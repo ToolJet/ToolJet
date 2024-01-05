@@ -104,6 +104,9 @@ class HomePageComponent extends React.Component {
   }
 
   async componentDidMount() {
+    retrieveWhiteLabelText().then((labelText) => {
+      document.title = `${labelText} - Dashboard`;
+    });
     await Promise.all([
       this.fetchApps(1, this.state.currentFolder.id),
       this.fetchFolders(),
@@ -113,7 +116,6 @@ class HomePageComponent extends React.Component {
       this.fetchWorkflowsWorkspaceLimit(),
       this.fetchOrgGit(),
     ]);
-    document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
 
   componentDidUpdate(prevProps) {

@@ -14,12 +14,14 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
-import { buildURLWithQuery, retrieveWhiteLabelText } from '@/_helpers/utils';
+import { buildURLWithQuery, retrieveWhiteLabelText, setFaviconAndTitle } from '@/_helpers/utils';
 import OIDCSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import posthog from 'posthog-js';
 import initPosthog from '../_helpers/initPosthog';
 import { redirectToDashboard } from '@/_helpers/routes';
 import { setCookie } from '@/_helpers/cookie';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -32,6 +34,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [password, setPassword] = useState();
   const [showPassword, setShowPassword] = useState(false);
   const [fallBack, setFallBack] = useState(false);
+  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_LOGO);
+  const [whiteLabelFavicon, setWhiteLabelFavicon] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON);
   const { t } = useTranslation();
 
   const location = useLocation();
@@ -85,10 +89,13 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     if (organizationId) {
       authenticationService.saveLoginOrganizationId(organizationId);
       organizationId &&
-        authenticationService.getOrganizationConfigs(organizationId).then(
+        authenticationService.getOrganizationConfigs(organizationId, null).then(
           (configs) => {
             setIsGettingConfigs(false);
             setConfigs(configs);
+            const { whiteLabelText, whiteLabelFavicon } = useWhiteLabellingStore.getState();
+            setWhiteLabelFavicon(whiteLabelFavicon);
+            setWhiteLabelText(whiteLabelText);
           },
           () => {
             setIsGettingConfigs(false);
@@ -99,6 +106,10 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
+  }, [whiteLabelFavicon, whiteLabelText]);
 
   useEffect(() => {
     const keyDownHandler = (event) => {
@@ -178,14 +189,14 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                 ) : (
                   <div className="common-auth-container-wrapper">
                     <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
-                      Join {configs?.name ? configs?.name : retrieveWhiteLabelText()}
+                      Join {configs?.name ? configs?.name : whiteLabelText}
                     </h2>
 
                     <div className="invite-sub-header" data-cy="invite-page-sub-header">
                       {`You are invited to ${
                         configs?.name
                           ? `a workspace ${configs?.name}. Accept the invite to join the workspace.`
-                          : `${retrieveWhiteLabelText()}.`
+                          : `${whiteLabelText}.`
                       }`}
                     </div>
                     {(configs?.google?.enabled || configs?.git?.enabled || configs?.openid?.enabled) &&
@@ -376,7 +387,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   {t('verificationSuccessPage.successfullyVerifiedEmail', 'Successfully verified email')}
                 </h1>
                 <p className="info-screen-description" data-cy="onboarding-page-description">
-                  Continue to set up your workspace to start using {retrieveWhiteLabelText()}.
+                  Continue to set up your workspace to start using {whiteLabelText}.
                 </p>
                 <ButtonSolid
                   className="verification-success-info-btn "
@@ -392,8 +403,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                     </div>
                   ) : (
                     <>
-                      {t('verificationSuccessPage.setupTooljet', `Set up ${retrieveWhiteLabelText()}`, {
-                        whiteLabelText: retrieveWhiteLabelText(),
+                      {t('verificationSuccessPage.setupTooljet', `Set up ${whiteLabelText}`, {
+                        whiteLabelText,
                       })}
 
                       <EnterIcon fill={'#fff'}></EnterIcon>

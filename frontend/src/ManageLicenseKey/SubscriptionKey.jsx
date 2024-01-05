@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import cx from 'classnames';
 import Textarea from '@/_ui/Textarea';
 import { toast } from 'react-hot-toast';
 import { licenseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { LoadingScreen } from './LoadingScreen';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { setFaviconAndTitle } from '@/_helpers/utils';
 
 const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
   const [license, setLicense] = useState(null);
   const [licenseLoading, setLicenseLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [licenseKey, setLicenseKey] = useState(false);
-  const [generatingLicense, setGeneratingLicense] = useState(false);
-  const navigate = useNavigate();
-  const { workspaceId } = useParams();
-  const { state, pathname } = useLocation();
+  const { state } = useLocation();
   const hasKeyChanged = licenseKey !== license?.license_key;
+  const [isLicenseUpdated, setIsLicenseUpdated] = useState(false);
+  const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
 
   const optionChanged = (value) => {
     setLicenseKey(value);
@@ -47,11 +48,7 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
       .update({ key: licenseKey })
       .then(() => {
         setLoading(false);
-        navigate(`/${workspaceId}/settings`, {
-          state: {
-            updated: true,
-          },
-        });
+        setIsLicenseUpdated(true);
         window.location.reload();
       })
       .catch(({ error }) => {
@@ -65,15 +62,14 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
   };
 
   useEffect(() => {
+    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
     fetchLicenseSettings();
     if (state?.updated) {
       toast.success('Subscription key updated successfully. Start using premium features now!', {
         position: 'top-center',
         style: { maxWidth: '324px' },
       });
-      navigate(`/${workspaceId}/settings`, {
-        replace: true,
-      });
+      window.location.reload();
     }
   }, []);
 

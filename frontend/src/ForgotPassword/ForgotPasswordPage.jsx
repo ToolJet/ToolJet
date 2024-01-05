@@ -9,6 +9,7 @@ import { ButtonSolid } from '@/_components/AppButton';
 import { withTranslation } from 'react-i18next';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 
 class ForgotPasswordComponent extends React.Component {
   constructor(props) {
@@ -19,9 +20,16 @@ class ForgotPasswordComponent extends React.Component {
       email: '',
       responseShow: false,
       emailError: '',
+      whiteLabelText: defaultWhiteLabellingSettings.WHITE_LABEL_TEXT,
     };
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
+
+  componentDidMount() {
+    retrieveWhiteLabelText().then((labelText) => {
+      this.setState({ whiteLabelText: labelText });
+    });
+  }
 
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value, emailError: '' });
@@ -54,7 +62,7 @@ class ForgotPasswordComponent extends React.Component {
   };
 
   render() {
-    const { isLoading } = this.state;
+    const { isLoading, whiteLabelText } = this.state;
 
     return (
       <div className="common-auth-section-whole-wrapper page">
@@ -69,7 +77,7 @@ class ForgotPasswordComponent extends React.Component {
                       Forgot Password
                     </h2>
                     <p className="common-auth-sub-header" data-cy="forgot-password-sub-header">
-                      New to {retrieveWhiteLabelText()}? &nbsp;
+                      New to {whiteLabelText}? &nbsp;
                       <Link
                         to={'/signup'}
                         tabIndex="-1"

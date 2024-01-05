@@ -15,6 +15,7 @@ import { OrganizationUser } from './organization_user.entity';
 import { InternalTable } from './internal_table.entity';
 import { AppEnvironment } from './app_environments.entity';
 import { OrganizationsLicense } from './organization_license.entity';
+import { WhiteLabelling } from './white_labelling.entity';
 import { OrganizationGitSync } from './organization_git_sync.entity';
 
 @Entity({ name: 'organizations' })
@@ -70,4 +71,7 @@ export class Organization extends BaseEntity {
 
   @OneToOne(() => OrganizationsLicense, (license) => license.organization, { onDelete: 'CASCADE' })
   organizationsLicense: OrganizationsLicense;
+
+  @OneToOne(() => WhiteLabelling, (whiteLabelling) => whiteLabelling.organization, { onDelete: 'CASCADE' })
+  whiteLabelling: WhiteLabelling;
 }

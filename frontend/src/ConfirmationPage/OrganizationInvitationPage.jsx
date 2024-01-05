@@ -11,6 +11,7 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { LinkExpiredInfoScreen } from '../SuccessInfoScreen/LinkExpiredInfoScreen';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 
 import { withRouter } from '@/_hoc/withRouter';
 class OrganizationInvitationPageComponent extends React.Component {
@@ -25,6 +26,7 @@ class OrganizationInvitationPageComponent extends React.Component {
       verifiedToken: false,
       showPassword: false,
       fallBack: false,
+      whiteLabelText: defaultWhiteLabellingSettings.WHITE_LABEL_TEXT,
     };
     this.formRef = React.createRef(null);
     this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
@@ -37,7 +39,7 @@ class OrganizationInvitationPageComponent extends React.Component {
     if (this.organizationId) {
       authenticationService.saveLoginOrganizationId(this.organizationId);
       this.organizationId &&
-        authenticationService.getOrganizationConfigs(this.organizationId).then(
+        authenticationService.getOrganizationConfigs(this.organizationId, null).then(
           (configs) => {
             this.setState({ isGettingConfigs: false, configs });
           },
@@ -62,6 +64,9 @@ class OrganizationInvitationPageComponent extends React.Component {
           this.setState({ fallBack: true });
         }
       });
+    retrieveWhiteLabelText(this.organizationId).then((labelText) => {
+      this.setState({ whiteLabelText: labelText });
+    });
   }
   handleOnCheck = () => {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));
@@ -109,7 +114,7 @@ class OrganizationInvitationPageComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, isGettingConfigs, userDetails, fallBack } = this.state;
+    const { isLoading, isGettingConfigs, userDetails, fallBack, whiteLabelText } = this.state;
     return (
       <div className="page" ref={this.formRef}>
         {fallBack ? (
@@ -134,14 +139,14 @@ class OrganizationInvitationPageComponent extends React.Component {
                           className="common-auth-section-header org-invite-header"
                           data-cy="workspace-invite-page-header"
                         >
-                          Join {this.state?.configs?.name ? this.state?.configs?.name : retrieveWhiteLabelText()}
+                          Join {this.state?.configs?.name ? this.state?.configs?.name : whiteLabelText}
                         </h2>
 
                         <div className="invite-sub-header" data-cy="workspace-invite-page-sub-header">
                           {`You are invited to ${
                             this.state?.configs?.name
                               ? `a workspace ${this.state?.configs?.name}. Accept the invite to join the workspace.`
-                              : retrieveWhiteLabelText()
+                              : whiteLabelText
                           }`}
                         </div>
 

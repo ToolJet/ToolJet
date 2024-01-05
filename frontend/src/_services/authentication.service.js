@@ -11,6 +11,7 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import config from 'config';
 import queryString from 'query-string';
 import { getRedirectToWithParams } from '@/_helpers/routes';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 
 const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,
@@ -116,18 +117,26 @@ function deleteLoginOrganizationSlug() {
   eraseCookie('login-workspace-slug');
 }
 
-function getOrganizationConfigs(organizationId) {
+async function getOrganizationConfigs(organizationId, organizationSlug) {
   const requestOptions = {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   };
-
-  return fetch(
-    `${config.apiUrl}/organizations/${organizationId ? `${organizationId}/` : ''}public-configs`,
-    requestOptions
-  )
-    .then(handleResponse)
-    .then((configs) => configs?.sso_configs);
+  try {
+    const { actions } = useWhiteLabellingStore.getState();
+    if (organizationId || organizationSlug) {
+      await actions.fetchWhiteLabelDetails(organizationId, organizationSlug);
+    }
+    const response = await fetch(
+      `${config.apiUrl}/organizations/${organizationId || organizationSlug}/public-configs`,
+      requestOptions
+    );
+    const configs = await handleResponse(response);
+    return configs?.sso_configs;
+  } catch (error) {
+    console.error('Error fetching organization configs and white label details:', error);
+    throw error;
+  }
 }
 
 function signup(email, name, password) {

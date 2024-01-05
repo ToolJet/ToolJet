@@ -107,7 +107,8 @@ export class OrganizationUsersService {
         organizationUser.user.firstName,
         user.firstName,
         `${invitationToken}?oid=${organizationUser.organizationId}`,
-        organizationUser.organization.name
+        organizationUser.organization.name,
+        organizationUser.organizationId
       )
       .catch((err) => console.error(err));
 

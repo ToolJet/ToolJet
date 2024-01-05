@@ -143,7 +143,16 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
   );
 };
 
-const ViewerHeader = ({ showHeader, appName, changeDarkMode, darkMode, pages, currentPageId, switchPage }) => {
+const ViewerHeader = ({
+  showHeader,
+  appName,
+  changeDarkMode,
+  darkMode,
+  pages,
+  currentPageId,
+  switchPage,
+  organizationId,
+}) => {
   const { currentLayout } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
@@ -169,7 +178,7 @@ const ViewerHeader = ({ showHeader, appName, changeDarkMode, darkMode, pages, cu
                 redirectToDashboard();
               }}
             >
-              <AppLogo isLoadingFromHeader={false} />
+              <AppLogo isLoadingFromHeader={false} viewer={true} organizationId={organizationId} />
             </Link>
           </h1>
           {appName && <span>{appName}</span>}

@@ -2,8 +2,8 @@ import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import { retrieveWhiteLabelText } from '@/_helpers/utils';
-import { authenticationService, tooljetService } from '@/_services';
+import { retrieveWhiteLabelText, setFaviconAndTitle } from '@/_helpers/utils';
+import { authenticationService, tooljetService, whiteLabellingService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
@@ -48,6 +48,8 @@ import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import { Settings } from '@/Settings';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import { ManageSubscriptionKey } from '@/ManageLicenseKey/MangeSubscriptionKey';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 
 const AppWrapper = (props) => {
   return (
@@ -83,20 +85,6 @@ class AppComponent extends React.Component {
       }
     });
   };
-
-  setFaviconAndTitle() {
-    const favicon_url = window.public_config?.WHITE_LABEL_FAVICON;
-    let links = document.querySelectorAll("link[rel='icon']");
-    links.forEach((link) => {
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.getElementsByTagName('head')[0].appendChild(link);
-      }
-      link.href = favicon_url ? favicon_url : 'assets/images/logo.svg';
-    });
-    document.title = `${retrieveWhiteLabelText()} - Dashboard`;
-  }
 
   initTelemetryAndSupport(currentUser) {
     const isApplicationsPath = window.location.pathname.includes('/applications/');
@@ -153,8 +141,22 @@ class AppComponent extends React.Component {
     initPosthog(currentUser);
   }
 
+  fetchAndSetWhiteLabelDetails = async () => {
+    const { actions } = useWhiteLabellingStore.getState();
+
+    // Fetch white labeling details
+    try {
+      await actions.fetchWhiteLabelDetails();
+    } catch (error) {
+      console.error('Unable to fetch white label settings', error);
+    }
+    const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
+    // Set favicon and title
+    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
+  };
+
   componentDidMount() {
-    this.setFaviconAndTitle();
+    setFaviconAndTitle();
     authorizeWorkspace();
     this.fetchMetadata();
     // setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
@@ -163,6 +165,7 @@ class AppComponent extends React.Component {
       ++this.counter;
       const current_user = authenticationService.currentSessionValue?.current_user;
       if (current_user?.id) {
+        this.fetchAndSetWhiteLabelDetails();
         this.initTelemetryAndSupport(current_user);
         clearInterval(this.interval);
       } else if (this.counter > 10) {
@@ -413,6 +416,14 @@ class AppComponent extends React.Component {
                   element={
                     <AdminRoute>
                       <ManageSubscriptionKey switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="white-labelling"
+                  element={
+                    <AdminRoute>
+                      <ManageWhiteLabelling switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </AdminRoute>
                   }
                 />

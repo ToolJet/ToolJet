@@ -47,12 +47,14 @@ import { SessionScheduler } from 'src/schedulers/session.scheduler';
 import { LdapService } from '@ee/services/oauth/ldap.service';
 import { SAMLService } from '@ee/services/oauth/saml.service';
 import { ClearSSOResponseScheduler } from 'src/schedulers/clear_sso_response.scheduler';
+import { WhiteLabellingModule } from '../white-labelling/white-labelling.module';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
     InstanceSettingsModule,
+    WhiteLabellingModule,
     TypeOrmModule.forFeature([
       User,
       File,

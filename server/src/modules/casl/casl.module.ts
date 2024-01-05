@@ -22,11 +22,13 @@ import { TooljetDbAbilityFactory } from './abilities/tooljet-db-ability.factory'
 import { GlobalDataSourceAbilityFactory } from './abilities/global-datasource-ability.factory';
 import { OrganizationConstantsAbilityFactory } from './abilities/organization-constants-ability.factory';
 import { InstanceSettingsModule } from '../instance_settings/instance_settings.module';
+import { WhiteLabellingModule } from '../white-labelling/white-labelling.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App, AuditLog]),
     InstanceSettingsModule,
+    WhiteLabellingModule,
   ],
   providers: [
     CaslAbilityFactory,

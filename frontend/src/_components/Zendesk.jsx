@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { retrieveWhiteLabelText } from '../_helpers/utils';
 import Input from '@/_ui/Input';
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import EncryptedFieldWrapper from './EncyrptedFieldWrapper';
 
 const Zendesk = ({
@@ -19,7 +20,13 @@ const Zendesk = ({
   optionsChanged,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
+  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
+
   const { t } = useTranslation();
+
+  useEffect(() => {
+    retrieveWhiteLabelText().then(setWhiteLabelText);
+  }, []);
 
   function authZendesk() {
     const provider = 'zendesk';
@@ -102,8 +109,8 @@ const Zendesk = ({
             <p>
               {t(
                 'zendesk.enableReadAndWrite',
-                `If you want your ${retrieveWhiteLabelText()} apps to modify your Zendesk resources, make sure to select read and write access`,
-                { whiteLabelText: retrieveWhiteLabelText() }
+                `If you want your ${whiteLabelText} apps to modify your Zendesk resources, make sure to select read and write access`,
+                { whiteLabelText: whiteLabelText }
               )}
             </p>
             <div>
@@ -114,8 +121,8 @@ const Zendesk = ({
                 text="Read only"
                 helpText={t(
                   'zendesk.readDataFromResources',
-                  `Your ${retrieveWhiteLabelText()} apps can only read data from resources`,
-                  { whiteLabelText: retrieveWhiteLabelText() }
+                  `Your ${whiteLabelText} apps can only read data from resources`,
+                  { whiteLabelText: whiteLabelText }
                 )}
               />
               <Radio
@@ -125,8 +132,8 @@ const Zendesk = ({
                 text="Read and write"
                 helpText={t(
                   'zendesk.readModifyResources',
-                  `Your ${retrieveWhiteLabelText()} apps can read data from resources, modify resources, and more.`,
-                  { whiteLabelText: retrieveWhiteLabelText() }
+                  `Your ${whiteLabelText} apps can read data from resources, modify resources, and more.`,
+                  { whiteLabelText: whiteLabelText }
                 )}
               />
             </div>

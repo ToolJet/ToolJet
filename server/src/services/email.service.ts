@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import handlebars from 'handlebars';
 import { generateInviteURL, generateOrgInviteURL } from 'src/helpers/utils.helper';
-import { InstanceSettingsService } from './instance_settings.service';
-import { INSTANCE_SETTINGS_TYPE, INSTANCE_SYSTEM_SETTINGS } from 'src/helpers/instance_settings.constants';
+import { WhiteLabellingService } from './white_labelling.service';
+import {
+  WHITE_LABELLING_SETTINGS,
+  DEFAULT_WHITE_LABELLING_SETTINGS,
+  WHITE_LABELLING_COLUMNS,
+} from 'src/helpers/white_labelling.constants';
 
 const path = require('path');
 const fs = require('fs');
@@ -26,15 +30,15 @@ export class EmailService {
   private WHITE_LABEL_LOGO;
   private SUB_PATH;
 
-  constructor(private readonly instancesettingsService: InstanceSettingsService) {
+  constructor(private readonly whiteLabellingService: WhiteLabellingService) {
     this.FROM_EMAIL = process.env.DEFAULT_FROM_EMAIL || 'hello@tooljet.io';
     this.TOOLJET_HOST = this.stripTrailingSlash(process.env.TOOLJET_HOST);
     this.SUB_PATH = process.env.SUB_PATH;
     this.NODE_ENV = process.env.NODE_ENV || 'development';
   }
 
-  async init() {
-    const whiteLabelSettings = await this.retrieveWhiteLabelSettings();
+  async init(organizationId?: string) {
+    const whiteLabelSettings = await this.retrieveWhiteLabelSettings(organizationId);
     this.WHITE_LABEL_TEXT = await this.retrieveWhiteLabelText(whiteLabelSettings);
     this.WHITE_LABEL_LOGO = await this.retrieveWhiteLabelLogo(whiteLabelSettings);
   }
@@ -88,7 +92,7 @@ export class EmailService {
     organizationName?: string,
     sender?: string
   ) {
-    await this.init();
+    await this.init(organizationId);
     const subject = `Welcome to ${this.WHITE_LABEL_TEXT}`;
     const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId);
     const html = `
@@ -128,9 +132,10 @@ export class EmailService {
     name: string,
     sender: string,
     invitationtoken: string,
-    organizationName: string
+    organizationName: string,
+    organizationId?: string
   ) {
-    await this.init();
+    await this.init(organizationId);
     const subject = `Welcome to ${this.WHITE_LABEL_TEXT}`;
     const inviteUrl = generateOrgInviteURL(invitationtoken);
     const html = `
@@ -162,8 +167,8 @@ export class EmailService {
     await this.sendEmail(to, subject, html);
   }
 
-  async sendPasswordResetEmail(to: string, token: string) {
-    await this.init();
+  async sendPasswordResetEmail(to: string, token: string, organizationId?: string) {
+    await this.init(organizationId);
     const subject = 'password reset instructions';
     const url = `${this.TOOLJET_HOST}${this.SUB_PATH ? this.SUB_PATH : '/'}reset-password/${token}`;
     const html = `
@@ -180,9 +185,10 @@ export class EmailService {
     commentLink: string,
     timestamp: string,
     comment: string,
-    fromAvatar: string
+    fromAvatar: string,
+    organizationId: string
   ) {
-    await this.init();
+    await this.init(organizationId);
     const filePath = path.join(__dirname, '../assets/email-templates/comment-mention.html');
     const source = fs.readFileSync(filePath, 'utf-8').toString();
     const template = handlebars.compile(source);
@@ -207,25 +213,21 @@ export class EmailService {
     await this.sendEmail(to, subject, html);
   }
 
-  async retrieveWhiteLabelSettings() {
-    const whiteLabelSetting = await this.instancesettingsService.getSettings(
-      [INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO, INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT],
-      false,
-      INSTANCE_SETTINGS_TYPE.SYSTEM
-    );
-
+  async retrieveWhiteLabelSettings(organizationId?: string) {
+    if (!organizationId) {
+      return {};
+    }
+    const whiteLabelSetting = await this.whiteLabellingService.getSettings(organizationId);
     return whiteLabelSetting;
   }
 
-  async retrieveWhiteLabelText(whiteLabelSetting) {
-    return whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT] !== ''
-      ? whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT]
-      : 'ToolJet';
+  async retrieveWhiteLabelText(whiteLabelSettings) {
+    const whiteLabelText = whiteLabelSettings?.[WHITE_LABELLING_COLUMNS.WHITE_LABEL_TEXT];
+    return whiteLabelText || DEFAULT_WHITE_LABELLING_SETTINGS[WHITE_LABELLING_SETTINGS.WHITE_LABEL_TEXT];
   }
 
-  async retrieveWhiteLabelLogo(whiteLabelSetting) {
-    return whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO] !== ''
-      ? whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO]
-      : 'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg';
+  async retrieveWhiteLabelLogo(whiteLabelSettings) {
+    const whiteLabelLogo = whiteLabelSettings?.[WHITE_LABELLING_COLUMNS.WHITE_LABEL_LOGO];
+    return whiteLabelLogo || DEFAULT_WHITE_LABELLING_SETTINGS[WHITE_LABELLING_SETTINGS.WHITE_LABEL_LOGO];
   }
 }

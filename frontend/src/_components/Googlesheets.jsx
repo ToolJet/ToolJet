@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { datasourceService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
@@ -17,7 +18,12 @@ const Googlesheets = ({
   isDisabled,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
+  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    retrieveWhiteLabelText().then(setWhiteLabelText);
+  }, []);
 
   function authGoogle() {
     const provider = 'googlesheets';
@@ -63,8 +69,8 @@ const Googlesheets = ({
             <p data-cy="google-sheet-connection-form-description">
               {t(
                 'googleSheets.enableReadAndWrite',
-                `If you want your ${retrieveWhiteLabelText()} apps to modify your Google sheets, make sure to select read and write access`,
-                { whiteLabelText: retrieveWhiteLabelText() }
+                `If you want your ${whiteLabelText} apps to modify your Google sheets, make sure to select read and write access`,
+                { whiteLabelText: whiteLabelText }
               )}
             </p>
             <div>
@@ -75,8 +81,8 @@ const Googlesheets = ({
                 text={t('googleSheets.readOnly', 'Read only')}
                 helpText={t(
                   'googleSheets.readDataFromSheets',
-                  `Your ${retrieveWhiteLabelText()} apps can only read data from Google sheets`,
-                  { whiteLabelText: retrieveWhiteLabelText() }
+                  `Your ${whiteLabelText} apps can only read data from Google sheets`,
+                  { whiteLabelText: whiteLabelText }
                 )}
               />
               <Radio
@@ -86,8 +92,8 @@ const Googlesheets = ({
                 text={t('googleSheets.readWrite', 'Read and write')}
                 helpText={t(
                   'googleSheets.readModifySheets',
-                  `Your ${retrieveWhiteLabelText()} apps can read data from sheets, modify sheets, and more.`,
-                  { whiteLabelText: retrieveWhiteLabelText() }
+                  `Your ${whiteLabelText} apps can read data from sheets, modify sheets, and more.`,
+                  { whiteLabelText: whiteLabelText }
                 )}
               />
             </div>

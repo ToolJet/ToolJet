@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import config from 'config';
 import { BreadCrumbContext } from '@/App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { setFaviconAndTitle } from '@/_helpers/utils';
 
 const MarketplacePage = ({ darkMode, switchDarkMode }) => {
   const [active, setActive] = React.useState('installed');
@@ -18,6 +20,7 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
 
   const { admin } = authenticationService.currentSessionValue;
   const ENABLE_MARKETPLACE_DEV_MODE = config.ENABLE_MARKETPLACE_DEV_MODE == 'true';
+  const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
 
   const navigate = useNavigate();
 
@@ -31,6 +34,7 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
   }, [admin]);
 
   React.useEffect(() => {
+    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
     marketplaceService
       .findAll()
       .then(({ data = [] }) => setMarketplacePlugins(data))

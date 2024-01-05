@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { datasourceService } from '@/_services';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import Button from '@/_ui/Button';
 import { retrieveWhiteLabelText } from '../_helpers/utils';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 
 const Slack = ({
   optionchanged,
@@ -15,7 +16,12 @@ const Slack = ({
   isDisabled,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
+  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    retrieveWhiteLabelText().then(setWhiteLabelText);
+  }, []);
 
   function authGoogle() {
     const provider = 'slack';
@@ -62,9 +68,9 @@ const Slack = ({
             <p>
               {t(
                 'slack.connectToolJetToSlack',
-                `${retrieveWhiteLabelText()} can connect to Slack and list users, send messages, etc. Please select appropriate permission
+                `${whiteLabelText} can connect to Slack and list users, send messages, etc. Please select appropriate permission
               scopes.`,
-                { whiteLabelText: retrieveWhiteLabelText() }
+                { whiteLabelText }
               )}
             </p>
             <div>
@@ -81,8 +87,8 @@ const Slack = ({
                   <small className="text-muted">
                     {t(
                       'slack.listUsersAndSendMessage',
-                      `Your ${retrieveWhiteLabelText()} app will be able to list users and send messages to users & channels.`,
-                      { whiteLabelText: retrieveWhiteLabelText() }
+                      `Your ${whiteLabelText} app will be able to list users and send messages to users & channels.`,
+                      { whiteLabelText }
                     )}
                   </small>
                 </span>

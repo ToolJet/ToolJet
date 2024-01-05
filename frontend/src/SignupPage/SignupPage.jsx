@@ -36,6 +36,9 @@ class SignupPageComponent extends React.Component {
   darkMode = localStorage.getItem('darkMode') === 'true';
 
   componentDidMount() {
+    retrieveWhiteLabelText().then((labelText) => {
+      this.setState({ whiteLabelText: labelText });
+    });
     authenticationService.deleteLoginOrganizationId();
 
     authenticationService.getOrganizationConfigs().then(
@@ -96,7 +99,7 @@ class SignupPageComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, signupSuccess } = this.state;
+    const { isLoading, signupSuccess, whiteLabelText } = this.state;
 
     return (
       <div className="page common-auth-section-whole-wrapper">
@@ -116,8 +119,8 @@ class SignupPageComponent extends React.Component {
                       className="common-auth-section-header common-auth-signup-section-header"
                       data-cy="signup-section-header"
                     >
-                      {this.props.t('loginSignupPage.joinTooljet', `Join ${retrieveWhiteLabelText()}`, {
-                        whiteLabelText: retrieveWhiteLabelText(),
+                      {this.props.t('loginSignupPage.joinTooljet', `Join ${whiteLabelText}`, {
+                        whiteLabelText,
                       })}
                     </h2>
                     <div className="signup-page-signin-redirect" data-cy="signin-redirect-text">

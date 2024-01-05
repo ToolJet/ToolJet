@@ -70,14 +70,28 @@ import { diff } from 'deep-object-diff';
 import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import { getQueryParams } from '@/_helpers/routes';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
 
 setAutoFreeze(false);
 enablePatches();
 
-function setWindowTitle(name) {
-  return (document.title = name ? `${name} - ${retrieveWhiteLabelText()}` : `My App - ${retrieveWhiteLabelText()}`);
+async function setWindowTitle(name) {
+  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
+  let whiteLabelText;
+
+  // Only fetch white labeling details if they haven't been fetched yet
+  if (!isWhiteLabelDetailsFetched) {
+    try {
+      await actions.fetchWhiteLabelDetails();
+    } catch (error) {
+      console.error('Unable to update white label settings', error);
+    }
+  }
+
+  whiteLabelText = useWhiteLabellingStore.getState().whiteLabelText;
+  document.title = name ? `${name} - ${whiteLabelText}` : `My App - ${whiteLabelText}`;
 }
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));

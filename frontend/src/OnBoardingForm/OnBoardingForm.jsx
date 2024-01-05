@@ -46,6 +46,9 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
   };
 
   useEffect(() => {
+    retrieveWhiteLabelText().then((labelText) => {
+      this.setState({ whiteLabelText: labelText });
+    });
     if (completed) {
       authenticationService
         .onboarding({
@@ -99,7 +102,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     'Enter your phone number',
     'Enter your phone number', //dummy for styling
   ];
-  const FormSubTitles = [`This information will help us improve ${retrieveWhiteLabelText()}.`];
+  const FormSubTitles = [`This information will help us improve ${this.state.whiteLabelText}.`];
 
   const handleRetry = () => {
     setIsLoading(true);

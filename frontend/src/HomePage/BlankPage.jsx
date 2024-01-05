@@ -7,6 +7,7 @@ import { authenticationService, appsService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';
 import posthog from 'posthog-js';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 
 export const BlankPage = function BlankPage({
   readAndImport,
@@ -24,9 +25,11 @@ export const BlankPage = function BlankPage({
 }) {
   const { t } = useTranslation();
   const [appsLimit, setAppsLimit] = useState(null);
+  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
 
   useEffect(() => {
     fetchAppsLimit();
+    retrieveWhiteLabelText().then(setWhiteLabelText);
   }, []);
 
   const staticTemplates = [
@@ -122,24 +125,24 @@ export const BlankPage = function BlankPage({
                 <div className="row homepage-empty-container">
                   <div className="col-6">
                     <h3 className="empty-welcome-header" data-cy="empty-homepage-welcome-header">
-                      {t('blankPage.welcomeToToolJet', `Welcome to your new ${retrieveWhiteLabelText()} workspace`, {
-                        whiteLabelText: retrieveWhiteLabelText(),
+                      {t('blankPage.welcomeToToolJet', `Welcome to your new ${whiteLabelText} workspace`, {
+                        whiteLabelText,
                       })}
                     </h3>
                     <p className={`empty-title`} data-cy="empty-homepage-description">
                       {appType !== 'workflow'
                         ? t(
                             'blankPage.getStartedCreateNewApp',
-                            `You can get started by creating a new application or by creating an application using a template in ${retrieveWhiteLabelText()} Library.`,
+                            `You can get started by creating a new application or by creating an application using a template in ${whiteLabelText} Library.`,
                             {
-                              whiteLabelText: retrieveWhiteLabelText(),
+                              whiteLabelText
                             }
                           )
                         : t(
                             'blankPage.getStartedCreateNewWorkflow',
                             `You can get started by creating a new workflow.`,
                             {
-                              whiteLabelText: retrieveWhiteLabelText(),
+                              whiteLabelText
                             }
                           )}
                     </p>
