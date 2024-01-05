@@ -5,7 +5,7 @@ import {
   multiEnvSelector,
 } from "Selectors/eeCommon";
 import { ssoEeText } from "Texts/eeCommon";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import * as common from "Support/utils/common";
 import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
@@ -18,6 +18,8 @@ import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
+import { promoteApp, releaseApp } from "Support/utils/multiEnv";
+
 
 export const oidcSSOPageElements = () => {
   cy.get(ssoEeSelector.oidcToggle).then(($el) => {
@@ -157,29 +159,37 @@ export const userSignUp = (fullName, email, workspaceName) => {
     cy.get(commonSelectors.setUpToolJetButton).click();
     cy.wait(4000);
   });
-  cy.get("body").then(($el) => {
-    if (!$el.text().includes(dashboardText.emptyPageHeader)) {
+  cy.get("body").then(($body) => {
+    if ($body.find(commonSelectors.appCreateButton).length < 0) {
       verifyOnboardingQuestions(fullName, workspaceName);
     }
   });
 };
 
+// export const resetAllowPersonalWorkspace = () => {
+//   cy.get(commonEeSelectors.instanceSettingIcon).click();
+//   cy.get(instanceSettingsSelector.manageInstanceSettings).click();
+//   cy.get(instanceSettingsSelector.allowWorkspaceToggle)
+//     .eq(0)
+//     .then(($el) => {
+//       if (!$el.is(":checked")) {
+//         cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).check();
+//         cy.get(commonEeSelectors.saveButton).click();
+//         cy.verifyToastMessage(
+//           commonSelectors.toastMessage,
+//           "Instance settings have been updated"
+//         );
+//       }
+//     });
+// };
+
 export const resetAllowPersonalWorkspace = () => {
-  cy.get(commonEeSelectors.instanceSettingIcon).click();
-  cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-  cy.get(instanceSettingsSelector.allowWorkspaceToggle)
-    .eq(0)
-    .then(($el) => {
-      if (!$el.is(":checked")) {
-        cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).check();
-        cy.get(commonEeSelectors.saveButton).click();
-        cy.verifyToastMessage(
-          commonSelectors.toastMessage,
-          "Instance settings have been updated"
-        );
-      }
-    });
-};
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: "UPDATE instance_settings SET value = 'true' WHERE key = 'ALLOW_PERSONAL_WORKSPACE';",
+  });
+}
+
 
 export const addNewUser = (firstName, email, companyName) => {
   common.navigateToManageUsers();
@@ -480,3 +490,23 @@ export const verifyTooltipDisabled = (selector, message) => {
       cy.get(".tooltip-inner").last().should("have.text", message);
     });
 };
+
+export const createAnAppWithSlug = (appName, slug) => {
+  cy.apiCreateApp(appName);
+  cy.openApp();
+  cy.dragAndDropWidget("Table", 250, 250);
+  promoteApp();
+  promoteApp();
+  releaseApp();
+  cy.get(commonWidgetSelector.shareAppButton).click();
+  cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
+  cy.wait(2000);
+  cy.get(commonWidgetSelector.modalCloseButton).click();
+}
+
+export const updateLicense = (key) => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `update instance_settings set value='${key}', updated_at= NOW() where key='LICENSE_KEY';`,
+  })
+}

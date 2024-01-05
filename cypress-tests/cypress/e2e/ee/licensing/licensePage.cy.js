@@ -1,6 +1,6 @@
 import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { verifyTooltip, navigateToManageSSO } from "Support/utils/common";
+import { verifyTooltip, navigateToManageSSO, navigateToManageGroups } from "Support/utils/common";
 import { addNewUser } from "Support/utils/eeCommon";
 import {
     commonEeSelectors,
@@ -9,7 +9,7 @@ import {
 import { licenseText } from "Texts/license";
 import { licenseSelectors } from "Selectors/license";
 import { groupsSelector } from "Selectors/manageGroups";
-import { verifyTooltipDisabled } from "Support/utils/eeCommon";
+import { verifyTooltipDisabled, updateLicense } from "Support/utils/eeCommon";
 import {
     verifyrenewPlanModal,
     verifyExpiredLicenseBanner,
@@ -20,6 +20,9 @@ describe("", () => {
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
     });
+    after(() => {
+        updateLicense(Cypress.env('license-key'))
+    })
     it("should verify license page elements", () => {
         cy.get(commonEeSelectors.instanceSettingIcon).click();
         cy.get(licenseSelectors.licenseOption).click();
@@ -262,8 +265,7 @@ describe("", () => {
         verifyExpiredLicenseBanner();
         verifyrenewPlanModal();
 
-        cy.get(commonSelectors.workspaceSettingsIcon).click();
-        cy.get(commonSelectors.manageGroupsOption).click();
+        navigateToManageGroups();
 
         cy.get('[data-cy="create-new-group-button"]').should("be.disabled");
         cy.get('[data-cy="warning-text-header"]:eq(1)').verifyVisibleElement(
@@ -302,10 +304,12 @@ describe("", () => {
             '[data-cy="openid-connect-list-item"]',
             "OpenID Connect is available only\n        in paid plans"
         );
+        cy.reload();
         verifyTooltipDisabled(
             '[data-cy="ldap-list-item"]',
             "LDAP is available only\n        in paid plans"
         );
+        cy.reload()
         verifyTooltipDisabled(
             '[data-cy="saml-list-item"]',
             "SAML is available only\n        in paid plans"
