@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { ToolTip } from '@/_components';
 
 function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, toggleCollapsibleSidebar = () => {} }) {
   const currentVersion = localStorage.getItem('currentVersion');
@@ -41,6 +42,37 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
               </div>
               <div className="col-3 px-3">
                 {enableCollapsibleSidebar && !collapseSidebar && (
+                  <ToolTip message="Collapse sidebar" placement="bottom">
+                    <ButtonSolid
+                      variant="ghostBlue"
+                      className="tj-text-xsm"
+                      style={{
+                        minWidth: '28px',
+                        width: '28px',
+                        height: '28px',
+                        padding: '7px',
+                        borderRadius: '6px',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                      }}
+                      leftIcon="cheveronleftdouble"
+                      fill="#3E63DD"
+                      iconWidth="14"
+                      size="md"
+                      onClick={toggleCollapsibleSidebar}
+                    ></ButtonSolid>
+                  </ToolTip>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        <div className="col tj-dashboard-header-wrap">
+          <div className="d-flex justify-content-sm-between">
+            {enableCollapsibleSidebar && collapseSidebar && (
+              <div className="pe-3">
+                <ToolTip message="Open sidebar" placement="bottom">
                   <ButtonSolid
                     variant="ghostBlue"
                     className="tj-text-xsm"
@@ -54,40 +86,13 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
                       justifyContent: 'center',
                       cursor: 'pointer',
                     }}
-                    leftIcon="cheveronleftdouble"
+                    leftIcon="cheveronrightdouble"
                     fill="#3E63DD"
                     iconWidth="14"
                     size="md"
                     onClick={toggleCollapsibleSidebar}
                   ></ButtonSolid>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-        <div className="col tj-dashboard-header-wrap">
-          <div className="d-flex justify-content-sm-between">
-            {enableCollapsibleSidebar && collapseSidebar && (
-              <div className="pe-3">
-                <ButtonSolid
-                  variant="ghostBlue"
-                  className="tj-text-xsm"
-                  style={{
-                    minWidth: '28px',
-                    width: '28px',
-                    height: '28px',
-                    padding: '7px',
-                    borderRadius: '6px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                  }}
-                  leftIcon="cheveronrightdouble"
-                  fill="#3E63DD"
-                  iconWidth="14"
-                  size="md"
-                  onClick={toggleCollapsibleSidebar}
-                ></ButtonSolid>
+                </ToolTip>
               </div>
             )}
             <div className="app-header-label" data-cy="app-header-label">

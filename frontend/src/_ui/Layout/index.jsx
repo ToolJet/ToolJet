@@ -20,7 +20,6 @@ function Layout({
   collapseSidebar = false,
   toggleCollapsibleSidebar = () => {},
 }) {
-  console.log('At layout', { collapseSidebar }, { toggleCollapsibleSidebar });
   const router = useRouter();
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
