@@ -503,3 +503,10 @@ export const createAnAppWithSlug = (appName, slug) => {
   cy.wait(2000);
   cy.get(commonWidgetSelector.modalCloseButton).click();
 }
+
+export const updateLicense = (key) => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `update instance_settings set value='${key}', updated_at= NOW() where key='LICENSE_KEY';`,
+  })
+}
