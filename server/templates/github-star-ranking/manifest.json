@@ -1,8 +1,0 @@
-{
-  "name": "GitHub Star Ranking",
-  "description": "Display the list of repositories having equal or more stars as set the by the user, includes advance search filter like language and minimum forks.",
-  "widgets": ["Table"],
-  "sources": [{"name": "REST API", "id": "restapi"}],
-  "id": "github-star-ranking",
-  "category": "product-management"
-}
