@@ -4,6 +4,13 @@
   }
 }
 
+.edit-row-dropdown {
+  .css-zz6spl-container {
+    width: 100% !important;
+    margin-top: 16px;
+  }
+}
+
 .edit-warning-info {
   background-color: #FFF8F7;
   padding: 8px;
@@ -48,7 +55,8 @@
   color: var(--slate10);
 }
 
-.tj-app-input {
+.tj-app-input,
+.edit-row-container {
   input.primary-idKey-light {
     gap: 16px !important;
     background: #f4f6fa !important;
@@ -145,4 +153,8 @@
     line-height: 20px;
   }
 
+}
+
+.edit-field-container {
+  margin-top: 22px;
 }

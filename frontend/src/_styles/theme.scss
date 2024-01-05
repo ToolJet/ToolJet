@@ -10250,7 +10250,8 @@ tbody {
 
 
 //TJ APP INPUT
-.tj-app-input {
+.tj-app-input,
+.edit-row-container {
   display: flex;
   flex-direction: column;
   font-family: 'IBM Plex Sans';

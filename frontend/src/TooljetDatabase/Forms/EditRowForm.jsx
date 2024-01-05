@@ -14,6 +14,7 @@ import Boolean from '../Icons/Toggle.svg';
 import './styles.scss';
 
 const EditRowForm = ({ onEdit, onClose }) => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns, selectedTableData } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
@@ -28,7 +29,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
         const newActiveTabs = [...prevActiveTabs];
         keysWithNullValues.forEach((key) => {
           const index = Object.keys(currentValue).indexOf(key);
-          if (index !== -1) {
+          if (currentValue[key] === null) {
             newActiveTabs[index] = 'Null';
           }
         });
@@ -38,7 +39,8 @@ const EditRowForm = ({ onEdit, onClose }) => {
         ? Object.keys(currentValue).map((key) => {
             const value =
               currentValue[key] === null ? 'Null' : currentValue[key] === currentValue[key] ? currentValue[key] : '';
-            return { value: value, disabled: false };
+            const disabledValue = currentValue[key] === null ? true : false;
+            return { value: value, disabled: disabledValue };
           })
         : [];
 
@@ -169,10 +171,10 @@ const EditRowForm = ({ onEdit, onClose }) => {
             //defaultValue={currentValue}
             value={inputValues[index]?.value}
             type="text"
-            disabled={isPrimaryKey}
+            disabled={inputValues[index]?.disabled}
             onChange={(e) => handleInputChange(index, e.target.value, columnName)}
             placeholder={'Enter a value'}
-            className="form-control"
+            className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
             data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
             autoComplete="off"
             // onFocus={onFocused}
@@ -187,6 +189,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
               type="checkbox"
               checked={inputValues[index]?.value}
               onChange={(e) => handleInputChange(index, e.target.checked, columnName)}
+              disabled={inputValues[index]?.disabled}
             />
           </label>
         );
@@ -208,7 +211,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
   const headerText = primaryColumn.charAt(0).toUpperCase() + primaryColumn.slice(1);
 
   return (
-    <div className="">
+    <div className="drawer-card-wrapper ">
       <div className="drawer-card-title">
         <h3 className="card-title" data-cy="edit-row-header">
           Edit a row
@@ -216,12 +219,12 @@ const EditRowForm = ({ onEdit, onClose }) => {
       </div>
       <div className="card-body">
         <div>
-          <div className="mb-3 row g-2 align-items-center">
+          <div className="mb-3">
             <div className="col-2" data-cy={`${primaryColumn}-column-name-label`}>
-              <Integer width="18" height="18" className="tjdb-column-header-name" />
-              {headerText}
+              <Integer width="24" height="18" className="tjdb-column-header-name" />
+              <span>{headerText}</span>
             </div>
-            <div className="col-auto row-edit-select-container" data-cy="select-row-dropdown">
+            <div className="edit-row-dropdown col-auto row-edit-select-container w-100" data-cy="select-row-dropdown">
               <Select
                 useMenuPortal={false}
                 placeholder="Select a row to edit"
@@ -240,8 +243,8 @@ const EditRowForm = ({ onEdit, onClose }) => {
               if (isPrimaryKey) return null;
 
               return (
-                <div className="mb-3" key={index}>
-                  <div className="d-flex align-items-center justify-content-between">
+                <div className="edit-row-container mb-3" key={index}>
+                  <div className="edit-field-container d-flex align-items-center justify-content-between">
                     <div
                       className="form-label"
                       data-cy={`${String(Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-name-label`}
