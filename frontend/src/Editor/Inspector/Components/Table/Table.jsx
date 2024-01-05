@@ -751,13 +751,17 @@ class TableComponent extends React.Component {
   deleteEvents = (ref, eventTarget) => {
     const events = useAppDataStore.getState().events.filter((event) => event.target === eventTarget);
 
+    if (!events || events.length === 0) return;
+
     const toDelete = events?.filter((e) => e.event?.ref === ref.ref);
 
-    return new Promise.all(
-      toDelete?.forEach((e) => {
-        return useAppDataStore.getState().actions.deleteAppVersionEventHandler(e.id);
-      })
-    );
+    if (toDelete.length > 0) {
+      return new Promise.all(
+        toDelete?.forEach((e) => {
+          return useAppDataStore.getState().actions.deleteAppVersionEventHandler(e.id);
+        })
+      );
+    }
   };
 
   actionPopOver = (action, index) => {
