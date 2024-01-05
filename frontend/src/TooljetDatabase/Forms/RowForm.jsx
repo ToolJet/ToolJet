@@ -19,7 +19,7 @@ const RowForm = ({ onCreate, onClose }) => {
     Array.isArray(columns)
       ? columns.map((item) => {
           if (item.column_default !== null) {
-            return { value: item.default, checkboxValue: false, disabled: false };
+            return { value: '', checkboxValue: false, disabled: false };
           } else if (item.is_nullable === 'YES') {
             return { value: '', checkboxValue: false, disabled: false };
           }
@@ -44,24 +44,28 @@ const RowForm = ({ onCreate, onClose }) => {
     const newActiveTabs = [...activeTab];
     newActiveTabs[index] = tabData;
     setActiveTab(newActiveTabs);
-
     const newInputValues = [...inputValues];
-    if (defaultValue && tabData === 'Default') {
+    const actualDefaultVal = defaultValue === 'true' ? true : false;
+    if (defaultValue && tabData === 'Default' && dataType !== 'boolean') {
       newInputValues[index] = { value: defaultValue, checkboxValue: defaultValue, disabled: true };
-    } else if (nullValue === 'YES' && tabData === 'Null') {
+    } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
+      newInputValues[index] = { value: defaultValue, checkboxValue: actualDefaultVal, disabled: true };
+    } else if (nullValue === 'YES' && tabData === 'Null' && dataType !== 'boolean') {
+      newInputValues[index] = { value: 'Null', checkboxValue: false, disabled: true };
+    } else if (nullValue === 'YES' && tabData === 'Null' && dataType === 'boolean') {
       newInputValues[index] = { value: 'Null', checkboxValue: false, disabled: true };
     } else {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false };
     }
     setInputValues(newInputValues);
     if (dataType === 'boolean') {
-      setData({ ...data, [columnName]: newInputValues[index].checkboxValue === 'Null' ? null : defaultValue });
+      setData({ ...data, [columnName]: newInputValues[index].checkboxValue });
     } else {
       setData({ ...data, [columnName]: newInputValues[index].value === 'Null' ? null : defaultValue });
     }
   };
 
-  const handleInputChange1 = (index, value, columnName) => {
+  const handleInputChange = (index, value, columnName) => {
     const newInputValues = [...inputValues];
     newInputValues[index] = { value, checkboxValue: inputValues[index].checkboxValue, disabled: false };
     setInputValues(newInputValues);
@@ -140,7 +144,7 @@ const RowForm = ({ onCreate, onClose }) => {
             //defaultValue={!isPrimaryKey && defaultValue?.length > 0 ? removeQuotes(defaultValue.split('::')[0]) : ''}
             type="text"
             value={inputValues[index]?.value}
-            onChange={(e) => handleInputChange1(index, e.target.value, columnName)}
+            onChange={(e) => handleInputChange(index, e.target.value, columnName)}
             disabled={isPrimaryKey || inputValues[index]?.disabled}
             placeholder={isPrimaryKey ? 'Auto-generated' : 'Enter a value'}
             className={
