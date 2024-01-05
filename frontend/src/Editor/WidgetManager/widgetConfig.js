@@ -485,7 +485,8 @@ export const widgets = [
         },
         useDynamicColumn: { value: '{{false}}' },
         columnData: {
-          value: "{{[{name: 'email', key: 'email'}, {name: 'Full name', key: 'name', isEditable: true}]}}",
+          value:
+            "{{[{name: 'email', key: 'email', id: '1'}, {name: 'Full name', key: 'name', id: '2', isEditable: true}]}}",
         },
         rowsPerPage: { value: '{{10}}' },
         serverSidePagination: { value: '{{false}}' },
