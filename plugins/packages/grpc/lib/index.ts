@@ -47,7 +47,15 @@ export default class GRPC implements QueryService {
     }
 
     const result = await new Promise((resolve, reject) => {
-      clientStub[rpc]({}, metadata, (err: any, response: any) => {
+      let jsonMessage = {};
+
+      try {
+        jsonMessage = JSON.parse(queryOptions.jsonMessage) || {};
+      } catch (error) {
+        throw new QueryError('Invalid JSON message', {}, {});
+      }
+
+      clientStub[rpc](jsonMessage, metadata, (err: any, response: any) => {
         if (err) {
           reject(err);
         }
