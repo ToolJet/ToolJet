@@ -255,7 +255,7 @@ Cypress.Commands.add(
             name: queryName,
             kind: dsKind,
             options: options,
-            data_source_id: Cypress.env(`${dsName}-id`),
+            data_source_id: dsName != null ? Cypress.env(`${dsName}-id`) : null,
             plugin_id: null,
           },
         }).then((queryResponse) => {
