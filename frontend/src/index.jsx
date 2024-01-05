@@ -13,6 +13,11 @@ import Backend from 'i18next-http-backend';
 
 const AppWithProfiler = Sentry.withProfiler(App);
 
+// Added to disable all console.logs in production
+if (process.env.NODE_ENV === 'production') {
+  console.log = () => {};
+}
+
 appService
   .getConfig()
   .then((config) => {
