@@ -5,7 +5,15 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, showToggleLayoutBtn, showUndoRedoBtn }) {
+function HeaderActions({
+  handleUndo,
+  canUndo,
+  handleRedo,
+  canRedo,
+  showToggleLayoutBtn,
+  showUndoRedoBtn,
+  showFullWidth,
+}) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { currentLayout, toggleCurrentLayout } = useEditorStore(
     (state) => ({
@@ -15,9 +23,9 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, showToggleLay
     shallow
   );
   return (
-    <div className="editor-header-actions">
+    <div className={cx('editor-header-actions', { 'w-100': showFullWidth })}>
       {showToggleLayoutBtn && (
-        <div style={{ borderRadius: 6 }}>
+        <div style={{ borderRadius: 6 }} className={cx({ 'w-100': showFullWidth })}>
           <div
             className="d-flex align-items-center p-1 current-layout"
             style={{ height: 28, background: darkMode ? '#202425' : '#F1F3F5', borderRadius: 6 }}
@@ -29,6 +37,7 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, showToggleLay
                 'bg-transparent': currentLayout !== 'desktop',
                 'bg-white': currentLayout === 'desktop',
                 'opacity-100': currentLayout === 'desktop',
+                'w-100': showFullWidth,
               })}
               style={{ height: 20 }}
               role="tab"
@@ -49,6 +58,7 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, showToggleLay
                 'bg-transparent': currentLayout !== 'mobile',
                 'bg-white': currentLayout === 'mobile',
                 'opacity-100': currentLayout === 'mobile',
+                'w-100': showFullWidth,
               })}
               role="tab"
               type="button"

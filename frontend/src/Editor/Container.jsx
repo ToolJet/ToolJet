@@ -50,7 +50,6 @@ export const Container = ({
   // Dont update first time to skip
   // redundant save on app definition load
   const firstUpdate = useRef(true);
-
   const { showComments, currentLayout } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
@@ -240,7 +239,6 @@ export const Container = ({
 
       const bottomPadding = mode === 'view' ? 100 : 300;
       const frameHeight = mode === 'view' ? 45 : 85;
-
       setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`);
     },
     [setCanvasHeight, currentLayout, mode]
@@ -317,6 +315,7 @@ export const Container = ({
         return;
       }
       // const id = componentId ? componentId : uuidv4();
+      console.log('useDrop');
 
       // Get the width of the canvas
       const canvasBounds = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
@@ -562,7 +561,6 @@ export const Container = ({
     },
     [setIsDragging]
   );
-
   const containerProps = useMemo(() => {
     return {
       mode,

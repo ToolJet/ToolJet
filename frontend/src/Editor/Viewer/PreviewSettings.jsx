@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import { OverlayTrigger } from 'react-bootstrap';
-import { useEditorStore } from '@/_stores/editorStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useAppInfo } from '@/_stores/appDataStore';
-import { shallow } from 'zustand/shallow';
 import { AppVersionsManager } from '../AppVersionsManager/AppVersionsManager';
 import { noop } from 'lodash';
 import HeaderActions from '../Header/HeaderActions';
@@ -12,20 +10,11 @@ import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const PreviewSettings = ({ isMobileLayout, onAppEnvironmentChanged, setAppDefinitionFromVersion, showHeader }) => {
-  const { featureAccess, currentAppEnvironment, setCurrentAppEnvironmentId } = useEditorStore(
-    (state) => ({
-      featureAccess: state?.featureAccess,
-      currentAppEnvironment: state?.currentAppEnvironment,
-      setCurrentAppEnvironmentId: state?.actions?.setCurrentAppEnvironmentId,
-    }),
-    shallow
-  );
+const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHeader }) => {
   const { editingVersion } = useAppVersionStore((state) => ({
     editingVersion: state?.editingVersion,
   }));
-  const { appId, isPublic, environments, creationMode } = useAppInfo();
-  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const { appId } = useAppInfo();
   const [previewNavbar, togglePreviewNavbar] = useState(false);
 
   const overlay = (
@@ -41,12 +30,8 @@ const PreviewSettings = ({ isMobileLayout, onAppEnvironmentChanged, setAppDefini
                 setAppDefinitionFromVersion(data);
               }}
               onVersionDelete={noop}
-              environments={environments}
-              currentEnvironment={currentAppEnvironment}
-              setCurrentEnvironment={setCurrentAppEnvironmentId}
-              isPublic={isPublic ?? false}
-              appCreationMode={creationMode}
               isEditable={false}
+              isViewer
             />
           )}
         </span>
@@ -56,11 +41,12 @@ const PreviewSettings = ({ isMobileLayout, onAppEnvironmentChanged, setAppDefini
       </div>
     </div>
   );
+
   if (isMobileLayout) {
     return (
       <Navbar
-        key={'ff'}
-        expand={'ff'}
+        key={'viewer-preview-navbar'}
+        expand={false}
         expanded={previewNavbar}
         onToggle={(show) => togglePreviewNavbar(show)}
         as={(props) => {
@@ -72,7 +58,7 @@ const PreviewSettings = ({ isMobileLayout, onAppEnvironmentChanged, setAppDefini
             return (
               <div
                 className="released-version-no-header-mbl-preview"
-                style={{ backgroundColor: 'var(--slate5)', top: '11px', left: showHeader ? '65%' : '41%' }}
+                style={{ backgroundColor: 'var(--slate5)', top: '7px', left: showHeader ? '65%' : '41%' }}
               >
                 <span
                   style={{
@@ -95,31 +81,32 @@ const PreviewSettings = ({ isMobileLayout, onAppEnvironmentChanged, setAppDefini
             );
           }}
         />
-
         <Navbar.Offcanvas placement="top">
           <Offcanvas.Header closeButton>
             <Offcanvas.Title>Preview settings</Offcanvas.Title>
           </Offcanvas.Header>
-          <Offcanvas.Body>
-            {/* <span>
-              {editingVersion && (
-                <AppVersionsManager
-                  appId={appId}
-                  setAppDefinitionFromVersion={(data) => {
-                    togglePreviewNavbar(false);
-                    setAppDefinitionFromVersion(data);
-                  }}
-                  onVersionDelete={noop}
-                  environments={environments}
-                  currentEnvironment={currentAppEnvironment}
-                  setCurrentEnvironment={setCurrentAppEnvironmentId}
-                  isPublic={isPublic ?? false}
-                  appCreationMode={creationMode}
-                  isEditable={false}
-                />
-              )}
-            </span> */}
-          </Offcanvas.Body>
+          {previewNavbar && (
+            <Offcanvas.Body>
+              <span>
+                {editingVersion && (
+                  <AppVersionsManager
+                    appId={appId}
+                    setAppDefinitionFromVersion={(data) => {
+                      togglePreviewNavbar(false);
+                      setAppDefinitionFromVersion(data);
+                    }}
+                    onVersionDelete={noop}
+                    isEditable={false}
+                    isViewer
+                  />
+                )}
+              </span>
+              <div className="d-flex p-2 align-items-center">
+                <span style={{ marginRight: '24px' }}>Layout</span>
+                <HeaderActions showToggleLayoutBtn showFullWidth />
+              </div>
+            </Offcanvas.Body>
+          )}
         </Navbar.Offcanvas>
       </Navbar>
     );

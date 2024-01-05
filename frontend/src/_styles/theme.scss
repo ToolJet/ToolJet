@@ -773,8 +773,18 @@ button {
       width: 100%;
     }
 
+
     .canvas-container::-webkit-scrollbar {
+      width: 0;
       background: transparent;
+    }
+
+    .canvas-container::-webkit-scrollbar-track {
+      background: transparent !important;
+    }
+
+    .canvas-container {
+      scrollbar-width: none;
     }
 
     .canvas-container {
@@ -11876,6 +11886,7 @@ tbody {
 }
 
 .powered-with-tj {
+  cursor: pointer;
   background-color: var(--base);
   padding: 10px;
   text-align: center;

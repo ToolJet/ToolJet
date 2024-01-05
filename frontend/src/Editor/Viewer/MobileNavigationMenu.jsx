@@ -4,36 +4,21 @@ import _ from 'lodash';
 import { slide as MobileMenu } from 'react-burger-menu';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
-import { shallow } from 'zustand/shallow';
 import './viewer.scss';
-import { useAppInfo } from '@/_stores/appDataStore';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
 import Cross from '@/_ui/Icon/solidIcons/Cross';
 
-const MobileNavigationMenu = ({
-  pages,
-  switchPage,
-  currentPageId,
-  darkMode,
-  changeDarkMode,
-  //   showHeader,
-  //   avatarText,
-  //   avatarTitle,
-  //   setAppDefinitionFromVersion,
-}) => {
+const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, changeDarkMode }) => {
   const [hamburgerMenuOpen, setHamburgerMenuOpen] = React.useState(false);
-  //   const { appId, isPublic } = useAppInfo();
   const handlepageSwitch = (pageId) => {
     setHamburgerMenuOpen(false);
     switchPage(pageId);
   };
-  //   const isVersionReleased = useAppVersionStore((state) => state.isVersionReleased, shallow);
   var styles = {
     bmBurgerButton: {
       position: 'absolute',
       width: '16px',
       height: '16px',
-      top: '1rem',
+      top: '13px',
       right: '1rem',
     },
     bmBurgerBars: {

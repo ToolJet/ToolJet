@@ -5,7 +5,6 @@ import LogoIcon from '@assets/images/rocket.svg';
 import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
-import FolderList from '@/_ui/FolderList/FolderList';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import { redirectToDashboard } from '@/_helpers/routes';
@@ -15,33 +14,6 @@ import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import PreviewSettings from './PreviewSettings';
 import MobileNavigationMenu from './MobileNavigationMenu';
-
-export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchPage, darkMode }) => {
-  if (isMobileDevice) {
-    return null;
-  }
-  return (
-    <div
-      className={`navigation-area`}
-      style={{
-        width: 200,
-        // backgroundColor: canvasBackgroundColor,
-      }}
-    >
-      <div className="page-handler-wrapper">
-        {pages.map(([id, page]) =>
-          page.hidden || page.disabled ? null : (
-            <FolderList key={page.handle} onClick={() => switchPage(id)} selectedItem={id === currentPageId}>
-              <span data-cy={`pages-name-${String(page.name).toLowerCase()}`} className="mx-3 text-wrap">
-                {_.truncate(page.name, { length: 18 })}
-              </span>
-            </FolderList>
-          )
-        )}
-      </div>
-    </div>
-  );
-};
 
 const ViewerHeader = ({
   showHeader,
@@ -53,7 +25,6 @@ const ViewerHeader = ({
   switchPage,
   setAppDefinitionFromVersion,
   showViewerNavigation,
-  onAppEnvironmentChanged,
 }) => {
   const { currentLayout } = useEditorStore(
     (state) => ({
@@ -69,7 +40,7 @@ const ViewerHeader = ({
 
   const _renderAppNameAndLogo = () => (
     <div
-      className={classNames('d-flex')}
+      className={classNames('d-flex', 'align-items-center')}
       style={{ visibility: showHeader || isVersionReleased ? 'visible' : 'hidden' }}
     >
       <h1 className="navbar-brand d-none-navbar-horizontal pe-0">
@@ -82,9 +53,7 @@ const ViewerHeader = ({
           <LogoIcon />
         </Link>
       </h1>
-      <div className={'viewer-vertical-line'}></div>
-      {/* <div className="navbar-seperator"></div> */}
-
+      <div className="navbar-seperator" style={{ margin: '0px 1.375rem' }}></div>
       {appName && (
         <div className="d-flex align-items-center">
           <span>{appName}</span>
@@ -102,9 +71,15 @@ const ViewerHeader = ({
     );
   }
 
+  // Mobile layout
   if (isMobileLayout && !showHeader && isVersionReleased) {
     return (
-      <>
+      <Header
+        styles={{
+          height: '48px',
+          backgroundColor: '#f2f2f5',
+        }}
+      >
         {showViewerNavigation ? (
           <MobileNavigationMenu
             pages={pages}
@@ -121,13 +96,18 @@ const ViewerHeader = ({
             <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
           </span>
         )}
-      </>
+      </Header>
     );
   }
 
   if (isMobileLayout && !showHeader && !isVersionReleased) {
     return (
-      <>
+      <Header
+        styles={{
+          height: '48px',
+          backgroundColor: '#f2f2f5',
+        }}
+      >
         {showViewerNavigation && (
           <MobileNavigationMenu
             pages={pages}
@@ -144,7 +124,7 @@ const ViewerHeader = ({
             <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
           </span>
         )}
-      </>
+      </Header>
     );
   }
 
@@ -171,14 +151,14 @@ const ViewerHeader = ({
         </div>
       )}
       {!isMobileLayout && _renderAppNameAndLogo()}
-      {!isVersionReleased && (
+      {/* {!isVersionReleased && (
         <PreviewSettings
           isMobileLayout={isMobileLayout}
           showHeader={showHeader}
           setAppDefinitionFromVersion={setAppDefinitionFromVersion}
           onAppEnvironmentChanged={onAppEnvironmentChanged}
         />
-      )}
+      )} */}
       {isMobileLayout && !showViewerNavigation && (
         <span className="released-version-no-header-dark-mode-icon" style={{ top: 'auto' }}>
           <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
@@ -193,4 +173,4 @@ const ViewerHeader = ({
   );
 };
 
-ViewerNavigation.Header = ViewerHeader;
+export default ViewerHeader;

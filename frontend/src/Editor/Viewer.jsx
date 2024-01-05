@@ -11,7 +11,6 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
 import { Confirm } from './Viewer/Confirm';
-import { ViewerNavigation } from './Viewer/ViewerNavigation';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
@@ -42,6 +41,9 @@ import { ERROR_TYPES } from '@/_helpers/constants';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import TooljetLogoIcon from '@/_ui/Icon/solidIcons/TooljetLogoIcon';
 import TooljetLogoText from '@/_ui/Icon/solidIcons/TooljetLogoText';
+import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
+import MobileHeader from './Viewer/MobileHeader';
+import DesktopHeader from './Viewer/DesktopHeader';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -110,9 +112,9 @@ class ViewerComponent extends React.Component {
     }
 
     let mobileLayoutHasWidgets = false;
+    const currentComponents = appDefData?.pages?.[appDefData?.homePageId]?.components;
 
-    if (this.props.currentLayout === 'mobile') {
-      const currentComponents = appDefData.pages[appDefData.homePageId].components;
+    if (this.props.currentLayout === 'mobile' && currentComponents) {
       mobileLayoutHasWidgets =
         Object.keys(currentComponents).filter((componentId) => currentComponents[componentId]['layouts']['mobile'])
           .length > 0;
@@ -184,7 +186,6 @@ class ViewerComponent extends React.Component {
       ...variables,
       ...constants,
     });
-    useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
     this.props.updateState({ events: data.events ?? [] });
     this.setState(
       {
@@ -396,6 +397,11 @@ class ViewerComponent extends React.Component {
       this.setState({ isLoading: true });
       this.loadApplicationBySlug(this.props.params.slug);
     }
+    if (prevProps.currentLayout !== this.props.currentLayout) {
+      if (this.props.id && useAppVersionStore.getState()?.editingVersion?.id) {
+        this.loadApplicationByVersion(this.props.id, useAppVersionStore.getState().editingVersion.id);
+      }
+    }
 
     if (this.state.initialComputationOfStateDone) this.handlePageSwitchingBasedOnURLparam();
     if (this.state.homepage !== prevState.homepage && !this.state.isLoading) {
@@ -556,7 +562,6 @@ class ViewerComponent extends React.Component {
       dataQueries,
       canvasWidth,
     } = this.state;
-
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
 
@@ -599,17 +604,32 @@ class ViewerComponent extends React.Component {
             key={queryConfirmationList[0]?.queryName}
           />
           <DndProvider backend={HTML5Backend}>
-            {/* <ViewerNavigation.Header
-              showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
-              appName={this.state.app?.name ?? null}
-              changeDarkMode={this.changeDarkMode}
-              darkMode={this.props.darkMode}
-              pages={Object.entries(this.state.appDefinition?.pages) ?? []}
-              currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
-              switchPage={this.switchPage}
-              setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
-              showViewerNavigation={appDefinition?.showViewerNavigation}
-            /> */}
+            {this.props.currentLayout !== 'mobile' && (
+              <DesktopHeader
+                showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
+                appName={this.state.app?.name ?? null}
+                changeDarkMode={this.changeDarkMode}
+                darkMode={this.props.darkMode}
+                pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                switchPage={this.switchPage}
+                setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                showViewerNavigation={appDefinition?.showViewerNavigation}
+              />
+            )}
+            {/* {this.props.currentLayout === 'mobile' && (
+              <MobileHeader
+                showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
+                appName={this.state.app?.name ?? null}
+                changeDarkMode={this.changeDarkMode}
+                darkMode={this.props.darkMode}
+                pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                switchPage={this.switchPage}
+                setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                showViewerNavigation={appDefinition?.showViewerNavigation}
+              />
+            )} */}
             <div className="sub-section">
               <div className="main">
                 <div
@@ -620,7 +640,7 @@ class ViewerComponent extends React.Component {
                 >
                   <div className="areas d-flex flex-rows">
                     {appDefinition?.showViewerNavigation && (
-                      <ViewerNavigation
+                      <ViewerSidebarNavigation
                         isMobileDevice={this.props.currentLayout === 'mobile'}
                         canvasBackgroundColor={this.computeCanvasBackgroundColor()}
                         pages={Object.entries(this.state.appDefinition?.pages) ?? []}
@@ -631,7 +651,7 @@ class ViewerComponent extends React.Component {
                     )}
                     <div
                       className="flex-grow-1 d-flex justify-content-center"
-                      style={{ backgroundColor: this.props.currentLayout === 'mobile' ? 'red' : 'unset' }}
+                      style={{ backgroundColor: this.props.currentLayout === 'mobile' ? '#ACB2B9' : 'unset' }}
                     >
                       <div
                         className="canvas-area"
@@ -643,17 +663,19 @@ class ViewerComponent extends React.Component {
                           padding: 0,
                         }}
                       >
-                        <ViewerNavigation.Header
-                          showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
-                          appName={this.state.app?.name ?? null}
-                          changeDarkMode={this.changeDarkMode}
-                          darkMode={this.props.darkMode}
-                          pages={Object.entries(this.state.appDefinition?.pages) ?? []}
-                          currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
-                          switchPage={this.switchPage}
-                          setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
-                          showViewerNavigation={appDefinition?.showViewerNavigation}
-                        />
+                        {this.props.currentLayout === 'mobile' && (
+                          <MobileHeader
+                            showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
+                            appName={this.state.app?.name ?? null}
+                            changeDarkMode={this.changeDarkMode}
+                            darkMode={this.props.darkMode}
+                            pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                            currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                            switchPage={this.switchPage}
+                            setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                            showViewerNavigation={appDefinition?.showViewerNavigation}
+                          />
+                        )}
                         {defaultComponentStateComputed && (
                           <>
                             {isLoading ? (
@@ -691,13 +713,22 @@ class ViewerComponent extends React.Component {
                           </>
                         )}
                       </div>
-                      <div className="powered-with-tj">
+                      <div
+                        className="powered-with-tj"
+                        onClick={() => {
+                          const url =
+                            'https://tooljet.com/?utm_source=powered_by_banner&utm_medium=instance_id&utm_campaign=self_hosted';
+                          window.open(url, '_blank');
+                        }}
+                      >
                         Powered with
                         <span className={'powered-with-tj-icon'}>
                           <TooljetLogoIcon />
                         </span>
                         <TooljetLogoText fill={this.props.darkMode ? '#ECEDEE' : '#11181C'} />
                       </div>
+                      {/* Following div is a hack to prevent showing mobile drawer navigation coming from left*/}
+                      {this.props.currentLayout === 'mobile' && <div className="hide-drawer-transition"></div>}
                     </div>
                   </div>
                 </div>
