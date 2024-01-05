@@ -104,7 +104,7 @@ export function LicenseBanner({
         return '';
       case !currentUser.admin && size === 'large':
         return '';
-      case isExpired && type === 'enterprise':
+      case isExpired && (type === 'enterprise' || type === 'business'):
         return 'Your license has expired!';
       case isExpired && type === 'trial':
         return 'Your trial has expired!';
@@ -116,7 +116,10 @@ export function LicenseBanner({
       case isLicenseValid && licenseType === 'trial' && daysLeft < 14 && type === 'trial': {
         return `Your trial ends in ${daysLeft} days!`;
       }
-      case isLicenseValid && licenseType === 'enterprise' && daysLeft <= 14 && type === 'enterprise': {
+      case isLicenseValid &&
+        (licenseType === 'enterprise' || licenseType === 'business') &&
+        daysLeft <= 14 &&
+        (type === 'enterprise' || type === 'business'): {
         return `Your license expires in ${daysLeft} days!`;
       }
       case type == 'tables' && !canAddUnlimited && (100 > percentage >= 90 || (total <= 10 && current === total - 1)):
@@ -169,7 +172,12 @@ export function LicenseBanner({
           },
         };
       case (size === 'xsmall' || size === 'small') &&
-        (type === 'trial' || type === 'basic' || type === 'enterprise' || type === 'apps' || type === 'workspaces') &&
+        (type === 'trial' ||
+          type === 'basic' ||
+          type === 'enterprise' ||
+          type === 'business' ||
+          type === 'apps' ||
+          type === 'workspaces') &&
         (isEndUser || isWorkspaceAdmin):
         return {
           text: 'Contact superadmin for more',
@@ -205,7 +213,7 @@ export function LicenseBanner({
             window.open(DEMO_LINK, '_blank');
           },
         };
-      case (isExpired || daysLeft < 14) && type === 'enterprise':
+      case (isExpired || daysLeft < 14) && (type === 'enterprise' || type === 'business'):
         return {
           text: 'Renew',
           onClick: () => {

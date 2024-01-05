@@ -16,7 +16,6 @@ import {
   editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
 
-
 describe("Multi env", () => {
   const data = {};
   data.appName = `${fake.companyName} App`;
@@ -84,7 +83,7 @@ describe("Multi env", () => {
     cy.waitForAutoSave();
 
     verifyAndModifyParameter("Text", `{{queries.restapi1.data.data[0].email`);
-    cy.wait(1000)
+    cy.wait(1000);
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();

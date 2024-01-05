@@ -128,7 +128,7 @@ describe("dashboard", () => {
     });
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      dashboardText.dashboardAppsHeaderLabel
+      " All apps"
     );
 
     cy.get(dashboardSelector.versionLabel).verifyVisibleElement(

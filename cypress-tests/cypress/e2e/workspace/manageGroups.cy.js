@@ -21,7 +21,7 @@ describe("Manage Groups", () => {
     });
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      "Groups"
+      " Groups"
     );
 
     groups.manageGroupsElements();

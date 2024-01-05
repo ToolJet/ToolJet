@@ -53,7 +53,7 @@ describe("Workspace constants", () => {
         });
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            "Workspace constants"
+            " Workspace constants"
         );
 
         cy.get(

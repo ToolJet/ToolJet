@@ -15,7 +15,7 @@ export const manageUsersElements = () => {
   });
   cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
     "have.text",
-    usersText.breadcrumbUsersPageTitle
+    ' Users & permissions'
   );
 
   for (const element in usersSelector.usersElements) {
