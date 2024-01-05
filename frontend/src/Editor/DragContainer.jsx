@@ -78,7 +78,7 @@ export default function DragContainer({
   const [draggedTarget, setDraggedTarget] = useState();
   const moveableRef = useRef();
   const draggedOverElemRef = useRef(null);
-  const childMoveableRefs = useRef([]);
+  const childMoveableRefs = useRef({});
   const isDraggingRef = useRef(false);
   const [movableTargets, setMovableTargets] = useState({});
   const [noOfGrids] = useNoOfGrid();
@@ -119,6 +119,41 @@ export default function DragContainer({
       }
     }
     setTimeout(reloadGrid, 100);
+
+    const selectedComponentsId = new Set(
+      selectedComponents.map((component) => {
+        console.log('here--- ', component.id, childMoveableRefs.current, childMoveableRefs.current[component.id]);
+        return component.id;
+      })
+    );
+    const parentId = selectedComponents.find((comp) => comp.component.parent)?.component?.parent;
+    console.log('parentId--', parentId, selectedComponents);
+
+    // Get all elements with the old class name
+    var elements = document.getElementsByClassName('selected-component');
+    // Iterate through the elements and replace the old class with the new one
+    for (var i = 0; i < elements.length; i++) {
+      elements[i].classList.remove('selected-component');
+    }
+
+    if (parentId) {
+      // eslint-disable-next-line no-undef
+      const childMoveableRef = childMoveableRefs.current[parentId];
+      const controlBoxes = childMoveableRef.moveable.getMoveables();
+      for (const element of controlBoxes) {
+        if (selectedComponentsId.has(element?.props?.target?.id)) {
+          element?.controlBox?.classList.add('selected-component');
+        }
+      }
+    } else {
+      const controlBoxes = moveableRef.current.moveable.getMoveables();
+      for (const element of controlBoxes) {
+        if (selectedComponentsId.has(element?.props?.target?.id)) {
+          element?.controlBox?.classList.add('selected-component');
+        }
+        // }
+      }
+    }
   }, [JSON.stringify(selectedComponents), JSON.stringify(boxes)]);
 
   useEffect(() => {
@@ -579,7 +614,7 @@ export default function DragContainer({
                   <Moveable
                     flushSync={flushSync}
                     key={i.parent}
-                    ref={(el) => (childMoveableRefs.current[i.id] = el)}
+                    ref={(el) => (childMoveableRefs.current[i.parent] = el)}
                     ables={[MouseCustomAble]}
                     props={{
                       mouseTest: true,
