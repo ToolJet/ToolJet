@@ -5,7 +5,7 @@ export const dataSourceText = {
   allDataSources: "All data sources (41)",
   allDatabase: "Databases (17)",
   allApis: "APIs (20)",
-  allCloudStorage: "Cloud Storage (4)",
+  allCloudStorage: "Cloud Storages (4)",
   pluginsLabelAndCount: "Plugins (0)",
 
   postgreSQL: "PostgreSQL",

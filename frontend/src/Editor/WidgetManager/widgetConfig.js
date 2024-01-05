@@ -1149,7 +1149,7 @@ export const widgets = [
     properties: {
       buttonToSubmit: {
         type: 'select',
-        displayName: 'Button To Submit Form',
+        displayName: 'Button to submit form',
         options: [{ name: 'None', value: 'none' }],
         validation: {
           schema: { type: 'string' },
@@ -1193,7 +1193,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
@@ -5369,24 +5369,24 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      columnData: { type: 'code', displayName: 'Column Data' },
-      cardData: { type: 'code', displayName: 'Card Data' },
+      columnData: { type: 'code', displayName: 'Column data' },
+      cardData: { type: 'code', displayName: 'Card data' },
       cardWidth: {
         type: 'code',
-        displayName: 'Card Width',
+        displayName: 'Card width',
         validation: {
           schema: { type: 'number' },
         },
       },
       cardHeight: {
         type: 'code',
-        displayName: 'Card Height',
+        displayName: 'Card height',
         validation: {
           schema: { type: 'number' },
         },
       },
-      enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
-      showDeleteButton: { type: 'toggle', displayName: 'Show Delete Button' },
+      enableAddCard: { type: 'toggle', displayName: 'Enable add card' },
+      showDeleteButton: { type: 'toggle', displayName: 'Show delete button' },
     },
     events: {
       onUpdate: { displayName: 'On update' },
@@ -5551,8 +5551,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       label: { type: 'code', displayName: 'Title' },
       data: { type: 'code', displayName: 'Structure' },
-      checkedData: { type: 'code', displayName: 'Checked Values' },
-      expandedData: { type: 'code', displayName: 'Expanded Values' },
+      checkedData: { type: 'code', displayName: 'Checked values' },
+      expandedData: { type: 'code', displayName: 'Expanded values' },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -5561,7 +5561,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
-      checkboxColor: { type: 'color', displayName: 'Checkbox Color' },
+      checkboxColor: { type: 'color', displayName: 'Checkbox color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
