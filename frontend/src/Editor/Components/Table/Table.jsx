@@ -1071,9 +1071,9 @@ export function Table({
                 setGlobalFilter={setGlobalFilter}
                 onComponentOptionChanged={onComponentOptionChanged}
                 component={component}
-                onEvent={onEvent}
                 darkMode={darkMode}
-                tableEvents={tableEvents}
+                setExposedVariable={setExposedVariable}
+                fireEvent={fireEvent}
               />
             )}
           </div>

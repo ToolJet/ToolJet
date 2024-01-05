@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { getPrivateRoute } from '@/_helpers/routes';
 
 function ChatwootIntegration({ token, darkMode, currentUser, hideMessageBubble = false }) {
   useEffect(() => {
@@ -31,6 +32,10 @@ function ChatwootIntegration({ token, darkMode, currentUser, hideMessageBubble =
     })(document, 'script');
 
     window.addEventListener('chatwoot:ready', function () {
+      if (!window.location.pathname.startsWith(getPrivateRoute('settings'))) {
+        if (window.$chatwoot?.hasLoaded && !window.$chatwoot?.hideMessageBubble)
+          window.$chatwoot?.toggleBubbleVisibility('hide');
+      }
       window.$chatwoot?.setUser(currentUser?.id, {
         email: currentUser?.email,
         name: currentUser?.first_name + ' ' + currentUser?.last_name,
@@ -38,7 +43,7 @@ function ChatwootIntegration({ token, darkMode, currentUser, hideMessageBubble =
     });
 
     return () => {
-      window.$chatwoot?.toggleBubbleVisibility('hide');
+      if (window.$chatwoot?.hasLoaded) window.$chatwoot?.toggleBubbleVisibility('hide');
     };
   }, []);
 
