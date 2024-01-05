@@ -178,7 +178,7 @@ describe("Editor- Inspector", () => {
     cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
     cy.apiDeleteApp();
   });
-  it.only("should verify deletion of component from inspector", () => {
+  it("should verify deletion of component from inspector", () => {
     cy.dragAndDropWidget("button", 500, 500);
     cy.get(commonWidgetSelector.sidebarinspector).click();
     deleteComponentFromInspector("button1");
