@@ -3,7 +3,10 @@ id: gitsync
 title: GitSync
 ---
 
-GitSync feature allows users to synchronize the applications on their workspace with a git repository. GitSync feature simplifies the process of managing and version controlling your applications on ToolJet.
+<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+
+
+The GitSync feature enables synchronization of workspace applications with a git repository, streamlining application management and version control on ToolJet.
 
 ## Overview
 
