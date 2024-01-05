@@ -3675,7 +3675,7 @@ export const widgets = [
     properties: {
       enableLineNumber: {
         type: 'code',
-        displayName: 'Show Line Number',
+        displayName: 'Show line number',
         validation: {
           schema: { type: 'boolean' },
         },
