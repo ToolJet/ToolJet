@@ -18,30 +18,54 @@ import {
   addGuiQuery,
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
-import {loginbyGoogle} from "Support/utils/manageSSO"
+import { loginbyGoogle } from "Support/utils/manageSSO";
+import { fake } from "Fixtures/fake";
+import {
+  verifyCouldnotConnectWithAlert,
+  deleteDatasource,
+  closeDSModal,
+} from "Support/utils/dataSource";
 
-describe("Editor- Test Button widget", () => {
+describe("Data source googlesheet", () => {
   const data = {};
+  data.appName = `${fake.companyName}-App`;
+  data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   data.sheetId = "1GYSTLiHKhLatsSN6768VgseLCvLu4sJhgGI9xek8WwM";
   data.range = "A1:Z100";
   data.gid = "0";
   beforeEach(() => {
-    let email='midhun@tooljet.com', password="Idhika@752"
+    let email = "midhun@tooljet.com",
+      password = "Idhika@752";
     cy.appUILogin();
-    cy.createApp();
-    cy.viewport(1200, 1300)
+    //cy.createApp(data.appName);
+    // cy.viewport(1200, 1300);
   });
 
   it("should verify elements on connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
-      .click();
-
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      googleSheetsText.dataSourceGoogleSheets
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDataSources
     );
-    cy.get(googleSheetsSelector.dataSourceGoogleSheets).click();
+
+    cy.get(postgreSqlSelector.databaseLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDatabase
+    );
+    cy.get(postgreSqlSelector.apiLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allApis
+    );
+    cy.get(postgreSqlSelector.cloudStorageLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allCloudStorage
+    );
+    selectDataSource(
+      "APIs",
+      googleSheetsText.dataSourceGoogleSheets,
+      data.lastName
+    );
 
     cy.get(googleSheetsSelector.connectionFormHeader).verifyVisibleElement(
       "have.text",
@@ -71,33 +95,31 @@ describe("Editor- Test Button widget", () => {
       "have.text",
       googleSheetsText.subLabelReadAndWrite
     );
+    cy.get('[data-cy="button-connect-gsheet"]').should("be.visible");
   });
 
-  it.only("should verify connection", () => {
-    // loginbyGoogle()
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
-      .click();
-
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      googleSheetsText.dataSourceGoogleSheets
+  it.skip("should verify connection", () => {
+    loginbyGoogle(email, password);
+    selectDataSource(
+      "APIs",
+      googleSheetsText.dataSourceGoogleSheets,
+      data.lastName
     );
-    cy.get(googleSheetsSelector.dataSourceGoogleSheets).click();
     cy.get(googleSheetsSelector.checkboxReadAndWrite).click();
     cy.window().then((win) => {
-      cy.stub(win, 'open').as('windowOpen')
-    })
+      cy.stub(win, "open").as("windowOpen");
+    });
     cy.get('[data-cy="button-connect-gsheet"]').click();
-
-    cy.window('@windowOpen').its('body').then(()=>{
-      cy.get('.btn')
-    })
-    cy.visit('@windowOpen')
-    cy.wait(5000)
+    cy.window("@windowOpen")
+      .its("body")
+      .then(() => {
+        cy.get(".btn");
+      });
+    cy.visit("@windowOpen");
+    cy.wait(5000);
   });
 
-  it("should verify elements on query manager", () => {
+  it.skip("should verify elements on query manager", () => {
     cy.visit("http://localhost:8082/apps/2c63daee-bb03-4ba3-b384-f4647ceb8b5e");
     cy.wait(5000);
     openQueryEditor(googleSheetsText.dataSourceGoogleSheets);
@@ -215,7 +237,7 @@ describe("Editor- Test Button widget", () => {
     cy.get(googleSheetsSelector.deleteRowIndexInputField).should("be.visible");
     cy.wait(1000);
   });
-  it("should verify CURD operation on query", () => {
+  it.skip("should verify CURD operation on query", () => {
     cy.visit("http://localhost:8082/apps/2c63daee-bb03-4ba3-b384-f4647ceb8b5e");
     cy.wait(5000);
     openQueryEditor("Google Sheets");
@@ -241,7 +263,10 @@ describe("Editor- Test Button widget", () => {
     //   });
 
     cy.get('[data-cy="preview-tab-raw"]').click();
-    cy.get('[class="tab-pane active"]').should('have.text', '[{"name":"mike","email":"1"},{"name":"steph","email":"2"}]');
+    cy.get('[class="tab-pane active"]').should(
+      "have.text",
+      '[{"name":"mike","email":"1"},{"name":"steph","email":"2"}]'
+    );
     openQueryEditor("Google Sheets");
     selectQueryMode("Append data to a spreadsheet"); //append
 
@@ -297,5 +322,5 @@ describe("Editor- Test Button widget", () => {
     ).clearAndTypeOnCodeMirror("4");
     cy.get('[data-cy="query-run-button"]').click();
   });
-  it("should verify the preview", () => {});    
+  it.skip("should verify the preview", () => {});
 });
