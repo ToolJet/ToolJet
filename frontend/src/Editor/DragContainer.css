@@ -14,10 +14,10 @@
     /* z-index: 3001; */
 }
 
-.moveable-control-box>.moveable-control-box:not(.moveable-control-box-d-block, .moveable-dragging){
+.moveable-control-box>.moveable-control-box:not(.moveable-control-box-d-block, .moveable-dragging, .selected-component){
 	visibility: hidden !important;
 }
-.moveable-control-box>.moveable-control-box:hover{
+.moveable-control-box>.moveable-control-box:hover, .selected-component{
 	visibility: visible !important;
 }
 .moveable-control-box>.moveable-control-box:hover, .moveable-control-box>.moveable-dragging{
