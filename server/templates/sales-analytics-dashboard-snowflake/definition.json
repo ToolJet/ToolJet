@@ -20111,18 +20111,6 @@
                             "scope": "local",
                             "createdAt": "2023-10-26T12:19:42.323Z",
                             "updatedAt": "2023-10-26T12:19:42.323Z"
-                        },
-                        {
-                            "id": "fdbed62b-c7ed-4707-a144-eb6a1a8bf25d",
-                            "name": "snowflake",
-                            "kind": "snowflake",
-                            "type": "default",
-                            "pluginId": null,
-                            "appVersionId": "2fc6e73f-c46e-49b5-a172-df9800103272",
-                            "organizationId": "f2a832bb-fc39-49c5-be7f-7037ebb79b84",
-                            "scope": "global",
-                            "createdAt": "2023-10-26T12:19:42.223Z",
-                            "updatedAt": "2024-01-02T12:43:39.184Z"
                         }
                     ],
                     "appVersions": [

@@ -18711,18 +18711,6 @@
                             "scope": "local",
                             "createdAt": "2023-12-19T21:13:02.789Z",
                             "updatedAt": "2023-12-19T21:13:02.789Z"
-                        },
-                        {
-                            "id": "7df5eb9a-4571-4fe9-a4b2-a9a4b0cfb4c8",
-                            "name": "kpi_management",
-                            "kind": "airtable",
-                            "type": "default",
-                            "pluginId": null,
-                            "appVersionId": "f2cab03f-b49b-4852-a694-ba5597f424d3",
-                            "organizationId": "f2a832bb-fc39-49c5-be7f-7037ebb79b84",
-                            "scope": "global",
-                            "createdAt": "2023-12-19T21:13:02.673Z",
-                            "updatedAt": "2023-12-19T21:14:00.337Z"
                         }
                     ],
                     "appVersions": [

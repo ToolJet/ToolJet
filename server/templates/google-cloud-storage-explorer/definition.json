@@ -16148,18 +16148,6 @@
                             "scope": "local",
                             "createdAt": "2023-11-02T10:59:37.348Z",
                             "updatedAt": "2023-11-02T10:59:37.348Z"
-                        },
-                        {
-                            "id": "255e9db0-3ce8-4f7d-af77-0a3d3b4dd769",
-                            "name": "GCS File Explorer",
-                            "kind": "gcs",
-                            "type": "default",
-                            "pluginId": null,
-                            "appVersionId": "a11405c6-ff35-4e47-9416-05d832f83ec9",
-                            "organizationId": "f2a832bb-fc39-49c5-be7f-7037ebb79b84",
-                            "scope": "global",
-                            "createdAt": "2023-11-02T10:59:37.238Z",
-                            "updatedAt": "2023-11-02T11:00:26.649Z"
                         }
                     ],
                     "appVersions": [
