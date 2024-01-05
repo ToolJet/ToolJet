@@ -220,8 +220,13 @@ const EditRowForm = ({ onEdit, onClose }) => {
       <div className="card-body">
         <div>
           <div className="mb-3">
-            <div className="col-2" data-cy={`${primaryColumn}-column-name-label`}>
-              <Integer width="24" height="18" className="tjdb-column-header-name" />
+            <div
+              className="form-label d-flex align-items-center justify-content-start mb-2"
+              data-cy={`${primaryColumn}-column-name-label`}
+            >
+              <span style={{ width: '24px' }}>
+                <Integer width="18" height="18" className="tjdb-column-header-name" />
+              </span>
               <span>{headerText}</span>
             </div>
             <div className="edit-row-dropdown col-auto row-edit-select-container w-100" data-cy="select-row-dropdown">
