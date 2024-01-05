@@ -278,7 +278,7 @@ jobs:
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:80/apps/tooljet/"
-          config-file: cypress-eeworkspace.config.js
+          config-file: cypress-cloud-workspace.config.js
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3
