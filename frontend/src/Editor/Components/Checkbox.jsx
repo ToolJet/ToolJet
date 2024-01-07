@@ -150,7 +150,7 @@ export const Checkbox = function Checkbox({
         boxShadow,
         alignItems: 'center',
         gap: '8px ',
-        justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
+        justifyContent: `${loadingState ? 'center' : 'space-between'}`,
         padding: padding === 'default' ? '4px 6px' : '',
         height: height == 26 ? (padding == 'default' ? '26px' : '16px') : padding == 'default' ? height : height + 2,
       }}
@@ -197,8 +197,8 @@ export const Checkbox = function Checkbox({
               )}
             </div>
           </div>
-          {alignment == 'right' && (
-            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && !checked && '*'}</span>
+          {alignment == 'right' && isMandatory && !checked && (
+            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>
           )}
           <p
             className="form-check-label tj-text-xsm"
@@ -214,8 +214,8 @@ export const Checkbox = function Checkbox({
           >
             {label}
           </p>
-          {alignment == 'left' && (
-            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && !checked && '*'}</span>
+          {alignment == 'left' && isMandatory && !checked && (
+            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>
           )}
         </>
       )}
@@ -227,8 +227,9 @@ export const Checkbox = function Checkbox({
     visibility: checked ? 'visible' : 'hidden',
     height: '16px',
     width: ' 16px',
-    left: padding == 'default' ? (alignment == 'left' ? '14px' : '28px') : alignment == 'left' ? '7px' : '16px',
-    top: padding == 'default' ? (alignment == 'left' ? '10px' : '28px') : alignment == 'left' ? '5px' : '16px',
+    left: padding == 'default' ? alignment == 'left' && '14px' : alignment == 'left' && '7px',
+    top: padding == 'default' ? (alignment == 'left' ? '36%' : '36%') : alignment == 'left' ? '30%' : '30%',
+    right: alignment == 'right' && padding == 'default' ? '-1.5px' : '-8px',
   };
 
   const checkboxStyle = {
@@ -255,7 +256,6 @@ export const Checkbox = function Checkbox({
 
   return (
     <div
-      // className="d-flex align-items-center "
       style={{
         height: height == 26 ? (padding == 'default' ? '26px' : '16px') : padding == 'default' ? height : height + 2,
         justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
