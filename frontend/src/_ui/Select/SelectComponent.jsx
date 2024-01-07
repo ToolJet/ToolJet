@@ -34,7 +34,7 @@ export const SelectComponent = ({
   const selectOptions =
     Array.isArray(options) && options.length === 0
       ? options
-      : options.map((option) => {
+      : options?.map((option) => {
           if (!option.hasOwnProperty('label')) {
             return _.mapKeys(option, (value, key) => (key === 'value' ? key : 'label'));
           }

@@ -59,7 +59,8 @@ export default function generateColumnsData({
       columnOptions.selectOptions = [];
       const useDynamicOptions = resolveReferences(column?.useDynamicOptions, currentState);
       if (useDynamicOptions) {
-        columnOptions.selectOptions = resolveReferences(column?.dynamicOptions || [], currentState);
+        const dynamicOptions = resolveReferences(column?.dynamicOptions || [], currentState);
+        columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
       } else {
         const options = column?.options ?? [];
         columnOptions.selectOptions =
