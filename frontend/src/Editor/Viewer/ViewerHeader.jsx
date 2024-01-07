@@ -8,7 +8,6 @@ import Header from './Header';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import { redirectToDashboard } from '@/_helpers/routes';
-import './viewer.scss';
 import classNames from 'classnames';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';

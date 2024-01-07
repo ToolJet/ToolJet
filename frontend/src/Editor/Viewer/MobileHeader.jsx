@@ -7,7 +7,6 @@ import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import { shallow } from 'zustand/shallow';
 import { redirectToDashboard } from '@/_helpers/routes';
-import './viewer.scss';
 import classNames from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import PreviewSettings from './PreviewSettings';
@@ -57,6 +56,9 @@ const MobileHeader = ({
         styles={{
           height: '48px',
           backgroundColor: '#f2f2f5',
+          position: 'fixed',
+          width: '450px',
+          zIndex: '100',
         }}
         showNavbarClass={false}
       >
@@ -85,6 +87,9 @@ const MobileHeader = ({
           styles={{
             height: '48px',
             backgroundColor: '#f2f2f5',
+            position: 'fixed',
+            width: '450px',
+            zIndex: '100',
           }}
           showNavbarClass={false}
         >
@@ -117,6 +122,9 @@ const MobileHeader = ({
     <Header
       styles={{
         height: '48px',
+        position: 'fixed',
+        width: '450px',
+        zIndex: '100',
       }}
     >
       <div className="d-flex">

@@ -2,7 +2,6 @@ import React from 'react';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import FolderList from '@/_ui/FolderList/FolderList';
-import './viewer.scss';
 
 export const ViewerSidebarNavigation = ({ isMobileDevice, pages, currentPageId, switchPage, darkMode }) => {
   if (isMobileDevice) {

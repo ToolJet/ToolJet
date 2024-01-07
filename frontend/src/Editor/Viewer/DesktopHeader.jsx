@@ -7,7 +7,6 @@ import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import { shallow } from 'zustand/shallow';
 import { redirectToDashboard } from '@/_helpers/routes';
-import './viewer.scss';
 import classNames from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import PreviewSettings from './PreviewSettings';

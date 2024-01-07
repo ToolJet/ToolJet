@@ -44,6 +44,7 @@ import TooljetLogoText from '@/_ui/Icon/solidIcons/TooljetLogoText';
 import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
 import MobileHeader from './Viewer/MobileHeader';
 import DesktopHeader from './Viewer/DesktopHeader';
+import './Viewer/viewer.scss';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -617,19 +618,6 @@ class ViewerComponent extends React.Component {
                 showViewerNavigation={appDefinition?.showViewerNavigation}
               />
             )}
-            {/* {this.props.currentLayout === 'mobile' && (
-              <MobileHeader
-                showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
-                appName={this.state.app?.name ?? null}
-                changeDarkMode={this.changeDarkMode}
-                darkMode={this.props.darkMode}
-                pages={Object.entries(this.state.appDefinition?.pages) ?? []}
-                currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
-                switchPage={this.switchPage}
-                setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
-                showViewerNavigation={appDefinition?.showViewerNavigation}
-              />
-            )} */}
             <div className="sub-section">
               <div className="main">
                 <div
@@ -716,8 +704,9 @@ class ViewerComponent extends React.Component {
                       <div
                         className="powered-with-tj"
                         onClick={() => {
-                          const url =
-                            'https://tooljet.com/?utm_source=powered_by_banner&utm_medium=instance_id&utm_campaign=self_hosted';
+                          const url = `https://tooljet.com/?utm_source=powered_by_banner&utm_medium=${
+                            useAppDataStore.getState()?.metadata?.instance_id
+                          }&utm_campaign=self_hosted`;
                           window.open(url, '_blank');
                         }}
                       >
@@ -728,7 +717,12 @@ class ViewerComponent extends React.Component {
                         <TooljetLogoText fill={this.props.darkMode ? '#ECEDEE' : '#11181C'} />
                       </div>
                       {/* Following div is a hack to prevent showing mobile drawer navigation coming from left*/}
-                      {this.props.currentLayout === 'mobile' && <div className="hide-drawer-transition"></div>}
+                      {this.props.currentLayout === 'mobile' && (
+                        <div className="hide-drawer-transition" style={{ right: 0 }}></div>
+                      )}
+                      {this.props.currentLayout === 'mobile' && (
+                        <div className="hide-drawer-transition" style={{ left: 0 }}></div>
+                      )}
                     </div>
                   </div>
                 </div>

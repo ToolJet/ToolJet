@@ -4,7 +4,6 @@ import _ from 'lodash';
 import { slide as MobileMenu } from 'react-burger-menu';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
-import './viewer.scss';
 import Cross from '@/_ui/Icon/solidIcons/Cross';
 
 const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, changeDarkMode }) => {
