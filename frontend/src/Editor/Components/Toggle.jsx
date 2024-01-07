@@ -25,12 +25,6 @@ class Switch extends React.Component {
       fireEvent,
     } = this.props;
 
-    const customStyle = {
-      marginRight: '0px',
-      paddingRight: '0px',
-      alignItems: 'center',
-    };
-
     const handleToggleChange = () => {
       setOn(!on);
       setExposedVariable('value', !on);
@@ -115,8 +109,7 @@ export const ToggleSwitch = ({
   component,
   validate,
 }) => {
-  const defaultValue = properties.defaultValue == 'true' ? true : false;
-  console.log('properties.defaultValue--', defaultValue, typeof defaultValue);
+  const defaultValue = properties.defaultValue ?? false;
 
   const [on, setOn] = React.useState(Boolean(defaultValue));
   const label = properties.label;
@@ -131,8 +124,7 @@ export const ToggleSwitch = ({
 
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
 
-  const { toggleSwitchColor, checkedColor, boxShadow, alignment, padding, uncheckedColor, borderColor, handleColor } =
-    styles;
+  const { toggleSwitchColor, boxShadow, alignment, padding, borderColor } = styles;
 
   const textColor = darkMode && styles.textColor === '#11181C' ? '#fff' : styles.textColor;
 
@@ -228,65 +220,92 @@ export const ToggleSwitch = ({
   }, [on]);
 
   const renderInput = () => (
-    <div data-cy={dataCy}>
+    <div
+      data-disabled={disabledState}
+      className={`${alignment === 'right' ? 'flex-row-reverse' : ''}`}
+      style={{
+        display: visibility ? 'flex' : 'none',
+        boxShadow,
+        alignItems: 'center',
+        gap: '8px ',
+        justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
+        padding: padding === 'default' ? '4px 6px' : '',
+        height: height == 26 ? (padding == 'default' ? '26px' : '16px') : padding == 'default' ? height : height + 2,
+      }}
+      data-cy={dataCy}
+    >
       {loading ? (
         <Loader width="16" />
       ) : (
-        <div
-          className={`d-flex flex-column `}
-          style={{
-            height: padding === 'default' && height,
-          }}
-        >
-          <div
-            className={`d-flex ${alignment === 'right' ? 'flex-row-reverse' : ''}`}
+        <>
+          {alignment == 'right' && (
+            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && !on && '*'}</span>
+          )}
+          <span
+            className=""
             style={{
-              height: padding === 'default' && height,
-              display: visibility ? 'flex' : 'none',
-              boxShadow,
-              gap: '8px ',
-              // justifyContent: loading ? 'center' : 'space-between',
-              alignItems: 'center',
-              padding: padding === 'default' ? '4px 6px' : '',
+              lineHeight: padding == 'none' && '12px',
+              color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
+              display: 'block',
+              overflow: label?.length > 6 && 'hidden', // Hide any content that overflows the box
+              textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+              fontWeight: 500,
             }}
           >
-            <span className="form-check-label form-check-label col-auto my-auto" style={{ color: textColor }}>
-              {label}
-              <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
-            </span>
-            <Switch
-              disabledState={disable}
-              on={on}
-              onClick={toggle}
-              onChange={toggleValue}
-              color={toggleSwitchColor}
-              alignment={alignment}
-              padding={padding}
-              validationError={validationError}
-              isValid={isValid}
-              showValidationError={showValidationError}
-              properties={properties}
-              setShowValidationError={setShowValidationError}
-              borderColor={borderColor}
-              setOn={setOn}
-              styles={styles}
-              setExposedVariable={setExposedVariable}
-              fireEvent={fireEvent}
-            />
-          </div>
-          {showValidationError && properties?.visibility && (
-            <div
-              className="tj-text-sm"
-              data-cy={`${String(component?.name).toLowerCase()}-invalid-feedback`}
-              style={{ color: 'red', textAlign: properties.direction == 'left' && 'end' }}
-            >
-              {validationError}
-            </div>
+            {label}
+          </span>
+          {alignment == 'left' && (
+            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && !on && '*'}</span>
           )}
-        </div>
+          <Switch
+            disabledState={disable}
+            on={on}
+            onClick={toggle}
+            onChange={toggleValue}
+            color={toggleSwitchColor}
+            alignment={alignment}
+            padding={padding}
+            validationError={validationError}
+            isValid={isValid}
+            showValidationError={showValidationError}
+            properties={properties}
+            setShowValidationError={setShowValidationError}
+            borderColor={borderColor}
+            setOn={setOn}
+            styles={styles}
+            setExposedVariable={setExposedVariable}
+            fireEvent={fireEvent}
+          />
+        </>
       )}
     </div>
   );
 
-  return <>{properties?.tooltip?.length > 0 ? <ToolTip message={tooltip}>{renderInput()}</ToolTip> : renderInput()}</>;
+  return (
+    <div
+      style={{
+        height: height == 26 ? (padding == 'default' ? '26px' : '16px') : padding == 'default' ? height : height + 2,
+        justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
+      }}
+    >
+      <>
+        {properties?.tooltip?.length > 0 ? (
+          <ToolTip message={tooltip}>
+            <div>{renderInput()}</div>
+          </ToolTip>
+        ) : (
+          <div>{renderInput()}</div>
+        )}
+      </>
+      {showValidationError && visibility && (
+        <div
+          className="tj-text-sm"
+          data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+          style={{ color: '#DB4324' }}
+        >
+          {showValidationError && validationError}
+        </div>
+      )}
+    </div>
+  );
 };
