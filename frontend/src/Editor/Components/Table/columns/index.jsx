@@ -32,7 +32,6 @@ export default function generateColumnsData({
 }) {
   return columnProperties.map((column) => {
     if (!column) return;
-
     const columnSize = columnSizes[column?.id] || columnSizes[column?.name];
     const columnType = column?.columnType;
     let sortType = 'alphanumeric';
@@ -62,7 +61,12 @@ export default function generateColumnsData({
       if (useDynamicOptions) {
         columnOptions.selectOptions = resolveReferences(column?.dynamicOptions || [], currentState);
       } else {
-        columnOptions.selectOptions = column?.options ?? [];
+        const options = column?.options ?? [];
+        columnOptions.selectOptions =
+          options?.map((option) => ({
+            label: option.label,
+            value: option.value,
+          })) ?? [];
       }
     }
     if (columnType === 'datepicker') {
@@ -372,8 +376,8 @@ export default function generateColumnsData({
                     placeholder={t('globals.select', 'Select') + '...'}
                     disabled={!isEditable}
                     className="select-search table-select-search"
-                    styles={{ background: 'inherit', border: 'none' }}
                     darkMode={darkMode}
+                    defaultOptionsList={column?.defaultOptionsList || []}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>

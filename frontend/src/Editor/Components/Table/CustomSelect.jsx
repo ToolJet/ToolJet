@@ -4,7 +4,7 @@ import { components } from 'react-select';
 import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-const { MenuList, ValueContainer, SingleValue, Placeholder } = components;
+const { MenuList } = components;
 export const CustomSelect = ({
   options,
   value,
@@ -13,8 +13,8 @@ export const CustomSelect = ({
   placeholder,
   disabled,
   className,
-  styles,
   darkMode,
+  defaultOptionsList,
 }) => {
   const containerRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -33,16 +33,19 @@ export const CustomSelect = ({
       document.removeEventListener('mousedown', onDomClick);
     };
   }, []);
+
   const customStyles = {
     ...defaultStyles(darkMode, '100%'),
   };
+
+  const defaultValue = defaultOptionsList.length >= 1 ? defaultOptionsList[defaultOptionsList.length - 1] : null;
+
   return (
     <div className="w-100">
       <Select
         options={options}
         hasSearch={false}
-        fuzzySearch={false}
-        placeholder={placeholder}
+        fuzzySearch={fuzzySearch}
         isDisabled={disabled}
         className={className}
         components={{
@@ -63,7 +66,8 @@ export const CustomSelect = ({
         }}
         useCustomStyles={true}
         styles={customStyles}
-        defaultValue={options[0]}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
       />
     </div>
   );
