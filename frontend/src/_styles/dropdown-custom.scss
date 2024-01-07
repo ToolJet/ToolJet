@@ -127,7 +127,9 @@
         font-style: normal;
         font-weight: 400;
         line-height: 20px; /* 166.667% */
-        
+        &.react-select__option--is-selected{
+            color: var(--indigo9) !important;
+        }
         &:active{
             background: var(--base) !important;
             box-shadow: 0px 0px 0px 4px var(--slate6);
