@@ -15,6 +15,7 @@ export const CustomSelect = ({
   className,
   darkMode,
   defaultOptionsList,
+  textColor,
 }) => {
   const containerRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -36,6 +37,10 @@ export const CustomSelect = ({
 
   const customStyles = {
     ...defaultStyles(darkMode, '100%'),
+    singleValue: (provided) => ({
+      ...provided,
+      color: textColor,
+    }),
   };
 
   const defaultValue = defaultOptionsList.length >= 1 ? defaultOptionsList[defaultOptionsList.length - 1] : null;

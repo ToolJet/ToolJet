@@ -378,6 +378,7 @@ export default function generateColumnsData({
                     className="select-search table-select-search"
                     darkMode={darkMode}
                     defaultOptionsList={column?.defaultOptionsList || []}
+                    textColor={column?.textColor || 'var(--slate12)'}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>
