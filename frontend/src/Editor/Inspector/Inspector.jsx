@@ -83,7 +83,7 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput'];
+  const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Datepicker'];
 
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -463,7 +463,7 @@ const widgetsWithStyleConditions = {
     ],
   },
 };
-const styleGroupedComponentTypes = ['TextInput', 'NumberInput', 'PasswordInput'];
+const styleGroupedComponentTypes = ['TextInput', 'NumberInput', 'PasswordInput' || 'Datepicker'];
 
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
   // Initialize an object to group properties by "accordian"
@@ -471,7 +471,8 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
   if (
     component.component.component === 'TextInput' ||
     component.component.component === 'PasswordInput' ||
-    component.component.component === 'NumberInput'
+    component.component.component === 'NumberInput' ||
+    component.component.component === 'Datepicker'
   ) {
     // Iterate over the properties in componentMeta.styles
     for (const key in componentMeta.styles) {
@@ -491,7 +492,8 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
   return Object.keys(
     component.component.component === 'TextInput' ||
       component.component.component === 'PasswordInput' ||
-      component.component.component === 'NumberInput'
+      component.component.component === 'NumberInput' ||
+      component.component.component === 'Datepicker'
       ? groupedProperties
       : componentMeta.styles
   ).map((style) => {
@@ -520,7 +522,8 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
     if (
       component.component.component === 'TextInput' ||
       component.component.component === 'PasswordInput' ||
-      component.component.component === 'NumberInput'
+      component.component.component === 'NumberInput' ||
+      component.component.component === 'Datepicker'
     ) {
       items.push({
         title: `${style}`,

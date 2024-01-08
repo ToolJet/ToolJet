@@ -2055,12 +2055,37 @@ export const widgets = [
     },
     validation: {
       customRule: { type: 'code', displayName: 'Custom validation' },
+      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
+    actions: [
+      {
+        handle: 'setVisibility',
+        displayName: 'setVisibility',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setDisable',
+        displayName: 'setDisable',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setLoading',
+        displayName: 'setLoading',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+    ],
     properties: {
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       defaultValue: {
         type: 'code',
         displayName: 'Default value',
@@ -2098,25 +2123,35 @@ export const widgets = [
           schema: { type: 'array', element: { type: 'string' } },
         },
       },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      tooltip: {
+        type: 'input',
+        displayName: 'Tooltip',
+        validation: { schema: { type: 'string' } },
+        section: 'additionalActions',
+      },
     },
     events: {
       onSelect: { displayName: 'On select' },
     },
     styles: {
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',
@@ -2127,6 +2162,10 @@ export const widgets = [
     },
     exposedVariables: {
       value: '',
+      isMandatory: false,
+      isVisible: true,
+      isDisabled: false,
+      isLoading: false,
     },
     definition: {
       others: {
@@ -2137,17 +2176,22 @@ export const widgets = [
         customRule: { value: null },
       },
       properties: {
+        label: { value: 'Label' },
         defaultValue: { value: '01/01/2022' },
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
         enableDate: { value: '{{true}}' },
         disabledDates: { value: '{{[]}}' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+        loadingState: { value: '{{false}}' },
+        tooltip: { value: '' },
       },
       events: [],
       styles: {
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{4}}' },
+        padding: { value: 'default' },
+        boxShadow: { value: '0px 0px 0px 0px #00000040' },
       },
     },
   },
