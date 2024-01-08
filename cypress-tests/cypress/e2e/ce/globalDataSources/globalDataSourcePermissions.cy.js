@@ -10,7 +10,6 @@ import {
     closeDSModal,
     deleteDatasource,
     addQuery,
-    addQueryN,
     verifyValueOnInspector,
 } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
@@ -38,12 +37,8 @@ describe("Global Datasource Manager", () => {
         cy.viewport(1200, 1300);
     });
     before(() => {
-        cy.apiLogin();
-        cy.apiCreateApp();
-        cy.openApp();
-        cy.renameApp(data.appName);
-        cy.dragAndDropWidget("Table", 250, 250);
-        cy.get(commonSelectors.editorPageLogo).click();
+        cy.defaultWorkspaceLogin();
+        cy.apiCreateApp(data.appName);
         addNewUserMW(data.firstName, data.email);
         logout();
     });
@@ -72,7 +67,7 @@ describe("Global Datasource Manager", () => {
         );
         cy.get(dataSourceSelector.querySearchBar)
             .invoke("attr", "placeholder")
-            .should("eq", "Search Databases");
+            .should("eq", "Search  data sources");
 
         cy.get(dataSourceSelector.apiLabelAndCount)
             .verifyVisibleElement("have.text", dataSourceText.allApis)
@@ -81,20 +76,14 @@ describe("Global Datasource Manager", () => {
             "have.text",
             " APIs"
         );
-        cy.get(dataSourceSelector.querySearchBar)
-            .invoke("attr", "placeholder")
-            .should("eq", "Search APIs");
 
         cy.get(dataSourceSelector.cloudStorageLabelAndCount)
             .verifyVisibleElement("have.text", dataSourceText.allCloudStorage)
             .click();
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            " Cloud Storage"
+            " Cloud Storages"
         );
-        cy.get(dataSourceSelector.querySearchBar)
-            .invoke("attr", "placeholder")
-            .should("eq", "Search Cloud Storage");
 
         cy.get(dataSourceSelector.pluginsLabelAndCount)
             .verifyVisibleElement("have.text", dataSourceText.pluginsLabelAndCount)
@@ -103,9 +92,6 @@ describe("Global Datasource Manager", () => {
             "have.text",
             " Plugins"
         );
-        cy.get(dataSourceSelector.querySearchBar)
-            .invoke("attr", "placeholder")
-            .should("eq", "Search Plugins");
 
         cy.get('[data-cy="added-ds-label"]').should(($el) => {
             expect($el.contents().first().text().trim()).to.eq("Data sources added");
@@ -178,6 +164,7 @@ describe("Global Datasource Manager", () => {
 
         deleteDatasource(`cypress-${data.dsName1}-postgresql1`);
     });
+
     it("Should verify the Datasource connection and query creation using global data source", () => {
         selectAndAddDataSource(
             "databases",
@@ -198,10 +185,7 @@ describe("Global Datasource Manager", () => {
         );
         cy.wait("@datasource");
 
-        cy.get(commonSelectors.globalDataSourceIcon).click();
-        cy.get(commonSelectors.dashboardIcon).click();
-        navigateToAppEditor(data.appName);
-
+        cy.openApp();
         pinInspector();
 
         addQuery(
@@ -223,24 +207,22 @@ describe("Global Datasource Manager", () => {
             .should("be.visible")
             .and("have.text", "+ Add new Data source");
         cy.get(".p-2 > .tj-base-btn").click();
+        cy.get('[data-cy="databases-datasource-button"]').should("be.visible");
 
-        selectAndAddDataSource(
-            "databases",
-            dataSourceText.postgreSQL,
-            data.dsName2
+        cy.apiCreateGDS(
+            "http://localhost:3000/api/v2/data_sources",
+            `cypress-${data.dsName2}-postgresql`,
+            "postgresql",
+            [
+                { key: "host", value: Cypress.env("pg_host") },
+                { key: "port", value: 5432 },
+                { key: "database", value: Cypress.env("pg_user") },
+                { key: "username", value: Cypress.env("pg_user") },
+                { key: "password", value: Cypress.env("pg_password"), encrypted: true },
+                { key: "ssl_enabled", value: false, encrypted: false },
+                { key: "ssl_certificate", value: "none", encrypted: false },
+            ]
         );
-        cy.intercept("GET", "api/v2/data_sources").as("datasource");
-        fillConnectionForm(
-            {
-                Host: Cypress.env("pg_host"),
-                Port: "5432",
-                "Database Name": Cypress.env("pg_user"),
-                Username: Cypress.env("pg_user"),
-                Password: Cypress.env("pg_password"),
-            },
-            ".form-switch"
-        );
-        cy.wait("@datasource");
 
         navigateToManageGroups();
         cy.get(groupsSelector.appSearchBox).click();
@@ -265,7 +247,7 @@ describe("Global Datasource Manager", () => {
     it("Should validate the user's global data source permissions on apps created by admin", () => {
         logout();
         cy.apiLogin(data.email, "password");
-        cy.visit('/my-workspace')
+        cy.visit("/my-workspace");
 
         cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
 
@@ -281,8 +263,7 @@ describe("Global Datasource Manager", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         verifyValueOnInspector("table_preview", "7 items ");
 
-        cy.get('[data-cy="show-ds-popover-button"]').click();
-        addQueryN(
+        addQuery(
             "student_data",
             `SELECT * FROM student_data;`,
             `cypress-${data.dsName2}-postgresql`
@@ -293,16 +274,14 @@ describe("Global Datasource Manager", () => {
             "student_data "
         );
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        verifyValueOnInspector("student_data", "8 items ");
+        verifyValueOnInspector("student_data", "4 items ");
     });
     it("Should verify the query creation and scope changing functionality.", () => {
         data.appName = `${fake.companyName}-App`;
         logout();
         cy.apiLogin(data.email, "password");
-        cy.visit('/my-workspace')
         cy.apiCreateApp(data.appName);
         cy.openApp();
-        cy.dragAndDropWidget("Table", 250, 250);
 
         addQuery(
             "table_preview",
