@@ -23,7 +23,6 @@ export const Checkbox = function Checkbox({
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const currentState = useCurrentState();
   const { loadingState, tooltip, disabledState } = properties;
-  const [showValidationError, setShowValidationError] = useState(true);
   const { checkboxColor, boxShadow, alignment, padding, uncheckedColor, borderColor, handleColor } = styles;
 
   const [loading, setLoading] = useState(properties?.loadingState);
@@ -151,7 +150,7 @@ export const Checkbox = function Checkbox({
         gap: '8px ',
         justifyContent: `${loadingState ? 'center' : 'space-between'}`,
         padding: padding === 'default' ? '4px 6px' : '',
-        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height == 16 && height,
+        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height,
       }}
       data-cy={dataCy}
     >
@@ -256,7 +255,7 @@ export const Checkbox = function Checkbox({
   return (
     <div
       style={{
-        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height == 16 && height,
+        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height,
         justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
       }}
     >
@@ -269,13 +268,13 @@ export const Checkbox = function Checkbox({
           <div>{renderCheckBox()}</div>
         )}
       </>
-      {showValidationError && visibility && (
+      {validationError && visibility && (
         <div
           className="tj-text-sm"
           data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
           style={{ color: '#DB4324' }}
         >
-          {showValidationError && validationError}
+          {validationError}
         </div>
       )}
     </div>

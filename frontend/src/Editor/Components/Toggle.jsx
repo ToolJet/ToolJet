@@ -11,13 +11,7 @@ class Switch extends React.Component {
       onChange,
       disabledState,
       color,
-      padding,
       alignment,
-      component,
-      showValidationError,
-      properties,
-      validationError,
-      setShowValidationError,
       borderColor,
       setOn,
       styles,
@@ -230,7 +224,7 @@ export const ToggleSwitch = ({
         gap: '8px ',
         justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
         padding: padding === 'default' ? '4px 6px' : '',
-        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height == 16 && height,
+        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height,
       }}
       data-cy={dataCy}
     >
@@ -242,7 +236,6 @@ export const ToggleSwitch = ({
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && !on && '*'}</span>
           )}
           <span
-            className=""
             style={{
               lineHeight: padding == 'none' && '12px',
               color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
@@ -284,7 +277,7 @@ export const ToggleSwitch = ({
   return (
     <div
       style={{
-        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height == 16 && height,
+        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height,
         justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
       }}
     >
