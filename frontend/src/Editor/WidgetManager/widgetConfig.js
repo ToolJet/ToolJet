@@ -2056,6 +2056,10 @@ export const widgets = [
     validation: {
       customRule: { type: 'code', displayName: 'Custom validation' },
       mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
+      minDate: { type: 'code', displayName: 'Minimum date' },
+      maxDate: { type: 'code', displayName: 'Maximum date' },
+      minTime: { type: 'code', displayName: 'Minimum time' },
+      maxTime: { type: 'code', displayName: 'Maximum time' },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -2359,10 +2363,11 @@ export const widgets = [
       },
       validation: {
         customRule: { value: null },
-        minDate: { type: 'code', displayName: 'Minimum date' },
-        maxDate: { type: 'code', displayName: 'Maximum date' },
-        minTime: { type: 'code', displayName: 'Minimum time' },
-        maxTime: { type: 'code', displayName: 'Maximum time' },
+        mandatory: { value: null },
+        minDate: { value: null },
+        maxDate: { value: null },
+        minTime: { value: null },
+        maxTime: { value: null },
       },
       properties: {
         label: { value: 'Label' },
