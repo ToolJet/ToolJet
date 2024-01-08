@@ -3,5 +3,5 @@ export const bigqueryText = {
   cypressBigQuery: "cypress-bigquery",
   errorInvalidEmailId:
     "The incoming JSON object does not contain a client_email field",
-  placehlderPrivateKey: "Enter JSON private key for service account",
+  placehlderPrivateKey: "**************",
 };
