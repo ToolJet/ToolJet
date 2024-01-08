@@ -20,7 +20,6 @@
 
 .released-version-no-header-mbl-preview {
   position: absolute;
-  // top: 1rem;
   left: 50%;
   z-index: 1000;
   border-radius: 100px;
@@ -72,7 +71,7 @@
   top: 0;
   background-color:#ACB2B9;
   width: calc(50vw - 225px);
-  height: 100%;
+  height: 100vh;
   z-index: 1201;
 }
 
@@ -96,7 +95,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 99;
   .powered-with-tj-icon {
     background-color: #3E63DD;
     padding: 4px;
@@ -104,5 +103,28 @@
     border-radius: 6px;
     margin-left: 6px;
     margin-right: 3px;
+  }
+}
+
+.viewer {
+  &.mobile-layout {
+    .canvas-container {
+      scrollbar-width: auto;
+      width: 100%;
+    }
+
+
+    .canvas-container::-webkit-scrollbar {
+      width: 0;
+      background: transparent;
+    }
+
+    .canvas-container::-webkit-scrollbar-track {
+      background: transparent !important;
+    }
+
+    .canvas-container {
+      scrollbar-width: none;
+    }
   }
 }

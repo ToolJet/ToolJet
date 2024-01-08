@@ -49,7 +49,7 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
   return (
     <Header
       styles={{
-        height: '48px',
+        height: '46px',
       }}
     >
       {_renderAppNameAndLogo()}

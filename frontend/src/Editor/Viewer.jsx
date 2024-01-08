@@ -593,7 +593,7 @@ class ViewerComponent extends React.Component {
       );
     } else {
       return (
-        <div className="viewer wrapper">
+        <div className={`viewer wrapper ${this.props.currentLayout === 'mobile' ? 'mobile-layout' : ''}`}>
           <Confirm
             show={queryConfirmationList.length > 0}
             message={'Do you want to run this query?'}

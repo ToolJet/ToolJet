@@ -773,18 +773,8 @@ button {
       width: 100%;
     }
 
-
     .canvas-container::-webkit-scrollbar {
-      width: 0;
       background: transparent;
-    }
-
-    .canvas-container::-webkit-scrollbar-track {
-      background: transparent !important;
-    }
-
-    .canvas-container {
-      scrollbar-width: none;
     }
 
     .canvas-container {
