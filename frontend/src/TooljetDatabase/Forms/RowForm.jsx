@@ -117,19 +117,15 @@ const RowForm = ({ onCreate, onClose }) => {
   }, []);
 
   const handleSubmit = async () => {
-    if (Object.values(data).includes('')) {
-      toast.error('Please fill the empty fields or select Null');
-    } else {
-      setFetching(true);
-      const { error } = await tooljetDatabaseService.createRow(organizationId, selectedTable.id, data);
-      setFetching(false);
-      if (error) {
-        toast.error(error?.message ?? `Failed to create a new column table "${selectedTable}"`);
-        return;
-      }
-      toast.success(`Row created successfully`);
-      onCreate && onCreate();
+    setFetching(true);
+    const { error } = await tooljetDatabaseService.createRow(organizationId, selectedTable.id, data);
+    setFetching(false);
+    if (error) {
+      toast.error(error?.message ?? `Failed to create a new column table "${selectedTable}"`);
+      return;
     }
+    toast.success(`Row created successfully`);
+    onCreate && onCreate();
   };
 
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index) => {
@@ -255,7 +251,12 @@ const RowForm = ({ onCreate, onClose }) => {
             );
           })}
       </div>
-      <DrawerFooter fetching={fetching} onClose={onClose} onCreate={handleSubmit} />
+      <DrawerFooter
+        fetching={fetching}
+        onClose={onClose}
+        onCreate={handleSubmit}
+        shouldDisableCreateBtn={Object.values(data).includes('')}
+      />
     </div>
   );
 };
