@@ -1,11 +1,10 @@
 import React, { useState, useContext } from 'react';
-import { Button } from '@/_ui/LeftSidebar';
 import Select from '@/_ui/Select';
 import Pagination from '@/_ui/Pagination';
 import Skeleton from 'react-loading-skeleton';
 import { TooljetDatabaseContext } from '../index';
 
-const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength }) => {
+const Footer = ({ darkMode, dataLoading, tableDataLength }) => {
   const selectOptions = [
     { label: '50 records', value: 50 },
     { label: '100 records', value: 100 },

@@ -4,15 +4,18 @@ import { toast } from 'react-hot-toast';
 import EditRowForm from '../../Forms/EditRowForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
   const { organizationId, selectedTable, setSelectedTableData, setTotalRecords } = useContext(TooljetDatabaseContext);
 
   return (
     <>
-      <button
+      <ButtonSolid
+        variant="tertiary"
+        size="sm"
         onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)}
-        className={`ghost-black-operation ${isCreateRowDrawerOpen ? 'open' : ''}`}
+        className="px-1 pe-3 ps-2 gap-0"
         data-cy="edit-row-button-"
       >
         {/* <SolidIcon name="editrectangle" width="14" fill={isCreateRowDrawerOpen ? '#3E63DD' : '#889096'} /> */}
@@ -34,7 +37,7 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
         <span data-cy="edit-row-button-text" className="tj-text-xsm font-weight-500">
           Edit row
         </span>
-      </button>
+      </ButtonSolid>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <EditRowForm
           onEdit={() => {

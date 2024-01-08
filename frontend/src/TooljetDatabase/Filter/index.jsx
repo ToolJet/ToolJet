@@ -91,6 +91,9 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
             'tj-db-filter-btn-applied': areFiltersApplied,
             'tj-db-filter-btn-active': show,
           })}
+          style={{
+            width: '70px',
+          }}
         >
           <SolidIcon name="filter" width="14" fill={areFiltersApplied ? '#46A758' : show ? '#3E63DD' : '#889096'} />
           &nbsp;&nbsp;Filter
