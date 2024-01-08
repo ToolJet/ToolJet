@@ -317,6 +317,7 @@ export const Inspector = ({
           component.component.component !== 'TextInput' &&
           component.component.component !== 'PasswordInput' &&
           component.component.component !== 'NumberInput' &&
+          component.component.component !== 'Datepicker' &&
           'p-3'
         }
       >

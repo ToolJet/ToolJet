@@ -6,7 +6,7 @@ import { renderElement } from '../Utils';
 import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
 import { AllComponents } from '@/Editor/Box';
-const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'DropDown', 'NumberInput', 'PasswordInput'];
+const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'DropDown', 'NumberInput', 'PasswordInput', 'Datepicker'];
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const {

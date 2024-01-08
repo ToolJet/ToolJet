@@ -2077,6 +2077,79 @@ export const widgets = [
         displayName: 'setLoading',
         params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
+
+      {
+        handle: 'clearValue',
+        displayName: 'clearValue',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setValue',
+        displayName: 'setValue',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setDate',
+        displayName: 'setDate',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setTime',
+        displayName: 'setTime',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+
+      {
+        handle: 'setValueinTimeStamp',
+        displayName: 'setValueinTimeStamp',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+
+      {
+        handle: 'disableDate',
+        displayName: 'disableDate',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+
+      {
+        handle: 'setMinDate',
+        displayName: 'setMinDate',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setMaxDate',
+        displayName: 'setMaxDate',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+
+      {
+        handle: 'setMinTime',
+        displayName: 'setMinTime',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+
+      {
+        handle: 'setMaxTime',
+        displayName: 'setMaxTime',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+
+      {
+        handle: 'setTimezone',
+        displayName: 'setTimezone',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setFocus',
+        displayName: 'setFocus',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+
+      {
+        handle: 'setBlur',
+        displayName: 'setBlur',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
     ],
     properties: {
       label: {
@@ -2152,12 +2225,117 @@ export const widgets = [
       onSelect: { displayName: 'On select' },
     },
     styles: {
-      borderRadius: {
-        type: 'code',
-        displayName: 'Border radius',
-        validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+      color: {
+        type: 'color',
+        displayName: 'Text color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'label',
+      },
+      alignment: {
+        type: 'switch',
+        displayName: 'Alignment',
+        validation: { schema: { type: 'string' } },
+        options: [
+          { displayName: 'Side', value: 'side' },
+          { displayName: 'Top', value: 'top' },
+        ],
+        accordian: 'label',
+      },
+      direction: {
+        type: 'switch',
+        displayName: '',
+        validation: { schema: { type: 'string' } },
+        showLabel: false,
+        isIcon: true,
+        options: [
+          { displayName: 'alignleftinspector', value: 'left' },
+          { displayName: 'alignrightinspector', value: 'right' },
+        ],
+        accordian: 'label',
+      },
+      width: {
+        type: 'slider',
+        displayName: 'Width',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'label',
+        conditionallyRender: {
+          key: 'alignment',
+          value: 'side',
         },
+      },
+      auto: {
+        type: 'checkbox',
+        displayName: 'auto',
+        showLabel: false,
+        validation: { schema: { type: 'boolean' } },
+        accordian: 'label',
+        conditionallyRender: {
+          key: 'alignment',
+          value: 'side',
+        },
+      },
+
+      backgroundColor: {
+        type: 'color',
+        displayName: 'BG color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      errTextColor: {
+        type: 'color',
+        displayName: 'Error text color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      icon: {
+        type: 'icon',
+        displayName: 'Icon',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+        visibility: false,
+      },
+      iconColor: {
+        type: 'color',
+        displayName: 'Icon color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+        visibility: false,
+      },
+      borderRadius: {
+        type: 'input',
+        displayName: 'Border radius',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'field',
+      },
+      boxShadow: {
+        type: 'boxShadow',
+        displayName: 'Box Shadow',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'field',
+      },
+
+      padding: {
+        type: 'switch',
+        displayName: 'Padding',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        options: [
+          { displayName: 'Default', value: 'default' },
+          { displayName: 'None', value: 'none' },
+        ],
+        accordian: 'container',
       },
     },
     exposedVariables: {
@@ -2166,6 +2344,13 @@ export const widgets = [
       isVisible: true,
       isDisabled: false,
       isLoading: false,
+      label: 'Label',
+      valueUnix: '',
+      selectedDate: '',
+      dateFormat: '',
+      selectedTime: '',
+      timeFormat: '',
+      selectedTimeZone: '',
     },
     definition: {
       others: {
@@ -2174,6 +2359,10 @@ export const widgets = [
       },
       validation: {
         customRule: { value: null },
+        minDate: { type: 'code', displayName: 'Minimum date' },
+        maxDate: { type: 'code', displayName: 'Maximum date' },
+        minTime: { type: 'code', displayName: 'Minimum time' },
+        maxTime: { type: 'code', displayName: 'Maximum time' },
       },
       properties: {
         label: { value: 'Label' },
@@ -2189,9 +2378,21 @@ export const widgets = [
       },
       events: [],
       styles: {
-        borderRadius: { value: '{{4}}' },
+        borderRadius: { value: '{{6}}' },
+        backgroundColor: { value: '#fff' },
+        borderColor: { value: '#D7DBDF' },
+        errTextColor: { value: '#DB4324' },
+        textColor: { value: '#232e3c' },
+        iconColor: { value: '#C1C8CD' },
+        direction: { value: 'left' },
+        width: { value: '33' },
+        alignment: { value: 'side' },
+        color: { value: '#11181C' },
+        auto: { value: true },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
+        icon: { value: 'IconLock' },
+        iconVisibility: { value: true },
       },
     },
   },
