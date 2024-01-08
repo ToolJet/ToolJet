@@ -17,6 +17,7 @@ import {
   catchDbException,
   extractMajorVersion,
   isTooljetVersionWithNormalizedAppDefinitionSchem,
+  shouldApplyGridCompatibilityFix,
 } from 'src/helpers/utils.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -57,6 +58,11 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'workflowsdefault',
 ];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
+
+function resolveGridPositionForComponent(dimension: number, type: string) {
+  const numberOfGrids = type === 'desktop' ? 43 : 12;
+  return Math.round((dimension * numberOfGrids) / 100);
+}
 
 @Injectable()
 export class AppImportExportService {
@@ -228,6 +234,9 @@ export class AppImportExportService {
       ? true
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
+    const shouldUpdateForGridCompatibility: boolean =
+      !cloning && shouldApplyGridCompatibilityFix(importedAppTooljetVersion);
+
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
 
     await this.setupImportedAppAssociations(
@@ -236,7 +245,8 @@ export class AppImportExportService {
       schemaUnifiedAppParams,
       user,
       externalResourceMappings,
-      isNormalizedAppDefinitionSchema
+      isNormalizedAppDefinitionSchema,
+      shouldUpdateForGridCompatibility
     );
     await this.createAdminGroupPermissions(this.entityManager, importedApp);
 
@@ -314,7 +324,8 @@ export class AppImportExportService {
     appParams: any,
     user: User,
     externalResourceMappings: Record<string, unknown>,
-    isNormalizedAppDefinitionSchema: boolean
+    isNormalizedAppDefinitionSchema: boolean,
+    shouldUpdateForGridCompatibility: boolean
   ) {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -377,7 +388,8 @@ export class AppImportExportService {
         importingDefaultAppEnvironmentId,
         importingPages,
         importingComponents,
-        importingEvents
+        importingEvents,
+        shouldUpdateForGridCompatibility
       );
 
       if (!isNormalizedAppDefinitionSchema) {
@@ -438,7 +450,7 @@ export class AppImportExportService {
                     const newLayout = new Layout();
                     newLayout.type = type;
                     newLayout.top = layout.top;
-                    newLayout.left = layout.left;
+                    newLayout.left = resolveGridPositionForComponent(layout.left, type);
                     newLayout.width = layout.width;
                     newLayout.height = layout.height;
                     newLayout.componentId = appResourceMappings.componentsMapping[componentId];
@@ -574,7 +586,8 @@ export class AppImportExportService {
     importingDefaultAppEnvironmentId: string,
     importingPages: Page[],
     importingComponents: Component[],
-    importingEvents: EventHandler[]
+    importingEvents: EventHandler[],
+    shouldUpdateForGridCompatibility: boolean
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -740,7 +753,9 @@ export class AppImportExportService {
               const newLayout = new Layout();
               newLayout.type = layout.type;
               newLayout.top = layout.top;
-              newLayout.left = layout.left;
+              newLayout.left = shouldUpdateForGridCompatibility
+                ? resolveGridPositionForComponent(layout.left, layout.type)
+                : layout.left;
               newLayout.width = layout.width;
               newLayout.height = layout.height;
               newLayout.component = savedComponent;
