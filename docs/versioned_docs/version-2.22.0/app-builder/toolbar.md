@@ -97,7 +97,7 @@ You can also use **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)** to 
 
 Share your applications with a unique URL generated automatically or edit the URL slug to personalize it.
 
-- When **Make the application public** is off and URL is shared then the users will have to login to ToolJet to use the application. Toggle on the option then anyone on the internet will be able to access the application without logging in to ToolJet.
+- When **Make application public** toggle is off and **Shareable app link** is shared then the users will have to login to ToolJet to use the application. Toggle on to make the application public and accessible to anyone on the internet without requiring a ToolJet login. Only released apps can be accessed using the **Shareable app link**. 
 - ToolJet generates the **Embedded link** which can be used to embed application on the webpages.
 
 :::tip

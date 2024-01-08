@@ -249,7 +249,7 @@ export const PasswordInput = function PasswordInput({
                   ? padding == 'default'
                     ? '8px'
                     : '5px'
-                  : `${elementWidth + 3}px`,
+                  : `${elementWidth}px`,
               position: 'absolute',
               top: `${
                 defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'

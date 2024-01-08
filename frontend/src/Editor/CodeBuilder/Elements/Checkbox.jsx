@@ -4,7 +4,7 @@ function Checkbox({ value, onChange }) {
   const [isChecked, setIsChecked] = useState(value); // Initial state of the checkbox
 
   return (
-    <div className="d-flex" style={{ width: '142px' }}>
+    <div className="d-flex align-items-center" style={{ width: '142px' }}>
       <input
         type="checkbox"
         checked={isChecked}
@@ -13,6 +13,7 @@ function Checkbox({ value, onChange }) {
           onChange(!isChecked);
         }}
         value={isChecked}
+        style={{ height: '16px', width: '16px' }}
       />
       <span className="tj-text-xsm" style={{ marginLeft: '4px' }}>
         Auto width

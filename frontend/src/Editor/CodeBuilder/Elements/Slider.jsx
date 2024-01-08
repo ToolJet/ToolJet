@@ -29,6 +29,7 @@ function Slider1({ value, onChange, component }) {
         disabled={component.component.definition.styles.auto.value == true}
         value={sliderValue}
         onChange={handleSliderChange}
+        style={{ margin: '4px' }}
       />
     </div>
   );
