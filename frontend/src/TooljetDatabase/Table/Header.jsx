@@ -163,7 +163,7 @@ const Header = ({
         <div className="card border-0">
           <div className="card-body  tj-db-operations-header">
             <div className="row align-items-center">
-              <div className="col-8 align-items-center p-3">
+              <div className="col-8 align-items-center p-3 gap-2">
                 <>
                   {columns?.length > 0 && (
                     <>
@@ -190,18 +190,22 @@ const Header = ({
                               </ButtonSolid>
                             </span>
                           </AddNewDataPopOver>
-                          <Filter
-                            filters={queryFilters}
-                            setFilters={setQueryFilters}
-                            handleBuildFilterQuery={handleBuildFilterQuery}
-                            resetFilterQuery={resetFilterQuery}
-                          />
-                          <Sort
-                            filters={sortFilters}
-                            setFilters={setSortFilters}
-                            handleBuildSortQuery={handleBuildSortQuery}
-                            resetSortQuery={resetSortQuery}
-                          />
+                          <div style={{ width: '70px' }}>
+                            <Filter
+                              filters={queryFilters}
+                              setFilters={setQueryFilters}
+                              handleBuildFilterQuery={handleBuildFilterQuery}
+                              resetFilterQuery={resetFilterQuery}
+                            />
+                          </div>
+                          <div style={{ width: '70px' }}>
+                            <Sort
+                              filters={sortFilters}
+                              setFilters={setSortFilters}
+                              handleBuildSortQuery={handleBuildSortQuery}
+                              resetSortQuery={resetSortQuery}
+                            />
+                          </div>
                         </>
                       )}
 

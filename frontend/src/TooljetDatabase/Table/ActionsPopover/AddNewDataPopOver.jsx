@@ -14,7 +14,12 @@ export const AddNewDataPopOver = ({
 }) => {
   if (disabled) return children;
   const popover = (
-    <Popover className={`table-list-items ${darkMode && 'dark-theme'}`}>
+    <Popover
+      className={`table-list-items ${darkMode && 'dark-theme'}`}
+      style={{
+        width: '160px',
+      }}
+    >
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
         <div className="row cursor-pointer">
           <div className="col-auto">
@@ -51,7 +56,16 @@ export const AddNewDataPopOver = ({
   );
 
   return (
-    <OverlayTrigger trigger="click" placement="bottom" rootCloseEvent="click" show={show} overlay={popover}>
+    <OverlayTrigger
+      trigger="click"
+      placement="bottom"
+      rootClose
+      onToggle={() => {
+        toggleAddNewDataMenu(!show);
+      }}
+      show={show}
+      overlay={popover}
+    >
       {children}
     </OverlayTrigger>
   );
