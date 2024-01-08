@@ -40,9 +40,9 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
                   {routes(location?.pathname.split('/').pop())}
                 </p>
               </div>
-              <div className="col-3 px-3">
-                {enableCollapsibleSidebar && !collapseSidebar && (
-                  <ToolTip message="Collapse sidebar" placement="bottom">
+              <ToolTip message="Collapse sidebar" placement="bottom">
+                <div className="col-3 px-3">
+                  {enableCollapsibleSidebar && !collapseSidebar && (
                     <ButtonSolid
                       variant="ghostBlue"
                       className="tj-text-xsm"
@@ -62,17 +62,17 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
                       size="md"
                       onClick={toggleCollapsibleSidebar}
                     ></ButtonSolid>
-                  </ToolTip>
-                )}
-              </div>
+                  )}
+                </div>
+              </ToolTip>
             </div>
           </div>
         )}
         <div className="col tj-dashboard-header-wrap">
           <div className="d-flex justify-content-sm-between">
             {enableCollapsibleSidebar && collapseSidebar && (
-              <div className="pe-3">
-                <ToolTip message="Open sidebar" placement="bottom">
+              <ToolTip message="Open sidebar" placement="bottom">
+                <div className="pe-3">
                   <ButtonSolid
                     variant="ghostBlue"
                     className="tj-text-xsm"
@@ -92,8 +92,8 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
                     size="md"
                     onClick={toggleCollapsibleSidebar}
                   ></ButtonSolid>
-                </ToolTip>
-              </div>
+                </div>
+              </ToolTip>
             )}
             <div className="app-header-label" data-cy="app-header-label">
               <Breadcrumbs darkMode={darkMode} />
