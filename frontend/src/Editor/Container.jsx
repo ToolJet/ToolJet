@@ -356,6 +356,17 @@ export const Container = ({
       const _canvasWidth = gw ? gw * noOfGrids : canvasWidth;
       const newWidth = (width * noOfGrids) / _canvasWidth;
       gw = gw ? gw : gridWidth;
+      const parent = boxes[id]?.component?.parent;
+      if (parent) {
+        const parentElem = document.getElementById(`canvas-${parent}`);
+        const parentId = parent.includes('-') ? parent?.split('-').slice(0, -1).join('-') : parent;
+        const compoenentType = boxes[parentId]?.component.component;
+        var parentHeight = parentElem?.clientHeight || height;
+        if (height > parentHeight && ['Tabs'].includes(compoenentType)) {
+          height = parentHeight;
+          y = 0;
+        }
+      }
       return {
         ...newBoxList,
         [id]: {
@@ -385,6 +396,7 @@ export const Container = ({
   function onDragStop(boxPositions) {
     const updatedBoxes = boxPositions.reduce((boxesObj, { id, x, y, parent }) => {
       let _width = boxes[id]['layouts'][currentLayout].width;
+      let _height = boxes[id]['layouts'][currentLayout].height;
       const containerWidth = parent ? subContainerWidths[parent] : gridWidth;
       if (parent !== boxes[id]['component']?.parent) {
         if (boxes[id]['component']?.parent) {
@@ -412,6 +424,18 @@ export const Container = ({
           _width = noOfGrids;
         }
       }
+
+      if (parent) {
+        const parentElem = document.getElementById(`canvas-${parent}`);
+        const parentId = parent.includes('-') ? parent?.split('-').slice(0, -1).join('-') : parent;
+        const compoenentType = boxes[parentId]?.component.component;
+        var parentHeight = parentElem?.clientHeight || _height;
+        if (_height > parentHeight && ['Tabs'].includes(compoenentType)) {
+          _height = parentHeight;
+          y = 0;
+        }
+      }
+
       return {
         ...boxesObj,
         [id]: {
@@ -429,6 +453,7 @@ export const Container = ({
               //   ? Math.round((boxes[id]['layouts'][currentLayout].width * gridWidth) / subContainerWidths[parent])
               //   : boxes[id]['layouts'][currentLayout].width,
               width: _width,
+              height: _height,
               top: y,
               left: _left,
             },
