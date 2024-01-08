@@ -10,7 +10,7 @@ function DrawerFooter({ fetching, onClose, isEditMode, onCreate, onEdit, shouldD
         </ButtonSolid>
         {isEditMode && (
           <ButtonSolid
-            disabled={fetching}
+            disabled={fetching || shouldDisableCreateBtn}
             data-cy={`save-changes-button`}
             onClick={onEdit}
             fill="#fff"

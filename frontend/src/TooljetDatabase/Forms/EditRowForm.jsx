@@ -335,7 +335,15 @@ const EditRowForm = ({ onEdit, onClose }) => {
             })}
         </div>
       </div>
-      {selectedRow && <DrawerFooter isEditMode={true} fetching={fetching} onClose={onClose} onEdit={handleSubmit} />}
+      {selectedRow && (
+        <DrawerFooter
+          isEditMode={true}
+          fetching={fetching}
+          onClose={onClose}
+          onEdit={handleSubmit}
+          shouldDisableCreateBtn={Object.values(rowData).includes('')}
+        />
+      )}
     </div>
   );
 };
