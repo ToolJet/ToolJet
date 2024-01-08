@@ -55,9 +55,7 @@ const ParameterList = ({
 
   return (
     <div className="card-header">
-      <p style={{ marginRight: '4px', margin: '0px' }}>
-        Parameters{formattedParameters?.length > 0 && `(${formattedParameters?.length})`}
-      </p>
+      <p style={{ marginRight: '4px', margin: '0px' }}>Parameters</p>
       {formattedParameters
         .filter((param) => param.isVisible)
         .map((parameter) => {
