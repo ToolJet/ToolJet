@@ -42,6 +42,7 @@ export const Modal = function Modal({
     boxShadow,
   } = styles;
   const parentRef = useRef(null);
+  const isInitialRender = useRef(true);
 
   const title = properties.title ?? '';
   const size = properties.size ?? 'lg';
@@ -62,9 +63,13 @@ export const Modal = function Modal({
   }, [setShowModal]);
 
   useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
     const canShowModal = exposedVariables.show ?? false;
     setShowModal(exposedVariables.show ?? false);
-    fireEvent(canShowModal && 'onOpen');
+    fireEvent(canShowModal ? 'onOpen' : 'onClose');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
 
