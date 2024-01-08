@@ -14,8 +14,12 @@ import { toast } from 'react-hot-toast';
 import { isEmpty } from 'lodash';
 import { tooljetDatabaseService } from '@/_services';
 import { pluralize } from '@/_helpers/utils';
+import { AddNewDataPopOver } from './ActionsPopover/AddNewDataPopOver';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Plus from '@/_ui/Icon/solidIcons/Plus';
 
 const TooljetDatabasePage = ({ totalTables }) => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   const {
     columns,
     selectedTable,
@@ -40,6 +44,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
   const [isBulkUploading, setIsBulkUploading] = useState(false);
   const [errors, setErrors] = useState({ client: [], server: [] });
   const [uploadResult, setUploadResult] = useState(null);
+  const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
 
   useEffect(() => {
     setErrors({ client: [], server: [] });
@@ -161,6 +166,18 @@ const TooljetDatabasePage = ({ totalTables }) => {
     setBulkUploadFile(file);
   };
 
+  const toggleAddNewDataMenu = (isShow) => {
+    setIsAddNewDataMenuOpen(isShow);
+  };
+
+  const handleOnClickCreateNewRow = (isOpenCreateNewRowDrawer) => {
+    setIsCreateRowDrawerOpen(isOpenCreateNewRowDrawer);
+  };
+
+  const handleOnClickBulkUpdateData = (isOpenBulkUploadDrawer) => {
+    setIsBulkUploadDrawerOpen(isOpenBulkUploadDrawer);
+  };
+
   return (
     <div className="row gx-0">
       <Sidebar />
@@ -175,22 +192,30 @@ const TooljetDatabasePage = ({ totalTables }) => {
                     <div className="col-8 align-items-center p-3">
                       {columns?.length > 0 && (
                         <>
-                          <CreateRowDrawer
-                            isCreateRowDrawerOpen={isCreateRowDrawerOpen}
-                            setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
-                          />
+                          <AddNewDataPopOver
+                            disabled={false}
+                            show={isAddNewDataMenuOpen}
+                            darkMode={darkMode}
+                            toggleAddNewDataMenu={toggleAddNewDataMenu}
+                            handleOnClickCreateNewRow={handleOnClickCreateNewRow}
+                            handleOnClickBulkUpdateData={handleOnClickBulkUpdateData}
+                          >
+                            <span className="col-auto">
+                              <ButtonSolid
+                                variant="tertiary"
+                                disabled={false}
+                                onClick={() => toggleAddNewDataMenu(true)}
+                                size="sm"
+                                className="px-1 pe-3 ps-2 gap-0"
+                              >
+                                <Plus fill="#697177" style={{ height: '16px' }} />
+                                Add new data
+                              </ButtonSolid>
+                            </span>
+                          </AddNewDataPopOver>
                           <EditRowDrawer
                             isCreateRowDrawerOpen={isEditRowDrawerOpen}
                             setIsCreateRowDrawerOpen={setIsEditRowDrawerOpen}
-                          />
-                          <BulkUploadDrawer
-                            isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}
-                            setIsBulkUploadDrawerOpen={setIsBulkUploadDrawerOpen}
-                            bulkUploadFile={bulkUploadFile}
-                            handleBulkUploadFileChange={handleBulkUploadFileChange}
-                            handleBulkUpload={handleBulkUpload}
-                            isBulkUploading={isBulkUploading}
-                            errors={errors}
                           />
                         </>
                       )}
@@ -231,6 +256,19 @@ const TooljetDatabasePage = ({ totalTables }) => {
       <CreateColumnDrawer
         isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
+      />
+      <CreateRowDrawer
+        isCreateRowDrawerOpen={isCreateRowDrawerOpen}
+        setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
+      />
+      <BulkUploadDrawer
+        isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}
+        setIsBulkUploadDrawerOpen={setIsBulkUploadDrawerOpen}
+        bulkUploadFile={bulkUploadFile}
+        handleBulkUploadFileChange={handleBulkUploadFileChange}
+        handleBulkUpload={handleBulkUpload}
+        isBulkUploading={isBulkUploading}
+        errors={errors}
       />
     </div>
   );

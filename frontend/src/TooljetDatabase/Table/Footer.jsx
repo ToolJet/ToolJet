@@ -79,7 +79,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
     <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
       <div className="table-footer row gx-0" data-cy="table-footer-section">
         <div className="col-5 d-flex align-items-center justify-content-start" data-cy="add-new-row-button">
-          <Button
+          {/* <Button
             disabled={dataLoading}
             onClick={openCreateRowDrawer}
             darkMode={darkMode}
@@ -87,7 +87,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
             styles={{ width: '118px', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
           >
             <Button.Content title={'Add new row'} iconSrc={'assets/images/icons/add-row.svg'} direction="left" />
-          </Button>
+          </Button> */}
         </div>
         {tableDataLength > 0 && (
           <>
