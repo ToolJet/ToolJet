@@ -342,7 +342,7 @@ export const Inspector = ({
     <div className="inspector">
       <ConfirmDialog
         show={showWidgetDeleteConfirmation}
-        message={'Widget will be deleted, do you want to continue?'}
+        message={'Are you sure you want to delete this component?'}
         onConfirm={() => {
           setSelectedComponents(EMPTY_ARRAY);
           removeComponent(component.id);
