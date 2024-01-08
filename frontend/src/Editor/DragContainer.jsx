@@ -139,17 +139,21 @@ export default function DragContainer({
     if (parentId) {
       // eslint-disable-next-line no-undef
       const childMoveableRef = childMoveableRefs.current[parentId];
-      const controlBoxes = childMoveableRef.moveable.getMoveables();
-      for (const element of controlBoxes) {
-        if (selectedComponentsId.has(element?.props?.target?.id)) {
-          element?.controlBox?.classList.add('selected-component');
+      const controlBoxes = childMoveableRef?.moveable?.getMoveables();
+      if (controlBoxes) {
+        for (const element of controlBoxes) {
+          if (selectedComponentsId.has(element?.props?.target?.id)) {
+            element?.controlBox?.classList.add('selected-component');
+          }
         }
       }
     } else {
-      const controlBoxes = moveableRef.current.moveable.getMoveables();
-      for (const element of controlBoxes) {
-        if (selectedComponentsId.has(element?.props?.target?.id)) {
-          element?.controlBox?.classList.add('selected-component');
+      const controlBoxes = moveableRef?.current?.moveable?.getMoveables();
+      if (controlBoxes) {
+        for (const element of controlBoxes) {
+          if (selectedComponentsId.has(element?.props?.target?.id)) {
+            element?.controlBox?.classList.add('selected-component');
+          }
         }
         // }
       }
