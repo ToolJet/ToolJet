@@ -127,10 +127,8 @@ async function getOrganizationConfigs(organizationId, organizationSlug) {
     if (organizationId || organizationSlug) {
       await actions.fetchWhiteLabelDetails(organizationId, organizationSlug);
     }
-    const response = await fetch(
-      `${config.apiUrl}/organizations/${organizationId || organizationSlug}/public-configs`,
-      requestOptions
-    );
+    const organizationPath = organizationId || organizationSlug ? `${organizationId || organizationSlug}/` : '';
+    const response = await fetch(`${config.apiUrl}/organizations/${organizationPath}public-configs`, requestOptions);
     const configs = await handleResponse(response);
     return configs?.sso_configs;
   } catch (error) {

@@ -34,7 +34,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [password, setPassword] = useState();
   const [showPassword, setShowPassword] = useState(false);
   const [fallBack, setFallBack] = useState(false);
-  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_LOGO);
+  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
   const [whiteLabelFavicon, setWhiteLabelFavicon] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON);
   const { t } = useTranslation();
 

@@ -1150,7 +1150,14 @@ class HomePageComponent extends React.Component {
                     </div>
                   </LicenseTooltip>
                   {this.props.appType === 'front-end' && (
-                    <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
+                    <LicenseBannerCloud
+                      classes="mb-3 small"
+                      limits={appsLimit}
+                      type="apps"
+                      size="small"
+                      style={{ marginTop: '20px' }}
+                      z-index="10000"
+                    />
                   )}
                   {this.props.appType === 'workflow' &&
                     (workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||

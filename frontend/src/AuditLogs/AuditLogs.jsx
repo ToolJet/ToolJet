@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useMemo } from 'react';
+import React, { useContext, useEffect, useState, useMemo, useParams } from 'react';
 import Layout from '@/_ui/Layout';
 import { withRouter } from '@/_hoc/withRouter';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -18,6 +18,7 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import { toast } from 'react-hot-toast';
 import Skeleton from 'react-loading-skeleton';
 import { getWorkspaceId } from '@/_helpers/utils';
+import posthog from 'posthog-js';
 
 const AuditLogs = (props) => {
   const navigate = useNavigate();
@@ -335,6 +336,14 @@ const AuditLogs = (props) => {
     return;
   }
 
+  const upgradeEventTrack = () => {
+    posthog.capture('click_upgrade_plan', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+    });
+  };
+
   async function fetchMaxDuration() {
     const duration = await auditLogsService.getMaxDurationForAuditLogs();
     setMaxDuration(duration);
@@ -613,7 +622,14 @@ const AuditLogs = (props) => {
                                                 cursor: 'pointer',
                                               }}
                                               onClick={() => {
-                                                window.open(DEMO_LINK, '_blank');
+                                                upgradeEventTrack();
+                                                navigate(
+                                                  `/${
+                                                    authenticationService?.currentSessionValue
+                                                      ?.current_organization_slug ||
+                                                    authenticationService?.currentSessionValue?.current_organization_id
+                                                  }/settings/subscription?currentTab=upgradePlan`
+                                                );
                                               }}
                                             >
                                               Upgrade.
