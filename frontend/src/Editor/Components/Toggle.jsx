@@ -230,7 +230,7 @@ export const ToggleSwitch = ({
         gap: '8px ',
         justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
         padding: padding === 'default' ? '4px 6px' : '',
-        height: height == 26 ? (padding == 'default' ? '26px' : '16px') : padding == 'default' ? height : height + 2,
+        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height == 16 && height,
       }}
       data-cy={dataCy}
     >
@@ -284,7 +284,7 @@ export const ToggleSwitch = ({
   return (
     <div
       style={{
-        height: height == 26 ? (padding == 'default' ? '26px' : '16px') : padding == 'default' ? height : height + 2,
+        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height == 16 && height,
         justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
       }}
     >
