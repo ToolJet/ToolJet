@@ -1,40 +1,10 @@
+import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { buttonText } from "Texts/button";
-import { fake } from "Fixtures/fake";
-import { commonWidgetText } from "Texts/common";
 
-import {
-  verifyControlComponentAction,
-  addBasicData,
-  verifyBasicData,
-} from "Support/utils/button";
-import { resizeQueryPanel } from "Support/utils/dataSource";
+import { addBasicData, verifyBasicData } from "Support/utils/button";
 
-import {
-  openAccordion,
-  verifyAndModifyParameter,
-  openEditorSidebar,
-  verifyAndModifyToggleFx,
-  addDefaultEventHandler,
-  addAndVerifyTooltip,
-  verifyComponentFromInspector,
-  verifyAndModifyStylePickerFx,
-  verifyWidgetColorCss,
-  selectColourFromColourPicker,
-  verifyLoaderColor,
-  fillBoxShadowParams,
-  verifyBoxShadowCss,
-  verifyLayout,
-  verifyTooltip,
-  editAndVerifyWidgetName,
-  verifyPropertiesGeneralAccordion,
-  verifyStylesGeneralAccordion,
-} from "Support/utils/commonWidget";
-import {
-  selectCSA,
-  selectEvent,
-  addSupportCSAData,
-} from "Support/utils/events";
+import { openEditorSidebar } from "Support/utils/commonWidget";
 
 describe("Editor- component duplication", () => {
   const data = {};
@@ -115,7 +85,7 @@ describe("Editor- component duplication", () => {
     );
     cy.moveComponent("button1", 200, 200);
     cy.forceClickOnCanvas();
-
+    cy.wait(1000);
     verifyBasicData("button2", data);
   });
 
@@ -130,7 +100,7 @@ describe("Editor- component duplication", () => {
     );
     cy.moveComponent("button1", 200, 200);
     cy.forceClickOnCanvas();
-
+    cy.wait(1000);
     verifyBasicData("button2", data);
 
     cy.reload();
