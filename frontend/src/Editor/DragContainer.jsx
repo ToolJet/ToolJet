@@ -699,7 +699,10 @@ export default function DragContainer({
                       } = lastEvent;
 
                       let draggedOverElemId = i.parent;
-                      if (document.elementFromPoint(e.clientX, e.clientY)) {
+                      const parentComponent = boxes.find((box) => box.id === i.parent);
+                      const parentComponentType = parentComponent?.component?.component;
+
+                      if (document.elementFromPoint(e.clientX, e.clientY) && parentComponentType !== 'Modal') {
                         const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
                         const draggedOverElem = targetElems.find((ele) => {
                           const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
