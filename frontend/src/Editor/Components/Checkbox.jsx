@@ -130,7 +130,6 @@ export const Checkbox = function Checkbox({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
-  console.log('validationError--', validationError);
 
   useEffect(() => {
     setExposedVariable('toggle', async function () {
