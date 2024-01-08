@@ -206,6 +206,7 @@ jobs:
           echo "REDIS_USER=default" >> .env
           echo "REDIS_PASSWORD=" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml
