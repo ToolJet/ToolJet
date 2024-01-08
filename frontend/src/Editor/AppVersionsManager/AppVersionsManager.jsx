@@ -152,15 +152,18 @@ export const AppVersionsManager = function ({
   };
 
   return (
-    <div className="d-flex align-items-center p-0" style={{ marginRight: currentLayout === 'mobile' ? '0px' : '12px' }}>
+    <div
+      className="d-flex align-items-center p-0"
+      style={{ marginRight: isViewer && currentLayout === 'mobile' ? '0px' : '12px' }}
+    >
       <div
         className={cx('d-flex version-manager-container p-0', {
-          'w-100': currentLayout === 'mobile' && isViewer,
+          'w-100': isViewer && currentLayout === 'mobile',
         })}
       >
         <div
           className={cx('app-versions-selector', {
-            'w-100': currentLayout === 'mobile' && isViewer,
+            'w-100': isViewer && currentLayout === 'mobile',
           })}
           data-cy="app-version-selector"
         >

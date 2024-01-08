@@ -5,7 +5,7 @@ const Header = ({ children, className, styles = {}, showNavbarClass = true }) =>
   return (
     <div
       style={{
-        minHeight: 48,
+        minHeight: '47px',
         ...styles,
       }}
       className={`header ${className}`}

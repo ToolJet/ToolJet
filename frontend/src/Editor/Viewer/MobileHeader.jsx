@@ -54,7 +54,7 @@ const MobileHeader = ({
     return (
       <Header
         styles={{
-          height: '48px',
+          height: '46px',
           backgroundColor: '#f2f2f5',
           position: 'fixed',
           width: '450px',
@@ -72,7 +72,7 @@ const MobileHeader = ({
             showHeader={showHeader}
           />
         ) : (
-          <span className="released-version-no-header-dark-mode-icon">
+          <span className="released-version-no-header-dark-mode-icon" style={{ position: 'absolute', top: '7px' }}>
             <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
           </span>
         )}
@@ -85,7 +85,7 @@ const MobileHeader = ({
       <>
         <Header
           styles={{
-            height: '48px',
+            height: '46px',
             backgroundColor: '#f2f2f5',
             position: 'fixed',
             width: '450px',
@@ -109,7 +109,7 @@ const MobileHeader = ({
             setAppDefinitionFromVersion={setAppDefinitionFromVersion}
           />
           {!showViewerNavigation && (
-            <span className="released-version-no-header-dark-mode-icon">
+            <span className="released-version-no-header-dark-mode-icon" style={{ position: 'absolute', top: '7px' }}>
               <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
             </span>
           )}
@@ -121,7 +121,7 @@ const MobileHeader = ({
   return (
     <Header
       styles={{
-        height: '48px',
+        height: '46px',
         position: 'fixed',
         width: '450px',
         zIndex: '100',
@@ -148,7 +148,7 @@ const MobileHeader = ({
         />
       )}
       {!showViewerNavigation && (
-        <span className="released-version-no-header-dark-mode-icon" style={{ top: 'auto' }}>
+        <span className="released-version-no-header-dark-mode-icon" style={{ position: 'absolute', top: '7px' }}>
           <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
         </span>
       )}
