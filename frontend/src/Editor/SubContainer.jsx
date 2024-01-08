@@ -137,6 +137,30 @@ export const SubContainer = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allComponents, parent]);
 
+  useEffect(() => {
+    try {
+      const isParentModal =
+        (allComponents[parent]?.component?.component === 'Modal' ||
+          allComponents[parent]?.component?.component === 'Form' ||
+          allComponents[parent]?.component?.component === 'Container') ??
+        false;
+      const canvasBounds = parentRef.current.getBoundingClientRect();
+      const subContainerHeight = canvasBounds.height - 30;
+      const componentBottom = Object.values(childWidgets).reduce(function (max, currentElement) {
+        let currentSum = currentElement.layouts[currentLayout].top + currentElement.layouts[currentLayout].height;
+        return Math.max(max, currentSum);
+      }, 0);
+
+      if (isParentModal && subContainerHeight <= componentBottom) {
+        subContainerHeightRef.current = componentBottom + 100;
+      } else {
+        subContainerHeightRef.current = subContainerHeight + 30;
+      }
+    } catch (error) {
+      console.error('console.error', error);
+    }
+  }, [childWidgets]);
+
   const containerWidth = getContainerCanvasWidth();
 
   useEffect(() => {
