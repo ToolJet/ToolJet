@@ -272,7 +272,7 @@ const EditorComponent = (props) => {
       document.title = 'Tooljet - Dashboard';
       socket && socket?.close();
       subscription.unsubscribe();
-      if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
+      if (featureAccess?.multiPlayerEdit) props?.provider?.disconnect();
       useEditorStore.getState().actions.setIsEditorActive(false);
       prevAppDefinition.current = null;
     };
@@ -336,6 +336,8 @@ const EditorComponent = (props) => {
   }, [currentLayout, mounted]);
 
   const handleYmapEventUpdates = () => {
+    if (!featureAccess?.multiPlayerEdit) return;
+
     props.ymap?.set('eventHandlersUpdated', {
       currentVersionId: currentVersionId,
       currentSessionId: currentSessionId,
@@ -450,7 +452,7 @@ const EditorComponent = (props) => {
    */
   const initRealtimeSave = () => {
     // Check if multiplayer editing is enabled; if not, return early
-    if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
+    if (!featureAccess?.multiPlayerEdit) return null;
 
     // Observe changes in the 'appDef' property of the 'ymap' object
     props.ymap?.observeDeep(() => {
@@ -508,14 +510,15 @@ const EditorComponent = (props) => {
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
 
-    await fetchApp(props.params.pageHandle, true);
+    await fetchApp(props.params.pageHandle);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
     await fetchEnvironments();
 
     await fetchAndInjectCustomStyles();
     initComponentVersioning();
-    initRealtimeSave();
+
+    featureAccess?.multiPlayerEdit && initRealtimeSave();
     initEventListeners();
     updateEditorState({
       selectedComponents: [],
@@ -843,14 +846,10 @@ const EditorComponent = (props) => {
     }
   };
 
-  const fetchApp = async (startingPageHandle, onMount = false) => {
+  const fetchApp = async (startingPageHandle) => {
     const _appId = props?.params?.id || props?.params?.slug;
 
-    if (!onMount) {
-      await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
-    } else {
-      callBack(app, startingPageHandle);
-    }
+    await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
   };
 
   const setAppDefinitionFromVersion = (
@@ -1032,6 +1031,10 @@ const EditorComponent = (props) => {
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
     const editingVersion = useAppVersionStore.getState().editingVersion;
+
+    //skipAutoSave means the updates are coming from websocket and we don't need to save it again
+    if (appDiffOptions?.skipAutoSave) return;
+
     if (
       isEditorFreezed ||
       useAppVersionStore.getState().isAppVersionPromoted ||
@@ -1067,7 +1070,7 @@ const EditorComponent = (props) => {
           };
           useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
 
-          if (config.ENABLE_MULTIPLAYER_EDITING) {
+          if (featureAccess?.multiPlayerEdit) {
             props.ymap?.set('appDef', {
               newDefinition: appDefinition,
               editingVersionId: editingVersion.id,
@@ -1256,7 +1259,7 @@ const EditorComponent = (props) => {
       const diffPatches = diff(appDefinition, updatedAppDefinition);
 
       if (!isEmpty(diffPatches)) {
-        appDefinitionChanged(updatedAppDefinition, { skipAutoSave: true, componentDefinitionChanged: true, ...props });
+        appDefinitionChanged(updatedAppDefinition, { componentDefinitionChanged: true, ...props });
       }
     }
   };
@@ -1958,7 +1961,7 @@ const EditorComponent = (props) => {
                       transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                     }}
                   >
-                    {config.ENABLE_MULTIPLAYER_EDITING && featureAccess?.multiPlayerEdit && (
+                    {featureAccess?.multiPlayerEdit && (
                       <RealtimeCursors editingVersionId={editingVersionId} editingPageId={currentPageId} />
                     )}
                     {isLoading && (

@@ -4,6 +4,7 @@ import config from 'config';
 import { RoomProvider } from '@y-presence/react';
 import Spinner from '@/_ui/Spinner';
 import { Editor } from '@/Editor';
+import { useEditorStore } from '@/_stores/editorStore';
 const Y = require('yjs');
 const psl = require('psl');
 const { WebsocketProvider } = require('y-websocket');
@@ -26,6 +27,8 @@ const getWebsocketUrl = () => {
 };
 
 export const RealtimeEditor = (props) => {
+  const { multiPlayerEdit = false } = useEditorStore.getState().featureAccess;
+
   const appId = props.id;
   const [provider, setProvider] = React.useState();
 
@@ -35,7 +38,10 @@ export const RealtimeEditor = (props) => {
     document.cookie = domain ? `domain=.${domain}; path=/` : `path=/`;
     document.cookie = domain ? `app_id=${appId}; domain=.${domain}; path=/` : `app_id=${appId}; path=/`;
     document.cookie = `app_id=${appId}; domain=.${domain}; path=/`;
-    setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
+
+    if (multiPlayerEdit) {
+      setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
 
@@ -50,8 +56,6 @@ export const RealtimeEditor = (props) => {
     () => provider.disconnect();
   }, [provider]);
 
-  if (!provider) return <Spinner />;
-
   const initialPresence = {
     firstName: '',
     lastName: '',
@@ -62,6 +66,10 @@ export const RealtimeEditor = (props) => {
     y: 0,
     color: '',
   };
+
+  if (!multiPlayerEdit || !provider) {
+    return <Editor {...props} />;
+  }
 
   return (
     <RoomProvider awareness={provider.awareness} initialPresence={initialPresence}>
