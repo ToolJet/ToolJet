@@ -86,6 +86,17 @@ const TableForm = ({
     onEdit && onEdit();
   };
 
+  const isRequiredFieldsExistForCreateTableOperation = (columnDetails) => {
+    if (
+      !columnDetails.column_name ||
+      !columnDetails.data_type ||
+      isEmpty(columnDetails?.column_name.trim()) ||
+      isEmpty(columnDetails?.data_type)
+    )
+      return false;
+    return true;
+  };
+
   return (
     <div className="drawer-card-wrapper">
       <div className="card-header">
@@ -131,7 +142,10 @@ const TableForm = ({
         onClose={onClose}
         onEdit={handleEdit}
         onCreate={handleCreate}
-        shouldDisableCreateBtn={isEmpty(tableName)}
+        shouldDisableCreateBtn={
+          isEmpty(tableName) ||
+          (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
+        }
       />
     </div>
   );

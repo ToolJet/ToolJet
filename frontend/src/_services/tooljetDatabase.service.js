@@ -30,12 +30,15 @@ function createRow(headers, tableId, data) {
   return tooljetAdapter.post(`/tooljet-db/proxy/${tableId}`, data, headers);
 }
 
-function createColumn(organizationId, tableId, columnName, dataType, defaultValue) {
+function createColumn(organizationId, tableId, columnName, dataType, defaultValue, isNotNull) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/column`, {
     column: {
       column_name: columnName,
       data_type: dataType,
       column_default: defaultValue,
+      constraints_type: {
+        is_not_null: isNotNull,
+      },
     },
   });
 }

@@ -16,6 +16,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
   const [dataType, setDataType] = useState();
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
+  const [isNotNull, setIsNotNull] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
 
@@ -98,7 +99,8 @@ const ColumnForm = ({ onCreate, onClose }) => {
       selectedTable.table_name,
       columnName,
       dataType?.value,
-      defaultValue
+      defaultValue,
+      isNotNull
     );
     setFetching(false);
     if (error) {
@@ -162,8 +164,34 @@ const ColumnForm = ({ onCreate, onClose }) => {
             disabled={dataType === 'serial'}
           />
         </div>
+
+        <div className="row mb-3">
+          <div className="col-1">
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={isNotNull}
+                onChange={(e) => {
+                  setIsNotNull(e.target.checked);
+                }}
+              />
+            </label>
+          </div>
+          <div className="col d-flex flex-column">
+            <p className="m-0 p-0 fw-500">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
+            <p className="fw-400 secondary-text">
+              {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
+            </p>
+          </div>
+        </div>
       </div>
-      <DrawerFooter fetching={fetching} onClose={onClose} onCreate={handleCreate} />
+      <DrawerFooter
+        fetching={fetching}
+        onClose={onClose}
+        onCreate={handleCreate}
+        shouldDisableCreateBtn={isEmpty(columnName) || isEmpty(dataType)}
+      />
     </div>
   );
 };
