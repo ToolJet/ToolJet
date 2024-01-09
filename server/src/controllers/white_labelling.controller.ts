@@ -1,6 +1,5 @@
 import { Controller, UseGuards, Body, Put, Get, Query, Param } from '@nestjs/common';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
-import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { WhiteLabellingService } from '@services/white_labelling.service';
 import { UpdateWhiteLabellingDto } from '@dto/update_white_labelling.dto';
 import { LicenseService } from '@services/license.service';
@@ -14,6 +13,9 @@ import {
 import { NotFoundException } from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { EntityManager } from 'typeorm';
+import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
+import { AppAbility } from 'src/modules/casl/casl-ability.factory';
+import { User as UserEntity } from 'src/entities/user.entity';
 
 @Controller('white-labelling')
 export class WhiteLabellingController {
@@ -87,7 +89,8 @@ export class WhiteLabellingController {
     return formattedSettings;
   }
 
-  @UseGuards(JwtAuthGuard, SuperAdminGuard, WhiteLabellingGuard)
+  @UseGuards(JwtAuthGuard, WhiteLabellingGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
   @Put('/:organizationId')
   async updateSettings(
     @Param('organizationId') organizationId: string,
