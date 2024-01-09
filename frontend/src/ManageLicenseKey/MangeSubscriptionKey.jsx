@@ -18,8 +18,8 @@ import ChatwootIntegration from '@/_components/ChatwootIntegration';
 
 function ManageSubscriptionKey({ darkMode }) {
   const { t } = useTranslation();
-  const [selectedTab, setSelectedTab] = useState('subscriptionKey');
-  const [sidebarNavs, setSidebarNavs] = useState(['Subscription key']);
+  const [selectedTab, setSelectedTab] = useState('upgradePlan');
+  const [sidebarNavs, setSidebarNavs] = useState(['Upgrade plan']);
   const [featureAccess, setFeatureAccess] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const { load_app, current_organization_id } = authenticationService.currentSessionValue;
@@ -68,7 +68,9 @@ function ManageSubscriptionKey({ darkMode }) {
 
   useEffect(() => {
     fetchFeatureAccess();
-    if ((load_app && paymentStatus) || currentTab) {
+    if (currentTab === 'subscriptionKey') {
+      setSelectedTab(currentTab);
+    } else if ((load_app && paymentStatus) || currentTab) {
       switch (true) {
         case paymentStatus === 'failure':
           toast.error('Plan could not be upgraded. Please try again!', {
@@ -100,7 +102,7 @@ function ManageSubscriptionKey({ darkMode }) {
     setIsLoading(true);
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess(data);
-      setSidebarNavs(['Subscription key', 'Limits', 'Access', 'Upgrade plan']);
+      setSidebarNavs(['Upgrade plan', 'Limits', 'Access', 'Subscription key']);
       setIsLoading(false);
     });
   };

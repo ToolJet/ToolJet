@@ -49,7 +49,7 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
       .then(() => {
         setLoading(false);
         setIsLicenseUpdated(true);
-        window.location.reload();
+        window.location = `/${workspaceId}/settings/subscription?currentTab=subscriptionKey`;
       })
       .catch(({ error }) => {
         setLoading(false);
