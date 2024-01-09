@@ -7,8 +7,42 @@ import DragContainerNested from './DragContainerNested';
 import _, { isEmpty } from 'lodash';
 import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
-import { useGridStoreActions, useDragTarget, useNoOfGrid } from '@/_stores/gridStore';
+import { useGridStoreActions, useDragTarget, useNoOfGrid, useGridStore } from '@/_stores/gridStore';
 const NO_OF_GRIDS = 43;
+
+const DimensionViewable = {
+  name: 'dimensionViewable',
+  props: [],
+  events: [],
+  render(moveable) {
+    const rect = moveable.getRect();
+
+    return (
+      <div
+        className={'multiple-components-config-handle'}
+        onMouseEnter={() => {
+          useGridStore.getState().actions.setIsGroundHandleHoverd(true);
+        }}
+        // onMouseUp={() => {
+        //   useGridStore.getState().actions.setIsGroundHandleHoverd(false);
+        // }}
+      >
+        <span className="badge handle-content" id="multiple-components-config-handle" style={{ background: '#4d72fa' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img
+              style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
+              src="assets/images/icons/settings.svg"
+              width="12"
+              height="12"
+              draggable="false"
+            />
+            <span>components</span>
+          </div>
+        </span>
+      </div>
+    );
+  },
+};
 
 const MouseCustomAble = {
   name: 'mouseTest',
@@ -239,6 +273,8 @@ export default function DragContainer({
       : '.widget-target'
   );
 
+  console.log('selectedComponents.length--- ', selectedComponents.length);
+
   return (
     <div className="root">
       <div className="container-fluid rm-container p-0">
@@ -267,10 +303,17 @@ export default function DragContainer({
         {mode === 'edit' && (
           <>
             <Moveable
+              dragTargetSelf={true}
+              dragTarget={
+                useGridStore.getState().isGroundHandleHoverd
+                  ? document.getElementById('multiple-components-config-handle')
+                  : undefined
+              }
               ref={moveableRef}
-              ables={[MouseCustomAble]}
+              ables={[MouseCustomAble, DimensionViewable]}
               props={{
-                mouseTest: true,
+                mouseTest: false,
+                dimensionViewable: true,
               }}
               flushSync={flushSync}
               target={
@@ -400,6 +443,7 @@ export default function DragContainer({
                 }
               }}
               onResizeStart={(e) => {
+                console.log('heree--- onResizeStart');
                 setResizingComponentId(e.target.id);
                 setIsResizing(true);
                 e.setMin([gridWidth, 10]);
@@ -409,12 +453,14 @@ export default function DragContainer({
                 }
               }}
               onResizeGroupStart={(e) => {
+                console.log('heree--- onResizeGroupStart');
                 if (currentLayout === 'mobile' && autoComputeLayout) {
                   turnOffAutoLayout();
                   return false;
                 }
               }}
               onResizeGroup={({ events }) => {
+                console.log('heree--- onResizeGroup');
                 const newBoxs = [];
                 events.forEach((ev) => {
                   ev.target.style.width = `${ev.width}px`;
@@ -430,6 +476,7 @@ export default function DragContainer({
                 });
                 onResizeStop(newBoxs);
               }}
+              onResizeGroupEnd={({ events }) => console.log('heree--- onResizeGroupEnd')}
               checkInput
               onDragStart={(e) => {
                 console.log('On-drag start => ', e?.moveable?.getControlBoxElement());
@@ -558,19 +605,33 @@ export default function DragContainer({
                 console.log('draggedOverElemId parent', draggedOverElemId, parent);
               }}
               onDragGroup={({ events }) => {
-                onDrag(
-                  events.map((ev) => ({
-                    id: ev.target.id,
-                    x: ev.translate[0],
-                    y: ev.translate[1],
-                  }))
-                );
+                events.forEach((ev) => {
+                  ev.target.style.transform = ev.transform;
+                });
+                // onDrag(
+                //   events.map((ev) => ({
+                //     id: ev.target.id,
+                //     x: ev.translate[0],
+                //     y: ev.translate[1],
+                //   }))
+                // );
               }}
               onDragGroupStart={() => {
                 if (currentLayout === 'mobile' && autoComputeLayout) {
                   turnOffAutoLayout();
                   return false;
                 }
+              }}
+              onDragGroupEnd={(e) => {
+                const { events } = e;
+                useGridStore.getState().actions.setIsGroundHandleHoverd(false);
+                onDrag(
+                  events.map((ev) => ({
+                    id: ev.target.id,
+                    x: ev.lastEvent.translate[0],
+                    y: ev.lastEvent.translate[1],
+                  }))
+                );
               }}
               //snap settgins
               snappable={true}
@@ -614,14 +675,18 @@ export default function DragContainer({
                   selectedComponents,
                   groupedTargets1.length ? groupedTargets1 : `.target-${i.parent}`
                 );
+
                 return (
                   <Moveable
+                    dragTargetSelf={true}
+                    dragTarget={document.getElementById('multiple-components-config-handle')}
                     flushSync={flushSync}
                     key={i.parent}
                     ref={(el) => (childMoveableRefs.current[i.parent] = el)}
-                    ables={[MouseCustomAble]}
+                    ables={[DimensionViewable]}
                     props={{
                       mouseTest: true,
+                      dimensionViewable: selectedComponents.length > 2,
                     }}
                     target={groupedTargets1.length ? groupedTargets1 : `.target-${i.parent}`}
                     draggable={true}
