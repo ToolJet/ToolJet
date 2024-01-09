@@ -2,10 +2,18 @@ export const postgreSqlText = {
   labelDataSources: "Datasources",
   labelAddDataSource: "+ add data source",
 
-  allDataSources: "All data sources (43)",
-  allDatabase: "Databases (19)",
+  allDataSources: () => {
+    return process.env.NODE_ENV === "development"
+      ? "All data sources (41)"
+      : "All data sources (43)";
+  },
+  allDatabase: () => {
+    return process.env.NODE_ENV === "development"
+      ? "Databases (17)"
+      : "Databases (19)";
+  },
   allApis: "APIs (20)",
-  allCloudStorage: "Cloud Storage (4)",
+  allCloudStorage: "Cloud Storages (4)",
 
   postgreSQL: "PostgreSQL",
   labelHost: "Host",

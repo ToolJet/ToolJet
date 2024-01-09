@@ -92,15 +92,15 @@ export const sanitizeHeaders = (sourceOptions: any, queryOptions: any, hasDataSo
   return headers;
 };
 
-export const sanitizeSearchParams = (sourceOptions: any, queryOptions: any, hasDataSource = true): object => {
+export const sanitizeSearchParams = (sourceOptions: any, queryOptions: any, hasDataSource = true): Array<string> => {
   const _urlParams = (queryOptions.url_params || []).filter((o) => {
     return o.some((e) => !isEmpty(e));
   });
 
-  if (!hasDataSource) return Object.fromEntries(_urlParams);
+  if (!hasDataSource) return _urlParams;
 
   const urlParams = _urlParams.concat(sourceOptions.url_params || []);
-  return Object.fromEntries(urlParams);
+  return urlParams;
 };
 
 export const fetchHttpsCertsForCustomCA = () => {

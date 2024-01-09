@@ -1,9 +1,7 @@
 ---
 id: access-cellvalue-rowdata
-title: Dynamically change cell colors in table
+title: Dynamically Change Cell Colors in Table
 ---
-
-# Dynamically Change Cell Colors In Table Component
 
 This guide shows how to change the text color and background color of certain cells in a Table component based on specific conditions.
 
