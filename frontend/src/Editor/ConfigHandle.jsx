@@ -21,7 +21,7 @@ export const ConfigHandle = function ConfigHandle({
       ref={dragRef}
       style={{
         top: position === 'top' ? '-20px' : widgetTop + widgetHeight - (widgetTop < 10 ? 0 : 10),
-        visibility: showHandle ? 'visible' : 'hidden',
+        visibility: showHandle && !isMultipleComponentsSelected ? 'visible' : 'hidden',
         left: '-1px',
       }}
     >

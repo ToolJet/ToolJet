@@ -9,6 +9,8 @@ const initialState = {
   resizingComponentId: null,
   draggingComponentId: null,
   dragTarget: null,
+  isGroundHandleHoverd: false,
+  idGroupDragged: false,
 };
 
 export const useGridStore = create(
@@ -22,6 +24,8 @@ export const useGridStore = create(
         setResizingComponentId: (id) => set({ resizingComponentId: id }),
         setDraggingComponentId: (id) => set({ draggingComponentId: id }),
         setDragTarget: (dragTarget) => set({ dragTarget }),
+        setIsGroundHandleHoverd: (isGroundHandleHoverd) => set({ isGroundHandleHoverd }),
+        setIdGroupDragged: (idGroupDragged) => set({ idGroupDragged }),
       },
     }),
     { name: 'Grid Store' }
