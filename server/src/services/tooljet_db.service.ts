@@ -98,7 +98,7 @@ export class TooljetDbService {
       JSON_BUILD_OBJECT(
           'is_not_null',
           CASE WHEN c.is_nullable = 'NO' THEN true ELSE false END,
-          'is_primary',
+          'is_primary_key',
           CASE WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN true ELSE false END
       ) AS constraints_type,
       CASE WHEN pk.COLUMN_NAME IS NOT NULL THEN 'PRIMARY KEY' ELSE '' END AS KeyType

@@ -7,9 +7,10 @@ import { isVersionGreaterThanOrEqual } from './utils.helper';
 const transformationsByVersion = {
   '2.27.4': (dto: ImportTooljetDatabaseDto) => {
     const transformedColumns = dto.schema.columns.map((col) => {
-      if (col.constraint_type !== 'PRIMARY KEY') return col;
-
-      col.constraints_type = { is_primary_key: true };
+      col.constraints_type = {
+        is_primary_key: col.constraint_type !== 'PRIMARY KEY',
+        is_not_null: col.is_nullable === 'NO',
+      };
       return col;
     });
     dto.schema.columns = transformedColumns;

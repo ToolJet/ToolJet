@@ -20,7 +20,7 @@ const RowForm = ({ onCreate, onClose }) => {
       ? columns.map((item) => {
           if (item.column_default !== null) {
             return { value: '', checkboxValue: false, disabled: false };
-          } else if (item.is_nullable === 'YES') {
+          } else if (item.constraints_type.is_not_null === false) {
             return { value: '', checkboxValue: false, disabled: false };
           }
           return { value: '', checkboxValue: false, disabled: false };
@@ -50,9 +50,9 @@ const RowForm = ({ onCreate, onClose }) => {
       newInputValues[index] = { value: defaultValue, checkboxValue: defaultValue, disabled: true };
     } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
       newInputValues[index] = { value: defaultValue, checkboxValue: actualDefaultVal, disabled: true };
-    } else if (nullValue === 'YES' && tabData === 'Null' && dataType !== 'boolean') {
+    } else if (nullValue && tabData === 'Null' && dataType !== 'boolean') {
       newInputValues[index] = { value: 'Null', checkboxValue: false, disabled: true };
-    } else if (nullValue === 'YES' && tabData === 'Null' && dataType === 'boolean') {
+    } else if (nullValue && tabData === 'Null' && dataType === 'boolean') {
       newInputValues[index] = { value: 'Null', checkboxValue: false, disabled: true };
     } else {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false };
@@ -185,7 +185,9 @@ const RowForm = ({ onCreate, onClose }) => {
       </div>
       <div className="card-body tj-app-input">
         {Array.isArray(columns) &&
-          columns?.map(({ Header, accessor, dataType, isPrimaryKey, column_default, is_nullable }, index) => {
+          columns?.map(({ Header, accessor, dataType, constraints_type, column_default }, index) => {
+            const isPrimaryKey = constraints_type.is_primary_key;
+            const isNullable = !constraints_type.is_not_null;
             const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);
             return (
               <div className="mb-3 " key={index}>
@@ -207,9 +209,9 @@ const RowForm = ({ onCreate, onClose }) => {
                   </div>
                   {index > 0 && (
                     <div className="row-tabs d-flex align-items-center justify-content-start bg-red gap-2">
-                      {is_nullable === 'YES' && (
+                      {isNullable && (
                         <div
-                          onClick={() => handleTabClick(index, 'Null', column_default, is_nullable, accessor, dataType)}
+                          onClick={() => handleTabClick(index, 'Null', column_default, isNullable, accessor, dataType)}
                           style={{
                             backgroundColor: activeTab[index] === 'Null' ? 'white' : 'transparent',
                             color: activeTab[index] === 'Null' ? '#3E63DD' : '#687076',
@@ -222,7 +224,7 @@ const RowForm = ({ onCreate, onClose }) => {
                       {column_default !== null && (
                         <div
                           onClick={() =>
-                            handleTabClick(index, 'Default', column_default, is_nullable, accessor, dataType)
+                            handleTabClick(index, 'Default', column_default, isNullable, accessor, dataType)
                           }
                           style={{
                             backgroundColor: activeTab[index] === 'Default' ? 'white' : 'transparent',
@@ -234,7 +236,7 @@ const RowForm = ({ onCreate, onClose }) => {
                         </div>
                       )}
                       <div
-                        onClick={() => handleTabClick(index, 'Custom', column_default, is_nullable, accessor, dataType)}
+                        onClick={() => handleTabClick(index, 'Custom', column_default, isNullable, accessor, dataType)}
                         style={{
                           backgroundColor: activeTab[index] === 'Custom' ? 'white' : 'transparent',
                           color: activeTab[index] === 'Custom' ? '#3E63DD' : '#687076',
