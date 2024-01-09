@@ -124,17 +124,8 @@ export function LicenseBannerCloud({
       case isLicenseValid && licenseType === 'trial' && type === 'trial': {
         return `Your ${daysLeft}-day trial has started!`;
       }
-      case isExpiringToday && (type === 'enterprise' || type === 'business'): {
-        return `Your subscription expires today!`;
-      }
       case isExpired && (type === 'enterprise' || type === 'business'):
         return 'Your subscription has expired!';
-      case isLicenseValid &&
-        (licenseType === 'enterprise' || licenseType === 'business') &&
-        daysLeft <= 14 &&
-        (type === 'enterprise' || type === 'business'): {
-        return `Your subscription expires in ${daysLeft} days!`;
-      }
       case type == 'tables' && !canAddUnlimited && (100 > percentage >= 90 || (total <= 10 && current === total - 1)):
         return `You're reaching your limit for number of ${type} - ${current}/${total}`;
       case type == 'tables' && !canAddUnlimited && percentage >= 100:
