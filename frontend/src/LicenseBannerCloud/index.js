@@ -265,6 +265,7 @@ export function LicenseBannerCloud({
           onClick={currentUser?.admin && handleClick}
           className={`upgrade-link ${currentUser?.admin ? 'cursor-pointer' : ''}`}
           style={{ fontWeight: '500' }}
+          data-cy="paid-feature-button"
         >
           {buttonText}
         </span>
@@ -283,7 +284,7 @@ export function LicenseBannerCloud({
   const modalBody = (
     <div className="form-group my-3">
       <div className="d-flex justify-content-between form-control align-items-center">
-        <p className="m-0" id="support-email">
+        <p className="m-0" id="support-email" data-cy="support-email">
           hello@tooljet.com
         </p>
         <SolidIcon name="copy" width="16" onClick={() => copyFunction('support-email')} />
@@ -314,7 +315,7 @@ export function LicenseBannerCloud({
       <div className="message-wrapper">
         <div className={`heading ${warningText?.parentClassName}`}>
           {warningText && <div className={warningText?.className}>{warningText?.text}</div>}
-          <div style={{ fontWeight: size === 'large' ? 500 : 400 }}>
+          <div style={{ fontWeight: size === 'large' ? 500 : 400 }} data-cy="warning-text-header">
             {applyBoldFormatting(message)}{' '}
             {(size === 'small' || size === 'xsmall') && (
               <div className={`cursor-pointer ${className} ${size === 'xsmall' && 'd-inline'}`}>
@@ -334,7 +335,11 @@ export function LicenseBannerCloud({
               </div>
             )}
           </div>
-          {size === 'large' && <span style={{ fontWeight: 400 }}>{generateInfo() || commonMessage}</span>}
+          {size === 'large' && (
+            <span style={{ fontWeight: 400 }} data-cy="warning-info-text">
+              {generateInfo() || commonMessage}
+            </span>
+          )}
           {type === licenseType && daysLeft <= 14 && !isExpired && (
             <ProgressBar
               parentStyles={{ width: size === 'xsmall' ? '100%' : '50%' }}
@@ -346,7 +351,7 @@ export function LicenseBannerCloud({
         </div>
       </div>
       {size === 'large' && currentUser.admin && (
-        <button onClick={handleClick} className="tj-base-btn upgrade-btn">
+        <button onClick={handleClick} className="tj-base-btn upgrade-btn" data-cy="upgrade-link">
           {buttonText}
         </button>
       )}

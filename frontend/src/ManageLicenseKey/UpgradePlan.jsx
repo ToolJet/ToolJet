@@ -126,8 +126,12 @@ export default function UpgradePlan({ current_organization_id }) {
         <div className="requirements-form">
           <div className="input-container">
             <div className="label-container">
-              <label className="tj-text-xsm tj-text font-weight-500">No. of builders</label>
-              <div className="price tj-text-sm">${costing.builderValue}/month</div>
+              <label className="tj-text-xsm tj-text font-weight-500" data-cy="no-of-builder-label">
+                No. of builders
+              </label>
+              <div className="price tj-text-sm" data-cy="monthly-builder-cost-label">
+                ${costing.builderValue}/month
+              </div>
             </div>
             <div className="input-wrapper">
               <input
@@ -136,13 +140,18 @@ export default function UpgradePlan({ current_organization_id }) {
                 onChange={(e) => updatePlanDetailsForm('editorsCount', e.target.value)}
                 className="form-control"
                 value={editorsCount}
+                data-cy="no-of-builder-input"
               />
             </div>
           </div>
           <div className="input-container">
             <div className="label-container">
-              <label className="tj-text-xsm tj-text font-weight-500">No. of end users</label>
-              <div className="price tj-text-sm">${costing.viewerValue}/month</div>
+              <label className="tj-text-xsm tj-text font-weight-500" data-cy="no-of-end-user-label">
+                No. of end users
+              </label>
+              <div className="price tj-text-sm" data-cy="monthly-end-user-cost-label">
+                ${costing.viewerValue}/month
+              </div>
             </div>
             <div className="input-wrapper">
               <input
@@ -151,12 +160,15 @@ export default function UpgradePlan({ current_organization_id }) {
                 onChange={(e) => updatePlanDetailsForm('viewersCount', e.target.value)}
                 className="form-control"
                 value={viewersCount}
+                data-cy="no-of-end-user-input"
               />
             </div>
           </div>
           <div className="input-container">
             <div className="label-container">
-              <label className="tj-text-xsm tj-text font-weight-500">Promo code</label>
+              <label className="tj-text-xsm tj-text font-weight-500" data-cy="promo-code-label">
+                Promo code
+              </label>
             </div>
             <div className="input-wrapper">
               <input
@@ -166,6 +178,7 @@ export default function UpgradePlan({ current_organization_id }) {
                 type="text"
                 value={promoCode}
                 className="form-control"
+                data-cy="promo-code-input"
               />
             </div>
           </div>
@@ -180,8 +193,9 @@ export default function UpgradePlan({ current_organization_id }) {
                 type="checkbox"
                 checked={subscriptionType === 'yearly'}
                 onChange={(e) => updatePlanDetailsForm('subscriptionType', e.target.checked ? 'yearly' : 'monthly')}
+                data-cy="offer-toggle"
               />
-              <span className="tj-text-sm font-weight-500">
+              <span className="tj-text-sm font-weight-500" data-cy="offer-toggle-label">
                 Pay {subscriptionType}{' '}
                 <span
                   className={cx('text-muted', { ' text-striked': subscriptionType !== 'yearly' })}
@@ -192,20 +206,23 @@ export default function UpgradePlan({ current_organization_id }) {
         </div>
 
         <div className="total-amount">
-          <div className="text-muted tj-text-sm font-weight-500">Total amount</div>
-          <div className="font-weight-500 text-primary">
+          <div className="text-muted tj-text-sm font-weight-500" data-cy="total-amount-label">
+            Total amount
+          </div>
+          <div className="font-weight-500 text-primary" data-cy="total-cost-value">
             ${costing.totalValue}/
             <span className="text-muted font-weight-500">{subscriptionType === 'yearly' ? 'year' : 'month'}</span>
           </div>
         </div>
         <div className="terms-info">
-          <div className="tj-text-xsm font-weight-400 mt-1">
+          <div className="tj-text-xsm font-weight-400 mt-1" data-cy="terms-helper-text">
             By upgrading, you agree to the{' '}
             <a
               href="https://www.tooljet.com/terms"
               target="_blank"
               className="link-btn cursor-pointer"
               rel="noreferrer"
+              data-cy="terms-link"
             >
               terms and conditions
             </a>
@@ -214,7 +231,7 @@ export default function UpgradePlan({ current_organization_id }) {
             <div className="info-box">
               <SolidIcon name="informationPrimary" />
             </div>
-            <div className="tailored-plan text-primary">
+            <div className="tailored-plan text-primary" data-cy="contact-us-helper-text">
               Want a custom plan tailored to your needs? Contact us at{' '}
               <a target="_blank" href="mailto:hello@tooljet.com" className="link-btn font-weight-500" rel="noreferrer">
                 hello@tooljet.com
@@ -230,6 +247,7 @@ export default function UpgradePlan({ current_organization_id }) {
           onClick={upgradePlan}
           variant="primary"
           className="sso-footer-save-btn"
+          data-cy="update-button"
         >
           Upgrade
         </ButtonSolid>

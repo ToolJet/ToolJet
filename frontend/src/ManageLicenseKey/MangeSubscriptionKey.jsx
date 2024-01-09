@@ -169,7 +169,9 @@ function ManageSubscriptionKey({ darkMode }) {
                 selectedTab === 'limits' && 'border-none'
               }`}
             >
-              <div>{headerName(selectedTab)}</div>
+              <div data-cy={`${String(headerName(selectedTab)).toLowerCase().replace(/\s+/g, '-')}-header}`}>
+                {headerName(selectedTab)}
+              </div>
               {!isLoading ? (
                 expiryDate && (
                   <div className={`status-container ${licenseExpiryStatus.className}`}>{licenseExpiryStatus.text}</div>

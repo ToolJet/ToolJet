@@ -79,7 +79,9 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
     <div className="general-wrapper">
       <div className="metrics-wrapper">
         <div className="col-md-12">
-          <label className="form-label mt-3">Subscription key</label>
+          <label className="form-label mt-3" data-cy="subscription-key-label">
+            Subscription key
+          </label>
           <div style={{ position: 'relative' }}>
             <Textarea
               placeholder="Enter subscription key"
@@ -88,8 +90,11 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
               value={licenseKey}
               onChange={(e) => optionChanged(e.target.value)}
               disabled={loading}
+              data-cy="subscription-key-text-area"
             />
-            <div className="tj-text-xsm mt-1">This subscription is configured for the current workspace only</div>
+            <div className="tj-text-xsm mt-1" data-cy="subscription-key-helper-text">
+              This subscription is configured for the current workspace only
+            </div>
           </div>
         </div>
         <ButtonSolid
@@ -99,6 +104,7 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
           variant="primary"
           fill="#fff"
           className="mt-3"
+          data-cy="update-button"
         >
           Update
         </ButtonSolid>
