@@ -15,6 +15,7 @@ import toast from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App';
 import posthog from 'posthog-js';
 import ChatwootIntegration from '@/_components/ChatwootIntegration';
+import { PLANS } from '@/_helpers/constants';
 
 function ManageSubscriptionKey({ darkMode }) {
   const { t } = useTranslation();
@@ -115,7 +116,7 @@ function ManageSubscriptionKey({ darkMode }) {
           text: 'Subscription Expired',
           className: 'expiry-status',
         };
-      case daysLeft < 14:
+      case ![PLANS.BUSINESS, PLANS.ENTERPRISE].includes(featureAccess?.licenseStatus?.licenseType) && daysLeft < 14:
         return {
           text: `Expiring in ${daysLeft} day(s)`,
           className: 'expiry-status',
