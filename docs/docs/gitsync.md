@@ -33,6 +33,7 @@ Facilitating the movement of applications across different ToolJet deployments (
 :::caution
 - ToolJet support git repo managers like GitHub, GitLab, Bitbucket, AWS CodeCommit, and Azure Repos.
 - Only Admins have the permission to configure the GitSync feature on workspace level.
+- The default branch name for the git repository should be `master`.
 :::
 
 ### Step 1: Create a new repository on GitHub
