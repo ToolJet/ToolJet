@@ -69,3 +69,8 @@ export const ERROR_MESSAGES = {
 export const TOOLTIP_MESSAGES = {
   SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released',
 };
+
+export const PLANS = {
+  BUSINESS: 'business',
+  ENTERPRISE: 'enterprise',
+};
