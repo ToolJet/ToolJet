@@ -49,8 +49,7 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
                       style={{
                         minWidth: '28px',
                         width: '28px',
-                        height: '28px',
-                        padding: '7px',
+                        height: '23px',
                         borderRadius: '6px',
                         display: 'flex',
                         justifyContent: 'center',
@@ -79,8 +78,7 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
                     style={{
                       minWidth: '28px',
                       width: '28px',
-                      height: '28px',
-                      padding: '7px',
+                      height: '23px',
                       borderRadius: '6px',
                       display: 'flex',
                       justifyContent: 'center',
