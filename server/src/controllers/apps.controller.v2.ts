@@ -183,7 +183,6 @@ export class AppsControllerV2 {
       appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
     }
 
-
     delete appCurrentEditingVersion['app'];
 
     const appData = {
