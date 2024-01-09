@@ -15,7 +15,7 @@ import { isEmpty } from 'lodash';
 import { tooljetDatabaseService } from '@/_services';
 import { pluralize } from '@/_helpers/utils';
 
-const TooljetDatabasePage = ({ totalTables }) => {
+const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
   const {
     columns,
     selectedTable,
@@ -163,8 +163,8 @@ const TooljetDatabasePage = ({ totalTables }) => {
 
   return (
     <div className="row gx-0">
-      <Sidebar />
-      <div className={cx('col animation-fade database-page-content-wrap')}>
+      <Sidebar collapseSidebar={collapseSidebar} />
+      <div className={cx('col animation-fade database-page-content-wrap vh-100')}>
         {totalTables === 0 && <EmptyState />}
         {!isEmpty(selectedTable) && (
           <>

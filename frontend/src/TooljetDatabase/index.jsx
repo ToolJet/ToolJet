@@ -53,6 +53,11 @@ export const TooljetDatabase = (props) => {
 
   const [queryFilters, setQueryFilters] = useState({});
   const [sortFilters, setSortFilters] = useState({});
+  const [collapseSidebar, setCollapseSidebar] = useState(false);
+
+  const toggleCollapsibleSidebar = () => {
+    setCollapseSidebar(!collapseSidebar);
+  };
 
   const {
     handleBuildFilterQuery,
@@ -121,10 +126,16 @@ export const TooljetDatabase = (props) => {
   }, []);
 
   return (
-    <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
+    <Layout
+      switchDarkMode={props.switchDarkMode}
+      darkMode={props.darkMode}
+      enableCollapsibleSidebar={true}
+      collapseSidebar={collapseSidebar}
+      toggleCollapsibleSidebar={toggleCollapsibleSidebar}
+    >
       <div className="page-wrapper tooljet-database">
         <TooljetDatabaseContext.Provider value={value}>
-          <TooljetDatabasePage totalTables={tables.length || 0} />
+          <TooljetDatabasePage totalTables={tables.length || 0} collapseSidebar={collapseSidebar} />
         </TooljetDatabaseContext.Provider>
       </div>
     </Layout>

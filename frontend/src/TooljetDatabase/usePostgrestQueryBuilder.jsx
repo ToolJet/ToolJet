@@ -91,7 +91,6 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
   };
 
   const resetAll = () => {
-    console.log('resetAll');
     postgrestQueryBuilder.current.sortQuery = new PostgrestQueryBuilder();
 
     postgrestQueryBuilder.current.paginationQuery.limit(50);

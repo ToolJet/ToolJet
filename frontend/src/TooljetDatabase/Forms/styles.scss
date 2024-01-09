@@ -1,0 +1,49 @@
+.column-datatype-selector {
+  .css-zz6spl-container {
+    width: 100% !important;
+  }
+}
+
+.edit-warning-info {
+  background-color: #FFF8F7;
+  padding: 8px;
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 5px;
+  border-radius: 6px;
+  border: 1px solid #FDD8D3;
+
+  .edit-warning-icon {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .edit-warning-text {
+    color: #E54D2E;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+}
+
+.css-1fdsijx-ValueContainer {
+  padding: 2px 0px 2px 8px !important;
+}
+
+.css-1dimb5e-singleValue {
+  width: 100px !important;
+}
+
+.css-1xc3v61-indicatorContainer {
+  padding: 8px 8px 8px 0px !important;
+}
+
+.dataType-dropdown-label {
+  margin-left: 8px;
+}
+
+.dataType-dropdown-value {
+  margin-left: 8px;
+  color: var(--slate10);
+}
