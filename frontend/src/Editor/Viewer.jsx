@@ -710,7 +710,7 @@ class ViewerComponent extends React.Component {
                           window.open(url, '_blank');
                         }}
                       >
-                        Powered with
+                        Built with
                         <span className={'powered-with-tj-icon'}>
                           <TooljetLogoIcon />
                         </span>
