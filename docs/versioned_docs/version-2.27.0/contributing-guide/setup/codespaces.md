@@ -97,7 +97,7 @@ npm run build:plugins
 
 ```
 npm run --prefix server db:create
-npm run --prefix server db:mirgate
+npm run --prefix server db:migrate
 ```
 
 If at any point you need to reset the database, use this command `npm run --prefix server db:reset`
