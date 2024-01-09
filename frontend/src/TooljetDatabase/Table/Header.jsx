@@ -22,6 +22,7 @@ const Header = ({
   setIsCreateRowDrawerOpen,
   selectedRowIds,
   handleDeleteRow,
+  rows,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
@@ -213,6 +214,8 @@ const Header = ({
                         <EditRowDrawer
                           isCreateRowDrawerOpen={isEditRowDrawerOpen}
                           setIsCreateRowDrawerOpen={setIsEditRowDrawerOpen}
+                          selectedRowIds={selectedRowIds}
+                          rows={rows}
                         />
                       )}
                       {Object.keys(selectedRowIds).length > 0 && (

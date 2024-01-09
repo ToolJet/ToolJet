@@ -7,14 +7,15 @@ import Select from '@/_ui/Select';
 import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 
-const EditRowForm = ({ onEdit, onClose }) => {
+const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
   const { organizationId, selectedTable, columns, selectedTableData } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
-  const [selectedRow, setSelectedRow] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(rowIdToBeEdited);
 
   useEffect(() => {
     toast.dismiss();
   }, []);
+
   const handleOnSelect = (selectedOption) => {
     setSelectedRow(selectedOption);
   };
@@ -85,6 +86,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
             </div>
             <div className="col-auto row-edit-select-container" data-cy="select-row-dropdown">
               <Select
+                isDisabled={true}
                 useMenuPortal={false}
                 placeholder="Select a row to edit"
                 value={selectedRow}

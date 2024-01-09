@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import EditRowForm from '../../Forms/EditRowForm';
@@ -6,8 +6,24 @@ import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
-  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords } = useContext(TooljetDatabaseContext);
+const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen, selectedRowIds, rows }) => {
+  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords, columns } =
+    useContext(TooljetDatabaseContext);
+  const [rowIdToBeEdited, setRowIdToBeEdited] = useState(null);
+
+  React.useEffect(() => {
+    const selectedRows = Object.keys(selectedRowIds).map((key) => rows[key]);
+    const primaryKey = columns.find((column) => column.isPrimaryKey);
+    const deletionKeys = selectedRows.map((row) => {
+      return row.values[primaryKey.accessor];
+    });
+    if (deletionKeys.length) setRowIdToBeEdited(deletionKeys[0]);
+
+    return () => {
+      setRowIdToBeEdited(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -58,6 +74,7 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
             setIsCreateRowDrawerOpen(false);
           }}
           onClose={() => setIsCreateRowDrawerOpen(false)}
+          rowIdToBeEdited={rowIdToBeEdited}
         />
       </Drawer>
     </>

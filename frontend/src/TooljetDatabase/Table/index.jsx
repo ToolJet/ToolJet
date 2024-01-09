@@ -335,6 +335,7 @@ const Table = () => {
         setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
         selectedRowIds={selectedRowIds}
         handleDeleteRow={handleDeleteRow}
+        rows={rows}
       />
       <div
         style={{
