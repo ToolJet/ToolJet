@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import cx from 'classnames';
 import Textarea from '@/_ui/Textarea';
 import { toast } from 'react-hot-toast';
@@ -19,6 +19,7 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
   const hasKeyChanged = licenseKey !== license?.license_key;
   const [isLicenseUpdated, setIsLicenseUpdated] = useState(false);
   const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
+  const { workspaceId } = useParams();
 
   const optionChanged = (value) => {
     setLicenseKey(value);
@@ -51,7 +52,8 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
         setIsLicenseUpdated(true);
         window.location = `/${workspaceId}/settings/subscription?currentTab=subscriptionKey`;
       })
-      .catch(({ error }) => {
+      .catch((error) => {
+        console.log({ error });
         setLoading(false);
         fetchLicenseSettings();
         toast.error('Subscription key could not be updated. Please try again!', {
