@@ -3,13 +3,15 @@ id: tooljet-copilot
 title: Copilot
 ---
 
-<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+<div class='badge badge--primary heading-badge'>
+    <a href="https://www.tooljet.com/pricing" style="cursor: pointer; color: inherit; text-decoration: none;">Available on: Paid plans</a>
+</div>
 
 :::info BETA
 ToolJet Copilot is currently in private beta for **Business** and **Enterprise** users only.
 :::
 
-**ToolJet Copilot** helps you write your queries faster. It uses OpenAI to suggest queries based on your data. 
+**ToolJet Copilot** helps you write your queries faster. It uses OpenAI to suggest queries based on your data.
 
 ## Activating Copilot
 
@@ -18,8 +20,9 @@ To gain access to Copilot, all users, including administrators, can individually
 You can join the waitlist here: **https://tooljet.com/copilot**
 
 :::info
+
 - Copilot can be used by users who have **permissions to edit** the app with the copilot setup.
-:::
+  :::
 
 <div style={{textAlign: 'center'}}>
 
@@ -49,7 +52,7 @@ To prevent abuse or excessive usage of the Copilot API, rate-limiting measures a
 When generating an API key, if a workspace has 5 editors, the daily request limit will be 500 (100 requests per editor). Even if the workspace later expands to 10 editors after a week, the maximum number of requests allowed per day will still be 500.
 :::
 
-### Example: Generating a SQL statement 
+### Example: Generating a SQL statement
 
 This example demonstrates the usage of copilot by generating a SQL query to fetch the order details from a PostgreSQL database based on the key provided in the REST API data.
 
@@ -86,7 +89,11 @@ return query //the variable might be different in your generated code
 - Once the query is executed, create a new PostgreSQL query in SQL mode and use JavaScript to get the data query data dynamically:
 
 ```js
-{{queries.restapi1.data}}
+{
+  {
+    queries.restapi1.data;
+  }
+}
 ```
 
 <div style={{textAlign: 'center'}}>

@@ -3,7 +3,9 @@ id: superadmin
 title: Super Admin
 ---
 
-<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+<div class='badge badge--primary heading-badge'>
+    <a href="https://www.tooljet.com/pricing" style="cursor: pointer; color: inherit; text-decoration: none;">Available on: Paid plans</a>
+</div>
 
 A Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance. An instance can have more than one Super Admin. A Super Admin has full control over other users' workspaces and can create users, groups, and other super admins.
 
@@ -11,23 +13,23 @@ The user details entered while setting up ToolJet will have Super Admin privileg
 
 ## How is Super Admin different from Admin
 
-| Privilege | Admin | Super Admin | 
-| --------- | ----- | ----------- |
-| Manage Users in their workspace (Invite/Archive/Unarchive) | ✅ | ✅ |
-| Manage Groups in their workspace (Create Group/Add or Delete Users from groups/ Modify Group Permissions) | ✅ | ✅ |
-| Manage SSO in their workspace | ✅ | ✅ |
-| Manage Workspace Variables in their workspace | ✅ | ✅ |
-| Manage Workspace Constants in their workspace | ✅ | ✅ |
-| [Manage data sources for the user group in their workspace](/docs/data-sources/overview#permissions) | ✅ | ✅ |
-| [Access any user's personal workspace (create, edit or delete apps)](#access-any-workspace) | ❌ | ✅ |
-| [Archive Admin or any user of any workspace](#archiveunarchive-users) | ❌ | ✅ |
-| [Access any user's ToolJet database (create, edit or delete database)](#access-tooljet-db-in-any-workspace) | ❌ | ✅ |
-| [Manage any workspace's setting (Groups/SSO/Workspace constants)](#manage-workspace-setting-groupsssoworkspace-constants) | ❌ | ✅ |
-| [Manage all users from all the workspaces in the instance](#manage-all-users-in-the-instance) | ❌ | ✅ |
-| [Make any user Super Admin](#make-the-user-super-admin) | ❌ | ✅ |
-| [Restrict creation of personal workspace of users](#restrict-creation-of-personal-workspace-of-users) | ❌ | ✅ |
-| [Enable Multiplayer editing](#enable-multiplayer-editing) | ❌ | ✅ |
-| [Implement White Labelling](#white-labelling) | ❌ | ✅ |
+| Privilege                                                                                                                 | Admin | Super Admin |
+| ------------------------------------------------------------------------------------------------------------------------- | ----- | ----------- |
+| Manage Users in their workspace (Invite/Archive/Unarchive)                                                                | ✅    | ✅          |
+| Manage Groups in their workspace (Create Group/Add or Delete Users from groups/ Modify Group Permissions)                 | ✅    | ✅          |
+| Manage SSO in their workspace                                                                                             | ✅    | ✅          |
+| Manage Workspace Variables in their workspace                                                                             | ✅    | ✅          |
+| Manage Workspace Constants in their workspace                                                                             | ✅    | ✅          |
+| [Manage data sources for the user group in their workspace](/docs/data-sources/overview#permissions)                      | ✅    | ✅          |
+| [Access any user's personal workspace (create, edit or delete apps)](#access-any-workspace)                               | ❌    | ✅          |
+| [Archive Admin or any user of any workspace](#archiveunarchive-users)                                                     | ❌    | ✅          |
+| [Access any user's ToolJet database (create, edit or delete database)](#access-tooljet-db-in-any-workspace)               | ❌    | ✅          |
+| [Manage any workspace's setting (Groups/SSO/Workspace constants)](#manage-workspace-setting-groupsssoworkspace-constants) | ❌    | ✅          |
+| [Manage all users from all the workspaces in the instance](#manage-all-users-in-the-instance)                             | ❌    | ✅          |
+| [Make any user Super Admin](#make-the-user-super-admin)                                                                   | ❌    | ✅          |
+| [Restrict creation of personal workspace of users](#restrict-creation-of-personal-workspace-of-users)                     | ❌    | ✅          |
+| [Enable Multiplayer editing](#enable-multiplayer-editing)                                                                 | ❌    | ✅          |
+| [Implement White Labelling](#white-labelling)                                                                             | ❌    | ✅          |
 
 <div style={{textAlign: 'center'}}>
 
@@ -67,13 +69,14 @@ If a user is Super Admin, they just need to open the workspace in which they wan
 
 </div>
 
-###  Access ToolJet DB in any workspace
+### Access ToolJet DB in any workspace
 
 Super Admins have access to the database of any user's workspace - just like Super Admins can access any application in any workspace. They have full access to modify or create any table in the ToolJet DB of any workspace.
 
-###  Manage Workspace Settings (Groups/SSO/Workspace constants)
+### Manage Workspace Settings (Groups/SSO/Workspace constants)
 
 Super Admins have all the privileges that an Admin of a workspace have, Super Admins can:
+
 - **✅ Manage Groups**: Creating/Deleting/Updating a Group in any workspace
 - **✅ Manage SSO**: Full control over General Settings, Password login and other SSO options
 - **✅ Workspace Variables**: Adding, updating or deleting workspace variables
@@ -153,6 +156,7 @@ Manage the instance license via the **Settings** page. Super Admins have the cap
 Check out the [License](/docs/licensing) page for more details.
 
 ## White labelling
+
 This feature allows you to customize the ToolJet instance with your own branding. You can change the logo, favicon, and the name of the instance.
 
 Check out the [White labelling](/docs/enterprise/white-label/) page for more details.

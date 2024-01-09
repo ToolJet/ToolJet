@@ -3,10 +3,11 @@ id: setup
 title: Setup
 ---
 
-<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+<div class='badge badge--primary heading-badge'>
+    <a href="https://www.tooljet.com/pricing" style="cursor: pointer; color: inherit; text-decoration: none;">Available on: Paid plans</a>
+</div>
 
 # Configure OpenId Connect Single Sign-on
-
 
 - Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
   <div style={{textAlign: 'center'}}>
@@ -18,14 +19,14 @@ title: Setup
 - Select `SSO` from workspace options
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/okta/sso2.png" alt="Okta: SSO" width="500"/> 
+  <img className="screenshot-full" src="/img/sso/okta/sso2.png" alt="Okta: SSO" width="500"/>
 
   </div>
 
 - Select `OpenId Connect`.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/openid/openid.png" alt="Okta: SSO" /> 
+  <img className="screenshot-full" src="/img/sso/openid/openid.png" alt="Okta: SSO" />
 
   </div>
 
@@ -39,6 +40,6 @@ The exposed user info can be dynamically accessed throughout the apps using JS *
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/sso/openid/ssouserinfo.png" alt="ssouserinfo" /> 
+<img className="screenshot-full" src="/img/sso/openid/ssouserinfo.png" alt="ssouserinfo" />
 
 </div>
