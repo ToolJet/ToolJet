@@ -167,18 +167,23 @@ const EditRowForm = ({ onEdit, onClose }) => {
       case 'serial':
       case 'double precision':
         return (
-          <input
-            //defaultValue={currentValue}
-            value={inputValues[index]?.value}
-            type="text"
-            disabled={inputValues[index]?.disabled}
-            onChange={(e) => handleInputChange(index, e.target.value, columnName)}
-            placeholder={'Enter a value'}
-            className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
-            data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
-            autoComplete="off"
-            // onFocus={onFocused}
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              //defaultValue={currentValue}
+              value={inputValues[index]?.value}
+              type="text"
+              disabled={inputValues[index]?.disabled}
+              onChange={(e) => handleInputChange(index, e.target.value, columnName)}
+              placeholder={'Enter a value'}
+              className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
+              data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
+              autoComplete="off"
+              // onFocus={onFocused}
+            />
+            {inputValues[index]?.value === 'Null' && (
+              <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
+            )}
+          </div>
         );
 
       case 'boolean':
@@ -219,7 +224,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
       </div>
       <div className="card-body">
         <div>
-          <div className="mb-3">
+          <div className="createRow-idContainer">
             <div
               className="form-label d-flex align-items-center justify-content-start mb-2"
               data-cy={`${primaryColumn}-column-name-label`}
@@ -260,7 +265,11 @@ const EditRowForm = ({ onEdit, onClose }) => {
                       </div>
                     </div>
                     {index > 0 && (
-                      <div className="row-tabs d-flex align-items-center justify-content-start bg-red gap-2">
+                      <div
+                        className={`${
+                          darkMode ? 'row-tabs-dark' : 'row-tabs'
+                        } d-flex align-items-center justify-content-start gap-2`}
+                      >
                         {is_nullable === 'YES' && (
                           <div
                             onClick={() =>
@@ -275,8 +284,18 @@ const EditRowForm = ({ onEdit, onClose }) => {
                               )
                             }
                             style={{
-                              backgroundColor: activeTab[index] === 'Null' ? 'white' : 'transparent',
-                              color: activeTab[index] === 'Null' ? '#3E63DD' : '#687076',
+                              backgroundColor:
+                                activeTab[index] === 'Null' && !darkMode
+                                  ? 'white'
+                                  : activeTab[index] === 'Null' && darkMode
+                                  ? '#242f3c'
+                                  : 'transparent',
+                              color:
+                                activeTab[index] === 'Null' && !darkMode
+                                  ? '#3E63DD'
+                                  : activeTab[index] === 'Null' && darkMode
+                                  ? 'white'
+                                  : '#687076',
                             }}
                             className="row-tab-content"
                           >
@@ -297,8 +316,18 @@ const EditRowForm = ({ onEdit, onClose }) => {
                               )
                             }
                             style={{
-                              backgroundColor: activeTab[index] === 'Default' ? 'white' : 'transparent',
-                              color: activeTab[index] === 'Default' ? '#3E63DD' : '#687076',
+                              backgroundColor:
+                                activeTab[index] === 'Default' && !darkMode
+                                  ? 'white'
+                                  : activeTab[index] === 'Default' && darkMode
+                                  ? '#242f3c'
+                                  : 'transparent',
+                              color:
+                                activeTab[index] === 'Default' && !darkMode
+                                  ? '#3E63DD'
+                                  : activeTab[index] === 'Default' && darkMode
+                                  ? 'white'
+                                  : '#687076',
                             }}
                             className="row-tab-content"
                           >
@@ -318,8 +347,18 @@ const EditRowForm = ({ onEdit, onClose }) => {
                             )
                           }
                           style={{
-                            backgroundColor: activeTab[index] === 'Custom' ? 'white' : 'transparent',
-                            color: activeTab[index] === 'Custom' ? '#3E63DD' : '#687076',
+                            backgroundColor:
+                              activeTab[index] === 'Custom' && !darkMode
+                                ? 'white'
+                                : activeTab[index] === 'Custom' && darkMode
+                                ? '#242f3c'
+                                : 'transparent',
+                            color:
+                              activeTab[index] === 'Custom' && !darkMode
+                                ? '#3E63DD'
+                                : activeTab[index] === 'Custom' && darkMode
+                                ? 'white'
+                                : '#687076',
                           }}
                           className="row-tab-content"
                         >

@@ -52,7 +52,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
 
   const prevSelectedTableRef = useRef({});
   const columnCreatorElement = useRef();
-  //const wholeScreenWidth = window.innerWidth;
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const fetchTableMetadata = () => {
     if (!isEmpty(selectedTable)) {
@@ -218,8 +218,14 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   }, [wholeScreenWidth, columHeaderLength]);
 
   const widthOfScreen = width.screenWidth > 0 ? width.screenWidth : wholeScreenWidth;
-
-  const positionValue = width.xAxis > widthOfScreen ? 'add-row-btn-database-fixed' : 'add-row-btn-database-absolute';
+  const positionValue =
+    !darkMode && width.xAxis > widthOfScreen
+      ? 'add-row-btn-database-fixed'
+      : !darkMode && width.xAxis <= widthOfScreen
+      ? 'add-row-btn-database-absolute'
+      : darkMode && width.xAxis > widthOfScreen
+      ? 'add-row-btn-database-fixed-dark'
+      : 'add-row-btn-database-absolute-dark';
 
   const handleDeleteRow = async () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
@@ -269,8 +275,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   };
 
   if (!selectedTable) return null;
-
-  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const handleMouseOver = (index) => {
     setEditColumnHeader((prevState) => ({
@@ -398,11 +402,15 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                     key={column.Header}
                     width={index === 0 ? 66 : 230}
                     title={column?.Header || ''}
-                    className={`${
-                      editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
+                    className={
+                      darkMode
+                        ? 'table-header-dark tj-database-column-header tj-text-xsm'
+                        : !darkMode
+                        ? 'table-header tj-database-column-header tj-text-xsm'
+                        : editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
                         ? 'table-header-click tj-database-column-header tj-text-xsm'
                         : 'table-header tj-database-column-header tj-text-xsm'
-                    }`}
+                    }
                     data-cy={`${String(column.Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-header`}
                     {...column.getHeaderProps()}
                     onMouseOver={() => handleMouseOver(index)}
@@ -497,17 +505,27 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                           <td
                             key={`cell.value-${index}`}
                             title={cell.value || ''}
-                            className={`${
-                              editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
+                            className={
+                              editColumnHeader?.clickedColumn === index &&
+                              editColumnHeader?.columnEditPopover === true &&
+                              !darkMode
                                 ? `table-cell-click`
-                                : editColumnHeader?.hoveredColumn === index
+                                : editColumnHeader?.clickedColumn === index &&
+                                  editColumnHeader?.columnEditPopover === true &&
+                                  darkMode
+                                ? 'table-cell-click-dark'
+                                : editColumnHeader?.hoveredColumn === index && !darkMode
                                 ? 'table-cell-hover-background'
+                                : editColumnHeader?.hoveredColumn === index && darkMode
+                                ? 'table-cell-hover-background-dark'
                                 : `table-cell`
-                            }`}
+                            }
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
                           >
-                            {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                            <span className="cell-text">
+                              {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                            </span>
                           </td>
                         );
                       })}
@@ -516,7 +534,10 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                 );
               })
             )}
-            <button onClick={() => openCreateRowDrawer()} className="add-col-btn-database">
+            <button
+              onClick={() => openCreateRowDrawer()}
+              className={darkMode ? 'add-col-btn-database-dark' : 'add-col-btn-database'}
+            >
               +
             </button>
           </tbody>

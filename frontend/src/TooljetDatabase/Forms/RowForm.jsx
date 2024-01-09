@@ -140,25 +140,30 @@ const RowForm = ({ onCreate, onClose }) => {
       case 'serial':
       case 'double precision':
         return (
-          <input
-            //defaultValue={!isPrimaryKey && defaultValue?.length > 0 ? removeQuotes(defaultValue.split('::')[0]) : ''}
-            type="text"
-            value={inputValues[index]?.value}
-            onChange={(e) => handleInputChange(index, e.target.value, columnName)}
-            disabled={isPrimaryKey || inputValues[index]?.disabled}
-            placeholder={isPrimaryKey ? 'Auto-generated' : 'Enter a value'}
-            className={
-              isPrimaryKey && !darkMode
-                ? 'primary-idKey-light'
-                : isPrimaryKey && darkMode
-                ? 'primary-idKey-dark'
-                : !darkMode
-                ? 'form-control'
-                : 'form-control dark-form-row'
-            }
-            data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
-            autoComplete="off"
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              //defaultValue={!isPrimaryKey && defaultValue?.length > 0 ? removeQuotes(defaultValue.split('::')[0]) : ''}
+              type="text"
+              value={inputValues[index]?.value}
+              onChange={(e) => handleInputChange(index, e.target.value, columnName)}
+              disabled={isPrimaryKey || inputValues[index]?.disabled}
+              placeholder={isPrimaryKey ? 'Auto-generated' : 'Enter a value'}
+              className={
+                isPrimaryKey && !darkMode
+                  ? 'primary-idKey-light'
+                  : isPrimaryKey && darkMode
+                  ? 'primary-idKey-dark'
+                  : !darkMode
+                  ? 'form-control'
+                  : 'form-control dark-form-row'
+              }
+              data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
+              autoComplete="off"
+            />
+            {inputValues[index].value === 'Null' && (
+              <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
+            )}
+          </div>
         );
 
       case 'boolean':
@@ -198,7 +203,7 @@ const RowForm = ({ onCreate, onClose }) => {
                     className="form-label"
                     data-cy={`${String(Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-name-label`}
                   >
-                    <div className="d-flex align-items-center justify-content-start">
+                    <div className="headerText-withIcon d-flex align-items-center justify-content-start">
                       <span style={{ width: '24px' }}>
                         {Header == 'id' ? (
                           <Integer width="18" height="18" className="tjdb-column-header-name" />
@@ -210,13 +215,27 @@ const RowForm = ({ onCreate, onClose }) => {
                     </div>
                   </div>
                   {index > 0 && (
-                    <div className="row-tabs d-flex align-items-center justify-content-start bg-red gap-2">
+                    <div
+                      className={`${
+                        darkMode ? 'row-tabs-dark' : 'row-tabs'
+                      } d-flex align-items-center justify-content-start gap-2`}
+                    >
                       {is_nullable === 'YES' && (
                         <div
                           onClick={() => handleTabClick(index, 'Null', column_default, is_nullable, accessor, dataType)}
                           style={{
-                            backgroundColor: activeTab[index] === 'Null' ? 'white' : 'transparent',
-                            color: activeTab[index] === 'Null' ? '#3E63DD' : '#687076',
+                            backgroundColor:
+                              activeTab[index] === 'Null' && !darkMode
+                                ? 'white'
+                                : activeTab[index] === 'Null' && darkMode
+                                ? '#242f3c'
+                                : 'transparent',
+                            color:
+                              activeTab[index] === 'Null' && !darkMode
+                                ? '#3E63DD'
+                                : activeTab[index] === 'Null' && darkMode
+                                ? 'white'
+                                : '#687076',
                           }}
                           className="row-tab-content"
                         >
@@ -229,8 +248,18 @@ const RowForm = ({ onCreate, onClose }) => {
                             handleTabClick(index, 'Default', column_default, is_nullable, accessor, dataType)
                           }
                           style={{
-                            backgroundColor: activeTab[index] === 'Default' ? 'white' : 'transparent',
-                            color: activeTab[index] === 'Default' ? '#3E63DD' : '#687076',
+                            backgroundColor:
+                              activeTab[index] === 'Default' && !darkMode
+                                ? 'white'
+                                : activeTab[index] === 'Default' && darkMode
+                                ? '#242f3c'
+                                : 'transparent',
+                            color:
+                              activeTab[index] === 'Default' && !darkMode
+                                ? '#3E63DD'
+                                : activeTab[index] === 'Default' && darkMode
+                                ? 'white'
+                                : '#687076',
                           }}
                           className="row-tab-content"
                         >
@@ -240,8 +269,18 @@ const RowForm = ({ onCreate, onClose }) => {
                       <div
                         onClick={() => handleTabClick(index, 'Custom', column_default, is_nullable, accessor, dataType)}
                         style={{
-                          backgroundColor: activeTab[index] === 'Custom' ? 'white' : 'transparent',
-                          color: activeTab[index] === 'Custom' ? '#3E63DD' : '#687076',
+                          backgroundColor:
+                            activeTab[index] === 'Custom' && !darkMode
+                              ? 'white'
+                              : activeTab[index] === 'Custom' && darkMode
+                              ? '#242f3c'
+                              : 'transparent',
+                          color:
+                            activeTab[index] === 'Custom' && !darkMode
+                              ? '#3E63DD'
+                              : activeTab[index] === 'Custom' && darkMode
+                              ? 'white'
+                              : '#687076',
                         }}
                         className="row-tab-content"
                       >

@@ -6907,6 +6907,10 @@ tbody {
     background-color: #F8F9FA;
   }
 
+  .table-cell-hover-background-dark {
+    background-color: #242f3c;
+  }
+
   .table-cell-click {
     // background-color: #fbfdff;
     background-color: #F8F9FA;
@@ -6914,15 +6918,29 @@ tbody {
     border-right: 1.5px solid #3E63DD !important;
   }
 
+  .table-cell-click-dark {
+    background-color: #242f3c;
+    border-left: 1.5px solid white !important;
+    border-right: 1.5px solid white !important;
+  }
+
   .row-tj:first-child {
     .table-cell-click {
       border-top: 1.5px solid #3E63DD !important;
+    }
+
+    .table-cell-click-dark {
+      border-top: 1.5px solid white !important;
     }
   }
 
   .row-tj:last-of-type {
     .table-cell-click {
       border-bottom: 1.5px solid #3E63DD !important;
+    }
+
+    .table-cell-click-dark {
+      border-bottom: 1.5px solid white !important;
     }
   }
 
@@ -6951,8 +6969,6 @@ tbody {
         cursor: pointer;
       }
     }
-
-
   }
 
   .table-header {
@@ -6961,6 +6977,14 @@ tbody {
 
   .table-header:hover {
     background: #E6E8EB;
+
+    .tjdb-menu-icon {
+      display: block;
+      cursor: pointer;
+    }
+  }
+
+  .table-header-dark:hover {
 
     .tjdb-menu-icon {
       display: block;
@@ -10383,6 +10407,20 @@ tbody {
   border-color: var(--slate4);
 }
 
+.add-row-btn-database-absolute-dark {
+  position: absolute;
+  top: 0px;
+  right: -28px;
+  width: 29px;
+  height: 31px;
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-radius: 0px;
+  background: #1c252f;
+  border: 0.4px solid white !important;
+  color: white !important;
+}
+
 .add-row-btn-database-fixed {
   position: fixed;
   top: 112px;
@@ -10397,17 +10435,48 @@ tbody {
   border-color: var(--slate4);
 }
 
+.add-row-btn-database-fixed-dark {
+  position: fixed;
+  top: 112px;
+  right: 0px;
+  width: 29px;
+  height: 31px;
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-radius: 0px;
+  z-index: 1;
+  background: #1c252f;
+  border: 0.4px solid white !important;
+  color: white !important;
+}
+
 .add-col-btn-database {
   position: absolute;
   top: 28;
   left: 0px;
-  width: 28px;
-  height: 28px;
+  width: 29px;
+  height: 31px;
   background: var(--slate7);
   border-width: 0px 1px 1px 1px;
   border-style: solid;
+  border-radius: 0px;
   border-color: var(--slate4);
   border-radius: 0px !important;
+}
+
+.add-col-btn-database-dark {
+  position: absolute;
+  top: 28;
+  left: 0px;
+  width: 29px;
+  height: 31px;
+  background: var(--slate7);
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-radius: 0px;
+  background: #1c252f;
+  border: 0.4px solid white !important;
+  color: white !important;
 }
 
 // custom styles for users multiselect in manage users
