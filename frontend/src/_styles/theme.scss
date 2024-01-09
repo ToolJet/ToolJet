@@ -7273,9 +7273,13 @@ tbody {
   bottom: 40px;
 }
 
-.workspace-content-wrapper,
+// .workspace-content-wrapper,
+// .database-page-content-wrap {
+//   // background: var(--slate2);
+// }
+
 .database-page-content-wrap {
-  // background: var(--slate2);
+  height: calc(100vh - 64px) !important;
 }
 
 .workspace-variable-table-card {
@@ -7326,6 +7330,7 @@ tbody {
   max-width: 288px;
   background: var(--base);
   border-right: 1px solid var(--slate5);
+  height: calc(100vh - 64px) !important;
 
 
   .sidebar-container {
