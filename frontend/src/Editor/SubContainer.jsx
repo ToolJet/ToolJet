@@ -154,7 +154,7 @@ export const SubContainer = ({
       if (isParentModal && subContainerHeight <= componentBottom) {
         subContainerHeightRef.current = componentBottom + 100;
       } else {
-        subContainerHeightRef.current = subContainerHeight + 30;
+        subContainerHeightRef.current = subContainerHeight + 28;
       }
     } catch (error) {
       console.error('console.error', error);
