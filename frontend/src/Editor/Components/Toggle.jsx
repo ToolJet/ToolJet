@@ -283,7 +283,7 @@ export const ToggleSwitch = ({
   return (
     <div
       style={{
-        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height,
+        height: calculatedHeight == 30 ? (padding == 'default' ? '30px' : '20px') : calculatedHeight,
         justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
       }}
     >

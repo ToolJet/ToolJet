@@ -2466,7 +2466,7 @@ export const widgets = [
     component: 'ToggleSwitch',
     defaultSize: {
       width: 6,
-      height: 30,
+      height: 20,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
