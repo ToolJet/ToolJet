@@ -547,7 +547,7 @@ export const widgets = [
     description: 'Trigger actions: queries, alerts, set variables etc.',
     component: 'Button',
     defaultSize: {
-      width: 5,
+      width: 4,
       height: 40,
     },
     others: {
