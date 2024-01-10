@@ -276,8 +276,6 @@ export default function DragContainer({
       : '.widget-target'
   );
 
-  console.log('selectedComponents.length--- ', selectedComponents.length);
-
   return (
     <div className="root">
       <div className="container-fluid rm-container p-0">
@@ -693,7 +691,13 @@ export default function DragContainer({
                       mouseTest: true,
                       dimensionViewable: selectedComponents.length > 2,
                     }}
-                    target={groupedTargets1.length ? groupedTargets1 : `.target-${i.parent}`}
+                    target={
+                      groupedTargets.length
+                        ? '.empty-widget'
+                        : groupedTargets1.length
+                        ? groupedTargets1
+                        : `.target-${i.parent}`
+                    }
                     draggable={true}
                     resizable={{
                       edge: ['e', 'w', 'n', 's'],
