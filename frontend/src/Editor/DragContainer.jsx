@@ -772,6 +772,10 @@ export default function DragContainer({
                         width,
                       } = lastEvent;
 
+                      if (top < 0) {
+                        top = 0;
+                      }
+
                       let draggedOverElemId = i.parent;
                       const parentComponent = boxes.find((box) => box.id === i.parent);
                       const parentComponentType = parentComponent?.component?.component;
