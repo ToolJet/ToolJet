@@ -147,7 +147,7 @@ export const NumberInput = function NumberInput({
   ]);
 
   const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
@@ -155,8 +155,8 @@ export const NumberInput = function NumberInput({
     boxShadow: boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
-        ? '3px 5px 3px 23px'
-        : '3px 5px 3px 22px'
+        ? '3px 5px 3px 26px'
+        : '3px 5px 3px 26px'
       : '3px 5px 3px 5px',
   };
 
@@ -230,18 +230,19 @@ export const NumberInput = function NumberInput({
 
   const renderInput = () => {
     const loaderStyle = {
-      right: alignment == 'top' ? `26px` : direction == 'left' ? `26px` : `${labelWidth + 26}px`,
-      top: alignment == 'side' ? '' : `50%`,
+      right: alignment == 'top' ? `33px` : direction == 'left' ? `33px` : `${labelWidth + 35}px`,
+      top: alignment == 'side' ? '' : `53%`,
       transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
+      background: 'red',
     };
 
     return (
       <>
         <div
           data-disabled={disable || loading}
-          className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
-            direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
-          }
+          className={`text-input overflow-hidden d-flex ${
+            defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '
+          }  ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
          ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
          ${visibility || 'invisible'}`}
           style={{
@@ -280,14 +281,15 @@ export const NumberInput = function NumberInput({
                 left:
                   direction === 'right'
                     ? padding == 'default'
-                      ? '7px'
-                      : '5px'
+                      ? '10px'
+                      : '8px'
                     : defaultAlignment === 'top'
                     ? padding == 'default'
-                      ? '7px'
-                      : '5px'
-                    : `${labelWidth + 7}px`,
+                      ? '10px'
+                      : '8px'
+                    : `${labelWidth + 15}px`,
                 position: 'absolute',
+                backgroundColor: 'red',
                 top: `${
                   defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
                 }`,

@@ -52,7 +52,7 @@ export const PasswordInput = function PasswordInput({
   const [loading, setLoading] = useState(loadingState);
 
   const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
@@ -60,13 +60,17 @@ export const PasswordInput = function PasswordInput({
     boxShadow: boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
-        ? '3px 24px 3px 23px'
-        : '3px 24px 3px 22px'
-      : '3px 24px 3px 5px',
+        ? '3px 24px 3px 29px'
+        : '3px 24px 3px 27px'
+      : '3px 24px 3px 10px',
   };
   const loaderStyle = {
     right:
-      direction === 'right' && defaultAlignment === 'side' ? `${elementWidth}px` : padding == 'default' ? '7px' : '5px',
+      direction === 'right' && defaultAlignment === 'side'
+        ? `${elementWidth + 5}px`
+        : padding == 'default'
+        ? '12px'
+        : '10px',
     top: `${defaultAlignment === 'top' ? `50%` : ''}`,
     transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
   };
@@ -243,19 +247,20 @@ export const PasswordInput = function PasswordInput({
               left:
                 direction === 'right'
                   ? padding == 'default'
-                    ? '8px'
-                    : '5px'
+                    ? '13px'
+                    : '10px'
                   : defaultAlignment === 'top'
                   ? padding == 'default'
-                    ? '8px'
-                    : '5px'
-                  : `${elementWidth}px`,
+                    ? '13px'
+                    : '10px'
+                  : `${elementWidth + 5}px`,
               position: 'absolute',
               top: `${
                 defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
               }`,
               transform: ' translateY(-50%)',
               color: iconColor,
+              background: 'red',
             }}
             stroke={1.5}
           />
@@ -266,25 +271,27 @@ export const PasswordInput = function PasswordInput({
               setIconVisibility(!iconVisibility);
             }}
             style={{
-              width: '7',
-              height: '7',
+              width: '16px',
+              height: '16px',
               position: 'absolute',
               right:
                 alignment == 'top'
                   ? padding == 'none'
-                    ? `6px`
-                    : '8px'
+                    ? `11px`
+                    : '13px'
                   : direction == 'left'
                   ? padding == 'none'
-                    ? `6px`
-                    : '8px'
-                  : `${elementWidth}px`,
+                    ? `11px`
+                    : '13px'
+                  : `${elementWidth + 5}px`,
               top: alignment == 'side' ? '50%' : label?.length > 0 && width > 0 ? `calc(50% + 10px)` : '50%',
               transform: ' translateY(-50%)',
+              background: 'red',
+              display: 'flex',
             }}
             stroke={1.5}
           >
-            <SolidIcon width={14} className="password-component-eye" name={!iconVisibility ? 'eye1' : 'eyedisable'} />
+            <SolidIcon width={16} className="password-component-eye" name={!iconVisibility ? 'eye1' : 'eyedisable'} />
           </div>
         )}
         <input

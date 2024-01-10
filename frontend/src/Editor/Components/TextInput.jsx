@@ -50,7 +50,7 @@ export const TextInput = function TextInput({
   const [loading, setLoading] = useState(loadingState);
 
   const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
@@ -58,13 +58,18 @@ export const TextInput = function TextInput({
     boxShadow: boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
-        ? '3px 5px 3px 23px'
-        : '3px 5px 3px 22px'
+        ? '3px 5px 3px 29px'
+        : '3px 5px 3px 28px'
       : '3px 5px 3px 5px',
   };
   const loaderStyle = {
     right:
-      direction === 'right' && defaultAlignment === 'side' ? `${elementWidth}px` : padding == 'default' ? '7px' : '5px',
+      direction === 'right' && defaultAlignment === 'side'
+        ? `${elementWidth + 8}px`
+        : padding == 'default'
+        ? '13px'
+        : '11px',
+    background: 'red',
     top: `${defaultAlignment === 'top' ? '50%' : ''}`,
     transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
   };
@@ -245,17 +250,18 @@ export const TextInput = function TextInput({
               left:
                 direction === 'right'
                   ? padding == 'default'
-                    ? '7px'
-                    : '5px'
+                    ? '13px'
+                    : '11px'
                   : defaultAlignment === 'top'
                   ? padding == 'default'
-                    ? '7px'
-                    : '5px'
-                  : `${elementWidth}px`,
+                    ? '13px'
+                    : '11px'
+                  : `${elementWidth + 5}px`,
               position: 'absolute',
               top: `${
                 defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
               }`,
+              backgroundColor: 'red',
               transform: ' translateY(-50%)',
               color: iconColor,
             }}
