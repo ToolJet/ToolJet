@@ -840,6 +840,8 @@ const EditorComponent = (props) => {
     await handleEvent('onPageLoad', currentPageEvents, {}, true);
 
     const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
+    /* TODO: Later we have to remove this obj from localstore and should use the store to get environment details */
+    const appId = data.id ?? appId;
     if (currentEnvironmentObj[appId] !== envDetails?.id) {
       currentEnvironmentObj[appId] = currentEnvironmentId;
       localStorage.setItem('currentEnvironmentIds', JSON.stringify(currentEnvironmentObj));
