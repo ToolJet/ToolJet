@@ -8,6 +8,7 @@ import _, { isEmpty } from 'lodash';
 import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
 import { useGridStoreActions, useDragTarget, useNoOfGrid, useGridStore } from '@/_stores/gridStore';
+
 const NO_OF_GRIDS = 43;
 
 const DimensionViewable = {
@@ -133,6 +134,7 @@ export default function DragContainer({
   const [list, setList] = useState(boxList);
 
   console.log('dragTarget => ', dragTarget);
+  // const { setSelectedComponents } = useEditorActions();
 
   const hoveredComponent = useEditorStore((state) => state?.hoveredComponent, shallow);
   const [count, setCount] = useState(0);
@@ -551,6 +553,8 @@ export default function DragContainer({
                       parent: isParentChangeAllowed ? draggedOverElemId : undefined,
                     },
                   ]);
+                  const box = boxes.find((box) => box.id === e.target.id);
+                  useEditorStore.getState().actions.setSelectedComponents([{ ...box }]);
                 } catch (error) {
                   console.log('error', error);
                 }
@@ -827,6 +831,8 @@ export default function DragContainer({
                           parent: draggedOverElemId,
                         },
                       ]);
+                      const box = boxes.find((box) => box.id === e.target.id);
+                      useEditorStore.getState().actions.setSelectedComponents([{ ...box }]);
                       setDragTarget(null);
                     }}
                     onDragGroup={({ events }) => {
