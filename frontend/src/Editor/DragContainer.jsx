@@ -156,18 +156,16 @@ export default function DragContainer({
 
     const selectedComponentsId = new Set(
       selectedComponents.map((component) => {
-        console.log('here--- ', component.id, childMoveableRefs.current, childMoveableRefs.current[component.id]);
         return component.id;
       })
     );
     const parentId = selectedComponents.find((comp) => comp.component.parent)?.component?.parent;
-    console.log('parentId--', parentId, selectedComponents);
 
     // Get all elements with the old class name
     var elements = document.getElementsByClassName('selected-component');
     // Iterate through the elements and replace the old class with the new one
     for (var i = 0; i < elements.length; i++) {
-      elements[i].classList.remove('selected-component');
+      elements[i].className = 'moveable-control-box modal-moveable rCS1w3zcxh';
     }
 
     if (parentId) {
@@ -177,7 +175,7 @@ export default function DragContainer({
       if (controlBoxes) {
         for (const element of controlBoxes) {
           if (selectedComponentsId.has(element?.props?.target?.id)) {
-            element?.controlBox?.classList.add('selected-component');
+            element?.controlBox?.classList.add('selected-component', `sc-${element?.props?.target?.id}`);
           }
         }
       }
@@ -186,7 +184,7 @@ export default function DragContainer({
       if (controlBoxes) {
         for (const element of controlBoxes) {
           if (selectedComponentsId.has(element?.props?.target?.id)) {
-            element?.controlBox?.classList.add('selected-component');
+            element?.controlBox?.classList.add('selected-component', `sc-${element?.props?.target?.id}`);
           }
         }
         // }

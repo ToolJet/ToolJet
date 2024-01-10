@@ -23,6 +23,9 @@
 .moveable-control-box>.moveable-control-box:hover, .moveable-control-box>.moveable-dragging{
 	visibility: visible !important;
 }
+.moveable-control-box.modal-moveable{
+    z-index: 1000 !important;
+}
 
 .moveable-control-box {
 	background: red;
