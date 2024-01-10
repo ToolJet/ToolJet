@@ -39,3 +39,25 @@
 .column-popover-parent {
   background-color: white !important;
 }
+
+.keyPress-actions {
+
+  gap: 1.5rem;
+
+  .navigate-keyActions,
+  .enter-keyActions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+
+    .leftNav-parent-container,
+    .rightNav-parent-container,
+    .editEnter-parent-container {
+      border-radius: 6px;
+      border: 1px solid var(--slate7);
+      width: 25px;
+      text-align: center;
+    }
+  }
+}

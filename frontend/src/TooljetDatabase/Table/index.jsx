@@ -47,12 +47,44 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     deletePopupModal: false,
     columnEditPopover: false,
   });
-  const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
-  const [wholeScreenWidth, setWholeScreenWidth] = useState(window.innerWidth);
+
+  const [creatorElement, setCreatorElement] = useState({ width: false, height: false });
 
   const prevSelectedTableRef = useRef({});
-  const columnCreatorElement = useRef();
-  //const wholeScreenWidth = window.innerWidth;
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+
+    const handleResize = () => {
+      if (container) {
+        const hasScrollbarWidth = container.scrollWidth > container.clientWidth;
+        const hasScrollbarHeight = container.scrollHeight > container.clientHeight;
+        setCreatorElement((prevElement) => ({
+          ...prevElement,
+          width: hasScrollbarWidth,
+          height: hasScrollbarHeight,
+        }));
+      }
+    };
+
+    // Initialize ResizeObserver
+    const resizeObserver = new ResizeObserver(handleResize);
+
+    // Attach observer to the container
+    if (container) {
+      resizeObserver.observe(container);
+    }
+
+    // Cleanup observer when the component unmounts
+    return () => {
+      if (container) {
+        resizeObserver.unobserve(container);
+      }
+    };
+  }, []);
+
+  const positionValueX = creatorElement.width === true ? 'add-row-btn-database-fixed' : 'add-row-btn-database-absolute';
 
   const fetchTableMetadata = () => {
     if (!isEmpty(selectedTable)) {
@@ -182,44 +214,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       ]);
     }
   );
-
-  const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
-
-  const moveColumnCreateElement = useCallback(() => {
-    setTimeout(() => {
-      const initialxAxis = columnCreatorElement.current?.getBoundingClientRect().x;
-      const fullWidth = window.innerWidth;
-      setWidth((prevState) => ({
-        ...prevState,
-        screenWidth: fullWidth,
-        xAxis: initialxAxis,
-      }));
-    }, 200);
-  }, [setWidth, columnCreatorElement]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWholeScreenWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  useEffect(() => {
-    moveColumnCreateElement();
-  }, []);
-
-  useEffect(() => {
-    moveColumnCreateElement();
-  }, [wholeScreenWidth, columHeaderLength]);
-
-  const widthOfScreen = width.screenWidth > 0 ? width.screenWidth : wholeScreenWidth;
-
-  const positionValue = width.xAxis > widthOfScreen ? 'add-row-btn-database-fixed' : 'add-row-btn-database-absolute';
 
   const handleDeleteRow = async () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
@@ -381,6 +375,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           height: 'calc(100vh - 164px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
         className={cx('table-responsive border-0 tj-db-table animation-fade')}
+        ref={containerRef}
       >
         <table
           {...getTableProps()}
@@ -388,9 +383,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           style={{ position: 'relative' }}
         >
           <thead>
-            <button ref={columnCreatorElement} onClick={() => openCreateColumnDrawer()} className={`${positionValue}`}>
-              +
-            </button>
             {headerGroups.map((headerGroup, index) => (
               <tr className="tj-database-column-row" {...headerGroup.getHeaderGroupProps()} key={index}>
                 {headerGroup.headers.map((column, index) => (
@@ -460,6 +452,9 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
               </tr>
             ))}
           </thead>
+          <button onClick={() => openCreateColumnDrawer()} className={`${positionValueX}`}>
+            +
+          </button>
           <tbody
             className={cx({
               'bg-white': rows.length > 0 && !darkMode,
@@ -516,10 +511,10 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                 );
               })
             )}
-            <button onClick={() => openCreateRowDrawer()} className="add-col-btn-database">
-              +
-            </button>
           </tbody>
+          <button onClick={() => openCreateRowDrawer()} className="add-col-btn-database">
+            +
+          </button>
         </table>
 
         <TableFooter

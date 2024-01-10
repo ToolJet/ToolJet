@@ -7945,6 +7945,7 @@ tbody {
 .toojet-db-table-footer {
   height: 52px;
   background: var(--base) !important;
+  width: calc(100vw - 336px);
 }
 
 .home-app-card-header {
@@ -10416,8 +10417,8 @@ tbody {
 }
 
 .add-col-btn-database {
-  position: absolute;
-  top: 28;
+  position: sticky;
+  bottom: 0;
   left: 0px;
   width: 28px;
   height: 28px;
