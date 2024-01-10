@@ -10,8 +10,9 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { LinkExpiredInfoScreen } from '../SuccessInfoScreen/LinkExpiredInfoScreen';
-import { retrieveWhiteLabelText } from '@/_helpers/utils';
+import { setFaviconAndTitle } from '@/_helpers/utils';
 import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 
 import { withRouter } from '@/_hoc/withRouter';
 class OrganizationInvitationPageComponent extends React.Component {
@@ -27,6 +28,7 @@ class OrganizationInvitationPageComponent extends React.Component {
       showPassword: false,
       fallBack: false,
       whiteLabelText: defaultWhiteLabellingSettings.WHITE_LABEL_TEXT,
+      whiteLabelFavicon: defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON,
     };
     this.formRef = React.createRef(null);
     this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
@@ -42,6 +44,10 @@ class OrganizationInvitationPageComponent extends React.Component {
         authenticationService.getOrganizationConfigs(this.organizationId, null).then(
           (configs) => {
             this.setState({ isGettingConfigs: false, configs });
+            const { whiteLabelText, whiteLabelFavicon } = useWhiteLabellingStore.getState();
+            this.setState({ whiteLabelFavicon: whiteLabelFavicon });
+            this.setState({ whiteLabelText: whiteLabelText });
+            setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
           },
           () => {
             this.setState({ isGettingConfigs: false });
@@ -64,9 +70,6 @@ class OrganizationInvitationPageComponent extends React.Component {
           this.setState({ fallBack: true });
         }
       });
-    retrieveWhiteLabelText(this.organizationId).then((labelText) => {
-      this.setState({ whiteLabelText: labelText });
-    });
   }
   handleOnCheck = () => {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));

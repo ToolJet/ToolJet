@@ -605,9 +605,8 @@ export const setFaviconAndTitle = (whiteLabelFavicon, whiteLabelText, page = 'Da
     document.getElementsByTagName('head')[0].appendChild(link);
     links = [link];
   }
-  const faviconVersion = new Date().getTime();
   links.forEach((link) => {
-    link.href = `${whiteLabelFavicon || defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON}?v=${faviconVersion}`;
+    link.href = `${whiteLabelFavicon || defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON}`;
   });
   // Set title
   document.title = `${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT} - ${page}`;
