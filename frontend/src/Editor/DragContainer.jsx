@@ -153,15 +153,38 @@ export default function DragContainer({
       }
     }
     setTimeout(reloadGrid, 100);
+  }, [JSON.stringify(selectedComponents), JSON.stringify(boxes)]);
+
+  useEffect(() => {
+    setList(boxList);
+    setTimeout(reloadGrid, 100);
+  }, [currentLayout]);
+
+  const reloadGrid = async () => {
+    setCount((c) => c + 1);
+    if (moveableRef.current) {
+      moveableRef.current.updateRect();
+      moveableRef.current.updateTarget();
+      moveableRef.current.updateSelectors();
+    }
+    for (let refObj of Object.values(childMoveableRefs.current)) {
+      if (refObj) {
+        console.log('refObj -->', refObj);
+        refObj.updateRect();
+        refObj.updateTarget();
+        refObj.updateSelectors();
+      }
+    }
 
     const selectedComponentsId = new Set(
       selectedComponents.map((component) => {
-        console.log('here--- ', component.id, childMoveableRefs.current, childMoveableRefs.current[component.id]);
         return component.id;
       })
     );
-    const parentId = selectedComponents.find((comp) => comp.component.parent)?.component?.parent;
-    console.log('parentId--', parentId, selectedComponents);
+    console.log('here--->', { selectedComponents, boxes, selectedComponentsId });
+    const selectedBoxs = boxes.filter((box) => selectedComponentsId.has(box.id));
+    const parentId = selectedBoxs.find((comp) => comp.component.parent)?.component?.parent;
+    console.log('here--->', parentId, selectedBoxs);
 
     // Get all elements with the old class name
     var elements = document.getElementsByClassName('selected-component');
@@ -169,7 +192,6 @@ export default function DragContainer({
     for (var i = 0; i < elements.length; i++) {
       elements[i].classList.remove('selected-component');
     }
-
     if (parentId) {
       // eslint-disable-next-line no-undef
       const childMoveableRef = childMoveableRefs.current[parentId];
@@ -190,27 +212,6 @@ export default function DragContainer({
           }
         }
         // }
-      }
-    }
-  }, [JSON.stringify(selectedComponents), JSON.stringify(boxes)]);
-
-  useEffect(() => {
-    setList(boxList);
-    setTimeout(reloadGrid, 100);
-  }, [currentLayout]);
-
-  const reloadGrid = async () => {
-    setCount((c) => c + 1);
-    if (moveableRef.current) {
-      moveableRef.current.updateRect();
-      moveableRef.current.updateTarget();
-      moveableRef.current.updateSelectors();
-    }
-    for (let refObj of Object.values(childMoveableRefs.current)) {
-      if (refObj) {
-        refObj.updateRect();
-        refObj.updateTarget();
-        refObj.updateSelectors();
       }
     }
   };
