@@ -227,6 +227,7 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
               <Table
                 openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)}
                 openCreateColumnDrawer={() => setIsCreateColumnDrawerOpen(true)}
+                collapseSidebar={collapseSidebar}
               />
             </div>
           </>

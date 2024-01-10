@@ -8,7 +8,7 @@ import LeftNav from '../Icons/LeftNav.svg';
 import RightNav from '../Icons/RightNav.svg';
 import Enter from '../Icons/Enter.svg';
 
-const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength }) => {
+const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength, collapseSidebar }) => {
   const selectOptions = [
     { label: '50 records', value: 50 },
     { label: '100 records', value: 100 },
@@ -75,7 +75,11 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
   }, [totalRecords, selectedTable]);
 
   return (
-    <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center col-12">
+    <div
+      className={`${
+        collapseSidebar ? 'toojet-db-table-footer-collapse' : 'toojet-db-table-footer'
+      } card-footer d-flex align-items-center jet-table-footer justify-content-center col-12`}
+    >
       {tableDataLength > 0 && (
         <div
           className="table-footer d-flex align-items-center justify-content-between gx-0"

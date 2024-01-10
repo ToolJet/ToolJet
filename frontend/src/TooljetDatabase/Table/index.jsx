@@ -24,7 +24,7 @@ import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 
 import './styles.scss';
 
-const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
+const Table = ({ openCreateRowDrawer, openCreateColumnDrawer, collapseSidebar }) => {
   const {
     organizationId,
     columns,
@@ -68,15 +68,12 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       }
     };
 
-    // Initialize ResizeObserver
     const resizeObserver = new ResizeObserver(handleResize);
 
-    // Attach observer to the container
     if (container) {
       resizeObserver.observe(container);
     }
 
-    // Cleanup observer when the component unmounts
     return () => {
       if (container) {
         resizeObserver.unobserve(container);
@@ -522,6 +519,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           openCreateRowDrawer={openCreateRowDrawer}
           dataLoading={loading}
           tableDataLength={tableData.length}
+          collapseSidebar={collapseSidebar}
         />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">

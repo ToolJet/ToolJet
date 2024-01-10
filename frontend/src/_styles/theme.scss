@@ -7818,6 +7818,7 @@ tbody {
 }
 
 .toojet-db-table-footer,
+.toojet-db-table-footer-collapse,
 .home-page-footer {
   position: fixed;
   bottom: 0px;
@@ -7946,6 +7947,12 @@ tbody {
   height: 52px;
   background: var(--base) !important;
   width: calc(100vw - 336px);
+}
+
+.toojet-db-table-footer-collapse {
+  height: 52px;
+  background: var(--base) !important;
+  width: calc(100vw - 48px);
 }
 
 .home-app-card-header {
