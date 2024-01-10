@@ -357,6 +357,9 @@ export const Container = ({
       const newWidth = (width * noOfGrids) / _canvasWidth;
       gw = gw ? gw : gridWidth;
       const parent = boxes[id]?.component?.parent;
+      if (y < 0) {
+        y = 0;
+      }
       if (parent) {
         const parentElem = document.getElementById(`canvas-${parent}`);
         const parentId = parent.includes('-') ? parent?.split('-').slice(0, -1).join('-') : parent;
@@ -423,6 +426,10 @@ export const Container = ({
         if (_width > noOfGrids) {
           _width = noOfGrids;
         }
+      }
+
+      if (y < 0) {
+        y = 0;
       }
 
       if (parent) {
