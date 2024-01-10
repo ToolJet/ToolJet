@@ -228,7 +228,7 @@ export const ToggleSwitch = ({
         boxShadow,
         alignItems: 'center',
         gap: '8px ',
-        justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
+        justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'space-between'}`,
         padding: padding === 'default' ? '4px 6px' : '',
         height: calculatedHeight == 30 ? (padding == 'default' ? '30px' : '20px') : calculatedHeight,
       }}
@@ -238,10 +238,7 @@ export const ToggleSwitch = ({
         <Loader width="16" />
       ) : (
         <>
-          {alignment == 'right' && (
-            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && !on && '*'}</span>
-          )}
-          <span
+          <p
             style={{
               lineHeight: padding == 'none' && '12px',
               color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
@@ -249,13 +246,17 @@ export const ToggleSwitch = ({
               overflow: label?.length > 6 && 'hidden', // Hide any content that overflows the box
               textOverflow: 'ellipsis', // Display ellipsis for overflowed content
               fontWeight: 500,
+              fontSize: '14px',
+              margin: '0px',
             }}
           >
+            {/* {alignment == 'left' && isMandatory && !on && (
+              <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>
+            )} */}
             {label}
-          </span>
-          {alignment == 'left' && (
-            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && !on && '*'}</span>
-          )}
+            {isMandatory && !on && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
+          </p>
+
           <Switch
             disabledState={disable}
             on={on}

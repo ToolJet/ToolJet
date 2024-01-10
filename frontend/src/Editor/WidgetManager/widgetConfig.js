@@ -2158,7 +2158,7 @@ export const widgets = [
     component: 'Checkbox',
     defaultSize: {
       width: 5,
-      height: 30,
+      height: 20,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -2465,7 +2465,7 @@ export const widgets = [
     description: 'User-controlled on-off switch',
     component: 'ToggleSwitch',
     defaultSize: {
-      width: 6,
+      width: 5,
       height: 20,
     },
     others: {

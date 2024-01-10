@@ -155,7 +155,7 @@ export const Checkbox = function Checkbox({
         boxShadow,
         alignItems: 'center',
         gap: '8px ',
-        justifyContent: `${loadingState ? 'center' : 'space-between'}`,
+        justifyContent: `${loadingState ? 'center' : alignment == 'right' ? 'space-between' : ''}`,
         padding: padding === 'default' ? '4px 6px' : '',
         height: calculatedHeight == 30 ? (padding == 'default' ? '30px' : '20px') : calculatedHeight,
       }}
@@ -202,9 +202,7 @@ export const Checkbox = function Checkbox({
               )}
             </div>
           </div>
-          {alignment == 'right' && isMandatory && !checked && (
-            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>
-          )}
+
           <p
             className="form-check-label tj-text-xsm"
             style={{
@@ -215,13 +213,12 @@ export const Checkbox = function Checkbox({
               textOverflow: 'ellipsis', // Display ellipsis for overflowed content
               fontWeight: 500,
               textAlign: alignment == 'right' ? 'right' : 'left',
+              fontSize: '14px',
             }}
           >
             {label}
+            {isMandatory && !checked && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
           </p>
-          {alignment == 'left' && isMandatory && !checked && (
-            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>
-          )}
         </>
       )}
     </div>
