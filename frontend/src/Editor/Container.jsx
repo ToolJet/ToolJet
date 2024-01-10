@@ -106,26 +106,26 @@ export const Container = ({
   const [canvasHeight, setCanvasHeight] = useState(null);
 
   useEffect(() => {
-    if (currentLayout === 'mobile' && appDefinition.pages[currentPageId]?.autoComputeLayout) {
-      const mobLayouts = Object.keys(boxes).map((key) => {
-        return { ...cloneDeep(boxes[key]?.layouts?.desktop), i: key };
-      });
-      const updatedBoxes = cloneDeep(boxes);
-      let newmMobLayouts = correctBounds(mobLayouts, { cols: 12 });
-      newmMobLayouts = compact(newmMobLayouts, 'vertical', 12);
-      Object.keys(boxes).forEach((id) => {
-        const mobLayout = newmMobLayouts.find((layout) => layout.i === id);
-        updatedBoxes[id].layouts.mobile = {
-          left: mobLayout.left,
-          height: mobLayout.height,
-          top: mobLayout.top,
-          width: mobLayout.width,
-        };
-      });
-      setBoxes({ ...updatedBoxes });
-      // console.log('currentLayout', data);
-    }
-    setNoOfGrids(currentLayout === 'mobile' ? 12 : 43);
+    // if (currentLayout === 'mobile' && appDefinition.pages[currentPageId]?.autoComputeLayout) {
+    //   const mobLayouts = Object.keys(boxes).map((key) => {
+    //     return { ...cloneDeep(boxes[key]?.layouts?.desktop), i: key };
+    //   });
+    //   const updatedBoxes = cloneDeep(boxes);
+    //   let newmMobLayouts = correctBounds(mobLayouts, { cols: 12 });
+    //   newmMobLayouts = compact(newmMobLayouts, 'vertical', 12);
+    //   Object.keys(boxes).forEach((id) => {
+    //     const mobLayout = newmMobLayouts.find((layout) => layout.i === id);
+    //     updatedBoxes[id].layouts.mobile = {
+    //       left: mobLayout.left,
+    //       height: mobLayout.height,
+    //       top: mobLayout.top,
+    //       width: mobLayout.width,
+    //     };
+    //   });
+    //   setBoxes({ ...updatedBoxes });
+    //   // console.log('currentLayout', data);
+    // }
+    // setNoOfGrids(currentLayout === 'mobile' ? 12 : 43);
   }, [currentLayout]);
 
   const paramUpdatesOptsRef = useRef({});
