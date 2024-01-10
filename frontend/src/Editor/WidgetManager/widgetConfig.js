@@ -1149,7 +1149,7 @@ export const widgets = [
     properties: {
       buttonToSubmit: {
         type: 'select',
-        displayName: 'Button To Submit Form',
+        displayName: 'Button to submit form',
         options: [{ name: 'None', value: 'none' }],
         validation: {
           schema: { type: 'string' },
@@ -1193,7 +1193,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
@@ -3675,7 +3675,7 @@ export const widgets = [
     properties: {
       enableLineNumber: {
         type: 'code',
-        displayName: 'Show Line Number',
+        displayName: 'Show line number',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -5630,21 +5630,21 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       linkTarget: {
         type: 'code',
-        displayName: 'Link Target',
+        displayName: 'Link target',
         validation: {
           schema: { type: 'string' },
         },
       },
       linkText: {
         type: 'code',
-        displayName: 'Link Text',
+        displayName: 'Link text',
         validation: {
           schema: { type: 'string' },
         },
       },
       targetType: {
         type: 'select',
-        displayName: 'Target Type',
+        displayName: 'Target type',
         options: [
           { name: 'New Tab', value: 'new' },
           { name: 'Same Tab', value: 'same' },
@@ -5661,14 +5661,14 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textSize: {
         type: 'number',
-        displayName: 'Text Size',
+        displayName: 'Text size',
         validation: {
           schema: { type: 'number' },
         },

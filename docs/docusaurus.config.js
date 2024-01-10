@@ -127,7 +127,12 @@ module.exports = {
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
-        sitemap: {},
+        sitemap: {
+          changefreq: 'weekly',
+          priority: 0.5,
+          ignorePatterns: ['/docs/1.x.x/**'],
+          filename: 'sitemap.xml',
+        },
         googleTagManager: isProd
           ? {
             containerId: process.env.GTM,

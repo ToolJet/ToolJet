@@ -14,8 +14,8 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
   const [slug, setSlug] = useState({ value: '', error: '' });
   const [slugProgress, setSlugProgress] = useState(false);
   const [workspaceNameProgress, setWorkspaceNameProgress] = useState(false);
-  const [isNameDisabled, setNameDisabled] = useState(true);
-  const [isSlugDisabled, setSlugDisabled] = useState(true);
+  const [isNameDisabled, setNameDisabled] = useState(false);
+  const [isSlugDisabled, setSlugDisabled] = useState(false);
   const { t } = useTranslation();
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -152,8 +152,8 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     setName({ value: currentValue?.name, error: '' });
     setSlug({ value: currentValue?.slug, error: '' });
     setShowEditOrg(false);
-    setSlugDisabled(true);
-    setNameDisabled(true);
+    setSlugDisabled(false);
+    setNameDisabled(false);
   };
 
   const delayedSlugChange = _.debounce(async (value) => {
@@ -166,7 +166,14 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     await handleInputChange(value, 'name');
   }, 500);
 
-  const isDisabled = isCreating || isNameDisabled || isSlugDisabled || slugProgress || workspaceNameProgress;
+  const userHasntChangeAnythingYet = name?.value === currentValue?.name && slug?.value === currentValue?.slug;
+  const baseConditions =
+    isCreating ||
+    (name?.value !== currentValue?.name && isNameDisabled) ||
+    (slug?.value !== currentValue?.slug && isSlugDisabled) ||
+    slugProgress ||
+    workspaceNameProgress;
+  const isDisabled = userHasntChangeAnythingYet || baseConditions;
 
   return (
     <AlertDialog
