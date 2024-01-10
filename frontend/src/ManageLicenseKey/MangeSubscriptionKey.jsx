@@ -169,7 +169,7 @@ function ManageSubscriptionKey({ darkMode }) {
                 selectedTab === 'limits' && 'border-none'
               }`}
             >
-              <div data-cy={`${String(headerName(selectedTab)).toLowerCase().replace(/\s+/g, '-')}-header}`}>
+              <div data-cy={`${String(headerName(selectedTab)).toLowerCase().replace(/\s+/g, '-')}-tab-title`}>
                 {headerName(selectedTab)}
               </div>
               {!isLoading ? (

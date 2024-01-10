@@ -382,3 +382,7 @@ Cypress.Commands.add('visitSlug', ({ actualUrl, currentUrl = 'http://localhost:8
     }
   });
 });
+
+Cypress.Commands.add('verifyLabel', (labelName) => {
+  cy.get(commonSelectors.label(`${labelName}`)).verifyVisibleElement('have.text', labelName)
+})
