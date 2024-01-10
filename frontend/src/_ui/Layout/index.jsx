@@ -11,6 +11,7 @@ import SolidIcon from '../Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
+import Settings from '@/_components/Settings';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
@@ -43,7 +44,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
             <div>
               <ul className="sidebar-inner nav nav-vertical">
                 <li className="text-center cursor-pointer">
-                  <ToolTip message="Dashboard" placement="right">
+                  <ToolTip message="Apps" placement="right">
                     <Link
                       to="/"
                       onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
@@ -66,7 +67,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 </li>
                 {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
                   <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
-                    <ToolTip message="Database" placement="right">
+                    <ToolTip message="ToolJet Database" placement="right">
                       <Link
                         to={getPrivateRoute('database')}
                         onClick={(event) => checkForUnsavedChanges(getPrivateRoute('database'), event)}
@@ -108,39 +109,21 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     </ToolTip>
                   </li>
                 )}
-                {marketplaceEnabled && (
-                  <li className="text-center d-flex flex-column">
-                    <ToolTip message="Marketplace (Beta)" placement="right">
-                      <Link
-                        to="/integrations"
-                        onClick={(event) => checkForUnsavedChanges('/integrations', event)}
-                        className={`tj-leftsidebar-icon-items  ${
-                          router.pathname === '/integrations' && `current-seleted-route`
-                        }`}
-                        data-cy="icon-marketplace"
-                      >
-                        <SolidIcon
-                          name="marketplace"
-                          fill={router.pathname === '/integrations' ? '#3E63DD' : 'var(--slate8)'}
-                        />
-                      </Link>
-                    </ToolTip>
-                  </li>
-                )}
                 <li className="text-center cursor-pointer">
                   <ToolTip message="Workspace settings" placement="right">
                     <Link
-                      to={getPrivateRoute('workspace_settings')}
-                      onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
+                      to={getPrivateRoute('workspace_constants')}
+                      onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_constants'), event)}
                       className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === getPrivateRoute('workspace_settings') && `current-seleted-route`
+                        router.pathname === getPrivateRoute('workspace_constants') && `current-seleted-route`
                       }`}
                       data-cy="icon-workspace-settings"
                     >
                       <SolidIcon
-                        name="settings"
-                        fill={router.pathname === getPrivateRoute('workspace_settings') ? '#3E63DD' : 'var(--slate8)'}
-                        width={28}
+                        name="workspaceconstants"
+                        fill={router.pathname === getPrivateRoute('workspace_constants') ? '#3E63DD' : 'var(--slate8)'}
+                        width={25}
+                        viewBox={'0 0 20 20'}
                       />
                     </Link>
                   </ToolTip>
@@ -159,11 +142,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </ToolTip>
 
                   <ToolTip message="Profile" placement="right">
-                    <Profile
-                      checkForUnsavedChanges={checkForUnsavedChanges}
-                      switchDarkMode={switchDarkMode}
-                      darkMode={darkMode}
-                    />
+                    <Settings darkMode={darkMode} checkForUnsavedChanges={checkForUnsavedChanges} />
                   </ToolTip>
                 </li>
               </ul>

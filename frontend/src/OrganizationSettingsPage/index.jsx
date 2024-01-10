@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import cx from 'classnames';
+import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
@@ -10,14 +11,15 @@ import { CopilotSetting } from '@/CopilotSettings';
 import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
-import { ManageOrgConstants } from '@/ManageOrgConstants';
+import { getWorkspaceId } from '@/_helpers/utils';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
   const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
+  const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Workspace constants'];
+  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'Users':
@@ -28,8 +30,6 @@ export function OrganizationSettings(props) {
         return 'manageSSO';
       case 'Workspace variables':
         return 'manageEnvVars';
-      case 'Workspace constants':
-        return 'manageOrgConstants';
       default:
         return groupName;
     }
@@ -46,7 +46,7 @@ export function OrganizationSettings(props) {
   }, [authenticationService.currentSessionValue?.admin]);
 
   const goTooOrgConstantsDashboard = () => {
-    setSelectedTab('manageOrgConstants');
+    navigate(`/${getWorkspaceId()}/workspace-constants`);
   };
 
   return (
@@ -58,7 +58,7 @@ export function OrganizationSettings(props) {
               {sideBarNavs.map((item, index) => {
                 return (
                   <>
-                    {(admin || item == 'Workspace variables' || item == 'Copilot' || item == 'Workspace constants') && (
+                    {(admin || item == 'Workspace variables' || item == 'Copilot') && (
                       <FolderList
                         className="workspace-settings-nav-items"
                         key={index}
@@ -98,7 +98,6 @@ export function OrganizationSettings(props) {
                 <ManageOrgVars darkMode={props.darkMode} goTooOrgConstantsDashboard={goTooOrgConstantsDashboard} />
               )}
               {selectedTab === 'manageCopilot' && <CopilotSetting />}
-              {selectedTab === 'manageOrgConstants' && <ManageOrgConstants darkMode={props.darkMode} />}
             </div>
           </div>
         </div>

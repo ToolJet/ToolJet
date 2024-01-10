@@ -21,6 +21,8 @@ function Header() {
         return 'Profile settings';
       case 'integrations':
         return 'Integrations';
+      case 'workspace-constants':
+        return 'Workspace constants';
       default:
         return 'Applications';
     }
