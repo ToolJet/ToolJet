@@ -192,7 +192,7 @@ export default function DragContainer({
     var elements = document.getElementsByClassName('selected-component');
     // Iterate through the elements and replace the old class with the new one
     for (var i = 0; i < elements.length; i++) {
-      elements[i].classList.remove('selected-component');
+      elements[i].className = 'moveable-control-box modal-moveable rCS1w3zcxh';
     }
     if (parentId) {
       // eslint-disable-next-line no-undef
@@ -201,7 +201,7 @@ export default function DragContainer({
       if (controlBoxes) {
         for (const element of controlBoxes) {
           if (selectedComponentsId.has(element?.props?.target?.id)) {
-            element?.controlBox?.classList.add('selected-component');
+            element?.controlBox?.classList.add('selected-component', `sc-${element?.props?.target?.id}`);
           }
         }
       }
@@ -210,7 +210,7 @@ export default function DragContainer({
       if (controlBoxes) {
         for (const element of controlBoxes) {
           if (selectedComponentsId.has(element?.props?.target?.id)) {
-            element?.controlBox?.classList.add('selected-component');
+            element?.controlBox?.classList.add('selected-component', `sc-${element?.props?.target?.id}`);
           }
         }
         // }
