@@ -849,8 +849,8 @@ const EditorComponent = (props) => {
   };
 
   const fetchApp = async (startingPageHandle) => {
-    const _appId = props?.params?.id || props?.params?.slug;
-
+    /* id of an app will be there if the user is trying to load app editor with slug. fetchApp api needs id. */
+    const _appId = props?.id;
     await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
   };
 
