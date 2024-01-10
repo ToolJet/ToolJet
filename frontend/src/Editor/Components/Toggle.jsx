@@ -121,12 +121,18 @@ export const ToggleSwitch = ({
   const { toggleSwitchColor, boxShadow, alignment, padding, borderColor } = styles;
 
   const textColor = darkMode && styles.textColor === '#11181C' ? '#fff' : styles.textColor;
+  const [calculatedHeight, setCalculatedHeight] = useState(height);
 
   function toggleValue(e) {
     const toggled = e.target.checked;
     setExposedVariable('value', toggled);
     fireEvent('onChange');
   }
+  useEffect(() => {
+    if (padding == 'default') {
+      setCalculatedHeight(height + 10);
+    }
+  }, [padding]);
 
   // Exposing the initially set false value once on load
   useEffect(() => {
@@ -224,7 +230,7 @@ export const ToggleSwitch = ({
         gap: '8px ',
         justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
         padding: padding === 'default' ? '4px 6px' : '',
-        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height,
+        height: calculatedHeight == 30 ? (padding == 'default' ? '30px' : '20px') : calculatedHeight,
       }}
       data-cy={dataCy}
     >

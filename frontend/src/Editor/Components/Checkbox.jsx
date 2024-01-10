@@ -29,8 +29,15 @@ export const Checkbox = function Checkbox({
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
   const { isValid, validationError } = validate(checked);
+  const [calculatedHeight, setCalculatedHeight] = useState(height);
 
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+
+  useEffect(() => {
+    if (padding == 'default') {
+      setCalculatedHeight(height + 10);
+    }
+  }, [padding]);
 
   function toggleValue(e) {
     const isChecked = e.target.checked;
@@ -138,7 +145,7 @@ export const Checkbox = function Checkbox({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checked]);
-  console.log('height--', height);
+
   const renderCheckBox = () => (
     <div
       data-disabled={disabledState}
@@ -150,7 +157,7 @@ export const Checkbox = function Checkbox({
         gap: '8px ',
         justifyContent: `${loadingState ? 'center' : 'space-between'}`,
         padding: padding === 'default' ? '4px 6px' : '',
-        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height,
+        height: calculatedHeight == 30 ? (padding == 'default' ? '30px' : '20px') : calculatedHeight,
       }}
       data-cy={dataCy}
     >
@@ -255,7 +262,7 @@ export const Checkbox = function Checkbox({
   return (
     <div
       style={{
-        height: height == 30 ? (padding == 'default' ? '30px' : '16px') : height,
+        height: calculatedHeight == 30 ? (padding == 'default' ? '30px' : '20px') : calculatedHeight,
         justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
       }}
     >
