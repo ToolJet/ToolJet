@@ -312,8 +312,8 @@ export default function DragContainer({
               ref={moveableRef}
               ables={[MouseCustomAble, DimensionViewable]}
               props={{
-                mouseTest: false,
-                dimensionViewable: true,
+                mouseTest: true,
+                dimensionViewable: selectedComponents.length > 1,
               }}
               flushSync={flushSync}
               target={
@@ -683,7 +683,7 @@ export default function DragContainer({
                     flushSync={flushSync}
                     key={i.parent}
                     ref={(el) => (childMoveableRefs.current[i.parent] = el)}
-                    ables={[DimensionViewable]}
+                    ables={[MouseCustomAble, DimensionViewable]}
                     props={{
                       mouseTest: true,
                       dimensionViewable: selectedComponents.length > 2,
