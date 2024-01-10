@@ -275,7 +275,7 @@
                     "permissionResources": {
                         "userGroup": "User group",
                         "apps": "Apps",
-                        "users": "User",
+                        "users": "Users",
                         "permissions": "Permissions",
                         "addAppsToGroup": "Select apps to add to the group",
                         "name": "name",
