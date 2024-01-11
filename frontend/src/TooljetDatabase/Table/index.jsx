@@ -387,7 +387,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           className="table card-table table-bordered table-vcenter text-nowrap datatable"
           style={{ position: 'relative' }}
         >
-          <thead>
+          <thead className="tjdb-sticky-column-header">
             <button ref={columnCreatorElement} onClick={() => openCreateColumnDrawer()} className={`${positionValue}`}>
               +
             </button>
