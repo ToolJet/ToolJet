@@ -1,0 +1,23 @@
+export enum WHITE_LABELLING_SETTINGS {
+  WHITE_LABEL_LOGO = 'WHITE_LABEL_LOGO',
+  WHITE_LABEL_TEXT = 'WHITE_LABEL_TEXT',
+  WHITE_LABEL_FAVICON = 'WHITE_LABEL_FAVICON',
+}
+
+export enum WHITE_LABELLING_OPTIONS {
+  WHITE_LABEL_LOGO = 'App Logo',
+  WHITE_LABEL_TEXT = 'Page Title',
+  WHITE_LABEL_FAVICON = 'Favicon',
+}
+
+export enum WHITE_LABELLING_COLUMNS {
+  WHITE_LABEL_LOGO = 'logo',
+  WHITE_LABEL_TEXT = 'text',
+  WHITE_LABEL_FAVICON = 'favicon',
+}
+
+export enum DEFAULT_WHITE_LABELLING_SETTINGS {
+  WHITE_LABEL_LOGO = 'https://app.tooljet.com/logo.svg',
+  WHITE_LABEL_TEXT = 'ToolJet',
+  WHITE_LABEL_FAVICON = 'https://app.tooljet.com/favico.png',
+}

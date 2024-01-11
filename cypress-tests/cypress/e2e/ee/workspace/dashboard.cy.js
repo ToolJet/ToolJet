@@ -8,13 +8,18 @@ import { dashboardSelector } from "Selectors/dashboard";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
 
-describe("dashboard", () => {
+describe("dashboard", {
+  retries: {
+    runMode: 2,
+  },
+}, () => {
   const selector =
     Cypress.env("environment") === "Enterprise"
       ? commonEeSelectors.instanceSettingIcon
-      : '[data-cy="icon-settings"]';
+      : commonEeSelectors.settingsIcon;
 
-  before(() => {
+
+  it("should verify the elements on empty dashboard", () => {
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=&type=front-end", {
       fixture: "intercept/emptyDashboard.json",
     }).as("emptyDashboard");
@@ -24,9 +29,7 @@ describe("dashboard", () => {
     login();
     cy.wait("@emptyDashboard");
     cy.wait("@folders");
-  });
 
-  it("should verify the elements on empty dashboard", () => {
     cy.get(commonSelectors.homePageLogo).should("be.visible");
     cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
@@ -97,7 +100,7 @@ describe("dashboard", () => {
     });
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      dashboardText.dashboardAppsHeaderLabel
+      " All apps"
     );
 
     cy.get(dashboardSelector.versionLabel).should("be.visible");

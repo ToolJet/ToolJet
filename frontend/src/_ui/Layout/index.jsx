@@ -6,18 +6,21 @@ import { Profile } from '@/_components/Profile';
 import { NotificationCenter } from '@/_components/NotificationCenter';
 import Logo from '@assets/images/rocket.svg';
 import Header from '../Header';
-import { authenticationService, licenseService } from '@/_services';
+import { authenticationService, licenseService, whiteLabellingService } from '@/_services';
 import SolidIcon from '../Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import Beta from '../Beta';
 import './styles.scss';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
   const [featureAccess, setFeatureAccess] = useState({});
+  const [whiteLabelLogo, setWhiteLabelLogo] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_LOGO);
   let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
 
   const canAnyGroupPerformAction = (action, permissions) => {
@@ -61,6 +64,23 @@ function Layout({ children, switchDarkMode, darkMode }) {
 
   useEffect(() => {
     fetchFeatureAccess();
+    const fetchData = async () => {
+      const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
+      let whiteLabelLogo;
+
+      if (!isWhiteLabelDetailsFetched) {
+        // Fetch white labeling details if not loaded yet
+        try {
+          await actions.fetchWhiteLabelDetails();
+        } catch (error) {
+          console.error('Unable to update white label settings', error);
+        }
+      }
+      whiteLabelLogo = useWhiteLabellingStore.getState().whiteLabelLogo;
+      setWhiteLabelLogo(whiteLabelLogo);
+    };
+
+    fetchData();
   }, []);
 
   const currentUserValue = authenticationService.currentSessionValue;
@@ -96,11 +116,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 to={getPrivateRoute('dashboard')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               >
-                {window.public_config?.WHITE_LABEL_LOGO ? (
-                  <img src={window.public_config?.WHITE_LABEL_LOGO} height={26} />
-                ) : (
-                  <Logo />
-                )}
+                {whiteLabelLogo ? <img src={whiteLabelLogo} height={26} /> : <Logo />}
               </Link>
             </div>
             <div>

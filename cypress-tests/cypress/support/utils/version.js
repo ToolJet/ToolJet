@@ -67,7 +67,7 @@ export const editVersionAndVerify = (
   newVersion = [],
   toastMessageText
 ) => {
-  cy.reload();
+  // cy.reload();
   cy.get(appVersionSelectors.currentVersionField(currentVersion)).then(
     ($ele) => {
       if ($ele.hasClass("color-light-green")) {

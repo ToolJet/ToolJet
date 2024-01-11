@@ -26,11 +26,11 @@ describe("Data source Elasticsearch", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources
+      postgreSqlText.allDataSources()
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase
+      postgreSqlText.allDatabase()
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -131,7 +131,7 @@ describe("Data source Elasticsearch", () => {
 
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       Cypress.env("elasticsearch_password")
     );
 
@@ -161,7 +161,7 @@ describe("Data source Elasticsearch", () => {
 
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       "elasticsearch_password"
     );
 
@@ -171,7 +171,7 @@ describe("Data source Elasticsearch", () => {
     );
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       Cypress.env("elasticsearch_password")
     );
 

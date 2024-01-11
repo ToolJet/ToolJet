@@ -28,11 +28,11 @@ describe("Data sources", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources
+      postgreSqlText.allDataSources()
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase
+      postgreSqlText.allDatabase()
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -101,7 +101,7 @@ describe("Data sources", () => {
     );
     cy.get('[data-cy="connection-alert-text"]').should(
       "have.text",
-      "Network error. Could not reach Snowflake."
+      "Invalid account. The specified value must be a valid subdomain string."
     );
   });
 
@@ -122,7 +122,7 @@ describe("Data sources", () => {
     );
     fillDataSourceTextField(
       "Password",
-      "Enter password",
+      "**************",
       Cypress.env("snowflake_password")
     );
     fillDataSourceTextField(

@@ -104,6 +104,9 @@ class HomePageComponent extends React.Component {
   }
 
   async componentDidMount() {
+    retrieveWhiteLabelText().then((labelText) => {
+      document.title = `${labelText} - Dashboard`;
+    });
     await Promise.all([
       this.fetchApps(1, this.state.currentFolder.id),
       this.fetchFolders(),
@@ -113,7 +116,6 @@ class HomePageComponent extends React.Component {
       this.fetchWorkflowsWorkspaceLimit(),
       this.fetchOrgGit(),
     ]);
-    document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
 
   componentDidUpdate(prevProps) {
@@ -234,7 +236,7 @@ class HomePageComponent extends React.Component {
     _self.setState({ renamingApp: true });
     try {
       await appsService.saveApp(appId, { name: newAppName });
-      await this.fetchApps();
+      await this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
       toast.success('App name has been updated!');
       _self.setState({ renamingApp: false });
       return true;
@@ -1148,7 +1150,14 @@ class HomePageComponent extends React.Component {
                     </div>
                   </LicenseTooltip>
                   {this.props.appType === 'front-end' && (
-                    <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
+                    <LicenseBannerCloud
+                      classes="mb-3 small"
+                      limits={appsLimit}
+                      type="apps"
+                      size="small"
+                      style={{ marginTop: '20px' }}
+                      z-index="10000"
+                    />
                   )}
                   {this.props.appType === 'workflow' &&
                     (workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||

@@ -6,7 +6,13 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import LdapSSOLoginButton from '@ee/components/LoginPage/LdapSSOLoginButton';
-import { validateEmail, retrieveWhiteLabelText, eraseRedirectUrl, redirectToWorkspace } from '@/_helpers/utils';
+import {
+  validateEmail,
+  retrieveWhiteLabelText,
+  eraseRedirectUrl,
+  redirectToWorkspace,
+  setFaviconAndTitle,
+} from '@/_helpers/utils';
 import SAMLSSOLoginButton from '@ee/components/LoginPage/SAMLSSOLoginButton';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
@@ -21,6 +27,8 @@ import initPosthog from '../_helpers/initPosthog';
 import { withRouter } from '@/_hoc/withRouter';
 import { pathnameToArray, redirectToDashboard, getRedirectTo } from '@/_helpers/routes';
 import { setCookie } from '@/_helpers/cookie';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -38,6 +46,9 @@ class LoginPageComponent extends React.Component {
   darkMode = localStorage.getItem('darkMode') === 'true';
 
   componentDidMount() {
+    retrieveWhiteLabelText().then((labelText) => {
+      this.setState({ whiteLabelText: labelText });
+    });
     /* remove login oranization's id and slug from the cookie */
     authenticationService.deleteLoginOrganizationId();
     authenticationService.deleteLoginOrganizationSlug();
@@ -63,13 +74,15 @@ class LoginPageComponent extends React.Component {
       }
     });
 
-    authenticationService.getOrganizationConfigs(this.organizationSlug).then(
+    authenticationService.getOrganizationConfigs(null, this.organizationSlug).then(
       (configs) => {
         this.organizationId = configs.id;
         this.setState({
           isGettingConfigs: false,
           configs,
         });
+        const { whiteLabelText, whiteLabelFavicon } = useWhiteLabellingStore.getState();
+        setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
       },
       (response) => {
         if (response.data.statusCode !== 404 && response.data.statusCode !== 422) {
@@ -205,7 +218,7 @@ class LoginPageComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, configs, isGettingConfigs } = this.state;
+    const { isLoading, configs, isGettingConfigs, whiteLabelText } = this.state;
     return (
       <>
         <div className="common-auth-section-whole-wrapper page">
@@ -271,8 +284,8 @@ class LoginPageComponent extends React.Component {
                           <div className="tj-text-input-label">
                             {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
                               <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
-                                {this.props.t('newToTooljet', ` New to ${retrieveWhiteLabelText()}?`, {
-                                  whiteLabelText: retrieveWhiteLabelText(),
+                                {this.props.t('newToTooljet', ` New to ${whiteLabelText}?`, {
+                                  whiteLabelText,
                                 })}
                                 <Link
                                   to={'/signup'}

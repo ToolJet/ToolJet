@@ -10,6 +10,18 @@ export const zustandDevTools = (fn, options = {}) =>
 
 const resetters = [];
 
+export const defaultWhiteLabellingSettings = {
+  WHITE_LABEL_LOGO: 'https://app.tooljet.com/logo.svg',
+  WHITE_LABEL_TEXT: 'ToolJet',
+  WHITE_LABEL_FAVICON: 'https://app.tooljet.com/favico.png',
+};
+
+export const whiteLabellingOptions = {
+  WHITE_LABEL_LOGO: 'App Logo',
+  WHITE_LABEL_TEXT: 'Page Title',
+  WHITE_LABEL_FAVICON: 'Favicon',
+};
+
 export const create = (fn) => {
   if (fn === undefined) return create;
   const store = _create(fn);

@@ -54,6 +54,9 @@ class ManageAppUsersComponent extends React.Component {
     const appId = this.props.appId;
     this.fetchAppUsers(appId);
     this.setState({ appId });
+    retrieveWhiteLabelText().then((labelText) => {
+      this.setState({ whiteLabelText: labelText });
+    });
   }
 
   fetchAppUsers = (appId) => {
@@ -191,14 +194,12 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, appId, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
+    const { isLoading, appId, isSlugVerificationInProgress, newSlug, isSlugUpdated, whiteLabelText } = this.state;
 
     const appLink = `${getHostURL()}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
-    const embeddableLink = `<iframe width="560" height="315" src="${appLink}${
-      this.props.slug
-    }" title="${retrieveWhiteLabelText()} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
+    const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="${whiteLabelText} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
 
     const shouldShowShareModal = this.props.isVersionReleased
       ? this.props.multiEnvironmentEnabled

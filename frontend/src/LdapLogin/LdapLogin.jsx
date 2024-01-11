@@ -36,7 +36,7 @@ const LdapLoginPageComponent = ({ darkMode, ...props }) => {
   useEffect(() => {
     setGettingConfigsState(true);
     authenticationService.deleteLoginOrganizationId();
-    authenticationService.getOrganizationConfigs(organizationSlug).then(
+    authenticationService.getOrganizationConfigs(null, organizationSlug).then(
       (configs) => {
         if (configs?.id) setLoginOrganizationId(configs.id);
         if (!configs?.ldap?.enabled) {

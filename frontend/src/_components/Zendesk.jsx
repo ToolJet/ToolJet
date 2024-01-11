@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { retrieveWhiteLabelText } from '../_helpers/utils';
 import Input from '@/_ui/Input';
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import EncryptedFieldWrapper from './EncyrptedFieldWrapper';
 
 const Zendesk = ({
   optionchanged,
@@ -15,9 +17,16 @@ const Zendesk = ({
   currentAppEnvironmentId,
   workspaceConstants,
   isDisabled,
+  optionsChanged,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
+  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
+
   const { t } = useTranslation();
+
+  useEffect(() => {
+    retrieveWhiteLabelText().then(setWhiteLabelText);
+  }, []);
 
   function authZendesk() {
     const provider = 'zendesk';
@@ -75,21 +84,23 @@ const Zendesk = ({
           />
         </div>
         <div className="col-md-12 mb-2">
-          <label className="form-label text-muted mt-3">
-            Client Secret
-            <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
-              Encrypted
-            </small>
-          </label>
-          <Input
-            type="password"
-            className="form-control"
-            onChange={(e) => optionchanged('client_secret', e.target.value)}
-            value={options?.client_secret?.value}
-            workspaceConstants={workspaceConstants}
-            disabled={isDisabled}
-          />
+          <EncryptedFieldWrapper
+            options={options}
+            selectedDataSource={selectedDataSource}
+            optionchanged={optionchanged}
+            optionsChanged={optionsChanged}
+            name="client_secret"
+            label="Client Secret"
+          >
+            <Input
+              type="password"
+              className="form-control"
+              onChange={(e) => optionchanged('client_secret', e.target.value)}
+              value={options?.client_secret?.value}
+              workspaceConstants={workspaceConstants}
+              disabled={isDisabled}
+            />
+          </EncryptedFieldWrapper>
         </div>
 
         <div className="col-md-12">
@@ -98,8 +109,8 @@ const Zendesk = ({
             <p>
               {t(
                 'zendesk.enableReadAndWrite',
-                `If you want your ${retrieveWhiteLabelText()} apps to modify your Zendesk resources, make sure to select read and write access`,
-                { whiteLabelText: retrieveWhiteLabelText() }
+                `If you want your ${whiteLabelText} apps to modify your Zendesk resources, make sure to select read and write access`,
+                { whiteLabelText: whiteLabelText }
               )}
             </p>
             <div>
@@ -110,8 +121,8 @@ const Zendesk = ({
                 text="Read only"
                 helpText={t(
                   'zendesk.readDataFromResources',
-                  `Your ${retrieveWhiteLabelText()} apps can only read data from resources`,
-                  { whiteLabelText: retrieveWhiteLabelText() }
+                  `Your ${whiteLabelText} apps can only read data from resources`,
+                  { whiteLabelText: whiteLabelText }
                 )}
               />
               <Radio
@@ -121,8 +132,8 @@ const Zendesk = ({
                 text="Read and write"
                 helpText={t(
                   'zendesk.readModifyResources',
-                  `Your ${retrieveWhiteLabelText()} apps can read data from resources, modify resources, and more.`,
-                  { whiteLabelText: retrieveWhiteLabelText() }
+                  `Your ${whiteLabelText} apps can read data from resources, modify resources, and more.`,
+                  { whiteLabelText: whiteLabelText }
                 )}
               />
             </div>

@@ -65,7 +65,7 @@ export default function EditorHeader({
   const [promoteModalData, setPromoteModalData] = useState(null);
 
   let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
-  const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
+  const shouldEnableMultiplayer = featureAccess?.multiPlayerEdit === true;
 
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({

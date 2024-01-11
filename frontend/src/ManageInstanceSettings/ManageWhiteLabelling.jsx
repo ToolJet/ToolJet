@@ -7,7 +7,9 @@ import ErrorBoundary from '@/Editor/ErrorBoundary';
 import Skeleton from 'react-loading-skeleton';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _ from 'lodash';
-
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { setFaviconAndTitle } from '@/_helpers/utils';
 class ManageWhiteLabellingComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -24,6 +26,8 @@ class ManageWhiteLabellingComponent extends React.Component {
   }
 
   componentDidMount() {
+    const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
+    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
     this.fetchFeatureAccess();
     this.fetchSettings();
   }
@@ -81,9 +85,7 @@ class ManageWhiteLabellingComponent extends React.Component {
     whiteLabellingService
       .update(transformedSettings)
       .then(() => {
-        window.location = `${window.public_config?.TOOLJET_HOST}${
-          window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-        }instance-settings/white-labelling`;
+        window.location.reload();
         this.setState({ isSaving: false, hasChanges: false });
         this.fetchSettings();
       })
@@ -143,6 +145,9 @@ class ManageWhiteLabellingComponent extends React.Component {
                         'White labelling'
                       )}
                     </div>
+                    {disabled && (
+                      <LicenseBannerCloud isAvailable={false} showPaidFeatureBanner={true}></LicenseBannerCloud>
+                    )}
                   </div>
                 </div>
                 <div className="card-body">

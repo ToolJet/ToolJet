@@ -70,14 +70,28 @@ import { diff } from 'deep-object-diff';
 import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import { getQueryParams } from '@/_helpers/routes';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
 
 setAutoFreeze(false);
 enablePatches();
 
-function setWindowTitle(name) {
-  return (document.title = name ? `${name} - ${retrieveWhiteLabelText()}` : `My App - ${retrieveWhiteLabelText()}`);
+async function setWindowTitle(name) {
+  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
+  let whiteLabelText;
+
+  // Only fetch white labeling details if they haven't been fetched yet
+  if (!isWhiteLabelDetailsFetched) {
+    try {
+      await actions.fetchWhiteLabelDetails();
+    } catch (error) {
+      console.error('Unable to update white label settings', error);
+    }
+  }
+
+  whiteLabelText = useWhiteLabellingStore.getState().whiteLabelText;
+  document.title = name ? `${name} - ${whiteLabelText}` : `My App - ${whiteLabelText}`;
 }
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
@@ -258,7 +272,7 @@ const EditorComponent = (props) => {
       document.title = 'Tooljet - Dashboard';
       socket && socket?.close();
       subscription.unsubscribe();
-      if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
+      if (featureAccess?.multiPlayerEdit) props?.provider?.disconnect();
       useEditorStore.getState().actions.setIsEditorActive(false);
       prevAppDefinition.current = null;
     };
@@ -321,17 +335,15 @@ const EditorComponent = (props) => {
     }
   }, [currentLayout, mounted]);
 
-  useEffect(() => {
-    if (mounted && JSON.stringify(prevEventsStoreRef.current) !== JSON.stringify(events)) {
-      props.ymap?.set('eventHandlersUpdated', {
-        updated: true,
-        currentVersionId: currentVersionId,
-        currentSessionId: currentSessionId,
-      });
-    }
+  const handleYmapEventUpdates = () => {
+    if (!featureAccess?.multiPlayerEdit) return;
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ events })]);
+    props.ymap?.set('eventHandlersUpdated', {
+      currentVersionId: currentVersionId,
+      currentSessionId: currentSessionId,
+      update: true,
+    });
+  };
 
   /**
    * ThandleMessage event listener in the login component for iframe communication.
@@ -370,6 +382,7 @@ const EditorComponent = (props) => {
         name: app.name,
         slug: app.slug,
         creationMode: app?.creationMode || app?.creation_mode,
+        current_version_id: app.current_version_id,
       })),
     });
   };
@@ -439,7 +452,7 @@ const EditorComponent = (props) => {
    */
   const initRealtimeSave = () => {
     // Check if multiplayer editing is enabled; if not, return early
-    if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
+    if (!featureAccess?.multiPlayerEdit) return null;
 
     // Observe changes in the 'appDef' property of the 'ymap' object
     props.ymap?.observeDeep(() => {
@@ -458,8 +471,6 @@ const EditorComponent = (props) => {
 
         // Trigger real-time save with specific options
 
-        // const ymapOpts = ymapUpdates?.opts;
-
         realtimeSave(props.ymap?.get('appDef').newDefinition, {
           skipAutoSave: true,
           skipYmapUpdate: true,
@@ -469,7 +480,7 @@ const EditorComponent = (props) => {
         });
       }
 
-      if (ymapEventHandlersUpdated) {
+      if (ymapEventHandlersUpdated?.update === true) {
         if (
           !ymapEventHandlersUpdated.currentSessionId ||
           ymapEventHandlersUpdated.currentSessionId === currentSessionId
@@ -499,14 +510,15 @@ const EditorComponent = (props) => {
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
 
-    await fetchApp(props.params.pageHandle, true);
+    await fetchApp(props.params.pageHandle);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
     await fetchEnvironments();
 
     await fetchAndInjectCustomStyles();
     initComponentVersioning();
-    initRealtimeSave();
+
+    featureAccess?.multiPlayerEdit && initRealtimeSave();
     initEventListeners();
     updateEditorState({
       selectedComponents: [],
@@ -741,16 +753,13 @@ const EditorComponent = (props) => {
       releasedId && useAppVersionStore.getState().actions.updateReleasedVersionId(releasedId);
     }
 
-    const isMultiEnvironmentActive = useEditorStore.getState().featureAccess?.multiEnvironment ?? false;
-
     const currentAppVersionEnvId =
-      !isMultiEnvironmentActive && useAppVersionStore.getState().isVersionReleased
-        ? data['editing_version']['promoted_from'] || data['editing_version']['promotedFrom']
-        : data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
+      data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
 
     const currentOrgId = data?.organization_id || data?.organizationId;
 
-    const currentEnvironmentId = !environmentSwitch ? currentAppVersionEnvId : selectedEnvironmentId;
+    const currentEnvironmentId =
+      !environmentSwitch && !versionSwitched ? currentAppVersionEnvId : selectedEnvironmentId;
     await fetchOrgEnvironmentConstants(currentEnvironmentId);
 
     let envDetails = useEditorStore.getState().currentAppEnvironment;
@@ -831,23 +840,26 @@ const EditorComponent = (props) => {
     await handleEvent('onPageLoad', currentPageEvents, {}, true);
 
     const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
+    /* TODO: Later we have to remove this obj from localstore and should use the store to get environment details */
+    const appId = data.id ?? appId;
     if (currentEnvironmentObj[appId] !== envDetails?.id) {
       currentEnvironmentObj[appId] = currentEnvironmentId;
       localStorage.setItem('currentEnvironmentIds', JSON.stringify(currentEnvironmentObj));
     }
   };
 
-  const fetchApp = async (startingPageHandle, onMount = false) => {
-    const _appId = props?.params?.id || props?.params?.slug;
-
-    if (!onMount) {
-      await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
-    } else {
-      callBack(app, startingPageHandle);
-    }
+  const fetchApp = async (startingPageHandle) => {
+    /* id of an app will be there if the user is trying to load app editor with slug. fetchApp api needs id. */
+    const _appId = props?.id;
+    await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
   };
 
-  const setAppDefinitionFromVersion = (appData) => {
+  const setAppDefinitionFromVersion = (
+    appData,
+    versionSwitched = false,
+    isEnvironmentSwitched = false,
+    selectedEnvironmentId = null
+  ) => {
     const version = appData?.editing_version?.id;
     if (version?.id !== editingVersionId) {
       if (version?.id === currentVersionId) {
@@ -861,7 +873,7 @@ const EditorComponent = (props) => {
       });
       onEditorFreeze(false);
       setAppVersionPromoted(false);
-      callBack(appData, null, true, false, null);
+      callBack(appData, null, versionSwitched, isEnvironmentSwitched, selectedEnvironmentId);
       initComponentVersioning();
     }
   };
@@ -1021,6 +1033,10 @@ const EditorComponent = (props) => {
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
     const editingVersion = useAppVersionStore.getState().editingVersion;
+
+    //skipAutoSave means the updates are coming from websocket and we don't need to save it again
+    if (appDiffOptions?.skipAutoSave) return;
+
     if (
       isEditorFreezed ||
       useAppVersionStore.getState().isAppVersionPromoted ||
@@ -1056,7 +1072,7 @@ const EditorComponent = (props) => {
           };
           useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
 
-          if (config.ENABLE_MULTIPLAYER_EDITING) {
+          if (featureAccess?.multiPlayerEdit) {
             props.ymap?.set('appDef', {
               newDefinition: appDefinition,
               editingVersionId: editingVersion.id,
@@ -1245,7 +1261,7 @@ const EditorComponent = (props) => {
       const diffPatches = diff(appDefinition, updatedAppDefinition);
 
       if (!isEmpty(diffPatches)) {
-        appDefinitionChanged(updatedAppDefinition, { skipAutoSave: true, componentDefinitionChanged: true, ...props });
+        appDefinitionChanged(updatedAppDefinition, { componentDefinitionChanged: true, ...props });
       }
     }
   };
@@ -1475,6 +1491,17 @@ const EditorComponent = (props) => {
     useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
   };
 
+  const navigateToPage = (queryParams = [], handle) => {
+    const appId = useAppDataStore.getState()?.appId;
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
+
+    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
+  };
+
   const switchPage = (pageId, queryParams = []) => {
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useEditorStore.getState().currentPageId;
@@ -1489,13 +1516,7 @@ const EditorComponent = (props) => {
 
     if (!name || !handle) return;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
-
-    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
-      state: {
-        isSwitchingPage: true,
-      },
-    });
+    navigateToPage(queryParams, handle);
 
     const page = {
       id: pageId,
@@ -1504,6 +1525,7 @@ const EditorComponent = (props) => {
       variables: copyOfAppDefinition.pages[pageId]?.variables ?? {},
     };
 
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const globals = {
       ...currentState.globals,
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
@@ -1700,9 +1722,8 @@ const EditorComponent = (props) => {
     });
 
     toast.success('Page handle updated successfully');
-
     const queryParams = getQueryParams();
-    switchPage(pageId, Object.entries(queryParams));
+    navigateToPage(Object.entries(queryParams), newHandle);
   };
 
   const updateOnSortingPages = (newSortedPages) => {
@@ -1832,7 +1853,7 @@ const EditorComponent = (props) => {
       {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
       {isVersionReleased && <ReleasedVersionError />}
       {!isVersionReleased && isEditorFreezed && creationMode !== 'GIT' && <FreezeVersionInfo />}
-      <EditorContextWrapper>
+      <EditorContextWrapper handleYmapEventUpdates={handleYmapEventUpdates}>
         <EditorHeader
           darkMode={props.darkMode}
           appDefinition={_.cloneDeep(appDefinition)}
@@ -1942,7 +1963,7 @@ const EditorComponent = (props) => {
                       transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                     }}
                   >
-                    {config.ENABLE_MULTIPLAYER_EDITING && featureAccess?.multiPlayerEdit && (
+                    {featureAccess?.multiPlayerEdit && (
                       <RealtimeCursors editingVersionId={editingVersionId} editingPageId={currentPageId} />
                     )}
                     {isLoading && (

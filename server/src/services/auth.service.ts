@@ -343,7 +343,7 @@ export class AuthService {
         role: user.role,
       });
       this.emailService
-        .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
+        .sendWelcomeEmail(user.email, user.firstName, user.invitationToken, null, organization.id, null, null)
         .catch((err) => console.error(err));
 
       await this.auditLoggerService.perform(
@@ -368,7 +368,7 @@ export class AuthService {
     }
     const forgotPasswordToken = uuid.v4();
     await this.usersService.updateUser(user.id, { forgotPasswordToken });
-    await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken);
+    await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken, user.organizationId);
   }
 
   async resetPassword(token: string, password: string) {
@@ -660,7 +660,9 @@ export class AuthService {
             `${user.firstName} ${user.lastName} ?? ''`,
             user.invitationToken,
             `${organizationUser.invitationToken}`,
-            organizationUser.organizationId
+            organizationUser.organizationId,
+            organizationUser.organizationId,
+            null
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
         throw new UnauthorizedException(

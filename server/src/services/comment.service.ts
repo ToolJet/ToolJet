@@ -43,7 +43,8 @@ export class CommentService {
           commentLink,
           comment.createdAt.toUTCString(),
           comment.comment,
-          mentionedUser.avatar?.data.toString('base64')
+          mentionedUser.avatar?.data.toString('base64'),
+          user.organizationId
         );
         void this.commentUsersRepository.save(
           this.commentUsersRepository.create({ commentId: comment.id, userId: mentionedUser.id })

@@ -2,7 +2,7 @@ import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
-import { navigateToAllUserGroup } from "../utils/common";
+import { navigateToAllUserGroup, createGroup } from "Support/utils/common";
 
 export const manageGroupsElements = () => {
   cy.get(groupsSelector.groupLink("All users")).verifyVisibleElement(
@@ -63,14 +63,12 @@ export const manageGroupsElements = () => {
 
   cy.get("body").then(($title) => {
     if ($title.find(groupsSelector.helperTextNoAppsAdded).length > 0) {
-      cy.get(groupsSelector.helperTextNoAppsAdded).eq(0).verifyVisibleElement(
-        "have.text",
-        groupsText.helperTextNoAppsAdded
-      );
-      cy.get(groupsSelector.helperTextPermissions).eq(0).verifyVisibleElement(
-        "have.text",
-        groupsText.helperTextPermissions
-      );
+      cy.get(groupsSelector.helperTextNoAppsAdded)
+        .eq(0)
+        .verifyVisibleElement("have.text", groupsText.helperTextNoAppsAdded);
+      cy.get(groupsSelector.helperTextPermissions)
+        .eq(0)
+        .verifyVisibleElement("have.text", groupsText.helperTextPermissions);
     }
   });
 
@@ -183,14 +181,12 @@ export const manageGroupsElements = () => {
 
   cy.get("body").then(($title) => {
     if ($title.find(groupsSelector.helperTextNoAppsAdded).length > 0) {
-      cy.get(groupsSelector.helperTextNoAppsAdded).eq(0).verifyVisibleElement(
-        "have.text",
-        groupsText.helperTextNoAppsAdded
-      );
-      cy.get(groupsSelector.helperTextPermissions).eq(0).verifyVisibleElement(
-        "have.text",
-        groupsText.helperTextPermissions
-      );
+      cy.get(groupsSelector.helperTextNoAppsAdded)
+        .eq(0)
+        .verifyVisibleElement("have.text", groupsText.helperTextNoAppsAdded);
+      cy.get(groupsSelector.helperTextPermissions)
+        .eq(0)
+        .verifyVisibleElement("have.text", groupsText.helperTextPermissions);
     }
   });
 
@@ -260,4 +256,92 @@ export const addUserToGroup = (groupName, email) => {
     cy.get("input").check();
   });
   cy.get(`[data-cy="${groupName}-group-add-button"]`).click();
+};
+
+export const createGroupAddAppAndUserToGroup = (groupName, email) => {
+  cy.intercept("GET", "http://localhost:3000/api/group_permissions").as(
+    `${groupName}`
+  );
+  createGroup(groupName);
+
+  cy.wait(`@${groupName}`).then((groupResponse) => {
+    const groupId = groupResponse.response.body.group_permissions.find(
+      (group) => group.group === groupName
+    ).id;
+
+    cy.getCookie("tj_auth_token").then((cookie) => {
+      const headers = {
+        "Tj-Workspace-Id": Cypress.env("workspaceId"),
+        Cookie: `tj_auth_token=${cookie.value}`,
+      };
+
+      cy.request({
+        method: "PUT",
+        url: `http://localhost:3000/api/group_permissions/${groupId}/app`,
+        headers: headers,
+        body: { add_apps: [Cypress.env("appId")] },
+      }).then((patchResponse) => {
+        expect(patchResponse.status).to.equal(200);
+      });
+
+      cy.task("updateId", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `select id from users where email='${email}';`,
+      }).then((resp) => {
+        const userId = resp.rows[0].id;
+
+        cy.request({
+          method: "PUT",
+          url: `http://localhost:3000/api/group_permissions/${groupId}/user`,
+          headers: headers,
+          body: { add_users: [userId] },
+        }).then((patchResponse) => {
+          expect(patchResponse.status).to.equal(200);
+        });
+
+        cy.get('[data-cy="all-users-list-item"] > span').click();
+        cy.get(`[data-cy="${groupName}-list-item"]`).click();
+        cy.wait(1000);
+        cy.get('[data-cy="checkbox-app-edit"]').check();
+      });
+    });
+  });
+};
+
+export const addDsToGroup = (groupName, dsName) => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    const headers = {
+      "Tj-Workspace-Id": Cypress.env("workspaceId"),
+      Cookie: `tj_auth_token=${cookie.value}`,
+    };
+
+    cy.request({
+      method: "GET",
+      url: `http://localhost:3000/api/group_permissions`,
+      headers: headers,
+    }).then((response) => {
+      const group = response.body.group_permissions.find(
+        (group) => group.group === groupName
+      );
+      const groupId = group.id;
+
+      cy.task("updateId", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `select id from data_sources where name='${dsName}';`,
+      }).then((resp) => {
+        const dsId = resp.rows[0].id;
+
+        cy.request({
+          method: "PUT",
+          url: `http://localhost:3000/api/group_permissions/${groupId}/data-source`,
+          headers: headers,
+          body: {
+            add_data_sources: [`${dsId}`],
+          },
+        }).then((patchResponse) => {
+          expect(patchResponse.status).to.equal(200);
+        });
+      });
+    });
+  });
 };

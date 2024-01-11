@@ -26,21 +26,20 @@ export function Settings(props) {
   const location = useLocation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const sideBarNavs = ['Subscription'];
-  const protectedNavs = ['General settings', 'White labelling'];
+  const sideBarNavs = ['White labelling', 'Subscription'];
 
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'subscription':
         return 'Subscription';
+      case 'white-labelling':
+        return 'White labelling';
       default:
         return groupName;
     }
   };
 
-  const paidFeatures = { 'White labelling': 'whiteLabelling' };
-
-  const fetchFeatureAccess = (loadingAtFirstTime = false) => {
+  const fetchFeatureAccess = () => {
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess({ ...data });
       if (data.licenseStatus.isExpired || !data.licenseStatus.isLicenseValid) {
@@ -83,8 +82,8 @@ export function Settings(props) {
     if (licenseLoaded) {
       const selectedTabFromRoute = location.pathname.split('/').pop();
       if (selectedTabFromRoute === 'settings') {
-        setSelectedTab('Subscription');
-        navigate(`/${workspaceId}/settings/subscription`);
+        setSelectedTab('White labelling');
+        navigate(`/${workspaceId}/settings/white-labelling`);
       } else {
         setSelectedTab(defaultOrgName(selectedTabFromRoute));
       }
@@ -101,59 +100,31 @@ export function Settings(props) {
               <div className="workspace-nav-list-wrap">
                 {licenseLoaded ? (
                   sideBarNavs.map((item, index) => {
-                    const navLink = `/settings/${item.toLowerCase().replace(/\s+/g, '-')}`;
-                    const proctedNavIndex = protectedNavs.indexOf(item);
-                    const Wrapper = ({ children }) =>
-                      proctedNavIndex >= 0 ? (
-                        <LicenseTooltip
-                          limits={featureAccess}
-                          feature={item}
-                          isAvailable={true}
-                          noTooltipIfValid={true}
-                          customMessage={
-                            item === 'Manage instance settings'
-                              ? 'Manage instance settings are available only in paid plans'
-                              : undefined
-                          }
-                        >
-                          {children}
-                        </LicenseTooltip>
-                      ) : (
-                        <>{children}</>
-                      );
+                    const navLink = `/${workspaceId}/settings/${item.toLowerCase().replace(/\s+/g, '-')}`;
                     return (
-                      <Wrapper key={index}>
-                        <Link
-                          to={navLink}
-                          key={index}
-                          style={{
-                            textDecoration: 'none',
-                            border: 'none',
-                            color: 'inherit',
-                            outline: 'none',
-                            backgroundColor: 'inherit',
+                      <Link
+                        to={navLink}
+                        key={index}
+                        style={{
+                          textDecoration: 'none',
+                          border: 'none',
+                          color: 'inherit',
+                          outline: 'none',
+                          backgroundColor: 'inherit',
+                        }}
+                      >
+                        <FolderList
+                          className="workspace-settings-nav-items"
+                          onClick={() => {
+                            setSelectedTab(defaultOrgName(item));
+                            updateSidebarNAV(item);
                           }}
+                          selectedItem={selectedTab === defaultOrgName(item)}
+                          dataCy={item.toLowerCase().replace(/\s+/g, '-')}
                         >
-                          <FolderList
-                            className="workspace-settings-nav-items"
-                            onClick={() => {
-                              if (
-                                (featureAccess.licenseStatus.isExpired ||
-                                  !featureAccess.licenseStatus.isLicenseValid ||
-                                  featureAccess?.[paidFeatures?.[item]] === false) &&
-                                protectedNavs.includes(item) === true
-                              )
-                                return;
-                              setSelectedTab(defaultOrgName(item));
-                              updateSidebarNAV(item);
-                            }}
-                            selectedItem={selectedTab == defaultOrgName(item)}
-                            dataCy={item.toLowerCase().replace(/\s+/g, '-')}
-                          >
-                            {item}
-                          </FolderList>
-                        </Link>
-                      </Wrapper>
+                          {item}
+                        </FolderList>
+                      </Link>
                     );
                   })
                 ) : (

@@ -13,12 +13,12 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
-  console.log('prop', prop);
-  console.log('obj', obj);
   for (var i = 0; i < prop.length; i++) {
     if (prop[i].endsWith(']')) {
       const actual_prop = prop[i].split('[')[0];
@@ -581,9 +581,35 @@ export const hightlightMentionedUserInComment = (comment) => {
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
 };
 
-export const retrieveWhiteLabelText = () => {
-  const custom_label = window.public_config?.WHITE_LABEL_TEXT;
-  return custom_label ? custom_label : 'ToolJet';
+export const retrieveWhiteLabelText = async (organizationId = null) => {
+  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
+  if (!isWhiteLabelDetailsFetched) {
+    try {
+      await actions.fetchWhiteLabelDetails(organizationId);
+    } catch (error) {
+      console.error('Unable to update white label settings', error);
+    }
+  }
+
+  const { whiteLabelText } = useWhiteLabellingStore.getState();
+  return whiteLabelText;
+};
+
+export const setFaviconAndTitle = (whiteLabelFavicon, whiteLabelText, page = 'Dashboard') => {
+  // Set favicon
+  let links = document.querySelectorAll("link[rel='icon']");
+  if (links.length === 0) {
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.type = 'image/png';
+    document.getElementsByTagName('head')[0].appendChild(link);
+    links = [link];
+  }
+  links.forEach((link) => {
+    link.href = `${whiteLabelFavicon || defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON}`;
+  });
+  // Set title
+  document.title = `${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT} - ${page}`;
 };
 
 export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {

@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import cx from 'classnames';
 import Textarea from '@/_ui/Textarea';
 import { toast } from 'react-hot-toast';
 import { licenseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { LoadingScreen } from './LoadingScreen';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { setFaviconAndTitle } from '@/_helpers/utils';
 
 const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
   const [license, setLicense] = useState(null);
   const [licenseLoading, setLicenseLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [licenseKey, setLicenseKey] = useState(false);
-  const [generatingLicense, setGeneratingLicense] = useState(false);
-  const navigate = useNavigate();
-  const { workspaceId } = useParams();
-  const { state, pathname } = useLocation();
+  const { state } = useLocation();
   const hasKeyChanged = licenseKey !== license?.license_key;
+  const [isLicenseUpdated, setIsLicenseUpdated] = useState(false);
+  const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
+  const { workspaceId } = useParams();
 
   const optionChanged = (value) => {
     setLicenseKey(value);
@@ -47,14 +49,11 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
       .update({ key: licenseKey })
       .then(() => {
         setLoading(false);
-        navigate(`/${workspaceId}/settings`, {
-          state: {
-            updated: true,
-          },
-        });
-        window.location.reload();
+        setIsLicenseUpdated(true);
+        window.location = `/${workspaceId}/settings/subscription?currentTab=subscriptionKey`;
       })
-      .catch(({ error }) => {
+      .catch((error) => {
+        console.log({ error });
         setLoading(false);
         fetchLicenseSettings();
         toast.error('Subscription key could not be updated. Please try again!', {
@@ -65,15 +64,14 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
   };
 
   useEffect(() => {
+    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
     fetchLicenseSettings();
     if (state?.updated) {
       toast.success('Subscription key updated successfully. Start using premium features now!', {
         position: 'top-center',
         style: { maxWidth: '324px' },
       });
-      navigate(`/${workspaceId}/settings`, {
-        replace: true,
-      });
+      window.location.reload();
     }
   }, []);
 
@@ -83,7 +81,9 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
     <div className="general-wrapper">
       <div className="metrics-wrapper">
         <div className="col-md-12">
-          <label className="form-label mt-3">Subscription key</label>
+          <label className="form-label mt-3" data-cy="subscription-key-label">
+            Subscription key
+          </label>
           <div style={{ position: 'relative' }}>
             <Textarea
               placeholder="Enter subscription key"
@@ -92,8 +92,11 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
               value={licenseKey}
               onChange={(e) => optionChanged(e.target.value)}
               disabled={loading}
+              data-cy="subscription-key-text-area"
             />
-            <div className="tj-text-xsm mt-1">This subscription is configured for the current workspace only</div>
+            <div className="tj-text-xsm mt-1" data-cy="subscription-key-helper-text">
+              This subscription is configured for the current workspace only
+            </div>
           </div>
         </div>
         <ButtonSolid
@@ -103,6 +106,7 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
           variant="primary"
           fill="#fff"
           className="mt-3"
+          data-cy="update-button"
         >
           Update
         </ButtonSolid>

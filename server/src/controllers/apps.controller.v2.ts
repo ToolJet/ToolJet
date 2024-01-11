@@ -153,6 +153,7 @@ export class AppsControllerV2 {
       homePageId: versionToLoad.homePageId,
       globalSettings: versionToLoad.globalSettings,
       showViewerNavigation: versionToLoad.showViewerNavigation,
+      organizationId: app?.organizationId,
     };
   }
 
@@ -180,6 +181,11 @@ export class AppsControllerV2 {
     const eventsForVersion = await this.eventsService.findEventsForVersion(versionId);
 
     const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
+
+    if (appCurrentEditingVersion && !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+      const developmentEnv = await this.appEnvironmentService.getByPriority(user.organizationId);
+      appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
+    }
 
     delete appCurrentEditingVersion['app'];
 

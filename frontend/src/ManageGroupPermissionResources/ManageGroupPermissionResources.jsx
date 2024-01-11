@@ -1195,6 +1195,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             overrideStrings={{
                               selectSomeItems: 'Select Data Sources to add to the group',
                             }}
+                            disabled={getPermissionInputStatus()}
                             setState={this.setState}
                             selectedData={this.state.selectedDataSourceIds}
                           />

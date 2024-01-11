@@ -21,5 +21,8 @@
     "@grpc/proto-loader": "^0.7.6",
     "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2"
+  },
+  "overrides": {
+    "minimist": "^1.2.6"
   }
 }

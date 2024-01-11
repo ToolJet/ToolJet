@@ -41,6 +41,8 @@ import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { getPreviewQueryParams, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import { camelizeKeys } from 'humps';
 
 class ViewerComponent extends React.Component {
@@ -64,8 +66,23 @@ class ViewerComponent extends React.Component {
       environmentId: null,
       pages: {},
       homepage: null,
+      organizationId: null,
     };
   }
+
+  setFavicon = (whiteLabelFavicon) => {
+    // Set favicon
+    let links = document.querySelectorAll("link[rel='icon']");
+    if (links.length === 0) {
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+      links = [link];
+    }
+    links.forEach((link) => {
+      link.href = whiteLabelFavicon || defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
+    });
+  };
 
   getViewerRef() {
     return {
@@ -306,46 +323,60 @@ class ViewerComponent extends React.Component {
     }
   };
 
-  loadApplicationBySlug = (slug, authentication_failed) => {
-    appService
-      .fetchAppBySlug(slug)
-      .then((data) => {
-        const isAppPublic = data?.is_public;
-        if (authentication_failed && !isAppPublic) {
-          return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
-        }
-        this.setStateForApp(data, true);
-        this.setState({ appId: data.id });
-        this.setStateForContainer(data);
-        this.setWindowTitle(data.name);
-      })
-      .catch((error) => {
-        this.setState({
-          isLoading: false,
-        });
-        if (error?.statusCode === 404) {
-          /* User is not authenticated. but the app url is wrong */
-          redirectToErrorPage(ERROR_TYPES.INVALID);
-        } else if (error?.statusCode === 403) {
-          redirectToErrorPage(ERROR_TYPES.RESTRICTED);
-        } else if (error?.statusCode !== 401) {
-          redirectToErrorPage(ERROR_TYPES.UNKNOWN);
-        }
-      });
+  updateWhiteLabels = async (organizationId) => {
+    try {
+      const { actions } = useWhiteLabellingStore.getState();
+      await actions.fetchWhiteLabelDetails(organizationId);
+      const { whiteLabelFavicon } = useWhiteLabellingStore.getState();
+      this.setFavicon(whiteLabelFavicon);
+    } catch (error) {
+      console.error('Unable to update white label settings', error);
+    }
   };
 
-  loadApplicationByVersion = (appId, versionId) => {
-    appService
-      .fetchAppByVersion(appId, versionId)
-      .then((data) => {
-        this.setStateForApp(data);
-        this.setStateForContainer(data, versionId);
-      })
-      .catch(() => {
-        this.setState({
-          isLoading: false,
-        });
+  loadApplicationBySlug = async (slug, authentication_failed) => {
+    try {
+      const data = await appService.fetchAppBySlug(slug);
+
+      this.setState({ organizationId: data?.organizationId });
+      await this.updateWhiteLabels(data?.organizationId);
+      const isAppPublic = data?.is_public;
+
+      if (authentication_failed && !isAppPublic) {
+        return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
+      }
+
+      this.setStateForApp(data, true);
+      this.setState({ appId: data.id });
+      this.setStateForContainer(data);
+      this.setWindowTitle(data.name);
+    } catch (error) {
+      this.setState({
+        isLoading: false,
       });
+
+      if (error?.statusCode === 404) {
+        // User is not authenticated. but the app url is wrong
+        redirectToErrorPage(ERROR_TYPES.INVALID);
+      } else if (error?.statusCode === 403) {
+        redirectToErrorPage(ERROR_TYPES.RESTRICTED);
+      } else if (error?.statusCode !== 401) {
+        redirectToErrorPage(ERROR_TYPES.UNKNOWN);
+      }
+    }
+  };
+
+  loadApplicationByVersion = async (appId, versionId) => {
+    try {
+      const data = await appService.fetchAppByVersion(appId, versionId);
+      this.setStateForApp(data);
+      this.setStateForContainer(data, versionId);
+      await this.updateWhiteLabels(data?.organizationId);
+    } catch (error) {
+      this.setState({
+        isLoading: false,
+      });
+    }
   };
 
   updateQueryConfirmationList = (queryConfirmationList) =>
@@ -599,6 +630,7 @@ class ViewerComponent extends React.Component {
       defaultComponentStateComputed,
       dataQueries,
       canvasWidth,
+      organizationId,
     } = this.state;
 
     const currentCanvasWidth = canvasWidth;
@@ -686,6 +718,7 @@ class ViewerComponent extends React.Component {
                 pages={Object.entries(this.state.appDefinition?.pages) ?? []}
                 currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                 switchPage={this.switchPage}
+                organizationId={organizationId}
               />
               <div className="sub-section">
                 <div className="main">

@@ -27,6 +27,9 @@ const OAuth = ({
   optionchanged,
   workspaceConstants,
   isDisabled,
+  options,
+  optionsChanged,
+  selectedDataSource,
 }) => {
   const authOptions = (isGrpc = false) => {
     const options = [
@@ -80,6 +83,9 @@ const OAuth = ({
         bearer_token={bearer_token}
         auth_url={auth_url}
         workspaceConstants={workspaceConstants}
+        options={options}
+        optionsChanged={optionsChanged}
+        selectedDataSource={selectedDataSource}
       />
     </>
   );

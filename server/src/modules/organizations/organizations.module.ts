@@ -41,6 +41,7 @@ import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { SessionService } from '@services/session.service';
+import { WhiteLabellingModule } from '../white-labelling/white-labelling.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { SessionService } from '@services/session.service';
       Metadata,
     ]),
     InstanceSettingsModule,
+    WhiteLabellingModule,
     AppEnvironmentsModule,
     CaslModule,
     JwtModule.registerAsync({
