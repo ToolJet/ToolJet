@@ -47,9 +47,13 @@ const updateType = Object.freeze({
 });
 
 export const computeAppDiff = (appDiff, currentPageId, opts, currentLayout) => {
-  const { updateDiff, type, operation, error } = updateFor(appDiff, currentPageId, opts, currentLayout);
+  try {
+    const { updateDiff, type, operation, error } = updateFor(appDiff, currentPageId, opts, currentLayout);
 
-  return { updateDiff, type, operation, error };
+    return { updateDiff, type, operation, error };
+  } catch (error) {
+    return { error, updateDiff: {}, type: null, operation: null };
+  }
 };
 
 // for table column diffs, we need to compute the diff for each column separately and send the the entire column data
@@ -187,34 +191,38 @@ const computePageUpdate = (appDiff, currentPageId, opts) => {
   let updateDiff;
   let operation = 'update';
 
-  if (opts.includes('deletePageRequest')) {
-    const deletePageId = _.keys(appDiff?.pages).map((pageId) => {
-      if (appDiff?.pages[pageId]?.pageId === undefined) {
-        return pageId;
+  try {
+    if (opts.includes('deletePageRequest')) {
+      const deletePageId = _.keys(appDiff?.pages).map((pageId) => {
+        if (appDiff?.pages[pageId]?.pageId === undefined) {
+          return pageId;
+        }
+      })[0];
+
+      updateDiff = {
+        pageId: deletePageId,
+      };
+
+      type = updateType.pageDefinitionChanged;
+      operation = 'delete';
+    } else if (opts.includes('pageSortingChanged')) {
+      updateDiff = appDiff?.pages;
+
+      type = updateType.pageDefinitionChanged;
+    } else if (opts.includes('pageDefinitionChanged')) {
+      updateDiff = appDiff?.pages[currentPageId];
+
+      type = updateType.pageDefinitionChanged;
+
+      if (opts.includes('addNewPage')) {
+        operation = 'create';
       }
-    })[0];
-
-    updateDiff = {
-      pageId: deletePageId,
-    };
-
-    type = updateType.pageDefinitionChanged;
-    operation = 'delete';
-  } else if (opts.includes('pageSortingChanged')) {
-    updateDiff = appDiff?.pages;
-
-    type = updateType.pageDefinitionChanged;
-  } else if (opts.includes('pageDefinitionChanged')) {
-    updateDiff = appDiff?.pages[currentPageId];
-
-    type = updateType.pageDefinitionChanged;
-
-    if (opts.includes('addNewPage')) {
-      operation = 'create';
     }
-  }
 
-  return { updateDiff, type, operation };
+    return { updateDiff, type, operation };
+  } catch (error) {
+    return { error, updateDiff: {}, type: null, operation: null };
+  }
 };
 
 const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
@@ -222,97 +230,101 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
   let updateDiff;
   let operation = 'update';
 
-  if (opts.includes('componentDeleted')) {
-    const currentPageComponents = appDiff?.pages[currentPageId]?.components;
+  try {
+    if (opts.includes('componentDeleted')) {
+      const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
-    updateDiff = _.keys(currentPageComponents);
+      updateDiff = _.keys(currentPageComponents);
 
-    type = updateType.componentDeleted;
+      type = updateType.componentDeleted;
 
-    operation = 'delete';
-  } else if (opts.includes('componentAdded')) {
-    const currentPageComponents = appDiff?.pages[currentPageId]?.components;
+      operation = 'delete';
+    } else if (opts.includes('componentAdded')) {
+      const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
-    updateDiff = _.toPairs(currentPageComponents ?? []).reduce((result, [id, component]) => {
-      if (_.keys(component).length === 1 && component.withDefaultChildren !== undefined) {
-        return result;
-      }
+      updateDiff = _.toPairs(currentPageComponents ?? []).reduce((result, [id, component]) => {
+        if (_.keys(component).length === 1 && component.withDefaultChildren !== undefined) {
+          return result;
+        }
 
-      const componentMeta = _.cloneDeep(
-        componentTypes.find((comp) => comp.component === component.component.component)
-      );
+        const componentMeta = _.cloneDeep(
+          componentTypes.find((comp) => comp.component === component.component.component)
+        );
 
-      if (!componentMeta) {
-        return result;
-      }
+        if (!componentMeta) {
+          return result;
+        }
 
-      const metaDiff = diff(componentMeta, component.component);
+        const metaDiff = diff(componentMeta, component.component);
 
-      result[id] = _.defaultsDeep(metaDiff, defaultComponent);
+        result[id] = _.defaultsDeep(metaDiff, defaultComponent);
 
-      if (metaDiff.definition && !_.isEmpty(metaDiff.definition)) {
-        const metaAttributes = _.keys(metaDiff.definition);
+        if (metaDiff.definition && !_.isEmpty(metaDiff.definition)) {
+          const metaAttributes = _.keys(metaDiff.definition);
 
-        metaAttributes.forEach((attribute) => {
-          const doesActionsExist =
-            metaDiff.definition[attribute]?.actions && !_.isEmpty(metaDiff.definition[attribute]?.actions?.value);
-          const doesColumnsExist =
-            metaDiff.definition[attribute]?.columns && !_.isEmpty(metaDiff.definition[attribute]?.columns?.value);
+          metaAttributes.forEach((attribute) => {
+            const doesActionsExist =
+              metaDiff.definition[attribute]?.actions && !_.isEmpty(metaDiff.definition[attribute]?.actions?.value);
+            const doesColumnsExist =
+              metaDiff.definition[attribute]?.columns && !_.isEmpty(metaDiff.definition[attribute]?.columns?.value);
 
-          if (doesActionsExist || doesColumnsExist) {
-            const actions = _.toArray(metaDiff.definition[attribute]?.actions?.value) || [];
-            const columns = _.toArray(metaDiff.definition[attribute]?.columns?.value) || [];
+            if (doesActionsExist || doesColumnsExist) {
+              const actions = _.toArray(metaDiff.definition[attribute]?.actions?.value) || [];
+              const columns = _.toArray(metaDiff.definition[attribute]?.columns?.value) || [];
 
-            metaDiff.definition = {
-              ...metaDiff.definition,
-              [attribute]: {
-                ...metaDiff.definition[attribute],
-                actions: {
-                  value: actions,
+              metaDiff.definition = {
+                ...metaDiff.definition,
+                [attribute]: {
+                  ...metaDiff.definition[attribute],
+                  actions: {
+                    value: actions,
+                  },
+                  columns: {
+                    value: columns,
+                  },
                 },
-                columns: {
-                  value: columns,
-                },
-              },
-            };
-          }
-          result[id][attribute] = metaDiff.definition[attribute];
-        });
-      }
+              };
+            }
+            result[id][attribute] = metaDiff.definition[attribute];
+          });
+        }
 
-      const currentDisplayPreference = currentLayout;
+        const currentDisplayPreference = currentLayout;
 
-      if (currentDisplayPreference === 'mobile') {
-        result[id].others.showOnMobile = { value: '{{true}}' };
-        result[id].others.showOnDesktop = { value: '{{false}}' };
-      }
+        if (currentDisplayPreference === 'mobile') {
+          result[id].others.showOnMobile = { value: '{{true}}' };
+          result[id].others.showOnDesktop = { value: '{{false}}' };
+        }
 
-      if (result[id]?.definition) {
-        delete result[id].definition;
-      }
+        if (result[id]?.definition) {
+          delete result[id].definition;
+        }
 
-      result[id].type = componentMeta.component;
-      result[id].parent = component.component.parent ?? null;
-      result[id].layouts = appDiff.pages[currentPageId].components[id].layouts;
+        result[id].type = componentMeta.component;
+        result[id].parent = component.component.parent ?? null;
+        result[id].layouts = appDiff.pages[currentPageId].components[id].layouts;
 
-      operation = 'create';
+        operation = 'create';
 
-      return result;
-    }, {});
+        return result;
+      }, {});
 
-    type = updateType.componentDefinitionChanged;
-  } else if (
-    (opts.includes('containerChanges') || opts.includes('componentDefinitionChanged')) &&
-    !opts.includes('componentAdded')
-  ) {
-    const currentPageComponents = appDiff?.pages[currentPageId]?.components;
+      type = updateType.componentDefinitionChanged;
+    } else if (
+      (opts.includes('containerChanges') || opts.includes('componentDefinitionChanged')) &&
+      !opts.includes('componentAdded')
+    ) {
+      const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
-    updateDiff = toRemoveExposedvariablesFromComponentDiff(currentPageComponents);
+      updateDiff = toRemoveExposedvariablesFromComponentDiff(currentPageComponents);
 
-    type = opts.includes('containerChanges') ? updateType.containerChanges : updateType.componentDefinitionChanged;
+      type = opts.includes('containerChanges') ? updateType.containerChanges : updateType.componentDefinitionChanged;
+    }
+
+    return { updateDiff, type, operation };
+  } catch (error) {
+    return { error, updateDiff: {}, type: null, operation: null };
   }
-
-  return { updateDiff, type, operation };
 };
 
 function toRemoveExposedvariablesFromComponentDiff(object) {
