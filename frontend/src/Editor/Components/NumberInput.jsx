@@ -26,7 +26,6 @@ export const NumberInput = function NumberInput({
     borderRadius,
     borderColor,
     backgroundColor,
-    // textColor,
     boxShadow,
     width,
     alignment,
@@ -44,6 +43,7 @@ export const NumberInput = function NumberInput({
   const [showValidationError, setShowValidationError] = useState(false);
   const [value, setValue] = React.useState(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
   const { isValid, validationError } = validate(value);
+  const [isFocused, setIsFocused] = useState(false);
 
   const inputRef = useRef(null);
   const currentState = useCurrentState();
@@ -73,7 +73,8 @@ export const NumberInput = function NumberInput({
     } else setValue(Number(parseFloat(e.target.value ? e.target.value : 0).toFixed(properties.decimalPlaces)));
     setShowValidationError(true);
     e.stopPropagation();
-    // fireEvent('onBlur');
+    fireEvent('onBlur');
+    setIsFocused(false);
   };
 
   useEffect(() => {
@@ -150,13 +151,19 @@ export const NumberInput = function NumberInput({
     height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
-    borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
+    borderColor: isFocused
+      ? '#3E63DD'
+      : ['#D7DBDF'].includes(borderColor)
+      ? darkMode
+        ? '#4C5155'
+        : '#D7DBDF'
+      : borderColor,
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    boxShadow: boxShadow,
+    boxShadow: isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
-        ? '3px 5px 3px 26px'
-        : '3px 5px 3px 26px'
+        ? '3px 5px 3px 29px'
+        : '3px 5px 3px 29px'
       : '3px 5px 3px 5px',
   };
 
@@ -227,6 +234,34 @@ export const NumberInput = function NumberInput({
 
     fireEvent('onChange');
   };
+  useEffect(() => {
+    setExposedVariable('setFocus', async function () {
+      inputRef.current.focus();
+    });
+    setExposedVariable('setBlur', async function () {
+      inputRef.current.blur();
+    });
+    setExposedVariable('setText', async function (text) {
+      if (text) {
+        const newValue = Number(parseFloat(text));
+        if (!isNaN(parseFloat(properties.minValue)) && newValue < parseFloat(properties.minValue)) {
+          setValue(Number(parseFloat(properties.minValue)));
+        } else if (!isNaN(parseFloat(properties.maxValue)) && newValue > parseFloat(properties.maxValue)) {
+          setValue(Number(parseFloat(properties.maxValue)));
+        } else {
+          setValue(newValue);
+        }
+        setExposedVariable('value', text).then(fireEvent('onChange'));
+      }
+    });
+
+    setExposedVariable('clear', async function () {
+      setValue('');
+      setExposedVariable('value', '').then(fireEvent('onChange'));
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const renderInput = () => {
     const loaderStyle = {
@@ -280,12 +315,12 @@ export const NumberInput = function NumberInput({
                 left:
                   direction === 'right'
                     ? padding == 'default'
-                      ? '10px'
-                      : '8px'
+                      ? '13px'
+                      : '11px'
                     : defaultAlignment === 'top'
                     ? padding == 'default'
-                      ? '10px'
-                      : '8px'
+                      ? '13px'
+                      : '11px'
                     : `${labelWidth + 15}px`,
                 position: 'absolute',
                 top: `${
@@ -293,6 +328,7 @@ export const NumberInput = function NumberInput({
                 }`,
                 transform: ' translateY(-50%)',
                 color: iconColor,
+                backgroundColor: 'red',
               }}
               stroke={1.5}
             />
@@ -310,6 +346,18 @@ export const NumberInput = function NumberInput({
             data-cy={dataCy}
             min={properties.minValue}
             max={properties.maxValue}
+            onKeyUp={(e) => {
+              if (e.key === 'Enter') {
+                setValue(e.target.value);
+                setExposedVariable('value', e.target.value);
+                fireEvent('onEnterPressed');
+              }
+            }}
+            onFocus={(e) => {
+              setIsFocused(true);
+              e.stopPropagation();
+              fireEvent('onFocus');
+            }}
           />
           {!isResizing && (
             <>
