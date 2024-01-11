@@ -13,3 +13,13 @@ export class UpdateGroupPermissionDto {
   @IsNotEmpty()
   actions: object;
 }
+export class DuplucateGroupDto {
+  @IsBoolean()
+  addPermission;
+
+  @IsBoolean()
+  addApps;
+
+  @IsBoolean()
+  addUsers;
+}

@@ -58,6 +58,7 @@ import LightMode from './LightMode.jsx';
 import ListView from './ListView.jsx';
 import Logout from './Logout.jsx';
 import Menu from './Menu.jsx';
+import Options from './option.jsx';
 import MenuHome from './MenuHome.jsx';
 import Minus from './Minus.jsx';
 import Minus01 from './Minus01.jsx';
@@ -294,6 +295,10 @@ const Icon = (props) => {
       return <NotificationSilent {...props} />;
     case 'notificationunread':
       return <NotificationUnread {...props} />;
+    case 'open':
+      return <Open {...props} />;
+    case 'options':
+      return <Options {...props} />;
     case 'page':
       return <Page {...props} />;
     case 'pageAdd':
