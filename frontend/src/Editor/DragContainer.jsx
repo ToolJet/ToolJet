@@ -52,8 +52,8 @@ const MouseCustomAble = {
   props: {},
   events: {},
   mouseEnter(e) {
-    console.log('MouseCustomAble ENTER', e);
-    const controlBoxes = document.getElementsByClassName('.moveable-control-box');
+    console.log('here--- ', e);
+    const controlBoxes = document.getElementsByClassName('moveable-control-box');
     for (const element of controlBoxes) {
       element.classList.remove('moveable-control-box-d-block');
     }
@@ -313,7 +313,7 @@ export default function DragContainer({
               ref={moveableRef}
               ables={[MouseCustomAble, DimensionViewable]}
               props={{
-                mouseTest: true,
+                mouseTest: selectedComponents.length < 2,
                 dimensionViewable: selectedComponents.length > 1,
               }}
               flushSync={flushSync}
@@ -687,7 +687,7 @@ export default function DragContainer({
                     ref={(el) => (childMoveableRefs.current[i.parent] = el)}
                     ables={[MouseCustomAble, DimensionViewable]}
                     props={{
-                      mouseTest: true,
+                      mouseTest: selectedComponents.length < 2,
                       dimensionViewable: selectedComponents.length > 2,
                     }}
                     target={
