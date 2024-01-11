@@ -28,4 +28,10 @@ export const licenseSelectors = {
     noOfTablesfield: '[data-cy="tables-field"]',
     expiryStatus: '[data-cy="license-expiry-status"]',
     licenseTextArea: '[data-cy="license-text-area"]',
+    paidFeatureButton: '[data-cy="paid-feature-button"]',
+    accessTabTitle: '[data-cy="access-tab-title"]',
+    enterpriseGradientIcon: '[data-cy="enterprise-gradient-icon"]',
+    warningInfoText: '[data-cy="warning-info-text"]',
+    lockGradientIcon: '[data-cy="lock-gradient"]',
+    dsGradientIcon: '[data-cy="datasource-gradient"]',
 };
