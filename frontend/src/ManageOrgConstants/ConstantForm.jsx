@@ -3,7 +3,7 @@ import { withTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _, { capitalize } from 'lodash';
 import { Tooltip } from 'react-tooltip';
-import { FormWrapper } from '@/_components/FormWrapper';
+import { FormWrapper, textAreaEnterOnSave } from '@/_components/FormWrapper';
 
 const ConstantForm = ({
   selectedConstant,
@@ -124,12 +124,6 @@ const ConstantForm = ({
 
   const inputRef = React.useRef(null);
 
-  const handleKeyPress = (event) => {
-    if (event.key === 'Enter') {
-      handlecreateOrUpdate(event);
-    }
-  };
-
   const handleInput = () => {
     const input = inputRef.current;
     if (fields['value'] && fields['value'].length > 30 && input) {
@@ -192,7 +186,7 @@ const ConstantForm = ({
                 name="value"
                 onChange={handleFieldChange}
                 value={fields['value']}
-                onKeyDown={handleKeyPress}
+                onKeyDown={(e) => textAreaEnterOnSave(e, handlecreateOrUpdate)}
                 onInput={handleInput}
                 onFocus={() => !!selectedConstant && handleInput()}
                 style={{

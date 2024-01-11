@@ -16,3 +16,14 @@ export const FormWrapper = ({ callback, id, classnames, children }) => {
     </form>
   );
 };
+
+export const textAreaEnterOnSave = (event, callback) => {
+  /* if the user needs new line in license text (less likely) then can press shift + enter */
+  if (event.shiftKey && event.key === 'Enter') {
+    return;
+  }
+  if (event.key === 'Enter') {
+    event?.preventDefault();
+    callback(event);
+  }
+};
