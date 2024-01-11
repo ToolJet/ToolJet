@@ -12,7 +12,7 @@ import ErrorBoundary from './ErrorBoundary';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
-import { useNoOfGrid } from '@/_stores/gridStore';
+import { useNoOfGrid, useGridStore } from '@/_stores/gridStore';
 import WidgetBox from './WidgetBox';
 import * as Sentry from '@sentry/react';
 
@@ -226,7 +226,7 @@ export const DraggableBox = React.memo(
               'draggable-box-in-editor': mode === 'edit',
             })}
             onMouseEnter={(e) => {
-              console.log('e.currentTarget', e.currentTarget, e.target);
+              if (useGridStore.getState().draggingComponentId) return;
               const closestDraggableBox = e.target.closest('.draggable-box');
               if (closestDraggableBox) {
                 const classNames = closestDraggableBox.className.split(' ');
@@ -243,6 +243,7 @@ export const DraggableBox = React.memo(
               }
             }}
             onMouseLeave={(e) => {
+              if (useGridStore.getState().draggingComponentId) return;
               setHoveredComponent('');
             }}
             style={getStyles(isDragging, isSelectedComponent)}
