@@ -8,7 +8,7 @@ const transformationsByVersion = {
   '2.27.4': (dto: ImportTooljetDatabaseDto) => {
     const transformedColumns = dto.schema.columns.map((col) => {
       col.constraints_type = {
-        is_primary_key: col.constraint_type !== 'PRIMARY KEY',
+        is_primary_key: col.constraint_type === 'PRIMARY KEY',
         is_not_null: col.is_nullable === 'NO',
       };
       return col;
