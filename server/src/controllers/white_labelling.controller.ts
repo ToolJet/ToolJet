@@ -58,7 +58,12 @@ export class WhiteLabellingController {
   @Get('/by-slug/:workspaceSlug')
   async getSettingsBySlug(@Param('workspaceSlug') workspaceSlug: string, @Query('key') key?: string) {
     // Find the organization by slug
-    const organization = await this.entityManager.findOne(Organization, { slug: workspaceSlug });
+    let organization: Organization;
+    try {
+      organization = await this.entityManager.findOneOrFail(Organization, { slug: workspaceSlug });
+    } catch (error) {
+      organization = await this.entityManager.findOne(Organization, { id: workspaceSlug });
+    }
     if (!organization) {
       throw new NotFoundException(`Organization with slug '${workspaceSlug}' not found.`);
     }
