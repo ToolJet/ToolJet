@@ -9,10 +9,8 @@ const {
   union,
   size,
   pattern,
-  defaulted,
   coerce,
   create,
-  literal,
   never,
 } = require('superstruct');
 

@@ -19,7 +19,6 @@ export const widgets = [
           schema: {
             type: 'array',
             element: { type: 'object' },
-            optional: true,
           },
         },
       },
