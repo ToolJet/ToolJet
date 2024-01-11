@@ -1,0 +1,26 @@
+.value-container-selected-option {
+  display: flex;
+  align-items: center;
+  border-radius: 100px;
+  border: 1px solid #ECEEF0;
+  background:  #F1F3F5;
+  padding: 2px 10px;
+  padding-right: 2px;
+  margin-right: 4px;
+  .value-container-selected-option-delete-icon {
+    margin-left:5px;
+    cursor: pointer;
+  }
+}
+
+.multiselect-custom-menulist-select-all {
+  display: flex;
+  padding: 8px 12px;
+  margin-top: 4px;
+}
+
+.value-container-selected-option-popover {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap : 5px;
+}

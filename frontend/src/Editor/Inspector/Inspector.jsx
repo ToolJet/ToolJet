@@ -3,7 +3,7 @@ import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
-import { renderElement } from './Utils';
+import { renderElement, renderCustomStyles } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
 import { ConfirmDialog } from '@/_components';
@@ -34,6 +34,7 @@ import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
 import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
+import { Select } from './Components/Select';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -83,6 +84,8 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
+  const newRevampedWidgets = ['TextInput', 'Text', 'DropDown', 'Multiselect'];
+
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -204,6 +207,66 @@ export const Inspector = ({
     });
   }
 
+  // use following function when more than one property needs to be updated
+
+  function paramsUpdated(array, isParamFromTableColumn = false) {
+    let newComponent = JSON.parse(JSON.stringify(component));
+    let newDefinition = _.cloneDeep(newComponent.component.definition);
+    array.map((item) => {
+      const { param, attr, value, paramType } = item;
+      let allParams = newDefinition[paramType] || {};
+      const paramObject = allParams[param.name];
+      if (!paramObject) {
+        allParams[param.name] = {};
+      }
+      if (attr) {
+        allParams[param.name][attr] = value;
+        const defaultValue = getDefaultValue(value);
+        // This is needed to have enable pagination in Table as backward compatible
+        // Whenever enable pagination is false, we turn client and server side pagination as false
+        if (
+          component.component.component === 'Table' &&
+          param.name === 'enablePagination' &&
+          !resolveReferences(value, currentState)
+        ) {
+          if (allParams?.['clientSidePagination']?.[attr]) {
+            allParams['clientSidePagination'][attr] = value;
+          }
+          if (allParams['serverSidePagination']?.[attr]) {
+            allParams['serverSidePagination'][attr] = value;
+          }
+        }
+        // This case is required to handle for older apps when serverSidePagination is connected to Fx
+        if (param.name === 'serverSidePagination' && !allParams?.['enablePagination']?.[attr]) {
+          allParams = {
+            ...allParams,
+            enablePagination: {
+              value: true,
+            },
+          };
+        }
+        if (param.type === 'select' && defaultValue) {
+          allParams[defaultValue.paramName]['value'] = defaultValue.value;
+        }
+        if (param.name === 'secondarySignDisplay') {
+          if (value === 'negative') {
+            newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
+          } else if (value === 'positive') {
+            newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
+          }
+        }
+      } else {
+        allParams[param.name] = value;
+      }
+      newDefinition[paramType] = allParams;
+      newComponent.component.definition = newDefinition;
+    });
+    componentDefinitionChanged(newComponent, {
+      componentPropertyUpdated: true,
+      isParamFromTableColumn,
+    });
+  }
+
   function layoutPropertyChanged(param, attr, value, paramType) {
     paramUpdated(param, attr, value, paramType);
 
@@ -251,6 +314,8 @@ export const Inspector = ({
     }
   }
 
+  const isNewlyRevampedWidget = newRevampedWidgets.includes(component.component.component);
+
   const handleInspectorHeaderActions = (value) => {
     if (value === 'rename') {
       setTimeout(() => setInputFocus(), 0);
@@ -294,6 +359,7 @@ export const Inspector = ({
         layoutPropertyChanged={layoutPropertyChanged}
         component={component}
         paramUpdated={paramUpdated}
+        paramsUpdated={paramsUpdated}
         dataQueries={dataQueries}
         componentMeta={componentMeta}
         // eventUpdated={eventUpdated}
@@ -310,7 +376,7 @@ export const Inspector = ({
   );
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${isVersionReleased && 'disabled'}`}>
-      <div className="p-3">
+      <div className={!isNewlyRevampedWidget && 'p-3'}>
         <Inspector.RenderStyleOptions
           componentMeta={componentMeta}
           component={component}
@@ -318,9 +384,10 @@ export const Inspector = ({
           dataQueries={dataQueries}
           currentState={currentState}
           allComponents={allComponents}
+          isNewlyRevampedWidget={isNewlyRevampedWidget}
         />
       </div>
-      {buildGeneralStyle()}
+      {!isNewlyRevampedWidget && buildGeneralStyle()}
     </div>
   );
 
@@ -455,9 +522,35 @@ const widgetsWithStyleConditions = {
   },
 };
 
-const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
-  return Object.keys(componentMeta.styles).map((style) => {
-    const conditionWidget = widgetsWithStyleConditions[component?.component?.component] ?? null;
+const RenderStyleOptions = ({
+  componentMeta,
+  component,
+  paramUpdated,
+  dataQueries,
+  currentState,
+  allComponents,
+  isNewlyRevampedWidget,
+}) => {
+  // Initialize an object to group properties by "accordian"
+  const groupedProperties = {};
+  if (isNewlyRevampedWidget) {
+    // Iterate over the properties in componentMeta.styles
+    for (const key in componentMeta.styles) {
+      const property = componentMeta.styles[key];
+      const accordian = property.accordian;
+
+      // Check if the "accordian" key exists in groupedProperties
+      if (!groupedProperties[accordian]) {
+        groupedProperties[accordian] = {}; // Create an empty object for the "accordian" key if it doesn't exist
+      }
+
+      // Add the property to the corresponding "accordian" object
+      groupedProperties[accordian][key] = property;
+    }
+  }
+
+  return Object.keys(isNewlyRevampedWidget ? groupedProperties : componentMeta.styles).map((style) => {
+    const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
     const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
 
     if (conditionWidget && conditionWidget.conditions.find((condition) => condition.conditionStyles.includes(style))) {
@@ -477,16 +570,38 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
       );
     }
 
-    return renderElement(
-      component,
-      componentMeta,
-      paramUpdated,
-      dataQueries,
-      style,
-      'styles',
-      currentState,
-      allComponents
-    );
+    const items = [];
+
+    if (isNewlyRevampedWidget) {
+      items.push({
+        title: `${style}`,
+        children: Object.entries(groupedProperties[style]).map(([key, value]) => ({
+          ...renderCustomStyles(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            key,
+            'styles',
+            currentState,
+            allComponents,
+            value.accordian
+          ),
+        })),
+      });
+      return <Accordion key={style} items={items} />;
+    } else {
+      return renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        style,
+        'styles',
+        currentState,
+        allComponents
+      );
+    }
   });
 };
 
@@ -536,6 +651,10 @@ const GetAccordion = React.memo(
 
       case 'Form':
         return <Form {...restProps} />;
+
+      case 'DropDown':
+      case 'Multiselect':
+        return <Select {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

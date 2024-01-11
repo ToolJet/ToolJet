@@ -4,7 +4,7 @@ import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _, { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
-
+import Icon from '@/_ui/Icon/solidIcons/index';
 import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 import { useCurrentState } from '@/_stores/currentStateStore';
@@ -127,7 +127,26 @@ export const LeftSidebarInspector = ({
     }
   });
 
-  const iconsList = useMemo(() => [...queryIcons, ...componentIcons], [queryIcons, componentIcons]);
+  const exposedVariablesIcon = Object.entries(currentState['components'])
+    .map(([key, value]) => {
+      const component = componentDefinitions[value.id]?.component ?? {};
+      const componentExposedVariables = value;
+      if (!_.isEmpty(component) && component.component === 'Text' && componentExposedVariables?.visibility) {
+        return {
+          iconName: 'visibility',
+          jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+          className: 'component-icon',
+          tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+          isInfoIcon: true,
+        };
+      }
+    })
+    .filter((value) => value); // removed undefined's
+
+  const iconsList = useMemo(
+    () => [...queryIcons, ...componentIcons, ...exposedVariablesIcon],
+    [queryIcons, componentIcons, exposedVariablesIcon]
+  );
 
   const handleRemoveComponent = (component) => {
     removeComponent(component.id);

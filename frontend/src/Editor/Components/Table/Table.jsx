@@ -1012,7 +1012,6 @@ export function Table({
             )}
             {showFilterButton && !loadingState && (
               <div className="position-relative">
-                {''}
                 <Tooltip id="tooltip-for-filter-data" className="tooltip" />
                 <ButtonSolid
                   variant="tertiary"

@@ -9,6 +9,7 @@ import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
 import { Link } from '../Link';
 import moment from 'moment';
+import { SelectComponent } from '../SelectComponent';
 
 export default function generateColumnsData({
   columnProperties,
@@ -219,7 +220,6 @@ export default function generateColumnsData({
               });
 
               const { isValid, validationError } = validationData;
-              console.log('validationData', column.minValue, column.maxValue, validationData);
               const cellStyles = {
                 color: textColor ?? '',
               };
@@ -319,7 +319,7 @@ export default function generateColumnsData({
 
             return (
               <div className="h-100 d-flex align-items-center">
-                <SelectSearch
+                <SelectComponent
                   options={columnOptions.selectOptions}
                   value={cellValue}
                   search={true}
@@ -329,7 +329,9 @@ export default function generateColumnsData({
                   fuzzySearch
                   placeholder={t('globals.select', 'Select') + '...'}
                   disabled={!isEditable}
-                  className="select-search"
+                  className="select-search table-select-search"
+                  styles={{ background: 'inherit', border: 'none' }}
+                  darkMode={darkMode}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>

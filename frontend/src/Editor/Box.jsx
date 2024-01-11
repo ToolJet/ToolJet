@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext, useRef, memo } from 'react';
+import React, { useEffect, useState, useMemo, useContext, useRef, memo, useCallback } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -70,7 +70,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 
-const AllComponents = {
+export const AllComponents = {
   Button,
   Image,
   Text,
@@ -149,22 +149,12 @@ export const Box = memo(
     sideBarDebugger,
     readOnly,
     childComponents,
+    isResizing,
+    adjustHeightBasedOnAlignment,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
-
-    let styles = {
-      height: '100%',
-      padding: '1px',
-    };
-
-    if (inCanvas) {
-      styles = {
-        ...styles,
-      };
-    }
-
     const { events } = useAppInfo();
 
     const componentMeta = useMemo(() => {
@@ -183,11 +173,11 @@ export const Box = memo(
         : [resolvedProperties, []];
 
     const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
+
     const [validatedStyles, styleErrors] =
       mode === 'edit' && component.validate
         ? validateProperties(resolvedStyles, componentMeta.styles)
         : [resolvedStyles, []];
-    validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
 
     const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
     const [validatedGeneralProperties, generalPropertiesErrors] =
@@ -205,6 +195,16 @@ export const Box = memo(
     const darkMode = localStorage.getItem('darkMode') === 'true';
     const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
+    let styles = {
+      height: '100%',
+      padding: validatedStyles?.padding === 'none' ? '0px' : '1px',
+    };
+
+    if (inCanvas) {
+      styles = {
+        ...styles,
+      };
+    }
     useEffect(() => {
       if (!component?.parent) {
         onComponentOptionChanged && onComponentOptionChanged(component, 'id', id);
@@ -279,6 +279,15 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
+    const shouldAddBoxShadow = ['TextInput', 'Text', 'DropDown', 'Multiselect'];
+
+    const calculateHeight = useCallback(() => {
+      // 2px needs to be added since we are removing 1px each from top bottom padding when padding selected to none
+      if (validatedStyles?.padding === 'none') {
+        return height + 2;
+      }
+      return height;
+    }, [validatedStyles?.padding, height]);
 
     return (
       <OverlayTrigger
@@ -301,44 +310,53 @@ export const Box = memo(
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >
-          {!resetComponent ? (
-            <ComponentToRender
-              onComponentClick={onComponentClick}
-              onComponentOptionChanged={onComponentOptionChanged}
-              currentState={currentState}
-              onEvent={onEvent}
-              id={id}
-              paramUpdated={paramUpdated}
-              width={width}
-              changeCanDrag={changeCanDrag}
-              onComponentOptionsChanged={onComponentOptionsChanged}
-              height={height}
-              component={component}
-              containerProps={containerProps}
-              darkMode={darkMode}
-              removeComponent={removeComponent}
-              canvasWidth={canvasWidth}
-              properties={validatedProperties}
-              exposedVariables={exposedVariables}
-              styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
-              setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
-              setExposedVariables={(variableSet) =>
-                onComponentOptionsChanged(component, Object.entries(variableSet), id)
-              }
-              fireEvent={fireEvent}
-              validate={validate}
-              parentId={parentId}
-              customResolvables={customResolvables}
-              variablesExposedForPreview={variablesExposedForPreview}
-              exposeToCodeHinter={exposeToCodeHinter}
-              setProperty={(property, value) => {
-                paramUpdated(id, property, { value });
-              }}
-              mode={mode}
-              resetComponent={() => setResetStatus(true)}
-              childComponents={childComponents}
-              dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
-            ></ComponentToRender>
+          {inCanvas ? (
+            !resetComponent ? (
+              <ComponentToRender
+                onComponentClick={onComponentClick}
+                onComponentOptionChanged={onComponentOptionChanged}
+                currentState={currentState}
+                onEvent={onEvent}
+                id={id}
+                paramUpdated={paramUpdated}
+                width={width}
+                changeCanDrag={changeCanDrag}
+                onComponentOptionsChanged={onComponentOptionsChanged}
+                height={calculateHeight()}
+                component={component}
+                containerProps={containerProps}
+                darkMode={darkMode}
+                removeComponent={removeComponent}
+                canvasWidth={canvasWidth}
+                properties={validatedProperties}
+                exposedVariables={exposedVariables}
+                styles={{
+                  ...validatedStyles,
+                  ...(!shouldAddBoxShadow.includes(component.component)
+                    ? { boxShadow: validatedGeneralStyles?.boxShadow }
+                    : {}),
+                }}
+                setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
+                setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
+                fireEvent={fireEvent}
+                validate={validate}
+                parentId={parentId}
+                customResolvables={customResolvables}
+                variablesExposedForPreview={variablesExposedForPreview}
+                exposeToCodeHinter={exposeToCodeHinter}
+                setProperty={(property, value) => {
+                  paramUpdated(id, property, { value });
+                }}
+                mode={mode}
+                resetComponent={() => setResetStatus(true)}
+                childComponents={childComponents}
+                dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
+                isResizing={isResizing}
+                adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
+              ></ComponentToRender>
+            ) : (
+              <></>
+            )
           ) : (
             <></>
           )}

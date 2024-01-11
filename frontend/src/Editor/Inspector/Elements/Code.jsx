@@ -18,6 +18,8 @@ export const Code = ({
   fxActive,
   component,
   verticalLine,
+  accordian,
+  placeholder,
 }) => {
   const currentState = useCurrentState();
 
@@ -30,6 +32,13 @@ export const Code = ({
 
       if (isPaginationEnabled) return '{{true}}';
       return '{{false}}';
+    }
+    // Following condition is needed to support older Text component not having textFormat switch
+    if (component?.component?.component === 'Text' && param === 'textFormat') {
+      const doTextFormatAlreadyExist = component?.component?.definition?.properties?.textFormat;
+      if (!doTextFormatAlreadyExist) {
+        return 'html';
+      }
     }
     if (['showAddNewRowButton', 'allowSelection', 'defaultSelectedRow'].includes(param)) {
       if (param === 'allowSelection') {
@@ -50,8 +59,8 @@ export const Code = ({
   };
 
   let initialValue = !_.isEmpty(definition) ? definition.value : getDefinitionForNewProps(param.name);
-  const paramMeta = componentMeta[paramType][param.name];
-  const displayName = paramMeta.displayName || param.name;
+  const paramMeta = accordian ? componentMeta[paramType]?.[param.name] : componentMeta[paramType][param.name];
+  const displayName = paramMeta?.displayName || param?.name;
 
   /*
     following block is written for cellSize Prop to support backward compatibility, 
@@ -75,7 +84,11 @@ export const Code = ({
     onChange(param, 'value', value, paramType);
   }
 
-  const options = paramMeta.options || {};
+  function onVisibilityChange(value) {
+    onChange({ name: 'iconVisibility' }, 'value', value, 'styles');
+  }
+
+  const options = paramMeta?.options || {};
 
   const getfieldName = React.useMemo(() => {
     return param.name;
@@ -90,15 +103,19 @@ export const Code = ({
         lineWrapping={true}
         className={options.className}
         onChange={(value) => handleCodeChanged(value)}
+        onVisibilityChange={(value) => onVisibilityChange(value)}
         componentName={`component/${componentName}::${getfieldName}`}
-        type={paramMeta.type}
+        type={paramMeta?.type}
         paramName={param.name}
-        paramLabel={displayName}
+        paramLabel={paramMeta?.showLabel !== false ? displayName : ' '}
         fieldMeta={paramMeta}
         onFxPress={onFxPress}
         fxActive={CLIENT_SERVER_TOGGLE_FIELDS.includes(param.name) ? false : fxActive} // Client Server Toggle don't support Fx
         component={component}
         verticalLine={verticalLine}
+        isIcon={paramMeta?.isIcon}
+        placeholder={placeholder}
+        inspectorTab={paramType}
       />
     </div>
   );

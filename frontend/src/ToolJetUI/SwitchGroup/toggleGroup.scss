@@ -1,13 +1,15 @@
 .ToggleGroup {
   display: inline-flex;
-  background-color:  var(--slate4);
+  background-color: var(--slate4);
   border-radius: 6px;
   box-shadow: 0 2px 10px var(--black-a7);
+  width: 142px;
+  padding: 1px;
 }
 
 .ToggleGroupItem {
   all: unset;
-  background-color:  var(--slate4);
+  background-color: var(--slate4);
   color: var(--slate9);
   min-height: 28px;
   display: flex;
@@ -16,27 +18,51 @@
   font-weight: 500;
   align-items: center;
   justify-content: center;
-  padding: 2px 6px;
+  padding: 2px 2px;
   border-radius: 6px;
+  width: 100%;
+  font-size: 10px;
+
 }
+
 .ToggleGroupItem:first-child {
   margin-left: 0;
   border-top-left-radius: 4px;
   border-bottom-left-radius: 4px;
 }
+
 .ToggleGroupItem:last-child {
   border-top-right-radius: 4px;
   border-bottom-right-radius: 4px;
 }
+
 .ToggleGroupItem[data-state='on'] {
   padding: 2px 2px;
+
   .toggle-item {
-    background-color: var(--slate1);
+    background-color: white;
     color: var(--indigo9);
     border-radius: 6px;
     padding: 4px;
+    height: 28px;
+    font-size: 10px;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+
+    svg {
+      path {
+        fill: var(--indigo9) !important;
+
+      }
+
+    }
   }
 }
+
 .ToggleGroupItem:focus {
   position: relative;
 }
