@@ -339,7 +339,7 @@ export function CodeHinter({
                 </div>
               )}
             </div>
-            {content + coercionPreview}
+            {JSON.stringify(content) + coercionPreview}
           </div>
         </div>
         {/* Todo: Remove this when workspace variables are deprecated */}
