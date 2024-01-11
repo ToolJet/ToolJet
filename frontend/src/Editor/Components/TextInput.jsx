@@ -69,7 +69,6 @@ export const TextInput = function TextInput({
         : padding == 'default'
         ? '13px'
         : '11px',
-    background: 'red',
     top: `${defaultAlignment === 'top' ? '50%' : ''}`,
     transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
   };
@@ -261,7 +260,6 @@ export const TextInput = function TextInput({
               top: `${
                 defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
               }`,
-              backgroundColor: 'red',
               transform: ' translateY(-50%)',
               color: iconColor,
             }}

@@ -260,7 +260,6 @@ export const PasswordInput = function PasswordInput({
               }`,
               transform: ' translateY(-50%)',
               color: iconColor,
-              background: 'red',
             }}
             stroke={1.5}
           />
@@ -286,7 +285,6 @@ export const PasswordInput = function PasswordInput({
                   : `${elementWidth + 5}px`,
               top: alignment == 'side' ? '50%' : label?.length > 0 && width > 0 ? `calc(50% + 10px)` : '50%',
               transform: ' translateY(-50%)',
-              background: 'red',
               display: 'flex',
             }}
             stroke={1.5}

@@ -233,7 +233,6 @@ export const NumberInput = function NumberInput({
       right: alignment == 'top' ? `33px` : direction == 'left' ? `33px` : `${labelWidth + 35}px`,
       top: alignment == 'side' ? '' : `53%`,
       transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
-      background: 'red',
     };
 
     return (
@@ -289,7 +288,6 @@ export const NumberInput = function NumberInput({
                       : '8px'
                     : `${labelWidth + 15}px`,
                 position: 'absolute',
-                backgroundColor: 'red',
                 top: `${
                   defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
                 }`,
