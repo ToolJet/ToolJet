@@ -123,10 +123,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchGroupPermission(groupPermissionId);
       })
       .catch(({ error, data }) => {
-        const { statusCode } = data;
-        if ([451].indexOf(statusCode) === -1) {
           toast.error(error);
-        }
       });
   };
 
@@ -231,10 +228,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         toast.success('App removed from the group');
       })
       .catch(({ error, data }) => {
-        const { statusCode } = data;
-        if ([451].indexOf(statusCode) === -1) {
           toast.error(error);
-        }
       });
   };
 
@@ -275,10 +269,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         toast.success('User removed from the group');
       })
       .catch(({ error, data }) => {
-        const { statusCode } = data;
-        if ([451].indexOf(statusCode) === -1) {
           toast.error(error);
-        }
       });
   };
 
