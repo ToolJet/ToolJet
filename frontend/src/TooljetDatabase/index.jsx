@@ -4,6 +4,7 @@ import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
 import { authenticationService } from '../_services/authentication.service';
 import { BreadCrumbContext } from '@/App/App';
+import { setWindowTitle } from '@/_helpers/utils';
 
 export const TooljetDatabaseContext = createContext({
   organizationId: null,
@@ -107,6 +108,10 @@ export const TooljetDatabase = (props) => {
     updateSidebarNAV('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setWindowTitle({ page: `${selectedTable?.table_name || 'Database'}` });
+  }, [selectedTable]);
 
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>

@@ -1060,3 +1060,49 @@ export const determineJustifyContentValue = (value) => {
       return 'start';
   }
 };
+
+export const defaultWhiteLabellingSettings = {
+  WHITE_LABEL_LOGO: 'https://app.tooljet.com/logo.svg',
+  WHITE_LABEL_TEXT: 'ToolJet',
+  WHITE_LABEL_FAVICON: 'https://app.tooljet.com/favico.png',
+};
+
+export const setWindowTitle = async (details, location) => {
+  const pathToTitle = {
+    'instance-settings': 'Settings',
+    'workspace-settings': 'Workspace settings',
+    integrations: 'Marketplace',
+    workflows: 'Workflows',
+    database: 'Database',
+    'data-sources': 'Data sources',
+    'audit-logs': 'Audit logs',
+    'account-settings': 'Profile settings',
+    settings: 'Settings',
+    login: '',
+    'forgot-password': '',
+  };
+  const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+  if (details?.page === 'viewer') {
+    if (details?.released === true) {
+      document.title = details?.appName ? `${details?.appName}` : `My App`;
+    } else {
+      document.title = details?.appName
+        ? `Preview - ${details?.appName} | ${whiteLabelText}`
+        : `Preview - My App | ${whiteLabelText}`;
+    }
+  } else if (details?.page === 'editor' || details?.page === 'workflowEditor') {
+    document.title = details?.appName ? `${details?.appName} | ${whiteLabelText}` : `My App | ${whiteLabelText}`;
+  } else {
+    for (const path in pathToTitle) {
+      if (location?.pathname?.includes(path)) {
+        const pageTitleSegment = pathToTitle[path];
+        if (pageTitleSegment) {
+          document.title = `${pageTitleSegment} | ${whiteLabelText}`;
+        } else {
+          document.title = `${whiteLabelText}`;
+        }
+        break;
+      }
+    }
+  }
+};

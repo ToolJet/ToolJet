@@ -15,6 +15,7 @@ import { SearchBox } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
+import { setWindowTitle } from '@/_helpers/utils';
 
 export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
@@ -65,6 +66,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   useEffect(() => {
     if (selectedDataSource) {
       setModalProps({ ...modalProps, backdrop: false });
+      setWindowTitle({ page: `${selectedDataSource?.name || 'Data sources'}` });
     }
 
     if (!isEditing) {
