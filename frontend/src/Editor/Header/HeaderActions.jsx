@@ -14,6 +14,14 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
     }),
     shallow
   );
+
+  const clearSelectionBorder = () => {
+    const selectedElems = document.getElementsByClassName('resizer-select');
+    for (const element of selectedElems) {
+      element.classList.remove('resizer-select');
+    }
+  };
+
   return (
     <div className="editor-header-actions">
       <div style={{ borderRadius: 6 }}>
@@ -34,7 +42,10 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
             type="button"
             aria-selected="true"
             tabIndex="0"
-            onClick={() => toggleCurrentLayout('desktop')}
+            onClick={() => {
+              clearSelectionBorder();
+              toggleCurrentLayout('desktop');
+            }}
             data-cy={`button-change-layout-to-desktop`}
           >
             <SolidIcon
@@ -54,7 +65,10 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
             style={{ height: 20 }}
             aria-selected="false"
             tabIndex="-1"
-            onClick={() => toggleCurrentLayout('mobile')}
+            onClick={() => {
+              clearSelectionBorder();
+              toggleCurrentLayout('mobile');
+            }}
             data-cy={`button-change-layout-to-mobile`}
           >
             <SolidIcon
