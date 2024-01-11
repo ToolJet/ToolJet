@@ -21,8 +21,7 @@ export function Google({ settings, updateData }) {
     let text = document.getElementById(input).innerHTML;
     copyToClipboard(text);
   };
-  const saveSettings = (e) => {
-    e.preventDefault();
+  const saveSettings = () => {
     setSaving(true);
     organizationService.editOrganizationConfigs({ type: 'google', configs: { clientId } }).then(
       (data) => {

@@ -5,8 +5,13 @@ import React from 'react';
   Form it self has enter for save feature. so don't need to explicitly add. 
 */
 export const FormWrapper = ({ callback, id, classnames, children }) => {
+  const handleSubmit = (event) => {
+    event?.preventDefault();
+    callback(event);
+  };
+
   return (
-    <form onSubmit={callback} noValidate id={id} className={classnames}>
+    <form onSubmit={handleSubmit} noValidate id={id} className={classnames}>
       {children}
     </form>
   );

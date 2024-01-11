@@ -61,7 +61,6 @@ export function AppModal({
   }, [selectedAppName]);
 
   const handleAction = async (e) => {
-    e.preventDefault();
     setDeploying(true);
     const trimmedAppName = newAppName.trim();
     setNewAppName(trimmedAppName);
