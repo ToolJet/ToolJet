@@ -258,7 +258,7 @@ export function CodeHinter({
         case 'boolean':
           return content.toString();
         default:
-          return content;
+          return JSON.stringify(content);
       }
     } catch (e) {
       return undefined;
@@ -339,7 +339,7 @@ export function CodeHinter({
                 </div>
               )}
             </div>
-            {JSON.stringify(content) + coercionPreview}
+            {content + coercionPreview}
           </div>
         </div>
         {/* Todo: Remove this when workspace variables are deprecated */}

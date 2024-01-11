@@ -13,6 +13,7 @@ const {
   coerce,
   create,
   literal,
+  never,
 } = require('superstruct');
 
 import _ from 'lodash';
@@ -27,7 +28,6 @@ const generateSchemaFromValidationDefinition = (definition, recursionDepth = 0) 
 
       if (recursionDepth === 0) {
         schema = coerce(schema, number(), JSON.stringify);
-        schema = defaulted(schema, () => '', { strict: true });
       }
 
       break;
@@ -41,7 +41,6 @@ const generateSchemaFromValidationDefinition = (definition, recursionDepth = 0) 
           const finalValue = parsedValue ? parsedValue : value;
           return finalValue;
         });
-        schema = defaulted(schema, () => 0, { strict: true });
       }
       break;
     }
@@ -59,13 +58,6 @@ const generateSchemaFromValidationDefinition = (definition, recursionDepth = 0) 
       const elementSchema = generateSchemaFromValidationDefinition(definition.element ?? {}, recursionDepth + 1);
       schema = array(elementSchema);
 
-      if (recursionDepth === 0) {
-        schema = coerce(schema, literal(undefined), (value) => {
-          console.log({ shashi: value, recursionDepth });
-          return [];
-        });
-      }
-
       break;
     }
     case 'object': {
@@ -77,10 +69,11 @@ const generateSchemaFromValidationDefinition = (definition, recursionDepth = 0) 
       );
       schema = type(obJectSchema);
 
-      if (recursionDepth === 0) {
-        schema = defaulted(schema, () => ({}), { strict: true });
-      }
+      break;
+    }
 
+    case 'undefined': {
+      schema = never();
       break;
     }
     default:
