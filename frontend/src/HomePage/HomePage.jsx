@@ -827,7 +827,7 @@ class HomePageComponent extends React.Component {
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
                     <div className="liner"></div>
                     <div className="filter-container">
-                      <span>{meta?.total_count} APPS</span>
+                      <span>{currentFolder?.count ?? meta?.total_count} APPS</span>
                       <div className="d-flex align-items-center">
                         <div className="mx-2">Filter by</div>
                         <FolderFilter

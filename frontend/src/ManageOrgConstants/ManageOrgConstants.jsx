@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { authenticationService, orgEnvironmentConstantService, appEnvironmentService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -12,6 +12,7 @@ import Drawer from '@/_ui/Drawer';
 import ConstantForm from './ConstantForm';
 import EmptyState from './EmptyState';
 import FolderList from '@/_ui/FolderList/FolderList';
+import { BreadCrumbContext } from '@/App';
 
 const MODES = Object.freeze({
   CREATE: 'create',
@@ -37,6 +38,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [errors, setErrors] = useState([]);
   const [showConstantDeleteConfirmation, setShowConstantDeleteConfirmation] = useState(false);
   const [selectedConstant, setSelectedConstant] = useState(null);
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   const onCancelBtnClicked = () => {
     setSelectedConstant(null);
@@ -269,6 +271,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
   useEffect(() => {
     fetchConstantsAndEnvironments(true);
+    updateSidebarNAV('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

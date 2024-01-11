@@ -7651,6 +7651,7 @@ tbody {
   height: 64px;
 
   @media only screen and (max-width: 767px) {
+    border-bottom: 1px solid var(--slate5);
     .row {
       display: flex;
 
@@ -7828,6 +7829,17 @@ tbody {
     width: fit-content;
     max-width: 30px;
     text-align: center;
+  }
+
+  @media only screen and (max-width: 768px) {
+    .unstyled-button {
+      height: unset;
+      width: unset;
+      img {
+        width: 20px;
+        height: 20px
+      }
+    }
   }
 }
 
@@ -8439,6 +8451,10 @@ tbody {
   padding-left: 40px;
   height: 64px;
   border-bottom: 1px solid var(--slate5);
+
+  @media only screen and (max-width: 768px) {
+    border-bottom: none;
+  }
 }
 
 .dashboard-breadcrumb-header-name:hover {
@@ -10876,7 +10892,7 @@ tbody {
   }
 
   .workspace-constant-card-body {
-    min-height: calc(100vh - 408px);
+   height: 100%;
   }
 
   .constant-table-card {
@@ -10910,7 +10926,7 @@ tbody {
   max-width: 880px;
 
   @media only screen and (max-width: 768px) {
-    margin-bottom: 0rem;
+    margin-bottom: 0rem !important;
     .liner {
       width: unset !important;
     }
@@ -11998,4 +12014,8 @@ tbody {
 
 .workspace-constants-wrapper {
   height: calc(100vh - 64px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.5rem;
 }

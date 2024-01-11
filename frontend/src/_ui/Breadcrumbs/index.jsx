@@ -38,5 +38,6 @@ const routes = [
   { path: '/:worspace_id/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/data-sources', breadcrumb: 'Data sources' },
+  { path: '/:worspace_id/workspace-constants', breadcrumb: ' ' },
   { path: '/integrations', breadcrumb: 'Integrations / plugins', props: { beta: true } },
 ];

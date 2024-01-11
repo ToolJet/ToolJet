@@ -9,38 +9,22 @@ export default function LogoNavDropdown({ darkMode }) {
   const getOverlay = () => {
     return (
       <div className={`logo-nav-card settings-card card ${darkMode && 'dark-theme'}`}>
-        <Link
-          onClick={(event) => getPrivateRoute('dashboard')}
-          to={getPrivateRoute('dashboard')}
-          className="dropdown-item tj-text-xsm"
-        >
+        <Link to={getPrivateRoute('dashboard')} className="dropdown-item tj-text-xsm">
           <SolidIcon name="arrowbackdown" width="20" viewBox="0 0 20 20" />
           <span>Back to apps</span>
         </Link>
         <div className="divider"></div>
 
-        <Link
-          onClick={(event) => getPrivateRoute('database')}
-          to={getPrivateRoute('database')}
-          className="dropdown-item tj-text-xsm"
-        >
+        <Link target="_blank" to={getPrivateRoute('database')} className="dropdown-item tj-text-xsm">
           <SolidIcon name="table" width="20" />
           <span>Database</span>
         </Link>
-        <Link
-          onClick={(event) => getPrivateRoute('data_sources')}
-          to={getPrivateRoute('data_sources')}
-          className="dropdown-item tj-text-xsm"
-        >
+        <Link to={getPrivateRoute('data_sources')} className="dropdown-item tj-text-xsm" target="_blank">
           <SolidIcon name="datasource" width="20" />
           <span>Data sources</span>
         </Link>
 
-        <Link
-          onClick={(event) => getPrivateRoute('workspace_constants')}
-          to={getPrivateRoute('workspace_constants')}
-          className="dropdown-item tj-text-xsm"
-        >
+        <Link to={getPrivateRoute('workspace_constants')} className="dropdown-item tj-text-xsm" target="_blank">
           <SolidIcon name="workspaceconstants" width="20" viewBox="0 0 20 20" />
           <span>Workspace constants</span>
         </Link>
