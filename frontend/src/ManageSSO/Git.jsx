@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Toggle from '@/_ui/Toggle/index';
+import { FormWrapper } from '@/_components/FormWrapper';
 
 export function Git({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -26,7 +27,8 @@ export function Git({ settings, updateData }) {
     let text = document.getElementById(input).innerHTML;
     copyToClipboard(text);
   };
-  const saveSettings = () => {
+  const saveSettings = (e) => {
+    e.preventDefault();
     setSaving(true);
     organizationService.editOrganizationConfigs({ type: 'git', configs: { clientId, clientSecret, hostName } }).then(
       (data) => {
@@ -91,7 +93,7 @@ export function Git({ settings, updateData }) {
         </div>
       </div>
       <div className="card-body">
-        <form noValidate className="sso-form-wrap">
+        <FormWrapper classnames="sso-form-wrap" id="git-sso-form" callback={saveSettings}>
           <div className="form-group mb-3">
             <label className="form-label" data-cy="host-name-label">
               {t('header.organization.menus.manageSSO.github.hostName', 'Host Name')}
@@ -159,7 +161,7 @@ export function Git({ settings, updateData }) {
               </div>
             </div>
           )}
-        </form>
+        </FormWrapper>
       </div>
       <div className="form-footer sso-card-footer">
         <ButtonSolid onClick={reset} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
@@ -176,6 +178,8 @@ export function Git({ settings, updateData }) {
           leftIcon="floppydisk"
           fill="#fff"
           iconWidth="20"
+          type="submit"
+          form="git-sso-form"
         >
           {t('globals.savechanges', 'Save changes')}
         </ButtonSolid>

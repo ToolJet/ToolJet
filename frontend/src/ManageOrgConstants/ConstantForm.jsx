@@ -3,6 +3,7 @@ import { withTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _, { capitalize } from 'lodash';
 import { Tooltip } from 'react-tooltip';
+import { FormWrapper } from '@/_components/FormWrapper';
 
 const ConstantForm = ({
   selectedConstant,
@@ -123,6 +124,12 @@ const ConstantForm = ({
 
   const inputRef = React.useRef(null);
 
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      handlecreateOrUpdate(event);
+    }
+  };
+
   const handleInput = () => {
     const input = inputRef.current;
     if (fields['value'] && fields['value'].length > 30 && input) {
@@ -140,7 +147,7 @@ const ConstantForm = ({
         </h3>
       </div>
       <div className="card-body org-constant-form">
-        <form noValidate onSubmit={(e) => e.preventDefault()}>
+        <FormWrapper callback={handlecreateOrUpdate} id="variable-form">
           <div className="form-group mb-3 ">
             <div className="d-flex mb-3">
               <div
@@ -185,6 +192,7 @@ const ConstantForm = ({
                 name="value"
                 onChange={handleFieldChange}
                 value={fields['value']}
+                onKeyDown={handleKeyPress}
                 onInput={handleInput}
                 onFocus={() => !!selectedConstant && handleInput()}
                 style={{
@@ -203,7 +211,7 @@ const ConstantForm = ({
               </span>
             </div>
           </div>
-        </form>
+        </FormWrapper>
       </div>
       <div className="form-footer gap-2 variable-form-footer">
         <ButtonSolid onClick={onCancelBtnClicked} data-cy="cancel-button" variant="tertiary">
@@ -211,10 +219,10 @@ const ConstantForm = ({
         </ButtonSolid>
         <ButtonSolid
           type="submit"
-          onClick={handlecreateOrUpdate}
           isLoading={isLoading}
           disabled={isLoading || shouldDisableButton || selectedConstant?.value === fields['value']}
           data-cy="add-constant-button"
+          form="variable-form"
         >
           {!selectedConstant ? 'Add constant' : 'Update'}
         </ButtonSolid>

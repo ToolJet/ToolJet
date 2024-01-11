@@ -5,6 +5,7 @@ import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { FormWrapper } from '@/_components/FormWrapper';
 
 export function Google({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -20,7 +21,8 @@ export function Google({ settings, updateData }) {
     let text = document.getElementById(input).innerHTML;
     copyToClipboard(text);
   };
-  const saveSettings = () => {
+  const saveSettings = (e) => {
+    e.preventDefault();
     setSaving(true);
     organizationService.editOrganizationConfigs({ type: 'google', configs: { clientId } }).then(
       (data) => {
@@ -91,7 +93,7 @@ export function Google({ settings, updateData }) {
         </div>
       </div>
       <div className="card-body">
-        <form noValidate className="sso-form-wrap">
+        <FormWrapper classnames="sso-form-wrap" id="google-sso-form" callback={saveSettings}>
           <div className="form-group mb-3">
             <label className="form-label" data-cy="client-id-label">
               {t('header.organization.menus.manageSSO.google.clientId', 'Client Id')}
@@ -120,7 +122,7 @@ export function Google({ settings, updateData }) {
               </div>
             </div>
           )}
-        </form>
+        </FormWrapper>
       </div>
       <div className="form-footer sso-card-footer">
         <ButtonSolid onClick={reset} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
@@ -130,12 +132,13 @@ export function Google({ settings, updateData }) {
         <ButtonSolid
           disabled={isSaving}
           isLoading={isSaving}
-          onClick={saveSettings}
           data-cy="save-button"
           variant="primary"
           className="sso-footer-save-btn"
           leftIcon="floppydisk"
           fill="#fff"
+          type="submit"
+          form="google-sso-form"
           iconWidth="20"
         >
           {t('globals.savechanges', 'Save changes')}
