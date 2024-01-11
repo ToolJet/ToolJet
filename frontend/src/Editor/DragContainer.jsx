@@ -15,18 +15,20 @@ const DimensionViewable = {
   name: 'dimensionViewable',
   props: [],
   events: [],
-  render(moveable) {
-    const rect = moveable.getRect();
-
+  render() {
     return (
       <div
         className={'multiple-components-config-handle'}
-        onMouseEnter={() => {
-          useGridStore.getState().actions.setIsGroundHandleHoverd(true);
+        onMouseUpCapture={() => {
+          if (useGridStore.getState().isGroundHandleHoverd) {
+            useGridStore.getState().actions.setIsGroundHandleHoverd(false);
+          }
         }}
-        // onMouseUp={() => {
-        //   useGridStore.getState().actions.setIsGroundHandleHoverd(false);
-        // }}
+        onMouseDownCapture={() => {
+          if (!useGridStore.getState().isGroundHandleHoverd) {
+            useGridStore.getState().actions.setIsGroundHandleHoverd(true);
+          }
+        }}
       >
         <span className="badge handle-content" id="multiple-components-config-handle" style={{ background: '#4d72fa' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -183,10 +185,8 @@ export default function DragContainer({
         return component.id;
       })
     );
-    console.log('here--->', { selectedComponents, boxes, selectedComponentsId });
     const selectedBoxs = boxes.filter((box) => selectedComponentsId.has(box.id));
     const parentId = selectedBoxs.find((comp) => comp.component.parent)?.component?.parent;
-    console.log('here--->', parentId, selectedBoxs);
 
     // Get all elements with the old class name
     var elements = document.getElementsByClassName('selected-component');
@@ -627,7 +627,6 @@ export default function DragContainer({
               }}
               onDragGroupEnd={(e) => {
                 const { events } = e;
-                useGridStore.getState().actions.setIsGroundHandleHoverd(false);
                 onDrag(
                   events.map((ev) => ({
                     id: ev.target.id,
