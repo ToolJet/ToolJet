@@ -98,6 +98,8 @@ export function CodeHinter({
   const [prevCurrentValue, setPrevCurrentValue] = useState(null);
   const [resolvedValue, setResolvedValue] = useState(null);
   const [resolvingError, setResolvingError] = useState(null);
+  const [coercionPreview, setCoercionPreview] = useState('');
+  const [typeAfterCoercion, setTypeAfterCoercion] = useState(null);
 
   const [isFocused, setFocused] = useState(false);
   const [heightRef, currentHeight] = useHeight();
@@ -148,8 +150,8 @@ export function CodeHinter({
       }
       return accumulator;
     }, {});
-    const [_valid, errorMessages] = validateProperty(resolvedProperty, propertyDefinition, paramName);
-    return [_valid, errorMessages];
+    const [_valid, errorMessages, newValue] = validateProperty(resolvedProperty, propertyDefinition, paramName);
+    return [_valid, errorMessages, newValue, propertyDefinition.validation ? true : false];
   };
 
   const getPreviewAndErrorFromValue = (value) => {
@@ -161,8 +163,9 @@ export function CodeHinter({
   useEffect(() => {
     setCurrentValue(initialValue);
     const [preview, error] = getPreviewAndErrorFromValue(initialValue);
-    const [_valid] = checkTypeErrorInRunTime(preview);
+    const [_valid, _errorMessages] = checkTypeErrorInRunTime(preview);
     if (!_valid || error) setResolvingError(true);
+
     return () => {
       setPrevCurrentValue(null);
       setResolvedValue(null);
@@ -205,7 +208,7 @@ export function CodeHinter({
     if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
       const [preview, error] = getPreviewAndErrorFromValue(currentValue);
       // checking type error if any in run time
-      const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
+      const [_valid, errorMessages, newValue, validationSchemaExists] = checkTypeErrorInRunTime(preview);
 
       setPrevCurrentValue(currentValue);
       if (error || !_valid || typeof preview === 'function') {
@@ -217,6 +220,14 @@ export function CodeHinter({
         globalPreviewCopy = preview;
         globalErrorCopy = null;
         setResolvingError(null);
+
+        if (validationSchemaExists) {
+          const [coercionPreview, typeAfterCoercion] = computeCoercion(preview, newValue);
+
+          setCoercionPreview(coercionPreview);
+          setTypeAfterCoercion(typeAfterCoercion);
+        }
+
         setResolvedValue(preview);
       }
     }
@@ -320,7 +331,7 @@ export function CodeHinter({
           <div>
             <div className="d-flex my-1">
               <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
-                {previewType}
+                {previewType} {coercionPreview ? ` → ${typeAfterCoercion}` : ''}
               </div>
               {isFocused && (
                 <div className="preview-icons position-relative">
@@ -328,7 +339,7 @@ export function CodeHinter({
                 </div>
               )}
             </div>
-            {content}
+            {content + coercionPreview}
           </div>
         </div>
         {/* Todo: Remove this when workspace variables are deprecated */}
@@ -566,6 +577,21 @@ const DepericatedAlertForWorkspaceVariable = ({ text }) => {
     </Alert>
   );
 };
+
+function computeCoercion(oldValue, newValue) {
+  const oldValueType = Array.isArray(oldValue) ? 'array' : typeof oldValue;
+  const newValueType = Array.isArray(newValue) ? 'array' : typeof newValue;
+
+  if (oldValueType === newValueType) {
+    if (JSON.stringify(oldValue) != JSON.stringify(newValue)) {
+      return [` → ${JSON.stringify(newValue)}`, newValueType];
+    }
+  } else {
+    return [` → ${JSON.stringify(newValue)}`, newValueType];
+  }
+
+  return ['', newValueType];
+}
 
 CodeHinter.PopupIcon = PopupIcon;
 CodeHinter.Portal = Portal;

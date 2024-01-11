@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext, useRef, memo } from 'react';
+import React, { useEffect, useState, useMemo, useContext, memo } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -247,7 +247,7 @@ export const Box = memo(
       }
 
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
+    }, [JSON.stringify({ validatedProperties, validatedStyles })]);
 
     useEffect(() => {
       if (customResolvables && !readOnly && mode === 'edit') {
