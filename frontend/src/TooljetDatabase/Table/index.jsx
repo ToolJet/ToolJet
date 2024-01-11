@@ -22,6 +22,7 @@ import Boolean from '../Icons/Toggle.svg';
 import Menu from '../Icons/Menu.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 import TjdbTableHeader from './Header';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 import './styles.scss';
 
@@ -52,6 +53,8 @@ const Table = () => {
   });
   const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
   const [wholeScreenWidth, setWholeScreenWidth] = useState(window.innerWidth);
+  const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
+  // const [rowIdSelected, setRowIdSelected] = useState({});
 
   const prevSelectedTableRef = useRef({});
   const columnCreatorElement = useRef();
@@ -148,6 +151,13 @@ const Table = () => {
     }
   };
 
+  // function customToggleRowSelection(rowId) {
+  //   const rowSelectionDetails = {};
+  //   // if (rowSelectionDetails[rowId]) delete rowSelectionDetails[rowId];
+  //   if (!rowSelectionDetails[rowId]) rowSelectionDetails[rowId] = true;
+  //   setRowIdSelected({ ...rowSelectionDetails });
+  // }
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -175,11 +185,46 @@ const Table = () => {
           ),
           // The cell can use the individual row's getToggleRowSelectedProps method
           // to the render a checkbox
-          Cell: ({ row }) => (
-            <div>
-              <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-            </div>
-          ),
+          Cell: ({ row, toggleAllRowsSelected }) => {
+            const [isHover, setIsHover] = useState(false);
+            // {'0': true, '1': true} -> {} -> {'1': true}
+            return (
+              <div
+                className="d-flex align-items-center gap-2"
+                style={{
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                  e.stopPropagation();
+                  setIsHover(true);
+                }}
+                onMouseLeave={(e) => {
+                  e.stopPropagation();
+                  setIsHover(false);
+                }}
+              >
+                <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+                <div
+                  style={{
+                    ...(!isHover && { visibility: 'hidden' }),
+                    display: isHover ? 'block' : 'none',
+                  }}
+                  onClick={() => {
+                    toggleAllRowsSelected(false);
+                    setTimeout(() => {
+                      row.toggleRowSelected(true);
+                    });
+                    // customToggleRowSelection(row.id);
+                    setTimeout(() => {
+                      setIsEditRowDrawerOpen(true);
+                    });
+                  }}
+                >
+                  <SolidIcon name="expand" />
+                </div>
+              </div>
+            );
+          },
         },
         ...columns,
       ]);
@@ -336,6 +381,8 @@ const Table = () => {
         selectedRowIds={selectedRowIds}
         handleDeleteRow={handleDeleteRow}
         rows={rows}
+        isEditRowDrawerOpen={isEditRowDrawerOpen}
+        setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
       />
       <div
         style={{

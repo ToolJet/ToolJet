@@ -23,9 +23,10 @@ const Header = ({
   selectedRowIds,
   handleDeleteRow,
   rows,
+  isEditRowDrawerOpen,
+  setIsEditRowDrawerOpen,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
   const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
   const [bulkUploadFile, setBulkUploadFile] = useState(null);
