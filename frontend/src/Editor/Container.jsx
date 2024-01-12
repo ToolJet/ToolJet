@@ -816,6 +816,7 @@ export const Container = ({
         setDraggedSubContainer={setDraggedSubContainer}
         draggedSubContainer={draggedSubContainer}
         mode={isVersionReleased ? 'view' : mode}
+        boxesAsObj={boxes}
       />
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div style={{ paddingTop: '10%' }}>
