@@ -10468,8 +10468,8 @@ tbody {
 }
 
 .add-col-btn-database {
-  position: absolute;
-  top: 28;
+  position: sticky;
+  bottom: 0;
   left: 0px;
   width: 29px;
   height: 31px;
@@ -10482,8 +10482,8 @@ tbody {
 }
 
 .add-col-btn-database-dark {
-  position: absolute;
-  top: 28;
+  position: sticky;
+  bottom: 0;
   left: 0px;
   width: 29px;
   height: 31px;

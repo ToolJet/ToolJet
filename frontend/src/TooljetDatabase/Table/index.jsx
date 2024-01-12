@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
 import { isBoolean, isEmpty } from 'lodash';
@@ -47,12 +47,35 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     deletePopupModal: false,
     columnEditPopover: false,
   });
-  const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
-  const [wholeScreenWidth, setWholeScreenWidth] = useState(window.innerWidth);
+  const [creatorElement, setCreatorElement] = useState({ width: false, height: false });
 
   const prevSelectedTableRef = useRef({});
-  const columnCreatorElement = useRef();
+  const containerRef = useRef(null);
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const handleResize = () => {
+      if (container) {
+        const hasScrollbarWidth = container.scrollWidth > container.clientWidth;
+        const hasScrollbarHeight = container.scrollHeight > container.clientHeight;
+        setCreatorElement((prevElement) => ({
+          ...prevElement,
+          width: hasScrollbarWidth,
+          height: hasScrollbarHeight,
+        }));
+      }
+    };
+    const resizeObserver = new ResizeObserver(handleResize);
+    if (container) {
+      resizeObserver.observe(container);
+    }
+    return () => {
+      if (container) {
+        resizeObserver.unobserve(container);
+      }
+    };
+  }, []);
 
   const fetchTableMetadata = () => {
     if (!isEmpty(selectedTable)) {
@@ -183,47 +206,12 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }
   );
 
-  const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
-
-  const moveColumnCreateElement = useCallback(() => {
-    setTimeout(() => {
-      const initialxAxis = columnCreatorElement.current?.getBoundingClientRect().x;
-      const fullWidth = window.innerWidth;
-      setWidth((prevState) => ({
-        ...prevState,
-        screenWidth: fullWidth,
-        xAxis: initialxAxis,
-      }));
-    }, 200);
-  }, [setWidth, columnCreatorElement]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWholeScreenWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  useEffect(() => {
-    moveColumnCreateElement();
-  }, []);
-
-  useEffect(() => {
-    moveColumnCreateElement();
-  }, [wholeScreenWidth, columHeaderLength]);
-
-  const widthOfScreen = width.screenWidth > 0 ? width.screenWidth : wholeScreenWidth;
   const positionValue =
-    !darkMode && width.xAxis > widthOfScreen
+    !darkMode && creatorElement.width === true
       ? 'add-row-btn-database-fixed'
-      : !darkMode && width.xAxis <= widthOfScreen
+      : !darkMode && creatorElement.width !== true
       ? 'add-row-btn-database-absolute'
-      : darkMode && width.xAxis > widthOfScreen
+      : darkMode && creatorElement.width === true
       ? 'add-row-btn-database-fixed-dark'
       : 'add-row-btn-database-absolute-dark';
 
@@ -385,6 +373,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           height: 'calc(100vh - 164px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
         className={cx('table-responsive border-0 tj-db-table animation-fade')}
+        ref={containerRef}
       >
         <table
           {...getTableProps()}
@@ -392,7 +381,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           style={{ position: 'relative' }}
         >
           <thead>
-            <button ref={columnCreatorElement} onClick={() => openCreateColumnDrawer()} className={`${positionValue}`}>
+            <button onClick={() => openCreateColumnDrawer()} className={`${positionValue}`}>
               +
             </button>
             {headerGroups.map((headerGroup, index) => (
