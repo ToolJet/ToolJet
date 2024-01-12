@@ -6901,6 +6901,9 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    &:hover {
+      background: #F1F3F5 !important;
+    }
   }
 
   .table-cell-hover-background {
@@ -6984,6 +6987,14 @@ tbody {
   .delete-row-btn {
     max-width: 140px;
   }
+
+  .tjdb-table-row:hover{
+    background: #F8F9FA;
+  
+    .tjdb-checkbox-cell {
+      display: block !important;
+    }
+  } 
 }
 
 .apploader {

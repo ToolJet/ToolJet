@@ -196,7 +196,7 @@ const Table = () => {
               >
                 <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
                 <div
-                  className="tjdb-row-cell"
+                  className="tjdb-checkbox-cell"
                   style={{
                     display: 'none',
                   }}
