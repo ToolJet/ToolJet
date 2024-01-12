@@ -43,7 +43,7 @@ import { Icon } from './Elements/Icon';
 import { Visibility } from './Elements/Visibility';
 import { validateProperty } from '../component-properties-validation';
 
-const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
+const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
 
 const AllElements = {
   Color,
