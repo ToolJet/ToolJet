@@ -9,8 +9,6 @@ import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
 import { useGridStoreActions, useDragTarget, useNoOfGrid, useGridStore } from '@/_stores/gridStore';
 
-const NO_OF_GRIDS = 43;
-
 const DimensionViewable = {
   name: 'dimensionViewable',
   props: [],
@@ -110,6 +108,7 @@ export default function DragContainer({
   autoComputeLayout,
   setDraggedSubContainer,
   draggedSubContainer,
+  boxesAsObj,
 }) {
   const [dragTarget, setDragTarget] = useDragTarget();
   const [draggedTarget, setDraggedTarget] = useState();
@@ -275,6 +274,41 @@ export default function DragContainer({
       ? [...groupedTargets]
       : '.widget-target'
   );
+
+  // Function to limit the resizing of element within the parent
+  const setResizingLimit = (e, i) => {
+    const elemLayout = boxesAsObj[e.target.id]?.layouts[currentLayout];
+    const parentLayout = boxesAsObj[i.parent]?.layouts[currentLayout];
+    let maxWidth = null,
+      maxHeight = null,
+      parentgW = subContainerWidths[i.parent] || gridWidth,
+      elemSize = 0;
+
+    const [leftRight, topBottom] = e.direction;
+    if (leftRight === 0) {
+      if (topBottom === -1) {
+        //Resize with top handle
+        elemSize = elemLayout?.top + elemLayout?.height;
+      } else {
+        //Resize with top handle
+        const parentHeight = document.getElementById(`canvas-${i.parent}`)?.offsetHeight ?? parentLayout?.height;
+        elemSize = parentHeight - elemLayout?.top;
+      }
+      maxHeight = elemSize;
+    } else {
+      if (leftRight === -1) {
+        //Resize with left handle
+        elemSize = (noOfGrids - (elemLayout?.left + elemLayout?.width)) * parentgW;
+      } else {
+        //Resize with right handle
+        elemSize = elemLayout?.left * parentgW;
+      }
+      maxWidth = noOfGrids * parentgW - elemSize;
+    }
+
+    e.setMax([maxWidth, maxHeight]);
+    e.setMin([gridWidth, 10]);
+  };
 
   return (
     <div className="root">
@@ -851,7 +885,7 @@ export default function DragContainer({
                     onResizeStart={(e) => {
                       setResizingComponentId(e.target.id);
                       setActiveGrid(i.parent);
-                      e.setMin([gridWidth, 10]);
+                      setResizingLimit(e, i);
                       if (currentLayout === 'mobile' && autoComputeLayout) {
                         turnOffAutoLayout();
                         return false;
