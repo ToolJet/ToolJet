@@ -1625,6 +1625,9 @@ export const widgets = [
     },
     events: {
       onChange: { displayName: 'On change' },
+      onFocus: { displayName: 'On focus' },
+      onBlur: { displayName: 'On blur' },
+      onEnterPressed: { displayName: 'On enter pressed' },
     },
     styles: {
       color: {
@@ -1740,6 +1743,23 @@ export const widgets = [
       },
     },
     actions: [
+      {
+        handle: 'setText',
+        displayName: 'Set text',
+        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
+      },
+      {
+        handle: 'clear',
+        displayName: 'Clear',
+      },
+      {
+        handle: 'setFocus',
+        displayName: 'Set focus',
+      },
+      {
+        handle: 'setBlur',
+        displayName: 'Set blur',
+      },
       {
         handle: 'setVisibility',
         displayName: 'setVisibility',
@@ -1862,9 +1882,13 @@ export const widgets = [
       minLength: { type: 'code', displayName: 'Min length' },
       maxLength: { type: 'code', displayName: 'Max length' },
       customRule: { type: 'code', displayName: 'Custom validation' },
+      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
     events: {
       onChange: { displayName: 'On change' },
+      onFocus: { displayName: 'On focus' },
+      onBlur: { displayName: 'On blur' },
+      onEnterPressed: { displayName: 'On enter pressed' },
     },
     styles: {
       color: {
@@ -1988,6 +2012,23 @@ export const widgets = [
       isLoading: false,
     },
     actions: [
+      {
+        handle: 'setText',
+        displayName: 'Set text',
+        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
+      },
+      {
+        handle: 'clear',
+        displayName: 'Clear',
+      },
+      {
+        handle: 'setFocus',
+        displayName: 'Set focus',
+      },
+      {
+        handle: 'setBlur',
+        displayName: 'Set blur',
+      },
       {
         handle: 'setVisibility',
         displayName: 'setVisibility',

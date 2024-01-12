@@ -21,5 +21,8 @@
     "@tooljet-plugins/common": "file:../common",
     "json5": "^2.2.3",
     "react": "^17.0.2"
+  },
+  "overrides": {
+    "minimist": "^1.2.6"
   }
 }

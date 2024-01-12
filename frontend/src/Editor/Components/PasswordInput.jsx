@@ -50,24 +50,35 @@ export const PasswordInput = function PasswordInput({
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const [iconVisibility, setIconVisibility] = useState(false);
   const [loading, setLoading] = useState(loadingState);
+  const [isFocused, setIsFocused] = useState(false);
 
   const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
-    borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
+    borderColor: isFocused
+      ? '#3E63DD'
+      : ['#D7DBDF'].includes(borderColor)
+      ? darkMode
+        ? '#4C5155'
+        : '#D7DBDF'
+      : borderColor,
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    boxShadow: boxShadow,
+    boxShadow: isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
-        ? '3px 24px 3px 23px'
-        : '3px 24px 3px 22px'
-      : '3px 24px 3px 5px',
+        ? '3px 24px 3px 29px'
+        : '3px 24px 3px 27px'
+      : '3px 24px 3px 10px',
   };
   const loaderStyle = {
     right:
-      direction === 'right' && defaultAlignment === 'side' ? `${elementWidth}px` : padding == 'default' ? '7px' : '5px',
-    top: `${defaultAlignment === 'top' ? `50%` : ''}`,
+      direction === 'right' && defaultAlignment === 'side'
+        ? `${elementWidth + 5}px`
+        : padding == 'default'
+        ? '12px'
+        : '10px',
+    top: `${defaultAlignment === 'top' ? `53%` : ''}`,
     transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
   };
 
@@ -114,7 +125,7 @@ export const PasswordInput = function PasswordInput({
 
   useEffect(() => {
     setPasswordValue(properties.value);
-    setExposedVariable('value', properties.value);
+    setExposedVariable('value', properties?.value ?? '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
@@ -205,9 +216,9 @@ export const PasswordInput = function PasswordInput({
     <>
       <div
         data-disabled={disable || loading}
-        className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
-          direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
-        }
+        className={`text-input d-flex overflow-hidden ${
+          defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '
+        }  ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
       ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
       ${visibility || 'invisible'}`}
         style={{
@@ -243,13 +254,13 @@ export const PasswordInput = function PasswordInput({
               left:
                 direction === 'right'
                   ? padding == 'default'
-                    ? '8px'
-                    : '5px'
+                    ? '13px'
+                    : '10px'
                   : defaultAlignment === 'top'
                   ? padding == 'default'
-                    ? '8px'
-                    : '5px'
-                  : `${elementWidth}px`,
+                    ? '13px'
+                    : '10px'
+                  : `${elementWidth + 5}px`,
               position: 'absolute',
               top: `${
                 defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
@@ -266,25 +277,26 @@ export const PasswordInput = function PasswordInput({
               setIconVisibility(!iconVisibility);
             }}
             style={{
-              width: '7',
-              height: '7',
+              width: '16px',
+              height: '16px',
               position: 'absolute',
               right:
                 alignment == 'top'
                   ? padding == 'none'
-                    ? `6px`
-                    : '8px'
+                    ? `11px`
+                    : '13px'
                   : direction == 'left'
                   ? padding == 'none'
-                    ? `6px`
-                    : '8px'
-                  : `${elementWidth}px`,
+                    ? `11px`
+                    : '13px'
+                  : `${elementWidth + 5}px`,
               top: alignment == 'side' ? '50%' : label?.length > 0 && width > 0 ? `calc(50% + 10px)` : '50%',
               transform: ' translateY(-50%)',
+              display: 'flex',
             }}
             stroke={1.5}
           >
-            <SolidIcon width={14} className="password-component-eye" name={!iconVisibility ? 'eye1' : 'eyedisable'} />
+            <SolidIcon width={16} className="password-component-eye" name={!iconVisibility ? 'eye1' : 'eyedisable'} />
           </div>
         )}
         <input
@@ -305,11 +317,14 @@ export const PasswordInput = function PasswordInput({
             fireEvent('onChange');
           }}
           onBlur={(e) => {
+            setIsFocused(false);
             setShowValidationError(true);
             e.stopPropagation();
             fireEvent('onBlur');
           }}
           onFocus={(e) => {
+            setIsFocused(true);
+
             e.stopPropagation();
             fireEvent('onFocus');
           }}

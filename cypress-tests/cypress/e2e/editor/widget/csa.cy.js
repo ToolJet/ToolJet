@@ -25,6 +25,7 @@ describe("Editor- CSA", () => {
   });
 
   afterEach(() => {
+    cy.wait(500);
     cy.apiDeleteApp();
   });
 
@@ -218,7 +219,7 @@ describe("Editor- CSA", () => {
     cy.get('[data-cy="draggable-widget-icon1"]').should("not.be.visible");
   });
 
-  it.only("Should verify Kanban CSA", () => {
+  it("Should verify Kanban CSA", () => {
     cy.viewport(1400, 1900);
 
     cy.dragAndDropWidget("Kanban", 50, 400);
