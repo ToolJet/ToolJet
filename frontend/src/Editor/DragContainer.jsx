@@ -516,9 +516,8 @@ export default function DragContainer({
                       if (isOwnChild) return false;
                       return (
                         ele.id !== e.target.id &&
-                        (ele.classList.contains('target') ||
-                          ele.classList.contains('nested-target') ||
-                          ele.classList.contains('drag-container-parent'))
+                        // ele.classList.contains('target') ||
+                        (ele.classList.contains('nested-target') || ele.classList.contains('drag-container-parent'))
                       );
                     });
                     draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
@@ -794,6 +793,9 @@ export default function DragContainer({
                         });
                         draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
                         console.log('draggedOverElem', draggedOverElem, draggedOverElemId);
+                        if (!subContainerWidths[draggedOverElemId]) {
+                          draggedOverElemId = i.parent;
+                        }
                         if (draggedOverElemId !== i.parent) {
                           const newParentElem = list[draggedOverElemId]?.layouts?.desktop;
                           let { left: _left, top: _top } = getMouseDistanceFromParentDiv(e, draggedOverElemId);
