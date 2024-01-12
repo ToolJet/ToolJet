@@ -54,7 +54,6 @@ const Table = () => {
   const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
   const [wholeScreenWidth, setWholeScreenWidth] = useState(window.innerWidth);
   const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
-  // const [rowIdSelected, setRowIdSelected] = useState({});
 
   const prevSelectedTableRef = useRef({});
   const columnCreatorElement = useRef();
@@ -151,13 +150,6 @@ const Table = () => {
     }
   };
 
-  // function customToggleRowSelection(rowId) {
-  //   const rowSelectionDetails = {};
-  //   // if (rowSelectionDetails[rowId]) delete rowSelectionDetails[rowId];
-  //   if (!rowSelectionDetails[rowId]) rowSelectionDetails[rowId] = true;
-  //   setRowIdSelected({ ...rowSelectionDetails });
-  // }
-
   const {
     getTableProps,
     getTableBodyProps,
@@ -205,13 +197,12 @@ const Table = () => {
                     setTimeout(() => {
                       row.toggleRowSelected(true);
                     });
-                    // customToggleRowSelection(row.id);
                     setTimeout(() => {
                       setIsEditRowDrawerOpen(true);
                     }, 100);
                   }}
                 >
-                  <SolidIcon name="expand" />
+                  <SolidIcon name="expand" width={14} viewBox="0 0 14 14" />
                 </div>
               </div>
             );
