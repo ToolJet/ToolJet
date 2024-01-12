@@ -180,7 +180,6 @@ export const Checkbox = function Checkbox({
               }}
               defaultChecked={defaultValue}
               checked={checked}
-              // style={{ backgroundColor: checked ? `${checkboxColor}` : 'white', marginTop: '1px', display: 'none' }}
             />
             <div style={checkmarkStyle}>
               {checked && (

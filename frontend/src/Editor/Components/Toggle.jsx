@@ -250,9 +250,6 @@ export const ToggleSwitch = ({
               margin: '0px',
             }}
           >
-            {/* {alignment == 'left' && isMandatory && !on && (
-              <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>
-            )} */}
             {label}
             {isMandatory && !on && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
           </p>
