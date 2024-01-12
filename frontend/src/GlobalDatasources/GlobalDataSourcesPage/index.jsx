@@ -64,9 +64,9 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   }, []);
 
   useEffect(() => {
+    setWindowTitle({ page: `${selectedDataSource?.name || 'Data sources'}` });
     if (selectedDataSource) {
       setModalProps({ ...modalProps, backdrop: false });
-      setWindowTitle({ page: `${selectedDataSource?.name || 'Data sources'}` });
     }
 
     if (!isEditing) {

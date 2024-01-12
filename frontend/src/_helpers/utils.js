@@ -1077,7 +1077,7 @@ export const setWindowTitle = async (details, location) => {
     'data-sources': 'Data sources',
     'audit-logs': 'Audit logs',
     'account-settings': 'Profile settings',
-    settings: 'Settings',
+    settings: 'Profile settings',
     login: '',
     'forgot-password': '',
   };
