@@ -1102,6 +1102,8 @@ export const setWindowTitle = async (details, location) => {
           document.title = `${whiteLabelText}`;
         }
         break;
+      } else {
+        document.title = details?.page ? `${details?.page} | ${whiteLabelText}` : `${whiteLabelText}`;
       }
     }
   }
