@@ -20,6 +20,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { diff } from 'deep-object-diff';
 import DragContainerNested from './DragContainerNested';
 import { useGridStore, useDragTarget } from '@/_stores/gridStore';
+import { SUBCONTAINER_WITH_SCROLL } from './constants';
 
 // const NO_OF_GRIDS = 43;
 
@@ -139,11 +140,7 @@ export const SubContainer = ({
 
   useEffect(() => {
     try {
-      const isParentModal =
-        (allComponents[parent]?.component?.component === 'Modal' ||
-          allComponents[parent]?.component?.component === 'Form' ||
-          allComponents[parent]?.component?.component === 'Container') ??
-        false;
+      const isParentScrollable = SUBCONTAINER_WITH_SCROLL.has(allComponents[parent]?.component?.component);
       const canvasBounds = parentRef.current.getBoundingClientRect();
       const subContainerHeight = canvasBounds.height - 30;
       const componentBottom = Object.values(childWidgets).reduce(function (max, currentElement) {
@@ -151,10 +148,8 @@ export const SubContainer = ({
         return Math.max(max, currentSum);
       }, 0);
 
-      if (isParentModal && subContainerHeight <= componentBottom) {
+      if (isParentScrollable && subContainerHeight <= componentBottom) {
         subContainerHeightRef.current = componentBottom + 100;
-      } else {
-        subContainerHeightRef.current = subContainerHeight + 28;
       }
     } catch (error) {
       console.error('console.error', error);
