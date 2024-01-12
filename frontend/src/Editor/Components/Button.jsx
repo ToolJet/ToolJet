@@ -134,7 +134,6 @@ export const Button = function Button(props) {
     computedStyles['--tblr-btn-color-darker'] = tinycolor(computedBgColor).darken(8).toString();
     computedStyles['--tblr-btn-color-clicked'] = tinycolor(computedBgColor).darken(15).toString();
   }
-
   const handleClick = () => {
     const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
     document.dispatchEvent(event1);
@@ -150,7 +149,7 @@ export const Button = function Button(props) {
     >
       <button
         disabled={disable || loading}
-        className={cx('overflow-hidden btn', {
+        className={cx('overflow-hidden', {
           'btn-loading': loading,
           'btn-custom': hasCustomBackground,
           'jet-button ': type == 'primary',
