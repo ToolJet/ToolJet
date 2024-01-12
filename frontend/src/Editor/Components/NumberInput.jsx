@@ -328,7 +328,6 @@ export const NumberInput = function NumberInput({
                 }`,
                 transform: ' translateY(-50%)',
                 color: iconColor,
-                backgroundColor: 'red',
               }}
               stroke={1.5}
             />
