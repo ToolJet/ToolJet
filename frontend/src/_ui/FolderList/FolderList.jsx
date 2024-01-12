@@ -39,7 +39,6 @@ function FolderList({
   };
 
   const menuToggle = () => {
-    console.log('menu clicked');
     setShowGroupOptions(!showGroupOptions);
   };
   const handleMouseEnterInside = () => {
