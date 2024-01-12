@@ -84,7 +84,7 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const newRevampedWidgets = ['TextInput', 'Text', 'DropDown', 'Multiselect'];
+  const newRevampedWidgets = ['TextInput', 'Text', 'DropDown', 'Multiselect', 'RadioButton'];
 
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -654,6 +654,7 @@ const GetAccordion = React.memo(
 
       case 'DropDown':
       case 'Multiselect':
+      case 'RadioButton':
         return <Select {...restProps} />;
 
       default: {

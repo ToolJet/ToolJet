@@ -29,6 +29,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   } = restProps;
 
   const isMultiSelect = component?.component?.component === 'Multiselect';
+  const isRadioButton = component?.component?.component === 'RadioButton';
 
   const constructOptions = () => {
     const labels = resolveReferences(component?.component?.definition?.properties?.display_values?.value, currentState);
@@ -460,7 +461,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             componentMeta,
             paramUpdated,
             dataQueries,
-            'loadingState',
+            isRadioButton ? 'optionsLoadingState' : 'loadingState',
             'properties',
             currentState,
             allComponents
