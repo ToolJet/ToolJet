@@ -87,7 +87,6 @@ export const Code = ({
     return param.name;
   }, [param]);
 
-  console.log('paramMeta', paramMeta);
   return (
     <div className={`field ${options.className}`} style={{ marginBottom: '8px' }}>
       <CodeHinter
