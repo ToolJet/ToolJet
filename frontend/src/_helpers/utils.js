@@ -1093,6 +1093,10 @@ export const setWindowTitle = async (details, location) => {
   } else if (details?.page === 'editor' || details?.page === 'workflowEditor') {
     document.title = details?.appName ? `${details?.appName} | ${whiteLabelText}` : `My App | ${whiteLabelText}`;
   } else {
+    if (details?.page) {
+      document.title = details?.page ? `${details?.page} | ${whiteLabelText}` : `${whiteLabelText}`;
+    }
+    else {
     for (const path in pathToTitle) {
       if (location?.pathname?.includes(path)) {
         const pageTitleSegment = pathToTitle[path];
@@ -1102,9 +1106,8 @@ export const setWindowTitle = async (details, location) => {
           document.title = `${whiteLabelText}`;
         }
         break;
-      } else {
-        document.title = details?.page ? `${details?.page} | ${whiteLabelText}` : `${whiteLabelText}`;
       }
     }
+  }
   }
 };
