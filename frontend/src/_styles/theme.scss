@@ -1147,7 +1147,7 @@ button {
 
 
       .modal-body {
-        height: 100%;
+        height: 80%;
         padding: 0 10px;
         background-color: var(--base) !important;
 
@@ -1280,7 +1280,21 @@ button {
     border-color: var(--slate5) !important;
   }
 
-  .modal-body,
+  .modal-body {
+    height: 80%;
+    padding: 0 10px;
+    background-color: var(--base) !important;
+  
+    .container-fluid {
+      height: 100%;
+      padding: 0;
+
+      .row {
+        height: 100%;
+      }
+    }
+  }
+
   .modal-footer,
   .modal-header,
   .modal-content {
@@ -11891,3 +11905,4 @@ tbody {
     }
   }
 }
+
