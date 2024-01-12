@@ -514,15 +514,32 @@ export default function DragContainer({
                     const draggedOverElem = targetElems.find((ele) => {
                       const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
                       if (isOwnChild) return false;
-                      return (
+
+                      let isDroppable =
                         ele.id !== e.target.id &&
                         // ele.classList.contains('target') ||
-                        (ele.classList.contains('nested-target') || ele.classList.contains('drag-container-parent'))
-                      );
+                        (ele.classList.contains('nested-target') || ele.classList.contains('drag-container-parent'));
+                      if (isDroppable) {
+                        let widgetId = ele?.getAttribute('component-id') || ele.id;
+                        let widgetType = boxes.find(({ id }) => id === widgetId)?.component?.component;
+                        if (!widgetType) {
+                          widgetId = widgetId.split('-').slice(0, -1).join('-');
+                          widgetType = boxes.find(({ id }) => id === widgetId)?.component?.component;
+                        }
+                        if (
+                          !['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container', 'Table'].includes(
+                            widgetType
+                          )
+                        ) {
+                          isDroppable = false;
+                        }
+                      }
+                      return isDroppable;
                     });
                     draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
                   }
                   // console.log("draggedOverElemId", draggedOverElemId);
+
                   const parentElem = list.find(({ id }) => id === draggedOverElemId);
                   let left = e.lastEvent.translate[0];
                   let top = e.lastEvent.translate[1];
@@ -793,7 +810,7 @@ export default function DragContainer({
                         });
                         draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
                         console.log('draggedOverElem', draggedOverElem, draggedOverElemId);
-                        if (!subContainerWidths[draggedOverElemId]) {
+                        if (draggedOverElemId && !subContainerWidths[draggedOverElemId]) {
                           draggedOverElemId = i.parent;
                         }
                         if (draggedOverElemId !== i.parent) {
