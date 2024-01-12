@@ -512,9 +512,13 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
                           >
-                            <span className="cell-text">
-                              {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
-                            </span>
+                            {cell.value === null ? (
+                              <span className="cell-text-null">Null</span>
+                            ) : (
+                              <span className="cell-text">
+                                {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                              </span>
+                            )}
                           </td>
                         );
                       })}
