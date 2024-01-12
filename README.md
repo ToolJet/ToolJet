@@ -99,6 +99,7 @@ You can use ToolJet Cloud for a fully managed solution. If you want to self-host
 | Google Cloud Run  | [Link](https://docs.tooljet.com/docs/setup/google-cloud-run)   |
 | Deploying ToolJet client  | [Link](https://docs.tooljet.com/docs/setup/client)   |
 | Deploying ToolJet on a Subpath  | [Link](https://docs.tooljet.com/docs/setup/tooljet-subpath/)   |
+| 1-Click Deploy on RepoCloud  | [Link](https://repocloud.io/details/?app_id=192)   |
 
 ## Marketplace 
 ToolJet can now be found on both AWS and Azure Marketplaces, making it simpler than ever to access and deploy our app-building platform.
