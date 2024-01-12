@@ -1,0 +1,71 @@
+@import "../../_styles/colors.scss";
+
+.codehinter-input-wrapper {
+    display: flex;
+    padding: 6px 0px;
+    align-items: flex-start;
+    gap: 8px;
+    align-self: stretch;
+
+    .codehinter-container {
+        height: 32px;
+        .codehinter-vertical-line {
+            position: relative;
+            width: 0;
+            border-left: 1px solid var(--slate5);
+            content: '';
+            margin-right: 1rem;
+        }
+    }
+}
+
+.codehinter-input {
+    // font-family: "Roboto", sans-serif;
+    font-family: IBM Plex Sans;
+    font-size: 12px;
+    padding: 5px !important;
+    display: block;
+    width: 100%;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--slate9);
+    background-color: var(--base) !important;
+    background-clip: padding-box;
+    border: 1px solid var(--slate7);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 4px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+    &:hover {
+        background-color: #FBFCFD;
+    }
+
+    &:focus {
+        outline: none;
+        border-color: var(--slate9);
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+  }
+
+
+
+.suggest-list-item {
+    color: var(--Text-default, #1B1F24);
+    font-family: IBM Plex Sans;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px; /* 145.455% */
+
+    &:hover{
+        border-radius: 0 !important;
+    }
+}
+
+.curly-braces {
+    color: #1E823B;
+}
+
+  

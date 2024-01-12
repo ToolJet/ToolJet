@@ -79,6 +79,8 @@ export function CodeHinter({
   currentState: _currentState,
   verticalLine = true,
 }) {
+  console.log('---tjrender', { componentName });
+
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
     lineNumbers: lineNumbers ?? false,

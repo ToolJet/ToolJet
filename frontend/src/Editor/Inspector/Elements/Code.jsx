@@ -3,6 +3,7 @@ import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import _ from 'lodash';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import CodeEditor from '@/Editor/CodeEditor';
 
 const CLIENT_SERVER_TOGGLE_FIELDS = ['serverSidePagination', 'serverSideSort', 'serverSideFilter'];
 
@@ -82,7 +83,7 @@ export const Code = ({
   }, [param]);
   return (
     <div className={`field ${options.className}`} style={{ marginBottom: '20px' }}>
-      <CodeHinter
+      {/* <CodeHinter
         enablePreview={true}
         initialValue={initialValue}
         mode={options.mode}
@@ -99,7 +100,8 @@ export const Code = ({
         fxActive={CLIENT_SERVER_TOGGLE_FIELDS.includes(param.name) ? false : fxActive} // Client Server Toggle don't support Fx
         component={component}
         verticalLine={verticalLine}
-      />
+      /> */}
+      <CodeEditor paramName={param.name} paramLabel={displayName} fieldMeta={paramMeta} />
     </div>
   );
 };
