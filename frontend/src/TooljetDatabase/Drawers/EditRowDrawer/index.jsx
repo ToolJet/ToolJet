@@ -24,7 +24,7 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen, select
       setIsCreateRowDrawerOpen(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedRowIds]);
 
   return (
     <>

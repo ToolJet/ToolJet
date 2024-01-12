@@ -211,14 +211,14 @@ const Header = ({
                         </>
                       )}
 
-                      {Object.keys(selectedRowIds).length === 1 && (
+                      {Object.keys(selectedRowIds).length === 1 ? (
                         <EditRowDrawer
                           isCreateRowDrawerOpen={isEditRowDrawerOpen}
                           setIsCreateRowDrawerOpen={setIsEditRowDrawerOpen}
                           selectedRowIds={selectedRowIds}
                           rows={rows}
                         />
-                      )}
+                      ) : null}
                       {Object.keys(selectedRowIds).length > 0 && (
                         <div>
                           <ButtonSolid
