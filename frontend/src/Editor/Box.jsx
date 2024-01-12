@@ -356,32 +356,7 @@ export const Box = memo(
               <></>
             )
           ) : (
-            <div className="component-image-wrapper" style={{ height: '56px', width: '72px' }}>
-              <div
-                className="component-image-holder d-flex flex-column justify-content-center"
-                style={{ height: '100%' }}
-                data-cy={`widget-list-box-${component.displayName.toLowerCase().replace(/\s+/g, '-')}`}
-              >
-                <center>
-                  <div
-                    className="widget-svg-container"
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      backgroundSize: 'contain',
-                      backgroundRepeat: 'no-repeat',
-                    }}
-                  >
-                    <WidgetIcon
-                      name={component.name.toLowerCase()}
-                      width="32"
-                      fill={darkMode ? '#3A3F42' : '#D7DBDF'}
-                    />
-                  </div>
-                </center>
-              </div>
-              <div className="component-title">{t(`widget.${component.name}.displayName`, component.displayName)}</div>
-            </div>
+            <></>
           )}
         </div>
       </OverlayTrigger>

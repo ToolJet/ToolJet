@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
@@ -16,7 +16,7 @@ import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
@@ -33,6 +33,7 @@ import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
+import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -53,29 +54,34 @@ const INSPECTOR_HEADER_OPTIONS = [
 ];
 
 export const Inspector = ({
-  selectedComponentId,
   componentDefinitionChanged,
   allComponents,
   darkMode,
-  switchSidebarTab,
   removeComponent,
   pages,
   cloneComponents,
 }) => {
   const dataQueries = useDataQueries();
+
+  const currentState = useCurrentState();
+  const { selectedComponentId, setSelectedComponents } = useEditorStore(
+    (state) => ({
+      selectedComponentId: state.selectedComponents[0]?.id,
+      setSelectedComponents: state.actions.setSelectedComponents,
+    }),
+    shallow
+  );
   const component = {
     id: selectedComponentId,
-    component: JSON.parse(JSON.stringify(allComponents[selectedComponentId].component)),
+    component: JSON.parse(JSON.stringify(allComponents?.[selectedComponentId]?.component)),
     layouts: allComponents[selectedComponentId].layouts,
     parent: allComponents[selectedComponentId].parent,
   };
-  const currentState = useCurrentState();
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
-
-  const componentNameRef = useRef(null);
-  const [newComponentName, setNewComponentName] = useState(component.component.name);
+  // eslint-disable-next-line no-unused-vars
+  const [newComponentName, setNewComponentName] = useState('');
   const [inputRef, setInputFocus] = useFocus();
-  // const [selectedTab, setSelectedTab] = useState('properties');
+
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
   const shouldAddBoxShadow = ['TextInput', 'Text'];
 
@@ -86,27 +92,27 @@ export const Inspector = ({
     shallow
   );
   const { t } = useTranslation();
-
   useHotkeys('backspace', () => {
     if (isVersionReleased) return;
     setWidgetDeleteConfirmation(true);
   });
-  useHotkeys('escape', () => switchSidebarTab(2));
+  useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY));
 
   const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component.component === comp.component));
 
   const isMounted = useMounted();
 
+  //
   useEffect(() => {
-    componentNameRef.current = newComponentName;
-  }, [newComponentName]);
+    setNewComponentName(allComponents[selectedComponentId]?.component?.name);
+  }, [selectedComponentId, allComponents]);
 
   const validateComponentName = (name) => {
     const isValid = !Object.values(allComponents)
-      .map((component) => component.component.name)
+      .map((component) => component?.component?.name)
       .includes(name);
 
-    if (component.component.name === name) {
+    if (component?.component.name === name) {
       return true;
     }
     return isValid;
@@ -222,7 +228,7 @@ export const Inspector = ({
       componentDefinitionChanged(newComponent, { layoutPropertyChanged: true });
 
       //  Child components should also have a mobile layout
-      const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
+      const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component?.id);
 
       childComponents.forEach((componentId) => {
         let newChild = {
@@ -304,7 +310,6 @@ export const Inspector = ({
       />
     </div>
   );
-
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${isVersionReleased && 'disabled'}`}>
       <div
@@ -343,15 +348,15 @@ export const Inspector = ({
         show={showWidgetDeleteConfirmation}
         message={'Widget will be deleted, do you want to continue?'}
         onConfirm={() => {
-          switchSidebarTab(2);
+          setSelectedComponents(EMPTY_ARRAY);
           removeComponent(component.id);
         }}
         onCancel={() => setWidgetDeleteConfirmation(false)}
         darkMode={darkMode}
       />
       <div>
-        <div className={`row inspector-component-title-input-holder ${isVersionReleased && 'disabled'}`}>
-          <div className="col-1" onClick={() => switchSidebarTab(2)}>
+        <div className="row inspector-component-title-input-holder">
+          <div className="col-1" onClick={() => setSelectedComponents(EMPTY_ARRAY)}>
             <span data-cy={`inspector-close-icon`} className="cursor-pointer">
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
@@ -369,7 +374,7 @@ export const Inspector = ({
               />
             </div>
           </div>
-          <div className="col-2">
+          <div className="col-2" data-cy={'component-inspector-options'}>
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-end'}
@@ -380,6 +385,7 @@ export const Inspector = ({
                   <Popover.Body bsPrefix="list-item-popover-body">
                     {INSPECTOR_HEADER_OPTIONS.map((option) => (
                       <div
+                        data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
                         className="list-item-popover-option"
                         key={option?.value}
                         onClick={(e) => {
@@ -494,7 +500,7 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
         allComponents,
         style,
         propertyConditon,
-        component.component?.definition[widgetPropertyDefinition]
+        component?.component?.definition[widgetPropertyDefinition]
       );
     }
 

@@ -191,7 +191,8 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   createDataSource = () => {
-    const { appId, options, selectedDataSource, selectedDataSourcePluginId } = this.state;
+    const { appId, options, selectedDataSource, selectedDataSourcePluginId, dataSourceMeta, dataSourceSchema } =
+      this.state;
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -200,7 +201,7 @@ class DataSourceManagerComponent extends React.Component {
     const scope = this.state?.scope || selectedDataSource?.scope;
 
     const parsedOptions = Object?.keys(options)?.map((key) => {
-      const keyMeta = selectedDataSource.options[key];
+      const keyMeta = dataSourceMeta.options[key];
       return {
         key: key,
         value: options[key].value,
@@ -856,7 +857,11 @@ class DataSourceManagerComponent extends React.Component {
                   <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
                   <a
                     className="color-primary tj-docs-link tj-text-sm"
-                    href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}
+                    href={
+                      selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
+                        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`
+                        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource.kind}`
+                    }
                     target="_blank"
                     rel="noreferrer"
                     data-cy="link-read-documentation"

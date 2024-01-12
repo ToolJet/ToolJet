@@ -29,7 +29,6 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     borderRadius,
     isScrollRequired,
   } = styles;
-  console.log(backgroundColor, 'styles');
   const { loadingState, textFormat, disabledState } = properties;
   const [text, setText] = useState(() => computeText());
   const [visibility, setVisibility] = useState(properties.visibility);
@@ -45,7 +44,6 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, loadingState, disabledState]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const text = computeText();
     setText(text);
