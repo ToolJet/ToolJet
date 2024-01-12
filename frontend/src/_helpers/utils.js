@@ -1067,7 +1067,7 @@ export const defaultWhiteLabellingSettings = {
   WHITE_LABEL_FAVICON: 'https://app.tooljet.com/favico.png',
 };
 
-export const setWindowTitle = async (details, location) => {
+export const setWindowTitle = async (pageDetails, location) => {
   const pathToTitle = {
     'instance-settings': 'Settings',
     'workspace-settings': 'Workspace settings',
@@ -1078,35 +1078,30 @@ export const setWindowTitle = async (details, location) => {
     'audit-logs': 'Audit logs',
     'account-settings': 'Profile settings',
     settings: 'Profile settings',
-    login: '',
-    'forgot-password': '',
   };
   const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
-  if (details?.page === 'viewer') {
-    if (details?.released === true) {
-      document.title = details?.appName ? `${details?.appName}` : `My App`;
-    } else {
-      document.title = details?.appName
-        ? `Preview - ${details?.appName} | ${whiteLabelText}`
-        : `Preview - My App | ${whiteLabelText}`;
+  let pageTitleKey = pageDetails?.page || '';
+  let pageTitle = '';
+  if (!pageTitleKey) {
+    pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path)) || '';
+  }
+  switch (pageTitleKey) {
+    case 'viewer': {
+      const titlePrefix = pageDetails?.released ? '' : 'Preview - ';
+      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
+      break;
     }
-  } else if (details?.page === 'editor' || details?.page === 'workflowEditor') {
-    document.title = details?.appName ? `${details?.appName} | ${whiteLabelText}` : `My App | ${whiteLabelText}`;
-  } else {
-    if (details?.page) {
-      document.title = details?.page ? `${details?.page} | ${whiteLabelText}` : `${whiteLabelText}`;
-    } else {
-      for (const path in pathToTitle) {
-        if (location?.pathname?.includes(path)) {
-          const pageTitleSegment = pathToTitle[path];
-          if (pageTitleSegment) {
-            document.title = `${pageTitleSegment} | ${whiteLabelText}`;
-          } else {
-            document.title = `${whiteLabelText}`;
-          }
-          break;
-        }
-      }
+    case 'editor':
+    case 'workflowEditor': {
+      pageTitle = pageDetails?.appName || 'My App';
+      break;
     }
+    default: {
+      pageTitle = pathToTitle[pageTitleKey] || pageTitleKey;
+      break;
+    }
+  }
+  if (pageTitle) {
+    document.title = `${pageTitle} | ${whiteLabelText}`;
   }
 };
