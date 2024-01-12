@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsString, IsNotEmpty, IsObject } from 'class-validator';
+import { IsString, IsNotEmpty, IsObject, IsBoolean } from 'class-validator';
 
 export class CreateGroupPermissionDto {
   @IsString()

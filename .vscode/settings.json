@@ -23,5 +23,8 @@
             ],
             "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json"
         }
+    ],
+    "cSpell.words": [
+        "casl"
     ]
 }

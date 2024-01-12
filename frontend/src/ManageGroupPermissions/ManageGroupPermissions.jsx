@@ -50,7 +50,6 @@ class ManageGroupPermissionsComponent extends React.Component {
     return currentUpdatedGroup.id;
   };
 
-
   duplicateGroup = () => {
     const { groupDuplicateOption, groupToDuplicate } = this.state;
     this.setState({ isDuplicatingGroup: true, creatingGroup: true });
@@ -89,7 +88,7 @@ class ManageGroupPermissionsComponent extends React.Component {
   };
 
   renderPopoverContent = (props, compoParam) => {
-    const { groupName, id, isFeatureEnabled } = compoParam;
+    const { groupName, id } = compoParam;
     const deleteGroup = () => {
       this.deleteGroup(id);
     };
@@ -120,7 +119,6 @@ class ManageGroupPermissionsComponent extends React.Component {
                 text={'Duplicate group'}
                 // text={t('header.organization.manageGroups.groupOptions.deleteGroup', 'Duplicate Group')}
                 onClick={duplicateGroup}
-                buttonDisable={!isFeatureEnabled}
               />
               <Field
                 leftIcon="delete"
@@ -312,11 +310,6 @@ class ManageGroupPermissionsComponent extends React.Component {
 
     const { addPermission, addApps, addUsers } = groupDuplicateOption;
     const allFalse = [addPermission, addApps, addUsers].every((value) => !value);
-
-    const isFeatureEnabled =
-      !featureAccess?.licenseStatus?.isExpired &&
-      featureAccess?.licenseStatus?.isLicenseValid &&
-      featureAccess?.licenseStatus?.licenseType !== 'basic';
 
     return (
       <ErrorBoundary showFallback={true}>
@@ -513,32 +506,31 @@ class ManageGroupPermissionsComponent extends React.Component {
                   {groups.map((permissionGroup) => {
                     return (
                       <FolderList
-                            key={permissionGroup.id}
-                            listId={permissionGroup.id}
-                            overlayFunctionParam={{
-                              id: permissionGroup.id,
-                              groupName: permissionGroup.group,
-                              isFeatureEnabled: isFeatureEnabled,
-                            }}
-                            selectedItem={
-                              this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.group)
-                            }
-                            onClick={() => {
-                              if (!permissionGroup?.enabled) return;
-                              this.setState({
-                                selectedGroupPermissionId: permissionGroup.id,
-                                selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.group),
-                              });
-                            }}
-                            toolTipText={this.humanizeifDefaultGroupName(permissionGroup.group)}
-                            overLayComponent={this.renderPopoverContent}
-                            className="groups-folder-list"
-                            dataCy={this.humanizeifDefaultGroupName(permissionGroup.group)
-                              .toLowerCase()
-                              .replace(/\s+/g, '-')}
-                          >
-                            <span>{this.humanizeifDefaultGroupName(permissionGroup.group)}</span>
-                          </FolderList>
+                        key={permissionGroup.id}
+                        listId={permissionGroup.id}
+                        overlayFunctionParam={{
+                          id: permissionGroup.id,
+                          groupName: permissionGroup.group,
+                        }}
+                        selectedItem={
+                          this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.group)
+                        }
+                        onClick={() => {
+                          if (!permissionGroup?.enabled) return;
+                          this.setState({
+                            selectedGroupPermissionId: permissionGroup.id,
+                            selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.group),
+                          });
+                        }}
+                        toolTipText={this.humanizeifDefaultGroupName(permissionGroup.group)}
+                        overLayComponent={this.renderPopoverContent}
+                        className="groups-folder-list"
+                        dataCy={this.humanizeifDefaultGroupName(permissionGroup.group)
+                          .toLowerCase()
+                          .replace(/\s+/g, '-')}
+                      >
+                        <span>{this.humanizeifDefaultGroupName(permissionGroup.group)}</span>
+                      </FolderList>
                     );
                   })}
                 </div>

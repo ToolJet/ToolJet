@@ -140,6 +140,7 @@ import Check from './Check.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
+import Delete from './Delete.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -207,6 +208,8 @@ const Icon = (props) => {
       return <Copy {...props} />;
     case 'darkmode':
       return <DarkMode {...props} />;
+    case 'delete':
+      return <Delete {...props} />;
     case 'datasource':
       return <Datasource {...props} />;
     case 'diamond':
@@ -295,8 +298,6 @@ const Icon = (props) => {
       return <NotificationSilent {...props} />;
     case 'notificationunread':
       return <NotificationUnread {...props} />;
-    case 'open':
-      return <Open {...props} />;
     case 'options':
       return <Options {...props} />;
     case 'page':

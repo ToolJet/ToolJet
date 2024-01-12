@@ -7,7 +7,7 @@ import { App } from 'src/entities/app.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { UsersService } from './users.service';
-import { dbTransactionWrap,getMaxCopyNumber } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, getMaxCopyNumber } from 'src/helpers/utils.helper';
 import { DuplucateGroupDto } from '@dto/group-permission.dto';
 
 @Injectable()
@@ -278,7 +278,7 @@ export class GroupPermissionsService {
     const groupToDuplicate = await this.findOne(user, groupPermissionId);
     let newGroup: GroupPermission;
 
-    const { addPermission, addApps, addDataSource, addUsers } = body;
+    const { addPermission, addApps, addUsers } = body;
 
     if (!groupToDuplicate) throw new BadRequestException('Wrong group id');
 
@@ -296,6 +296,11 @@ export class GroupPermissionsService {
     let newName = `${groupToDuplicate.group}_copy`;
     const number = getMaxCopyNumber(existNameList);
     if (number) newName = `${groupToDuplicate.group}_copy_${number}`;
+    console.log('new name is');
+
+    console.log(existNameList);
+
+    console.log(newName);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       newGroup = manager.create(GroupPermission, {

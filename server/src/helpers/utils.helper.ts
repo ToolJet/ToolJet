@@ -229,6 +229,18 @@ export const getMaxCopyNumber = (existNameList) => {
     return !isNaN(parseInt(parts[parts.length - 1]));
   });
 
+  // Extracting numbers from the filtered names
+  const numbers = filteredNames.map((name) => {
+    const parts = name.group.split('_');
+    return parseInt(parts[parts.length - 1]);
+  });
+
+  // Finding the maximum number
+  // Creating the new name with maxNumber + 1
+  const maxNumber = Math.max(...numbers, 0);
+  return maxNumber + 1;
+};
+
 /**
  * Checks if a given Tooljet version is compatible with normalized app definition schemas.
  *

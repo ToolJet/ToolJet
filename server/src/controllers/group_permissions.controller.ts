@@ -7,7 +7,7 @@ import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { User } from 'src/decorators/user.decorator';
 import { User as UserEntity } from 'src/entities/user.entity';
-import { CreateGroupPermissionDto, UpdateGroupPermissionDto ,DuplucateGroupDto} from '@dto/group-permission.dto';
+import { CreateGroupPermissionDto, UpdateGroupPermissionDto, DuplucateGroupDto } from '@dto/group-permission.dto';
 
 @Controller('group_permissions')
 export class GroupPermissionsController {
@@ -22,7 +22,7 @@ export class GroupPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('createGroupPermission', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Post(':id/duplicate')
   async duplicate(@User() user, @Param('id') id: string, @Body() body: DuplucateGroupDto) {
     const duplicateGroup = await this.groupPermissionsService.duplicateGroup(user, id, body);

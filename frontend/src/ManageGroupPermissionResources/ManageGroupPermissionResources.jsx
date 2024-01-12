@@ -123,7 +123,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchGroupPermission(groupPermissionId);
       })
       .catch(({ error, data }) => {
-          toast.error(error);
+        toast.error(error);
       });
   };
 
@@ -228,7 +228,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         toast.success('App removed from the group');
       })
       .catch(({ error, data }) => {
-          toast.error(error);
+        toast.error(error);
       });
   };
 
@@ -269,7 +269,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         toast.success('User removed from the group');
       })
       .catch(({ error, data }) => {
-          toast.error(error);
+        toast.error(error);
       });
   };
 
@@ -361,6 +361,19 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
               </div>
 
               <nav className="nav nav-tabs groups-sub-header-wrap">
+                <a
+                  onClick={() => this.setState({ currentTab: 'apps' })}
+                  className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
+                  data-cy="apps-link"
+                >
+                  <SolidIcon
+                    className="manage-group-tab-icons"
+                    fill={currentTab === 'apps' ? '#3E63DD' : '#C1C8CD'}
+                    name="grid"
+                    width="16"
+                  ></SolidIcon>
+                  {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
+                </a>
                 <a
                   onClick={() => this.setState({ currentTab: 'users' })}
                   className={cx('nav-item nav-link', { active: currentTab === 'users' })}
