@@ -1095,19 +1095,18 @@ export const setWindowTitle = async (details, location) => {
   } else {
     if (details?.page) {
       document.title = details?.page ? `${details?.page} | ${whiteLabelText}` : `${whiteLabelText}`;
-    }
-    else {
-    for (const path in pathToTitle) {
-      if (location?.pathname?.includes(path)) {
-        const pageTitleSegment = pathToTitle[path];
-        if (pageTitleSegment) {
-          document.title = `${pageTitleSegment} | ${whiteLabelText}`;
-        } else {
-          document.title = `${whiteLabelText}`;
+    } else {
+      for (const path in pathToTitle) {
+        if (location?.pathname?.includes(path)) {
+          const pageTitleSegment = pathToTitle[path];
+          if (pageTitleSegment) {
+            document.title = `${pageTitleSegment} | ${whiteLabelText}`;
+          } else {
+            document.title = `${whiteLabelText}`;
+          }
+          break;
         }
-        break;
       }
     }
-  }
   }
 };
