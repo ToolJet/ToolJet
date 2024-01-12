@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import TemplateLibraryModal from './TemplateLibraryModal/';
 import { useTranslation } from 'react-i18next';
 import EmptyIllustration from '@assets/images/no-apps.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -13,8 +12,6 @@ export const BlankPage = function BlankPage({
   openCreateAppFromTemplateModal,
   creatingApp,
   darkMode,
-  showTemplateLibraryModal,
-  hideTemplateLibraryModal,
   viewTemplateLibraryModal,
   canCreateApp,
 }) {
@@ -147,13 +144,6 @@ export const BlankPage = function BlankPage({
           </div>
         </div>
       </div>
-      <TemplateLibraryModal
-        show={showTemplateLibraryModal}
-        onHide={hideTemplateLibraryModal}
-        onCloseButtonClick={hideTemplateLibraryModal}
-        darkMode={darkMode}
-        appCreationDisabled={appCreationDisabled}
-      />
     </div>
   );
 };
