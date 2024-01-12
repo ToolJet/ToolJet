@@ -114,6 +114,7 @@ import Telescope from './Telescope.jsx';
 import Unlock from './Unlock.jsx';
 import DragHandle from './DragHandle.jsx';
 import Lock from './Lock.jsx';
+import Users from './users.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -213,7 +214,6 @@ const Icon = (props) => {
       return <Layers {...props} />;
     case 'leftarrow':
       return <LeftArrow {...props} />;
-
     case 'listview':
       return <ListView {...props} />;
     case 'lock':
@@ -309,6 +309,8 @@ const Icon = (props) => {
       return <Trash {...props} />;
     case 'uparrow':
       return <UpArrow {...props} />;
+    case 'users':
+      return <Users {...props} />;
 
     case 'useradd':
       return <UserAdd {...props} />;

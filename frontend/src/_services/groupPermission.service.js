@@ -12,6 +12,7 @@ export const groupPermissionService = {
   getUsersInGroup,
   getUsersNotInGroup,
   updateAppGroupPermission,
+  duplicate,
 };
 
 function create(group) {
@@ -54,6 +55,18 @@ function getGroup(groupPermissionId) {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}`, requestOptions).then(handleResponse);
+}
+
+function duplicate(groupPermissionId, body) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/duplicate`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function getGroups() {
