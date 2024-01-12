@@ -9,24 +9,24 @@ import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
 import { useGridStoreActions, useDragTarget, useNoOfGrid, useGridStore } from '@/_stores/gridStore';
 
-const NO_OF_GRIDS = 43;
-
 const DimensionViewable = {
   name: 'dimensionViewable',
   props: [],
   events: [],
-  render(moveable) {
-    const rect = moveable.getRect();
-
+  render() {
     return (
       <div
         className={'multiple-components-config-handle'}
-        onMouseEnter={() => {
-          useGridStore.getState().actions.setIsGroundHandleHoverd(true);
+        onMouseUpCapture={() => {
+          if (useGridStore.getState().isGroundHandleHoverd) {
+            useGridStore.getState().actions.setIsGroundHandleHoverd(false);
+          }
         }}
-        // onMouseUp={() => {
-        //   useGridStore.getState().actions.setIsGroundHandleHoverd(false);
-        // }}
+        onMouseDownCapture={() => {
+          if (!useGridStore.getState().isGroundHandleHoverd) {
+            useGridStore.getState().actions.setIsGroundHandleHoverd(true);
+          }
+        }}
       >
         <span className="badge handle-content" id="multiple-components-config-handle" style={{ background: '#4d72fa' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -50,8 +50,8 @@ const MouseCustomAble = {
   props: {},
   events: {},
   mouseEnter(e) {
-    console.log('MouseCustomAble ENTER', e);
-    const controlBoxes = document.getElementsByClassName('.moveable-control-box');
+    console.log('here--- ', e);
+    const controlBoxes = document.getElementsByClassName('moveable-control-box');
     for (const element of controlBoxes) {
       element.classList.remove('moveable-control-box-d-block');
     }
@@ -108,6 +108,7 @@ export default function DragContainer({
   autoComputeLayout,
   setDraggedSubContainer,
   draggedSubContainer,
+  boxesAsObj,
 }) {
   const [dragTarget, setDragTarget] = useDragTarget();
   const [draggedTarget, setDraggedTarget] = useState();
@@ -183,10 +184,8 @@ export default function DragContainer({
         return component.id;
       })
     );
-    console.log('here--->', { selectedComponents, boxes, selectedComponentsId });
     const selectedBoxs = boxes.filter((box) => selectedComponentsId.has(box.id));
     const parentId = selectedBoxs.find((comp) => comp.component.parent)?.component?.parent;
-    console.log('here--->', parentId, selectedBoxs);
 
     // Get all elements with the old class name
     var elements = document.getElementsByClassName('selected-component');
@@ -276,6 +275,41 @@ export default function DragContainer({
       : '.widget-target'
   );
 
+  // Function to limit the resizing of element within the parent
+  const setResizingLimit = (e, i) => {
+    const elemLayout = boxesAsObj[e.target.id]?.layouts[currentLayout];
+    const parentLayout = boxesAsObj[i.parent]?.layouts[currentLayout];
+    let maxWidth = null,
+      maxHeight = null,
+      parentgW = subContainerWidths[i.parent] || gridWidth,
+      elemSize = 0;
+
+    const [leftRight, topBottom] = e.direction;
+    if (leftRight === 0) {
+      if (topBottom === -1) {
+        //Resize with top handle
+        elemSize = elemLayout?.top + elemLayout?.height;
+      } else {
+        //Resize with top handle
+        const parentHeight = document.getElementById(`canvas-${i.parent}`)?.offsetHeight ?? parentLayout?.height;
+        elemSize = parentHeight - elemLayout?.top;
+      }
+      maxHeight = elemSize;
+    } else {
+      if (leftRight === -1) {
+        //Resize with left handle
+        elemSize = (noOfGrids - (elemLayout?.left + elemLayout?.width)) * parentgW;
+      } else {
+        //Resize with right handle
+        elemSize = elemLayout?.left * parentgW;
+      }
+      maxWidth = noOfGrids * parentgW - elemSize;
+    }
+
+    e.setMax([maxWidth, maxHeight]);
+    e.setMin([gridWidth, 10]);
+  };
+
   return (
     <div className="root">
       <div className="container-fluid rm-container p-0">
@@ -313,7 +347,7 @@ export default function DragContainer({
               ref={moveableRef}
               ables={[MouseCustomAble, DimensionViewable]}
               props={{
-                mouseTest: true,
+                mouseTest: selectedComponents.length < 2,
                 dimensionViewable: selectedComponents.length > 1,
               }}
               flushSync={flushSync}
@@ -643,7 +677,6 @@ export default function DragContainer({
               }}
               onDragGroupEnd={(e) => {
                 const { events } = e;
-                useGridStore.getState().actions.setIsGroundHandleHoverd(false);
                 onDrag(
                   events.map((ev) => ({
                     id: ev.target.id,
@@ -704,7 +737,7 @@ export default function DragContainer({
                     ref={(el) => (childMoveableRefs.current[i.parent] = el)}
                     ables={[MouseCustomAble, DimensionViewable]}
                     props={{
-                      mouseTest: true,
+                      mouseTest: selectedComponents.length < 2,
                       dimensionViewable: selectedComponents.length > 2,
                     }}
                     target={
@@ -871,7 +904,7 @@ export default function DragContainer({
                     onResizeStart={(e) => {
                       setResizingComponentId(e.target.id);
                       setActiveGrid(i.parent);
-                      e.setMin([gridWidth, 10]);
+                      setResizingLimit(e, i);
                       if (currentLayout === 'mobile' && autoComputeLayout) {
                         turnOffAutoLayout();
                         return false;
