@@ -169,6 +169,7 @@ const Table = () => {
     {
       columns: tableColumns,
       data: tableData,
+      initialState: { selectedRowIds: {} },
     },
     useRowSelect,
     (hooks) => {
@@ -186,28 +187,18 @@ const Table = () => {
           // The cell can use the individual row's getToggleRowSelectedProps method
           // to the render a checkbox
           Cell: ({ row, toggleAllRowsSelected }) => {
-            const [isHover, setIsHover] = useState(false);
-            // {'0': true, '1': true} -> {} -> {'1': true}
             return (
               <div
                 className="d-flex align-items-center gap-2"
                 style={{
                   cursor: 'pointer',
                 }}
-                onMouseEnter={(e) => {
-                  e.stopPropagation();
-                  setIsHover(true);
-                }}
-                onMouseLeave={(e) => {
-                  e.stopPropagation();
-                  setIsHover(false);
-                }}
               >
                 <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
                 <div
+                  className="tjdb-row-cell"
                   style={{
-                    ...(!isHover && { visibility: 'hidden' }),
-                    display: isHover ? 'block' : 'none',
+                    display: 'none',
                   }}
                   onClick={() => {
                     toggleAllRowsSelected(false);
@@ -217,7 +208,7 @@ const Table = () => {
                     // customToggleRowSelection(row.id);
                     setTimeout(() => {
                       setIsEditRowDrawerOpen(true);
-                    });
+                    }, 100);
                   }}
                 >
                   <SolidIcon name="expand" />
@@ -498,7 +489,7 @@ const Table = () => {
                 prepareRow(row);
                 return (
                   <>
-                    <tr className={`${`row-tj`}`} {...row.getRowProps()} key={index}>
+                    <tr className={`tjdb-table-row ${`row-tj`}`} {...row.getRowProps()} key={index}>
                       {row.cells.map((cell, index) => {
                         const dataCy =
                           cell.column.id === 'selection'
@@ -507,6 +498,7 @@ const Table = () => {
                         const cellValue = cell.value === null ? '' : cell.value;
                         return (
                           <td
+                            {...cell.getCellProps()}
                             key={`cell.value-${index}`}
                             title={cell.value || ''}
                             className={`${
