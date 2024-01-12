@@ -46,6 +46,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     columnHeaderValue: null,
     deletePopupModal: false,
     columnEditPopover: false,
+    cellClick: null,
   });
   const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
   const [wholeScreenWidth, setWholeScreenWidth] = useState(window.innerWidth);
@@ -301,6 +302,13 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }));
   };
 
+  const handleCellClick = (index) => {
+    setEditColumnHeader((prevState) => ({
+      ...prevState,
+      cellClick: index,
+    }));
+  };
+
   function showTooltipForId(column) {
     return (
       <ToolTip message="Column cannot be edited or deleted" placement="bottom">
@@ -499,13 +507,16 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                             title={cell.value || ''}
                             className={`${
                               editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
-                                ? `table-cell-click`
+                                ? `table-columnHeader-click`
                                 : editColumnHeader?.hoveredColumn === index
                                 ? 'table-cell-hover-background'
+                                : editColumnHeader?.cellClick === index
+                                ? `table-cell-click`
                                 : `table-cell`
                             }`}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
+                            onClick={() => handleCellClick(index)}
                           >
                             {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
                           </td>

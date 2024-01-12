@@ -6901,6 +6901,7 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: pointer;
   }
 
   .table-cell-hover-background {
@@ -6908,6 +6909,10 @@ tbody {
   }
 
   .table-cell-click {
+    border: 1px solid red;
+  }
+
+  .table-columnHeader-click {
     // background-color: #fbfdff;
     background-color: #F8F9FA;
     border-left: 1.5px solid #3E63DD !important;
@@ -6915,13 +6920,13 @@ tbody {
   }
 
   .row-tj:first-child {
-    .table-cell-click {
+    .table-columnHeader-click {
       border-top: 1.5px solid #3E63DD !important;
     }
   }
 
   .row-tj:last-of-type {
-    .table-cell-click {
+    .table-columnHeader-click {
       border-bottom: 1.5px solid #3E63DD !important;
     }
   }
