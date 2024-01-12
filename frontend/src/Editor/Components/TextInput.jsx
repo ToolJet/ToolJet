@@ -48,24 +48,35 @@ export const TextInput = function TextInput({
   const [elementWidth, setElementWidth] = useState(0);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const [loading, setLoading] = useState(loadingState);
+  const [isFocused, setIsFocused] = useState(false);
 
   const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height - 4 : height,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
-    borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
+    borderColor: isFocused
+      ? '#3E63DD'
+      : ['#D7DBDF'].includes(borderColor)
+      ? darkMode
+        ? '#4C5155'
+        : '#D7DBDF'
+      : borderColor,
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    boxShadow: boxShadow,
+    boxShadow: isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
-        ? '3px 5px 3px 23px'
-        : '3px 5px 3px 22px'
+        ? '3px 5px 3px 29px'
+        : '3px 5px 3px 28px'
       : '3px 5px 3px 5px',
   };
   const loaderStyle = {
     right:
-      direction === 'right' && defaultAlignment === 'side' ? `${elementWidth}px` : padding == 'default' ? '7px' : '5px',
-    top: `${defaultAlignment === 'top' ? '50%' : ''}`,
+      direction === 'right' && defaultAlignment === 'side'
+        ? `${elementWidth + 8}px`
+        : padding == 'default'
+        ? '13px'
+        : '11px',
+    top: `${defaultAlignment === 'top' ? '53%' : ''}`,
     transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
   };
   useEffect(() => {
@@ -207,7 +218,7 @@ export const TextInput = function TextInput({
     <>
       <div
         data-disabled={disable || loading}
-        className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
+        className={`text-input d-flex  ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
           direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
         }
       ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
@@ -245,13 +256,13 @@ export const TextInput = function TextInput({
               left:
                 direction === 'right'
                   ? padding == 'default'
-                    ? '7px'
-                    : '5px'
+                    ? '13px'
+                    : '11px'
                   : defaultAlignment === 'top'
                   ? padding == 'default'
-                    ? '7px'
-                    : '5px'
-                  : `${elementWidth}px`,
+                    ? '13px'
+                    : '11px'
+                  : `${elementWidth + 5}px`,
               position: 'absolute',
               top: `${
                 defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
@@ -281,10 +292,13 @@ export const TextInput = function TextInput({
           }}
           onBlur={(e) => {
             setShowValidationError(true);
+            setIsFocused(false);
             e.stopPropagation();
             fireEvent('onBlur');
+            setIsFocused(false);
           }}
           onFocus={(e) => {
+            setIsFocused(true);
             e.stopPropagation();
             fireEvent('onFocus');
           }}
