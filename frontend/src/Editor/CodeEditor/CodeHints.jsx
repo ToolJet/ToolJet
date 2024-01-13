@@ -3,7 +3,7 @@ import Overlay from 'react-bootstrap/Overlay';
 import Popover from 'react-bootstrap/Popover';
 import SuggestionsList from './Suggestions';
 
-const CodeHints = ({ children, ref, componentName, target, shouldShowSuggestions, hints }) => {
+const CodeHints = ({ children, ref, componentName, target, shouldShowSuggestions, hints, updateValueFromHint }) => {
   return (
     <div ref={ref} className={`code-editor-container-${componentName}`}>
       {children}
@@ -16,7 +16,7 @@ const CodeHints = ({ children, ref, componentName, target, shouldShowSuggestions
           <Popover.Header>Suggestions</Popover.Header>
           <Popover.Body className="p-0">
             <div className={'tj-app-input-suggestions'}>
-              <SuggestionsList hints={hints} />
+              <SuggestionsList hints={hints} updateValueFromHint={updateValueFromHint} />
             </div>
           </Popover.Body>
         </Popover>

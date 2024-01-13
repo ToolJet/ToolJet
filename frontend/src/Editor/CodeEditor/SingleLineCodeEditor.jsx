@@ -27,6 +27,17 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
     setHints(hints);
   };
 
+  const updateValueFromHint = (hintValue) => {
+    const currentValueWithoutBraces = currentValue.replace(/{{|}}/g, '');
+    const value = currentValueWithoutBraces + hintValue;
+
+    const withBraces = '{{' + value + '}}';
+
+    setCurrentValue(withBraces);
+
+    setShouldShowSuggestions(false);
+  };
+
   function setCaretPosition(editableDiv, position) {
     const setRange = (node, pos) => {
       const range = document.createRange();
@@ -63,6 +74,8 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
     if (!hintsActiveRef.current && currentValue.startsWith('{{') && currentValue.endsWith('}}')) {
       setShouldShowSuggestions(true);
       hintsActiveRef.current = true;
+    } else {
+      hintsActiveRef.current = false;
     }
   }, [isFocused]);
 
@@ -116,6 +129,7 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
       target={target}
       shouldShowSuggestions={shouldShowSuggestions}
       hints={hints}
+      updateValueFromHint={updateValueFromHint}
     >
       <div className="code-editor-basic-wrapper">
         <div className="field code-editor-basic-label">{paramLabel}</div>
@@ -123,6 +137,7 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
           <div className={'code-hinter-vertical-line'}></div>
 
           <SingleLineCodeEditor.Editor
+            currentValue={currentValue}
             setValue={handleInputChange}
             setCaretPosition={setCaretPosition}
             suggestions={suggestions}
@@ -134,9 +149,11 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
   );
 };
 
-const EditorInput = ({ setValue, setCaretPosition, setIsFocused }) => {
+const EditorInput = ({ currentValue, setValue, setCaretPosition, setIsFocused }) => {
   const editableDivRef = useRef(null);
   const ignoreNextInputEventRef = useRef(false);
+
+  const [localValue, setLocalValue] = useState('');
 
   const formatText = (rawText) => {
     // Split text into parts and wrap {{ and }} in spans
@@ -151,14 +168,7 @@ const EditorInput = ({ setValue, setCaretPosition, setIsFocused }) => {
       .join('');
   };
 
-  const handleInputChange = (event) => {
-    if (ignoreNextInputEventRef.current) {
-      ignoreNextInputEventRef.current = false;
-      return;
-    }
-
-    let rawText = event.target.innerText;
-
+  const handleChange = (rawText) => {
     if (rawText.startsWith('{{') && !rawText.endsWith('}}')) {
       rawText = '{{}}';
     }
@@ -179,7 +189,25 @@ const EditorInput = ({ setValue, setCaretPosition, setIsFocused }) => {
       }
     }
     setValue(rawText);
+    setLocalValue(rawText);
   };
+
+  const handleInputChange = (event) => {
+    if (ignoreNextInputEventRef.current) {
+      ignoreNextInputEventRef.current = false;
+      return;
+    }
+
+    let rawText = event.target.innerText;
+
+    handleChange(rawText);
+  };
+
+  useEffect(() => {
+    if (currentValue !== localValue) {
+      handleChange(currentValue);
+    }
+  }, [currentValue]);
 
   return (
     <div

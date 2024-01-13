@@ -7,14 +7,12 @@ import Dropdown from 'react-bootstrap/Dropdown';
  * {hint: string, type: primitive type, icon: svg url}
  */
 
-function SuggestionsList({ hints }) {
+function SuggestionsList({ hints, updateValueFromHint }) {
   const [focusedIndex, setFocusedIndex] = useState(0);
 
   useHotkeys(
     'up, down, enter, esc',
     (key) => {
-      console.log('---piku', { key });
-
       if (key.code === 'ArrowDown') {
         const nextIndex = Math.min(hints.length - 1, focusedIndex + 1);
 
@@ -26,8 +24,10 @@ function SuggestionsList({ hints }) {
         setFocusedIndex(prevIndex);
       }
 
-      // if (key.code === 'Enter') {
-      // }
+      if (key.code === 'Enter') {
+        const selectedHint = hints[focusedIndex];
+        updateValueFromHint(selectedHint);
+      }
     },
     { scopes: 'codehinter' }
   );
@@ -41,6 +41,7 @@ function SuggestionsList({ hints }) {
             active={index === focusedIndex}
             eventKey={index}
             as="li"
+            onClick={() => updateValueFromHint(suggestion)}
             className="suggest-list-item d-flex justify-content-between align-items-start"
           >
             <div className="ms-2 me-auto">
