@@ -240,6 +240,7 @@ export const PasswordInput = function PasswordInput({
               textOverflow: 'ellipsis', // Display ellipsis for overflowed content
               fontWeight: 500,
               textAlign: direction == 'right' ? 'right' : 'left',
+              whiteSpace: 'nowrap',
             }}
           >
             {label}

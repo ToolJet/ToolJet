@@ -226,6 +226,7 @@ export const TextInput = function TextInput({
         style={{
           padding: padding === 'default' ? '2px' : '',
           position: 'relative',
+          whiteSpace: 'nowrap',
         }}
       >
         {label && width > 0 && (

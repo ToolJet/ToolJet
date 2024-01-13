@@ -1569,20 +1569,20 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
-      minValue: {
-        type: 'code',
-        displayName: 'Minimum value',
-        validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        },
-      },
-      maxValue: {
-        type: 'code',
-        displayName: 'Maximum value',
-        validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        },
-      },
+      // minValue: {
+      //   type: 'code',
+      //   displayName: 'Minimum value',
+      //   validation: {
+      //     schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+      //   },
+      // },
+      // maxValue: {
+      //   type: 'code',
+      //   displayName: 'Maximum value',
+      //   validation: {
+      //     schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+      //   },
+      // },
       placeholder: {
         type: 'code',
         displayName: 'Placeholder',
@@ -1785,6 +1785,14 @@ export const widgets = [
     },
     validation: {
       mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
+      regex: { type: 'code', displayName: 'Regex' },
+      minValue: { type: 'code', displayName: 'Min value', placeholder: 'Enter min value' },
+      maxValue: { type: 'code', displayName: 'Max value', placeholder: 'Enter max value' },
+      customRule: {
+        type: 'code',
+        displayName: 'Custom validation',
+        placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
+      },
     },
     definition: {
       others: {
@@ -1793,6 +1801,10 @@ export const widgets = [
       },
       validation: {
         mandatory: { value: false },
+        regex: { value: '' },
+        minValue: { value: '' },
+        maxValue: { value: '' },
+        customRule: { value: null },
       },
       properties: {
         value: { value: '99' },

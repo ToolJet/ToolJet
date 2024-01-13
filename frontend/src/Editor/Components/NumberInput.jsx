@@ -38,6 +38,9 @@ export const NumberInput = function NumberInput({
 
   const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState) ?? false;
+  const minValue = resolveReferences(component?.definition?.validation?.minValue?.value, currentState) ?? null;
+  const maxValue = resolveReferences(component?.definition?.validation?.maxValue?.value, currentState) ?? null;
+
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(loadingState);
   const [showValidationError, setShowValidationError] = useState(false);
@@ -68,8 +71,8 @@ export const NumberInput = function NumberInput({
   }, [properties.value]);
 
   const handleBlur = (e) => {
-    if (!isNaN(parseFloat(properties.minValue)) && parseFloat(e.target.value) < parseFloat(properties.minValue)) {
-      setValue(Number(parseFloat(properties.minValue)));
+    if (!isNaN(parseFloat(minValue)) && parseFloat(e.target.value) < parseFloat(minValue)) {
+      setValue(Number(parseFloat(minValue)));
     } else setValue(Number(parseFloat(e.target.value ? e.target.value : 0).toFixed(properties.decimalPlaces)));
     setShowValidationError(true);
     e.stopPropagation();
@@ -176,17 +179,10 @@ export const NumberInput = function NumberInput({
   // eslint-disable-next-line import/namespace
 
   const handleChange = (e) => {
-    if (
-      !isNaN(parseFloat(properties.minValue)) &&
-      !isNaN(parseFloat(properties.maxValue)) &&
-      parseFloat(properties.minValue) > parseFloat(properties.maxValue)
-    ) {
-      setValue(Number(parseFloat(properties.maxValue)));
-    } else if (
-      !isNaN(parseFloat(properties.maxValue)) &&
-      parseFloat(e.target.value) > parseFloat(properties.maxValue)
-    ) {
-      setValue(Number(parseFloat(properties.maxValue)));
+    if (!isNaN(parseFloat(minValue)) && !isNaN(parseFloat(maxValue)) && parseFloat(minValue) > parseFloat(maxValue)) {
+      setValue(Number(parseFloat(maxValue)));
+    } else if (!isNaN(parseFloat(maxValue)) && parseFloat(e.target.value) > parseFloat(maxValue)) {
+      setValue(Number(parseFloat(maxValue)));
     } else {
       setValue(Number(parseFloat(e.target.value)));
     }
@@ -210,10 +206,10 @@ export const NumberInput = function NumberInput({
 
     const newValue = (value || 0) + 1;
 
-    if (!isNaN(parseFloat(properties.maxValue)) && newValue > parseFloat(properties.maxValue)) {
-      setValue(Number(parseFloat(properties.maxValue)));
-    } else if (!isNaN(parseFloat(properties.minValue)) && newValue < parseFloat(properties.minValue)) {
-      setValue(Number(parseFloat(properties.minValue)));
+    if (!isNaN(parseFloat(maxValue)) && newValue > parseFloat(maxValue)) {
+      setValue(Number(parseFloat(maxValue)));
+    } else if (!isNaN(parseFloat(minValue)) && newValue < parseFloat(minValue)) {
+      setValue(Number(parseFloat(minValue)));
     } else {
       setValue(newValue);
     }
@@ -224,10 +220,10 @@ export const NumberInput = function NumberInput({
     e.preventDefault();
     const newValue = (value || 0) - 1;
 
-    if (!isNaN(parseFloat(properties.minValue)) && newValue < parseFloat(properties.minValue)) {
-      setValue(Number(parseFloat(properties.minValue)));
-    } else if (!isNaN(parseFloat(properties.maxValue)) && newValue > parseFloat(properties.maxValue)) {
-      setValue(Number(parseFloat(properties.maxValue)));
+    if (!isNaN(parseFloat(minValue)) && newValue < parseFloat(minValue)) {
+      setValue(Number(parseFloat(minValue)));
+    } else if (!isNaN(parseFloat(maxValue)) && newValue > parseFloat(maxValue)) {
+      setValue(Number(parseFloat(maxValue)));
     } else {
       setValue(newValue);
     }
@@ -244,10 +240,10 @@ export const NumberInput = function NumberInput({
     setExposedVariable('setText', async function (text) {
       if (text) {
         const newValue = Number(parseFloat(text));
-        if (!isNaN(parseFloat(properties.minValue)) && newValue < parseFloat(properties.minValue)) {
-          setValue(Number(parseFloat(properties.minValue)));
-        } else if (!isNaN(parseFloat(properties.maxValue)) && newValue > parseFloat(properties.maxValue)) {
-          setValue(Number(parseFloat(properties.maxValue)));
+        if (!isNaN(parseFloat(minValue)) && newValue < parseFloat(minValue)) {
+          setValue(Number(parseFloat(minValue)));
+        } else if (!isNaN(parseFloat(maxValue)) && newValue > parseFloat(maxValue)) {
+          setValue(Number(parseFloat(maxValue)));
         } else {
           setValue(newValue);
         }
@@ -284,6 +280,7 @@ export const NumberInput = function NumberInput({
             position: 'relative',
             width: '100%',
             display: !visibility ? 'none' : 'flex',
+            whiteSpace: 'nowrap',
           }}
         >
           {label && width > 0 && (
@@ -343,8 +340,8 @@ export const NumberInput = function NumberInput({
             style={computedStyles}
             value={value}
             data-cy={dataCy}
-            min={properties.minValue}
-            max={properties.maxValue}
+            min={minValue}
+            max={maxValue}
             onKeyUp={(e) => {
               if (e.key === 'Enter') {
                 setValue(e.target.value);

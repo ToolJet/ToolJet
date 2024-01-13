@@ -2433,8 +2433,6 @@ body {
 }
 
 .code-hinter {
-  height: 36px;
-
   .form-control {
     .CodeMirror {
       font-family: "Roboto", sans-serif;
@@ -11947,4 +11945,15 @@ tbody {
 
 .accordion-header {
   height: 52px;
+}
+
+.code-hinter {
+  min-height: 32px !important;
+}
+
+.CodeMirror-sizer {
+  // height: 30px !important;
+  display: flex;
+  align-items: center;
+  min-height: 32px !important;
 }
