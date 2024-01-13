@@ -2,15 +2,18 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { generateSuggestiveHints } from './utils';
 import { useHotkeysContext } from 'react-hotkeys-hook';
-
-import Overlay from 'react-bootstrap/Overlay';
-import Popover from 'react-bootstrap/Popover';
-import SuggestionsList from './Suggestions';
+import CodeHints from './CodeHints';
 
 const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
-  const [isFocused, setIsFocused] = React.useState(false);
+  const { enableScope, disableScope, enabledScopes } = useHotkeysContext();
 
+  const [isFocused, setIsFocused] = React.useState(false);
+  const [shouldShowSuggestions, setShouldShowSuggestions] = useState(false);
   const [currentValue, setCurrentValue] = React.useState('');
+  const [target, setTarget] = useState(null);
+
+  const hintsActiveRef = useRef(false);
+  const ref = useRef(null);
 
   const [hints, setHints] = React.useState([]);
 
@@ -56,11 +59,6 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
     walkNode(editableDiv, position);
   }
 
-  const { enableScope, disableScope, enabledScopes } = useHotkeysContext();
-
-  const [shouldShowSuggestions, setShouldShowSuggestions] = useState(false);
-  const hintsActiveRef = useRef(false);
-
   useEffect(() => {
     if (!hintsActiveRef.current && currentValue.startsWith('{{') && currentValue.endsWith('}}')) {
       setShouldShowSuggestions(true);
@@ -83,10 +81,6 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
       }
     }
   }, [shouldShowSuggestions]);
-
-  //   const [show, setShow] = useState(false);
-  const [target, setTarget] = useState(null);
-  const ref = useRef(null);
 
   const handleClick = (event) => {
     setIsFocused((prev) => !prev);
@@ -116,7 +110,13 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
   }, [ref.current]);
 
   return (
-    <div ref={ref} className={`code-editor-container-${componentName}`}>
+    <CodeHints
+      ref={ref}
+      componentName={componentName}
+      target={target}
+      shouldShowSuggestions={shouldShowSuggestions}
+      hints={hints}
+    >
       <div className="code-editor-basic-wrapper">
         <div className="field code-editor-basic-label">{paramLabel}</div>
         <div className="codehinter-container w-100 p-2">
@@ -130,21 +130,7 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
           />
         </div>
       </div>
-
-      <Overlay show={shouldShowSuggestions} target={target} placement="bottom" container={ref} containerPadding={20}>
-        <Popover
-          id="popover-contained"
-          style={{ width: '250px', maxWidth: '350px', maxHeight: '200px', overflowY: 'auto' }}
-        >
-          <Popover.Header as="h3">Popover bottom</Popover.Header>
-          <Popover.Body>
-            <div className={'tj-app-input-suggestions'}>
-              <SuggestionsList hints={hints} />
-            </div>
-          </Popover.Body>
-        </Popover>
-      </Overlay>
-    </div>
+    </CodeHints>
   );
 };
 
