@@ -95,8 +95,8 @@ export const Container = ({
   const paramUpdatesOptsRef = useRef({});
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
-  useHotkeys('meta+z, control+z', () => handleUndo());
-  useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
+  useHotkeys('meta+z, control+z', () => handleUndo(), { scopes: 'editor' });
+  useHotkeys('meta+shift+z, control+shift+z', () => handleRedo(), { scopes: 'editor' });
   useHotkeys(
     'meta+v, control+v',
     async () => {
@@ -122,7 +122,8 @@ export const Container = ({
       }
       enableReleasedVersionPopupState();
     },
-    [isContainerFocused, appDefinition, focusedParentIdRef.current]
+    [isContainerFocused, appDefinition, focusedParentIdRef.current],
+    { scopes: 'editor' }
   );
 
   useEffect(() => {

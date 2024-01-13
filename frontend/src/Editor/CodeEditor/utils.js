@@ -86,3 +86,32 @@ export const createJavaScriptSuggestions = () => {
 
   return allMethods;
 };
+
+export function generateSuggestiveHints(suggestionList, query) {
+  const result = suggestionList.filter((key) => key.includes(query));
+
+  const suggestions = result.filter((key) => {
+    const hintsDelimiterCount = countDelimiter(key, '.');
+    const queryDelimiterCount = countDelimiter(query, '.');
+    const hintDepth = queryDelimiterCount + 1;
+
+    if (
+      hintDepth !== queryDelimiterCount &&
+      (hintsDelimiterCount === hintDepth || hintsDelimiterCount === queryDelimiterCount)
+    ) {
+      return true;
+    }
+  });
+
+  function countDelimiter(string, delimiter) {
+    var stringsearch = delimiter;
+
+    var str = string;
+    var count = 0;
+    for (var i = (count = 0); i < str.length; count += +(stringsearch === str[i++]));
+
+    return count;
+  }
+
+  return suggestions;
+}

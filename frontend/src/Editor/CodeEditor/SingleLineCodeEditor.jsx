@@ -1,13 +1,27 @@
-import React, { useRef } from 'react';
-import CodeHints from './CodeHints';
+import React, { useEffect, useRef, useState } from 'react';
 
-const SingleLineCodeEditor = (props) => {
+import { generateSuggestiveHints } from './utils';
+import { useHotkeysContext } from 'react-hotkeys-hook';
+
+import Overlay from 'react-bootstrap/Overlay';
+import Popover from 'react-bootstrap/Popover';
+import SuggestionsList from './Suggestions';
+
+const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
   const [isFocused, setIsFocused] = React.useState(false);
 
   const [currentValue, setCurrentValue] = React.useState('');
 
+  const [hints, setHints] = React.useState([]);
+
   const handleInputChange = (value) => {
     setCurrentValue(value);
+
+    const actualInput = value.replace(/{{|}}/g, '');
+
+    const hints = generateSuggestiveHints(suggestions['appHints'], actualInput);
+
+    setHints(hints);
   };
 
   function setCaretPosition(editableDiv, position) {
@@ -42,21 +56,99 @@ const SingleLineCodeEditor = (props) => {
     walkNode(editableDiv, position);
   }
 
+  const { enableScope, disableScope, enabledScopes } = useHotkeysContext();
+
+  const [shouldShowSuggestions, setShouldShowSuggestions] = useState(false);
+  const hintsActiveRef = useRef(false);
+
+  useEffect(() => {
+    if (!hintsActiveRef.current && currentValue.startsWith('{{') && currentValue.endsWith('}}')) {
+      setShouldShowSuggestions(true);
+      hintsActiveRef.current = true;
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
+    if (shouldShowSuggestions) {
+      enableScope('codehinter');
+      disableScope('editor');
+    }
+
+    if (!shouldShowSuggestions) {
+      const hinterScopeActive = enabledScopes.includes('codehinter');
+
+      if (hinterScopeActive) {
+        disableScope('codehinter');
+        enableScope('editor');
+      }
+    }
+  }, [shouldShowSuggestions]);
+
+  //   const [show, setShow] = useState(false);
+  const [target, setTarget] = useState(null);
+  const ref = useRef(null);
+
+  const handleClick = (event) => {
+    setIsFocused((prev) => !prev);
+    setTarget(event.target);
+  };
+
+  useEffect(() => {
+    if (currentValue.startsWith('{{')) {
+      setShouldShowSuggestions(true);
+      hintsActiveRef.current = true;
+    }
+  }, [currentValue]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current !== event.target) {
+        setShouldShowSuggestions(false);
+        setIsFocused(false);
+        hintsActiveRef.current = false;
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [ref.current]);
+
   return (
-    <div className="code-editor-basic-wrapper">
-      <div className="field code-editor-basic-label">{props?.paramLabel}</div>
-      <CodeHints isFocused={isFocused} setFocus={setIsFocused} currentValue={currentValue}>
+    <div ref={ref} className={`code-editor-container-${componentName}`}>
+      <div className="code-editor-basic-wrapper">
+        <div className="field code-editor-basic-label">{paramLabel}</div>
         <div className="codehinter-container w-100 p-2">
           <div className={'code-hinter-vertical-line'}></div>
 
-          <SingleLineCodeEditor.Editor setValue={handleInputChange} setCaretPosition={setCaretPosition} />
+          <SingleLineCodeEditor.Editor
+            setValue={handleInputChange}
+            setCaretPosition={setCaretPosition}
+            suggestions={suggestions}
+            setIsFocused={handleClick}
+          />
         </div>
-      </CodeHints>
+      </div>
+
+      <Overlay show={shouldShowSuggestions} target={target} placement="bottom" container={ref} containerPadding={20}>
+        <Popover
+          id="popover-contained"
+          style={{ width: '250px', maxWidth: '350px', maxHeight: '200px', overflowY: 'auto' }}
+        >
+          <Popover.Header as="h3">Popover bottom</Popover.Header>
+          <Popover.Body>
+            <div className={'tj-app-input-suggestions'}>
+              <SuggestionsList hints={hints} />
+            </div>
+          </Popover.Body>
+        </Popover>
+      </Overlay>
     </div>
   );
 };
 
-const EditorInput = ({ setValue, setCaretPosition }) => {
+const EditorInput = ({ setValue, setCaretPosition, setIsFocused }) => {
   const editableDivRef = useRef(null);
   const ignoreNextInputEventRef = useRef(false);
 
@@ -99,11 +191,29 @@ const EditorInput = ({ setValue, setCaretPosition }) => {
         const position = rawText.length - 2;
         setCaretPosition(editableDivRef.current, position);
       }
-      setValue(rawText);
     }
+    setValue(rawText);
   };
 
-  return <div contentEditable ref={editableDivRef} onInput={handleInputChange} className="codehinter-input"></div>;
+  return (
+    <div
+      contentEditable
+      ref={editableDivRef}
+      onInput={handleInputChange}
+      className="codehinter-input"
+      onFocus={(e) => setIsFocused(e)}
+      //   onBlur={(e) => setIsFocused(e)}
+      onKeyDown={(e) => {
+        // if down arrow key is pressed, then prevent default behaviour
+        // to prevent cursor from moving to next line
+        if (e.keyCode === 40) {
+          e.preventDefault();
+          // and remove cursor from editable div
+          editableDivRef.current.blur();
+        }
+      }}
+    ></div>
+  );
 };
 
 SingleLineCodeEditor.Editor = EditorInput;

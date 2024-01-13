@@ -17,6 +17,10 @@
             margin-right: 1rem;
         }
     }
+
+    .list-group-item {
+        border-radius: 0 !important;
+    }
 }
 
 .codehinter-input {
@@ -59,12 +63,18 @@
     font-weight: 400;
     line-height: 16px; /* 145.455% */
 
-    &:hover{
+    &:hover, &:active{
         border-radius: 0 !important;
     }
+
+
 }
 
 .curly-braces {
+    color: #1E823B;
+}
+
+.styled-par {
     color: #1E823B;
 }
 

@@ -1,6 +1,7 @@
 import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
 import { omit } from 'lodash';
+import { useResolveStore } from './resolverStore';
 
 const initialState = {
   queries: {},
@@ -54,6 +55,16 @@ export const useCurrentState = () =>
       layout: state.layout,
     };
   }, shallow);
+
+// Set up the subscription
+useCurrentStateStore.subscribe(
+  (state) => {
+    // This function is called whenever the state changes.
+    // You can access the updated state and perform actions in another store.
+    useResolveStore.getState().actions.updateAppSuggestions(state);
+  },
+  (state) => [state] // Specify the part of the state to listen for changes
+);
 
 export const getCurrentState = () => {
   return omit(useCurrentStateStore.getState(), 'actions');

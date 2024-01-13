@@ -18,11 +18,9 @@ const NewCodeHinter = ({ type = 'basic', ...restProps }) => {
     shallow
   );
 
-  console.log('---arpit [new]', { suggestions });
-
   const RenderCodeEditor = CODE_EDITOR_TYPE[type];
 
-  return <RenderCodeEditor {...restProps} />;
+  return <RenderCodeEditor suggestions={suggestions} {...restProps} />;
 };
 
 NewCodeHinter.propTypes = {

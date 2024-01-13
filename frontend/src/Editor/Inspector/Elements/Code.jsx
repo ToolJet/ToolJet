@@ -101,7 +101,12 @@ export const Code = ({
         component={component}
         verticalLine={verticalLine}
       /> */}
-      <CodeEditor paramName={param.name} paramLabel={displayName} fieldMeta={paramMeta} />
+      <CodeEditor
+        paramName={param.name}
+        paramLabel={displayName}
+        fieldMeta={paramMeta}
+        componentName={`component/${componentName}::${getfieldName}`}
+      />
     </div>
   );
 };

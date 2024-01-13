@@ -1,40 +1,56 @@
-import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import ListGroup from 'react-bootstrap/ListGroup';
+import React, { useState } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
+import Dropdown from 'react-bootstrap/Dropdown';
 
-function SuggestionsList() {
-  // Replace this with your actual suggestions array
-  const suggestions = [
-    {
-      hint: 'components.table1.selectedRow',
-      type: 'object',
+/**
+ *! Expected hint data structure
+ * {hint: string, type: primitive type, icon: svg url}
+ */
+
+function SuggestionsList({ hints }) {
+  const [focusedIndex, setFocusedIndex] = useState(0);
+
+  useHotkeys(
+    'up, down, enter, esc',
+    (key) => {
+      console.log('---piku', { key });
+
+      if (key.code === 'ArrowDown') {
+        const nextIndex = Math.min(hints.length - 1, focusedIndex + 1);
+
+        setFocusedIndex(nextIndex);
+      }
+
+      if (key.code === 'ArrowUp') {
+        const prevIndex = Math.max(0, focusedIndex - 1);
+        setFocusedIndex(prevIndex);
+      }
+
+      // if (key.code === 'Enter') {
+      // }
     },
-    {
-      hint: 'components.table',
-      type: 'array',
-    },
-    {
-      hint: 'components.table1.searchtext',
-      type: 'string',
-    },
-  ];
+    { scopes: 'codehinter' }
+  );
 
   return (
-    <ListGroup>
-      {suggestions.map((suggestion, index) => (
-        <ListGroup.Item
-          action
-          key={index}
-          as="li"
-          className=" suggest-list-item d-flex justify-content-between align-items-start"
-        >
-          <div className="ms-2 me-auto">
-            <div>{suggestion.hint}</div>
-          </div>
-          <code>{suggestion.type}</code>
-        </ListGroup.Item>
-      ))}
-    </ListGroup>
+    <>
+      {hints.map((suggestion, index) => {
+        return (
+          <Dropdown.Item
+            key={index}
+            active={index === focusedIndex}
+            eventKey={index}
+            as="li"
+            className="suggest-list-item d-flex justify-content-between align-items-start"
+          >
+            <div className="ms-2 me-auto">
+              <div>{suggestion}</div>
+            </div>
+            {/* <code>{suggestion.type}</code> */}
+          </Dropdown.Item>
+        );
+      })}
+    </>
   );
 }
 

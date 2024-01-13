@@ -1,5 +1,6 @@
 import { createJavaScriptSuggestions } from '@/Editor/CodeEditor/utils';
 import { create, zustandDevTools } from './utils';
+import { getSuggestionKeys } from '@/Editor/CodeBuilder/utils';
 
 /**
  * *Resolver Store
@@ -21,8 +22,11 @@ export const useResolveStore = create(
     (set, get) => ({
       ...initialState,
       actions: {
-        updateAppSuggestions: (suggestions) =>
-          set(() => ({ suggestions: { ...get().suggestions, appHints: suggestions } })),
+        updateAppSuggestions: (refState) => {
+          const suggestionTable = getSuggestionKeys(refState);
+
+          set(() => ({ suggestions: { ...get().suggestions, appHints: suggestionTable } }));
+        },
       },
     }),
     { name: 'Resolver Store' }
