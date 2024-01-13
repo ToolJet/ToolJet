@@ -1,3 +1,5 @@
+import { useResolveStore } from '@/_stores/resolverStore';
+
 const acorn = require('acorn');
 
 const code = `
@@ -115,3 +117,12 @@ export function generateSuggestiveHints(suggestionList, query) {
 
   return suggestions;
 }
+
+export const resolveReferences = (query) => {
+  const { lookupTable } = useResolveStore.getState();
+
+  const idToLookUp = lookupTable.hints.get(query);
+  const value = lookupTable.resolvedRefs.get(idToLookUp);
+
+  return value;
+};

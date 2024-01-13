@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { generateSuggestiveHints } from './utils';
+import { generateSuggestiveHints, resolveReferences } from './utils';
 import { useHotkeysContext } from 'react-hotkeys-hook';
 import CodeHints from './CodeHints';
 
@@ -9,8 +9,10 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
 
   const [isFocused, setIsFocused] = React.useState(false);
   const [shouldShowSuggestions, setShouldShowSuggestions] = useState(false);
-  const [currentValue, setCurrentValue] = React.useState('');
   const [target, setTarget] = useState(null);
+
+  const [currentValue, setCurrentValue] = React.useState('');
+  const [resolvedValue, setResolvedValue] = React.useState(undefined);
 
   const hintsActiveRef = useRef(false);
   const ref = useRef(null);
@@ -21,7 +23,8 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
     setCurrentValue(value);
 
     const actualInput = value.replace(/{{|}}/g, '');
-
+    const resolvedValue = resolveReferences(actualInput);
+    setResolvedValue(resolvedValue);
     const hints = generateSuggestiveHints(suggestions['appHints'], actualInput);
 
     setHints(hints);
@@ -34,6 +37,9 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
     const withBraces = '{{' + value + '}}';
 
     setCurrentValue(withBraces);
+
+    const resolvedValue = resolveReferences(value);
+    setResolvedValue(resolvedValue);
 
     setShouldShowSuggestions(false);
   };
@@ -143,6 +149,9 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
             suggestions={suggestions}
             setIsFocused={handleClick}
           />
+        </div>
+        <div>
+          <div className="field code-editor-basic-label">{JSON.stringify(resolvedValue)}</div>
         </div>
       </div>
     </CodeHints>

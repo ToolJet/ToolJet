@@ -8,7 +8,7 @@ const CodeHints = ({ children, ref, componentName, target, shouldShowSuggestions
     <div ref={ref} className={`code-editor-container-${componentName}`}>
       {children}
 
-      <Overlay show={shouldShowSuggestions} target={target} placement="bottom" container={ref} containerPadding={20}>
+      <Overlay show={shouldShowSuggestions} target={target} placement="top" container={ref} containerPadding={20}>
         <Popover
           id="popover-contained"
           style={{ width: '250px', maxWidth: '350px', maxHeight: '200px', overflowY: 'auto' }}

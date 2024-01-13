@@ -3,7 +3,7 @@ import { devtools } from 'zustand/middleware';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/Editor/WidgetManager/components';
-import _ from 'lodash';
+import _, { uniqueId } from 'lodash';
 
 export const zustandDevTools = (fn, options = {}) =>
   devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : true });
@@ -327,4 +327,110 @@ function toRemoveExposedvariablesFromComponentDiff(object) {
   });
 
   return copy;
+}
+const actions = [
+  'runQuery',
+  'setVariable',
+  'unSetVariable',
+  'showAlert',
+  'logout',
+  'showModal',
+  'closeModal',
+  'setLocalStorage',
+  'copyToClipboard',
+  'goToApp',
+  'generateFile',
+  'setPageVariable',
+  'unsetPageVariable',
+  'switchPage',
+];
+
+export function createReferencesLookup(refState) {
+  const state = _.cloneDeep(refState);
+  const queries = state['queries'];
+  const actions = [
+    'runQuery',
+    'setVariable',
+    'unSetVariable',
+    'showAlert',
+    'logout',
+    'showModal',
+    'closeModal',
+    'setLocalStorage',
+    'copyToClipboard',
+    'goToApp',
+    'generateFile',
+    'setPageVariable',
+    'unsetPageVariable',
+    'switchPage',
+  ];
+
+  // eslint-disable-next-line no-unused-vars
+  _.forIn(queries, (query, key) => {
+    if (!query.hasOwnProperty('run')) {
+      query.run = true;
+    }
+  });
+
+  const currentState = _.merge(state, { queries });
+  const suggestionList = [];
+  const map = new Map();
+
+  const hintsMap = new Map();
+  const resolvedRefs = new Map();
+
+  const buildMap = (data, path = '') => {
+    const keys = Object.keys(data);
+    keys.forEach((key, index) => {
+      const uniqueId = uniqueId();
+      const value = data[key];
+      const _type = Object.prototype.toString.call(value).slice(8, -1);
+      const prevType = map.get(path)?.type;
+
+      let newPath = '';
+      if (path === '') {
+        newPath = key;
+      } else if (prevType === 'Array') {
+        newPath = `${path}[${index}]`;
+      } else {
+        newPath = `${path}.${key}`;
+      }
+
+      if (_type === 'Object') {
+        map.set(newPath, { type: _type });
+        buildMap(value, newPath);
+      }
+      if (_type === 'Array') {
+        map.set(newPath, { type: _type });
+        buildMap(value, newPath);
+      } else {
+        map.set(newPath, { type: _type });
+      }
+
+      // Populate hints and refs
+
+      hintsMap.set(newPath, uniqueId);
+      resolvedRefs.set(uniqueId, value);
+    });
+  };
+
+  buildMap(currentState, '');
+  map.forEach((__, key) => {
+    if (key.endsWith('run') && key.startsWith('queries')) {
+      return suggestionList.push(`${key}()`);
+    }
+    return suggestionList.push(key);
+  });
+
+  // if (['Runjs', 'Runpy'].includes(refSource)) {
+  //   actions.forEach((action) => {
+  //     suggestionList.push(`actions.${action}()`);
+  //   });
+  // }
+
+  actions.forEach((action) => {
+    suggestionList.push(`actions.${action}()`);
+  });
+
+  return { suggestionList, hintsMap, resolvedRefs };
 }

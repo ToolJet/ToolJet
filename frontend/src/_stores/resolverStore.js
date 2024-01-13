@@ -1,5 +1,5 @@
 import { createJavaScriptSuggestions } from '@/Editor/CodeEditor/utils';
-import { create, zustandDevTools } from './utils';
+import { create, createReferencesLookup, zustandDevTools } from './utils';
 import { getSuggestionKeys } from '@/Editor/CodeBuilder/utils';
 
 /**
@@ -15,6 +15,10 @@ const initialState = {
     appHints: [],
     jsHints: createJavaScriptSuggestions(),
   },
+  lookupTable: {
+    hints: {},
+    resolvedRefs: {},
+  },
 };
 
 export const useResolveStore = create(
@@ -23,9 +27,12 @@ export const useResolveStore = create(
       ...initialState,
       actions: {
         updateAppSuggestions: (refState) => {
-          const suggestionTable = getSuggestionKeys(refState);
+          // const suggestionTable = getSuggestionKeys(refState);
+          const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState);
 
-          set(() => ({ suggestions: { ...get().suggestions, appHints: suggestionTable } }));
+          set(() => ({ suggestions: { ...get().suggestions, appHints: suggestionList } }));
+
+          set(() => ({ lookupTable: { ...get().lookupTable, hints: hintsMap, resolvedRefs } }));
         },
       },
     }),
