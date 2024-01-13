@@ -3603,23 +3603,6 @@ input[type="text"] {
   padding: 1.25px 5px;
 }
 
-.datepicker-widget {
-  .input-field {
-    min-height: 26px;
-    padding: 0;
-    padding-left: 2px;
-  }
-
-  td.rdtActive,
-  td.rdtActive:hover {
-    background-color: $primary;
-  }
-
-  .react-datepicker__day--selected {
-    background-color: $primary-light;
-  }
-}
-
 .daterange-picker-widget {
   .DateInput_input {
     min-height: 24px;
@@ -11947,4 +11930,36 @@ tbody {
 
 .accordion-header {
   height: 52px;
+}
+
+.toggle-dropdown-container {
+  // height: 44px;
+  // // width: 268px;
+  // background-color: red;
+}
+
+/* Dropdown styles */
+.select-dropdown {
+  border-radius: 6px;
+  border: 1px solid #D7DBDF;
+  background: var(--Input-box-01-fill-default, #FFF);
+  box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.04);
+  /* Add other styles as needed */
+}
+
+/* Apply custom styles to dropdown arrow (optional) */
+.select-dropdown::-ms-expand {
+  display: none;
+  /* IE 11 */
+}
+
+.select-dropdown::after {
+  content: '\25BC';
+  /* Unicode character for down arrow */
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  /* Add other styles for the arrow as needed */
 }

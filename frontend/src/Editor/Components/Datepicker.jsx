@@ -1,7 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import DatePickerComponent from 'react-datepicker';
+import { getMonth, getYear } from 'date-fns';
+import range from 'lodash/range';
+
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components/ToolTip';
+import * as Icons from '@tabler/icons-react';
+import Loader from '@/ToolJetUI/Loader/Loader';
+import { resolveReferences } from '@/_helpers/utils';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import './datepicker.scss';
+import { TimePicker } from './Timepicker';
 
 export const Datepicker = function Datepicker({
   height,
@@ -16,10 +27,26 @@ export const Datepicker = function Datepicker({
   darkMode,
   fireEvent,
   dataCy,
+  isResizing,
 }) {
-  const { enableTime, enableDate, defaultValue, disabledDates } = properties;
+  const { enableTime, enableDate, defaultValue, disabledDates, tooltip, label, loadingState, disabledState } =
+    properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
-  const { visibility, disabledState, borderRadius, boxShadow } = styles;
+  const {
+    padding,
+    borderRadius,
+    borderColor,
+    backgroundColor,
+    boxShadow,
+    width,
+    alignment,
+    direction,
+    color,
+    auto,
+    errTextColor,
+    iconColor,
+  } = styles;
+  const labelRef = useRef();
 
   const [date, setDate] = useState(null);
   const [excludedDates, setExcludedDates] = useState([]);
@@ -73,45 +100,277 @@ export const Datepicker = function Datepicker({
   const validationData = validate(exposedVariables.value);
   const { isValid, validationError } = validationData;
 
+  const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const [labelWidth, setLabelWidth] = useState(0);
+  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState) ?? false;
+  const [visibility, setVisibility] = useState(properties.visibility);
+  const [loading, setLoading] = useState(loadingState);
+  const [isFocused, setIsFocused] = useState(false);
+  const currentState = useCurrentState();
+  const [disable, setDisable] = useState(disabledState || loadingState);
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
-  return (
-    <div
-      data-disabled={disabledState}
-      className={`datepicker-widget ${darkMode && 'theme-dark'}`}
-      data-cy={dataCy}
-      style={{
-        height,
-        display: visibility ? '' : 'none',
-        background: 'none',
-      }}
-    >
-      <DatePickerComponent
-        className={`input-field form-control ${
-          !isValid && showValidationError ? 'is-invalid' : ''
-        } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
-        selected={date}
-        value={date !== null ? computeDateString(date) : 'select date'}
-        onChange={(date) => onDateChange(date)}
-        showTimeInput={enableTime ? true : false}
-        showTimeSelectOnly={enableDate ? false : true}
-        onFocus={(event) => {
-          onComponentClick(id, component, event);
-        }}
-        showMonthDropdown
-        showYearDropdown
-        dropdownMode="select"
-        excludeDates={excludedDates}
-        customInput={<input style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />}
-        timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
-      />
+  useEffect(() => {
+    if (labelRef.current) {
+      const width = labelRef.current.offsetWidth;
+      padding == 'default' ? setLabelWidth(width + 7) : setLabelWidth(width + 5);
+    } else setLabelWidth(0);
 
-      <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
-        {showValidationError && validationError}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isResizing,
+    width,
+    auto,
+    defaultAlignment,
+    component?.definition?.styles?.iconVisibility?.value,
+    label?.length,
+    isMandatory,
+    padding,
+    direction,
+    alignment,
+  ]);
+  useEffect(() => {
+    disable !== disabledState && setDisable(disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+  useEffect(() => {
+    visibility !== properties.visibility && setVisibility(properties.visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility]);
+  useEffect(() => {
+    loading !== loadingState && setLoading(loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
+
+  useEffect(() => {
+    setExposedVariable('isMandatory', isMandatory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMandatory]);
+
+  useEffect(() => {
+    setExposedVariable('isLoading', loading);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  useEffect(() => {
+    setExposedVariable('setLoading', async function (loading) {
+      setLoading(loading);
+      setExposedVariable('isLoading', loading);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.loadingState]);
+
+  useEffect(() => {
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariable('setVisibility', async function (state) {
+      setVisibility(state);
+      setExposedVariable('isVisible', state);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility]);
+
+  useEffect(() => {
+    setExposedVariable('setDisable', async function (disable) {
+      setDisable(disable);
+      setExposedVariable('isDisabled', disable);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    setExposedVariable('isDisabled', disable);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disable]);
+
+  const iconName = styles.icon; // Replace with the name of the icon you want
+  // eslint-disable-next-line import/namespace
+  const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
+  // eslint-disable-next-line import/namespace
+
+  const [startDate, setStartDate] = useState(new Date());
+  const years = range(1990, getYear(new Date()) + 1, 1);
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [selectedTime, setSelectedTime] = useState('');
+
+  const togglePopover = () => {
+    setPopoverOpen(!popoverOpen);
+  };
+
+  const handleTimeSelect = (time) => {
+    setSelectedTime(time);
+  };
+  const ExampleCustomTimeInput = ({ date, value, onChange }) => (
+    <input value={value} onChange={(e) => onChange(e.target.value)} style={{ border: 'solid 1px pink' }} />
+  );
+
+  const renderDatePicker = () => (
+    <>
+      <div
+        data-cy={dataCy}
+        data-disabled={disable || loading}
+        className={` datepicker-widget  d-flex  ${darkMode && 'theme-dark'} ${
+          defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '
+        }  ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+       ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
+       ${visibility || 'invisible'}`}
+        style={{
+          padding: padding === 'default' ? '2px' : '',
+          position: 'relative',
+          width: '100%',
+          display: !visibility ? 'none' : 'flex',
+          background: 'none',
+          // height,
+        }}
+      >
+        {label && width > 0 && (
+          <label
+            ref={labelRef}
+            style={{
+              color: darkMode && color === '#11181C' ? '#fff' : color,
+              width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${width}%` : '100%',
+              maxWidth: auto && defaultAlignment === 'side' ? '70%' : '100%',
+              marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '9px' : '',
+              marginLeft: label?.length > 0 && direction === 'right' && defaultAlignment === 'side' ? '9px' : '',
+              display: 'block',
+              overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
+              textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+              fontWeight: 500,
+              textAlign: direction == 'right' ? 'right' : 'left',
+              whiteSpace: 'nowrap', // Keep the text in a single line
+            }}
+          >
+            {label}
+            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
+          </label>
+        )}
+
+        <DatePickerComponent
+          showIcon
+          // calendarIcon={<FaCalendarAlt />}
+
+          calendarIcon={<IconElement stroke={1.5} />}
+          className={`input-field form-control  ${
+            !isValid && showValidationError ? 'is-invalid' : ''
+          } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
+          popperClassName="tj-datepicker-widget"
+          selected={date}
+          value={date !== null ? computeDateString(date) : 'select date'}
+          onChange={(date) => onDateChange(date)}
+          // selected={startDate}
+          // onChange={(date) => setStartDate(date)}
+          showTimeInput={enableTime ? true : false}
+          showTimeSelectOnly={enableDate ? false : true}
+          onFocus={(event) => {
+            onComponentClick(id, component, event);
+          }}
+          // customTimeInput={<ExampleCustomTimeInput />}
+          showMonthDropdown
+          showYearDropdown
+          dropdownMode="select"
+          excludeDates={excludedDates}
+          // customInput={
+          //   <input className="text-input" style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />
+          // }
+          timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
+          showPopperArrow={false}
+          showTimeSelect={false}
+          renderCustomHeader={({
+            date,
+            changeYear,
+            changeMonth,
+            decreaseMonth,
+            increaseMonth,
+            prevMonthButtonDisabled,
+            nextMonthButtonDisabled,
+          }) => (
+            <div
+              style={{
+                margin: 10,
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              <button onClick={decreaseMonth} disabled={prevMonthButtonDisabled}>
+                {'<'}
+              </button>
+              <select value={getYear(date)} onChange={({ target: { value } }) => changeYear(value)}>
+                {years.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={months[getMonth(date)]}
+                onChange={({ target: { value } }) => changeMonth(months.indexOf(value))}
+              >
+                {months.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+
+              <button onClick={increaseMonth} disabled={nextMonthButtonDisabled}>
+                {'>'}
+              </button>
+            </div>
+          )}
+          customTimeInput={
+            <TimePicker isOpen={popoverOpen} togglePopover={togglePopover} onSelect={handleTimeSelect} />
+          }
+          // selected={startDate}
+          // onChange={(date) => setStartDate(date)}
+        />
+        <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
+          {showValidationError && validationError}
+        </div>
       </div>
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {properties?.tooltip?.length > 0 ? (
+        <ToolTip message={tooltip}>
+          <div>{renderDatePicker()}</div>
+        </ToolTip>
+      ) : (
+        <div>{renderDatePicker()}</div>
+      )}
+    </>
   );
 };
+// display: flex;
+// padding: var(--3, 6px) var(--5, 10px);
+// align-items: center;
+// gap: var(--7, 16px);
+// align-self: stretch;
+// Copy
+// border-radius: var(--3, 6px);
+
+// border: var(--0, 1px) solid var(--Slate-12, #11181C);
+
+// background: var(--Bases-Transparent,

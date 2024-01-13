@@ -21,6 +21,8 @@ import { Color } from './Elements/Color';
 import { Json } from './Elements/Json';
 import { Select } from './Elements/Select';
 import { Toggle } from './Elements/Toggle';
+import { ToggleDropdown } from './Elements/ToggleDropdown';
+
 import { AlignButtons } from './Elements/AlignButtons';
 import { TypeMapping } from './TypeMapping';
 import { Number } from './Elements/Number';
@@ -60,6 +62,7 @@ const AllElements = {
   Checkbox,
   Icon,
   Visibility,
+  ToggleDropdown,
 };
 
 export function CodeHinter({

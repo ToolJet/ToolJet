@@ -2091,7 +2091,7 @@ export const widgets = [
     description: 'Choose date and time',
     component: 'Datepicker',
     defaultSize: {
-      width: 5,
+      width: 10,
       height: 30,
     },
     validation: {
@@ -2226,6 +2226,17 @@ export const widgets = [
           defaultValue: false,
         },
       },
+      timeFormat: {
+        type: 'toggleDropdown',
+        displayName: 'timeFormat',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'label',
+        conditionallyRender: {
+          key: 'enableTime',
+          value: true,
+        },
+      },
+
       enableDate: {
         type: 'toggle',
         displayName: 'Enable date selection?',
