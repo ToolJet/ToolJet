@@ -14,6 +14,7 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
 
   const [currentValue, setCurrentValue] = React.useState('');
   const [resolvedValue, setResolvedValue] = React.useState(undefined);
+  const [error, setError] = React.useState(null);
 
   const hintsActiveRef = useRef(false);
   const ref = useRef(null);
@@ -24,8 +25,15 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
     setCurrentValue(value);
 
     const actualInput = value.replace(/{{|}}/g, '');
-    const resolvedValue = resolveReferences(actualInput);
-    setResolvedValue(resolvedValue);
+    const [resolvedValue, error] = resolveReferences(actualInput);
+
+    if (resolvedValue) {
+      setResolvedValue(resolvedValue);
+    }
+
+    if (error) {
+      setError(error);
+    }
     const hints = generateSuggestiveHints(suggestions['appHints'], actualInput);
 
     setHints(hints);
@@ -39,7 +47,7 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
 
     setCurrentValue(withBraces);
 
-    const resolvedValue = resolveReferences(value);
+    const [resolvedValue] = resolveReferences(value);
     setResolvedValue(resolvedValue);
 
     setShouldShowSuggestions(false);
@@ -150,7 +158,7 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
             suggestions={suggestions}
             setIsFocused={handleClick}
           />
-          <ResolvedValue value={resolvedValue} isFocused={isFocused} />
+          <ResolvedValue value={resolvedValue} isFocused={isFocused} error={error} componentName={{ componentName }} />
         </div>
       </div>
     </CodeHints>
@@ -238,24 +246,10 @@ const EditorInput = ({ currentValue, setValue, setCaretPosition, setIsFocused })
   );
 };
 
-const ResolvedValue = ({ value, isFocused }) => {
-  // const [preview, error] = resolveReferences(value, state, null, {}, true, true);
+const ResolvedValue = ({ value, error, isFocused, componentName }) => {
   const preview = value;
 
-  // const error = null;
-  // const previewType = typeof preview;
-
-  // let resolvedValue = preview;
-
-  // const errorMessage = error?.toString().includes(`Server variables can't be used like this`)
-  //   ? 'HiddenEnvironmentVariable'
-  //   : error?.toString();
-  // const isValidError = error && errorMessage !== 'HiddenEnvironmentVariable';
-
-  // if (error && !isValidError) {
-  //   resolvedValue = errorMessage;
-  // }
-
+  const [heightRef, currentHeight] = useHeight();
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
@@ -277,8 +271,6 @@ const ResolvedValue = ({ value, isFocused }) => {
     }
   };
 
-  const [heightRef, currentHeight] = useHeight();
-
   const slideInStyles = useSpring({
     config: { ...config.stiff },
     from: { opacity: 0, height: 0 },
@@ -287,6 +279,25 @@ const ResolvedValue = ({ value, isFocused }) => {
       height: isFocused ? currentHeight : 0,
     },
   });
+
+  if (value === null && error) {
+    const err = String(error);
+    const errorMessage = err.includes('.run()')
+      ? `${err} in ${componentName ? componentName.split('::')[0] + "'s" : 'fx'} field`
+      : err;
+    return (
+      <animated.div className={isFocused ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
+        <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
+          <div>
+            <div className="heading my-1">
+              <span>Error</span>
+            </div>
+            {errorMessage}
+          </div>
+        </div>
+      </animated.div>
+    );
+  }
 
   let previewType = typeof preview;
   let previewContent = preview;

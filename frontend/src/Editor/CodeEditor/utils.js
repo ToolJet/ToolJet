@@ -119,10 +119,20 @@ export function generateSuggestiveHints(suggestionList, query) {
 }
 
 export const resolveReferences = (query) => {
+  let resolvedValue = null;
+  let error = null;
+
   const { lookupTable } = useResolveStore.getState();
 
-  const idToLookUp = lookupTable.hints.get(query);
-  const value = lookupTable.resolvedRefs.get(idToLookUp);
+  // const idToLookUp = lookupTable.hints.get(query);
+  // const value = lookupTable.resolvedRefs.get(idToLookUp);
 
-  return value;
+  if (lookupTable.hints.has(query)) {
+    const idToLookUp = lookupTable.hints.get(query);
+    resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);
+  } else {
+    error = `No reference found for ${query}`;
+  }
+
+  return [resolvedValue, error];
 };
