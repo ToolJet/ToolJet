@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-
+import { useSpring, config, animated } from 'react-spring';
+import useHeight from '@/_hooks/use-height-transition';
 import { generateSuggestiveHints, resolveReferences } from './utils';
 import { useHotkeysContext } from 'react-hotkeys-hook';
 import CodeHints from './CodeHints';
@@ -149,9 +150,7 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
             suggestions={suggestions}
             setIsFocused={handleClick}
           />
-        </div>
-        <div>
-          <div className="field code-editor-basic-label">{JSON.stringify(resolvedValue)}</div>
+          <ResolvedValue value={resolvedValue} isFocused={isFocused} />
         </div>
       </div>
     </CodeHints>
@@ -236,6 +235,77 @@ const EditorInput = ({ currentValue, setValue, setCaretPosition, setIsFocused })
         }
       }}
     ></div>
+  );
+};
+
+const ResolvedValue = ({ value, isFocused }) => {
+  // const [preview, error] = resolveReferences(value, state, null, {}, true, true);
+  const preview = value;
+
+  // const error = null;
+  // const previewType = typeof preview;
+
+  // let resolvedValue = preview;
+
+  // const errorMessage = error?.toString().includes(`Server variables can't be used like this`)
+  //   ? 'HiddenEnvironmentVariable'
+  //   : error?.toString();
+  // const isValidError = error && errorMessage !== 'HiddenEnvironmentVariable';
+
+  // if (error && !isValidError) {
+  //   resolvedValue = errorMessage;
+  // }
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
+
+  const getPreviewContent = (content, type) => {
+    if (!content) return value;
+
+    try {
+      switch (type) {
+        case 'object':
+          return JSON.stringify(content);
+        case 'boolean':
+          return content.toString();
+        default:
+          return content;
+      }
+    } catch (e) {
+      return undefined;
+    }
+  };
+
+  const [heightRef, currentHeight] = useHeight();
+
+  const slideInStyles = useSpring({
+    config: { ...config.stiff },
+    from: { opacity: 0, height: 0 },
+    to: {
+      opacity: isFocused ? 1 : 0,
+      height: isFocused ? currentHeight : 0,
+    },
+  });
+
+  let previewType = typeof preview;
+  let previewContent = preview;
+
+  const content = getPreviewContent(previewContent, previewType);
+
+  return (
+    <animated.div className={isFocused ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
+      <div ref={heightRef} className="dynamic-variable-preview bg-green-lt px-1 py-1">
+        <div>
+          <div className="d-flex my-1">
+            <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
+              {previewType}
+            </div>
+          </div>
+          {content}
+        </div>
+      </div>
+    </animated.div>
   );
 };
 

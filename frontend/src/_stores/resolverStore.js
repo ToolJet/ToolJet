@@ -27,7 +27,6 @@ export const useResolveStore = create(
       ...initialState,
       actions: {
         updateAppSuggestions: (refState) => {
-          // const suggestionTable = getSuggestionKeys(refState);
           const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState);
 
           set(() => ({ suggestions: { ...get().suggestions, appHints: suggestionList } }));
