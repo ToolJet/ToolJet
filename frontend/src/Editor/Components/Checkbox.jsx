@@ -158,6 +158,7 @@ export const Checkbox = function Checkbox({
         justifyContent: `${loadingState ? 'center' : alignment == 'right' ? 'space-between' : ''}`,
         padding: padding === 'default' ? '4px 6px' : '',
         height: calculatedHeight == 30 ? (padding == 'default' ? '30px' : '20px') : calculatedHeight,
+        position: 'relative',
       }}
       data-cy={dataCy}
     >
@@ -228,9 +229,10 @@ export const Checkbox = function Checkbox({
     visibility: checked ? 'visible' : 'hidden',
     height: '16px',
     width: ' 16px',
-    left: padding == 'default' ? alignment == 'left' && '14px' : alignment == 'left' && '7px',
-    top: padding == 'default' ? (alignment == 'left' ? '36%' : '36%') : alignment == 'left' ? '30%' : '30%',
+    left: padding == 'default' ? alignment == 'left' && '14px' : alignment == 'left' && '8px',
+    top: '50%',
     right: alignment == 'right' && padding == 'default' ? '-1.5px' : '-8px',
+    display: 'flex',
   };
 
   const checkboxStyle = {

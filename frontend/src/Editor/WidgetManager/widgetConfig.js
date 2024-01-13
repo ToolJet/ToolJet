@@ -2588,7 +2588,7 @@ export const widgets = [
         },
         accordian: 'switch',
       },
-      checkedColor: {
+      toggleSwitchColor: {
         type: 'color',
         displayName: 'Checked color',
         validation: {
@@ -2682,7 +2682,7 @@ export const widgets = [
       events: [],
       styles: {
         textColor: { value: '#11181C' },
-        checkedColor: { value: '#3E63DD' },
+        toggleSwitchColor: { value: '#3E63DD' }, //keeping same key for backward comopatibility
         uncheckedColor: { value: '#D7DBDF' },
         padding: { value: 'default' },
         borderColor: { value: '#D7DBDF' },

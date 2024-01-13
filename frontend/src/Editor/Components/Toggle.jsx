@@ -41,7 +41,7 @@ class Switch extends React.Component {
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: on ? styles.checkedColor : styles.uncheckedColor,
+      backgroundColor: on ? styles.toggleSwitchColor : styles.uncheckedColor,
       transition: 'background-color 0.2s',
       borderRadius: '34px',
       outline: `1px solid ${styles.borderColor}`,
