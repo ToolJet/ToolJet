@@ -119,16 +119,19 @@ export function generateSuggestiveHints(suggestionList, query) {
 }
 
 export const resolveReferences = (query) => {
-  let resolvedValue = null;
+  let resolvedValue = query;
   let error = null;
+
+  if (!query.includes('{{') || !query.includes('}}')) {
+    return [resolvedValue, error];
+  }
+
+  const value = query.replace(/{{|}}/g, '');
 
   const { lookupTable } = useResolveStore.getState();
 
-  // const idToLookUp = lookupTable.hints.get(query);
-  // const value = lookupTable.resolvedRefs.get(idToLookUp);
-
-  if (lookupTable.hints.has(query)) {
-    const idToLookUp = lookupTable.hints.get(query);
+  if (lookupTable.hints.has(value)) {
+    const idToLookUp = lookupTable.hints.get(value);
     resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);
   } else {
     error = `No reference found for ${query}`;
@@ -136,3 +139,5 @@ export const resolveReferences = (query) => {
 
   return [resolvedValue, error];
 };
+
+export const getCurrentNodeType = (node) => Object.prototype.toString.call(node).slice(8, -1);

@@ -1,20 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useSpring, config, animated } from 'react-spring';
-import useHeight from '@/_hooks/use-height-transition';
-import { generateSuggestiveHints, resolveReferences } from './utils';
+import { generateSuggestiveHints } from './utils';
 import { useHotkeysContext } from 'react-hotkeys-hook';
 import CodeHints from './CodeHints';
+import { PreviewBox } from './PreviewBox';
+import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
+import { useTranslation } from 'react-i18next';
+import { camelCase } from 'lodash';
 
-const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
+const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName, darkMode, fieldMeta }) => {
   const { enableScope, disableScope, enabledScopes } = useHotkeysContext();
+  const { t } = useTranslation();
 
   const [isFocused, setIsFocused] = React.useState(false);
   const [shouldShowSuggestions, setShouldShowSuggestions] = useState(false);
   const [target, setTarget] = useState(null);
 
   const [currentValue, setCurrentValue] = React.useState('');
-  const [resolvedValue, setResolvedValue] = React.useState(undefined);
-  const [error, setError] = React.useState(null);
 
   const hintsActiveRef = useRef(false);
   const ref = useRef(null);
@@ -25,15 +26,7 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
     setCurrentValue(value);
 
     const actualInput = value.replace(/{{|}}/g, '');
-    const [resolvedValue, error] = resolveReferences(actualInput);
 
-    if (resolvedValue) {
-      setResolvedValue(resolvedValue);
-    }
-
-    if (error) {
-      setError(error);
-    }
     const hints = generateSuggestiveHints(suggestions['appHints'], actualInput);
 
     setHints(hints);
@@ -43,12 +36,9 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
     const currentValueWithoutBraces = currentValue.replace(/{{|}}/g, '');
     const value = currentValueWithoutBraces + hintValue;
 
-    const withBraces = '{{' + value + '}}';
+    const withBraces = `{{${value}}}`;
 
     setCurrentValue(withBraces);
-
-    const [resolvedValue] = resolveReferences(value);
-    setResolvedValue(resolvedValue);
 
     setShouldShowSuggestions(false);
   };
@@ -92,6 +82,7 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
     } else {
       hintsActiveRef.current = false;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFocused]);
 
   useEffect(() => {
@@ -108,6 +99,7 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
         enableScope('editor');
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldShowSuggestions]);
 
   const handleClick = (event) => {
@@ -135,6 +127,7 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ref.current]);
 
   return (
@@ -147,18 +140,29 @@ const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName }) => {
       updateValueFromHint={updateValueFromHint}
     >
       <div className="code-editor-basic-wrapper">
-        <div className="field code-editor-basic-label">{paramLabel}</div>
-        <div className="codehinter-container w-100 p-2">
-          <div className={'code-hinter-vertical-line'}></div>
-
-          <SingleLineCodeEditor.Editor
-            currentValue={currentValue}
-            setValue={handleInputChange}
-            setCaretPosition={setCaretPosition}
-            suggestions={suggestions}
-            setIsFocused={handleClick}
-          />
-          <ResolvedValue value={resolvedValue} isFocused={isFocused} error={error} componentName={{ componentName }} />
+        {paramLabel && (
+          <div className={`field`} data-cy={`${'cyLabel'}-widget-parameter-label`}>
+            <ToolTip
+              label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
+              meta={fieldMeta}
+              labelClass={`tj-text-xsm color-slate12 mb-2 ${darkMode && 'color-whitish-darkmode'}`}
+            />
+          </div>
+        )}
+        <div className="d-flex">
+          {/* <div className="field-type-vertical-line"></div> */}
+          <div className="codehinter-container w-100 px-3">
+            <SingleLineCodeEditor.Editor
+              currentValue={currentValue}
+              setValue={handleInputChange}
+              setCaretPosition={setCaretPosition}
+              suggestions={suggestions}
+              setIsFocused={handleClick}
+            />
+            {currentValue.length > 0 && (
+              <PreviewBox currentValue={currentValue} isFocused={isFocused} componentName={componentName} />
+            )}
+          </div>
         </div>
       </div>
     </CodeHints>
@@ -243,80 +247,6 @@ const EditorInput = ({ currentValue, setValue, setCaretPosition, setIsFocused })
         }
       }}
     ></div>
-  );
-};
-
-const ResolvedValue = ({ value, error, isFocused, componentName }) => {
-  const preview = value;
-
-  const [heightRef, currentHeight] = useHeight();
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-
-  const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
-
-  const getPreviewContent = (content, type) => {
-    if (!content) return value;
-
-    try {
-      switch (type) {
-        case 'object':
-          return JSON.stringify(content);
-        case 'boolean':
-          return content.toString();
-        default:
-          return content;
-      }
-    } catch (e) {
-      return undefined;
-    }
-  };
-
-  const slideInStyles = useSpring({
-    config: { ...config.stiff },
-    from: { opacity: 0, height: 0 },
-    to: {
-      opacity: isFocused ? 1 : 0,
-      height: isFocused ? currentHeight : 0,
-    },
-  });
-
-  if (value === null && error) {
-    const err = String(error);
-    const errorMessage = err.includes('.run()')
-      ? `${err} in ${componentName ? componentName.split('::')[0] + "'s" : 'fx'} field`
-      : err;
-    return (
-      <animated.div className={isFocused ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
-        <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
-          <div>
-            <div className="heading my-1">
-              <span>Error</span>
-            </div>
-            {errorMessage}
-          </div>
-        </div>
-      </animated.div>
-    );
-  }
-
-  let previewType = typeof preview;
-  let previewContent = preview;
-
-  const content = getPreviewContent(previewContent, previewType);
-
-  return (
-    <animated.div className={isFocused ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
-      <div ref={heightRef} className="dynamic-variable-preview bg-green-lt px-1 py-1">
-        <div>
-          <div className="d-flex my-1">
-            <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
-              {previewType}
-            </div>
-          </div>
-          {content}
-        </div>
-      </div>
-    </animated.div>
   );
 };
 

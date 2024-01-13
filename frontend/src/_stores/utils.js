@@ -328,22 +328,6 @@ function toRemoveExposedvariablesFromComponentDiff(object) {
 
   return copy;
 }
-const actions = [
-  'runQuery',
-  'setVariable',
-  'unSetVariable',
-  'showAlert',
-  'logout',
-  'showModal',
-  'closeModal',
-  'setLocalStorage',
-  'copyToClipboard',
-  'goToApp',
-  'generateFile',
-  'setPageVariable',
-  'unsetPageVariable',
-  'switchPage',
-];
 
 export function createReferencesLookup(refState) {
   const state = _.cloneDeep(refState);
