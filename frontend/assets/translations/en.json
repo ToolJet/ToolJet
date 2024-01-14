@@ -284,6 +284,10 @@
                         "resource": "Resource",
                         "createUpdateDelete": "Create/Update/Delete",
                         "folder": "Folder"
+                    },
+                    "groupOptions":{
+                        "deleteGroup":"Delete Group",
+                        "duplicateGroup":"Duplicate Group"
                     }
                 },
                 "manageSSO": {

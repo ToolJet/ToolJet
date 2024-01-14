@@ -36,6 +36,10 @@
 
 }
 
+.tj-list-item-option-opened {
+     background-color: var(--indigo4);
+ }
+
 .tj-list-item-disabled {
     color: var(--slate8);
 }
@@ -46,7 +50,7 @@
 }
 
 .user-group-actions {
-    width: 231px;
+    width: 100px;;
 
     a {
         display: flex;
