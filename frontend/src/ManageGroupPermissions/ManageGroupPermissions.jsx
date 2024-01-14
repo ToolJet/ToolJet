@@ -157,6 +157,7 @@ class ManageGroupPermissionsComponent extends React.Component {
     this.setState({
       isLoading: true,
     });
+    console.log('rebased');
 
     groupPermissionService
       .getGroups()
