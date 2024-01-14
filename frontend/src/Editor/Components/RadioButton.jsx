@@ -29,7 +29,7 @@ export const RadioButton = function RadioButton({
     optionsLoadingState,
     loadingState,
   } = properties;
-  const { activeColor, boxShadow, labelAlignment, direction } = styles;
+  const { activeColor, boxShadow, labelAlignment, direction, optionTextColor } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checkedValue, setValue] = useState(() => value);
   const currentState = useCurrentState();
@@ -174,7 +174,7 @@ export const RadioButton = function RadioButton({
                     onChange={() => onSelect(option.value)}
                     disabled={option.isDisabled}
                   />
-                  <span className="form-check-label" style={{ color: textColor }}>
+                  <span className="form-check-label" style={{ color: optionTextColor ? optionTextColor : textColor }}>
                     {option.label}
                   </span>
                 </label>

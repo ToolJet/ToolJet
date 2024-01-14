@@ -2067,19 +2067,25 @@ export const widgets = [
         ],
         accordian: 'label',
       },
-      whileResizing: {
-        type: 'switch',
-        displayName: 'While Resizing',
-        validation: { schema: { type: 'string' } },
-        options: [
-          { displayName: 'Wrap', value: 'wrap' },
-          { displayName: 'Adjust size', value: 'adjustSize' },
-        ],
-        accordian: 'label',
-      },
-      switchBorderColor: {
+      switchOffBorderColor: {
         type: 'color',
-        displayName: 'Border color',
+        displayName: 'Off Border',
+        validation: {
+          schema: { type: 'string' },
+        },
+        accordian: 'switch',
+      },
+      switchOffBackgroundColor: {
+        type: 'color',
+        displayName: 'Off background',
+        validation: {
+          schema: { type: 'string' },
+        },
+        accordian: 'switch',
+      },
+      switchOnBorderColor: {
+        type: 'color',
+        displayName: 'On border',
         validation: {
           schema: { type: 'string' },
         },
@@ -2087,7 +2093,7 @@ export const widgets = [
       },
       activeColor: {
         type: 'color',
-        displayName: 'Active BG color',
+        displayName: 'On background',
         validation: {
           schema: { type: 'string' },
         },
@@ -2101,15 +2107,33 @@ export const widgets = [
         },
         accordian: 'switch',
       },
-      switchAlignment: {
+      optionTextColor: {
+        type: 'color',
+        displayName: 'Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+        accordian: 'Text',
+      },
+      optionAlignment: {
         type: 'switch',
         displayName: 'Alignment',
         validation: { schema: { type: 'string' } },
         options: [
-          { displayName: 'Side', value: 'side' },
-          { displayName: 'Top', value: 'top' },
+          { displayName: 'Horizontal', value: 'horizontal' },
+          { displayName: 'Vertical', value: 'vertical' },
         ],
-        accordian: 'switch',
+        accordian: 'Text',
+      },
+      whileResizing: {
+        type: 'switch',
+        displayName: 'While Resizing',
+        validation: { schema: { type: 'string' } },
+        options: [
+          { displayName: 'Wrap', value: 'wrap' },
+          { displayName: 'Hide', value: 'hide' },
+        ],
+        accordian: 'Text',
       },
       padding: {
         type: 'switch',
@@ -2158,14 +2182,17 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '' },
+        textColor: { value: '#11181C' },
         labelAlignment: { value: 'side' },
         direction: { value: 'alignLeft' },
         whileResizing: { value: 'wrap' },
-        switchBorderColor: { value: '#DFE3E6' },
+        switchOffBorderColor: { value: '#DFE3E6' },
+        switchOffBackgroundColor: { value: '#DFE3E6' },
+        switchOnBorderColor: { value: '#DFE3E6' },
         activeColor: { value: '#3E63DD' },
         handleColor: { value: '#DFE3E6' },
-        switchAlignment: { value: '' },
+        optionTextColor: { value: '#11181C' },
+        optionAlignment: { value: 'horizontal' },
         padding: { value: 'default' },
       },
     },
