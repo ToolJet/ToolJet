@@ -21,7 +21,6 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
     <div>
       <div className="preview-settings-overlay">
         <span className="preview-settings-text">Preview settings</span>
-        <div className="navbar-seperator"></div>
         <span>
           {editingVersion && (
             <AppVersionsManager
@@ -102,7 +101,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
                 )}
               </span>
               <div className="d-flex p-2 align-items-center">
-                <span style={{ marginRight: '24px' }}>Layout</span>
+                <span style={{ marginRight: '24px' }}>layout</span>
                 <HeaderActions showToggleLayoutBtn showFullWidth />
               </div>
             </Offcanvas.Body>

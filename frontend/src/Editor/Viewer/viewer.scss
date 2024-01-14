@@ -1,7 +1,15 @@
 .preview-chip {
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.app-title {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+  color: #11181C;
 }
 
 .released-version-no-header-dark-mode-icon {
@@ -30,7 +38,7 @@
   display: flex;
   align-items: center;
   background-color: var(--base);
-  padding: 3px 6px;
+  padding: 6px 12px;
   border : 1px solid #E4E7EB;
   border-radius: 6px;
   margin-top: 4px;

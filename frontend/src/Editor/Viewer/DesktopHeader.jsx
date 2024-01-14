@@ -30,7 +30,7 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
       </h1>
       <div className="navbar-seperator" style={{ margin: '0px 1.375rem' }}></div>
       {appName && (
-        <div className="d-flex align-items-center">
+        <div className="d-flex align-items-center app-title">
           <span>{appName}</span>
         </div>
       )}
