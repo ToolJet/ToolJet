@@ -73,6 +73,8 @@ export const Button = function Button(props) {
     borderColor: borderColor,
     boxShadow: boxShadow,
     padding: '6px 12px',
+    cursor: 'pointer',
+    opacity: disable && '50%',
   };
 
   useEffect(() => {
@@ -95,24 +97,36 @@ export const Button = function Button(props) {
       loading: async function (value) {
         setLoading(value);
       },
-      setDisable: async function (value) {
-        setDisable(value);
-        setExposedVariable('isDisabled', value);
-      },
-      setVisibility: async function (value) {
-        setVisibility(value);
-        setExposedVariable('isVisible', value);
-      },
-      setLoading: async function (value) {
-        setLoading(value);
-        setExposedVariable('isLoading', value);
-      },
     };
 
     setExposedVariables(exposedVariables);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable, setLabel, setDisable, setVisibility, setLoading]);
+  }, [disable]);
+
+  useEffect(() => {
+    setExposedVariable('setLoading', async function (loading) {
+      setLoading(loading);
+      setExposedVariable('isLoading', loading);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
+
+  useEffect(() => {
+    setExposedVariable('setVisibility', async function (state) {
+      setVisibility(state);
+      setExposedVariable('isVisible', state);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility]);
+
+  useEffect(() => {
+    setExposedVariable('setDisable', async function (disable) {
+      setDisable(disable);
+      setExposedVariable('isDisabled', disable);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
 
   useEffect(() => {
     setExposedVariable('isLoading', loading);
