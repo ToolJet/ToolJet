@@ -1569,20 +1569,6 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
-      // minValue: {
-      //   type: 'code',
-      //   displayName: 'Minimum value',
-      //   validation: {
-      //     schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-      //   },
-      // },
-      // maxValue: {
-      //   type: 'code',
-      //   displayName: 'Maximum value',
-      //   validation: {
-      //     schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-      //   },
-      // },
       placeholder: {
         type: 'code',
         displayName: 'Placeholder',

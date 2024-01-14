@@ -107,6 +107,7 @@ export function CodeHinter({
     highlightSelectionMatches: true,
     placeholder,
   };
+  console.log('try---', placeholder);
   const currentState = useCurrentState();
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState('');
