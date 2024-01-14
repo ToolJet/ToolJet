@@ -52,16 +52,7 @@ const MobileHeader = ({
   // Mobile layout
   if (!showHeader && isVersionReleased) {
     return (
-      <Header
-        styles={{
-          height: '46px',
-          backgroundColor: '#f2f2f5',
-          position: 'fixed',
-          width: '450px',
-          zIndex: '100',
-        }}
-        showNavbarClass={false}
-      >
+      <>
         {showViewerNavigation ? (
           <MobileNavigationMenu
             pages={pages}
@@ -76,7 +67,7 @@ const MobileHeader = ({
             <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
           </span>
         )}
-      </Header>
+      </>
     );
   }
 
