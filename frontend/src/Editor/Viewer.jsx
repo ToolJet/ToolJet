@@ -285,13 +285,19 @@ class ViewerComponent extends React.Component {
       .fetchAppBySlug(slug)
       .then((data) => {
         const isAppPublic = data?.is_public;
-        const released = data.current_version_id ? true : false;
+        const preview = JSON.parse(JSON.stringify(queryString.parse(this.props.location.search)))?.version
+          ? true
+          : false;
         if (authentication_failed && !isAppPublic) {
           return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
         }
         this.setStateForApp(data, true);
         this.setStateForContainer(data);
-        setWindowTitle({ page: pageTitles.VIEWER, appName: data.name, released });
+        setWindowTitle({
+          page: pageTitles.VIEWER,
+          appName: data.name,
+          preview,
+        });
       })
       .catch((error) => {
         this.setState({

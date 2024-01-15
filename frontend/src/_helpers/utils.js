@@ -1104,7 +1104,7 @@ export const setWindowTitle = async (pageDetails, location) => {
   }
   switch (pageTitleKey) {
     case pageTitles.VIEWER: {
-      const titlePrefix = pageDetails?.released ? '' : 'Preview - ';
+      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
       pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
       break;
     }
@@ -1119,6 +1119,6 @@ export const setWindowTitle = async (pageDetails, location) => {
     }
   }
   if (pageTitle) {
-    document.title = pageDetails && pageDetails?.released ? `${pageTitle}` : `${pageTitle} | ${whiteLabelText}`;
+    document.title = pageDetails && pageDetails?.preview ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
   }
 };
