@@ -716,8 +716,7 @@ export default function DragContainer({
                 let groupedTargets1 = [
                   ...selectedComponents
                     .filter((component) => {
-                      const comp = list.find((l) => l.id === component.id);
-                      comp?.component?.parent === i.parent;
+                      return component?.component?.parent === i.parent;
                     })
                     .map((component) => '.ele-' + component.id),
                 ];
@@ -741,11 +740,12 @@ export default function DragContainer({
                       dimensionViewable: selectedComponents.length > 2,
                     }}
                     target={
-                      groupedTargets.length
-                        ? '.empty-widget'
-                        : groupedTargets1.length
-                        ? groupedTargets1
-                        : `.target-${i.parent}`
+                      // groupedTargets.length
+                      //   ? '.empty-widget'
+                      //   : groupedTargets1.length
+                      //   ? groupedTargets1
+                      //   : `.target-${i.parent}`
+                      groupedTargets1.length > 1 ? groupedTargets1 : `.target-${i.parent}`
                     }
                     draggable={true}
                     resizable={{
@@ -981,6 +981,17 @@ export default function DragContainer({
                         turnOffAutoLayout();
                         return false;
                       }
+                    }}
+                    onDragGroupEnd={(e) => {
+                      const { events } = e;
+                      onDrag(
+                        events.map((ev) => ({
+                          id: ev.target.id,
+                          x: ev.lastEvent.translate[0],
+                          y: ev.lastEvent.translate[1],
+                          parent: i.parent,
+                        }))
+                      );
                     }}
                     onResizeGroupStart={(e) => {
                       if (currentLayout === 'mobile' && autoComputeLayout) {

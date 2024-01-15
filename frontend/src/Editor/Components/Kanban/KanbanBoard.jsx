@@ -36,7 +36,7 @@ const dropAnimation = {
 
 const TRASH_ID = 'void';
 
-export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
+export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, mode, id }) {
   const { properties, fireEvent, setExposedVariable, setExposedVariables, styles } = kanbanProps;
   const { columnData, cardData, cardWidth, cardHeight, showDeleteButton, enableAddCard } = properties;
   const { accentColor } = styles;
@@ -55,6 +55,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
   const cardMovementRef = useRef(null);
   const shouldUpdateData = useRef(false);
   const droppableItemsColumnId = useRef(0);
+  const controlBoxRef = useRef(null);
 
   const colAccentColor = {
     color: '#fff',
@@ -66,6 +67,21 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
     shouldUpdateData.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(columnData)]);
+
+  useEffect(() => {
+    if (!showModal && mode === 'edit') {
+      controlBoxRef.current?.classList?.remove('modal-moveable');
+      controlBoxRef.current = null;
+    }
+    if (showModal) {
+      /**** Start - Logic to reduce the zIndex of modal control box ****/
+      controlBoxRef.current = document.querySelector(`.selected-component.sc-${id}`)?.parentElement;
+      if (mode === 'edit' && controlBoxRef.current) {
+        controlBoxRef.current.classList.add('modal-moveable');
+      }
+      /**** End - Logic to reduce the zIndex of modal control box ****/
+    }
+  }, [showModal]);
 
   useEffect(() => {
     setItems(() => getCardData(cardData, { ...columnDataAsObj }));
