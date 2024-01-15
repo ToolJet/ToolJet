@@ -102,20 +102,19 @@ export class EmailService {
           <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
         </head>
         <body>
-          <p>Hi ${name || ''},</p>
+          <p>Hi ${name || ''},\n</p>
           ${
             organizationInvitationToken && sender && organizationName
               ? `<span>
-              ${sender} has invited you to use ${this.WHITE_LABEL_TEXT} workspace: ${organizationName}.
+              ${sender} has invited you to join ${this.WHITE_LABEL_TEXT} workspace-${organizationName}.
+              \n
             </span>`
               : ''
           }
           <span>
-            Please use the link below to set up your account and get started.
+            Click <a href="${inviteUrl}">here</a> to get started!
+            \n
           </span>
-          <br>
-          <a href="${inviteUrl}">${inviteUrl}</a>
-          <br>
           <p>
             Welcome aboard,<br>
             ${this.WHITE_LABEL_TEXT} Team
@@ -145,17 +144,14 @@ export class EmailService {
           <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
         </head>
         <body>
-          <p>Hi ${name || ''},</p>
-          <br>
+          <p>Hi ${name || ''},\n</p>
           <span>
-          ${sender} has invited you to use ${
-      this.WHITE_LABEL_TEXT
-    } workspace: ${organizationName}. Use the link below to set up your account and get started.
+          ${sender} has invited you to join ${this.WHITE_LABEL_TEXT} workspace-${organizationName}.\n
           </span>
-          <br>
-          <a href="${inviteUrl}">${inviteUrl}</a>
-          <br>
-          <br>
+          <span>
+            Click <a href="${inviteUrl}">here</a> to get started!
+            \n
+          </span>
           <p>
             Welcome aboard,<br>
             ${this.WHITE_LABEL_TEXT} Team
