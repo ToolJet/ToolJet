@@ -199,6 +199,7 @@ describe("Global Datasource Manager", () => {
             },
             ".form-switch"
         );
+        cy.wait(1000);
 
         cy.openApp();
 
@@ -267,6 +268,7 @@ describe("Global Datasource Manager", () => {
             },
             ".form-switch"
         );
+        cy.wait(1000);
 
         selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.ds2);
         cy.clearAndType(
@@ -284,6 +286,7 @@ describe("Global Datasource Manager", () => {
             },
             ".form-switch"
         );
+        cy.wait(1000);
 
         cy.apiCreateApp(data.appName);
         navigateToManageGroups();
@@ -376,6 +379,7 @@ describe("Global Datasource Manager", () => {
             ".form-switch"
         );
 
+        cy.wait(1000);
         navigateToManageGroups();
         cy.get(groupsSelector.permissionsLink).click();
         cy.get(groupsSelector.appsCreateCheck).then(($el) => {
