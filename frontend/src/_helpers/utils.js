@@ -1080,6 +1080,7 @@ export const pageTitles = {
   EDITOR: 'Editor',
   WORKFLOW_EDITOR: 'workflowEditor',
   VIEWER: 'Viewer',
+  DASHBOARD: 'Dashboard',
 };
 
 export const setWindowTitle = async (pageDetails, location) => {
