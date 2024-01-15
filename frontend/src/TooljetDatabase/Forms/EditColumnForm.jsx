@@ -85,7 +85,6 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
       setFetching(false);
       if (error) {
         toast.error(error?.message ?? `Failed to edit a column in "${selectedTable.table_name}" table`);
-        onClose && onClose();
         return;
       }
     }
@@ -191,12 +190,19 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
             value={defaultValue}
             type="text"
             placeholder="Enter default value"
-            className="form-control"
+            className={
+              isNotNull === true && (defaultValue?.length <= 0 || defaultValue === null)
+                ? 'form-control form-error'
+                : 'form-control'
+            }
             data-cy="default-value-input-field"
             autoComplete="off"
             onChange={(e) => setDefaultValue(e.target.value)}
             disabled={dataType === 'serial'}
           />
+          {isNotNull === true && (defaultValue?.length <= 0 || defaultValue === null) ? (
+            <span className="form-error-message">Default value cannot be empty when NOT NULL constraint is added</span>
+          ) : null}
         </div>
         <div className="row mb-3">
           <div className="col-1">

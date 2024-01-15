@@ -157,12 +157,15 @@ const ColumnForm = ({ onCreate, onClose }) => {
             value={defaultValue}
             type="text"
             placeholder="Enter default value"
-            className="form-control"
+            className={isNotNull === true && defaultValue.length <= 0 ? 'form-error' : 'form-control'}
             data-cy="default-value-input-field"
             autoComplete="off"
             onChange={(e) => setDefaultValue(e.target.value)}
             disabled={dataType === 'serial'}
           />
+          {isNotNull === true && defaultValue.length <= 0 ? (
+            <span className="form-error-message">Default value cannot be empty when NOT NULL constraint is added</span>
+          ) : null}
         </div>
 
         <div className="row mb-3">
@@ -190,7 +193,9 @@ const ColumnForm = ({ onCreate, onClose }) => {
         fetching={fetching}
         onClose={onClose}
         onCreate={handleCreate}
-        shouldDisableCreateBtn={isEmpty(columnName) || isEmpty(dataType)}
+        shouldDisableCreateBtn={
+          isEmpty(columnName) || isEmpty(dataType) || (isNotNull === true && isEmpty(defaultValue))
+        }
       />
     </div>
   );

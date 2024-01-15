@@ -147,6 +147,28 @@
       outline: none;
     }
   }
+
+  input.form-error {
+
+    gap: 16px !important;
+    background: #FFF8F7 !important;
+    border: 1px solid #E54D2E !important;
+    border-radius: 6px !important;
+    margin-bottom: 4px !important;
+    color: var(--slate12) !important;
+    transition: none;
+    width: 100% !important;
+    padding: 7px 12px !important;
+
+    &:hover {
+      background: #FFF8F7 !important;
+      border: 1px solid #E54D2E !important;
+      -webkit-box-shadow: none !important;
+      box-shadow: none !important;
+      outline: none;
+    }
+
+  }
 }
 
 .row-tabs {
@@ -215,4 +237,9 @@
 
 .createRow-idContainer {
   margin-bottom: 20px !important;
+}
+
+.form-error-message {
+  color: #E54D2E;
+  font-size: 12px;
 }

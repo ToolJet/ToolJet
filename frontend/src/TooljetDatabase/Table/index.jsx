@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, { useEffect, useState, useContext, useRef, useMemo } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
 import { isBoolean, isEmpty } from 'lodash';
@@ -206,8 +206,18 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }
   );
 
+  const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
+
   const positionValue =
-    !darkMode && creatorElement.width === true
+    !darkMode && Object.keys(selectedRowIds).length > 0 && creatorElement.width === true
+      ? 'add-row-btn-database-fixed-id'
+      : darkMode && Object.keys(selectedRowIds).length > 0 && creatorElement.width === true
+      ? 'add-row-btn-database-fixed-id-dark'
+      : !darkMode && editColumnHeader.hoveredColumn === columHeaderLength - 1
+      ? 'add-row-btn-database-absolute'
+      : darkMode && editColumnHeader.hoveredColumn === columHeaderLength - 1
+      ? 'add-row-btn-database-absolute-dark'
+      : !darkMode && creatorElement.width === true
       ? 'add-row-btn-database-fixed'
       : !darkMode && creatorElement.width !== true
       ? 'add-row-btn-database-absolute'
@@ -253,6 +263,19 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (editColumnHeader.columnEditPopover && event.target.closest('.popover') === null) {
+        closeMenu();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [editColumnHeader.columnEditPopover]);
+
   const handleDelete = (column) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
@@ -271,11 +294,11 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }));
   };
 
-  const onMenuClick = (e, index) => {
+  const onMenuClick = (index) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
       clickedColumn: index,
-      columnEditPopover: !editColumnHeader?.columnEditPopover,
+      columnEditPopover: !editColumnHeader.columnEditPopover,
     }));
   };
 
@@ -390,7 +413,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                   <th
                     key={column.Header}
                     width={index === 0 ? 66 : 230}
-                    title={column?.Header || ''}
+                    //title={column?.Header || ''}
                     className={
                       darkMode
                         ? 'table-header-dark tj-database-column-header tj-text-xsm'
@@ -433,7 +456,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                               width="20"
                               height="20"
                               className="tjdb-menu-icon"
-                              onClick={(e) => onMenuClick(e, index)}
+                              onClick={() => onMenuClick(index)}
                             />
                           </div>
                         </TablePopover>
