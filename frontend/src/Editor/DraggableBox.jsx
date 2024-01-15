@@ -207,13 +207,18 @@ export const DraggableBox = React.memo(
     };
     function isVerticalResizingAllowed() {
       // Return true if vertical resizing is allowed, false otherwise
-      return mode === 'edit' && component.component !== 'TextInput' && !readOnly;
+      return (
+        mode === 'edit' &&
+        component.component !== 'TextInput' &&
+        component.component !== 'PasswordInput' &&
+        component.component !== 'NumberInput' &&
+        !readOnly
+      );
     }
     const adjustHeightBasedOnAlignment = (increase) => {
       if (increase) return setCalculatedHeight(layoutData?.height + 20);
       else return setCalculatedHeight(layoutData?.height);
     };
-
     return (
       <div
         className={
@@ -320,7 +325,7 @@ export const DraggableBox = React.memo(
                     component={component}
                     id={id}
                     width={width}
-                    height={layoutData.height - 4}
+                    height={layoutData.height}
                     mode={mode}
                     changeCanDrag={changeCanDrag}
                     inCanvas={inCanvas}

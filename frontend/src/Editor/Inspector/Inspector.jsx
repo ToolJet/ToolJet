@@ -84,7 +84,15 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const newRevampedWidgets = ['TextInput', 'Text', 'DropDown', 'Multiselect', 'RadioButton'];
+  const newRevampedWidgets = [
+    'TextInput',
+    'Text',
+    'DropDown',
+    'Multiselect',
+    'RadioButton',
+    'PasswordInput',
+    'NumberInput',
+  ];
 
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -420,7 +428,11 @@ export const Inspector = ({
       <div>
         <div className="row inspector-component-title-input-holder">
           <div className="col-1" onClick={() => setSelectedComponents(EMPTY_ARRAY)}>
-            <span data-cy={`inspector-close-icon`} className="cursor-pointer">
+            <span
+              data-cy={`inspector-close-icon`}
+              className="cursor-pointer d-flex align-items-center "
+              style={{ height: '28px', width: '28px' }}
+            >
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
           </div>
@@ -437,7 +449,7 @@ export const Inspector = ({
               />
             </div>
           </div>
-          <div className="col-2">
+          <div className="col-2" data-cy={'component-inspector-options'}>
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-end'}
@@ -448,6 +460,7 @@ export const Inspector = ({
                   <Popover.Body bsPrefix="list-item-popover-body">
                     {INSPECTOR_HEADER_OPTIONS.map((option) => (
                       <div
+                        data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
                         className="list-item-popover-option"
                         key={option?.value}
                         onClick={(e) => {
@@ -521,6 +534,7 @@ const widgetsWithStyleConditions = {
     ],
   },
 };
+const styleGroupedComponentTypes = ['TextInput', 'NumberInput', 'PasswordInput'];
 
 const RenderStyleOptions = ({
   componentMeta,

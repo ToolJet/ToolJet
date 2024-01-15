@@ -91,9 +91,9 @@ export function CodeHinter({
   callgpt = () => null,
   isCopilotEnabled = false,
   currentState: _currentState,
-  verticalLine = true,
   isIcon = false,
   inspectorTab,
+  staticText,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -393,7 +393,6 @@ export function CodeHinter({
     className === 'query-hinter' || className === 'custom-component' || undefined ? '' : 'code-hinter';
 
   const ElementToRender = AllElements[TypeMapping[type]];
-
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
@@ -453,9 +452,10 @@ export function CodeHinter({
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'label-hinter-margin' : 'mb-0'} ${
                 darkMode && 'color-whitish-darkmode'
               }`}
+              bold={!AllElements.hasOwnProperty(TypeMapping[type]) ? true : false}
             />
           </div>
         )}
@@ -489,6 +489,7 @@ export function CodeHinter({
                 meta={fieldMeta}
                 cyLabel={cyLabel}
                 isIcon={isIcon}
+                staticText={staticText}
                 component={component}
                 {...getExclusiveElementProps()}
               />
@@ -502,7 +503,6 @@ export function CodeHinter({
       >
         <div className={`col code-hinter-col`}>
           <div className="d-flex">
-            {/* <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div> */}
             <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
               <div
                 className={`${defaultClassName} ${className || 'codehinter-default-input'} ${
@@ -568,11 +568,6 @@ export function CodeHinter({
       </div>
     </div>
   );
-}
-
-// eslint-disable-next-line no-unused-vars
-function CodeHinterInputField() {
-  return <></>;
 }
 
 const PopupIcon = ({ callback, icon, tip, transformation = false }) => {

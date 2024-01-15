@@ -13,7 +13,7 @@ export const Visibility = ({ value, onVisibilityChange, component }) => {
     >
       <SolidIcon
         name={component?.component?.definition?.styles?.iconVisibility?.value ? 'eye1' : 'eyedisable'}
-        width="16"
+        width="20"
         fill={'var(--slate8)'}
       />
     </div>
