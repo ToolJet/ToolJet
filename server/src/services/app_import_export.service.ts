@@ -739,6 +739,7 @@ export class AppImportExportService {
             newComponent.type = component.type;
             newComponent.properties = component.properties;
             newComponent.styles = component.styles;
+            newComponent.generalStyles = component.generalStyles;
             newComponent.validation = component.validation;
             newComponent.parent = component.parent ? parentId : null;
 
