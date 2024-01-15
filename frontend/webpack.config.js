@@ -155,16 +155,16 @@ module.exports = {
       'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
       'process.env.SERVE_CLIENT': JSON.stringify(process.env.SERVE_CLIENT),
     }),
-    // // Add Sentry plugin for error and performance monitoring
-    // sentryWebpackPlugin({
-    //   authToken: process.env.SENTRY_AUTH_TOKEN,
-    //   org: process.env.SENTRY_ORG,
-    //   project: process.env.SENTRY_PROJECT,
-    //   release: {
-    //     // The version should be same as what its when we are sending error events
-    //     name: `tooljet-${version}`,
-    //   },
-    // }),
+    // Add Sentry plugin for error and performance monitoring
+    sentryWebpackPlugin({
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      release: {
+        // The version should be same as what its when we are sending error events
+        name: `tooljet-${version}`,
+      },
+    }),
   ],
   devServer: {
     historyApiFallback: { index: ASSET_PATH },
