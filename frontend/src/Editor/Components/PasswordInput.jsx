@@ -11,7 +11,7 @@ export const PasswordInput = ({
   fireEvent,
   dataCy,
 }) => {
-  const { visibility, disabledState, borderRadius, backgroundColor, boxShadow } = styles;
+  const { visibility, disabledState, borderRadius, backgroundColor, boxShadow, errTextColor } = styles;
 
   const placeholder = properties.placeholder;
 
@@ -20,13 +20,18 @@ export const PasswordInput = ({
   const [showValidationError, setShowValidationError] = useState(false);
 
   const computedStyles = {
-    height,
-    display: visibility ? '' : 'none',
-    borderRadius: `${borderRadius}px`,
-    color: darkMode && '#fff',
-    borderColor: darkMode && '#DADCDE',
-    backgroundColor: darkMode && ['#ffffff'].includes(backgroundColor) ? '#232e3c' : backgroundColor,
-    boxShadow: boxShadow,
+    input: {
+      height,
+      display: visibility ? '' : 'none',
+      borderRadius: `${borderRadius}px`,
+      color: darkMode && '#fff',
+      borderColor: darkMode && '#DADCDE',
+      backgroundColor: darkMode && ['#ffffff'].includes(backgroundColor) ? '#232e3c' : backgroundColor,
+      boxShadow: boxShadow,
+    },
+    errorText: {
+      color: errTextColor,
+    },
   };
 
   React.useEffect(() => {
@@ -50,10 +55,14 @@ export const PasswordInput = ({
         }`}
         placeholder={placeholder}
         value={passwordValue}
-        style={computedStyles}
+        style={computedStyles.input}
         data-cy={dataCy}
       />
-      <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
+      <div
+        className="invalid-feedback"
+        style={computedStyles.errorText}
+        data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+      >
         {showValidationError && validationError}
       </div>
     </div>
