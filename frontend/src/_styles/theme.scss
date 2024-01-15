@@ -1147,7 +1147,7 @@ button {
 
 
       .modal-body {
-        height: 100%;
+        height: 80%;
         padding: 0 10px;
         background-color: var(--base) !important;
 
@@ -1280,7 +1280,21 @@ button {
     border-color: var(--slate5) !important;
   }
 
-  .modal-body,
+  .modal-body {
+    height: 80%;
+    padding: 0 10px;
+    background-color: var(--base) !important;
+  
+    .container-fluid {
+      height: 100%;
+      padding: 0;
+
+      .row {
+        height: 100%;
+      }
+    }
+  }
+
   .modal-footer,
   .modal-header,
   .modal-content {
@@ -10009,8 +10023,9 @@ tbody {
 .template-card {
   padding: 16px;
   gap: 16px;
-  width: 272px;
-  height: 184px;
+  min-width: 280px;
+  max-width: 100%;
+  height: 210px;
   background: var(--base);
   border: 1px solid var(--slate3);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
@@ -10023,8 +10038,8 @@ tbody {
 
 .template-card-img {
   padding: 0px;
-  width: 240px;
-  height: 112px;
+  width: 100%;
+  height: 77.5%;
   border-radius: 4px;
 }
 
@@ -10228,6 +10243,7 @@ tbody {
   flex-direction: column;
   font-family: 'IBM Plex Sans';
   font-style: normal;
+  position: relative;
 
   .text-danger {
     font-weight: 400 !important;
@@ -10295,6 +10311,21 @@ tbody {
 
   }
 
+}
+
+.tj-app-input-wrapper {
+  display: flex;
+
+  .eye-icon {
+    position: absolute;
+    right: 8px;
+    top: 5px;
+    cursor: pointer;
+  }
+
+  .form-control {
+    padding-right: 2.2rem;
+  }
 }
 
 
@@ -11896,3 +11927,4 @@ tbody {
     }
   }
 }
+

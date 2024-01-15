@@ -63,11 +63,13 @@ import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDat
 import { useNoOfGrid } from '@/_stores/gridStore';
 import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
+import { useSocketOpen } from '@/_hooks/use-socket-open';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import useConfirm from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/Confirm';
+import { getQueryParams } from '@/_helpers/routes';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
 
@@ -82,6 +84,7 @@ const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).to
 
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
+  const isSocketOpen = useSocketOpen(socket);
   const mounted = useMounted();
 
   const {
@@ -265,6 +268,8 @@ const EditorComponent = (props) => {
 
       computeComponentState(components);
 
+      if (appDiffOptions?.skipAutoSave === true) return;
+
       if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
         autoSave();
       }
@@ -307,17 +312,13 @@ const EditorComponent = (props) => {
     }
   }, [currentLayout, mounted]);
 
-  useEffect(() => {
-    if (mounted && JSON.stringify(prevEventsStoreRef.current) !== JSON.stringify(events)) {
-      props.ymap?.set('eventHandlersUpdated', {
-        updated: true,
-        currentVersionId: currentVersionId,
-        currentSessionId: currentSessionId,
-      });
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ events })]);
+  const handleYmapEventUpdates = () => {
+    props.ymap?.set('eventHandlersUpdated', {
+      currentVersionId: currentVersionId,
+      currentSessionId: currentSessionId,
+      update: true,
+    });
+  };
 
   const handleMessage = (event) => {
     const { data } = event;
@@ -343,7 +344,14 @@ const EditorComponent = (props) => {
   const fetchApps = async (page) => {
     const { apps } = await appService.getAll(page);
 
-    updateState({ apps: apps.map((app) => ({ id: app.id, name: app.name, slug: app.slug })) });
+    updateState({
+      apps: apps.map((app) => ({
+        id: app.id,
+        name: app.name,
+        slug: app.slug,
+        current_version_id: app.current_version_id,
+      })),
+    });
   };
 
   const fetchOrgEnvironmentVariables = () => {
@@ -413,8 +421,6 @@ const EditorComponent = (props) => {
 
         // Trigger real-time save with specific options
 
-        const ymapOpts = ymapUpdates?.opts;
-
         realtimeSave(props.ymap?.get('appDef').newDefinition, {
           skipAutoSave: true,
           skipYmapUpdate: true,
@@ -424,7 +430,7 @@ const EditorComponent = (props) => {
         });
       }
 
-      if (ymapEventHandlersUpdated) {
+      if (ymapEventHandlersUpdated?.update === true) {
         if (
           !ymapEventHandlersUpdated.currentSessionId ||
           ymapEventHandlersUpdated.currentSessionId === currentSessionId
@@ -618,12 +624,14 @@ const EditorComponent = (props) => {
   const onVersionRelease = (versionId) => {
     useAppVersionStore.getState().actions.updateReleasedVersionId(versionId);
 
-    socket.send(
-      JSON.stringify({
-        event: 'events',
-        data: { message: 'versionReleased', appId: appId },
-      })
-    );
+    if (socket instanceof WebSocket && socket?.readyState === WebSocket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          event: 'events',
+          data: { message: 'versionReleased', appId: appId },
+        })
+      );
+    }
   };
 
   const computeCanvasBackgroundColor = () => {
@@ -1020,7 +1028,7 @@ const EditorComponent = (props) => {
     for (let key in prevPatch) {
       const type = typeof prevPatch[key];
 
-      if (type === 'object') {
+      if (type === 'object' && !_.isEmpty(prevPatch[key])) {
         handlePaths(prevPatch[key], [...paths, key], appJSON);
       } else {
         const currentpath = [...paths, key].join('.');
@@ -1142,7 +1150,7 @@ const EditorComponent = (props) => {
       const diffPatches = diff(appDefinition, updatedAppDefinition);
 
       if (!isEmpty(diffPatches)) {
-        appDefinitionChanged(updatedAppDefinition, { skipAutoSave: true, componentDefinitionChanged: true, ...props });
+        appDefinitionChanged(updatedAppDefinition, { componentDefinitionChanged: true, ...props });
       }
     }
   };
@@ -1382,11 +1390,21 @@ const EditorComponent = (props) => {
     useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
   };
 
+  const navigateToPage = (queryParams = [], handle) => {
+    const appId = useAppDataStore.getState()?.appId;
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
+
+    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
+  };
+
   const switchPage = (pageId, queryParams = []) => {
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useEditorStore.getState().currentPageId;
     const appDefinition = useEditorStore.getState().appDefinition;
-    const appId = useAppDataStore.getState()?.appId;
     const pageHandle = getCurrentState().pageHandle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
@@ -1396,13 +1414,7 @@ const EditorComponent = (props) => {
 
     if (!name || !handle) return;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
-
-    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
-      state: {
-        isSwitchingPage: true,
-      },
-    });
+    navigateToPage(queryParams, handle);
 
     const page = {
       id: pageId,
@@ -1411,6 +1423,7 @@ const EditorComponent = (props) => {
       variables: copyOfAppDefinition.pages[pageId]?.variables ?? {},
     };
 
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const globals = {
       ...currentState.globals,
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
@@ -1622,6 +1635,9 @@ const EditorComponent = (props) => {
     appDefinitionChanged(newDefinition, {
       pageDefinitionChanged: true,
     });
+
+    const queryParams = getQueryParams();
+    navigateToPage(Object.entries(queryParams), newHandle);
   };
 
   const updateOnSortingPages = (newSortedPages) => {
@@ -1722,7 +1738,7 @@ const EditorComponent = (props) => {
         darkMode={props.darkMode}
       />
       {isVersionReleased && <ReleasedVersionError />}
-      <EditorContextWrapper>
+      <EditorContextWrapper handleYmapEventUpdates={handleYmapEventUpdates}>
         <EditorHeader
           darkMode={props.darkMode}
           appDefinition={_.cloneDeep(appDefinition)}
@@ -1740,6 +1756,7 @@ const EditorComponent = (props) => {
           appName={appName}
           appId={appId}
           slug={slug}
+          isSocketOpen={isSocketOpen}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">
