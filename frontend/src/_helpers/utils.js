@@ -1077,6 +1077,9 @@ export const pageTitles = {
   AUDIT_LOGS: 'Audit logs',
   ACCOUNT_SETTINGS: 'Profile settings',
   SETTINGS: 'Profile settings',
+  EDITOR: 'Editor',
+  WORKFLOW_EDITOR: 'workflowEditor',
+  VIEWER: 'Viewer',
 };
 
 export const setWindowTitle = async (pageDetails, location) => {
@@ -1099,13 +1102,13 @@ export const setWindowTitle = async (pageDetails, location) => {
     pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path)) || '';
   }
   switch (pageTitleKey) {
-    case 'viewer': {
+    case pageTitles.VIEWER: {
       const titlePrefix = pageDetails?.released ? '' : 'Preview - ';
       pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
       break;
     }
-    case 'editor':
-    case 'workflowEditor': {
+    case pageTitles.EDITOR:
+    case pageTitles.WORKFLOW_EDITOR: {
       pageTitle = pageDetails?.appName || 'My App';
       break;
     }

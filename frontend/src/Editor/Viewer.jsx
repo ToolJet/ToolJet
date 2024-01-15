@@ -24,7 +24,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable, setWindowTitle } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, setWindowTitle, pageTitles } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -291,7 +291,7 @@ class ViewerComponent extends React.Component {
         }
         this.setStateForApp(data, true);
         this.setStateForContainer(data);
-        setWindowTitle({ page: 'viewer', appName: data.name, released: released });
+        setWindowTitle({ page: pageTitles.VIEWER, appName: data.name, released: released });
       })
       .catch((error) => {
         this.setState({
