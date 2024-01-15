@@ -1081,8 +1081,6 @@ export const pageTitles = {
 
 export const setWindowTitle = async (pageDetails, location) => {
   const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
-  console.log(pageTitle);
-
   const pathToTitle = {
     'instance-settings': pageTitles.INSTANCE_SETTINGS,
     'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
