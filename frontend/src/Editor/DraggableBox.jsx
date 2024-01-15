@@ -212,11 +212,12 @@ export const DraggableBox = React.memo(
         component.component !== 'TextInput' &&
         component.component !== 'PasswordInput' &&
         component.component !== 'NumberInput' &&
+        component.component !== 'RadioButton' &&
         !readOnly
       );
     }
     const adjustHeightBasedOnAlignment = (increase) => {
-      if (increase) return setCalculatedHeight(layoutData?.height + 20);
+      if (increase) return setCalculatedHeight(layoutData?.height + increase);
       else return setCalculatedHeight(layoutData?.height);
     };
     return (

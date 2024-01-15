@@ -7,6 +7,7 @@ import './radioButton.scss';
 export const RadioButton = function RadioButton({
   id,
   height,
+  width,
   properties,
   styles,
   fireEvent,
@@ -16,6 +17,7 @@ export const RadioButton = function RadioButton({
   dataCy,
   component,
   validate,
+  adjustHeightBasedOnAlignment,
 }) {
   const {
     label,
@@ -128,9 +130,14 @@ export const RadioButton = function RadioButton({
     setExposedVariable('setDisabled', async function (value) {
       setIsDisabled(value);
     });
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, loadingState, disabledState, isMandatory, label, isValid]);
+
+  useEffect(() => {
+    const radioGroupHeight = document.getElementById('tj-widget-radio-group').offsetHeight;
+    adjustHeightBasedOnAlignment(radioGroupHeight - height);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [optionAlignment, selectOptions, width]);
 
   if (loadingState) {
     return (
@@ -154,6 +161,7 @@ export const RadioButton = function RadioButton({
       data-cy={dataCy}
     >
       <div
+        id="tj-widget-radio-group"
         style={{
           display: labelAlignment === 'top' ? 'block' : 'flex',
           flexDirection: labelAlignment === 'side' && direction === 'alignRight' ? 'row-reverse' : 'row',
@@ -181,38 +189,17 @@ export const RadioButton = function RadioButton({
             selectOptions.map((option, index) => {
               const isChecked = checkedValue == option.value;
               return (
-                // <label key={index} className="form-check form-check-inline">
-                // <input
-                //   style={{
-                //     marginTop: '1px',
-                //     backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
-                //   }}
-                //   className="form-check-input"
-                //   checked={checkedValue == option.value}
-                //   type="radio"
-                //   value={option.value}
-                //   name={`${id}-${uuidv4()}`}
-                //   onChange={() => onSelect(option.value)}
-                //   disabled={option.isDisabled}
-                // />
-                //   <span className="form-check-label" style={{ color: optionTextColor ? optionTextColor : textColor }}>
-                //
-                //   </span>
-                // </label>
                 <label
                   key={index}
                   className="radio-button-container"
                   style={{ display: optionAlignment === 'horizontal' ? 'inline-block' : 'block' }}
                 >
-                  <span className="form-check-label" style={{ color: optionTextColor ? optionTextColor : textColor }}>
-                    {option.label}
-                  </span>
+                  <span style={{ color: optionTextColor ? optionTextColor : textColor }}>{option.label}</span>
                   <input
                     style={{
                       marginTop: '1px',
                       backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
                     }}
-                    // className="form-check-input"
                     checked={checkedValue == option.value}
                     type="radio"
                     value={option.value}
