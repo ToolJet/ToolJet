@@ -165,6 +165,7 @@ describe("Global Datasource Manager", () => {
 
         navigateToAppEditor(data.appName);
         cy.wait(2000);
+        cy.skipEditorPopover();
 
         cy.get('[data-cy="list-query-restapi1"]')
             .verifyVisibleElement("have.text", "restapi1 ")
@@ -241,6 +242,7 @@ describe("Global Datasource Manager", () => {
 
         navigateToAppEditor(data.appName);
         cy.wait(2000);
+        cy.skipEditorPopover();
         cy.get('[data-cy="list-query-restapi1"]').verifyVisibleElement(
             "have.text",
             "restapi1 "

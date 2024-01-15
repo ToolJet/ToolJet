@@ -51,9 +51,7 @@ export const ssoEeSelector = {
   baseDnInput: '[data-cy="base-dn-input"]',
   sslToggleInput: '[data-cy="ssl-toggle-input"]',
   ldapSSOText: '[data-cy="ldap-sso-text"]',
-  userNameInputLabel: '[data-cy="user-name-input-label"]'
-
-
+  userNameInputLabel: '[data-cy="user-name-input-label"]',
 };
 
 export const eeGroupsSelector = {
@@ -124,8 +122,7 @@ export const multiEnvSelector = {
   targetEnvName: '[data-cy="target-env-name"]',
   stagingLabel: '[data-cy="staging-label"]',
   productionLabel: '[data-cy="production-label"]',
-
-}
+};
 
 export const whiteLabellingSelectors = {
   whiteLabelList: '[data-cy="white-labelling-list-item"]',
@@ -138,8 +135,4 @@ export const whiteLabellingSelectors = {
   favIconLabel: '[data-cy="fav-icon-label"]',
   favIconInput: '[data-cy="input-field-fav-icon"]',
   favIconHelpText: '[data-cy="fav-icon-help-text"]',
-
-
-
-}
-
+};

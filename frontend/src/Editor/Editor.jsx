@@ -293,6 +293,8 @@ const EditorComponent = (props) => {
 
       computeComponentState(components);
 
+      if (appDiffOptions?.skipAutoSave === true) return;
+
       if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
         autoSave();
       }

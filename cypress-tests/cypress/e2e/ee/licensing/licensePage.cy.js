@@ -190,7 +190,7 @@ describe("", () => {
     });
     it("should verify banners, renew modal and tooltips for expired license", () => {
         let ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-
+        //app creation
         cy.get(commonEeSelectors.instanceSettingIcon).click();
         cy.get(licenseSelectors.licenseOption).click();
         cy.get(licenseSelectors.licenseKeyOption).click();
@@ -255,6 +255,7 @@ describe("", () => {
 
         cy.get(commonSelectors.globalDataSourceIcon).click();
         selectAndAddDataSource("databases", "PostgreSQL", ds);
+        cy.wait(1000);
         verifyTooltipDisabled(
             '[data-cy="staging-label"]',
             "Multi-environments are available only in paid plans"
