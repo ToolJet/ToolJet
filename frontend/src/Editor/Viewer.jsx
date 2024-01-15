@@ -285,7 +285,7 @@ class ViewerComponent extends React.Component {
       .fetchAppBySlug(slug)
       .then((data) => {
         const isAppPublic = data?.is_public;
-        const preview = !!queryString.parse(this.props.location.search).version;
+        const preview = !!queryString.parse(this.props?.location?.search)?.version;
         if (authentication_failed && !isAppPublic) {
           return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
         }
