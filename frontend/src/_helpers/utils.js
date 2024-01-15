@@ -1067,22 +1067,37 @@ export const defaultWhiteLabellingSettings = {
   WHITE_LABEL_FAVICON: 'https://app.tooljet.com/favico.png',
 };
 
+export const pageTitles = {
+  INSTANCE_SETTINGS: 'Settings',
+  WORKSPACE_SETTINGS: 'Workspace settings',
+  INTEGRATIONS: 'Marketplace',
+  WORKFLOWS: 'Workflows',
+  DATABASE: 'Database',
+  DATA_SOURCES: 'Data sources',
+  AUDIT_LOGS: 'Audit logs',
+  ACCOUNT_SETTINGS: 'Profile settings',
+  SETTINGS: 'Profile settings',
+};
+
 export const setWindowTitle = async (pageDetails, location) => {
+  const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
+  console.log(pageTitle);
+
   const pathToTitle = {
-    'instance-settings': 'Settings',
-    'workspace-settings': 'Workspace settings',
-    integrations: 'Marketplace',
-    workflows: 'Workflows',
-    database: 'Database',
-    'data-sources': 'Data sources',
-    'audit-logs': 'Audit logs',
-    'account-settings': 'Profile settings',
-    settings: 'Profile settings',
+    'instance-settings': pageTitles.INSTANCE_SETTINGS,
+    'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
+    integrations: pageTitles.INTEGRATIONS,
+    workflows: pageTitles.WORKFLOWS,
+    database: pageTitles.DATABASE,
+    'data-sources': pageTitles.DATA_SOURCES,
+    'audit-logs': pageTitles.AUDIT_LOGS,
+    'account-settings': pageTitles.ACCOUNT_SETTINGS,
+    settings: pageTitles.SETTINGS,
   };
   const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
   let pageTitleKey = pageDetails?.page || '';
   let pageTitle = '';
-  if (!pageTitleKey) {
+  if (!pageTitleKey && !isEditorOrViewerGoingToRender) {
     pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path)) || '';
   }
   switch (pageTitleKey) {
@@ -1102,6 +1117,6 @@ export const setWindowTitle = async (pageDetails, location) => {
     }
   }
   if (pageTitle) {
-    document.title = `${pageTitle} | ${whiteLabelText}`;
+    document.title = pageDetails && pageDetails?.released ? `${pageTitle}` : `${pageTitle} | ${whiteLabelText}`;
   }
 };
