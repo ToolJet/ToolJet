@@ -2,6 +2,7 @@ import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import React, { useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import './radioButton.scss';
 
 export const RadioButton = function RadioButton({
   id,
@@ -29,7 +30,18 @@ export const RadioButton = function RadioButton({
     optionsLoadingState,
     loadingState,
   } = properties;
-  const { activeColor, boxShadow, labelAlignment, direction, optionTextColor } = styles;
+  const {
+    activeColor,
+    boxShadow,
+    labelAlignment,
+    direction,
+    optionTextColor,
+    switchOffBorderColor,
+    switchOffBackgroundColor,
+    switchOnBorderColor,
+    handleColor,
+    optionAlignment,
+  } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checkedValue, setValue] = useState(() => value);
   const currentState = useCurrentState();
@@ -144,9 +156,17 @@ export const RadioButton = function RadioButton({
       <div
         style={{
           display: labelAlignment === 'top' ? 'block' : 'flex',
+          flexDirection: labelAlignment === 'side' && direction === 'alignRight' ? 'row-reverse' : 'row',
+          justifyContent: direction === 'alignRight' ? 'space-between' : 'flex-start',
         }}
       >
-        <span className="px-1 form-check-label py-0" style={{ color: textColor }}>
+        <span
+          className="px-1 form-check-label py-0"
+          style={{
+            color: textColor,
+            textAlign: labelAlignment === 'top' && direction === 'alignRight' ? 'right' : 'start',
+          }}
+        >
           {label}
           <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
         </span>
@@ -159,14 +179,40 @@ export const RadioButton = function RadioButton({
             </div>
           ) : (
             selectOptions.map((option, index) => {
+              const isChecked = checkedValue == option.value;
               return (
-                <label key={index} className="form-check form-check-inline">
+                // <label key={index} className="form-check form-check-inline">
+                // <input
+                //   style={{
+                //     marginTop: '1px',
+                //     backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
+                //   }}
+                //   className="form-check-input"
+                //   checked={checkedValue == option.value}
+                //   type="radio"
+                //   value={option.value}
+                //   name={`${id}-${uuidv4()}`}
+                //   onChange={() => onSelect(option.value)}
+                //   disabled={option.isDisabled}
+                // />
+                //   <span className="form-check-label" style={{ color: optionTextColor ? optionTextColor : textColor }}>
+                //
+                //   </span>
+                // </label>
+                <label
+                  key={index}
+                  className="radio-button-container"
+                  style={{ display: optionAlignment === 'horizontal' ? 'inline-block' : 'block' }}
+                >
+                  <span className="form-check-label" style={{ color: optionTextColor ? optionTextColor : textColor }}>
+                    {option.label}
+                  </span>
                   <input
                     style={{
                       marginTop: '1px',
                       backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
                     }}
-                    className="form-check-input"
+                    // className="form-check-input"
                     checked={checkedValue == option.value}
                     type="radio"
                     value={option.value}
@@ -174,9 +220,16 @@ export const RadioButton = function RadioButton({
                     onChange={() => onSelect(option.value)}
                     disabled={option.isDisabled}
                   />
-                  <span className="form-check-label" style={{ color: optionTextColor ? optionTextColor : textColor }}>
-                    {option.label}
-                  </span>
+                  <span
+                    className="checkmark"
+                    style={{
+                      backgroundColor: !isChecked && switchOffBackgroundColor,
+                      borderColor: !isChecked && switchOffBorderColor,
+                      '--selected-background-color': activeColor,
+                      '--selected-border-color': switchOnBorderColor,
+                      '--selected-handle-color': handleColor,
+                    }}
+                  ></span>
                 </label>
               );
             })
