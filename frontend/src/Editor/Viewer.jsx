@@ -291,7 +291,7 @@ class ViewerComponent extends React.Component {
         }
         this.setStateForApp(data, true);
         this.setStateForContainer(data);
-        setWindowTitle({ page: pageTitles.VIEWER, appName: data.name, released: released });
+        setWindowTitle({ page: pageTitles.VIEWER, appName: data.name, released });
       })
       .catch((error) => {
         this.setState({
