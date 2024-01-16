@@ -72,6 +72,7 @@ import useConfirm from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/Confi
 import { getQueryParams } from '@/_helpers/routes';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
+import AutoLayoutAlert from './AutoLayoutAlert';
 
 setAutoFreeze(false);
 enablePatches();
@@ -1195,11 +1196,11 @@ const EditorComponent = (props) => {
   };
 
   const moveComponents = (direction) => {
-    const isAutoComputeOn = appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile';
-    if (isAutoComputeOn) {
-      turnOffAutoLayout();
-      return;
-    }
+    // const isAutoComputeOn = appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile';
+    // if (isAutoComputeOn) {
+    //   turnOffAutoLayout();
+    //   return;
+    // }
     const gridWidth = (1 * 100) / noOfGrids; // width of the canvas grid in percentage
     const _appDefinition = _.cloneDeep(appDefinition);
     let newComponents = _appDefinition?.pages[currentPageId].components;
@@ -1673,7 +1674,7 @@ const EditorComponent = (props) => {
 
   async function turnOffAutoLayout() {
     const result = await confirm(
-      'You have to disable auto alignment to manually adjust mobile components. Once disabled, the mobile layout won’t automatically align with desktop changes',
+      'Once Auto Layout is disabled, you wont be able to turn if back on and the mobile layout won’t automatically align with desktop changes',
       'Turn off Auto Layout'
     );
     if (result) {
@@ -1876,7 +1877,11 @@ const EditorComponent = (props) => {
                           appDefinitionChanged={appDefinitionChanged}
                           snapToGrid={true}
                           darkMode={props.darkMode}
-                          mode={'edit'}
+                          mode={
+                            appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile'
+                              ? 'view'
+                              : 'edit'
+                          }
                           zoomLevel={zoomLevel}
                           deviceWindowWidth={deviceWindowWidth}
                           appLoading={isLoading}
@@ -1900,6 +1905,10 @@ const EditorComponent = (props) => {
                     )}
                   </div>
                 </div>
+                <AutoLayoutAlert
+                  show={appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile'}
+                  onClick={turnOffAutoLayout}
+                />
               </div>
               <QueryPanel
                 onQueryPaneDragging={handleQueryPaneDragging}
@@ -1939,7 +1948,12 @@ const EditorComponent = (props) => {
                   </div>
                 }
                 widgetManagerTab={
-                  <WidgetManager componentTypes={componentTypes} zoomLevel={zoomLevel} darkMode={props.darkMode} />
+                  <WidgetManager
+                    componentTypes={componentTypes}
+                    zoomLevel={zoomLevel}
+                    darkMode={props.darkMode}
+                    disabled={appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile'}
+                  />
                 }
                 allComponents={appDefinition.pages[currentPageId]?.components}
               />

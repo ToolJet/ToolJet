@@ -104,7 +104,7 @@ export default function DragContainer({
   currentLayout,
   subContainerWidths,
   currentPageId,
-  turnOffAutoLayout,
+  // turnOffAutoLayout,
   autoComputeLayout,
   setDraggedSubContainer,
   draggedSubContainer,
@@ -482,18 +482,18 @@ export default function DragContainer({
                 setResizingComponentId(e.target.id);
                 setIsResizing(true);
                 e.setMin([gridWidth, 10]);
-                if (currentLayout === 'mobile' && autoComputeLayout) {
-                  turnOffAutoLayout();
-                  return false;
-                }
+                // if (currentLayout === 'mobile' && autoComputeLayout) {
+                //   turnOffAutoLayout();
+                //   return false;
+                // }
               }}
-              onResizeGroupStart={(e) => {
-                console.log('heree--- onResizeGroupStart');
-                if (currentLayout === 'mobile' && autoComputeLayout) {
-                  turnOffAutoLayout();
-                  return false;
-                }
-              }}
+              // onResizeGroupStart={(e) => {
+              //   console.log('heree--- onResizeGroupStart');
+              //   if (currentLayout === 'mobile' && autoComputeLayout) {
+              //     turnOffAutoLayout();
+              //     return false;
+              //   }
+              // }}
               onResizeGroup={({ events }) => {
                 console.log('heree--- onResizeGroup');
                 const newBoxs = [];
@@ -511,14 +511,14 @@ export default function DragContainer({
                 });
                 onResizeStop(newBoxs);
               }}
-              onResizeGroupEnd={({ events }) => console.log('heree--- onResizeGroupEnd')}
+              onResizeGroupEnd={({ events }) => console.log('here--- onResizeGroupEnd')}
               checkInput
               onDragStart={(e) => {
                 console.log('On-drag start => ', e?.moveable?.getControlBoxElement());
-                if (currentLayout === 'mobile' && autoComputeLayout) {
-                  turnOffAutoLayout();
-                  return false;
-                }
+                // if (currentLayout === 'mobile' && autoComputeLayout) {
+                //   turnOffAutoLayout();
+                //   return false;
+                // }
                 const box = boxes.find((box) => box.id === e.target.id);
                 if (['RangeSlider', 'Container', 'BoundedBox'].includes(box?.component?.component)) {
                   const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
@@ -669,12 +669,12 @@ export default function DragContainer({
                 //   }))
                 // );
               }}
-              onDragGroupStart={() => {
-                if (currentLayout === 'mobile' && autoComputeLayout) {
-                  turnOffAutoLayout();
-                  return false;
-                }
-              }}
+              // onDragGroupStart={() => {
+              //   // if (currentLayout === 'mobile' && autoComputeLayout) {
+              //   //   turnOffAutoLayout();
+              //   //   return false;
+              //   // }
+              // }}
               onDragGroupEnd={(e) => {
                 const { events } = e;
                 onDrag(
@@ -716,7 +716,28 @@ export default function DragContainer({
                 let groupedTargets1 = [
                   ...selectedComponents
                     .filter((component) => {
-                      return component?.component?.parent === i.parent;
+                      if (
+                        component?.component?.parent === i.parent &&
+                        !selectedComponents.some((comp) => comp.id === component?.component?.parent)
+                      ) {
+                        console.log('selected===>' + i.parent, {
+                          i: component?.id,
+                          c: component?.component?.component,
+                          sp: component?.component?.parent,
+                          parent: i.parent,
+                          selectedComponents: selectedComponents.map((c) => ({
+                            i: c?.id,
+                            c: c?.component?.component,
+                          })),
+                          r:
+                            component?.component?.parent === i.parent &&
+                            !selectedComponents.some((comp) => comp.id === component?.component?.parent),
+                        });
+                      }
+                      return (
+                        component?.component?.parent === i.parent &&
+                        !selectedComponents.some((comp) => comp.id === component?.component?.parent)
+                      );
                     })
                     .map((component) => '.ele-' + component.id),
                 ];
@@ -726,6 +747,8 @@ export default function DragContainer({
                   selectedComponents,
                   groupedTargets1.length ? groupedTargets1 : `.target-${i.parent}`
                 );
+
+                console.log('slects-2', i);
 
                 return (
                   <Moveable
@@ -758,10 +781,10 @@ export default function DragContainer({
                     individualGroupable={groupedTargets1.length <= 1}
                     onDragStart={(e) => {
                       console.log('On-Drag start', e);
-                      if (currentLayout === 'mobile' && autoComputeLayout) {
-                        turnOffAutoLayout();
-                        return false;
-                      }
+                      // if (currentLayout === 'mobile' && autoComputeLayout) {
+                      //   turnOffAutoLayout();
+                      //   return false;
+                      // }
                       const box = boxes.find((box) => box.id === e.target.id);
                       if (['RangeSlider', 'Container', 'BoundedBox'].includes(box?.component?.component)) {
                         const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
@@ -905,10 +928,10 @@ export default function DragContainer({
                       setResizingComponentId(e.target.id);
                       setActiveGrid(i.parent);
                       setResizingLimit(e, i);
-                      if (currentLayout === 'mobile' && autoComputeLayout) {
-                        turnOffAutoLayout();
-                        return false;
-                      }
+                      // if (currentLayout === 'mobile' && autoComputeLayout) {
+                      //   turnOffAutoLayout();
+                      //   return false;
+                      // }
                     }}
                     onResize={(e) => {
                       const gridWidth = subContainerWidths[i.parent];
@@ -976,12 +999,12 @@ export default function DragContainer({
                         console.error('ResizeEnd error ->', error);
                       }
                     }}
-                    onDragGroupStart={() => {
-                      if (currentLayout === 'mobile' && autoComputeLayout) {
-                        turnOffAutoLayout();
-                        return false;
-                      }
-                    }}
+                    // onDragGroupStart={() => {
+                    //   if (currentLayout === 'mobile' && autoComputeLayout) {
+                    //     turnOffAutoLayout();
+                    //     return false;
+                    //   }
+                    // }}
                     onDragGroupEnd={(e) => {
                       const { events } = e;
                       onDrag(
@@ -994,10 +1017,10 @@ export default function DragContainer({
                       );
                     }}
                     onResizeGroupStart={(e) => {
-                      if (currentLayout === 'mobile' && autoComputeLayout) {
-                        turnOffAutoLayout();
-                        return false;
-                      }
+                      // if (currentLayout === 'mobile' && autoComputeLayout) {
+                      //   turnOffAutoLayout();
+                      //   return false;
+                      // }
                     }}
                     displayAroundControls={true}
                     controlPadding={10}
