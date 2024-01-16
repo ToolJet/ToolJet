@@ -66,6 +66,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
     newActiveTabs[index] = tabData;
     setActiveTab(newActiveTabs);
     const customVal = currentValue === null || '' ? '' : currentValue;
+    console.log('first', customVal.length);
     const customBooleanVal = currentValue === null || false ? false : currentValue;
     const actualDefaultVal = defaultValue === 'true' ? true : false;
     const newInputValues = [...inputValues];
@@ -77,12 +78,12 @@ const EditRowForm = ({ onEdit, onClose }) => {
       newInputValues[index] = { value: 'Null', disabled: true };
     } else if (nullValue === 'YES' && tabData === 'Null' && dataType === 'boolean') {
       newInputValues[index] = { value: false, disabled: true };
-    } else if (tabData === 'Custom' && dataType === 'character varying' && customVal.length > 0) {
+    } else if (tabData === 'Custom' && customVal.length > 0) {
       newInputValues[index] = { value: customVal, disabled: false };
-    } else if (tabData === 'Custom' && dataType === 'character varying' && customVal.length <= 0) {
+    } else if (tabData === 'Custom' && customVal.length <= 0) {
       newInputValues[index] = { value: '', disabled: false };
-    } else if (tabData === 'Custom' && dataType !== 'character varying' && customVal.length <= 0) {
-      newInputValues[index] = { value: '', disabled: false };
+    } else {
+      newInputValues[index] = { value: customVal, disabled: false };
     }
 
     setInputValues(newInputValues);
@@ -110,8 +111,8 @@ const EditRowForm = ({ onEdit, onClose }) => {
             ? null
             : newInputValues[index].value === defaultValue
             ? defaultValue
-            : newInputValues[index].value === customVal
-            ? customVal
+            : newInputValues[index].value === currentValue
+            ? currentValue
             : currentValue === null && customVal === ''
             ? null
             : null,
@@ -230,6 +231,8 @@ const EditRowForm = ({ onEdit, onClose }) => {
       matchingObject[keyName] = rowData[keyName];
     }
   });
+
+  console.log('first', rowData);
 
   return (
     <div className="drawer-card-wrapper ">
