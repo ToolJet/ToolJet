@@ -7,6 +7,7 @@ import {
   verifyConfirmPageElements,
   verifyOnboardingQuestions,
   verifyInvalidInvitationLink,
+  verifyCloudOnboardingQuestions
 } from "Support/utils/onboarding";
 import { dashboardText } from "Texts/dashboard";
 import { updateWorkspaceName } from "Support/utils/userPermissions";
@@ -18,6 +19,7 @@ describe("User signup", () => {
   data.workspaceName = fake.companyName;
 
   let invitationLink = "";
+  const envVar = Cypress.env("environment");
 
   before(() => {
     cy.visit("/");
@@ -47,14 +49,13 @@ describe("User signup", () => {
     verifyConfirmPageElements();
     cy.get(commonSelectors.setUpToolJetButton).click();
     cy.wait(4000);
-    cy.get("body").then(($el) => {
-      if (!$el.text().includes(dashboardText.emptyPageHeader)) {
-        verifyOnboardingQuestions(data.fullName, data.workspaceName);
-        updateWorkspaceName(data.email);
-      } else {
-        updateWorkspaceName(data.email);
-      }
-    });
+    if (envVar === "Enterprise") {
+      verifyOnboardingQuestions(data.fullName, data.workspaceName);
+    }
+    else {
+      verifyCloudOnboardingQuestions(data.fullName, data.workspaceName)
+    }
+    updateWorkspaceName(data.email);
   });
   it("Verify invalid invitation link", () => {
     cy.visit(invitationLink);
