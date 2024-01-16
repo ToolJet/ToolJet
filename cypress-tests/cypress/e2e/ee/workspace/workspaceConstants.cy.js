@@ -729,6 +729,7 @@ describe("Workspace constants", () => {
         cy.apiCreateApp(data.appName);
         cy.openApp();
 
+        cy.wait(1000);
         selectQueryFromLandingPage("runjs", "JavaScript");
         addInputOnQueryField("runjs", `return constants.${data.constantsName}`);
         query("preview");
