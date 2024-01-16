@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
@@ -6,6 +6,7 @@ import Select from 'react-select';
 export default function FolderFilter({ disabled, options, onChange, value }) {
   const navigate = useNavigate();
   const [currentFolder, setCurrentFolder] = useState({});
+  let selectRef = useRef();
 
   const handleFolderChange = (folder) => {
     onChange(folder);
@@ -17,25 +18,35 @@ export default function FolderFilter({ disabled, options, onChange, value }) {
     navigate({ pathname: location.pathname, search: path }, { replace: true });
   };
 
-  const allOptions = [{ name: 'All apps', label: 'All apps', value: '', id: '' }, ...options];
-  const currentValue = { label: currentFolder?.name, ...currentFolder };
-
   useEffect(() => {
     if (isEmpty(value)) {
       setCurrentFolder({ name: 'All apps', label: 'All apps', value: '', id: '' });
     } else {
-      setCurrentFolder(value);
+      setCurrentFolder({ ...value, value: value?.id });
       handleFolderChange(value);
     }
   }, [value]);
 
+  const allOptions = [{ name: 'All apps', label: 'All apps', value: '', id: '' }, ...options];
+  const currentValue = { label: currentFolder?.name, ...currentFolder };
+
   return (
     <Select
+      ref={selectRef}
       options={allOptions}
       onChange={handleFolderChange}
       value={currentValue}
+      defaultValue={currentValue}
       closeMenuOnSelect={true}
       styles={{
+        option: (base, state) => {
+          const currentOption = state.getValue('All apps')[0];
+          const isSelectedOption = currentOption.label === 'All apps';
+          return {
+            ...base,
+            ...(state.isFocused && !isSelectedOption && { backgroundColor: 'var(--slate0)', color: 'var(--slate12)' }),
+          };
+        },
         singleValue: (base) => ({
           ...base,
           color: 'var(--slate12)',

@@ -166,7 +166,7 @@ export const BlankPage = function BlankPage({
           </div>
         </div>
       </div>
-      <div className="d-flex justify-content-center align-items-center flex-column mt-3 blank-page-wrapper-mobile">
+      <div className="justify-content-center align-items-center flex-column mt-3 blank-page-wrapper-mobile">
         <div className="mb-4">
           <EmptyFoldersIllustration />
         </div>

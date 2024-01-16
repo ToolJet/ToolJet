@@ -25,7 +25,7 @@ export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
 
   useEffect(() => {
     if (!canCreateVariableOrConstant()) {
-      toast.error("You don't have access to Workspace constants");
+      toast.error("You don't have access to Workspace constants", { style: { maxWidth: '400px' } });
       navigate('/');
     }
   }, [canCreateVariableOrConstant]);

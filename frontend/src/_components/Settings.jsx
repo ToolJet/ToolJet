@@ -78,11 +78,9 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
       overlay={getOverlay()}
     >
       <div className={cx('settings-nav-item cursor-pointer', { active: showOverlay })}>
-        <ToolTip delay={{ show: 0, hide: 0 }} message="Settings">
-          <div className="d-xl-block" data-cy="profile-settings">
-            <SolidIcon name="settings" fill={showOverlay ? '#3E63DD' : 'var(--slate8)'} width={28} />
-          </div>
-        </ToolTip>
+        <div className="d-xl-block">
+          <SolidIcon name="settings" fill={showOverlay ? '#3E63DD' : 'var(--slate8)'} width={28} />
+        </div>
       </div>
     </OverlayTrigger>
   );

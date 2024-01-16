@@ -365,6 +365,13 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
             <div className="workspace-constant-table-card">
               <div className="manage-sso-container h-100">
                 <div className="d-flex manage-sso-wrapper-card h-100">
+                  <ManageOrgConstantsComponent.EnvironmentsTabs
+                    allEnvironments={environments}
+                    currentEnvironment={activeTabEnvironment}
+                    setActiveTabEnvironment={setActiveTabEnvironment}
+                    isLoading={isLoading}
+                    allConstants={constants}
+                  />
                   {constants.length > 0 ? (
                     <div className="w-100 workspace-constant-card-body">
                       <div className="align-items-center d-flex p-3 justify-content-between">
