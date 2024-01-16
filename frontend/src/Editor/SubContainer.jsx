@@ -62,7 +62,7 @@ export const SubContainer = ({
   setSubContainerWidths,
   parentGridWidth,
   subContainerWidths,
-  turnOffAutoLayout,
+  // turnOffAutoLayout,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -352,10 +352,10 @@ export const SubContainer = ({
     () => ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
-        if (item.currentLayout === 'mobile' && item.autoComputeLayout) {
-          turnOffAutoLayout();
-          return false;
-        }
+        // if (item.currentLayout === 'mobile' && item.autoComputeLayout) {
+        //   turnOffAutoLayout();
+        //   return false;
+        // }
         const componentMeta = _.cloneDeep(
           componentTypes.find((component) => component.component === item.component.component)
         );

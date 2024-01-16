@@ -51,7 +51,6 @@ export const Container = ({
   handleRedo,
   sideBarDebugger,
   currentPageId,
-  turnOffAutoLayout,
 }) => {
   // Dont update first time to skip
   // redundant save on app definition load
@@ -290,10 +289,10 @@ export const Container = ({
     () => ({
       accept: [ItemTypes.BOX, ItemTypes.COMMENT],
       async drop(item, monitor) {
-        if (item.currentLayout === 'mobile' && item.autoComputeLayout) {
-          turnOffAutoLayout();
-          return false;
-        }
+        // if (item.currentLayout === 'mobile' && item.autoComputeLayout) {
+        //   turnOffAutoLayout();
+        //   return false;
+        // }
 
         if (item.parent) {
           return;
@@ -365,7 +364,7 @@ export const Container = ({
         const parentId = parent.includes('-') ? parent?.split('-').slice(0, -1).join('-') : parent;
         const compoenentType = boxes[parentId]?.component.component;
         var parentHeight = parentElem?.clientHeight || height;
-        if (height > parentHeight && ['Tabs'].includes(compoenentType)) {
+        if (height > parentHeight && ['Tabs', 'Listview'].includes(compoenentType)) {
           height = parentHeight;
           y = 0;
         }
@@ -434,10 +433,10 @@ export const Container = ({
 
       if (parent) {
         const parentElem = document.getElementById(`canvas-${parent}`);
-        const parentId = parent.includes('-') ? parent?.split('-').slice(0, -1).join('-') : parent;
+        const parentId = boxes[parent] ? parent : parent?.split('-').slice(0, -1).join('-');
         const compoenentType = boxes[parentId]?.component.component;
         var parentHeight = parentElem?.clientHeight || _height;
-        if (_height > parentHeight && ['Tabs'].includes(compoenentType)) {
+        if (_height > parentHeight && ['Tabs', 'Listview'].includes(compoenentType)) {
           _height = parentHeight;
           y = 0;
         }
@@ -721,7 +720,7 @@ export const Container = ({
           isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
           childComponents={childComponents[key]}
           containerProps={{
-            turnOffAutoLayout,
+            // turnOffAutoLayout,
             mode,
             snapToGrid,
             onComponentClick,
@@ -810,7 +809,7 @@ export const Container = ({
         setIsResizing={setIsResizing}
         currentLayout={currentLayout}
         subContainerWidths={subContainerWidths}
-        turnOffAutoLayout={turnOffAutoLayout}
+        // turnOffAutoLayout={turnOffAutoLayout}
         currentPageId={currentPageId}
         autoComputeLayout={appDefinition.pages[currentPageId]?.autoComputeLayout}
         setDraggedSubContainer={setDraggedSubContainer}
