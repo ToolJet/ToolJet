@@ -202,7 +202,12 @@ export default function GitSyncModal({
           !appGitLoading &&
           !commitEnabled && (
             <Modal.Footer>
-              <ButtonSolid disabled={appPushLoading} variant={'tertiary'} onClick={insideHandleClose}>
+              <ButtonSolid
+                disabled={appPushLoading}
+                variant={'tertiary'}
+                onClick={insideHandleClose}
+                data-cy="cancel-button"
+              >
                 Cancel
               </ButtonSolid>
               <ButtonSolid
@@ -210,6 +215,7 @@ export default function GitSyncModal({
                 isLoading={appPushLoading}
                 variant={'primary'}
                 onClick={appGitPush}
+                data-cy="commit-button"
               >
                 Commit changes
               </ButtonSolid>
@@ -221,7 +227,12 @@ export default function GitSyncModal({
       case MODAL_TYPE.PULL:
         return (
           <Modal.Footer>
-            <ButtonSolid disabled={appPushLoading} variant={'tertiary'} onClick={insideHandleClose}>
+            <ButtonSolid
+              disabled={appPushLoading}
+              variant={'tertiary'}
+              onClick={insideHandleClose}
+              data-cy="cancel-button"
+            >
               Cancel
             </ButtonSolid>
             <ButtonSolid
@@ -229,6 +240,7 @@ export default function GitSyncModal({
               isLoading={appPushLoading}
               variant={'primary'}
               onClick={appGitPull}
+              data-cy="pull-button"
             >
               Pull changes
             </ButtonSolid>
@@ -243,14 +255,26 @@ export default function GitSyncModal({
         return (
           <div className="connect-to-repository-container">
             <SolidIcon name="gitsync" />
-            <div className="tj-text tj-text-sm font-weight-500 my-2">No connection yet</div>
-            <div className="tj-text-xsm">Sync applications to your git repository and never lose your progress!</div>
+            <div className="tj-text tj-text-sm font-weight-500 my-2" data-cy="no-connection-yet-label">
+              No connection yet
+            </div>
+            <div className="tj-text-xsm" data-cy="sync-app-helper-text">
+              Sync applications to your git repository and never lose your progress!
+            </div>
             {admin ? (
-              <ButtonSolid onClick={handleGitConfigRoute} rightIcon="arrowright" variant="ghostBlue" className="mt-2">
+              <ButtonSolid
+                onClick={handleGitConfigRoute}
+                rightIcon="arrowright"
+                variant="ghostBlue"
+                className="mt-2"
+                data-cy="connect-repo-button"
+              >
                 Connect to repository
               </ButtonSolid>
             ) : (
-              <div className="tj-text-sm mt-1 font-weight-500">Contact admins to know more.</div>
+              <div className="tj-text-sm mt-1 font-weight-500" data-cy="contact-admin-helper-text">
+                Contact admins to know more.
+              </div>
             )}
           </div>
         );
@@ -259,7 +283,9 @@ export default function GitSyncModal({
           <div className="create-commit-container">
             <form noValidate className="commit-form">
               <div className="form-group mb-3">
-                <label className="mb-1 tj-text-xsm font-weight-500">Git repo URL</label>
+                <label className="mb-1 tj-text-xsm font-weight-500" data-cy="git-repo-url-label">
+                  Git repo URL
+                </label>
                 <div className="tj-app-input">
                   <input
                     type="text"
@@ -267,11 +293,14 @@ export default function GitSyncModal({
                     value={appGitData?.org_git?.git_url}
                     disabled={true}
                     readOnly={true}
+                    data-cy="git-repo-input"
                   />
                 </div>
               </div>
               <div className="form-group mb-3">
-                <label className="mb-1 tj-text-xsm font-weight-500">Commit message</label>
+                <label className="mb-1 tj-text-xsm font-weight-500" data-cy="commit-message-label">
+                  Commit message
+                </label>
                 <div className="tj-app-input">
                   <input
                     onChange={handleCommitChange}
@@ -279,6 +308,7 @@ export default function GitSyncModal({
                     value={commitMessage}
                     placeholder={`Briefly describe the changes you've made`}
                     className="form-control font-weight-400"
+                    data-cy="commit-message-input"
                   />
                 </div>
                 {/* <div>
@@ -286,13 +316,15 @@ export default function GitSyncModal({
                 </div> */}
               </div>
               <div className="form-group mb-3">
-                <label className="mb-1 tj-text-xsm font-weight-500">Last commit</label>
+                <label className="mb-1 tj-text-xsm font-weight-500" data-cy="last-commit-label">
+                  Last commit
+                </label>
                 <div className="last-commit-info form-control">
                   <div className="message-info">
-                    <div>{appGitData?.last_commit_message ?? 'No commits yet'}</div>
-                    <div>{appGitData?.git_version_name}</div>
+                    <div data-cy="las-commit-message">{appGitData?.last_commit_message ?? 'No commits yet'}</div>
+                    <div data-cy="last-commit-version">{appGitData?.git_version_name}</div>
                   </div>
-                  <div className="author-info">
+                  <div className="author-info" data-cy="auther-info">
                     {appGitData?.last_commit_user
                       ? `Done by ${appGitData?.last_commit_user} at ${moment(
                           new Date(appGitData?.last_push_date)
@@ -309,7 +341,9 @@ export default function GitSyncModal({
           <div className="pull-container">
             <form noValidate>
               <div className="form-group mb-3">
-                <label className="mb-1 tj-text-xsm font-weight-500">Git repo URL</label>
+                <label className="mb-1 tj-text-xsm font-weight-500" data-cy="git-repo-url-label">
+                  Git repo URL
+                </label>
                 <div className="tj-app-input">
                   <input
                     type="text"
@@ -317,6 +351,7 @@ export default function GitSyncModal({
                     value={appGitData?.org_git?.git_url}
                     disabled={true}
                     readOnly={true}
+                    data-cy="git-repo-info"
                   />
                 </div>
               </div>
@@ -428,8 +463,10 @@ export default function GitSyncModal({
         contentClassName={`${darkMode ? 'theme-dark dark-theme git-sync-modal' : 'git-sync-modal'}`}
       >
         <Modal.Header>
-          <Modal.Title className="font-weight-500">GitSync</Modal.Title>
-          <div onClick={insideHandleClose} className="cursor-pointer">
+          <Modal.Title className="font-weight-500" data-cy="modal-title">
+            GitSync
+          </Modal.Title>
+          <div onClick={insideHandleClose} className="cursor-pointer" data-cy="modal-close-button">
             <SolidIcon name="remove" width="20" />
           </div>
         </Modal.Header>
