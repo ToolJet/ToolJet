@@ -100,6 +100,7 @@ export function CodeHinter({
   const [resolvingError, setResolvingError] = useState(null);
   const [coercionPreview, setCoercionPreview] = useState('');
   const [typeAfterCoercion, setTypeAfterCoercion] = useState(null);
+  const [typeBeforeCoercion, setTypeBeforeCoercion] = useState(null);
 
   const [isFocused, setFocused] = useState(false);
   const [heightRef, currentHeight] = useHeight();
@@ -222,10 +223,11 @@ export function CodeHinter({
         setResolvingError(null);
 
         if (validationSchemaExists) {
-          const [coercionPreview, typeAfterCoercion] = computeCoercion(preview, newValue);
+          const [coercionPreview, typeAfterCoercion, typeBeforeCoercion] = computeCoercion(preview, newValue);
 
           setCoercionPreview(coercionPreview);
           setTypeAfterCoercion(typeAfterCoercion);
+          setTypeBeforeCoercion(typeBeforeCoercion);
         }
 
         setResolvedValue(preview);
@@ -331,7 +333,7 @@ export function CodeHinter({
           <div>
             <div className="d-flex my-1">
               <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
-                {previewType} {coercionPreview ? ` → ${typeAfterCoercion}` : ''}
+                {typeBeforeCoercion} {coercionPreview ? ` → ${typeAfterCoercion}` : ''}
               </div>
               {isFocused && (
                 <div className="preview-icons position-relative">
@@ -584,13 +586,13 @@ function computeCoercion(oldValue, newValue) {
 
   if (oldValueType === newValueType) {
     if (JSON.stringify(oldValue) != JSON.stringify(newValue)) {
-      return [` → ${JSON.stringify(newValue)}`, newValueType];
+      return [` → ${JSON.stringify(newValue)}`, newValueType, oldValueType];
     }
   } else {
-    return [` → ${JSON.stringify(newValue)}`, newValueType];
+    return [` → ${JSON.stringify(newValue)}`, newValueType, oldValueType];
   }
 
-  return ['', newValueType];
+  return ['', newValueType, oldValueType];
 }
 
 CodeHinter.PopupIcon = PopupIcon;
