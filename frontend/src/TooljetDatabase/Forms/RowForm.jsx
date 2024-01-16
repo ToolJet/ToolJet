@@ -54,14 +54,25 @@ const RowForm = ({ onCreate, onClose }) => {
       newInputValues[index] = { value: 'Null', checkboxValue: false, disabled: true };
     } else if (nullValue === 'YES' && tabData === 'Null' && dataType === 'boolean') {
       newInputValues[index] = { value: 'Null', checkboxValue: false, disabled: true };
+    } else if (tabData === 'Custom' && dataType === 'character varying') {
+      newInputValues[index] = { value: '', checkboxValue: false, disabled: false };
     } else {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false };
     }
+
     setInputValues(newInputValues);
     if (dataType === 'boolean') {
       setData({ ...data, [columnName]: newInputValues[index].checkboxValue });
     } else {
-      setData({ ...data, [columnName]: newInputValues[index].value === 'Null' ? null : defaultValue });
+      setData({
+        ...data,
+        [columnName]:
+          newInputValues[index].value === 'Null'
+            ? null
+            : newInputValues[index].value === 'Default'
+            ? defaultValue
+            : newInputValues[index].value,
+      });
     }
   };
 
@@ -181,6 +192,17 @@ const RowForm = ({ onCreate, onClose }) => {
     }
   };
 
+  let matchingObject = {};
+
+  columns.forEach((obj) => {
+    const keyName = Object.values(obj)[0];
+    const dataType = Object.values(obj)[2];
+
+    if (data[keyName] !== undefined && dataType !== 'character varying') {
+      matchingObject[keyName] = data[keyName];
+    }
+  });
+
   return (
     <div className="drawer-card-wrapper ">
       <div className="card-header">
@@ -294,7 +316,7 @@ const RowForm = ({ onCreate, onClose }) => {
         fetching={fetching}
         onClose={onClose}
         onCreate={handleSubmit}
-        shouldDisableCreateBtn={Object.values(data).includes('')}
+        shouldDisableCreateBtn={Object.values(matchingObject).includes('')}
       />
     </div>
   );

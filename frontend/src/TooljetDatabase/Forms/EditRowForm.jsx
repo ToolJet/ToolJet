@@ -77,9 +77,14 @@ const EditRowForm = ({ onEdit, onClose }) => {
       newInputValues[index] = { value: 'Null', disabled: true };
     } else if (nullValue === 'YES' && tabData === 'Null' && dataType === 'boolean') {
       newInputValues[index] = { value: false, disabled: true };
-    } else {
+    } else if (tabData === 'Custom' && dataType === 'character varying' && customVal.length > 0) {
       newInputValues[index] = { value: customVal, disabled: false };
+    } else if (tabData === 'Custom' && dataType === 'character varying' && customVal.length <= 0) {
+      newInputValues[index] = { value: '', disabled: false };
+    } else if (tabData === 'Custom' && dataType !== 'character varying' && customVal.length <= 0) {
+      newInputValues[index] = { value: '', disabled: false };
     }
+
     setInputValues(newInputValues);
     if (dataType === 'boolean') {
       setRowData({
@@ -105,8 +110,8 @@ const EditRowForm = ({ onEdit, onClose }) => {
             ? null
             : newInputValues[index].value === defaultValue
             ? defaultValue
-            : newInputValues[index].value === currentValue
-            ? currentValue
+            : newInputValues[index].value === customVal
+            ? customVal
             : currentValue === null && customVal === ''
             ? null
             : null,
@@ -214,6 +219,17 @@ const EditRowForm = ({ onEdit, onClose }) => {
   });
 
   const headerText = primaryColumn.charAt(0).toUpperCase() + primaryColumn.slice(1);
+
+  let matchingObject = {};
+
+  columns.forEach((obj) => {
+    const keyName = Object.values(obj)[0];
+    const dataType = Object.values(obj)[2];
+
+    if (rowData[keyName] !== undefined && dataType !== 'character varying') {
+      matchingObject[keyName] = rowData[keyName];
+    }
+  });
 
   return (
     <div className="drawer-card-wrapper ">
@@ -380,7 +396,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
           fetching={fetching}
           onClose={onClose}
           onEdit={handleSubmit}
-          shouldDisableCreateBtn={Object.values(rowData).includes('')}
+          shouldDisableCreateBtn={Object.values(matchingObject).includes('')}
         />
       )}
     </div>
