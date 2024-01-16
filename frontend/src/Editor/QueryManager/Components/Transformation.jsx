@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import 'codemirror/theme/base16-light.css';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/addon/hint/show-hint';
-import 'codemirror/addon/search/match-highlighter';
-import 'codemirror/addon/hint/show-hint.css';
+// import 'codemirror/theme/base16-light.css';
+// import 'codemirror/mode/javascript/javascript';
+// import 'codemirror/addon/hint/show-hint';
+// import 'codemirror/addon/search/match-highlighter';
+// import 'codemirror/addon/hint/show-hint.css';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';

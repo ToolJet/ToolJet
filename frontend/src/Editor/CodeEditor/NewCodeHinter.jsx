@@ -14,7 +14,6 @@ const NewCodeHinter = ({ type = 'basic', ...restProps }) => {
   const { suggestions } = useResolveStore(
     (state) => ({
       suggestions: state.suggestions,
-      // lookupTable: state.lookupTable,
     }),
     shallow
   );

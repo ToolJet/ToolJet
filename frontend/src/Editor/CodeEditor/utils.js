@@ -1,4 +1,6 @@
 import { useResolveStore } from '@/_stores/resolverStore';
+import moment from 'moment';
+import _ from 'lodash';
 
 const acorn = require('acorn');
 
@@ -11,6 +13,8 @@ const number = 1;
 `;
 
 const ast = acorn.parse(code, { ecmaVersion: 2020 });
+
+export const getCurrentNodeType = (node) => Object.prototype.toString.call(node).slice(8, -1);
 
 function traverseAST(node, callback) {
   callback(node);
@@ -89,35 +93,6 @@ export const createJavaScriptSuggestions = () => {
   return allMethods;
 };
 
-export function generateSuggestiveHints(suggestionList, query) {
-  const result = suggestionList.filter((key) => key.includes(query));
-
-  const suggestions = result.filter((key) => {
-    const hintsDelimiterCount = countDelimiter(key, '.');
-    const queryDelimiterCount = countDelimiter(query, '.');
-    const hintDepth = queryDelimiterCount + 1;
-
-    if (
-      hintDepth !== queryDelimiterCount &&
-      (hintsDelimiterCount === hintDepth || hintsDelimiterCount === queryDelimiterCount)
-    ) {
-      return true;
-    }
-  });
-
-  function countDelimiter(string, delimiter) {
-    var stringsearch = delimiter;
-
-    var str = string;
-    var count = 0;
-    for (var i = (count = 0); i < str.length; count += +(stringsearch === str[i++]));
-
-    return count;
-  }
-
-  return suggestions;
-}
-
 export const resolveReferences = (query) => {
   let resolvedValue = query;
   let error = null;
@@ -126,13 +101,21 @@ export const resolveReferences = (query) => {
     return [resolvedValue, error];
   }
 
-  const value = query.replace(/{{|}}/g, '');
+  const value = query.replace(/{{|}}/g, '').trim();
 
   const { lookupTable } = useResolveStore.getState();
 
-  if (lookupTable.hints.has(value)) {
-    const idToLookUp = lookupTable.hints.get(value);
+  const { toResolveReference, jsExpression } = inferJSExpAndReferences(value, lookupTable.hints);
+
+  if (lookupTable.hints.has(toResolveReference)) {
+    const idToLookUp = lookupTable.hints.get(toResolveReference);
     resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);
+
+    if (jsExpression) {
+      let jscode = value.replace(toResolveReference, resolvedValue);
+      jscode = value.replace(toResolveReference, `'${resolvedValue}'`);
+      resolvedValue = evaluateJsExpression(jscode);
+    }
   } else {
     error = `No reference found for ${query}`;
   }
@@ -140,4 +123,42 @@ export const resolveReferences = (query) => {
   return [resolvedValue, error];
 };
 
-export const getCurrentNodeType = (node) => Object.prototype.toString.call(node).slice(8, -1);
+const inferJSExpAndReferences = (code, hintsMap) => {
+  const references = code.split('.');
+
+  let prevReference;
+
+  let toResolveReference;
+  let jsExpression;
+
+  for (let i = 0; i < references.length; i++) {
+    const currentRef = references[i];
+
+    const ref = prevReference ? prevReference + '.' + currentRef : currentRef;
+
+    const existsInMap = hintsMap.has(ref);
+
+    if (!existsInMap) {
+      break;
+    }
+
+    prevReference = ref;
+    toResolveReference = ref;
+    jsExpression = code.substring(ref.length);
+  }
+
+  return {
+    toResolveReference,
+    jsExpression,
+  };
+};
+
+function evaluateJsExpression(jsExpression) {
+  try {
+    const evalFunction = new Function(`return ${jsExpression};`);
+
+    return evalFunction();
+  } catch (error) {
+    console.log(error);
+  }
+}

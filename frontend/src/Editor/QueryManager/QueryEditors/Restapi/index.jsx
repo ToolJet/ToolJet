@@ -1,4 +1,4 @@
-import 'codemirror/theme/duotone-light.css';
+// import 'codemirror/theme/duotone-light.css';
 
 import React from 'react';
 import { isEmpty, defaults } from 'lodash';

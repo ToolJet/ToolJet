@@ -1,6 +1,6 @@
-import { createJavaScriptSuggestions } from '@/Editor/CodeEditor/utils';
-import { create, createReferencesLookup, zustandDevTools } from './utils';
-import { getSuggestionKeys } from '@/Editor/CodeBuilder/utils';
+import { create } from 'zustand';
+import { createReferencesLookup } from './utils';
+import { createJavaScriptSuggestions } from '../Editor/CodeEditor/utils';
 
 /**
  * *Resolver Store
@@ -13,7 +13,7 @@ import { getSuggestionKeys } from '@/Editor/CodeBuilder/utils';
 const initialState = {
   suggestions: {
     appHints: [],
-    jsHints: createJavaScriptSuggestions(),
+    jsHints: [],
   },
   lookupTable: {
     hints: {},
@@ -22,21 +22,24 @@ const initialState = {
 };
 
 export const useResolveStore = create(
-  zustandDevTools(
-    (set, get) => ({
-      ...initialState,
-      actions: {
-        updateAppSuggestions: (refState) => {
-          const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState);
+  (set, get) => ({
+    ...initialState,
+    actions: {
+      updateAppSuggestions: (refState) => {
+        const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState);
 
-          set(() => ({ suggestions: { ...get().suggestions, appHints: suggestionList } }));
+        set(() => ({ suggestions: { ...get().suggestions, appHints: suggestionList } }));
 
-          set(() => ({ lookupTable: { ...get().lookupTable, hints: hintsMap, resolvedRefs } }));
-        },
+        set(() => ({ lookupTable: { ...get().lookupTable, hints: hintsMap, resolvedRefs } }));
       },
-    }),
-    { name: 'Resolver Store' }
-  )
+
+      updateJSHints: () => {
+        const hints = createJavaScriptSuggestions();
+        set(() => ({ suggestions: { ...get().suggestions, jsHints: hints } }));
+      },
+    },
+  }),
+  { name: 'Resolver Store' }
 );
 
 export const useResolverStoreActions = useResolveStore.getState().actions;

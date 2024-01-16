@@ -1,5 +1,5 @@
 import React from 'react';
-import 'codemirror/theme/duotone-light.css';
+// import 'codemirror/theme/duotone-light.css';
 import DOMPurify from 'dompurify';
 import Select from '@/_ui/Select';
 import { openapiService } from '@/_services';

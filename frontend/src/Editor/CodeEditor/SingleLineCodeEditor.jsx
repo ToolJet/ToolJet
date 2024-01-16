@@ -1,252 +1,161 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { generateSuggestiveHints } from './utils';
-import { useHotkeysContext } from 'react-hotkeys-hook';
-import CodeHints from './CodeHints';
+/* eslint-disable import/no-unresolved */
+import React from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
 import { camelCase } from 'lodash';
+import CodeMirror from '@uiw/react-codemirror';
+import { javascript } from '@codemirror/lang-javascript';
+import { autocompletion } from '@codemirror/autocomplete';
 
 const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName, darkMode, fieldMeta }) => {
-  const { enableScope, disableScope, enabledScopes } = useHotkeysContext();
   const { t } = useTranslation();
 
-  const [isFocused, setIsFocused] = React.useState(false);
-  const [shouldShowSuggestions, setShouldShowSuggestions] = useState(false);
-  const [target, setTarget] = useState(null);
+  const { validation } = fieldMeta;
 
+  const [isFocused, setIsFocused] = React.useState(false);
   const [currentValue, setCurrentValue] = React.useState('');
 
-  const hintsActiveRef = useRef(false);
-  const ref = useRef(null);
-
-  const [hints, setHints] = React.useState([]);
-
-  const handleInputChange = (value) => {
-    setCurrentValue(value);
-
-    const actualInput = value.replace(/{{|}}/g, '');
-
-    const hints = generateSuggestiveHints(suggestions['appHints'], actualInput);
-
-    setHints(hints);
-  };
-
-  const updateValueFromHint = (hintValue) => {
-    const currentValueWithoutBraces = currentValue.replace(/{{|}}/g, '');
-    const value = currentValueWithoutBraces + hintValue;
-
-    const withBraces = `{{${value}}}`;
-
-    setCurrentValue(withBraces);
-
-    setShouldShowSuggestions(false);
-  };
-
-  function setCaretPosition(editableDiv, position) {
-    const setRange = (node, pos) => {
-      const range = document.createRange();
-      const selection = window.getSelection();
-      range.setStart(node, pos);
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
-    };
-
-    const walkNode = (node, position) => {
-      let currentLength = 0;
-      for (const child of node.childNodes) {
-        if (child.nodeType === Node.TEXT_NODE) {
-          if (currentLength + child.length >= position) {
-            setRange(child, position - currentLength);
-            return true;
-          }
-          currentLength += child.length;
-        } else if (child.nodeType === Node.ELEMENT_NODE) {
-          if (walkNode(child, position - currentLength)) {
-            return true;
-          }
-          currentLength += child.innerText.length;
-        }
-      }
-      return false;
-    };
-
-    walkNode(editableDiv, position);
-  }
-
-  useEffect(() => {
-    if (!hintsActiveRef.current && currentValue.startsWith('{{') && currentValue.endsWith('}}')) {
-      setShouldShowSuggestions(true);
-      hintsActiveRef.current = true;
-    } else {
-      hintsActiveRef.current = false;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFocused]);
-
-  useEffect(() => {
-    if (shouldShowSuggestions) {
-      enableScope('codehinter');
-      disableScope('editor');
-    }
-
-    if (!shouldShowSuggestions) {
-      const hinterScopeActive = enabledScopes.includes('codehinter');
-
-      if (hinterScopeActive) {
-        disableScope('codehinter');
-        enableScope('editor');
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldShowSuggestions]);
-
-  const handleClick = (event) => {
-    setIsFocused((prev) => !prev);
-    setTarget(event.target);
-  };
-
-  useEffect(() => {
-    if (currentValue.startsWith('{{')) {
-      setShouldShowSuggestions(true);
-      hintsActiveRef.current = true;
-    }
-  }, [currentValue]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (ref.current !== event.target) {
-        setShouldShowSuggestions(false);
-        setIsFocused(false);
-        hintsActiveRef.current = false;
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref.current]);
-
   return (
-    <CodeHints
-      ref={ref}
-      componentName={componentName}
-      target={target}
-      shouldShowSuggestions={shouldShowSuggestions}
-      hints={hints}
-      updateValueFromHint={updateValueFromHint}
-    >
-      <div className="code-editor-basic-wrapper">
-        {paramLabel && (
-          <div className={`field`} data-cy={`${'cyLabel'}-widget-parameter-label`}>
-            <ToolTip
-              label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
-              meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 mb-2 ${darkMode && 'color-whitish-darkmode'}`}
-            />
-          </div>
-        )}
-        <div className="d-flex">
-          {/* <div className="field-type-vertical-line"></div> */}
-          <div className="codehinter-container w-100 px-3">
-            <SingleLineCodeEditor.Editor
-              currentValue={currentValue}
-              setValue={handleInputChange}
-              setCaretPosition={setCaretPosition}
-              suggestions={suggestions}
-              setIsFocused={handleClick}
-            />
-            {currentValue.length > 0 && (
-              <PreviewBox currentValue={currentValue} isFocused={isFocused} componentName={componentName} />
-            )}
-          </div>
+    <div className="code-editor-basic-wrapper">
+      {paramLabel && (
+        <div className={`field`} data-cy={`${'cyLabel'}-widget-parameter-label`}>
+          <ToolTip
+            label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
+            meta={fieldMeta}
+            labelClass={`tj-text-xsm color-slate12 mb-2 ${darkMode && 'color-whitish-darkmode'}`}
+          />
+        </div>
+      )}
+      <div className="d-flex">
+        {/* <div className="field-type-vertical-line"></div> */}
+        <div className="codehinter-container w-100 ">
+          <SingleLineCodeEditor.Editor
+            currentValue={currentValue}
+            setValue={setCurrentValue}
+            hints={suggestions}
+            setFocus={setIsFocused}
+            validationType={validation?.schema?.type}
+          />
+
+          <PreviewBox currentValue={currentValue} isFocused={isFocused} componentName={componentName} />
         </div>
       </div>
-    </CodeHints>
+    </div>
   );
 };
 
-const EditorInput = ({ currentValue, setValue, setCaretPosition, setIsFocused }) => {
-  const editableDivRef = useRef(null);
-  const ignoreNextInputEventRef = useRef(false);
+const EditorInput = ({ currentValue, setValue, hints, setFocus, validationType }) => {
+  function orderSuggestions(suggestions, validationType) {
+    const matchingSuggestions = suggestions.filter((s) => s.type === validationType);
 
-  const [localValue, setLocalValue] = useState('');
+    const otherSuggestions = suggestions.filter((s) => s.type !== validationType);
 
-  const formatText = (rawText) => {
-    // Split text into parts and wrap {{ and }} in spans
-    const parts = rawText.split(/(\{\{|\}\})/);
-    return parts
-      .map((part) => {
-        if (part === '{{' || part === '}}') {
-          return `<span class="curly-braces">${part}</span>`;
-        }
-        return part; // Keep other text as is
-      })
-      .join('');
-  };
+    return [...matchingSuggestions, ...otherSuggestions];
+  }
 
-  const handleChange = (rawText) => {
-    if (rawText.startsWith('{{') && !rawText.endsWith('}}')) {
-      rawText = '{{}}';
-    }
+  const getAutocompletion = (input, fieldType) => {
+    if (!input.startsWith('{{') || !input.endsWith('}}')) return [];
 
-    const formattedText = formatText(rawText);
+    const actualInput = input.replace(/{{|}}/g, '');
 
-    if (formattedText !== editableDivRef.current.innerHTML) {
-      ignoreNextInputEventRef.current = true;
-      editableDivRef.current.innerHTML = formattedText;
+    const JSLangHints = hints['jsHints'][fieldType]['methods'].map((hint) => ({
+      hint: hint,
+      type: 'js_method',
+    }));
 
-      const shouldChangeSelection = rawText.startsWith('{{') && rawText.endsWith('}}');
+    const appHints = hints['appHints'].filter((cm) => {
+      const { hint } = cm;
 
-      if (shouldChangeSelection) {
-        editableDivRef.current.focus();
-        //caret position should always be before the last curly brace
-        const position = rawText.length - 2;
-        setCaretPosition(editableDivRef.current, position);
+      if (hint.includes('actions')) {
+        return false;
       }
-    }
-    setValue(rawText);
-    setLocalValue(rawText);
+
+      const lastChar = hint[cm.length - 1];
+      if (lastChar === ')') {
+        return false;
+      }
+
+      return true;
+    });
+
+    const finalHints = [...JSLangHints, ...appHints];
+
+    let autoSuggestionList = finalHints.filter((suggestion) => {
+      if (actualInput.length === 0) return true;
+
+      return suggestion.hint.includes(actualInput);
+    });
+
+    const finalAutoSuggestions = [...JSLangHints, ...autoSuggestionList];
+
+    const priorityOrder = actualInput.endsWith('.');
+
+    const suggestions = finalAutoSuggestions.map(({ hint, type }) => {
+      return {
+        label: hint,
+        type: type === 'js_method' ? 'js_methods' : type?.toLowerCase(),
+        section:
+          type === 'js_method'
+            ? { name: 'JS methods', rank: priorityOrder ? 1 : 2 }
+            : { name: 'suggestions', rank: !priorityOrder ? 1 : 2 },
+        detail: type === 'js_method' ? 'method' : type?.toLowerCase() || '',
+      };
+    });
+
+    return orderSuggestions(suggestions, fieldType).map((cm, index) => ({ ...cm, boost: 100 - index }));
   };
 
-  const handleInputChange = (event) => {
-    if (ignoreNextInputEventRef.current) {
-      ignoreNextInputEventRef.current = false;
-      return;
+  function myCompletions(context) {
+    let before = context.matchBefore(/\w+/);
+
+    if (!context.explicit && !before) {
+      return null;
     }
 
-    let rawText = event.target.innerText;
+    let completions = getAutocompletion(context.state.doc.toString(), validationType);
 
-    handleChange(rawText);
-  };
+    return {
+      from: context.pos,
+      options: [...completions],
+      validFor: /^\{\{.*\}\}$/,
+    };
+  }
 
-  useEffect(() => {
-    if (currentValue !== localValue) {
-      handleChange(currentValue);
-    }
-  }, [currentValue]);
+  const myComplete = autocompletion({
+    override: [myCompletions],
+    compareCompletions: (a, b) => {
+      return a.label < b.label ? -1 : 1;
+    },
+    aboveCursor: false,
+    defaultKeymap: true,
+  });
+
+  const onChange = React.useCallback((val) => {
+    setValue(val);
+  }, []);
 
   return (
-    <div
-      contentEditable
-      ref={editableDivRef}
-      onInput={handleInputChange}
-      className="codehinter-input"
-      onFocus={(e) => setIsFocused(e)}
-      //   onBlur={(e) => setIsFocused(e)}
-      onKeyDown={(e) => {
-        // if down arrow key is pressed, then prevent default behaviour
-        // to prevent cursor from moving to next line
-        if (e.keyCode === 40) {
-          e.preventDefault();
-          // and remove cursor from editable div
-          editableDivRef.current.blur();
-        }
+    <CodeMirror
+      value={currentValue}
+      height="32px"
+      extensions={[javascript({ jsx: false }), myComplete]}
+      onChange={onChange}
+      basicSetup={{
+        lineNumbers: false,
+        syntaxHighlighting: true,
+        bracketMatching: true,
+        foldGutter: false,
+        highlightActiveLine: false,
+        autocompletion: true,
       }}
-    ></div>
+      onFocus={() => setFocus(true)}
+      onBlur={() => setFocus(false)}
+      style={{
+        borderRadius: '4px',
+        border: '1px solid #d9d9d9',
+      }}
+    />
   );
 };
 

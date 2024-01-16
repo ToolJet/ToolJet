@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@codemirror/autocomplete": "^6.12.0",
+    "@codemirror/lang-javascript": "^6.2.1",
     "@dnd-kit/core": "^6.0.7",
     "@dnd-kit/sortable": "^7.0.2",
     "@dnd-kit/utilities": "^3.2.1",
@@ -17,7 +19,8 @@
     "@sentry/webpack-plugin": "^2.5.0",
     "@tabler/icons-react": "^2.4.0",
     "@tooljet/plugins": "../plugins",
-    "@uiw/react-codemirror": "^3.0.6",
+    "@uiw/codemirror-themes": "^4.21.21",
+    "@uiw/react-codemirror": "^4.21.21",
     "@y-presence/react": "^2.0.1",
     "acorn": "^8.11.3",
     "array-move": "^4.0.0",

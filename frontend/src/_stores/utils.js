@@ -4,6 +4,7 @@ import { devtools } from 'zustand/middleware';
 import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import _, { uniqueId } from 'lodash';
+import { getCurrentNodeType } from '@/Editor/CodeEditor/utils';
 
 export const zustandDevTools = (fn, options = {}) =>
   devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : true });
@@ -362,6 +363,7 @@ export function createReferencesLookup(refState) {
 
   const hintsMap = new Map();
   const resolvedRefs = new Map();
+  const resolvedRefTypes = new Map();
 
   const buildMap = (data, path = '') => {
     const keys = Object.keys(data);
@@ -395,25 +397,21 @@ export function createReferencesLookup(refState) {
 
       hintsMap.set(newPath, uniqueId);
       resolvedRefs.set(uniqueId, value);
+      const resolveRefType = getCurrentNodeType(value);
+      resolvedRefTypes.set(uniqueId, resolveRefType);
     });
   };
 
   buildMap(currentState, '');
   map.forEach((__, key) => {
     if (key.endsWith('run') && key.startsWith('queries')) {
-      return suggestionList.push(`${key}()`);
+      return suggestionList.push({ hint: `${key}()`, type: 'Function' });
     }
-    return suggestionList.push(key);
+    return suggestionList.push({ hint: key, type: resolvedRefTypes.get(hintsMap.get(key)) });
   });
 
-  // if (['Runjs', 'Runpy'].includes(refSource)) {
-  //   actions.forEach((action) => {
-  //     suggestionList.push(`actions.${action}()`);
-  //   });
-  // }
-
   actions.forEach((action) => {
-    suggestionList.push(`actions.${action}()`);
+    suggestionList.push({ hint: `actions.${action}()`, type: 'method' });
   });
 
   return { suggestionList, hintsMap, resolvedRefs };

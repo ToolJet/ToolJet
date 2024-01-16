@@ -71,6 +71,8 @@ import { getQueryParams } from '@/_helpers/routes';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
 import { HotkeysProvider } from 'react-hotkeys-hook';
+import { useResolveStore } from '@/_stores/resolverStore';
+// import { createJavaScriptSuggestions } from './CodeEditor/utils';
 
 setAutoFreeze(false);
 enablePatches();
@@ -459,6 +461,8 @@ const EditorComponent = (props) => {
 
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
+
+    useResolveStore.getState().actions.updateJSHints();
 
     await fetchApp(props.params.pageHandle, true);
     await fetchApps(0);

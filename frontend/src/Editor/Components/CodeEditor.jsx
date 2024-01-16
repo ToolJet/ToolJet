@@ -1,13 +1,13 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
-import 'codemirror/addon/comment/comment';
-import 'codemirror/addon/hint/show-hint';
-import 'codemirror/addon/display/placeholder';
-import 'codemirror/addon/search/match-highlighter';
-import 'codemirror/addon/hint/show-hint.css';
-import 'codemirror/theme/base16-light.css';
-import 'codemirror/theme/duotone-light.css';
-import 'codemirror/theme/monokai.css';
+// import 'codemirror/addon/comment/comment';
+// import 'codemirror/addon/hint/show-hint';
+// import 'codemirror/addon/display/placeholder';
+// import 'codemirror/addon/search/match-highlighter';
+// import 'codemirror/addon/hint/show-hint.css';
+// import 'codemirror/theme/base16-light.css';
+// import 'codemirror/theme/duotone-light.css';
+// import 'codemirror/theme/monokai.css';
 import { onBeforeChange, handleChange } from '../CodeBuilder/utils';
 
 export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariables, setExposedVariable, dataCy }) => {
