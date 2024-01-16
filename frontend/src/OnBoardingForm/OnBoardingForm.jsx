@@ -27,6 +27,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
   const [isSkipLoading, setSkipLoading] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [trialErrorMessage, setShowTrialErrorMessage] = useState('');
+  const [whiteLabelText, setWhiteLabelText] = useState('');
   const [formData, setFormData] = useState({
     companyName: '',
     role: '',
@@ -47,7 +48,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
 
   useEffect(() => {
     retrieveWhiteLabelText().then((labelText) => {
-      this.setState({ whiteLabelText: labelText });
+      setWhiteLabelText(labelText);
     });
     if (completed) {
       authenticationService
@@ -102,7 +103,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     'Enter your phone number',
     'Enter your phone number', //dummy for styling
   ];
-  const FormSubTitles = [`This information will help us improve ${this.state.whiteLabelText}.`];
+  const FormSubTitles = [`This information will help us improve ${whiteLabelText}.`];
 
   const handleRetry = () => {
     setIsLoading(true);
