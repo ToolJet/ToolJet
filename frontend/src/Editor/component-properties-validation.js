@@ -44,6 +44,10 @@ const generateSchemaFromValidationDefinition = (definition, recursionDepth = 0) 
     }
     case 'boolean': {
       schema = boolean();
+
+      if (recursionDepth === 0) {
+        schema = coerce(schema, any(), (value) => (value ? true : false));
+      }
       break;
     }
     case 'union': {
