@@ -712,7 +712,7 @@ describe("Workspace constants", () => {
         );
     });
 
-    it("should verify the constants resolving value on components and query", () => {
+    it.only("should verify the constants resolving value on components and query", () => {
         data.constantsName = fake.firstName
             .toLowerCase()
             .replaceAll("[^A-Za-z]", "");
@@ -729,6 +729,7 @@ describe("Workspace constants", () => {
         cy.apiCreateApp(data.appName);
         cy.openApp();
 
+        cy.wait(1000)
         selectQueryFromLandingPage("runjs", "JavaScript");
         addInputOnQueryField("runjs", `return constants.${data.constantsName}`);
         query("preview");

@@ -17,8 +17,6 @@ export const BlankPage = function BlankPage({
   openCreateAppFromTemplateModal,
   creatingApp,
   darkMode,
-  showTemplateLibraryModal,
-  hideTemplateLibraryModal,
   viewTemplateLibraryModal,
   appType,
   canCreateApp,
@@ -33,9 +31,9 @@ export const BlankPage = function BlankPage({
   }, []);
 
   const staticTemplates = [
-    { id: 's3-file-explorer', name: 'S3 file explore' },
-    { id: 'job-application-tracker', name: 'Job application tracker' },
-    { id: 'whatsapp-and-sms-crm', name: 'Whatsapp and sms crm' },
+    { id: 'customer-ticketing-form', name: 'Customer ticketing form' },
+    { id: 'inventory-management-tooljet-db', name: 'Inventory management' },
+    { id: 'kpi-management-dashboard-tooljet-db', name: 'KPI management dashboard' },
   ];
 
   function fetchAppsLimit() {
@@ -75,7 +73,9 @@ export const BlankPage = function BlankPage({
               >
                 <div
                   className="img-responsive img-responsive-21x9 card-img-top template-card-img"
-                  style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
+                  style={{
+                    backgroundImage: `url(assets/images/templates/${id}${darkMode ? '-dark' : ''}.png)`,
+                  }}
                   data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-image`}
                 />
                 <div className="card-body">
@@ -135,14 +135,14 @@ export const BlankPage = function BlankPage({
                             'blankPage.getStartedCreateNewApp',
                             `You can get started by creating a new application or by creating an application using a template in ${whiteLabelText} Library.`,
                             {
-                              whiteLabelText
+                              whiteLabelText,
                             }
                           )
                         : t(
                             'blankPage.getStartedCreateNewWorkflow',
                             `You can get started by creating a new workflow.`,
                             {
-                              whiteLabelText
+                              whiteLabelText,
                             }
                           )}
                     </p>
@@ -206,13 +206,6 @@ export const BlankPage = function BlankPage({
             </div>
           </div>
         </div>
-        <TemplateLibraryModal
-          show={showTemplateLibraryModal}
-          onHide={hideTemplateLibraryModal}
-          onCloseButtonClick={hideTemplateLibraryModal}
-          darkMode={darkMode}
-          appCreationDisabled={appCreationDisabled}
-        />
       </div>
     )
   );

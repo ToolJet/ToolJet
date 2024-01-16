@@ -328,7 +328,6 @@ export async function runTransformation(
 
 export async function executeActionsForEventId(_ref, eventId, events = [], mode, customVariables) {
   if (!events || events.length === 0) return;
-
   const filteredEvents = events?.filter((event) => event?.event.eventId === eventId)?.sort((a, b) => a.index - b.index);
 
   for (const event of filteredEvents) {

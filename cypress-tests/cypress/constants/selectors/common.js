@@ -246,12 +246,12 @@ export const commonSelectors = {
   CreateAppFromTemplateButton: '[data-cy="create-new-app-from-template-title"]',
   listItem: (ItemName) => {
     return `[data-cy="${cyParamName(ItemName)}-list-item"]`;
-
   },
   label: (labelName) => {
-    return `[data-cy="${labelName.replace(/\s+|(?<=[\w-])\s+(?=\w)|[^\w\s]/g, "-").toLowerCase()}-label"]`;
-
-  }
+    return `[data-cy="${labelName
+      .replace(/\s+|(?<=[\w-])\s+(?=\w)|[^\w\s]/g, "-")
+      .toLowerCase()}-label"]`;
+  },
 };
 
 export const commonWidgetSelector = {
