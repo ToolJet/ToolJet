@@ -77,7 +77,7 @@ export class OidcOAuthService {
         console.error('Error while parsing JWT', error);
       }
     }
-    const userinfoResponse: UserinfoResponse = await this.oidcClient.userinfo(access_token);
+    let userinfoResponse: UserinfoResponse = await this.oidcClient.userinfo(access_token);
     const emailData = email;
     ({ name, email } = userinfoResponse);
     if (!email && emailData) {
@@ -88,6 +88,13 @@ export class OidcOAuthService {
     const words = name?.split(' ');
     const firstName = words?.[0] || '';
     const lastName = words?.length > 1 ? words[words.length - 1] : '';
+
+    /* EXPOSE THE ACCESS AND ID TOKENS TO THE USER */
+    userinfoResponse = {
+      ...userinfoResponse,
+      access_token,
+      ...(id_token && { id_token }) 
+    }
 
     return { userSSOId: access_token, firstName, lastName, email, sso: 'openid', userinfoResponse };
   }
