@@ -46,7 +46,10 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     columnHeaderValue: null,
     deletePopupModal: false,
     columnEditPopover: false,
-    cellClick: null,
+  });
+  const [cellClick, setCellClick] = useState({
+    rowIndex: null,
+    cellIndex: null,
   });
   const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
   const [wholeScreenWidth, setWholeScreenWidth] = useState(window.innerWidth);
@@ -210,6 +213,31 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     };
   }, []);
 
+  const handleKeyDown = (e) => {
+    if (cellClick.rowIndex !== null) {
+      if (e.key === 'ArrowRight') {
+        const newIndex = cellClick.cellIndex === columHeaderLength - 1 ? 1 : cellClick.cellIndex + 1;
+        setCellClick((prevState) => ({
+          ...prevState,
+          cellIndex: newIndex,
+        }));
+      } else if (e.key === 'ArrowLeft') {
+        const newIndex = cellClick.cellIndex === 1 ? columHeaderLength - 1 : cellClick.cellIndex - 1;
+        setCellClick((prevState) => ({
+          ...prevState,
+          cellIndex: newIndex,
+        }));
+      }
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [cellClick.cellIndex]);
+
   useEffect(() => {
     moveColumnCreateElement();
   }, []);
@@ -302,11 +330,20 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }));
   };
 
-  const handleCellClick = (index) => {
-    setEditColumnHeader((prevState) => ({
-      ...prevState,
-      cellClick: index,
-    }));
+  const handleCellClick = (cellIndex, rowIndex) => {
+    if (cellClick.rowIndex === rowIndex && cellClick.cellIndex == cellIndex) {
+      setCellClick((prevState) => ({
+        ...prevState,
+        rowIndex: null,
+        cellIndex: null,
+      }));
+    } else {
+      setCellClick((prevState) => ({
+        ...prevState,
+        rowIndex: rowIndex,
+        cellIndex: cellIndex,
+      }));
+    }
   };
 
   function showTooltipForId(column) {
@@ -490,11 +527,11 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                 </td>
               </tr>
             ) : (
-              rows.map((row, index) => {
+              rows.map((row, rIndex) => {
                 prepareRow(row);
                 return (
                   <>
-                    <tr className={`${`row-tj`}`} {...row.getRowProps()} key={index}>
+                    <tr className={`${`row-tj`}`} {...row.getRowProps()} key={rIndex}>
                       {row.cells.map((cell, index) => {
                         const dataCy =
                           cell.column.id === 'selection'
@@ -510,13 +547,15 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                 ? `table-columnHeader-click`
                                 : editColumnHeader?.hoveredColumn === index
                                 ? 'table-cell-hover-background'
-                                : editColumnHeader?.cellClick === index
+                                : cellClick?.rowIndex === rIndex &&
+                                  cellClick?.cellIndex === index &&
+                                  cellClick.cellIndex !== 0
                                 ? `table-cell-click`
                                 : `table-cell`
                             }`}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
-                            onClick={() => handleCellClick(index)}
+                            onClick={() => handleCellClick(index, rIndex)}
                           >
                             {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
                           </td>

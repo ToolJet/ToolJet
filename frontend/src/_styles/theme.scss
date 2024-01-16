@@ -6909,7 +6909,9 @@ tbody {
   }
 
   .table-cell-click {
-    border: 1px solid red;
+    border: 1.5px solid var(--indigo9);
+    background-color: var(--indigo2);
+    cursor: pointer;
   }
 
   .table-columnHeader-click {
