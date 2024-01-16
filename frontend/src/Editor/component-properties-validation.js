@@ -100,8 +100,8 @@ const validate = (value, schema, _defaultValue) => {
     newValue = create(value, schema);
   } catch (structError) {
     valid = false;
-    errors.push(structError.message);
-    console.log({ structError });
+    if (structError.type === 'type') errors.push(structError.message);
+    else errors.push(`Expected a value of type ${structError.type}, but received ${JSON.stringify(structError.value)}`);
   }
 
   return [valid, errors, newValue];
