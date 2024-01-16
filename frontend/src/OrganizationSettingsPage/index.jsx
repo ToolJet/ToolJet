@@ -35,10 +35,14 @@ export function OrganizationSettings(props) {
     }
   };
 
+  if (!admin) {
+    navigate('/');
+  }
+
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
-      admin ? updateSidebarNAV('Users & permissions') : updateSidebarNAV('Workspace variables');
+      updateSidebarNAV('Users & permissions');
     });
 
     () => subscription.unsubsciption();
@@ -58,7 +62,7 @@ export function OrganizationSettings(props) {
               {sideBarNavs.map((item, index) => {
                 return (
                   <>
-                    {(admin || item == 'Workspace variables' || item == 'Copilot') && (
+                    {admin && (
                       <FolderList
                         className="workspace-settings-nav-items"
                         key={index}

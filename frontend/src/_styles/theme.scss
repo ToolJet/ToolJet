@@ -7684,7 +7684,7 @@ tbody {
   padding-left: 20px;
   padding-bottom: 24px;
   border-right: 1px solid var(--slate5);
-  &[data-name="Workspace constants"] {
+  &[data-name="Workspace constants"], &[data-name="Profile settings"] {
     border-right: none;
     border-bottom: 1px solid var(--slate5);
   }
@@ -10937,7 +10937,7 @@ tbody {
 
     .app-list {
       overflow-y: auto;
-      height: calc(100vh - 17rem);
+      height: calc(100vh - 23rem);
     }
 
     .menu-ico {
@@ -12022,4 +12022,20 @@ tbody {
   align-items: center;
   justify-content: center;
   margin-top: 1.5rem;
+}
+
+.blank-page-wrapper {
+  @media only screen and (max-width: 768px) {
+    display: none;
+  }
+}
+
+.blank-page-wrapper-mobile {
+  display: none;
+  @media only screen and (max-width: 768px) {
+    transform: translateY(80%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

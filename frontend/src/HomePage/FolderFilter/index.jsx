@@ -36,6 +36,14 @@ export default function FolderFilter({ disabled, options, onChange, value }) {
       value={currentValue}
       closeMenuOnSelect={true}
       styles={{
+        singleValue: (base) => ({
+          ...base,
+          color: 'var(--slate12)',
+        }),
+        menu: (base) => ({
+          ...base,
+          background: 'var(--slate2)',
+        }),
         dropdownIndicator: (base) => ({
           ...base,
           padding: '4px 8px',

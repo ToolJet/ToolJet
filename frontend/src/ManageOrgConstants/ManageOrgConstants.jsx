@@ -127,21 +127,21 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
   const canCreateVariable = () => {
     return canAnyGroupPerformAction(
-      'org_environment_constant_create',
+      'org_environment_variable_create',
       authenticationService.currentSessionValue.group_permissions
     );
   };
 
   const canUpdateVariable = () => {
     return canAnyGroupPerformAction(
-      'org_environment_constant_create',
+      'org_environment_variable_update',
       authenticationService.currentSessionValue.group_permissions
     );
   };
 
   const canDeleteVariable = () => {
     return canAnyGroupPerformAction(
-      'org_environment_constant_delete',
+      'org_environment_variable_delete',
       authenticationService.currentSessionValue.group_permissions
     );
   };
@@ -365,13 +365,6 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
             <div className="workspace-constant-table-card">
               <div className="manage-sso-container h-100">
                 <div className="d-flex manage-sso-wrapper-card h-100">
-                  <ManageOrgConstantsComponent.EnvironmentsTabs
-                    allEnvironments={environments}
-                    currentEnvironment={activeTabEnvironment}
-                    setActiveTabEnvironment={setActiveTabEnvironment}
-                    isLoading={isLoading}
-                    allConstants={constants}
-                  />
                   {constants.length > 0 ? (
                     <div className="w-100 workspace-constant-card-body">
                       <div className="align-items-center d-flex p-3 justify-content-between">

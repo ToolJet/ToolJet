@@ -28,6 +28,21 @@ function Layout({ children, switchDarkMode, darkMode }) {
     nextRoute,
   } = useGlobalDatasourceUnsavedChanges();
 
+  const canAnyGroupPerformAction = (action, permissions) => {
+    if (!permissions) {
+      return false;
+    }
+
+    return permissions.some((p) => p[action]);
+  };
+
+  const canCreateVariableOrConstant = () => {
+    return canAnyGroupPerformAction(
+      'org_environment_variable_create',
+      authenticationService.currentSessionValue.group_permissions
+    );
+  };
+
   return (
     <div className="row m-auto">
       <div className="col-auto p-0">
@@ -109,41 +124,42 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     </ToolTip>
                   </li>
                 )}
-                <li className="text-center cursor-pointer">
-                  <ToolTip message="Workspace settings" placement="right">
-                    <Link
-                      to={getPrivateRoute('workspace_constants')}
-                      onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_constants'), event)}
-                      className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === getPrivateRoute('workspace_constants') && `current-seleted-route`
-                      }`}
-                      data-cy="icon-workspace-settings"
-                    >
-                      <SolidIcon
-                        name="workspaceconstants"
-                        fill={router.pathname === getPrivateRoute('workspace_constants') ? '#3E63DD' : 'var(--slate8)'}
-                        width={25}
-                        viewBox={'0 0 20 20'}
-                      />
-                    </Link>
-                  </ToolTip>
-                </li>
+                {canCreateVariableOrConstant() && (
+                  <li className="text-center cursor-pointer">
+                    <ToolTip message="Workspace constants" placement="right">
+                      <Link
+                        to={getPrivateRoute('workspace_constants')}
+                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_constants'), event)}
+                        className={`tj-leftsidebar-icon-items  ${
+                          router.pathname === getPrivateRoute('workspace_constants') && `current-seleted-route`
+                        }`}
+                        data-cy="icon-workspace-constants"
+                      >
+                        <SolidIcon
+                          name="workspaceconstants"
+                          fill={
+                            router.pathname === getPrivateRoute('workspace_constants') ? '#3E63DD' : 'var(--slate8)'
+                          }
+                          width={25}
+                          viewBox={'0 0 20 20'}
+                        />
+                      </Link>
+                    </ToolTip>
+                  </li>
+                )}
 
                 <li className="tj-leftsidebar-icon-items-bottom text-center">
                   <NotificationCenter darkMode={darkMode} />
-                  <ToolTip message="Mode" placement="right">
-                    <div
-                      className="cursor-pointer  tj-leftsidebar-icon-items"
+                  <ToolTip delay={{ show: 0, hide: 0 }} message="Mode" placement="right">
+                    <Link
+                      className="cursor-pointer tj-leftsidebar-icon-items"
                       onClick={() => switchDarkMode(!darkMode)}
                       data-cy="mode-switch-button"
                     >
                       <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill="var(--slate8)" />
-                    </div>
+                    </Link>
                   </ToolTip>
-
-                  <ToolTip message="Profile" placement="right">
-                    <Settings darkMode={darkMode} checkForUnsavedChanges={checkForUnsavedChanges} />
-                  </ToolTip>
+                  <Settings darkMode={darkMode} checkForUnsavedChanges={checkForUnsavedChanges} />
                 </li>
               </ul>
             </div>

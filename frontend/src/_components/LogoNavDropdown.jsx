@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { authenticationService } from '@/_services';
 import { getPrivateRoute } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from './AppLogo';
 
 export default function LogoNavDropdown({ darkMode }) {
   const getOverlay = () => {
+    const { admin } = authenticationService?.currentSessionValue ?? {};
     return (
       <div className={`logo-nav-card settings-card card ${darkMode && 'dark-theme'}`}>
         <Link to={getPrivateRoute('dashboard')} className="dropdown-item tj-text-xsm">
@@ -14,11 +16,12 @@ export default function LogoNavDropdown({ darkMode }) {
           <span>Back to apps</span>
         </Link>
         <div className="divider"></div>
-
-        <Link target="_blank" to={getPrivateRoute('database')} className="dropdown-item tj-text-xsm">
-          <SolidIcon name="table" width="20" />
-          <span>Database</span>
-        </Link>
+        {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
+          <Link target="_blank" to={getPrivateRoute('database')} className="dropdown-item tj-text-xsm">
+            <SolidIcon name="table" width="20" />
+            <span>Database</span>
+          </Link>
+        )}
         <Link to={getPrivateRoute('data_sources')} className="dropdown-item tj-text-xsm" target="_blank">
           <SolidIcon name="datasource" width="20" />
           <span>Data sources</span>

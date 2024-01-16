@@ -17,7 +17,7 @@
         "yes": "Yes",
         "submit": "Submit",
         "select": "Select",
-        "environmentVar": "Workspace Variables",
+        "environmentVar": "Workspace constant/variable",
         "saving": "Saving...",
         "saveDatasource": "Save data source",
         "authorize": "Authorize",

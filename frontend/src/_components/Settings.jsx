@@ -19,13 +19,13 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
   function logout() {
     authenticationService.logout();
   }
-  const handleOverlayToggle = () => {
-    setShowOverlay(!showOverlay);
+  const handleOverlayToggle = (value) => {
+    setShowOverlay(value);
   };
 
   const getOverlay = () => {
     return (
-      <div className={`settings-card card ${darkMode && 'dark-theme'}`}>
+      <div className={`settings-card tj-text card ${darkMode && 'dark-theme'}`}>
         {marketplaceEnabled && (
           <>
             <Link
@@ -38,13 +38,15 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
             <div className="divider"></div>
           </>
         )}
-        <Link
-          onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
-          to={getPrivateRoute('workspace_settings')}
-          className="dropdown-item tj-text-xsm"
-        >
-          <span>Workspace settings</span>
-        </Link>
+        {admin && (
+          <Link
+            onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
+            to={getPrivateRoute('workspace_settings')}
+            className="dropdown-item tj-text-xsm"
+          >
+            <span>Workspace settings</span>
+          </Link>
+        )}
 
         <Link
           onClick={(event) => checkForUnsavedChanges(getPrivateRoute('settings'), event)}
@@ -68,9 +70,15 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
   };
 
   return (
-    <OverlayTrigger onToggle={handleOverlayToggle} trigger="click" placement={'top'} overlay={getOverlay()}>
+    <OverlayTrigger
+      onToggle={handleOverlayToggle}
+      rootClose={true}
+      trigger="click"
+      placement={'top'}
+      overlay={getOverlay()}
+    >
       <div className={cx('settings-nav-item cursor-pointer', { active: showOverlay })}>
-        <ToolTip message="Profile">
+        <ToolTip delay={{ show: 0, hide: 0 }} message="Settings">
           <div className="d-xl-block" data-cy="profile-settings">
             <SolidIcon name="settings" fill={showOverlay ? '#3E63DD' : 'var(--slate8)'} width={28} />
           </div>
