@@ -68,6 +68,7 @@ describe("Manage SSO for multi workspace", () => {
     );
 
     SSO.passwordPageElements();
+
   });
 
   it("Should verify Google SSO page elements", () => {

@@ -32,6 +32,9 @@ export const generalSettings = () => {
     cy.clearAndType(ssoSelector.allowedDomainInput, ssoText.allowedDomain);
     cy.get(ssoSelector.saveButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast);
+
+    cy.get(ssoSelector.allowedDomainInput).clear();
+    cy.get(ssoSelector.saveButton).click();
   });
 };
 
