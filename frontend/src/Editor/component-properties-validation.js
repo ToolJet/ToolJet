@@ -108,7 +108,11 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
   const coercedProperties = Object.fromEntries(
     Object.entries(resolvedProperties ?? {}).map(([propertyName, value]) => {
       const validationDefinition = propertyDefinitions[propertyName]?.validation?.schema;
-      const defaultValue = validationDefinition ? findDefault(validationDefinition, value) : undefined;
+      const defaultValue = validationDefinition?.defaultValue
+        ? validationDefinition?.defaultValue
+        : validationDefinition
+        ? findDefault(validationDefinition, value)
+        : undefined;
 
       const schema = _.isUndefined(validationDefinition)
         ? any()

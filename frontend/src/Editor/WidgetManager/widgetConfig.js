@@ -1415,14 +1415,14 @@ export const widgets = [
         type: 'code',
         displayName: 'Minimum value',
         validation: {
-          schema: { type: 'number' },
+          schema: { type: 'number', defaultValue: Number.NEGATIVE_INFINITY },
         },
       },
       maxValue: {
         type: 'code',
         displayName: 'Maximum value',
         validation: {
-          schema: { type: 'number' },
+          schema: { type: 'number', defaultValue: Number.POSITIVE_INFINITY },
         },
       },
       placeholder: {
@@ -1499,8 +1499,8 @@ export const widgets = [
       },
       properties: {
         value: { value: '99' },
-        maxValue: { value: '' },
-        minValue: { value: '' },
+        maxValue: { value: '{{Number.POSITIVE_INFINITY}}' },
+        minValue: { value: '{{Number.NEGATIVE_INFINITY}}' },
         placeholder: { value: '0' },
         decimalPlaces: { value: '{{2}}' },
         loadingState: { value: '{{false}}' },
