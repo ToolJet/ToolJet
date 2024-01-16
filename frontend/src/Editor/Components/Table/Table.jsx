@@ -132,6 +132,7 @@ export function Table({
     showAddNewRowButton,
     allowSelection,
     enablePagination,
+    allowRowSelectionOnClick,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
@@ -1455,6 +1456,8 @@ export function Table({
                               cellTextColor={cellTextColor}
                               cell={cell}
                               currentState={currentState}
+                              allowRowSelectionOnClick={allowRowSelectionOnClick}
+                              allowSelection={allowSelection}
                             />
                           </div>
                         </td>

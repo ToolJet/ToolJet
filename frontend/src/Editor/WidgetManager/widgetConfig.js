@@ -330,6 +330,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      allowRowSelectionOnClick: {
+        type: 'toggle',
+        displayName: 'Allow row selection on click',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },

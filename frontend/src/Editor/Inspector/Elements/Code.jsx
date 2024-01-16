@@ -44,9 +44,13 @@ export const Code = ({
       } else {
         return '{{true}}';
       }
-    } else {
-      return '';
     }
+    if (param === 'allowRowSelectionOnClick') {
+      const allowRowSelectionOnClick =
+        component?.component?.definition?.properties?.allowRowSelectionOnClick?.value ?? '{{true}}';
+      return allowRowSelectionOnClick;
+    }
+    return '';
   };
 
   let initialValue = !_.isEmpty(definition) ? definition.value : getDefinitionForNewProps(param.name);
