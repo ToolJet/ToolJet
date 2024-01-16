@@ -106,20 +106,24 @@ export const Container = ({
 
   useEffect(() => {
     if (currentLayout === 'mobile' && appDefinition.pages[currentPageId]?.autoComputeLayout) {
-      const mobLayouts = Object.keys(boxes).map((key) => {
-        return { ...cloneDeep(boxes[key]?.layouts?.desktop), i: key };
-      });
+      const mobLayouts = Object.keys(boxes)
+        .filter((key) => !boxes[key]?.component?.parent)
+        .map((key) => {
+          return { ...cloneDeep(boxes[key]?.layouts?.desktop), i: key };
+        });
       const updatedBoxes = cloneDeep(boxes);
       let newmMobLayouts = correctBounds(mobLayouts, { cols: 43 });
       newmMobLayouts = compact(newmMobLayouts, 'vertical', 43);
       Object.keys(boxes).forEach((id) => {
         const mobLayout = newmMobLayouts.find((layout) => layout.i === id);
-        updatedBoxes[id].layouts.mobile = {
-          left: mobLayout.left,
-          height: mobLayout.height,
-          top: mobLayout.top,
-          width: mobLayout.width,
-        };
+        updatedBoxes[id].layouts.mobile = mobLayout
+          ? {
+              left: mobLayout.left,
+              height: mobLayout.height,
+              top: mobLayout.top,
+              width: mobLayout.width,
+            }
+          : updatedBoxes[id].layouts.desktop;
       });
       setBoxes({ ...updatedBoxes });
       // console.log('currentLayout', data);
