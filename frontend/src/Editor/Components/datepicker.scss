@@ -1,10 +1,11 @@
 .tj-datepicker-widget {
     border-radius: 6px !important;
-    border: 1px solid var(--slate-5) !important;
-    background: #FFF;
+    border: 1px solid var(--slate5) !important;
+    // background: var(--base);
     box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
     // background: red !important;
     width: 278px;
+    padding: 0px;
 }
 
 .react-datepicker__header {
@@ -13,12 +14,26 @@
     border: none;
 }
 
-.react-datepicker__navigation {
+.tj-datepicker-widget-left {
+    position: absolute;
+    left: 16px;
+}
+
+.tj-datepicker-widget-right {
+    position: absolute;
+    right: 16px;
+}
+
+
+.tj-datepicker-widget-arrows {
     box-shadow: 0px 1px 0px 0px #0000000B;
-    border: 1px solid #D7DBDF;
+    border: 1px solid var(--slate7);
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 28px;
+    width: 28px;
+    background-color: var(--base) !important;
 }
 
 .react-datepicker__navigation-icon--previous {
@@ -78,6 +93,7 @@
 }
 
 .react-datepicker-time__input {
+
     input {
         width: 205px !important;
         height: 32px !important;
@@ -85,6 +101,8 @@
         background: #FFF;
         box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
         border: 1px solid var(--tj-text-input-widget-border-default);
+        padding-left: 10px;
+
     }
 }
 
@@ -94,4 +112,85 @@
         padding: 0;
         padding-left: 2px;
     }
+}
+
+input[type="time"] {
+    position: relative;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+    display: block;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    background: transparent;
+}
+
+.react-datepicker-popper[data-placement^=bottom] {
+    padding-top: 0px !important;
+}
+
+.react-datepicker__day {
+    margin: 0px;
+}
+
+.react-datepicker__week {
+    height: 28px;
+}
+
+.react-datepicker__day-name,
+.react-datepicker__day,
+.react-datepicker__time-name {
+    margin: 0px;
+}
+
+.react-datepicker__day-names {
+    margin: 0rem 0.4rem;
+    height: 24px;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+}
+
+select {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    padding-right: 1em;
+    /* Add some padding on the right to create space for custom arrow */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23424242" width="18px" height="18px"><path d="M7 10l5 5 5-5z" /></svg>');
+    /* Add a custom arrow (you can use your own SVG) */
+    background-repeat: no-repeat;
+    background-position: right center;
+    border: none;
+    /* Remove the default border */
+    padding: 8px;
+    /* Adjust padding as needed */
+    cursor: pointer;
+    /* Add pointer cursor for better usability */
+    background: none;
+    padding: 0px;
+    height: 24px;
+    text-align: center;
+    color: var(--slate12);
+}
+
+/* Optional: Style when select is focused */
+select:focus {
+    outline: none;
+    /* Remove default focus outline */
+    // box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    /* Add a subtle box-shadow when focused */
+}
+
+.custom-input-datepicker {
+    // border-radius: 6px;
+    border: 1px solid var(--tj-text-input-widget-border-default);
+    background: var(--base);
+    box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.04);
+    text-align: left;
+    width: 100%;
 }

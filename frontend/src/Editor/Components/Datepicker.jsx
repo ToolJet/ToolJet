@@ -1,18 +1,20 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, forwardRef, useState, useRef } from 'react';
 import DatePickerComponent from 'react-datepicker';
 import { getMonth, getYear } from 'date-fns';
 import range from 'lodash/range';
-
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import './datepicker.scss';
-import { TimePicker } from './Timepicker';
+
+const MyDatePicker = forwardRef(({ value, onClick, styles }, ref) => {
+  return <input className="custom-input-datepicker" value={value} onClick={onClick} ref={ref} style={styles}></input>;
+});
 
 export const Datepicker = function Datepicker({
   height,
@@ -43,9 +45,20 @@ export const Datepicker = function Datepicker({
     direction,
     color,
     auto,
+    textColor,
     errTextColor,
     iconColor,
   } = styles;
+
+  const datepickerinputStyles = {
+    backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
+    borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
+    color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
+    boxShadow,
+    borderRadius: `${borderRadius}px`,
+    height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    paddingLeft: !component?.definition?.styles?.iconVisibility?.value ? '10px' : '29px',
+  };
   const labelRef = useRef();
 
   const [date, setDate] = useState(null);
@@ -63,7 +76,6 @@ export const Datepicker = function Datepicker({
       return moment(date).format('LT');
     }
   };
-
   const onDateChange = (date) => {
     setShowValidationError(true);
     setDate(date);
@@ -194,6 +206,18 @@ export const Datepicker = function Datepicker({
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
   // eslint-disable-next-line import/namespace
 
+  const loaderStyle = {
+    right:
+      direction === 'right' && defaultAlignment === 'side'
+        ? padding == 'default'
+          ? `${labelWidth + 14}px`
+          : `${labelWidth + 17}px`
+        : padding == 'default'
+        ? '13px'
+        : '11px',
+    top: `${defaultAlignment === 'top' ? '53%' : ''}`,
+    transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
+  };
   const [startDate, setStartDate] = useState(new Date());
   const years = range(1990, getYear(new Date()) + 1, 1);
   const months = [
@@ -213,15 +237,10 @@ export const Datepicker = function Datepicker({
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState('');
 
-  const togglePopover = () => {
-    setPopoverOpen(!popoverOpen);
-  };
-
-  const handleTimeSelect = (time) => {
-    setSelectedTime(time);
-  };
-  const ExampleCustomTimeInput = ({ date, value, onChange }) => (
-    <input value={value} onChange={(e) => onChange(e.target.value)} style={{ border: 'solid 1px pink' }} />
+  const ExampleCustomInput = ({ value, onClick }, ref) => (
+    <input onClick={onClick} ref={ref}>
+      {value}
+    </input>
   );
 
   const renderDatePicker = () => (
@@ -243,6 +262,33 @@ export const Datepicker = function Datepicker({
           // height,
         }}
       >
+        {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
+          <IconElement
+            style={{
+              width: '16px',
+              height: '16px',
+              left:
+                direction === 'right'
+                  ? padding == 'default'
+                    ? '13px'
+                    : '11px'
+                  : defaultAlignment === 'top'
+                  ? padding == 'default'
+                    ? '13px'
+                    : '11px'
+                  : `${labelWidth + 15}px`,
+              position: 'absolute',
+              top: `${
+                defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
+              }`,
+              transform: ' translateY(-50%)',
+              color: iconColor,
+              zIndex: 100,
+              // backgroundColor: 'red',
+            }}
+            stroke={1.5}
+          />
+        )}
         {label && width > 0 && (
           <label
             ref={labelRef}
@@ -267,34 +313,31 @@ export const Datepicker = function Datepicker({
 
         <DatePickerComponent
           showIcon
-          // calendarIcon={<FaCalendarAlt />}
-
           calendarIcon={<IconElement stroke={1.5} />}
-          className={`input-field form-control  ${
+          className={`input-field form-control tj-text-input-widget  ${
             !isValid && showValidationError ? 'is-invalid' : ''
           } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
           popperClassName="tj-datepicker-widget"
           selected={date}
-          value={date !== null ? computeDateString(date) : 'select date'}
           onChange={(date) => onDateChange(date)}
-          // selected={startDate}
-          // onChange={(date) => setStartDate(date)}
+          value={date !== null ? computeDateString(date) : 'select date'}
           showTimeInput={enableTime ? true : false}
           showTimeSelectOnly={enableDate ? false : true}
           onFocus={(event) => {
             onComponentClick(id, component, event);
           }}
-          // customTimeInput={<ExampleCustomTimeInput />}
+          // customInput={<MyDatePicker styles={datepickerinputStyles} />}
           showMonthDropdown
           showYearDropdown
           dropdownMode="select"
           excludeDates={excludedDates}
-          // customInput={
-          //   <input className="text-input" style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />
-          // }
           timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
           showPopperArrow={false}
-          showTimeSelect={false}
+          // timeFormat="HH:mm:ss:ssss"
+          // selected={startDate}
+          // onChange={(date) => setStartDate(date)}
+          minDate={new Date(component?.definition?.validation?.minDate?.value)}
+          maxDate={component?.definition?.validation?.maxDate?.value}
           renderCustomHeader={({
             date,
             changeYear,
@@ -304,47 +347,61 @@ export const Datepicker = function Datepicker({
             prevMonthButtonDisabled,
             nextMonthButtonDisabled,
           }) => (
-            <div
-              style={{
-                margin: 10,
-                display: 'flex',
-                justifyContent: 'center',
-              }}
-            >
-              <button onClick={decreaseMonth} disabled={prevMonthButtonDisabled}>
-                {'<'}
-              </button>
-              <select value={getYear(date)} onChange={({ target: { value } }) => changeYear(value)}>
-                {years.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={months[getMonth(date)]}
-                onChange={({ target: { value } }) => changeMonth(months.indexOf(value))}
+            <>
+              <div
+                style={{
+                  margin: 10,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  height: '44px',
+                  borderBottom: `1px solid var(--slate7)`,
+                }}
               >
-                {months.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+                <button
+                  className="tj-datepicker-widget-arrows tj-datepicker-widget-left "
+                  onClick={decreaseMonth}
+                  disabled={prevMonthButtonDisabled}
+                >
+                  <SolidIcon name="cheveronleft" />
+                </button>
+                <div>
+                  <select
+                    value={months[getMonth(date)]}
+                    onChange={({ target: { value } }) => changeMonth(months.indexOf(value))}
+                  >
+                    {months.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  <select value={getYear(date)} onChange={({ target: { value } }) => changeYear(value)}>
+                    {years.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <button onClick={increaseMonth} disabled={nextMonthButtonDisabled}>
-                {'>'}
-              </button>
-            </div>
+                <button
+                  className="tj-datepicker-widget-arrows tj-datepicker-widget-right "
+                  onClick={increaseMonth}
+                  disabled={nextMonthButtonDisabled}
+                >
+                  <SolidIcon name="cheveronright" />
+                </button>
+              </div>
+            </>
           )}
-          customTimeInput={
-            <TimePicker isOpen={popoverOpen} togglePopover={togglePopover} onSelect={handleTimeSelect} />
-          }
-          // selected={startDate}
-          // onChange={(date) => setStartDate(date)}
         />
-        <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
+        {loading && <Loader style={{ ...loaderStyle }} width="16" />}
+
+        <div
+          data-cy="date-picker-invalid-feedback"
+          className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}
+          style={{ color: errTextColor, textAlign: direction == 'left' && 'end' }}
+        >
           {showValidationError && validationError}
         </div>
       </div>
@@ -363,14 +420,3 @@ export const Datepicker = function Datepicker({
     </>
   );
 };
-// display: flex;
-// padding: var(--3, 6px) var(--5, 10px);
-// align-items: center;
-// gap: var(--7, 16px);
-// align-self: stretch;
-// Copy
-// border-radius: var(--3, 6px);
-
-// border: var(--0, 1px) solid var(--Slate-12, #11181C);
-
-// background: var(--Bases-Transparent,
