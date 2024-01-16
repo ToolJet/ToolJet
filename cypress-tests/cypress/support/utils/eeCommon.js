@@ -11,7 +11,10 @@ import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 import { eeGroupsSelector } from "Selectors/eeCommon";
 import { eeGroupsText } from "Texts/eeCommon";
-import { verifyOnboardingQuestions } from "Support/utils/onboarding";
+import {
+  verifyOnboardingQuestions,
+  verifyCloudOnboardingQuestions,
+} from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
 import { usersText } from "Texts/manageUsers";
@@ -19,7 +22,6 @@ import { usersSelector } from "Selectors/manageUsers";
 import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
 import { promoteApp, releaseApp } from "Support/utils/multiEnv";
-
 
 export const oidcSSOPageElements = () => {
   cy.get(ssoEeSelector.oidcToggle).then(($el) => {
@@ -140,6 +142,11 @@ export const deleteAssignedDatasources = () => {
 };
 
 export const userSignUp = (fullName, email, workspaceName) => {
+  const verificationFunction =
+    Cypress.env("environment") === "Enterprise"
+      ? verifyOnboardingQuestions
+      : verifyCloudOnboardingQuestions;
+
   let invitationLink = "";
   cy.visit("/");
   cy.wait(500);
@@ -158,11 +165,8 @@ export const userSignUp = (fullName, email, workspaceName) => {
     cy.visit(invitationLink);
     cy.get(commonSelectors.setUpToolJetButton).click();
     cy.wait(4000);
-  });
-  cy.get("body").then(($body) => {
-    if ($body.find(commonSelectors.appCreateButton).length < 0) {
-      verifyOnboardingQuestions(fullName, workspaceName);
-    }
+
+    verificationFunction(fullName, workspaceName);
   });
 };
 
@@ -188,8 +192,7 @@ export const resetAllowPersonalWorkspace = () => {
     dbconfig: Cypress.env("app_db"),
     sql: "UPDATE instance_settings SET value = 'true' WHERE key = 'ALLOW_PERSONAL_WORKSPACE';",
   });
-}
-
+};
 
 export const addNewUser = (firstName, email, companyName) => {
   common.navigateToManageUsers();
@@ -502,11 +505,11 @@ export const createAnAppWithSlug = (appName, slug) => {
   cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
   cy.wait(2000);
   cy.get(commonWidgetSelector.modalCloseButton).click();
-}
+};
 
 export const updateLicense = (key) => {
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
     sql: `update instance_settings set value='${key}', updated_at= NOW() where key='LICENSE_KEY';`,
-  })
-}
+  });
+};
