@@ -15,8 +15,6 @@ export const BlankPage = function BlankPage({
   openCreateAppFromTemplateModal,
   creatingApp,
   darkMode,
-  showTemplateLibraryModal,
-  hideTemplateLibraryModal,
   viewTemplateLibraryModal,
   appType,
   canCreateApp,
@@ -179,13 +177,6 @@ export const BlankPage = function BlankPage({
             </div>
           </div>
         </div>
-        <TemplateLibraryModal
-          show={showTemplateLibraryModal}
-          onHide={hideTemplateLibraryModal}
-          onCloseButtonClick={hideTemplateLibraryModal}
-          darkMode={darkMode}
-          appCreationDisabled={appCreationDisabled}
-        />
       </div>
     )
   );

@@ -21,12 +21,12 @@ export const verifyrenewPlanModal = () => {
 };
 
 export const verifyExpiredLicenseBanner = () => {
-    cy.get('[data-cy="enterprise-gradient-icon"]').should("be.visible");
+    cy.get(licenseSelectors.enterpriseGradientIcon).should("be.visible");
     cy.get('[data-cy="warning-text-header"] > div').verifyVisibleElement(
         "have.text",
         "Your license has expired! "
     );
-    cy.get('[data-cy="warning-info-text"]').verifyVisibleElement(
+    cy.get(licenseSelectors.warningInfoText).verifyVisibleElement(
         "have.text",
         " Renew your subscription to continue accessing ToolJet's premium features"
     );

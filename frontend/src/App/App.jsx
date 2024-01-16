@@ -278,7 +278,11 @@ class AppComponent extends React.Component {
                 />
                 <Route
                   path="configure-git"
-                  element={<GitSyncConfig switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                  element={
+                    <AdminRoute>
+                      <GitSyncConfig switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
                 />
                 <Route
                   path="workspace-constants"

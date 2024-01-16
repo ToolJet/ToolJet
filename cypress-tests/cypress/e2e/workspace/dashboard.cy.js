@@ -190,6 +190,7 @@ describe("dashboard", () => {
           });
       });
 
+    cy.wait(1000);
     viewAppCardOptions(data.appName);
     cy.get(
       commonSelectors.appCardOptions(commonText.changeIconOption)

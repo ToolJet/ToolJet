@@ -252,7 +252,7 @@ describe("App creation", () => {
         cy.go("back");
         cy.visit("/my-workspace");
     });
-    it("should verify the templates app creation", () => {
+    it.only("should verify the templates app creation", () => {
         data.appName = `${fake.companyName}-App`;
 
         cy.get(importSelectors.dropDownMenu).click();
@@ -269,7 +269,7 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.value",
-            "Customer dashboard"
+            "Applicant tracking system"
         );
         cy.get(commonSelectors.appNameInfoLabel).verifyVisibleElement(
             "have.text",

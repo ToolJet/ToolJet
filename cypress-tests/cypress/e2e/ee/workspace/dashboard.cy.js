@@ -16,7 +16,7 @@ describe("dashboard", {
   const selector =
     Cypress.env("environment") === "Enterprise"
       ? commonEeSelectors.instanceSettingIcon
-      : '[data-cy="icon-settings"]';
+      : commonEeSelectors.settingsIcon;
 
 
   it("should verify the elements on empty dashboard", () => {

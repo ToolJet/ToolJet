@@ -1,6 +1,10 @@
 import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { verifyTooltip, navigateToManageSSO, navigateToManageGroups } from "Support/utils/common";
+import {
+    verifyTooltip,
+    navigateToManageSSO,
+    navigateToManageGroups,
+} from "Support/utils/common";
 import { addNewUser } from "Support/utils/eeCommon";
 import {
     commonEeSelectors,
@@ -21,8 +25,8 @@ describe("", () => {
         cy.defaultWorkspaceLogin();
     });
     after(() => {
-        updateLicense(Cypress.env('license-key'))
-    })
+        updateLicense(Cypress.env("license-key"));
+    });
     it("should verify license page elements", () => {
         cy.get(commonEeSelectors.instanceSettingIcon).click();
         cy.get(licenseSelectors.licenseOption).click();
@@ -147,7 +151,7 @@ describe("", () => {
         // =>Icon validation.
 
         cy.get(licenseSelectors.accessOption).click();
-        cy.get('[data-cy="access-tab-title"]').verifyVisibleElement(
+        cy.get(licenseSelectors.accessTabTitle).verifyVisibleElement(
             "have.text",
             "Access"
         );
@@ -186,7 +190,7 @@ describe("", () => {
     });
     it("should verify banners, renew modal and tooltips for expired license", () => {
         let ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-
+        //app creation
         cy.get(commonEeSelectors.instanceSettingIcon).click();
         cy.get(licenseSelectors.licenseOption).click();
         cy.get(licenseSelectors.licenseKeyOption).click();
@@ -203,7 +207,7 @@ describe("", () => {
         );
         cy.wait(2000);
 
-        cy.get('[data-cy="enterprise-gradient-icon"]').should("be.visible");
+        cy.get(licenseSelectors.enterpriseGradientIcon).should("be.visible");
         cy.get('[data-cy="warning-text-header"] > div').verifyVisibleElement(
             "have.text",
             "Your license has expired! Renew"
@@ -219,7 +223,7 @@ describe("", () => {
 
         cy.get(instanceSettingsSelector.manageInstanceSettings).click();
         cy.get('[data-cy="enterprise-gradient-icon"]:eq(1)').should("be.visible");
-        cy.get('[data-cy="paid-feature-button"]').verifyVisibleElement(
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
             "have.text",
             "Paid feature"
         );
@@ -235,7 +239,7 @@ describe("", () => {
 
         cy.get('[data-cy="white-labelling-list-item"]').click();
         cy.get('[data-cy="enterprise-gradient-icon"]:eq(1)').should("be.visible");
-        cy.get('[data-cy="paid-feature-button"]').verifyVisibleElement(
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
             "have.text",
             "Paid feature"
         );
@@ -251,6 +255,7 @@ describe("", () => {
 
         cy.get(commonSelectors.globalDataSourceIcon).click();
         selectAndAddDataSource("databases", "PostgreSQL", ds);
+        cy.wait(1000);
         verifyTooltipDisabled(
             '[data-cy="staging-label"]',
             "Multi-environments are available only in paid plans"
@@ -278,7 +283,7 @@ describe("", () => {
         verifyrenewPlanModal();
 
         cy.get(groupsSelector.permissionsLink).click();
-        cy.get('[data-cy="lock-gradient"]').should("be.visible");
+        cy.get(licenseSelectors.lockGradientIcon).should("be.visible");
         cy.get(groupsSelector.appsCreateCheck).verifyVisibleElement("be.disabled");
         cy.get(groupsSelector.appsDeleteCheck).verifyVisibleElement("be.disabled");
         cy.get(groupsSelector.foldersCreateCheck).verifyVisibleElement(
@@ -289,7 +294,7 @@ describe("", () => {
         );
 
         cy.get('[data-cy="datasource-link"]').click();
-        cy.get('[data-cy="datasource-gradient"]').should("be.visible");
+        cy.get(licenseSelectors.dsGradientIcon).should("be.visible");
 
         verifyTooltip(
             commonEeSelectors.auditLogIcon,
@@ -309,7 +314,7 @@ describe("", () => {
             '[data-cy="ldap-list-item"]',
             "LDAP is available only\n        in paid plans"
         );
-        cy.reload()
+        cy.reload();
         verifyTooltipDisabled(
             '[data-cy="saml-list-item"]',
             "SAML is available only\n        in paid plans"
@@ -317,7 +322,7 @@ describe("", () => {
 
         cy.get('[data-cy="custom-styles-list-item"]').click();
         cy.get('[data-cy="enterprise-gradient-icon"]:eq(1)').should("be.visible");
-        cy.get('[data-cy="paid-feature-button"]').verifyVisibleElement(
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
             "have.text",
             "Paid feature"
         );
