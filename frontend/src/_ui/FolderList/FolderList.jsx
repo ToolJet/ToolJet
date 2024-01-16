@@ -65,16 +65,6 @@ function FolderList({
           data-tooltip-content={toolTipText}
           data-tooltip-id="button-content"
         >
-          {toolTipText && (
-            <Tooltip
-              style={{ maxWidth: '300px' }}
-              id="button-content"
-              // className="tooltip"
-              place="bottom"
-              show={isHovered}
-            />
-          )}
-
           {LeftIcon && (
             <div className="tj-list-item-icon">
               <SolidIcon name={LeftIcon} />
@@ -88,7 +78,6 @@ function FolderList({
             <>
               <div ref={target}>
                 <ButtonSolid
-                  title={'Add Page'}
                   className="groups-list-option-button"
                   fill={`var(--slate12)`}
                   leftIcon="options"

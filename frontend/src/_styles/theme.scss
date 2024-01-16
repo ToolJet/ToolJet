@@ -11964,6 +11964,12 @@ tbody {
   gap: 12px
 }
 
+.overflow-tooltip {
+  .tooltip-inner {
+    max-width: 100%;
+  }
+}
+
 #inspector-tabpane-properties {
   .accordion {
     .accordion-item:last-child {

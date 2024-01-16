@@ -13,6 +13,7 @@ import { Loader } from '../ManageSSO/Loader';
 import Popover from 'react-bootstrap/Popover';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
 import ModalBase from '@/_ui/Modal';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 class ManageGroupPermissionsComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -532,7 +533,9 @@ class ManageGroupPermissionsComponent extends React.Component {
                           .toLowerCase()
                           .replace(/\s+/g, '-')}
                       >
-                        <span>{this.humanizeifDefaultGroupName(permissionGroup.group)}</span>
+                        <span>
+                          <OverflowTooltip>{this.humanizeifDefaultGroupName(permissionGroup.group)}</OverflowTooltip>
+                        </span>
                       </FolderList>
                     );
                   })}
