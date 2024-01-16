@@ -41,7 +41,7 @@ export default function DragContainerNested({
 
   return (
     <div className="root h-100">
-      <div className={`container p-0 h-100 drag-container-parent`} component-id={parent}>
+      <div className={`container-fluid p-0 h-100 drag-container-parent`} component-id={parent}>
         {/* <button onClick={() => setList((list) => [...list, { id: new Date().getTime() }])}>Add</button> */}
         {list.map((i) => (
           <div
