@@ -229,7 +229,7 @@ class GitSyncConfigComponent extends Component {
   };
 
   validateGitUrl = (url) => {
-    const regexPattern = /^git@[^/]+\.com:[^/]+\/[^/]+\.git$/;
+    const regexPattern = /^git@[^/]+\/[^/]+\.git$/;
     return regexPattern.test(url);
   };
 
