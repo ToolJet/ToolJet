@@ -712,7 +712,7 @@ describe("Workspace constants", () => {
         );
     });
 
-    it.only("should verify the constants resolving value on components and query", () => {
+    it("should verify the constants resolving value on components and query", () => {
         data.constantsName = fake.firstName
             .toLowerCase()
             .replaceAll("[^A-Za-z]", "");

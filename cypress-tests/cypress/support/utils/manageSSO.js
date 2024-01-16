@@ -1,30 +1,12 @@
-import {
-  commonEeSelectors,
-  ssoEeSelector,
-  instanceSettingsSelector,
-  multiEnvSelector,
-} from "Selectors/eeCommon";
-import { ssoEeText } from "Texts/eeCommon";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import * as common from "Support/utils/common";
-import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
-import { eeGroupsSelector } from "Selectors/eeCommon";
-import { eeGroupsText } from "Texts/eeCommon";
-import {
-  verifyOnboardingQuestions,
-  verifyCloudOnboardingQuestions,
-} from "Support/utils/onboarding";
-import { commonText } from "Texts/common";
-import { dashboardText } from "Texts/dashboard";
-import { usersText } from "Texts/manageUsers";
-import { usersSelector } from "Selectors/manageUsers";
+import { commonSelectors } from "Selectors/common";
 import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
-import { promoteApp, releaseApp } from "Support/utils/multiEnv";
+import * as common from "Support/utils/common";
+import { commonText } from "Texts/common";
+import { dashboardSelector } from "Selectors/dashboard";
 
-export const oidcSSOPageElements = () => {
-  cy.get(ssoEeSelector.oidcToggle).then(($el) => {
+export const generalSettings = () => {
+  cy.get(ssoSelector.enableSignUpToggle).then(($el) => {
     if ($el.is(":checked")) {
       cy.get(ssoSelector.enableSignUpToggle).uncheck();
       cy.get(ssoSelector.cancelButton).click();
@@ -50,9 +32,10 @@ export const oidcSSOPageElements = () => {
     cy.clearAndType(ssoSelector.allowedDomainInput, ssoText.allowedDomain);
     cy.get(ssoSelector.saveButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast);
-
+    cy.wait(500);
     cy.get(ssoSelector.allowedDomainInput).clear();
     cy.get(ssoSelector.saveButton).click();
+    cy.wait(500);
   });
 };
 
@@ -61,248 +44,319 @@ export const googleSSOPageElements = () => {
     if ($el.is(":checked")) {
       cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
-        ssoEeText.enabledLabel
+        ssoText.enabledLabel
       );
-      cy.get(ssoEeSelector.oidcToggle).uncheck();
+      cy.get(ssoSelector.googleEnableToggle).uncheck();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("OpenID")
+        ssoText.toggleUpdateToast("Google")
       );
-      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
-        ssoEeText.disabledLabel
+        ssoText.disabledLabel
       );
-      cy.get(ssoEeSelector.oidcToggle).check();
+      cy.get(ssoSelector.googleEnableToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("OpenID")
+        ssoText.toggleUpdateToast("Google")
       );
-      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
-        ssoEeText.enabledLabel
+        ssoText.enabledLabel
       );
     } else {
-      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoEeText.disabledLabel
-      );
-      cy.get(ssoEeSelector.oidcToggle).check();
+      cy.get(ssoSelector.googleEnableToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("OpenID")
+        ssoText.toggleUpdateToast("Google")
       );
-      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
-        ssoEeText.enabledLabel
+        ssoText.enabledLabel
       );
-      cy.get(ssoEeSelector.oidcToggle).uncheck();
+
+      cy.get(ssoSelector.googleEnableToggle).uncheck();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("OpenID")
+        ssoText.toggleUpdateToast("Google")
       );
-      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
-        ssoEeText.disabledLabel
+        ssoText.disabledLabel
       );
-      cy.get(ssoEeSelector.oidcToggle).check();
-      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
+      cy.get(ssoSelector.googleEnableToggle).check();
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
-        ssoEeText.enabledLabel
+        ssoText.enabledLabel
       );
     }
-    cy.clearAndType(ssoEeSelector.nameInput, ssoEeText.testName);
-    cy.clearAndType(ssoEeSelector.clientIdInput, ssoEeText.testclientId);
-    cy.clearAndType(
-      ssoEeSelector.clientSecretInput,
-      ssoEeText.testclientSecret
-    );
-    cy.clearAndType(
-      ssoEeSelector.WellKnownUrlInput,
-      ssoEeText.testWellknownUrl
-    );
-    cy.get(commonEeSelectors.saveButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      ssoText.toggleUpdateToast("OpenID")
-    );
-    cy.get(ssoEeSelector.nameInput).should("have.value", ssoEeText.testName);
-    cy.get(ssoEeSelector.clientIdInput).should(
-      "have.value",
-      ssoEeText.testclientId
-    );
-    cy.get(ssoEeSelector.clientSecretInput).should(
-      "have.value",
-      ssoEeText.testclientSecret
-    );
-    cy.get(ssoEeSelector.WellKnownUrlInput).should(
-      "have.value",
-      ssoEeText.testWellknownUrl
-    );
+    cy.clearAndType(ssoSelector.clientIdInput, ssoText.testClientId);
+    cy.get(ssoSelector.cancelButton).click();
+    cy.clearAndType(ssoSelector.clientIdInput, ssoText.clientId);
+    cy.get(ssoSelector.saveButton).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.toggleUpdateToast("Google"));
+    cy.get(ssoSelector.clientIdInput).should("have.value", ssoText.clientId);
   });
 };
 
-export const resetDsPermissions = () => {
-  common.navigateToManageGroups();
-  cy.wait(200);
-  cy.get(groupsSelector.permissionsLink).click();
-
-  cy.get(groupsSelector.appsCreateCheck).then(($el) => {
+export const gitSSOPageElements = () => {
+  cy.get(ssoSelector.gitEnableToggle).then(($el) => {
     if ($el.is(":checked")) {
-      cy.get(groupsSelector.appsCreateCheck).uncheck();
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoText.enabledLabel
+      );
+      cy.get(ssoSelector.gitEnableToggle).uncheck();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        ssoText.toggleUpdateToast("GitHub")
+      );
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoText.disabledLabel
+      );
+      cy.get(ssoSelector.gitEnableToggle).check();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        ssoText.toggleUpdateToast("GitHub")
+      );
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoText.enabledLabel
+      );
+    } else {
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoText.disabledLabel
+      );
+      cy.get(ssoSelector.gitEnableToggle).check();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        ssoText.toggleUpdateToast("GitHub")
+      );
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoText.enabledLabel
+      );
+      cy.get(ssoSelector.gitEnableToggle).uncheck();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        ssoText.toggleUpdateToast("GitHub")
+      );
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoText.disabledLabel
+      );
+      cy.get(ssoSelector.gitEnableToggle).check();
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoText.enabledLabel
+      );
     }
+    cy.clearAndType(ssoSelector.hostNameInput, ssoText.hostName);
+    cy.clearAndType(ssoSelector.clientIdInput, ssoText.clientId);
+    cy.clearAndType(ssoSelector.clientSecretInput, ssoText.testClientId);
+    cy.get(ssoSelector.saveButton).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.toggleUpdateToast("GitHub"));
+    cy.get(ssoSelector.hostNameInput).should("have.value", ssoText.hostName);
+    cy.get(ssoSelector.clientIdInput).should("have.value", ssoText.clientId);
+    cy.get(ssoSelector.clientSecretInput).should(
+      "have.value",
+      ssoText.testClientId
+    );
   });
-  cy.get(eeGroupsSelector.dsCreateCheck).then(($el) => {
+};
+
+export const passwordPageElements = () => {
+  cy.get(ssoSelector.passwordEnableToggle).then(($el) => {
     if ($el.is(":checked")) {
-      cy.get(eeGroupsSelector.dsCreateCheck).uncheck();
+      cy.get(ssoSelector.passwordEnableToggle).uncheck();
+      cy.get(commonSelectors.modalComponent).should("be.visible");
+      cy.get(commonSelectors.modalMessage).verifyVisibleElement(
+        "have.text",
+        ssoText.passwordDisableWarning
+      );
+      cy.get(commonSelectors.buttonSelector("Yes")).click();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        ssoText.passwordDisabledToast
+      );
+
+      cy.get(ssoSelector.passwordEnableToggle).check();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        ssoText.passwordEnabledToast
+      );
+    } else {
+      cy.get(ssoSelector.passwordEnableToggle).check();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        ssoText.passwordEnabledToast
+      );
+
+      cy.get(ssoSelector.passwordEnableToggle).uncheck();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        ssoText.passwordDisabledToast
+      );
+
+      cy.get(ssoSelector.passwordEnableToggle).check();
     }
   });
-  cy.get(eeGroupsSelector.dsDeleteCheck).then(($el) => {
+};
+
+export const visitWorkspaceLoginPage = () => {
+  cy.get(ssoSelector.generalSettingsElements.generalSettings).click();
+  cy.get(ssoSelector.workspaceLoginUrl).then(($temp) => {
+    const url = $temp.text();
+    common.logout();
+    cy.wait(1000)
+    cy.visit(url);
+  });
+};
+
+export const enableDefaultSSO = () => {
+  common.navigateToManageSSO();
+  cy.get("body").then(($el) => {
+    if (!$el.text().includes("Allowed domains")) {
+      cy.get(ssoSelector.generalSettingsElements.generalSettings).click();
+    }
+  });
+  cy.get(ssoSelector.allowDefaultSSOToggle).then(($el) => {
+    if (!$el.is(":checked")) {
+      cy.get(ssoSelector.allowDefaultSSOToggle).uncheck();
+      cy.get(ssoSelector.saveButton).click();
+      cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast);
+    }
+  });
+};
+
+export const disableDefaultSSO = () => {
+  common.navigateToManageSSO();
+  cy.get("body").then(($el) => {
+    if (!$el.text().includes("Allowed domains")) {
+      cy.get(ssoSelector.generalSettingsElements.generalSettings).click();
+    }
+  });
+  cy.get(ssoSelector.allowDefaultSSOToggle).then(($el) => {
     if ($el.is(":checked")) {
-      cy.get(eeGroupsSelector.dsDeleteCheck).uncheck();
+      cy.get(ssoSelector.allowDefaultSSOToggle).uncheck();
+      cy.get(ssoSelector.saveButton).click();
+      cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast);
     }
   });
 };
 
-export const deleteAssignedDatasources = () => {
-  common.navigateToManageGroups();
-  cy.get('[data-cy="datasource-link"]').click();
-  cy.get("body").then(($body) => {
-    const removeAllButtons = $body.find('[data-cy="remove-button"]');
-    if (removeAllButtons.length > 0) {
-      cy.get('[data-cy="remove-button"]').click({ multiple: true });
-    }
-  });
+export const workspaceLoginPageElements = (workspaceName) => {
+  signInPageElements();
+  cy.get(ssoSelector.workspaceSubHeader).verifyVisibleElement(
+    "have.text",
+    ssoText.workspaceSubHeader(workspaceName)
+  );
 };
 
-export const userSignUp = (fullName, email, workspaceName) => {
-  const verificationFunction =
-    Cypress.env("environment") === "Enterprise"
-      ? verifyOnboardingQuestions
-      : verifyCloudOnboardingQuestions;
-
-  let invitationLink = "";
-  cy.visit("/");
-  cy.wait(500);
-  cy.get(commonSelectors.createAnAccountLink).realClick();
-  cy.clearAndType(commonSelectors.nameInputField, fullName);
-  cy.clearAndType(commonSelectors.emailInputField, email);
-  cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
-  cy.get(commonSelectors.signUpButton).click();
-
-  cy.wait(500);
-  cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `select invitation_token from users where email='${email}';`,
-  }).then((resp) => {
-    invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
-    cy.visit(invitationLink);
-    cy.get(commonSelectors.setUpToolJetButton).click();
-    cy.wait(4000);
-
-    verificationFunction(fullName, workspaceName);
-  });
+export const passwordLoginVisible = () => {
+  cy.get(commonSelectors.workEmailInputField).should("be.visible");
+  cy.get(commonSelectors.passwordInputField).should("be.visible");
+  cy.get(commonSelectors.loginButton).verifyVisibleElement(
+    "have.text",
+    commonText.loginButton
+  );
 };
 
-// export const resetAllowPersonalWorkspace = () => {
-//   cy.get(commonEeSelectors.instanceSettingIcon).click();
-//   cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-//   cy.get(instanceSettingsSelector.allowWorkspaceToggle)
-//     .eq(0)
-//     .then(($el) => {
-//       if (!$el.is(":checked")) {
-//         cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).check();
-//         cy.get(commonEeSelectors.saveButton).click();
-//         cy.verifyToastMessage(
-//           commonSelectors.toastMessage,
-//           "Instance settings have been updated"
-//         );
-//       }
-//     });
-// };
-
-export const resetAllowPersonalWorkspace = () => {
-  cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: "UPDATE instance_settings SET value = 'true' WHERE key = 'ALLOW_PERSONAL_WORKSPACE';",
-  });
-};
-
-export const addNewUser = (firstName, email, companyName) => {
-  common.navigateToManageUsers();
-  inviteUser(firstName, email);
-  cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
-  cy.get(commonSelectors.acceptInviteButton).click();
+export const workspaceLogin = (workspaceName) => {
+  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
+  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.get(commonSelectors.loginButton).click();
+  cy.wait(2000)
+  cy.get(commonSelectors.homePageLogo).should("be.visible");
   cy.get(commonSelectors.workspaceName).verifyVisibleElement(
     "have.text",
-    "My workspace"
+    workspaceName
   );
-};
-
-export const inviteUser = (firstName, email) => {
-  cy.get(usersSelector.buttonAddUsers).click();
-  cy.clearAndType(commonSelectors.inputFieldFullName, firstName);
-  cy.clearAndType(commonSelectors.inputFieldEmailAddress, email);
-
-  cy.get(usersSelector.buttonInviteUsers).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    usersText.userCreatedToast
-  );
-  WorkspaceInvitationLink(email);
-};
-
-export const defaultWorkspace = () => {
-  cy.get(".org-select-container").then(($title) => {
-    if (!$title.text().includes("My workspace")) {
-      cy.get(commonSelectors.workspaceName).realClick();
-      cy.contains("My workspace").realClick();
-      cy.wait(2000);
-      defaultWorkspace();
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Skip")) {
+      cy.get(commonSelectors.skipInstallationModal).click();
+    } else {
+      cy.log("Installation is Finished");
     }
   });
 };
 
-export const trunOffAllowPersonalWorkspace = () => {
-  cy.get(commonEeSelectors.instanceSettingIcon).click();
-  cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-  cy.get(instanceSettingsSelector.allowWorkspaceToggle)
-    .eq(0)
-    .then(($el) => {
-      if ($el.is(":checked")) {
-        cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).uncheck();
-        cy.get(commonEeSelectors.saveButton).click();
-        cy.verifyToastMessage(
-          commonSelectors.toastMessage,
-          "Instance settings have been updated"
-        );
-      }
-    });
+export const generalSettingsSW = () => {
+  cy.get(ssoSelector.enableSignUpToggle).then(($el) => {
+    if ($el.is(":checked")) {
+      cy.get(ssoSelector.enableSignUpToggle).uncheck();
+      cy.get(ssoSelector.cancelButton).click();
+      cy.get(ssoSelector.enableSignUpToggle).should("be.checked");
+    } else {
+      cy.get(ssoSelector.enableSignUpToggle).check();
+      cy.get(ssoSelector.cancelButton).click();
+      cy.get(ssoSelector.enableSignUpToggle).should("not.be.checked");
+      cy.get(ssoSelector.enableSignUpToggle).check();
+    }
+  });
 };
 
-export const verifySSOSignUpPageElements = () => {
-  cy.get(commonSelectors.invitePageHeader).verifyVisibleElement(
+export const signInPageElements = () => {
+  cy.get(ssoSelector.signInHeader).verifyVisibleElement(
     "have.text",
-    "Join ToolJet"
+    ssoText.signInHeader
   );
-  cy.get(commonSelectors.invitePageSubHeader).verifyVisibleElement(
+  cy.get(commonSelectors.workEmailLabel).verifyVisibleElement(
     "have.text",
-    "You are invited to ToolJet."
+    commonText.workEmailLabel
   );
-  cy.get(commonSelectors.userNameInputLabel).verifyVisibleElement(
+  cy.get(commonSelectors.passwordLabel).should(($el) => {
+    expect($el.contents().first().text().trim()).to.eq(
+      commonText.passwordLabel
+    );
+  });
+  cy.get(commonSelectors.forgotPasswordLink).verifyVisibleElement(
     "have.text",
-    commonText.userNameInputLabel
+    commonText.forgotPasswordLink
   );
-  cy.get(commonSelectors.invitedUserName).should("be.visible");
-  cy.get(commonSelectors.emailInputLabel).verifyVisibleElement(
+  cy.get(commonSelectors.loginButton).verifyVisibleElement(
     "have.text",
-    commonText.emailInputLabel
-  );
-  cy.get(commonSelectors.invitedUserEmail).should("be.visible");
-  cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
-    "have.text",
-    commonText.acceptInviteButton
+    commonText.loginButton
   );
 
+  cy.get(commonSelectors.workEmailInputField).should("be.visible");
+  cy.get(commonSelectors.passwordInputField).should("be.visible");
+
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Google")) {
+      cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.googleSSOText
+      );
+      cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.gitSignInText
+      );
+    }
+  });
+};
+
+export const SignUpPageElements = () => {
+  cy.get(commonSelectors.pageLogo).should("be.visible");
+  cy.get(commonSelectors.SignUpSectionHeader).verifyVisibleElement(
+    "have.text",
+    commonText.SignUpSectionHeader
+  );
+  cy.get(commonSelectors.signUpButton).verifyVisibleElement(
+    "have.text",
+    commonText.getStartedButton
+  );
+  cy.get(commonSelectors.signInRedirectText).should(($el) => {
+    expect($el.contents().first().text().trim()).to.eq(
+      commonText.signInRedirectText
+    );
+  });
+  cy.get(commonSelectors.signInRedirectLink).verifyVisibleElement(
+    "have.text",
+    commonText.signInRedirectLink
+  );
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
       commonText.signUpTermsHelperText
@@ -316,9 +370,163 @@ export const verifySSOSignUpPageElements = () => {
     .verifyVisibleElement("have.text", commonText.privacyPolicyLink)
     .and("have.attr", "href")
     .and("equal", "https://www.tooljet.com/privacy");
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Google")) {
+      cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.googleSignUpText
+      );
+      cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.gitSignUpText
+      );
+      cy.get(commonSelectors.onboardingSeperator).should("be.visible");
+      cy.get(commonSelectors.onboardingSeperatorText).verifyVisibleElement(
+        "have.text",
+        commonText.onboardingSeperatorText
+      );
+    }
+  });
 };
 
-export const VerifyWorkspaceInvitePageElements = () => {
+export const loginbyGoogle = (email, password) => {
+  cy.session([email, password], () => {
+    cy.visit("/");
+    cy.wait(3000);
+    cy.get(ssoSelector.googleSSOText).click();
+    cy.origin(
+      "https://accounts.google.com/",
+      { args: [email, password] },
+      ([email, password]) => {
+        const resizeObserverLoopErrRe =
+          /^[^(ResizeObserver loop limit exceeded)]/;
+        Cypress.on("uncaught:exception", (err) => {
+          if (resizeObserverLoopErrRe.test(err.message)) {
+            return false;
+          }
+        });
+        cy.wait(1000);
+        cy.get('input[name="identifier"]').type(email);
+        cy.get(".VfPpkd-LgbsSe").contains("Next").click();
+        cy.get('input[name="password"]', { timeout: 5000 }).type(password);
+        cy.get(".VfPpkd-LgbsSe").contains("Next").click();
+        cy.wait(5000);
+        cy.visit("/");
+      }
+    );
+  });
+};
+
+export const googleSSO = (email, password) => {
+  Cypress.session.clearAllSavedSessions();
+  cy.wait(3000);
+  cy.get(ssoSelector.googleSSOText).click();
+  loginbyGoogle(email, password);
+  cy.visit("http://localhost:8082");
+  cy.wait(4000);
+  cy.get(ssoSelector.googleSSOText).click();
+  cy.origin("https://accounts.google.com/", () => {
+    cy.get(".d2laFc").first().click();
+    cy.wait(3000);
+  });
+};
+
+export const loginbyGitHub = (email, password) => {
+  Cypress.session.clearAllSavedSessions();
+  cy.session([email, password], () => {
+    cy.visit("/");
+    cy.get(ssoSelector.gitSSOText).click();
+    cy.origin(
+      "https://github.com/",
+      { args: [email, password] },
+      ([email, password]) => {
+        cy.wait(1000);
+        cy.get('input[name="login"]').type(email);
+        cy.get('input[name="password"]').type(password);
+        cy.get('input[name="commit"]').click();
+        cy.get("body").then(($el) => {
+          if ($el.text().includes("Authorize")) {
+            cy.wait(1000);
+            cy.get("#js-oauth-authorize-btn").click();
+          }
+        });
+        cy.wait(3000);
+      }
+    );
+  });
+};
+
+export const gitHubSSO = (email, password) => {
+  loginbyGitHub(email, password);
+  cy.visit("http://localhost:8082");
+  cy.get(ssoSelector.gitSSOText).click();
+};
+
+export const enableGitHubSSO = () => {
+  common.navigateToManageSSO();
+  cy.get(ssoSelector.git).click();
+  cy.get(ssoSelector.gitEnableToggle).then(($el) => {
+    if (!$el.is(":checked")) {
+      cy.get(ssoSelector.gitEnableToggle).check();
+    }
+  });
+  cy.clearAndType(ssoSelector.clientIdInput, "b6cb1e7989494205e705");
+  cy.clearAndType(
+    ssoSelector.clientSecretInput,
+    "fcee4873f6a48a80da399f7dc2e55a5f9f0fca17"
+  );
+  cy.get(ssoSelector.saveButton).click();
+};
+
+export const enableGoogleSSO = () => {
+  common.navigateToManageSSO();
+  cy.get(ssoSelector.google).click();
+  cy.get(ssoSelector.googleEnableToggle).then(($el) => {
+    if (!$el.is(":checked")) {
+      cy.get(ssoSelector.googleEnableToggle).check();
+    }
+  });
+  cy.clearAndType(
+    ssoSelector.clientIdInput,
+    "788411490229-dlonkl1pepnpqt5lvjoqotc5h7lgjqh0.apps.googleusercontent.com"
+  );
+  cy.get(ssoSelector.saveButton).click();
+  cy.get(ssoSelector.saveButton).click();
+};
+
+export const enableSignUp = () => {
+  common.navigateToManageSSO();
+  cy.get("body").then(($el) => {
+    if (!$el.text().includes("Allowed domains")) {
+      cy.get(ssoSelector.generalSettingsElements.generalSettings).click();
+    }
+  });
+  cy.get(ssoSelector.enableSignUpToggle).then(($el) => {
+    if (!$el.is(":checked")) {
+      cy.get(ssoSelector.enableSignUpToggle).check();
+      cy.get(ssoSelector.saveButton).click();
+      cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast);
+    }
+  });
+};
+
+export const disableSignUp = () => {
+  common.navigateToManageSSO();
+  cy.get("body").then(($el) => {
+    if (!$el.text().includes("Allowed domains")) {
+      cy.get(ssoSelector.generalSettingsElements.generalSettings).click();
+    }
+  });
+  cy.get(ssoSelector.enableSignUpToggle).then(($el) => {
+    if ($el.is(":checked")) {
+      cy.get(ssoSelector.enableSignUpToggle).uncheck();
+      cy.get(ssoSelector.saveButton).click();
+      cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast);
+    }
+  });
+};
+
+export const invitePageElements = () => {
   cy.get(commonSelectors.invitePageHeader).verifyVisibleElement(
     "have.text",
     commonText.invitePageHeader
@@ -337,6 +545,11 @@ export const VerifyWorkspaceInvitePageElements = () => {
     commonText.emailInputLabel
   );
   cy.get(commonSelectors.invitedUserEmail).should("be.visible");
+  cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
+    "have.text",
+    commonText.passwordLabel
+  );
+  cy.get(commonSelectors.passwordInputField).should("be.visible");
   cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
     "have.text",
     commonText.acceptInviteButton
@@ -355,194 +568,15 @@ export const VerifyWorkspaceInvitePageElements = () => {
     .verifyVisibleElement("have.text", commonText.privacyPolicyLink)
     .and("have.attr", "href")
     .and("equal", "https://www.tooljet.com/privacy");
-
-  cy.get("body").then(($el) => {
-    if ($el.text().includes("Google")) {
-      cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
-        "have.text",
-        ssoText.googleSignUpText
-      );
-      cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
-        "have.text",
-        ssoText.gitSignUpText
-      );
-      cy.get(commonSelectors.onboardingSeperator).should("be.visible");
-    }
-  });
 };
 
-export const WorkspaceInvitationLink = (email) => {
-  let invitationToken,
-    organizationToken,
-    workspaceId,
-    userId,
-    url = "";
+export const updateId = () => {
   cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `select invitation_token from users where email='${email}';`,
-  }).then((resp) => {
-    invitationToken = resp.rows[0].invitation_token;
-
-    cy.task("updateId", {
-      dbconfig: Cypress.env("app_db"),
-      sql: "select id from organizations where name='My workspace';",
-    }).then((resp) => {
-      workspaceId = resp.rows[0].id;
-
-      cy.task("updateId", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `select id from users where email='${email}';`,
-      }).then((resp) => {
-        userId = resp.rows[0].id;
-
-        cy.task("updateId", {
-          dbconfig: Cypress.env("app_db"),
-          sql: `select invitation_token from organization_users where user_id='${userId}';`,
-        }).then((resp) => {
-          organizationToken = resp.rows[0].invitation_token;
-
-          url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
-          common.logout();
-          cy.visit(url);
-        });
-      });
-    });
+    dbconfig: Cypress.config("db"),
+    sql: "update sso_configs set id='5edf41b2-ff2b-4932-9e2a-08aef4a303cc' where sso='google';",
   });
-};
-
-export const enableDefaultSSO = () => {
-  common.navigateToManageSSO();
-  cy.get("body").then(($el) => {
-    if (!$el.text().includes("Allowed domains")) {
-      cy.get(ssoSelector.generalSettingsElements.generalSettings).click();
-    }
-  });
-  cy.get(ssoSelector.allowDefaultSSOToggle).then(($el) => {
-    if (!$el.is(":checked")) {
-      cy.get(ssoSelector.allowDefaultSSOToggle).check();
-      cy.get(ssoSelector.saveButton).click();
-      cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast);
-    }
-  });
-};
-
-export const disableSSO = (ssoSelector, toggleSelector) => {
-  cy.wait(1000);
-  cy.get(ssoSelector).click();
-  cy.get(toggleSelector).then(($el) => {
-    if ($el.is(":checked")) {
-      cy.get(toggleSelector).uncheck();
-    }
-  });
-};
-
-export const AddDataSourceToGroup = (groupName, dsName) => {
-  common.navigateToManageGroups();
-  cy.get(groupsSelector.groupLink(groupName)).click();
-  cy.get(eeGroupsSelector.datasourceLink).click();
-  cy.wait(500);
-  cy.get(
-    '[data-cy="datasource-select-search"] >> .rmsc > .dropdown-container > .dropdown-heading > .dropdown-heading-value > .gray'
-  ).click();
-  cy.contains(dsName).realClick();
-
-  cy.get(eeGroupsSelector.AddDsButton).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    "Datasources added to the group"
-  );
-};
-
-export const enableToggle = (toggleSelector) => {
-  cy.get(toggleSelector).then(($el) => {
-    if (!$el.is(":checked")) {
-      cy.get(toggleSelector).check();
-    }
-  });
-};
-
-export const disableToggle = (toggleSelector) => {
-  cy.get(toggleSelector).then(($el) => {
-    if ($el.is(":checked")) {
-      cy.get(toggleSelector).uncheck();
-    }
-  });
-};
-
-export const verifyPromoteModalUI = (versionName, currEnv, targetEnv) => {
-  cy.get(commonEeSelectors.promoteButton)
-    .verifyVisibleElement("have.text", " Promote ")
-    .click();
-  cy.get(commonEeSelectors.modalTitle).verifyVisibleElement(
-    "have.text",
-    `Promote ${versionName}`
-  );
-  cy.get(commonSelectors.closeButton).should("be.visible");
-  cy.get(multiEnvSelector.fromLabel).verifyVisibleElement("have.text", "FROM");
-  cy.get(multiEnvSelector.toLabel).verifyVisibleElement("have.text", "TO");
-  cy.get(multiEnvSelector.currEnvName).verifyVisibleElement(
-    "have.text",
-    currEnv
-  );
-  cy.get('[data-cy="target-env-name"]').verifyVisibleElement(
-    "have.text",
-    targetEnv
-  );
-  cy.get('[data-cy="cancel-button"]').verifyVisibleElement(
-    "have.text",
-    "Cancel"
-  );
-  cy.get(commonEeSelectors.promoteButton)
-    .eq(1)
-    .verifyVisibleElement("have.text", "Promote ");
-};
-
-export const resetPassword = (email) => {
-  cy.visit("/");
-  cy.get(commonSelectors.forgotPasswordLink).click();
-  cy.clearAndType(commonSelectors.emailInputField, email);
-  cy.get(commonSelectors.resetPasswordLinkButton).click();
-
   cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `select forgot_password_token from users where email='${email}';`,
-  }).then((resp) => {
-    const passwordResetLink = `/reset-password/${resp.rows[0].forgot_password_token}`;
-    cy.visit(passwordResetLink);
-  });
-  cy.wait(500);
-
-  cy.clearAndType(commonSelectors.newPasswordInputField, "Password");
-  cy.clearAndType(commonSelectors.confirmPasswordInputField, "Password");
-  cy.wait(4000);
-  cy.get(commonSelectors.resetPasswordButton).click();
-  cy.get(commonSelectors.backToLoginButton).click();
-};
-
-export const verifyTooltipDisabled = (selector, message) => {
-  cy.get(selector)
-    .trigger("mouseover", { force: true })
-    .then(() => {
-      cy.get(".tooltip-inner").last().should("have.text", message);
-    });
-};
-
-export const createAnAppWithSlug = (appName, slug) => {
-  cy.apiCreateApp(appName);
-  cy.openApp();
-  cy.dragAndDropWidget("Table", 250, 250);
-  promoteApp();
-  promoteApp();
-  releaseApp();
-  cy.get(commonWidgetSelector.shareAppButton).click();
-  cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
-  cy.wait(2000);
-  cy.get(commonWidgetSelector.modalCloseButton).click();
-};
-
-export const updateLicense = (key) => {
-  cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `update instance_settings set value='${key}', updated_at= NOW() where key='LICENSE_KEY';`,
+    dbconfig: Cypress.config("db"),
+    sql: "update sso_configs set id='9628dee2-6fa9-4aca-9c98-ef950601c83e' where sso='git';",
   });
 };
