@@ -50,15 +50,16 @@ const MouseCustomAble = {
   props: {},
   events: {},
   mouseEnter(e) {
-    console.log('here--- ', e);
     const controlBoxes = document.getElementsByClassName('moveable-control-box');
     for (const element of controlBoxes) {
       element.classList.remove('moveable-control-box-d-block');
     }
+    e.props.target.classList.add('hovered');
     e.controlBox.classList.add('moveable-control-box-d-block');
   },
   mouseLeave(e) {
     console.log('MouseCustomAble LEAVE', e);
+    e.props.target.classList.remove('hovered');
     e.controlBox.classList.remove('moveable-control-box-d-block');
   },
 };
