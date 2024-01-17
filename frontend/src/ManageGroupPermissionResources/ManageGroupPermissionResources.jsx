@@ -876,7 +876,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 </div>
                                 <div className="apps-variable-permission-wrap">
                                   <div data-cy="resource-workspace-variable">
-                                    {this.props.t('globals.environmentVar', 'Environment variables')}
+                                    {this.props.t('globals.environmentVar', 'Workspace constant/variable')}
                                   </div>
                                   <div className="text-muted">
                                     <div>

@@ -1149,7 +1149,7 @@ export const widgets = [
     properties: {
       buttonToSubmit: {
         type: 'select',
-        displayName: 'Button To Submit Form',
+        displayName: 'Button to submit form',
         options: [{ name: 'None', value: 'none' }],
         validation: {
           schema: { type: 'string' },
@@ -1193,7 +1193,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
