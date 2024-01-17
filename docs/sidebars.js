@@ -33,7 +33,7 @@ const sidebars = {
         'tooljet-concepts/exposed-variables',
         'tooljet-concepts/pages',
         'tooljet-concepts/run-js',
-        'tooljet-concepts/custom-css',
+        'tooljet-concepts/styling-components',
         'tooljet-concepts/workspace-constants',
         'tooljet-concepts/permissions',
         'tooljet-concepts/super-admin',

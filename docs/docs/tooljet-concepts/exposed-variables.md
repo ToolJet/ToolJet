@@ -9,7 +9,11 @@ Exposed Variables help in accessing and manipulating data within components. The
     <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/tooljet-concepts/exposed-variables/exposed-variables-preview.png" alt="Preview Of Exposed Variables" />
 </div>
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Accessing Exposed Variables
 Each component in ToolJet has its own set of exposed variables, which hold specific data related to that component. For example, in the Text Input component, the `value` variable is used. This variable is updated every time a user enters something in the text editor. It can be dynamically accessed using JavaScript notation: `{{components.textinput1.value}}`. This feature allows developers to easily track and utilize the data entered by users in real-time.
+
+</div>
 
 For detailed information about the exposed variables of the components, please refer to their respective documentation.

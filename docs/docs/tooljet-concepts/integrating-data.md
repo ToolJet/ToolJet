@@ -1,6 +1,6 @@
 ---
 id: integrating-data
-title: Integrating Data
+title: Queries
 ---
 
 Queries allows you to interact with various data sources, such as databases, APIs, and third-party services. They act as the bridge between your application's components and the data you wish to display, manipulate, or store. 
