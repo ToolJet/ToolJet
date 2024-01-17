@@ -50,12 +50,15 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   const [cellClick, setCellClick] = useState({
     rowIndex: null,
     cellIndex: null,
+    editable: false,
   });
+  const [cellVal, setCellVal] = useState('');
   const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
   const [wholeScreenWidth, setWholeScreenWidth] = useState(window.innerWidth);
 
   const prevSelectedTableRef = useRef({});
   const columnCreatorElement = useRef();
+  //const cellInputRef = useRef(null);
   //const wholeScreenWidth = window.innerWidth;
 
   const fetchTableMetadata = () => {
@@ -216,16 +219,29 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   const handleKeyDown = (e) => {
     if (cellClick.rowIndex !== null) {
       if (e.key === 'ArrowRight') {
-        const newIndex = cellClick.cellIndex === columHeaderLength - 1 ? 1 : cellClick.cellIndex + 1;
+        const newIndex =
+          cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
         setCellClick((prevState) => ({
           ...prevState,
           cellIndex: newIndex,
         }));
       } else if (e.key === 'ArrowLeft') {
-        const newIndex = cellClick.cellIndex === 1 ? columHeaderLength - 1 : cellClick.cellIndex - 1;
+        const newIndex = cellClick.cellIndex === 2 ? 2 : cellClick.cellIndex - 1;
         setCellClick((prevState) => ({
           ...prevState,
           cellIndex: newIndex,
+        }));
+      } else if (e.key === 'ArrowUp') {
+        const newRowIndex = cellClick.rowIndex === 0 ? 0 : cellClick.rowIndex - 1;
+        setCellClick((prevState) => ({
+          ...prevState,
+          rowIndex: newRowIndex,
+        }));
+      } else if (e.key === 'ArrowDown') {
+        const newRowIndex = cellClick.rowIndex === rows.length - 1 ? rows.length - 1 : cellClick.rowIndex + 1;
+        setCellClick((prevState) => ({
+          ...prevState,
+          rowIndex: newRowIndex,
         }));
       }
     }
@@ -236,7 +252,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [cellClick.cellIndex]);
+  }, [cellClick]);
 
   useEffect(() => {
     moveColumnCreateElement();
@@ -245,6 +261,24 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   useEffect(() => {
     moveColumnCreateElement();
   }, [wholeScreenWidth, columHeaderLength]);
+
+  const handleCellOutsideClick = (event) => {
+    if (!event.target.closest('.table-cell-click') && !event.target.closest('.table-editable-parent-cell')) {
+      setCellClick((prevState) => ({
+        ...prevState,
+        rowIndex: null,
+        cellIndex: null,
+        editable: false,
+      }));
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('click', handleCellOutsideClick);
+    return () => {
+      document.removeEventListener('click', handleCellOutsideClick);
+    };
+  }, []);
 
   const widthOfScreen = width.screenWidth > 0 ? width.screenWidth : wholeScreenWidth;
 
@@ -330,19 +364,17 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }));
   };
 
-  const handleCellClick = (cellIndex, rowIndex) => {
-    if (cellClick.rowIndex === rowIndex && cellClick.cellIndex == cellIndex) {
-      setCellClick((prevState) => ({
-        ...prevState,
-        rowIndex: null,
-        cellIndex: null,
-      }));
-    } else {
-      setCellClick((prevState) => ({
-        ...prevState,
-        rowIndex: rowIndex,
-        cellIndex: cellIndex,
-      }));
+  const handleCellClick = (e, cellIndex, rowIndex, cellVal) => {
+    if (e.target.classList.value === 'table-cell') {
+      if (cellIndex !== 0 && cellIndex !== 1) {
+        setCellVal(cellVal);
+        setCellClick((prevState) => ({
+          ...prevState,
+          rowIndex: rowIndex,
+          cellIndex: cellIndex,
+          editable: !cellClick.editable,
+        }));
+      }
     }
   };
 
@@ -547,17 +579,34 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                 ? `table-columnHeader-click`
                                 : editColumnHeader?.hoveredColumn === index
                                 ? 'table-cell-hover-background'
-                                : cellClick?.rowIndex === rIndex &&
-                                  cellClick?.cellIndex === index &&
-                                  cellClick.cellIndex !== 0
-                                ? `table-cell-click`
+                                : cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index &&
+                                  cellClick.editable === true &&
+                                  cellClick.cellIndex !== 0 &&
+                                  cellClick.cellIndex !== 1
+                                ? 'table-editable-parent-cell'
                                 : `table-cell`
                             }`}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
-                            onClick={() => handleCellClick(index, rIndex)}
+                            onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
-                            {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                            {/* {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')} */}
+                            {cellClick.editable &&
+                            index !== 0 &&
+                            index !== 1 &&
+                            cellClick.cellIndex !== 0 &&
+                            cellClick.cellIndex !== 1 &&
+                            cellClick.rowIndex === rIndex &&
+                            cellClick.cellIndex === index ? (
+                              <input
+                                className="form-control"
+                                value={cellVal}
+                                onChange={(e) => setCellVal(e.target.value)}
+                              />
+                            ) : (
+                              <>{isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}</>
+                            )}
                           </td>
                         );
                       })}

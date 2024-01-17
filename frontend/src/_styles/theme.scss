@@ -6902,16 +6902,27 @@ tbody {
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+    }
   }
 
   .table-cell-hover-background {
     background-color: #F8F9FA;
   }
 
-  .table-cell-click {
+  .table-editable-parent-cell {
     border: 1.5px solid var(--indigo9);
     background-color: var(--indigo2);
     cursor: pointer;
+    padding: 0;
+
+    .form-control {
+      border: none;
+      padding: 0.5rem;
+    }
   }
 
   .table-columnHeader-click {
