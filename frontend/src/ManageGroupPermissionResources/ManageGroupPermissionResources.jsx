@@ -375,19 +375,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
                   {this.props.t('header.organization.menus.manageGroups.permissionResources.users', 'Users')}
                 </a>
-                <a
-                  onClick={() => this.setState({ currentTab: 'apps' })}
-                  className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
-                  data-cy="apps-link"
-                >
-                  <SolidIcon
-                    className="manage-group-tab-icons"
-                    fill={currentTab === 'apps' ? '#3E63DD' : '#C1C8CD'}
-                    name="grid"
-                    width="16"
-                  ></SolidIcon>
-                  {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
-                </a>
 
                 <a
                   onClick={() => this.setState({ currentTab: 'permissions' })}
@@ -405,6 +392,19 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     'header.organization.menus.manageGroups.permissionResources.permissions',
                     'Permissions'
                   )}
+                </a>
+                <a
+                  onClick={() => this.setState({ currentTab: 'apps' })}
+                  className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
+                  data-cy="apps-link"
+                >
+                  <SolidIcon
+                    className="manage-group-tab-icons"
+                    fill={currentTab === 'apps' ? '#3E63DD' : '#C1C8CD'}
+                    name="grid"
+                    width="16"
+                  ></SolidIcon>
+                  {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
                 </a>
               </nav>
 
