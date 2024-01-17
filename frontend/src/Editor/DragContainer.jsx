@@ -9,39 +9,52 @@ import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
 import { useGridStoreActions, useDragTarget, useNoOfGrid, useGridStore } from '@/_stores/gridStore';
 
+const configHandleForMultiple = (id) => {
+  return (
+    <div
+      className={'multiple-components-config-handle'}
+      onMouseUpCapture={() => {
+        if (useGridStore.getState().isGroundHandleHoverd) {
+          useGridStore.getState().actions.setIsGroundHandleHoverd(false);
+        }
+      }}
+      onMouseDownCapture={() => {
+        if (!useGridStore.getState().isGroundHandleHoverd) {
+          useGridStore.getState().actions.setIsGroundHandleHoverd(true);
+        }
+      }}
+    >
+      <span className="badge handle-content" id={id} style={{ background: '#4d72fa' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <img
+            style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
+            src="assets/images/icons/settings.svg"
+            width="12"
+            height="12"
+            draggable="false"
+          />
+          <span>components</span>
+        </div>
+      </span>
+    </div>
+  );
+};
+
 const DimensionViewable = {
   name: 'dimensionViewable',
   props: [],
   events: [],
   render() {
-    return (
-      <div
-        className={'multiple-components-config-handle'}
-        onMouseUpCapture={() => {
-          if (useGridStore.getState().isGroundHandleHoverd) {
-            useGridStore.getState().actions.setIsGroundHandleHoverd(false);
-          }
-        }}
-        onMouseDownCapture={() => {
-          if (!useGridStore.getState().isGroundHandleHoverd) {
-            useGridStore.getState().actions.setIsGroundHandleHoverd(true);
-          }
-        }}
-      >
-        <span className="badge handle-content" id="multiple-components-config-handle" style={{ background: '#4d72fa' }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <img
-              style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
-              src="assets/images/icons/settings.svg"
-              width="12"
-              height="12"
-              draggable="false"
-            />
-            <span>components</span>
-          </div>
-        </span>
-      </div>
-    );
+    return configHandleForMultiple('multiple-components-config-handle');
+  },
+};
+
+const DimensionViewableForSub = {
+  name: 'dimensionViewableForSub',
+  props: [],
+  events: [],
+  render() {
+    return configHandleForMultiple('multiple-components-config-handle-sub');
   },
 };
 
@@ -754,14 +767,18 @@ export default function DragContainer({
                 return (
                   <Moveable
                     dragTargetSelf={true}
-                    dragTarget={document.getElementById('multiple-components-config-handle')}
+                    dragTarget={
+                      useGridStore.getState().isGroundHandleHoverd
+                        ? document.getElementById('multiple-components-config-handle-sub')
+                        : undefined
+                    }
                     flushSync={flushSync}
                     key={i.parent}
                     ref={(el) => (childMoveableRefs.current[i.parent] = el)}
-                    ables={[MouseCustomAble, DimensionViewable]}
+                    ables={[MouseCustomAble, DimensionViewableForSub]}
                     props={{
                       mouseTest: selectedComponents.length < 2,
-                      dimensionViewable: selectedComponents.length > 2,
+                      dimensionViewableForSub: selectedComponents.length > 1,
                     }}
                     target={
                       // groupedTargets.length
