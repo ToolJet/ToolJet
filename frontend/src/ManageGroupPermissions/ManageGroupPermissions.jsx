@@ -31,7 +31,7 @@ class ManageGroupPermissionsComponent extends React.Component {
       groupToBeUpdated: null,
       isSaveBtnDisabled: false,
       selectedGroupPermissionId: null,
-      selectedGroup: 'All Users',
+      selectedGroup: 'All users',
       isDuplicatingGroup: false,
       groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
       showDuplicateGroupModal: false,

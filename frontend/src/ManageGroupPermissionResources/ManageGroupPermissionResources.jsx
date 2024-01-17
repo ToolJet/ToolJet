@@ -29,7 +29,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       appsNotInGroup: [],
       selectedAppIds: [],
       removeAppIds: [],
-      currentTab: 'apps',
+      currentTab: 'users',
       selectedUsers: [],
     };
   }
@@ -362,19 +362,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
               <nav className="nav nav-tabs groups-sub-header-wrap">
                 <a
-                  onClick={() => this.setState({ currentTab: 'apps' })}
-                  className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
-                  data-cy="apps-link"
-                >
-                  <SolidIcon
-                    className="manage-group-tab-icons"
-                    fill={currentTab === 'apps' ? '#3E63DD' : '#C1C8CD'}
-                    name="grid"
-                    width="16"
-                  ></SolidIcon>
-                  {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
-                </a>
-                <a
                   onClick={() => this.setState({ currentTab: 'users' })}
                   className={cx('nav-item nav-link', { active: currentTab === 'users' })}
                   data-cy="users-link"
@@ -388,6 +375,20 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
                   {this.props.t('header.organization.menus.manageGroups.permissionResources.users', 'Users')}
                 </a>
+                <a
+                  onClick={() => this.setState({ currentTab: 'apps' })}
+                  className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
+                  data-cy="apps-link"
+                >
+                  <SolidIcon
+                    className="manage-group-tab-icons"
+                    fill={currentTab === 'apps' ? '#3E63DD' : '#C1C8CD'}
+                    name="grid"
+                    width="16"
+                  ></SolidIcon>
+                  {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
+                </a>
+
                 <a
                   onClick={() => this.setState({ currentTab: 'permissions' })}
                   className={cx('nav-item nav-link', { active: currentTab === 'permissions' })}

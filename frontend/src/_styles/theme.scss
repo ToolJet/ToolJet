@@ -6220,6 +6220,7 @@ a.step-item-disabled {
 .user-group-actions {
   display: flex;
   gap: 8px;
+  justify-content: right;
 }
 
 input.hide-input-arrows {
