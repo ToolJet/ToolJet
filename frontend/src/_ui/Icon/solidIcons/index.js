@@ -139,6 +139,7 @@ import Check from './Check.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
+import EnterButtonIcon from './EnterButtonIcon.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -214,6 +215,8 @@ const Icon = (props) => {
       return <DownArrow {...props} />;
     case 'editrectangle':
       return <EditRectangle {...props} />;
+    case 'enterbutton':
+      return <EnterButtonIcon {...props} />;
     case 'eye':
       return <Eye {...props} />;
     case 'eye1':

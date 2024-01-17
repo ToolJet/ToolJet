@@ -1,0 +1,33 @@
+.tjdb-table-cell-edit-popover {
+    min-width: 300px;
+    height: auto;
+
+    .tjdb-bool-cell-menu-badge-default {
+        padding: 2px 12px;
+        border-radius: 20px;
+        background: #F1F3F5;
+        color: #687076;
+        font-size: 14px;
+        height: 26px;
+        cursor: pointer;
+    }
+
+    .tjdb-bool-cell-menu-badge-selected {
+        border: 1px solid #3E63DD;
+        background: #F0F4FF;
+        color: #3E63DD;
+    }
+
+    .tjdb-cell-menu-shortcuts-info {
+        border-radius: 4px;
+        border: 1px solid #D7DBDF;
+        padding: 4px;
+        font-size: 8px;
+        color: #889096;
+    }
+
+    .tjdb-cell-menu-shortcuts-text {
+        font-size: 10px;
+        color: #7E868C;
+    }
+}
