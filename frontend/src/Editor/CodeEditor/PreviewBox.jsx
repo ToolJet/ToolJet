@@ -3,8 +3,8 @@ import { useSpring, config, animated } from 'react-spring';
 import useHeight from '@/_hooks/use-height-transition';
 import { getCurrentNodeType, resolveReferences } from './utils';
 
-export const PreviewBox = ({ currentValue, isFocused, componentName }) => {
-  const [resolvedValue, error] = resolveReferences(currentValue);
+export const PreviewBox = ({ currentValue, isFocused, componentName, expectedType }) => {
+  const [resolvedValue, error] = resolveReferences(currentValue, expectedType);
 
   const [heightRef, currentHeight] = useHeight();
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -73,9 +73,8 @@ const RenderError = ({ error }) => {
   return (
     <div>
       <div className="heading my-1">
-        <span>Error</span>
+        <span>{JSON.stringify(error)}</span>
       </div>
-      {'errorMessage'}
     </div>
   );
 };

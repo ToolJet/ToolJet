@@ -10,6 +10,7 @@ import { autocompletion } from '@codemirror/autocomplete';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
+import { paramValidation } from './utils';
 
 const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta, ...restProps }) => {
   const { initialValue, onChange } = restProps;
@@ -17,14 +18,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta, ...restPr
 
   const [isFocused, setIsFocused] = React.useState(false);
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
-
-  // useEffect(() => {
-  //   if (initialValue !== currentValue) {
-  //     onChange(currentValue);
-  //   }
-  // }, [JSON.stringify({ currentValue })]);
-
-  // console.log('----arpit:: =>', { currentValue, restProps });
 
   return (
     <div className=" code-editor-basic-wrapper d-flex">
@@ -38,7 +31,12 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta, ...restPr
           onBlurUpdate={onChange}
         />
 
-        <PreviewBox currentValue={currentValue} isFocused={isFocused} componentName={componentName} />
+        <PreviewBox
+          currentValue={currentValue}
+          isFocused={isFocused}
+          componentName={componentName}
+          expectedType={validation?.schema?.type}
+        />
       </div>
     </div>
   );
@@ -134,6 +132,15 @@ const EditorInput = ({ currentValue, setCurrentValue, hints, setFocus, validatio
     setCurrentValue(val);
   }, []);
 
+  const handleOnBlur = React.useCallback(() => {
+    setFocus(false);
+    const shouldUpdate = paramValidation(currentValue, validationType);
+
+    if (shouldUpdate) {
+      onBlurUpdate(currentValue);
+    }
+  }, []);
+
   return (
     <CodeMirror
       value={currentValue}
@@ -149,10 +156,7 @@ const EditorInput = ({ currentValue, setCurrentValue, hints, setFocus, validatio
         autocompletion: true,
       }}
       onFocus={() => setFocus(true)}
-      onBlur={() => {
-        setFocus(false);
-        onBlurUpdate(currentValue);
-      }}
+      onBlur={handleOnBlur}
       style={{
         borderRadius: '4px',
         border: '1px solid #d9d9d9',

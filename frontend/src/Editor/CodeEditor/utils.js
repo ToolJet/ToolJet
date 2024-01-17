@@ -144,7 +144,7 @@ function resolveCode(code, state, customObjects = {}, withError = true, reserved
   return result;
 }
 
-export const resolveReferences = (query) => {
+export const resolveReferences = (query, expectedParamType) => {
   let resolvedValue = query;
   let error = null;
 
@@ -177,7 +177,17 @@ export const resolveReferences = (query) => {
     error = errorRef || null;
   }
 
-  return [resolvedValue, error];
+  if (paramValidation(expectedParamType, resolvedValue)) {
+    return [resolvedValue, error];
+  }
+
+  return [null, `Expected ${expectedParamType} but got ${getCurrentNodeType(resolvedValue)}`];
+};
+
+export const paramValidation = (expectedType, value) => {
+  const type = getCurrentNodeType(value)?.toLowerCase();
+
+  return type === expectedType;
 };
 
 const inferJSExpAndReferences = (code, hintsMap) => {
