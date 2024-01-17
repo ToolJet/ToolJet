@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
@@ -7,45 +7,43 @@ import { camelCase } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { autocompletion } from '@codemirror/autocomplete';
+import FxButton from '../CodeBuilder/Elements/FxButton';
+import cx from 'classnames';
+import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
 
-const SingleLineCodeEditor = ({ paramLabel, suggestions, componentName, darkMode, fieldMeta }) => {
-  const { t } = useTranslation();
-
+const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta, ...restProps }) => {
+  const { initialValue, onChange } = restProps;
   const { validation } = fieldMeta;
 
   const [isFocused, setIsFocused] = React.useState(false);
-  const [currentValue, setCurrentValue] = React.useState('');
+  const [currentValue, setCurrentValue] = React.useState(() => initialValue);
+
+  useEffect(() => {
+    if (initialValue !== currentValue) {
+      onChange(currentValue);
+    }
+  }, [JSON.stringify({ currentValue })]);
+
+  // console.log('----arpit:: =>', { currentValue, restProps });
 
   return (
-    <div className="code-editor-basic-wrapper">
-      {paramLabel && (
-        <div className={`field`} data-cy={`${'cyLabel'}-widget-parameter-label`}>
-          <ToolTip
-            label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
-            meta={fieldMeta}
-            labelClass={`tj-text-xsm color-slate12 mb-2 ${darkMode && 'color-whitish-darkmode'}`}
-          />
-        </div>
-      )}
-      <div className="d-flex">
-        {/* <div className="field-type-vertical-line"></div> */}
-        <div className="codehinter-container w-100 ">
-          <SingleLineCodeEditor.Editor
-            currentValue={currentValue}
-            setValue={setCurrentValue}
-            hints={suggestions}
-            setFocus={setIsFocused}
-            validationType={validation?.schema?.type}
-          />
+    <div className=" code-editor-basic-wrapper d-flex">
+      <div className="codehinter-container w-100 ">
+        <SingleLineCodeEditor.Editor
+          currentValue={currentValue}
+          setCurrentValue={setCurrentValue}
+          hints={suggestions}
+          setFocus={setIsFocused}
+          validationType={validation?.schema?.type}
+        />
 
-          <PreviewBox currentValue={currentValue} isFocused={isFocused} componentName={componentName} />
-        </div>
+        <PreviewBox currentValue={currentValue} isFocused={isFocused} componentName={componentName} />
       </div>
     </div>
   );
 };
 
-const EditorInput = ({ currentValue, setValue, hints, setFocus, validationType }) => {
+const EditorInput = ({ currentValue, setCurrentValue, hints, setFocus, validationType }) => {
   function orderSuggestions(suggestions, validationType) {
     const matchingSuggestions = suggestions.filter((s) => s.type === validationType);
 
@@ -131,8 +129,8 @@ const EditorInput = ({ currentValue, setValue, hints, setFocus, validationType }
     defaultKeymap: true,
   });
 
-  const onChange = React.useCallback((val) => {
-    setValue(val);
+  const handleOnChange = React.useCallback((val) => {
+    setCurrentValue(val);
   }, []);
 
   return (
@@ -140,7 +138,7 @@ const EditorInput = ({ currentValue, setValue, hints, setFocus, validationType }
       value={currentValue}
       height="32px"
       extensions={[javascript({ jsx: false }), myComplete]}
-      onChange={onChange}
+      onChange={handleOnChange}
       basicSetup={{
         lineNumbers: false,
         syntaxHighlighting: true,
@@ -159,6 +157,102 @@ const EditorInput = ({ currentValue, setValue, hints, setFocus, validationType }
   );
 };
 
+const DynamicEditorBridge = (props) => {
+  const {
+    initialValue,
+    resolvedValue,
+    fxActive,
+    paramType,
+    paramLabel,
+    paramName,
+    fieldMeta,
+    darkMode,
+    options,
+    className,
+    onFxPress,
+    cyLabel = '',
+    verticalLine = false,
+    onChange,
+  } = props;
+  const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
+  const codeShow = paramType === 'code' || forceCodeBox;
+
+  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
+
+  const { t } = useTranslation();
+
+  return (
+    <div className={cx({ 'codeShow-active': codeShow })}>
+      <div className={cx('d-flex align-items-center justify-content-between')}>
+        {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
+        {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
+          <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
+            <ToolTip
+              label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
+              meta={fieldMeta}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+                darkMode && 'color-whitish-darkmode'
+              }`}
+            />
+          </div>
+        )}
+        <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} `}>
+          <div
+            style={{ width: paramType, marginBottom: codeShow ? '0.5rem' : '0px' }}
+            className="d-flex align-items-center"
+          >
+            <div className="col-auto pt-0 fx-common">
+              {paramLabel !== 'Type' && (
+                <FxButton
+                  active={codeShow}
+                  onPress={() => {
+                    if (codeShow) {
+                      setForceCodeBox(false);
+                      onFxPress(false);
+                    } else {
+                      setForceCodeBox(true);
+                      onFxPress(true);
+                    }
+                  }}
+                  dataCy={cyLabel}
+                />
+              )}
+            </div>
+            {!codeShow && (
+              <DynamicFxTypeRenderer
+                value={resolvedValue}
+                onChange={onChange}
+                paramName={paramName}
+                paramLabel={paramLabel}
+                paramType={paramType}
+                forceCodeBox={() => {
+                  setForceCodeBox(true);
+                  onFxPress(true);
+                }}
+                meta={fieldMeta}
+                cyLabel={cyLabel}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+      {codeShow && (
+        <div className={`row custom-row`} style={{ display: codeShow ? 'flex' : 'none' }}>
+          <div className={`col code-hinter-col`}>
+            <div className="d-flex">
+              <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div>
+              <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
+                <SingleLineCodeEditor initialValue {...props} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 SingleLineCodeEditor.Editor = EditorInput;
+SingleLineCodeEditor.EditorBridge = DynamicEditorBridge;
 
 export default SingleLineCodeEditor;

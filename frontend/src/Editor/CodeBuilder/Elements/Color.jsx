@@ -3,7 +3,7 @@ import { SketchPicker } from 'react-color';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 
-export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowPopover = true }) => {
+export const Color = ({ value = '', onChange, pickerStyle = {}, cyLabel, asBoxShadowPopover = true }) => {
   const [showPicker, setShowPicker] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 

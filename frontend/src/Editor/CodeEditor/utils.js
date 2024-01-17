@@ -1,6 +1,7 @@
 import { useResolveStore } from '@/_stores/resolverStore';
 import moment from 'moment';
 import _ from 'lodash';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
 const acorn = require('acorn');
 
@@ -93,6 +94,56 @@ export const createJavaScriptSuggestions = () => {
   return allMethods;
 };
 
+function resolveCode(code, state, customObjects = {}, withError = true, reservedKeyword, isJsCode) {
+  let result = '';
+  let error;
+
+  // dont resolve if code starts with "queries." and ends with "run()"
+  if (code.startsWith('queries.') && code.endsWith('run()')) {
+    error = `Cannot resolve function call ${code}`;
+  } else {
+    try {
+      const evalFunction = Function(
+        [
+          'variables',
+          'components',
+          'queries',
+          'globals',
+          'page',
+          'client',
+          'server',
+          'constants',
+          'moment',
+          '_',
+          ...Object.keys(customObjects),
+          reservedKeyword,
+        ],
+        `return ${code}`
+      );
+      result = evalFunction(
+        isJsCode ? state?.variables : undefined,
+        isJsCode ? state?.components : undefined,
+        isJsCode ? state?.queries : undefined,
+        isJsCode ? state?.globals : undefined,
+        isJsCode ? state?.page : undefined,
+        isJsCode ? undefined : state?.client,
+        isJsCode ? undefined : state?.server,
+        state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
+        moment,
+        _,
+        ...Object.values(customObjects),
+        null
+      );
+    } catch (err) {
+      error = err;
+      // console.log('eval_error', err);
+    }
+  }
+
+  if (withError) return [result, error];
+  return result;
+}
+
 export const resolveReferences = (query) => {
   let resolvedValue = query;
   let error = null;
@@ -106,6 +157,7 @@ export const resolveReferences = (query) => {
   const { lookupTable } = useResolveStore.getState();
 
   const { toResolveReference, jsExpression } = inferJSExpAndReferences(value, lookupTable.hints);
+  const currentState = useCurrentStateStore.getState();
 
   if (lookupTable.hints.has(toResolveReference)) {
     const idToLookUp = lookupTable.hints.get(toResolveReference);
@@ -114,10 +166,15 @@ export const resolveReferences = (query) => {
     if (jsExpression) {
       let jscode = value.replace(toResolveReference, resolvedValue);
       jscode = value.replace(toResolveReference, `'${resolvedValue}'`);
-      resolvedValue = evaluateJsExpression(jscode);
+      resolvedValue = resolveCode(jscode, currentState);
     }
   } else {
-    error = `No reference found for ${query}`;
+    console.log(value, 'pikuuuu ==> only JS code');
+
+    const [resolvedCode, errorRef] = resolveCode(value, currentState);
+
+    resolvedValue = resolvedCode;
+    error = errorRef || null;
   }
 
   return [resolvedValue, error];
@@ -162,3 +219,17 @@ function evaluateJsExpression(jsExpression) {
     console.log(error);
   }
 }
+
+export const FxParamTypeMapping = Object.freeze({
+  text: 'Text',
+  string: 'Text',
+  color: 'Color',
+  json: 'Json',
+  code: 'Code',
+  toggle: 'Toggle',
+  select: 'Select',
+  alignButtons: 'AlignButtons',
+  number: 'Number',
+  boxShadow: 'BoxShadow',
+  clientServerSwitch: 'ClientServerSwitch',
+});

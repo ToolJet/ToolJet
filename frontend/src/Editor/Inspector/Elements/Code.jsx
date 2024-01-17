@@ -73,6 +73,7 @@ export const Code = ({
   }
 
   function handleCodeChanged(value) {
+    console.log('---arpit on change hinter ==>', { value, param, paramType });
     onChange(param, 'value', value, paramType);
   }
 
@@ -102,10 +103,17 @@ export const Code = ({
         verticalLine={verticalLine}
       /> */}
       <CodeEditor
+        initialValue={initialValue}
         paramName={param.name}
         paramLabel={displayName}
+        paramType={paramMeta.type}
         fieldMeta={paramMeta}
+        onFxPress={onFxPress}
+        fxActive={CLIENT_SERVER_TOGGLE_FIELDS.includes(param.name) ? false : fxActive} // Client Server Toggle don't support Fx
         componentName={`component/${componentName}::${getfieldName}`}
+        onChange={(value) => handleCodeChanged(value)}
+        verticalLine={verticalLine}
+        className={options?.className}
       />
     </div>
   );
