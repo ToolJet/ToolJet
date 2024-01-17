@@ -76,7 +76,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
     } else if (nullValue === 'YES' && tabData === 'Null' && dataType !== 'boolean') {
       newInputValues[index] = { value: 'Null', disabled: true };
     } else if (nullValue === 'YES' && tabData === 'Null' && dataType === 'boolean') {
-      newInputValues[index] = { value: false, disabled: true };
+      newInputValues[index] = { value: 'Null', disabled: true };
     } else if (tabData === 'Custom' && customVal.length > 0) {
       newInputValues[index] = { value: customVal, disabled: false };
     } else if (tabData === 'Custom' && customVal.length <= 0) {
@@ -91,7 +91,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
         ...rowData,
         [columnName]:
           newInputValues[index].value === 'Null'
-            ? false
+            ? null
             : newInputValues[index].value === defaultValue
             ? defaultValue === 'true'
               ? true
@@ -113,7 +113,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
             : newInputValues[index].value === currentValue
             ? currentValue
             : currentValue === null && customVal === ''
-            ? null
+            ? ''
             : null,
       });
     }
@@ -157,6 +157,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, rowData, query);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
+      setFetching(false);
       return;
     }
     setFetching(false);

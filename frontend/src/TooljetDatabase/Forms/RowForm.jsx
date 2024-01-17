@@ -53,7 +53,7 @@ const RowForm = ({ onCreate, onClose }) => {
     } else if (nullValue === 'YES' && tabData === 'Null' && dataType !== 'boolean') {
       newInputValues[index] = { value: 'Null', checkboxValue: false, disabled: true };
     } else if (nullValue === 'YES' && tabData === 'Null' && dataType === 'boolean') {
-      newInputValues[index] = { value: 'Null', checkboxValue: false, disabled: true };
+      newInputValues[index] = { value: 'Null', checkboxValue: 'Null', disabled: true };
     } else if (tabData === 'Custom' && dataType === 'character varying') {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false };
     } else {
@@ -62,7 +62,10 @@ const RowForm = ({ onCreate, onClose }) => {
 
     setInputValues(newInputValues);
     if (dataType === 'boolean') {
-      setData({ ...data, [columnName]: newInputValues[index].checkboxValue });
+      setData({
+        ...data,
+        [columnName]: newInputValues[index].checkboxValue === 'Null' ? null : newInputValues[index].checkboxValue,
+      });
     } else {
       setData({
         ...data,

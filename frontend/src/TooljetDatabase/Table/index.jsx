@@ -47,7 +47,11 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     deletePopupModal: false,
     columnEditPopover: false,
   });
-  const [creatorElement, setCreatorElement] = useState({ width: false, height: false });
+  const [creatorElement, setCreatorElement] = useState({
+    width: false,
+    height: false,
+    scrollToEnd: false,
+  });
 
   const prevSelectedTableRef = useRef({});
   const containerRef = useRef(null);
@@ -55,24 +59,44 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
 
   useEffect(() => {
     const container = containerRef.current;
+
     const handleResize = () => {
       if (container) {
         const hasScrollbarWidth = container.scrollWidth > container.clientWidth;
         const hasScrollbarHeight = container.scrollHeight > container.clientHeight;
+        const threshold = 1;
+        const scrollEnd = container.scrollLeft + container.clientWidth + threshold >= container.scrollWidth;
+
         setCreatorElement((prevElement) => ({
           ...prevElement,
           width: hasScrollbarWidth,
           height: hasScrollbarHeight,
+          scrollToEnd: scrollEnd,
         }));
       }
     };
+
+    const handleScroll = () => {
+      if (container) {
+        const threshold = 1;
+        const scrollEnd = container.scrollLeft + container.clientWidth + threshold >= container.scrollWidth;
+
+        setCreatorElement((prevElement) => ({
+          ...prevElement,
+          scrollToEnd: scrollEnd,
+        }));
+      }
+    };
+
     const resizeObserver = new ResizeObserver(handleResize);
     if (container) {
       resizeObserver.observe(container);
+      container.addEventListener('scroll', handleScroll);
     }
     return () => {
       if (container) {
         resizeObserver.unobserve(container);
+        container.removeEventListener('scroll', handleScroll);
       }
     };
   }, []);
@@ -213,9 +237,9 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       ? 'add-row-btn-database-fixed-id'
       : darkMode && Object.keys(selectedRowIds).length > 0 && creatorElement.width === true
       ? 'add-row-btn-database-fixed-id-dark'
-      : !darkMode && editColumnHeader.hoveredColumn === columHeaderLength - 1
+      : !darkMode && creatorElement.scrollToEnd === true
       ? 'add-row-btn-database-absolute'
-      : darkMode && editColumnHeader.hoveredColumn === columHeaderLength - 1
+      : darkMode && creatorElement.scrollToEnd === true
       ? 'add-row-btn-database-absolute-dark'
       : !darkMode && creatorElement.width === true
       ? 'add-row-btn-database-fixed'
@@ -397,6 +421,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
         }}
         className={cx('table-responsive border-0 tj-db-table animation-fade')}
         ref={containerRef}
+        //onScroll={handleScroll}
       >
         <table
           {...getTableProps()}
@@ -413,7 +438,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                   <th
                     key={column.Header}
                     width={index === 0 ? 66 : 230}
-                    //title={column?.Header || ''}
+                    title={index === 1 ? '' : column?.Header}
                     className={
                       darkMode
                         ? 'table-header-dark tj-database-column-header tj-text-xsm'
@@ -430,7 +455,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                   >
                     {column.Header !== 'id' && index > 0 ? (
                       <div className="d-flex align-items-center justify-content-between">
-                        <div>
+                        <div className="tj-db-headerText">
                           <span className="tj-text-xsm tj-db-dataype text-lowercase">
                             {column.Header == 'id' ? (
                               <Integer width="18" height="18" className="tjdb-column-header-name" />
@@ -537,6 +562,14 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                           >
                             {cell.value === null ? (
                               <span className="cell-text-null">Null</span>
+                            ) : cell.column.dataType === 'boolean' ? (
+                              <div className="row">
+                                <div className="col-1">
+                                  <label className={`form-switch`}>
+                                    <input className="form-check-input" type="checkbox" checked={cell.value} />
+                                  </label>
+                                </div>
+                              </div>
                             ) : (
                               <span className="cell-text">
                                 {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
