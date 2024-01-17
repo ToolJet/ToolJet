@@ -102,6 +102,8 @@ class ManageGroupPermissionsComponent extends React.Component {
       this.showDuplicateDiologBox(id);
     };
 
+    const isDefaultGroup = groupName == 'all_users' || groupName == 'admin';
+
     return (
       <div
         {...props}
@@ -122,7 +124,6 @@ class ManageGroupPermissionsComponent extends React.Component {
                 leftIconWidth="20"
                 leftViewBox="0  0 20 20"
                 text={'Duplicate group'}
-                // text={t('header.organization.manageGroups.groupOptions.deleteGroup', 'Duplicate Group')}
                 onClick={duplicateGroup}
               />
               <Field
@@ -133,8 +134,8 @@ class ManageGroupPermissionsComponent extends React.Component {
                 text={'Delete group'}
                 tooltipId="tooltip-for-delete"
                 tooltipContent="Cannot delete default group"
-                onClick={groupName == 'all_users' || groupName == 'admin' ? {} : deleteGroup}
-                buttonDisable={groupName == 'all_users' || groupName == 'admin'}
+                onClick={isDefaultGroup ? {} : deleteGroup}
+                buttonDisable={isDefaultGroup}
               />
             </div>
           </Popover.Body>
@@ -147,7 +148,7 @@ class ManageGroupPermissionsComponent extends React.Component {
             style={{
               zIndex: 99999,
             }}
-            show={groupName == 'all_users' || groupName == 'admin'}
+            show={isDefaultGroup}
           />
         )}
       </div>

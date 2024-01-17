@@ -4,7 +4,7 @@ import SolidIcon from '../Icon/solidIcons/index';
 import Skeleton from 'react-loading-skeleton';
 import { ButtonSolid } from '../AppButton/AppButton';
 import Overlay from 'react-bootstrap/Overlay';
-import { Tooltip } from 'react-tooltip';
+import cx from 'classnames';
 
 function FolderList({
   overlayFunctionParam,
@@ -54,9 +54,11 @@ function FolderList({
       {!isLoading ? (
         <button
           {...restProps}
-          className={`tj-list-item ${selectedItem && 'tj-list-item-selected'}  ${className} ${
-            disabled && `tj-list-item-disabled`
-          } ${showGroupOptions && 'tj-list-item-option-opened'}`}
+          className={cx(`tj-list-item ${className}`, {
+            'tj-list-item-selected': selectedItem,
+            'tj-list-item-disabled': disabled,
+            'tj-list-item-option-opened': showGroupOptions,
+          })}
           style={backgroundColor && { backgroundColor }}
           onClick={isHoveredInside ? menuToggle : onClick}
           data-cy={`${dataCy}-list-item`}

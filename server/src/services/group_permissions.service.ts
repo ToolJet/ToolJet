@@ -150,7 +150,7 @@ export class GroupPermissionsService {
       org_environment_constant_delete,
     } = body;
 
-    await dbTransactionWrap(async (manager: EntityManager) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
       //update user group name
       if (name) {
         const newName = name.trim();
@@ -179,7 +179,6 @@ export class GroupPermissionsService {
         } else if (!groupToFind) {
           await manager.update(GroupPermission, groupPermissionId, { group: newName });
         }
-        return;
       }
 
       // update group permissions
