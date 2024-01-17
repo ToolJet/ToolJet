@@ -1,12 +1,18 @@
-
 .tj-tabs {
   .nav-tabs {
     border-bottom: 0px !important;
+    height: 36px;
   }
+
+
 
   .nav-item {
     font-size: 12px !important;
     line-height: 20px !important;
+
+    button {
+      height: 36px;
+    }
   }
 
   .nav-item .nav-link {
@@ -20,4 +26,3 @@
     color: var(--indigo9) !important;
   }
 }
-

@@ -93,8 +93,9 @@ export const Code = ({
   const getfieldName = React.useMemo(() => {
     return param.name;
   }, [param]);
+
   return (
-    <div className={`field ${options.className}`} style={{ marginBottom: '20px' }}>
+    <div className={`field ${options.className}`} style={{ marginBottom: '8px' }}>
       <CodeHinter
         enablePreview={true}
         initialValue={initialValue}
@@ -114,8 +115,10 @@ export const Code = ({
         component={component}
         verticalLine={verticalLine}
         isIcon={paramMeta?.isIcon}
+        staticText={paramMeta?.staticText}
         placeholder={placeholder}
         inspectorTab={paramType}
+        bold={true}
       />
     </div>
   );

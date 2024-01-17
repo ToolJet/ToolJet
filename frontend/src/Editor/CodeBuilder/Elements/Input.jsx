@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const Input = ({ value, onChange, cyLabel }) => {
+export const Input = ({ value, onChange, cyLabel, staticText }) => {
   return (
     <div className="form-text">
       <input
@@ -9,13 +9,13 @@ export const Input = ({ value, onChange, cyLabel }) => {
         className="tj-input-element tj-text-xsm"
         value={value}
         placeholder=""
-        id="youridhere"
+        id="labelId"
         onChange={(e) => {
           onChange(e.target.value);
         }}
       />
-      <label for="youridhere" className="static-value tj-text-xsm">
-        {/* {staticText} */}px
+      <label for="labelId" className="static-value tj-text-xsm">
+        {staticText?.length > 0 ? staticText : staticText?.length == 0 ? '' : 'px'}
       </label>
     </div>
   );

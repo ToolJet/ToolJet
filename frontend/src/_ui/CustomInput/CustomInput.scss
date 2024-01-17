@@ -1,5 +1,14 @@
 .form-text {
     position: relative;
+    margin: 0px !important;
+    height: 32px;
+
+
+    input {
+        height: 32px;
+        margin: 0px !important;
+
+    }
 }
 
 .static-value {

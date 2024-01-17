@@ -98,10 +98,10 @@ export const Icon = ({ value, onChange, onVisibilityChange, component }) => {
                       color={`${darkMode ? '#fff' : '#000'}`}
                       stroke={1.5}
                       strokeLinejoin="miter"
-                      style={{ width: '20px', height: '20px' }}
+                      style={{ width: '24px', height: '24px' }}
                     />
                   </div>
-                  <div className="text-truncate tj-text-xsm" style={{ width: '100px' }}>
+                  <div className="text-truncate tj-text-xsm" style={{ width: '80px' }}>
                     {value}
                   </div>
                   <Visibility

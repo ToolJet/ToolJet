@@ -83,7 +83,7 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const shouldAddBoxShadow = ['TextInput', 'Text'];
+  const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -313,7 +313,13 @@ export const Inspector = ({
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${isVersionReleased && 'disabled'}`}>
       <div
-        className={component.component.component !== 'TextInput' && component.component.component !== 'Text' && 'p-3'}
+        className={
+          component.component.component !== 'TextInput' &&
+          component.component.component !== 'PasswordInput' &&
+          component.component.component !== 'NumberInput' &&
+          component.component.component !== 'Text' &&
+          'p-3'
+        }
       >
         <Inspector.RenderStyleOptions
           componentMeta={componentMeta}
@@ -357,7 +363,11 @@ export const Inspector = ({
       <div>
         <div className="row inspector-component-title-input-holder">
           <div className="col-1" onClick={() => setSelectedComponents(EMPTY_ARRAY)}>
-            <span data-cy={`inspector-close-icon`} className="cursor-pointer">
+            <span
+              data-cy={`inspector-close-icon`}
+              className="cursor-pointer d-flex align-items-center "
+              style={{ height: '28px', width: '28px' }}
+            >
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
           </div>
@@ -459,11 +469,17 @@ const widgetsWithStyleConditions = {
     ],
   },
 };
+const styleGroupedComponentTypes = ['TextInput', 'NumberInput', 'PasswordInput'];
 
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
   // Initialize an object to group properties by "accordian"
   const groupedProperties = {};
-  if (component.component.component === 'TextInput' || component.component.component === 'Text') {
+  if (
+    component.component.component === 'TextInput' ||
+    component.component.component === 'PasswordInput' ||
+    component.component.component === 'NumberInput' ||
+    component.component.component === 'Text'
+  ) {
     // Iterate over the properties in componentMeta.styles
     for (const key in componentMeta.styles) {
       const property = componentMeta.styles[key];
@@ -480,7 +496,10 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
   }
 
   return Object.keys(
-    component.component.component === 'TextInput' || component.component.component === 'Text'
+    component.component.component === 'TextInput' ||
+      component.component.component === 'PasswordInput' ||
+      component.component.component === 'NumberInput' ||
+      component.component.component === 'Text'
       ? groupedProperties
       : componentMeta.styles
   ).map((style) => {
@@ -506,7 +525,12 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
 
     const items = [];
 
-    if (component.component.component === 'TextInput' || component.component.component === 'Text') {
+    if (
+      component.component.component === 'TextInput' ||
+      component.component.component === 'PasswordInput' ||
+      component.component.component === 'NumberInput' ||
+      component.component.component === 'Text'
+    ) {
       items.push({
         title: `${style}`,
         children: Object.entries(groupedProperties[style]).map(([key, value]) => ({
