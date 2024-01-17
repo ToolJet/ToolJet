@@ -10,4 +10,10 @@ export const TypeMapping = {
   number: 'Number',
   boxShadow: 'BoxShadow',
   clientServerSwitch: 'ClientServerSwitch',
+  checkbox: 'Checkbox',
+  slider: 'Slider',
+  switch: 'Switch',
+  input: 'Input',
+  icon: 'Icon',
+  visibility: 'Visibility',
 };
