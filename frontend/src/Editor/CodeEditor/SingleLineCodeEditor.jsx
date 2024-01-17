@@ -18,11 +18,11 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta, ...restPr
   const [isFocused, setIsFocused] = React.useState(false);
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
 
-  useEffect(() => {
-    if (initialValue !== currentValue) {
-      onChange(currentValue);
-    }
-  }, [JSON.stringify({ currentValue })]);
+  // useEffect(() => {
+  //   if (initialValue !== currentValue) {
+  //     onChange(currentValue);
+  //   }
+  // }, [JSON.stringify({ currentValue })]);
 
   // console.log('----arpit:: =>', { currentValue, restProps });
 
@@ -35,6 +35,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta, ...restPr
           hints={suggestions}
           setFocus={setIsFocused}
           validationType={validation?.schema?.type}
+          onBlurUpdate={onChange}
         />
 
         <PreviewBox currentValue={currentValue} isFocused={isFocused} componentName={componentName} />
@@ -43,7 +44,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta, ...restPr
   );
 };
 
-const EditorInput = ({ currentValue, setCurrentValue, hints, setFocus, validationType }) => {
+const EditorInput = ({ currentValue, setCurrentValue, hints, setFocus, validationType, onBlurUpdate }) => {
   function orderSuggestions(suggestions, validationType) {
     const matchingSuggestions = suggestions.filter((s) => s.type === validationType);
 
@@ -148,7 +149,10 @@ const EditorInput = ({ currentValue, setCurrentValue, hints, setFocus, validatio
         autocompletion: true,
       }}
       onFocus={() => setFocus(true)}
-      onBlur={() => setFocus(false)}
+      onBlur={() => {
+        setFocus(false);
+        onBlurUpdate(currentValue);
+      }}
       style={{
         borderRadius: '4px',
         border: '1px solid #d9d9d9',
