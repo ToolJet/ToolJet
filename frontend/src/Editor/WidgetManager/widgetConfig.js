@@ -2791,7 +2791,7 @@ export const widgets = [
 
       fieldBackgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'BG Color',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -2820,6 +2820,14 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
         visibility: false,
+      },
+      iconColor: {
+        type: 'color',
+        displayName: 'Icon color',
+        validation: {
+          schema: { type: 'string' },
+        },
+        accordian: 'field',
       },
       fieldBorderRadius: {
         type: 'input',
@@ -2904,6 +2912,7 @@ export const widgets = [
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
         icon: { value: 'IconHome2' },
         iconVisibility: { value: false },
+        iconColor: { value: '#DB4324' },
       },
     },
   },

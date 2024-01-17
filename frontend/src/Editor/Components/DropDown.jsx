@@ -19,7 +19,7 @@ const CustomValueContainer = ({ children, ...props }) => {
           style={{
             width: '16px',
             height: '16px',
-            fill: 'var(--slate8)',
+            color: selectProps?.iconColor,
           }}
         />
       )}
@@ -106,6 +106,8 @@ export const DropDown = function DropDown({
     iconVisibility,
     errTextColor,
     labelAutoWidth,
+    iconColor,
+    padding,
   } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
@@ -339,7 +341,7 @@ export const DropDown = function DropDown({
       // backgroundColor: state.isFocused && !state.isSelected ? 'transparent' : 'white',
       color: '#11181C',
       '&:hover': {
-        backgroundColor: '#3E63DD',
+        backgroundColor: '#ACB2B9',
         color: 'white',
       },
     }),
@@ -352,6 +354,10 @@ export const DropDown = function DropDown({
       gap: '4px !important',
       backgroundColor: 'var(--base) !important',
       overflowY: 'auto',
+    }),
+    menu: (provided, state) => ({
+      ...provided,
+      marginTop: '5px',
     }),
   };
 
@@ -393,6 +399,7 @@ export const DropDown = function DropDown({
           height,
           display: visibility ? 'flex' : 'none',
           flexDirection: alignment === 'top' ? 'column' : direction === 'alignRight' ? 'row-reverse' : 'row',
+          padding: padding === 'default' ? '3px 2px' : '',
         }}
         onMouseDown={(event) => {
           onComponentClick(id, component, event);
@@ -403,11 +410,11 @@ export const DropDown = function DropDown({
           className="my-auto"
           style={{
             alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
-            width: alignment === 'side' || labelAutoWidth ? 'auto' : `${labelWidth}%`,
-            maxWidth: alignment === 'side' || labelAutoWidth ? '100%' : `${labelWidth}%`,
+            width: alignment === 'top' || labelAutoWidth ? 'auto' : `${labelWidth}%`,
+            maxWidth: alignment === 'top' || labelAutoWidth ? '100%' : `${labelWidth}%`,
           }}
         >
-          <label style={labelStyles} className="form-label py-0 my-0">
+          <label style={labelStyles} className="font-size-12 font-weight-500 py-0 my-0">
             {label}
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
@@ -451,6 +458,7 @@ export const DropDown = function DropDown({
             isClearable
             icon={icon}
             doShowIcon={iconVisibility}
+            iconColor={iconColor}
             isSearchable={false}
             {...{
               menuIsOpen: isFocused || undefined,
