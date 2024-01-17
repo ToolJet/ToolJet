@@ -280,14 +280,6 @@ export const Box = memo(
       });
     const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'DropDown'];
 
-    const calculateHeight = useCallback(() => {
-      // 2px needs to be added since we are removing 1px each from top bottom padding when padding selected to none
-      if (validatedStyles?.padding === 'none') {
-        return height + 2;
-      }
-      return height;
-    }, [validatedStyles?.padding, height]);
-
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
@@ -321,7 +313,7 @@ export const Box = memo(
                 width={width}
                 changeCanDrag={changeCanDrag}
                 onComponentOptionsChanged={onComponentOptionsChanged}
-                height={calculateHeight()}
+                height={height}
                 component={component}
                 containerProps={containerProps}
                 darkMode={darkMode}
