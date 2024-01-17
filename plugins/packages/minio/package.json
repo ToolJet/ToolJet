@@ -17,5 +17,8 @@
     "@tooljet-plugins/common": "file:../common",
     "minio": "^7.0.32",
     "react": "^17.0.2"
+  },
+  "overrides": {
+    "minimist": "^1.2.6"
   }
 }

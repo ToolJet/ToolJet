@@ -41,4 +41,19 @@ export const dashboardSelector = {
   folderName: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-name"]`;
   },
+
+  createWorkspaceTitle: '[data-cy="create-workspace-title"]',
+  workspaceNameLabel: '[data-cy="workspace-name-label"]',
+  workspaceNameInfoLabel: '[data-cy="workspace-name-info-label"]',
+  slugNameInputLabel: '[data-cy="slug-input-label"]',
+  workspaceSlugInputField: '[data-cy="workspace-slug-input-field"]',
+  slugInfoLabel: '[data-cy="slug-info-label"]',
+  workspaceLinkLabel: '[data-cy="workspace-link-label"]',
+  slugField: '[data-cy="slug-field"]',
+  createWorkspaceButton: '[data-cy="create-workspace-button"]',
+  workspaceErrorLabel: '[data-cy="workspace-error-label"]',
+  inputLabelError: '[data-cy="input-label-error"]',
+  slugSuccessLabel: '[data-cy="slug-sucess-label"]',
+  slugErrorLabel: '[data-cy="slug-error-label"]',
+  editWorkspaceTitle: '[data-cy="edit-workspace-title"]',
 };

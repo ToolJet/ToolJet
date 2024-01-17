@@ -41,8 +41,9 @@ import Slider from './Elements/Slider';
 import { Input } from './Elements/Input';
 import { Icon } from './Elements/Icon';
 import { Visibility } from './Elements/Visibility';
+import { validateProperty } from '../component-properties-validation';
 
-const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Text'];
+const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
 
 const AllElements = {
   Color,
@@ -90,9 +91,9 @@ export function CodeHinter({
   callgpt = () => null,
   isCopilotEnabled = false,
   currentState: _currentState,
-  verticalLine = true,
   isIcon = false,
   inspectorTab,
+  staticText,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -136,9 +137,49 @@ export function CodeHinter({
   const { variablesExposedForPreview } = useContext(EditorContext);
   const prevCountRef = useRef(false);
 
+  function getPropertyDefinition(paramName, component) {
+    if (component?.properties?.hasOwnProperty(`${paramName}`)) {
+      return component.properties?.[paramName];
+    } else if (component?.styles?.hasOwnProperty(`${paramName}`)) {
+      return component?.styles?.[paramName];
+    } else if (component?.general?.hasOwnProperty(`${paramName}`)) {
+      return component?.general?.[paramName];
+    } else if (component?.generalStyles?.hasOwnProperty(`${paramName}`)) {
+      return component?.generalStyles?.[paramName];
+    } else {
+      return {};
+    }
+  }
+
+  const checkTypeErrorInRunTime = (preview) => {
+    const propertyDefinition = getPropertyDefinition(paramName, component?.component);
+    const resolvedProperty = Object.keys(component?.component?.definition || {}).reduce((accumulator, currentKey) => {
+      if (
+        component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName) ||
+        (paramName === 'tooltip' &&
+          currentKey === 'general' &&
+          !component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName))
+        //added second condition because initilly general is empty object and hence it was not going inside if statement and thus codehinter was always receiving undefined for initial render and thus showing error message in the preview
+      ) {
+        accumulator[`${paramName}`] = resolveReferences(preview, currentState);
+      }
+      return accumulator;
+    }, {});
+    const [_valid, errorMessages] = validateProperty(resolvedProperty, propertyDefinition, paramName);
+    return [_valid, errorMessages];
+  };
+
+  const getPreviewAndErrorFromValue = (value) => {
+    const customResolvables = getCustomResolvables();
+    const [preview, error] = resolveReferences(value, realState, null, customResolvables, true, true);
+    return [preview, error];
+  };
+
   useEffect(() => {
     setCurrentValue(initialValue);
-
+    const [preview, error] = getPreviewAndErrorFromValue(initialValue);
+    const [_valid] = checkTypeErrorInRunTime(preview);
+    if (!_valid || error) setResolvingError(true);
     return () => {
       setPrevCurrentValue(null);
       setResolvedValue(null);
@@ -176,25 +217,41 @@ export function CodeHinter({
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
   useEffect(() => {
+    let globalPreviewCopy = null;
+    let globalErrorCopy = null;
     if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
-      const customResolvables = getCustomResolvables();
-      const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
-      setPrevCurrentValue(currentValue);
+      const [preview, error] = getPreviewAndErrorFromValue(currentValue);
+      // checking type error if any in run time
+      const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
 
-      if (error) {
-        setResolvingError(error);
+      setPrevCurrentValue(currentValue);
+      if (error || !_valid || typeof preview === 'function') {
+        globalPreviewCopy = null;
+        globalErrorCopy = error || errorMessages?.[errorMessages?.length - 1];
+        setResolvingError(error || errorMessages?.[errorMessages?.length - 1]);
         setResolvedValue(null);
       } else {
+        globalPreviewCopy = preview;
+        globalErrorCopy = null;
         setResolvingError(null);
         setResolvedValue(preview);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    return () => {
+      if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
+        setPrevCurrentValue(null);
+        setResolvedValue(globalPreviewCopy);
+        setResolvingError(globalErrorCopy);
+      }
+    };
   }, [JSON.stringify({ currentValue, realState, isFocused })]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [JSON.stringify({ currentValue, realState, isFocused })]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
     if (editor.getValue()?.trim() !== currentValue) {
-      handleChange(editor, onChange, ignoreBraces, realState, componentName);
+      handleChange(editor, onChange, ignoreBraces, realState, componentName, getCustomResolvables());
       setCurrentValue(editor.getValue()?.trim());
     }
   }
@@ -238,14 +295,11 @@ export function CodeHinter({
 
   const getPreview = () => {
     if (!enablePreview) return;
-    // const customResolvables = getCustomResolvables();
-    // const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
-
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
     const preview = resolvedValue;
     const error = resolvingError;
 
-    if (error) {
+    if (resolvingError !== null && resolvedValue === null && error) {
       const err = String(error);
       const errorMessage = err.includes('.run()')
         ? `${err} in ${componentName ? componentName.split('::')[0] + "'s" : 'fx'} field`
@@ -272,7 +326,6 @@ export function CodeHinter({
       previewType = typeof previewContent;
     }
     const content = getPreviewContent(previewContent, previewType);
-
     return (
       <animated.div
         className={isOpen ? themeCls : null}
@@ -340,7 +393,6 @@ export function CodeHinter({
     className === 'query-hinter' || className === 'custom-component' || undefined ? '' : 'code-hinter';
 
   const ElementToRender = AllElements[TypeMapping[type]];
-
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
@@ -400,9 +452,10 @@ export function CodeHinter({
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'label-hinter-margin' : 'mb-0'} ${
                 darkMode && 'color-whitish-darkmode'
               }`}
+              bold={!AllElements.hasOwnProperty(TypeMapping[type]) ? true : false}
             />
           </div>
         )}
@@ -436,6 +489,7 @@ export function CodeHinter({
                 meta={fieldMeta}
                 cyLabel={cyLabel}
                 isIcon={isIcon}
+                staticText={staticText}
                 component={component}
                 {...getExclusiveElementProps()}
               />
@@ -449,10 +503,11 @@ export function CodeHinter({
       >
         <div className={`col code-hinter-col`}>
           <div className="d-flex">
-            {/* <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div> */}
             <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
               <div
-                className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
+                className={`${defaultClassName} ${className || 'codehinter-default-input'} ${
+                  resolvingError && 'border-danger'
+                }`}
                 key={componentName}
                 style={{
                   height: height || 'auto',
@@ -492,10 +547,10 @@ export function CodeHinter({
                     height={'100%'}
                     onFocus={() => setFocused(true)}
                     onBlur={(editor, e) => {
-                      e.stopPropagation();
-                      const value = editor.getValue()?.trimEnd();
+                      e?.stopPropagation();
+                      const value = editor?.getValue()?.trimEnd();
                       onChange(value);
-                      if (!isPreviewFocused.current) {
+                      if (!isPreviewFocused?.current) {
                         setFocused(false);
                       }
                     }}
@@ -515,6 +570,7 @@ export function CodeHinter({
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function CodeHinterInputField() {
   return <></>;
 }

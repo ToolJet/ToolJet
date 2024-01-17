@@ -4,6 +4,7 @@ import { fake } from "Fixtures/fake";
 import { commonWidgetText } from "Texts/common";
 
 import { verifyControlComponentAction } from "Support/utils/button";
+import { resizeQueryPanel } from "Support/utils/dataSource";
 
 import {
   openAccordion,
@@ -42,6 +43,7 @@ describe("Editor- Test Button widget", () => {
   it("should verify position of component after dragging", () => {
     const data = {};
     data.widgetName = buttonText.defaultWidgetName;
+    resizeQueryPanel(0);
 
     cy.getPosition(data.widgetName).then((position) => {
       const [clientX, clientY] = position;
@@ -57,6 +59,7 @@ describe("Editor- Test Button widget", () => {
       expect(clientY).to.be.closeTo(100, 10);
     });
     cy.reload();
+    resizeQueryPanel(0);
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
       "be.visible"
     );

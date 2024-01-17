@@ -1,5 +1,5 @@
 import { ERROR_MESSAGES } from '@/_helpers/constants';
-import { redirectToDashboard } from '@/_helpers/routes';
+import { redirectToDashboard, getPrivateRoute, getSubpath } from '@/_helpers/routes';
 import React from 'react';
 import { Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
@@ -13,15 +13,27 @@ export default function ErrorPage({ darkMode }) {
 
   if (!errorMsg) redirectToDashboard();
 
+  const searchParams = new URLSearchParams(location.search);
+  const appSlug = searchParams.get('appSlug');
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <ErrorModal errorMsg={errorMsg} show={true} darkMode={darkMode} />
+      <ErrorModal errorMsg={errorMsg} appSlug={appSlug} show={true} darkMode={darkMode} />
     </div>
   );
 }
 
-export const ErrorModal = ({ errorMsg, ...props }) => {
+export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
   const { t } = useTranslation();
+
+  // Redirect to edit app URL in a new tab
+  const openAppEditorInNewTab = () => {
+    const subpath = getSubpath();
+    const path = subpath
+      ? `${subpath}${getPrivateRoute('editor', { slug: appSlug })}`
+      : getPrivateRoute('editor', { slug: appSlug });
+    window.open(path, '_blank');
+  };
 
   return (
     <div className="custom-backdrop">
@@ -45,8 +57,12 @@ export const ErrorModal = ({ errorMsg, ...props }) => {
               fill="#E54D2E"
             />
           </svg>
-          <span className="header-text">{t('globals.static-error-modal.title', errorMsg?.title)}</span>
-          <p className="description">{t('globals.static-error-modal.description', errorMsg?.message)}</p>
+          <span className="header-text" data-cy="modal-header">
+            {t('globals.static-error-modal.title', errorMsg?.title)}
+          </span>
+          <p className="description" data-cy="modal-description">
+            {t('globals.static-error-modal.description', errorMsg?.message)}
+          </p>
         </Modal.Header>
         <Modal.Footer>
           {errorMsg?.retry && (
@@ -62,6 +78,7 @@ export const ErrorModal = ({ errorMsg, ...props }) => {
                 alignItems: 'center',
               }}
               onClick={() => window.history.back()}
+              data-cy="retry-button"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -81,9 +98,19 @@ export const ErrorModal = ({ errorMsg, ...props }) => {
               {t('globals.workspace-modal.continue-btn', 'Retry')}
             </button>
           )}
+          {appSlug && (
+            <button
+              className={'btn btn-primary action-btn'}
+              onClick={() => openAppEditorInNewTab()}
+              data-cy="open-app-button"
+            >
+              {t('globals.workspace-modal.continue-btn', 'Open app')}
+            </button>
+          )}
           <button
-            className={errorMsg?.retry ? 'btn btn-primary' : 'btn btn-primary action-btn'}
+            className={errorMsg?.retry || appSlug ? 'btn btn-primary' : 'btn btn-primary action-btn'}
             onClick={() => redirectToDashboard()}
+            data-cy="back-to-home-button"
           >
             {t('globals.workspace-modal.continue-btn', errorMsg?.cta)}
           </button>
