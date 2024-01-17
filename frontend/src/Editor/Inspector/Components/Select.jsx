@@ -56,7 +56,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const [options, setOptions] = useState([]);
   const [markedAsDefault, setMarkedAsDefault] = useState(_markedAsDefault);
-  const [hoveredOption, setHoveredOption] = useState(false);
+  const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
   const validations = Object.keys(componentMeta.validation || {});
   let properties = [];
   let additionalActions = [];
@@ -352,8 +352,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                             <div key={item.value}>
                               <ListGroup.Item
                                 style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
-                                onMouseEnter={() => setHoveredOption(item.value)}
-                                onMouseLeave={() => setHoveredOption('')}
+                                onMouseEnter={() => setHoveredOptionIndex(index)}
+                                onMouseLeave={() => setHoveredOptionIndex(null)}
                                 {...restProps}
                               >
                                 <div className="row">
@@ -369,10 +369,10 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                                         handleDeleteOption(index);
                                       }}
                                     >
-                                      {item.value === hoveredOption && (
+                                      {index === hoveredOptionIndex && (
                                         <ButtonSolid variant="tertiary" size="xs" className={'list-menu-option-btn'}>
                                           <span style={{ border: '1px solid #E54D2E' }}>
-                                            <Trash fill={'#E54D2E'} width={'16'} />
+                                            <Trash fill={'#E54D2E'} width={'14'} />
                                           </span>
                                         </ButtonSolid>
                                       )}

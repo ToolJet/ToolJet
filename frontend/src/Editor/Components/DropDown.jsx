@@ -303,7 +303,12 @@ export const DropDown = function DropDown({
             ? '#4C5155'
             : '#D7DBDF'
           : fieldBorderColor,
-        backgroundColor: darkMode && ['#fff'].includes(fieldBackgroundColor) ? '#313538' : fieldBackgroundColor,
+        backgroundColor:
+          darkMode && ['#fff'].includes(fieldBackgroundColor)
+            ? '#313538'
+            : state.isDisabled
+            ? '#F1F3F5'
+            : fieldBackgroundColor,
         '&:hover': {
           backgroundColor: 'var(--tj-text-input-widget-hover) !important',
           borderColor: '#3E63DD',
