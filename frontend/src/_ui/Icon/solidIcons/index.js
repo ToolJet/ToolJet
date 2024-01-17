@@ -139,6 +139,8 @@ import Check from './Check.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
+import WorkspaceConstants from './WorkspaceConstants.jsx';
+import ArrowBackDown from './ArrowBackDown.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -152,6 +154,8 @@ const Icon = (props) => {
       return <Archive {...props} />;
     case 'arrowback':
       return <ArrowBack {...props} />;
+    case 'arrowbackdown':
+      return <ArrowBackDown {...props} />;
     case 'arrowdown':
       return <ArrowDown {...props} />;
     case 'arroweft':
@@ -384,6 +388,8 @@ const Icon = (props) => {
       return <Variable {...props} />;
     case 'warning':
       return <Warning {...props} />;
+    case 'workspaceconstants':
+      return <WorkspaceConstants {...props} />;
     case 'zoomin':
       return <ZoomIn {...props} />;
     case 'zoomout':
