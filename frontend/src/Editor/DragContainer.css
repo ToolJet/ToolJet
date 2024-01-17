@@ -14,6 +14,10 @@
     /* z-index: 3001; */
 }
 
+.target.hovered{
+    z-index: 2;
+}
+
 .moveable-control-box>.moveable-control-box:not(.moveable-control-box-d-block, .moveable-dragging, .selected-component){
 	visibility: hidden !important;
 }
