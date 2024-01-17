@@ -6,6 +6,7 @@ import Select from 'react-select';
 export default function FolderFilter({ disabled, options, onChange, value }) {
   const navigate = useNavigate();
   const [currentFolder, setCurrentFolder] = useState({});
+  const defaultFolder = { name: 'All apps', label: 'All apps', value: '', id: '' };
   let selectRef = useRef();
 
   const handleFolderChange = (folder) => {
@@ -20,14 +21,14 @@ export default function FolderFilter({ disabled, options, onChange, value }) {
 
   useEffect(() => {
     if (isEmpty(value)) {
-      setCurrentFolder({ name: 'All apps', label: 'All apps', value: '', id: '' });
+      setCurrentFolder(defaultFolder);
     } else {
       setCurrentFolder({ ...value, value: value?.id });
       handleFolderChange(value);
     }
   }, [value]);
 
-  const allOptions = [{ name: 'All apps', label: 'All apps', value: '', id: '' }, ...options];
+  const allOptions = [defaultFolder, ...options];
   const currentValue = { label: currentFolder?.name, ...currentFolder };
 
   return (
