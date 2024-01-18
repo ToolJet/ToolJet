@@ -49,7 +49,8 @@ export const PreviewBox = ({ currentValue, isFocused, componentName, expectedTyp
     } else {
       setErrorStateActive(false);
     }
-  }, [error]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error, resolvedValue]);
 
   return (
     <animated.div className={isFocused ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>

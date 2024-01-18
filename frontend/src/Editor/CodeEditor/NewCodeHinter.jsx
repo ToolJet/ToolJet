@@ -22,7 +22,6 @@ const NewCodeHinter = ({ type = 'basic', initialValue, ...restProps }) => {
   );
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const [value, error] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
 
   const RenderCodeEditor = CODE_EDITOR_TYPE[type];
 
@@ -32,8 +31,6 @@ const NewCodeHinter = ({ type = 'basic', initialValue, ...restProps }) => {
       initialValue={initialValue}
       suggestions={suggestions}
       darkMode={darkMode}
-      resolvedValue={value}
-      errorRef={error}
       {...restProps}
     />
   );

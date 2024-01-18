@@ -10,12 +10,12 @@ import { autocompletion } from '@codemirror/autocomplete';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
-import { paramValidation } from './utils';
+import { paramValidation, resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 
 const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}, ...restProps }) => {
-  const { initialValue, onChange, enablePreview = true, resolvedValue } = restProps;
+  const { initialValue, onChange, enablePreview = true } = restProps;
   const { validation = {} } = fieldMeta;
 
   const [isFocused, setIsFocused] = React.useState(false);
@@ -33,7 +33,6 @@ const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}
           setFocus={setIsFocused}
           validationType={validation?.schema?.type}
           onBlurUpdate={onChange}
-          resolvedValue={resolvedValue}
           error={errorStateActive}
         />
 
@@ -60,7 +59,6 @@ const EditorInput = ({
   validationType,
   onBlurUpdate,
   placeholder = '',
-  resolvedValue = null,
   error,
 }) => {
   function orderSuggestions(suggestions, validationType) {
@@ -152,16 +150,21 @@ const EditorInput = ({
 
   const handleOnChange = React.useCallback((val) => {
     setCurrentValue(val);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleOnBlur = React.useCallback(() => {
     setFocus(false);
-    const shouldUpdate = validationType ? paramValidation(validationType, resolvedValue) : true;
+
+    const [value] = resolveReferences(currentValue);
+
+    const shouldUpdate = validationType ? paramValidation(validationType, value) : true;
 
     if (!error && shouldUpdate) {
       onBlurUpdate(currentValue);
     }
-  }, [currentValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentValue, error]);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const theme = darkMode ? okaidia : githubLight;
@@ -194,7 +197,7 @@ const EditorInput = ({
 const DynamicEditorBridge = (props) => {
   const {
     initialValue,
-    resolvedValue,
+    type,
     fxActive,
     paramType,
     paramLabel,
@@ -214,6 +217,7 @@ const DynamicEditorBridge = (props) => {
   const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
   const { t } = useTranslation();
+  const [value, error] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
 
   return (
     <div className={cx({ 'codeShow-active': codeShow })}>
@@ -254,7 +258,7 @@ const DynamicEditorBridge = (props) => {
             </div>
             {!codeShow && (
               <DynamicFxTypeRenderer
-                value={resolvedValue}
+                value={!error ? value : ''}
                 onChange={onChange}
                 paramName={paramName}
                 paramLabel={paramLabel}
