@@ -188,7 +188,7 @@ const EditorInput = ({
       }}
       onFocus={() => setFocus(true)}
       onBlur={handleOnBlur}
-      className="codehinter-input"
+      className={`codehinter-input ${error && 'border-danger'}`}
       theme={theme}
     />
   );
