@@ -1318,6 +1318,7 @@ export const widgets = [
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
+        staticText: '',
       },
     },
     validation: {
@@ -1873,6 +1874,7 @@ export const widgets = [
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
+        staticText: '',
       },
     },
     validation: {
