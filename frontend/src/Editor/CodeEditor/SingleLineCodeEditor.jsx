@@ -13,6 +13,7 @@ import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
 import { paramValidation, resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
+import { getAutocompletion } from './autocompleteExtensionConfig';
 
 const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true } = restProps;
@@ -61,88 +62,6 @@ const EditorInput = ({
   placeholder = '',
   error,
 }) => {
-  function orderSuggestions(suggestions, validationType) {
-    if (!validationType) return suggestions;
-
-    const matchingSuggestions = suggestions.filter((s) => s.type === validationType);
-
-    const otherSuggestions = suggestions.filter((s) => s.type !== validationType);
-
-    return [...matchingSuggestions, ...otherSuggestions];
-  }
-
-  const getAutocompletion = (input, fieldType) => {
-    if (!input.startsWith('{{') || !input.endsWith('}}')) return [];
-
-    const actualInput = input.replace(/{{|}}/g, '');
-
-    const JSLangHints = hints['jsHints'][fieldType]['methods'].map((hint) => ({
-      hint: hint,
-      type: 'js_method',
-    }));
-
-    const appHints = hints['appHints'].filter((cm) => {
-      const { hint } = cm;
-
-      if (hint.includes('actions')) {
-        return false;
-      }
-
-      const lastChar = hint[cm.length - 1];
-      if (lastChar === ')') {
-        return false;
-      }
-
-      return true;
-    });
-
-    const finalHints = [...JSLangHints, ...appHints];
-
-    let autoSuggestionList = finalHints.filter((suggestion) => {
-      if (actualInput.length === 0) return true;
-
-      return suggestion.hint.includes(actualInput);
-    });
-
-    const finalAutoSuggestions = [...JSLangHints, ...autoSuggestionList];
-
-    const suggestions = finalAutoSuggestions.map(({ hint, type }) => {
-      return {
-        label: hint,
-        type: type === 'js_method' ? 'js_methods' : type?.toLowerCase(),
-        section: type === 'js_method' ? { name: 'JS methods', rank: 2 } : { name: 'suggestions', rank: 1 },
-        detail: type === 'js_method' ? 'method' : type?.toLowerCase() || '',
-        apply: (view, completion, from, to) => {
-          const doc = view.state.doc;
-
-          const { from: start, to: end } = doc.lineAt(from);
-
-          const word = doc.sliceString(start, end);
-
-          const wordStart = start + word.indexOf('{{');
-
-          const wordEnd = wordStart + word.length;
-
-          const pickedCompletionConfig = {
-            from: wordEnd - from,
-            to: to,
-            insert: completion.label,
-          };
-
-          if (completion.type === 'js_methods') {
-            pickedCompletionConfig.from = from;
-          }
-
-          view.dispatch({
-            changes: pickedCompletionConfig,
-          });
-        },
-      };
-    });
-
-    return orderSuggestions(suggestions, fieldType).map((cm, index) => ({ ...cm, boost: 100 - index }));
-  };
-
   function autoCompleteExtensionConfig(context) {
     let before = context.matchBefore(/\w+/);
 
@@ -150,7 +69,7 @@ const EditorInput = ({
       return null;
     }
 
-    let completions = validationType ? getAutocompletion(context.state.doc.toString(), validationType) : [];
+    let completions = getAutocompletion(context.state.doc.toString(), validationType, hints);
 
     return {
       from: context.pos,
