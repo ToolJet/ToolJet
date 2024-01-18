@@ -106,24 +106,44 @@ const EditorInput = ({
 
     const finalAutoSuggestions = [...JSLangHints, ...autoSuggestionList];
 
-    const priorityOrder = actualInput.endsWith('.');
-
     const suggestions = finalAutoSuggestions.map(({ hint, type }) => {
       return {
         label: hint,
         type: type === 'js_method' ? 'js_methods' : type?.toLowerCase(),
-        section:
-          type === 'js_method'
-            ? { name: 'JS methods', rank: priorityOrder ? 1 : 2 }
-            : { name: 'suggestions', rank: !priorityOrder ? 1 : 2 },
+        section: type === 'js_method' ? { name: 'JS methods', rank: 2 } : { name: 'suggestions', rank: 1 },
         detail: type === 'js_method' ? 'method' : type?.toLowerCase() || '',
+        apply: (view, completion, from, to) => {
+          const doc = view.state.doc;
+
+          const { from: start, to: end } = doc.lineAt(from);
+
+          const word = doc.sliceString(start, end);
+
+          const wordStart = start + word.indexOf('{{');
+
+          const wordEnd = wordStart + word.length;
+
+          const pickedCompletionConfig = {
+            from: wordEnd - from,
+            to: to,
+            insert: completion.label,
+          };
+
+          if (completion.type === 'js_methods') {
+            pickedCompletionConfig.from = from;
+          }
+
+          view.dispatch({
+            changes: pickedCompletionConfig,
+          });
+        },
       };
     });
 
     return orderSuggestions(suggestions, fieldType).map((cm, index) => ({ ...cm, boost: 100 - index }));
   };
 
-  function myCompletions(context) {
+  function autoCompleteExtensionConfig(context) {
     let before = context.matchBefore(/\w+/);
 
     if (!context.explicit && !before) {
@@ -139,8 +159,8 @@ const EditorInput = ({
     };
   }
 
-  const myComplete = autocompletion({
-    override: [myCompletions],
+  const autoCompleteConfig = autocompletion({
+    override: [autoCompleteExtensionConfig],
     compareCompletions: (a, b) => {
       return a.label < b.label ? -1 : 1;
     },
@@ -176,7 +196,7 @@ const EditorInput = ({
       height={type === 'basic' ? '30px' : 'fit-content'}
       maxHeight="320px"
       width="100%"
-      extensions={[javascript({ jsx: false }), myComplete]}
+      extensions={[javascript({ jsx: false }), autoCompleteConfig]}
       onChange={handleOnChange}
       basicSetup={{
         lineNumbers: false,
