@@ -1107,9 +1107,10 @@ export const widgets = [
           height: 30,
           width: 25,
         },
-        properties: ['placeholder'],
+        properties: ['placeholder', 'label'],
         defaultValue: {
           placeholder: 'Enter your name',
+          label: '',
         },
       },
       {
@@ -1120,11 +1121,10 @@ export const widgets = [
           height: 30,
           width: 25,
         },
-        properties: ['value'],
-        styles: ['borderColor'],
+        properties: ['value', 'label'],
         defaultValue: {
           value: 24,
-          borderColor: '#dadcde',
+          label: '',
         },
       },
       {
@@ -1851,6 +1851,15 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
       loadingState: {
         type: 'toggle',
         displayName: 'Loading state',
@@ -2061,6 +2070,7 @@ export const widgets = [
         loadingState: { value: '{{false}}' },
         toolltip: { value: '' },
         label: { value: 'Label' },
+        value: { value: 'Hello world' },
       },
       validation: {
         mandatory: { value: false },
