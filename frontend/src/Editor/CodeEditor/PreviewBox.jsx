@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import useHeight from '@/_hooks/use-height-transition';
 import { getCurrentNodeType, resolveReferences } from './utils';
 
-export const PreviewBox = ({ currentValue, isFocused, componentName, expectedType }) => {
+export const PreviewBox = ({ currentValue, isFocused, componentName, expectedType, setErrorStateActive }) => {
   const [resolvedValue, error] = resolveReferences(currentValue, expectedType);
 
   const [heightRef, currentHeight] = useHeight();
@@ -42,6 +42,14 @@ export const PreviewBox = ({ currentValue, isFocused, componentName, expectedTyp
   let previewContent = resolvedValue;
 
   const content = getPreviewContent(previewContent);
+
+  useEffect(() => {
+    if (error) {
+      setErrorStateActive(true);
+    } else {
+      setErrorStateActive(false);
+    }
+  }, [error]);
 
   return (
     <animated.div className={isFocused ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>

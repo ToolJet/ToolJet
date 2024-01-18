@@ -73,7 +73,6 @@ export const Code = ({
   }
 
   function handleCodeChanged(value) {
-    console.log('---arpit on change hinter ==>', { value, param, paramType });
     onChange(param, 'value', value, paramType);
   }
 

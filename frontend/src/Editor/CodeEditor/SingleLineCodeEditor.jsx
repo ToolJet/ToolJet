@@ -15,11 +15,12 @@ import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 
 const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}, ...restProps }) => {
-  const { initialValue, onChange, enablePreview = true } = restProps;
+  const { initialValue, onChange, enablePreview = true, resolvedValue } = restProps;
   const { validation = {} } = fieldMeta;
 
   const [isFocused, setIsFocused] = React.useState(false);
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
+  const [errorStateActive, setErrorStateActive] = React.useState(false);
 
   return (
     <div className=" code-editor-basic-wrapper d-flex">
@@ -32,6 +33,8 @@ const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}
           setFocus={setIsFocused}
           validationType={validation?.schema?.type}
           onBlurUpdate={onChange}
+          resolvedValue={resolvedValue}
+          error={errorStateActive}
         />
 
         {enablePreview && (
@@ -40,6 +43,7 @@ const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}
             isFocused={isFocused}
             componentName={componentName}
             expectedType={validation?.schema?.type}
+            setErrorStateActive={setErrorStateActive}
           />
         )}
       </div>
@@ -56,6 +60,8 @@ const EditorInput = ({
   validationType,
   onBlurUpdate,
   placeholder = '',
+  resolvedValue = null,
+  error,
 }) => {
   function orderSuggestions(suggestions, validationType) {
     if (!validationType) return suggestions;
@@ -150,9 +156,9 @@ const EditorInput = ({
 
   const handleOnBlur = React.useCallback(() => {
     setFocus(false);
-    const shouldUpdate = validationType ? paramValidation(validationType, currentValue) : true;
+    const shouldUpdate = validationType ? paramValidation(validationType, resolvedValue) : true;
 
-    if (shouldUpdate) {
+    if (!error && shouldUpdate) {
       onBlurUpdate(currentValue);
     }
   }, [currentValue]);

@@ -17,8 +17,6 @@ const langSupport = Object.freeze({
 });
 
 const MultiLineCodeEditor = (props) => {
-  console.log('--arpit[multi]', { props });
-
   const {
     darkMode,
     height,
