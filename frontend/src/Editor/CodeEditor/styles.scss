@@ -27,7 +27,6 @@
     // font-family: "Roboto", sans-serif;
     font-family: IBM Plex Sans;
     font-size: 12px;
-    padding: 5px !important;
     display: block;
     width: 100%;
     font-size: 0.875rem;
@@ -35,12 +34,13 @@
     color: var(--slate9);
     background-color: var(--base) !important;
     background-clip: padding-box;
-    // border: 1px solid var(--slate7);
+    border: 1px solid var(--slate7);
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    // border-radius: 4px;
+    border-radius: 4px;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    padding: 0px 10px;
 
     &:hover {
         background-color: #FBFCFD;
@@ -232,6 +232,10 @@
     overflow-y: hidden !important;
     overflow-x: hidden !important;
 
+}
+
+.cm-focused {
+    outline: none !important;
 }
 
 

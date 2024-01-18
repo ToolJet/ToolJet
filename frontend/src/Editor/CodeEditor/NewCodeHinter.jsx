@@ -28,6 +28,7 @@ const NewCodeHinter = ({ type = 'basic', initialValue, ...restProps }) => {
 
   return (
     <RenderCodeEditor
+      type={type}
       initialValue={initialValue}
       suggestions={suggestions}
       darkMode={darkMode}

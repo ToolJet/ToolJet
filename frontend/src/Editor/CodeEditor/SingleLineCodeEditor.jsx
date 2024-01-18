@@ -11,8 +11,10 @@ import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
 import { paramValidation } from './utils';
+import { okaidia } from '@uiw/codemirror-theme-okaidia';
+import { githubLight } from '@uiw/codemirror-theme-github';
 
-const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...restProps }) => {
+const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true } = restProps;
   const { validation = {} } = fieldMeta;
 
@@ -23,6 +25,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
     <div className=" code-editor-basic-wrapper d-flex">
       <div className="codehinter-container w-100 ">
         <SingleLineCodeEditor.Editor
+          type={type}
           currentValue={currentValue}
           setCurrentValue={setCurrentValue}
           hints={suggestions}
@@ -45,6 +48,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
 };
 
 const EditorInput = ({
+  type,
   currentValue,
   setCurrentValue,
   hints,
@@ -146,18 +150,21 @@ const EditorInput = ({
 
   const handleOnBlur = React.useCallback(() => {
     setFocus(false);
-    const shouldUpdate = validationType ? paramValidation(currentValue, validationType) : true;
+    const shouldUpdate = validationType ? paramValidation(validationType, currentValue) : true;
 
     if (shouldUpdate) {
       onBlurUpdate(currentValue);
     }
-  }, []);
+  }, [currentValue]);
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  const theme = darkMode ? okaidia : githubLight;
 
   return (
     <CodeMirror
       value={currentValue}
       placeholder={placeholder}
-      height={'fit-content'}
+      height={type === 'basic' ? '30px' : 'fit-content'}
       maxHeight="320px"
       width="100%"
       extensions={[javascript({ jsx: false }), myComplete]}
@@ -172,10 +179,8 @@ const EditorInput = ({
       }}
       onFocus={() => setFocus(true)}
       onBlur={handleOnBlur}
-      style={{
-        borderRadius: '4px',
-        border: '1px solid #d9d9d9',
-      }}
+      className="codehinter-input"
+      theme={theme}
     />
   );
 };

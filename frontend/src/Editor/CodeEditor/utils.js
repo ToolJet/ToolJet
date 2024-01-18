@@ -171,8 +171,6 @@ export const resolveReferences = (query, expectedParamType) => {
       resolvedValue = resolveCode(jscode, currentState);
     }
   } else {
-    console.log(value, 'pikuuuu ==> only JS code');
-
     const [resolvedCode, errorRef] = resolveCode(value, currentState);
 
     resolvedValue = resolvedCode;

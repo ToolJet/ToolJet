@@ -56,7 +56,6 @@ export const useCurrentState = () =>
     };
   }, shallow);
 
-// Set up the subscription
 useCurrentStateStore.subscribe(
   (state) => {
     // This function is called whenever the state changes.
