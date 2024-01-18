@@ -11,7 +11,7 @@ Events are used to run queries, show alerts and other functionalities based on t
 Suppose you have a query that refreshes data when a user clicks on a button, and you also want to display a pop-up alert upon successful data refresh. In ToolJet, you can configure an event to trigger a query upon clicking the button, followed by another event to display a pop-up alert confirming the successful data refresh after the query execution is completed.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{padding: '10px'}} className="screenshot-full" src="/img/tooljet-concepts/what-are-events/events-configuration.png" alt="Event Configuration" />
+    <img className="screenshot-full" src="/img/tooljet-concepts/what-are-events/events-configuration.png" alt="Event Configuration" />
 </div>
 
 </div>
