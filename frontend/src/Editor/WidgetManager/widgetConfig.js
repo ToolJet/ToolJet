@@ -1516,7 +1516,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        value: { value: '' },
+        value: { value: 'Hello World👋' },
         label: { value: 'Label' },
         placeholder: { value: 'Enter your input' },
         visibility: { value: '{{true}}' },
@@ -1879,9 +1879,13 @@ export const widgets = [
     },
     validation: {
       regex: { type: 'code', displayName: 'Regex' },
-      minLength: { type: 'code', displayName: 'Min length' },
-      maxLength: { type: 'code', displayName: 'Max length' },
-      customRule: { type: 'code', displayName: 'Custom validation' },
+      minLength: { type: 'code', displayName: 'Min length', placeholder: 'Enter min length' },
+      maxLength: { type: 'code', displayName: 'Max length', placeholder: 'Enter max length' },
+      customRule: {
+        type: 'code',
+        displayName: 'Custom validation',
+        placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
+      },
       mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
     events: {
