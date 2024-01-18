@@ -318,13 +318,15 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }));
   };
 
-  const onMenuClick = (index) => {
+  const onMenuClick = (index, e) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
       clickedColumn: index,
       columnEditPopover: !editColumnHeader.columnEditPopover,
     }));
   };
+
+  //console.log('first', editColumnHeader.columnEditPopover);
 
   const handleMouseOut = () => {
     setEditColumnHeader((prevState) => ({
@@ -481,7 +483,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                               width="20"
                               height="20"
                               className="tjdb-menu-icon"
-                              onClick={() => onMenuClick(index)}
+                              onClick={(e) => onMenuClick(index, e)}
                             />
                           </div>
                         </TablePopover>

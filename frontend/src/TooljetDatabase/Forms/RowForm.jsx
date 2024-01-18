@@ -51,9 +51,9 @@ const RowForm = ({ onCreate, onClose }) => {
     } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
       newInputValues[index] = { value: defaultValue, checkboxValue: actualDefaultVal, disabled: true };
     } else if (nullValue === 'YES' && tabData === 'Null' && dataType !== 'boolean') {
-      newInputValues[index] = { value: 'Null', checkboxValue: false, disabled: true };
+      newInputValues[index] = { value: null, checkboxValue: false, disabled: true };
     } else if (nullValue === 'YES' && tabData === 'Null' && dataType === 'boolean') {
-      newInputValues[index] = { value: 'Null', checkboxValue: 'Null', disabled: true };
+      newInputValues[index] = { value: null, checkboxValue: null, disabled: true };
     } else if (tabData === 'Custom' && dataType === 'character varying') {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false };
     } else {
@@ -64,13 +64,13 @@ const RowForm = ({ onCreate, onClose }) => {
     if (dataType === 'boolean') {
       setData({
         ...data,
-        [columnName]: newInputValues[index].checkboxValue === 'Null' ? null : newInputValues[index].checkboxValue,
+        [columnName]: newInputValues[index].checkboxValue === null ? null : newInputValues[index].checkboxValue,
       });
     } else {
       setData({
         ...data,
         [columnName]:
-          newInputValues[index].value === 'Null'
+          newInputValues[index].value === null
             ? null
             : newInputValues[index].value === 'Default'
             ? defaultValue
@@ -157,7 +157,7 @@ const RowForm = ({ onCreate, onClose }) => {
               value={inputValues[index]?.value}
               onChange={(e) => handleInputChange(index, e.target.value, columnName)}
               disabled={isPrimaryKey || inputValues[index]?.disabled}
-              placeholder={isPrimaryKey ? 'Auto-generated' : 'Enter a value'}
+              placeholder={isPrimaryKey ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'}
               className={
                 isPrimaryKey && !darkMode
                   ? 'primary-idKey-light'
@@ -170,7 +170,7 @@ const RowForm = ({ onCreate, onClose }) => {
               data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
               autoComplete="off"
             />
-            {inputValues[index].value === 'Null' && (
+            {inputValues[index].value === null && (
               <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
             )}
           </div>
