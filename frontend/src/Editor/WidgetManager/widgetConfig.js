@@ -2258,8 +2258,9 @@ export const widgets = [
       },
     },
     events: {
-      onCheck: { displayName: 'On check' },
-      onUnCheck: { displayName: 'On uncheck' },
+      onChange: { displayName: 'On Change' },
+      onCheck: { displayName: 'On check (Deprecated)' },
+      onUnCheck: { displayName: 'On uncheck (Deprecated)' },
     },
     styles: {
       textColor: {
