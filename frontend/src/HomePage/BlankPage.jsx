@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import EmptyIllustration from '@assets/images/no-apps.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useNavigate } from 'react-router-dom';
+import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 
 export const BlankPage = function BlankPage({
   readAndImport,
@@ -23,12 +24,30 @@ export const BlankPage = function BlankPage({
   const navigate = useNavigate();
 
   const staticTemplates = [
-    { id: 's3-file-explorer', name: 'S3 file explore' },
-    { id: 'job-application-tracker', name: 'Job application tracker' },
-    { id: 'whatsapp-and-sms-crm', name: 'Whatsapp and sms crm' },
+    { id: 'customer-ticketing-form', name: 'Customer ticketing form' },
+    { id: 'inventory-management-tooljet-db', name: 'Inventory management' },
+    { id: 'kpi-management-dashboard-tooljet-db', name: 'KPI management dashboard' },
   ];
 
   const appCreationDisabled = !canCreateApp();
+
+  const EmptyState = () => {
+    return (
+      <div
+        style={{
+          transform: 'translateY(80%)',
+        }}
+        className="d-flex justify-content-center align-items-center flex-column mt-3"
+      >
+        <div className="mb-4">
+          <EmptyFoldersIllustration />
+        </div>
+        <div className="tj-text-md text-secondary" data-cy="empty-ds-page-text">
+          No datasources added
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -114,7 +133,9 @@ export const BlankPage = function BlankPage({
                           >
                             <div
                               className="img-responsive img-responsive-21x9 card-img-top template-card-img"
-                              style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
+                              style={{
+                                backgroundImage: `url(assets/images/templates/${id}${darkMode ? '-dark' : ''}.png)`,
+                              }}
                               data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-image`}
                             />
                             <div className="card-body">
@@ -144,6 +165,12 @@ export const BlankPage = function BlankPage({
             </div>
           </div>
         </div>
+      </div>
+      <div className="justify-content-center align-items-center flex-column mt-3 blank-page-wrapper-mobile">
+        <div className="mb-4">
+          <EmptyFoldersIllustration />
+        </div>
+        <div className="tj-text-md text-secondary">No apps created yet</div>
       </div>
       <TemplateLibraryModal
         show={showTemplateLibraryModal}

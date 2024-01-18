@@ -24,7 +24,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, setWindowTitle, pageTitles } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -38,6 +38,7 @@ import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { getPreviewQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
+import { camelizeKeys } from 'humps';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -132,8 +133,12 @@ class ViewerComponent extends React.Component {
         }
 
         if (query.pluginId || query?.plugin?.id) {
+          const exposedVariables =
+            query.plugin?.manifestFile?.data?.source?.exposedVariables ||
+            query.plugin?.manifest_file?.data?.source?.exposed_variables;
+
           queryState[query.name] = {
-            ...query.plugin.manifestFile.data.source.exposedVariables,
+            ...exposedVariables,
             ...this.props.currentState.queries[query.name],
           };
         } else {
@@ -280,12 +285,17 @@ class ViewerComponent extends React.Component {
       .fetchAppBySlug(slug)
       .then((data) => {
         const isAppPublic = data?.is_public;
+        const preview = !!queryString.parse(this.props?.location?.search)?.version;
         if (authentication_failed && !isAppPublic) {
           return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
         }
         this.setStateForApp(data, true);
         this.setStateForContainer(data);
-        this.setWindowTitle(data.name);
+        setWindowTitle({
+          page: pageTitles.VIEWER,
+          appName: data.name,
+          preview,
+        });
       })
       .catch((error) => {
         this.setState({
@@ -296,7 +306,7 @@ class ViewerComponent extends React.Component {
           redirectToErrorPage(ERROR_TYPES.INVALID);
         } else if (error?.statusCode === 403) {
           redirectToErrorPage(ERROR_TYPES.RESTRICTED);
-        } else {
+        } else if (error?.statusCode !== 401) {
           redirectToErrorPage(ERROR_TYPES.UNKNOWN);
         }
       });
@@ -462,10 +472,6 @@ class ViewerComponent extends React.Component {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
     return canvasBoundingRect?.width;
   };
-
-  setWindowTitle(name) {
-    document.title = name ?? 'My App';
-  }
 
   computeCanvasBackgroundColor = () => {
     const bgColor =

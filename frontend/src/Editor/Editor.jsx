@@ -47,7 +47,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, setWindowTitle, defaultWhiteLabellingSettings, pageTitles } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -62,24 +62,23 @@ import { EMPTY_ARRAY, useEditorActions, useEditorStore } from '@/_stores/editorS
 import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
+import { useSocketOpen } from '@/_hooks/use-socket-open';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
+import { getQueryParams } from '@/_helpers/routes';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
 
 setAutoFreeze(false);
 enablePatches();
 
-function setWindowTitle(name) {
-  document.title = name ? `${name} - Tooljet` : `My App - Tooljet`;
-}
-
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
+  const isSocketOpen = useSocketOpen(socket);
   const mounted = useMounted();
 
   const {
@@ -236,7 +235,7 @@ const EditorComponent = (props) => {
 
     // 6. Unsubscribe from the observable when the component is unmounted
     return () => {
-      document.title = 'Tooljet - Dashboard';
+      document.title = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
       socket && socket?.close();
       subscription.unsubscribe();
       if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
@@ -302,17 +301,13 @@ const EditorComponent = (props) => {
     }
   }, [currentLayout, mounted]);
 
-  useEffect(() => {
-    if (mounted && JSON.stringify(prevEventsStoreRef.current) !== JSON.stringify(events)) {
-      props.ymap?.set('eventHandlersUpdated', {
-        updated: true,
-        currentVersionId: currentVersionId,
-        currentSessionId: currentSessionId,
-      });
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ events })]);
+  const handleYmapEventUpdates = () => {
+    props.ymap?.set('eventHandlersUpdated', {
+      currentVersionId: currentVersionId,
+      currentSessionId: currentSessionId,
+      update: true,
+    });
+  };
 
   const handleMessage = (event) => {
     const { data } = event;
@@ -338,7 +333,14 @@ const EditorComponent = (props) => {
   const fetchApps = async (page) => {
     const { apps } = await appService.getAll(page);
 
-    updateState({ apps: apps.map((app) => ({ id: app.id, name: app.name, slug: app.slug })) });
+    updateState({
+      apps: apps.map((app) => ({
+        id: app.id,
+        name: app.name,
+        slug: app.slug,
+        current_version_id: app.current_version_id,
+      })),
+    });
   };
 
   const fetchOrgEnvironmentVariables = () => {
@@ -408,8 +410,6 @@ const EditorComponent = (props) => {
 
         // Trigger real-time save with specific options
 
-        const ymapOpts = ymapUpdates?.opts;
-
         realtimeSave(props.ymap?.get('appDef').newDefinition, {
           skipAutoSave: true,
           skipYmapUpdate: true,
@@ -419,7 +419,7 @@ const EditorComponent = (props) => {
         });
       }
 
-      if (ymapEventHandlersUpdated) {
+      if (ymapEventHandlersUpdated?.update === true) {
         if (
           !ymapEventHandlersUpdated.currentSessionId ||
           ymapEventHandlersUpdated.currentSessionId === currentSessionId
@@ -536,7 +536,7 @@ const EditorComponent = (props) => {
 
   const onNameChanged = (newName) => {
     updateState({ appName: newName });
-    setWindowTitle(newName);
+    setWindowTitle({ page: pageTitles.EDITOR, appName: newName });
   };
 
   const onZoomChanged = (zoom) => {
@@ -613,12 +613,14 @@ const EditorComponent = (props) => {
   const onVersionRelease = (versionId) => {
     useAppVersionStore.getState().actions.updateReleasedVersionId(versionId);
 
-    socket.send(
-      JSON.stringify({
-        event: 'events',
-        data: { message: 'versionReleased', appId: appId },
-      })
-    );
+    if (socket instanceof WebSocket && socket?.readyState === WebSocket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          event: 'events',
+          data: { message: 'versionReleased', appId: appId },
+        })
+      );
+    }
   };
 
   const computeCanvasBackgroundColor = () => {
@@ -660,7 +662,7 @@ const EditorComponent = (props) => {
   };
 
   const callBack = async (data, startingPageHandle, versionSwitched = false) => {
-    setWindowTitle(data.name);
+    setWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
     if (!releasedVersionId || !versionSwitched) {
       useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
@@ -1015,7 +1017,7 @@ const EditorComponent = (props) => {
     for (let key in prevPatch) {
       const type = typeof prevPatch[key];
 
-      if (type === 'object') {
+      if (type === 'object' && !_.isEmpty(prevPatch[key])) {
         handlePaths(prevPatch[key], [...paths, key], appJSON);
       } else {
         const currentpath = [...paths, key].join('.');
@@ -1367,11 +1369,21 @@ const EditorComponent = (props) => {
     useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
   };
 
+  const navigateToPage = (queryParams = [], handle) => {
+    const appId = useAppDataStore.getState()?.appId;
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
+
+    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
+  };
+
   const switchPage = (pageId, queryParams = []) => {
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useEditorStore.getState().currentPageId;
     const appDefinition = useEditorStore.getState().appDefinition;
-    const appId = useAppDataStore.getState()?.appId;
     const pageHandle = getCurrentState().pageHandle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
@@ -1381,13 +1393,7 @@ const EditorComponent = (props) => {
 
     if (!name || !handle) return;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
-
-    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
-      state: {
-        isSwitchingPage: true,
-      },
-    });
+    navigateToPage(queryParams, handle);
 
     const page = {
       id: pageId,
@@ -1396,6 +1402,7 @@ const EditorComponent = (props) => {
       variables: copyOfAppDefinition.pages[pageId]?.variables ?? {},
     };
 
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const globals = {
       ...currentState.globals,
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
@@ -1590,6 +1597,9 @@ const EditorComponent = (props) => {
     appDefinitionChanged(newDefinition, {
       pageDefinitionChanged: true,
     });
+
+    const queryParams = getQueryParams();
+    navigateToPage(Object.entries(queryParams), newHandle);
   };
 
   const updateOnSortingPages = (newSortedPages) => {
@@ -1680,7 +1690,7 @@ const EditorComponent = (props) => {
         darkMode={props.darkMode}
       />
       {isVersionReleased && <ReleasedVersionError />}
-      <EditorContextWrapper>
+      <EditorContextWrapper handleYmapEventUpdates={handleYmapEventUpdates}>
         <EditorHeader
           darkMode={props.darkMode}
           appDefinition={_.cloneDeep(appDefinition)}
@@ -1698,6 +1708,7 @@ const EditorComponent = (props) => {
           appName={appName}
           appId={appId}
           slug={slug}
+          isSocketOpen={isSocketOpen}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">
@@ -1874,6 +1885,7 @@ const EditorComponent = (props) => {
                       allComponents={appDefinition?.pages[currentPageId]?.components}
                       darkMode={props.darkMode}
                       pages={getPagesWithIds()}
+                      cloneComponents={cloningComponents}
                     />
                   </div>
                 }

@@ -21,18 +21,21 @@ function Header() {
         return 'Profile settings';
       case 'integrations':
         return 'Integrations';
+      case 'workspace-constants':
+        return 'Workspace constants';
       default:
         return 'Applications';
     }
   };
   const location = useLocation();
+  const pathname = routes(location?.pathname.split('/').pop());
 
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
-        <div className="tj-dashboard-section-header">
+        <div className="tj-dashboard-section-header" data-name={pathname}>
           <p className="tj-text-md font-weight-500" data-cy="dashboard-section-header">
-            {routes(location?.pathname.split('/').pop())}
+            {pathname}
           </p>
         </div>
         <div className="col tj-dashboard-header-wrap">

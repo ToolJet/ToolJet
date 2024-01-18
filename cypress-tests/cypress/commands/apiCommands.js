@@ -70,7 +70,7 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
       url: "http://localhost:3000/api/apps",
       headers: {
         "Tj-Workspace-Id": Cypress.env("workspaceId"),
-        Cookie: `tj_auth_token=${cookie.value}`,
+        Cookie: `tj_auth_token = ${cookie.value}`,
       },
       body: {
         created_at: "",
@@ -121,13 +121,14 @@ Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
 Cypress.Commands.add(
   "openApp",
   (
+    workspaceId = Cypress.env("workspaceId"),
     appId = Cypress.env("appId"),
     componentSelector = "[data-cy='empty-editor-text']"
   ) => {
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
     });
-    cy.visit(`/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}`);
+    cy.visit(`/${workspaceId}/apps/${appId}`);
     cy.get(componentSelector, { timeout: 10000 });
   }
 );
@@ -208,6 +209,30 @@ Cypress.Commands.add("userInviteApi", (userName, userEmail) => {
       { log: false }
     ).then((response) => {
       expect(response.status).to.equal(201);
+    });
+  });
+});
+Cypress.Commands.add("addQueryApi", (queryName, query, dataQueryId) => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    const headers = {
+      "Tj-Workspace-Id": Cypress.env("workspaceId"),
+      Cookie: `tj_auth_token=${cookie.value}`,
+    };
+    cy.request({
+      method: "PATCH",
+      url: `http://localhost:3000/api/data_queries/${dataQueryId}`,
+      headers: headers,
+      body: {
+        name: queryName,
+        options: {
+          mode: "sql",
+          transformationLanguage: "javascript",
+          enableTransformation: false,
+          query: query,
+        },
+      },
+    }).then((patchResponse) => {
+      expect(patchResponse.status).to.equal(200);
     });
   });
 });

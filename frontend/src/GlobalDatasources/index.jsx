@@ -26,6 +26,10 @@ export const GlobalDatasources = (props) => {
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
+  if (!admin) {
+    navigate('/');
+  }
+
   useEffect(() => {
     if (dataSources?.length == 0) updateSidebarNAV('Databases');
   }, []);
@@ -40,9 +44,9 @@ export const GlobalDatasources = (props) => {
   useEffect(() => {
     if (!admin) {
       toast.error("You don't have access to GDS, contact your workspace admin to add datasources");
-      navigate('/');
+    } else {
+      fetchEnvironments();
     }
-    fetchEnvironments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [admin]);
 
@@ -56,10 +60,22 @@ export const GlobalDatasources = (props) => {
     globalDatasourceService
       .getAll()
       .then((data) => {
-        const orderedDataSources = data.data_sources.sort((a, b) => a.name.localeCompare(b.name));
+        const orderedDataSources = data.data_sources
+          .map((ds) => {
+            if (ds.options && ds.options.connection_limit) {
+              return {
+                ...ds,
+                options: {
+                  ...ds.options,
+                  connectionLimit: ds.options.connection_limit,
+                },
+              };
+            }
+            return ds;
+          })
+          .sort((a, b) => a.name.localeCompare(b.name));
         setDataSources([...(orderedDataSources ?? [])]);
         const ds = dataSource && orderedDataSources.find((ds) => ds.id === dataSource.id);
-
         if (!resetSelection && ds) {
           setEditing(true);
           setSelectedDataSource(ds);

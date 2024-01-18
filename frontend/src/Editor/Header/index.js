@@ -19,6 +19,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { redirectToDashboard } from '@/_helpers/routes';
 import queryString from 'query-string';
 import { isEmpty } from 'lodash';
+import LogoNavDropdown from '@/_components/LogoNavDropdown';
 
 export default function EditorHeader({
   M,
@@ -34,6 +35,7 @@ export default function EditorHeader({
   onVersionDelete,
   slug,
   darkMode,
+  isSocketOpen,
 }) {
   const currentUser = useCurrentUser();
 
@@ -70,12 +72,6 @@ export default function EditorHeader({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
-  const handleLogoClick = (e) => {
-    e.preventDefault();
-    // Force a reload for clearing interval triggers
-    redirectToDashboard();
-  };
-
   useEffect(() => {
     const previewQuery = queryString.stringify({ version: editingVersion.name });
     const appVersionPreviewLink = editingVersion.id
@@ -91,9 +87,7 @@ export default function EditorHeader({
         <div className="container-xl header-container">
           <div className="d-flex w-100">
             <h1 className="navbar-brand d-none-navbar-horizontal p-0">
-              <Link data-cy="editor-page-logo" onClick={handleLogoClick}>
-                <AppLogo isLoadingFromHeader={true} />
-              </Link>
+              <LogoNavDropdown darkMode={darkMode} />
             </h1>
             <div
               style={{
@@ -193,14 +187,16 @@ export default function EditorHeader({
                   </div>
                 </div>
 
-                <div className="nav-item dropdown promote-release-btn">
-                  <ReleaseVersionButton
-                    appId={appId}
-                    appName={appName}
-                    onVersionRelease={onVersionRelease}
-                    saveEditingVersion={saveEditingVersion}
-                  />
-                </div>
+                {isSocketOpen && (
+                  <div className="nav-item dropdown promote-release-btn">
+                    <ReleaseVersionButton
+                      appId={appId}
+                      appName={appName}
+                      onVersionRelease={onVersionRelease}
+                      saveEditingVersion={saveEditingVersion}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
