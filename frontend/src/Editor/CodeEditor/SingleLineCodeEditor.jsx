@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect } from 'react';
+import React from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
@@ -157,7 +157,8 @@ const EditorInput = ({
     <CodeMirror
       value={currentValue}
       placeholder={placeholder}
-      height="32px"
+      height={'fit-content'}
+      maxHeight="320px"
       width="100%"
       extensions={[javascript({ jsx: false }), myComplete]}
       onChange={handleOnChange}

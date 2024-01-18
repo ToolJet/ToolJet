@@ -21,8 +21,6 @@ const NewCodeHinter = ({ type = 'basic', initialValue, ...restProps }) => {
     shallow
   );
 
-  console.log('piku', { type, x: restProps?.componentName });
-
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [value, error] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
 

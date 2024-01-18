@@ -35,11 +35,11 @@
     color: var(--slate9);
     background-color: var(--base) !important;
     background-clip: padding-box;
-    border: 1px solid var(--slate7);
+    // border: 1px solid var(--slate7);
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    border-radius: 4px;
+    // border-radius: 4px;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
     &:hover {
@@ -222,6 +222,16 @@
 
     
       
+}
+
+.cm-line {
+    padding: 3px !important
+}
+
+.cm-scroller {
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
+
 }
 
 
