@@ -6,10 +6,16 @@ import * as proxy from 'express-http-proxy';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { maybeSetSubPath } from '../helpers/utils.helper';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 
 @Injectable()
 export class PostgrestProxyService {
-  constructor(private readonly manager: EntityManager, private readonly configService: ConfigService) {}
+  constructor(
+    private readonly manager: EntityManager,
+    private readonly configService: ConfigService,
+    private eventEmitter: EventEmitter2
+  ) {}
 
   async perform(req, res, next) {
     const organizationId = req.headers['tj-workspace-id'] || req.dataQuery?.app?.organizationId;
@@ -20,6 +26,18 @@ export class PostgrestProxyService {
     req.headers['Prefer'] = 'count=exact'; // To get the total count of records
 
     res.set('Access-Control-Expose-Headers', 'Content-Range');
+
+    if (!isEmpty(req.dataQuery) && !isEmpty(req.user)) {
+      this.eventEmitter.emit('auditLogEntry', {
+        userId: req.user.id,
+        organizationId,
+        resourceId: req.dataQuery.id,
+        resourceName: req.dataQuery.name,
+        resourceType: ResourceTypes.DATA_QUERY,
+        actionType: ActionTypes.DATA_QUERY_RUN,
+        metadata: {},
+      });
+    }
 
     return this.httpProxy(req, res, next);
   }

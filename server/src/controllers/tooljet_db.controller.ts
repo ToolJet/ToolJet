@@ -149,11 +149,13 @@ export class TooljetDbController {
 
   @Post('/organizations/:organizationId/join')
   @UseFilters(new TooljetDbJoinExceptionFilter())
-  @UseGuards(TooljetDbGuard)
+  @UseGuards(OrganizationAuthGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.JoinTables, 'all'))
-  async joinTables(@Body() tooljetDbJoinDto: TooljetDbJoinDto, @Param('organizationId') organizationId) {
+  async joinTables(@Req() req, @Body() tooljetDbJoinDto: TooljetDbJoinDto, @Param('organizationId') organizationId) {
     const params = {
       joinQueryJson: { ...tooljetDbJoinDto },
+      dataQuery: req.dataQuery,
+      user: req.user,
     };
 
     const result = await this.tooljetDbService.perform(organizationId, 'join_tables', params);
