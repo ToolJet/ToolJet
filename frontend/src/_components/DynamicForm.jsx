@@ -8,7 +8,8 @@ import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 import OpenApi from '@/_ui/OpenAPI';
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
+// import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
+import NewCodeHinter from '@/Editor/CodeEditor';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
@@ -148,7 +149,7 @@ const DynamicForm = ({
       case 'react-component-slack':
         return Slack;
       case 'codehinter':
-        return CodeHinter;
+        return NewCodeHinter;
       case 'react-component-openapi-validator':
         return OpenApi;
       case 'react-component-zendesk':
@@ -309,23 +310,23 @@ const DynamicForm = ({
           darkMode,
         };
       case 'codehinter':
+        console.log('---mohaa:::', { height, width });
         return {
+          type: height.split('px')[0] > 100 ? 'multiline' : 'basic',
           currentState,
           initialValue: options[key]
             ? typeof options[key] === 'string'
               ? options[key]
               : JSON.stringify(options[key])
             : initialValue,
-          mode,
+          lang: mode,
           lineNumbers,
           className: className ? className : lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
           onChange: (value) => optionchanged(key, value),
-          theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
           height,
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
-          ignoreBraces,
           cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
         };
       case 'react-component-openapi-validator':

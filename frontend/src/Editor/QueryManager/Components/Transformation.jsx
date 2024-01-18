@@ -16,6 +16,7 @@ import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 const noop = () => {};
 import { Button } from '@/_ui/LeftSidebar';
 import Information from '@/_ui/Icon/solidIcons/Information';
+import NewCodeHinter from '@/Editor/CodeEditor';
 
 export const Transformation = ({ changeOption, options, darkMode, queryId }) => {
   const { t } = useTranslation();
@@ -211,14 +212,13 @@ return [row for row in data if row['amount'] > 1000]
                 </div>
               </div>
               <div className="codehinter-border-bottom mx-3"></div>
-              <CodeHinter
-                initialValue={state[lang]}
-                mode={lang}
-                theme={darkMode ? 'monokai' : 'base16-light'}
+              <NewCodeHinter
+                type="multiline"
+                initialValue={state[lang] ?? ''}
+                lang={lang}
                 lineNumbers={true}
                 height={'300px'}
                 className="query-hinter"
-                ignoreBraces={true}
                 onChange={(value) => changeOption('transformation', value)}
                 componentName={`transformation`}
                 cyLabel={'transformation-input'}

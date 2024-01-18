@@ -7,6 +7,7 @@ import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import NewCodeHinter from '@/Editor/CodeEditor';
 
 export const ListRows = React.memo(({ darkMode }) => {
   const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, offsetOptionChanged } =
@@ -161,11 +162,10 @@ export const ListRows = React.memo(({ darkMode }) => {
               Limit
             </label>
             <div className="field flex-grow-1">
-              <CodeHinter
+              <NewCodeHinter
+                type="basic"
                 initialValue={listRowsOptions?.limit ?? ''}
                 className="codehinter-plugins"
-                theme={darkMode ? 'monokai' : 'default'}
-                height={'32px'}
                 placeholder="Enter limit"
                 onChange={(newValue) => limitOptionChanged(newValue)}
               />
@@ -177,11 +177,10 @@ export const ListRows = React.memo(({ darkMode }) => {
               Offset
             </label>
             <div className="field flex-grow-1">
-              <CodeHinter
+              <NewCodeHinter
+                type="basic"
                 initialValue={listRowsOptions?.offset ?? ''}
                 className="codehinter-plugins"
-                theme={darkMode ? 'monokai' : 'default'}
-                height={'32px'}
                 placeholder="Enter offset"
                 onChange={(newValue) => offsetOptionChanged(newValue)}
               />
@@ -333,11 +332,10 @@ const RenderFilterFields = ({
               width={'auto'}
             />
           ) : (
-            <CodeHinter
+            <NewCodeHinter
+              type="basic"
               initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
               className="codehinter-plugins"
-              theme={darkMode ? 'monokai' : 'default'}
-              height={'32px'}
               placeholder="key"
               onChange={(newValue) => handleValueChange(newValue)}
             />

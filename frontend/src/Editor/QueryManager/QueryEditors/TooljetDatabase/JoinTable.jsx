@@ -12,6 +12,7 @@ import JoinSelect from './JoinSelect';
 import JoinSort from './JoinSort';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { filterOperatorOptions, nullOperatorOptions } from './util';
+import NewCodeHinter from '@/Editor/CodeEditor';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -149,12 +150,11 @@ const SelectTableMenu = ({ darkMode }) => {
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Limit</label>
         <div className="field flex-grow-1 overflow-hidden">
-          <CodeHinter
+          <NewCodeHinter
+            type="basic"
             className="tjdb-codehinter border rounded"
-            theme={darkMode ? 'monokai' : 'default'}
             height={'32px'}
             placeholder="Enter limit"
-            type="code"
             initialValue={joinTableOptions?.limit ?? ''}
             onChange={(value) => {
               if (value.length) {
@@ -170,12 +170,10 @@ const SelectTableMenu = ({ darkMode }) => {
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Offset</label>
         <div className="field flex-grow-1 overflow-hidden">
-          <CodeHinter
+          <NewCodeHinter
             className="tjdb-codehinter border rounded"
-            theme={darkMode ? 'monokai' : 'default'}
-            height={'32px'}
             placeholder="Enter offset"
-            type="code"
+            type="basic"
             initialValue={joinTableOptions?.offset ?? ''}
             onChange={(value) => {
               if (value.length) {
@@ -446,7 +444,8 @@ const RenderFilterSection = ({ darkMode }) => {
                 value={nullOperatorOptions.find((op) => op.value === rightField.value)}
               />
             ) : (
-              <CodeHinter
+              <NewCodeHinter
+                type="basic"
                 initialValue={
                   rightField?.value
                     ? typeof rightField?.value === 'string'
@@ -455,8 +454,6 @@ const RenderFilterSection = ({ darkMode }) => {
                     : rightField?.value
                 }
                 className="border border-end-0 fs-12 tjdb-codehinter"
-                theme={darkMode ? 'monokai' : 'default'}
-                height={'30px'}
                 placeholder="Value"
                 onChange={(newValue) =>
                   updateFilterConditionEntry('Value', index, { value: newValue, isLeftSideCondition: false })

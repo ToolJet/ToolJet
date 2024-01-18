@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import NewCodeHinter from '@/Editor/CodeEditor';
 
 const operationColorMapping = {
   get: 'azure',
@@ -288,14 +289,11 @@ class OpenapiComponent extends React.Component {
                           <input type="text" value={param.name} className="form-control border-0" placeholder="key" />
                         </div>
                         <div className="col field overflow-hidden">
-                          <CodeHinter
+                          <NewCodeHinter
+                            type="basic"
                             initialValue={this.state.options.params.path[param.name]}
-                            mode="text"
                             placeholder={'Value'}
-                            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-                            lineNumbers={false}
                             onChange={(value) => this.changeParam('path', param.name, value)}
-                            height={'32px'}
                           />
                         </div>
                         <span
@@ -336,14 +334,12 @@ class OpenapiComponent extends React.Component {
                           <input type="text" value={param.name} className="form-control border-0" placeholder="key" />
                         </div>
                         <div className="col field overflow-hidden">
-                          <CodeHinter
+                          <NewCodeHinter
+                            type="basic"
                             initialValue={this.state.options.params.path[param.name]}
-                            mode="text"
                             placeholder={'Value'}
-                            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                             lineNumbers={false}
                             onChange={(value) => this.changeParam('path', param.name, value)}
-                            height={'32px'}
                           />
                         </div>
                         <span
@@ -384,14 +380,11 @@ class OpenapiComponent extends React.Component {
                           <input type="text" value={param.name} className="form-control" placeholder="key" disabled />
                         </div>
                         <div className="col field overflow-hidden">
-                          <CodeHinter
+                          <NewCodeHinter
+                            type="basic"
                             initialValue={this.state.options.params?.query[param.name] ?? ''}
-                            mode="text"
                             placeholder={'Value'}
-                            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-                            lineNumbers={false}
                             onChange={(value) => this.changeParam('query', param.name, value)}
-                            height={'32px'}
                           />
                         </div>
                         <span
@@ -436,14 +429,11 @@ class OpenapiComponent extends React.Component {
                           <input type="text" value={param} className="form-control" placeholder="key" disabled />
                         </div>
                         <div className="col field overflow-hiddel">
-                          <CodeHinter
+                          <NewCodeHinter
+                            type="basic"
                             initialValue={this.state.options.params?.request[param] ?? ''}
-                            mode="text"
                             placeholder={'Value'}
-                            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-                            lineNumbers={false}
                             onChange={(value) => this.changeParam('request', param, value)}
-                            height={'32px'}
                           />
                         </div>
                         <span

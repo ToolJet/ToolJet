@@ -3,6 +3,7 @@ import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import NewCodeHinter from '@/Editor/CodeEditor';
 
 const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
   const protobufDefintion = JSON.parse(selectedDataSource?.options?.protobuf?.value);
@@ -210,16 +211,14 @@ function ControlledTabs({
             <Tab.Pane eventKey="message" bsPrefix="rest-api-tabpanes" transition={false}>
               <div className="tab-content-wrapper">
                 <div>
-                  <CodeHinter
+                  <NewCodeHinter
+                    type="multiline"
                     initialValue={messageJSON || '{\n\n}'}
-                    mode="javascript"
-                    theme={darkMode ? 'monokai' : 'base16-light'}
+                    lang="javascript"
                     height={'300px'}
                     className="query-hinter"
-                    ignoreBraces={false}
                     onChange={(value) => onJsonBodyChange(value)}
                     componentName={`${componentName}/message`}
-                    enablePreview={false}
                   />
                 </div>
               </div>
@@ -250,20 +249,18 @@ const TabContent = ({
             <div className="fields-container ">
               <div className="d-flex justify-content-center align-items-center query-number">{index + 1}</div>
               <div className="field col-4 overflow-hidden">
-                <CodeHinter
+                <NewCodeHinter
+                  type="basic"
                   initialValue={option[0]}
-                  theme={theme}
-                  height={'32px'}
                   placeholder="Key"
                   onChange={(value) => onChange('key', index, value)}
                   componentName={`${componentName}/${tabType}::key::${index}`}
                 />
               </div>
               <div className="field col overflow-hidden">
-                <CodeHinter
+                <NewCodeHinter
+                  type="basic"
                   initialValue={option[1]}
-                  theme={theme}
-                  height={'32px'}
                   placeholder="Value"
                   onChange={(value) => onChange('value', index, value)}
                   componentName={`${componentName}/${tabType}::value::${index}`}

@@ -2,6 +2,7 @@ import React from 'react';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
+import NewCodeHinter from '@/Editor/CodeEditor';
 
 export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged }) => {
   return (
@@ -11,18 +12,18 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
           <div className="d-flex gap-2 mb-2" key={index}>
             <div className="d-flex justify-content-between gap-2 w-100">
               <div className="w-100">
-                <CodeHinter
+                <NewCodeHinter
                   initialValue={option[0]}
-                  height="32px"
+                  type={'basic'}
                   placeholder="key"
                   onChange={(value) => keyValuePairValueChanged(value, 0, index)}
                   componentName={`HttpHeaders::key::${index}`}
                 />
               </div>
               <div className="w-100">
-                <CodeHinter
+                <NewCodeHinter
                   initialValue={option[1]}
-                  height="32px"
+                  type={'basic'}
                   placeholder="value"
                   onChange={(value) => keyValuePairValueChanged(value, 1, index)}
                   componentName={`HttpHeaders::value::${index}`}

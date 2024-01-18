@@ -103,6 +103,7 @@ export const Code = ({
         verticalLine={verticalLine}
       /> */}
       <CodeEditor
+        type="fxEditor"
         initialValue={initialValue}
         paramName={param.name}
         paramLabel={displayName}

@@ -2,6 +2,7 @@ import React from 'react';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { isEmpty } from 'lodash';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
+import NewCodeHinter from '@/Editor/CodeEditor';
 
 function RunjsParameters({ event, darkMode, index, handlerChanged }) {
   const dataQueries = useDataQueries();
@@ -26,11 +27,12 @@ function RunjsParameters({ event, darkMode, index, handlerChanged }) {
         <React.Fragment key={param.name}>
           <div className="col-3 p-2">{param.name}</div>
           <div className="col-9">
-            <CodeHinter
-              theme={darkMode ? 'monokai' : 'default'}
+            <NewCodeHinter
+              type="basic"
               initialValue={event.parameters?.[param.name]}
               onChange={(value) => handleChange(value, param)}
               usePortalEditor={false}
+              componentName="RunJS Params"
             />
           </div>
         </React.Fragment>

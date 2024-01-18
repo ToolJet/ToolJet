@@ -1,5 +1,6 @@
 import React from 'react';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
+import NewCodeHinter from '@/Editor/CodeEditor';
 
 export const ProgramaticallyHandleProperties = ({
   darkMode,
@@ -47,15 +48,12 @@ export const ProgramaticallyHandleProperties = ({
   const options = {};
   return (
     <div className={`mb-2 field ${options.className}`} onClick={(e) => e.stopPropagation()}>
-      <CodeHinter
-        enablePreview={true}
+      <NewCodeHinter
+        type="fxEditor"
         initialValue={initialValue}
-        mode={options.mode}
-        theme={darkMode ? 'monokai' : options.theme}
-        lineWrapping={true}
         onChange={(value) => callbackFunction(index, property, value)}
         componentName={`component/${component?.component?.name}::${param.name}`}
-        type={paramMeta.type}
+        paramType={paramMeta.type}
         paramName={param.name}
         paramLabel={paramMeta.displayName}
         fieldMeta={paramMeta}

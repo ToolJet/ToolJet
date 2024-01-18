@@ -15,6 +15,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
+import NewCodeHinter from '../CodeEditor';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -350,13 +351,11 @@ export const GlobalSettings = ({
                     className={`${!forceCodeBox && 'hinter-canvas-input'} ${!darkMode && 'hinter-canvas-input-light'} `}
                   >
                     {!forceCodeBox && (
-                      <CodeHinter
+                      <NewCodeHinter
                         cyLabel={`canvas-bg-colour`}
                         currentState={realState}
                         initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
-                        value={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
-                        theme={darkMode ? 'monokai' : 'duotone-light'}
-                        mode="javascript"
+                        lang="javascript"
                         className="canvas-hinter-wrap"
                         lineNumbers={false}
                         onChange={(color) => {

@@ -8,6 +8,7 @@ import { changeOption } from '../utils';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { BaseUrl } from './BaseUrl';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import NewCodeHinter from '@/Editor/CodeEditor';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -167,18 +168,16 @@ class Restapi extends React.Component {
                   <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
                 )}
                 <div className={`flex-grow-1  ${dataSourceURL ? 'url-input-group' : ''}`}>
-                  <CodeHinter
+                  <NewCodeHinter
+                    type="basic"
                     currentState={this.props.currentState}
                     initialValue={options.url}
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => {
                       changeOption(this, 'url', value);
                     }}
                     placeholder={dataSourceURL ? 'Enter request endpoint' : 'Enter request URL'}
                     componentName={`${queryName}::url`}
-                    mode="javascript"
-                    lineNumbers={false}
-                    height={'32px'}
+                    lang="javascript"
                   />
                 </div>
               </div>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { defaults } from 'lodash';
 import { Card } from 'react-bootstrap';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import ParameterList from './ParameterList';
+import NewCodehinter from '@/Editor/CodeEditor';
 
 const Runjs = (props) => {
   const currentState = useCurrentState();
@@ -62,20 +62,16 @@ const Runjs = (props) => {
         />
       )}
 
-      <CodeHinter
+      <NewCodehinter
+        type="multiline"
         initialValue={props.options.code}
-        mode="javascript"
-        theme={props.darkMode ? 'monokai' : 'base16-light'}
-        lineNumbers={true}
+        lang="javascript"
         height={400}
         className="query-hinter"
-        ignoreBraces={true}
         onChange={(value) => {
           const newOptions = { ...options, code: value };
           props.optionsChanged(newOptions);
         }}
-        isMultiLineJs={false}
-        enablePreview={false}
         componentName="Runjs"
         cyLabel={`runjs`}
         currentState={currStateForCodeHinter}

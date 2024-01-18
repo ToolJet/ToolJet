@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Form, Popover, Row, Col, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import Information from '@/_ui/Icon/solidIcons/Information';
+import NewCodeHinter from '@/Editor/CodeEditor';
 
 const isValidVariableName = (str) => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(str);
 
@@ -101,12 +102,11 @@ const ParameterForm = ({
             <Col sm="12">
               <div className="d-flex">
                 <div className="w-100">
-                  <CodeHinter
+                  <NewCodeHinter
+                    type="basic"
                     onChange={(value) => setDefaultValue(value)}
-                    theme={darkMode ? 'monokai' : 'default'}
                     currentState={emptyObj.current}
                     usePortalEditor={false}
-                    height={36}
                     initialValue={defaultValue}
                     enablePreview={false}
                   />

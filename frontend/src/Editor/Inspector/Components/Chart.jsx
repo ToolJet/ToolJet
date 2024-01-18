@@ -3,6 +3,7 @@ import { renderElement } from '../Utils';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import Accordion from '@/_ui/Accordion';
 import { resolveReferences } from '@/_helpers/utils';
+import NewCodeHinter from '@/Editor/CodeEditor';
 
 class Chart extends React.Component {
   constructor(props) {
@@ -116,12 +117,10 @@ class Chart extends React.Component {
       items.push({
         title: 'JSON description',
         children: (
-          <CodeHinter
+          <NewCodeHinter
+            type="basic"
             currentState={this.props.currentState}
             initialValue={jsonDescription?.value ?? {}}
-            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-            mode="javascript"
-            lineNumbers={false}
             className="chart-input pr-2"
             onChange={(value) => this.props.paramUpdated({ name: 'jsonDescription' }, 'value', value, 'properties')}
             componentName={`component/${this.props.component.component.name}::${chartType}`}
@@ -146,12 +145,10 @@ class Chart extends React.Component {
       items.push({
         title: 'Chart data',
         children: (
-          <CodeHinter
+          <NewCodeHinter
+            type="basic"
             currentState={this.props.currentState}
             initialValue={data.value}
-            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-            mode="javascript"
-            lineNumbers={false}
             className="chart-input pr-2"
             onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
             componentName={`component/${this.props.component.component.name}::${chartType}`}

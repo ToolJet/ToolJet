@@ -12,9 +12,9 @@ import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
 import { paramValidation } from './utils';
 
-const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta, ...restProps }) => {
-  const { initialValue, onChange } = restProps;
-  const { validation } = fieldMeta;
+const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...restProps }) => {
+  const { initialValue, onChange, enablePreview = true } = restProps;
+  const { validation = {} } = fieldMeta;
 
   const [isFocused, setIsFocused] = React.useState(false);
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
@@ -31,19 +31,31 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta, ...restPr
           onBlurUpdate={onChange}
         />
 
-        <PreviewBox
-          currentValue={currentValue}
-          isFocused={isFocused}
-          componentName={componentName}
-          expectedType={validation?.schema?.type}
-        />
+        {enablePreview && (
+          <PreviewBox
+            currentValue={currentValue}
+            isFocused={isFocused}
+            componentName={componentName}
+            expectedType={validation?.schema?.type}
+          />
+        )}
       </div>
     </div>
   );
 };
 
-const EditorInput = ({ currentValue, setCurrentValue, hints, setFocus, validationType, onBlurUpdate }) => {
+const EditorInput = ({
+  currentValue,
+  setCurrentValue,
+  hints,
+  setFocus,
+  validationType,
+  onBlurUpdate,
+  placeholder = '',
+}) => {
   function orderSuggestions(suggestions, validationType) {
+    if (!validationType) return suggestions;
+
     const matchingSuggestions = suggestions.filter((s) => s.type === validationType);
 
     const otherSuggestions = suggestions.filter((s) => s.type !== validationType);
@@ -110,7 +122,7 @@ const EditorInput = ({ currentValue, setCurrentValue, hints, setFocus, validatio
       return null;
     }
 
-    let completions = getAutocompletion(context.state.doc.toString(), validationType);
+    let completions = validationType ? getAutocompletion(context.state.doc.toString(), validationType) : [];
 
     return {
       from: context.pos,
@@ -134,7 +146,7 @@ const EditorInput = ({ currentValue, setCurrentValue, hints, setFocus, validatio
 
   const handleOnBlur = React.useCallback(() => {
     setFocus(false);
-    const shouldUpdate = paramValidation(currentValue, validationType);
+    const shouldUpdate = validationType ? paramValidation(currentValue, validationType) : true;
 
     if (shouldUpdate) {
       onBlurUpdate(currentValue);
@@ -144,7 +156,9 @@ const EditorInput = ({ currentValue, setCurrentValue, hints, setFocus, validatio
   return (
     <CodeMirror
       value={currentValue}
+      placeholder={placeholder}
       height="32px"
+      width="100%"
       extensions={[javascript({ jsx: false }), myComplete]}
       onChange={handleOnChange}
       basicSetup={{

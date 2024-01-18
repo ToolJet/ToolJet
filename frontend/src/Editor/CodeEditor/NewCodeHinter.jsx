@@ -4,11 +4,13 @@ import { useResolveStore } from '@/_stores/resolverStore';
 import { shallow } from 'zustand/shallow';
 import './styles.scss';
 import SingleLineCodeEditor from './SingleLineCodeEditor';
+import MultiLineCodeEditor from './MultiLineCodeEditor';
 import { resolveReferences } from './utils';
 
 const CODE_EDITOR_TYPE = {
-  basic: SingleLineCodeEditor.EditorBridge,
-  multi: <>Multi line</>,
+  fxEditor: SingleLineCodeEditor.EditorBridge,
+  basic: SingleLineCodeEditor,
+  multiline: MultiLineCodeEditor,
 };
 
 const NewCodeHinter = ({ type = 'basic', initialValue, ...restProps }) => {
@@ -19,10 +21,10 @@ const NewCodeHinter = ({ type = 'basic', initialValue, ...restProps }) => {
     shallow
   );
 
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-  const [value, error] = resolveReferences(initialValue);
+  console.log('piku', { type, x: restProps?.componentName });
 
-  // console.log('----arpit:: =>', { initialValue, value });
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  const [value, error] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
 
   const RenderCodeEditor = CODE_EDITOR_TYPE[type];
 

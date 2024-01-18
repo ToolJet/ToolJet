@@ -20,6 +20,7 @@ import { shallow } from 'zustand/shallow';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import NoListItem from './Components/Table/NoListItem';
 import ManageEventButton from './ManageEventButton';
+import NewCodeHinter from '../CodeEditor';
 
 export const EventManager = ({
   sourceId,
@@ -396,8 +397,8 @@ export const EventManager = ({
               {t('editor.inspector.eventManager.runOnlyIf', 'Run Only If')}
             </div>
             <div className="col-9" data-cy="alert-message-type">
-              <CodeHinter
-                theme={darkMode ? 'monokai' : 'default'}
+              <NewCodeHinter
+                type="basic"
                 initialValue={event.runOnlyIf}
                 onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
                 usePortalEditor={false}
@@ -419,7 +420,8 @@ export const EventManager = ({
                     {t('editor.inspector.eventManager.message', 'Message')}
                   </div>
                   <div className="col-9" data-cy="alert-message-input-field">
-                    <CodeHinter
+                    <NewCodeHinter
+                      type="basic"
                       theme={darkMode ? 'monokai' : 'default'}
                       initialValue={event.message}
                       onChange={(value) => handlerChanged(index, 'message', value)}
@@ -452,8 +454,8 @@ export const EventManager = ({
             {event.actionId === 'open-webpage' && (
               <div className="p-1">
                 <label className="form-label mt-1">{t('editor.inspector.eventManager.url', 'URL')}</label>
-                <CodeHinter
-                  theme={darkMode ? 'monokai' : 'default'}
+                <NewCodeHinter
+                  type="basic"
                   initialValue={event.url}
                   onChange={(value) => handlerChanged(index, 'url', value)}
                   usePortalEditor={false}
@@ -517,8 +519,8 @@ export const EventManager = ({
             {event.actionId === 'copy-to-clipboard' && (
               <div className="p-1">
                 <label className="form-label mt-1">{t('editor.inspector.eventManager.text', 'Text')}</label>
-                <CodeHinter
-                  theme={darkMode ? 'monokai' : 'default'}
+                <NewCodeHinter
+                  type="basic"
                   initialValue={event.contentToCopy}
                   onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
                   usePortalEditor={false}
@@ -572,11 +574,10 @@ export const EventManager = ({
                 <div className="row">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
-                    <CodeHinter
-                      theme={darkMode ? 'monokai' : 'default'}
+                    <NewCodeHinter
+                      type="basic"
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
-                      enablePreview={true}
                       usePortalEditor={false}
                       component={component}
                     />
@@ -585,11 +586,10 @@ export const EventManager = ({
                 <div className="row mt-3">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
                   <div className="col-9">
-                    <CodeHinter
-                      theme={darkMode ? 'monokai' : 'default'}
+                    <NewCodeHinter
+                      type="basic"
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
-                      enablePreview={true}
                       usePortalEditor={false}
                       component={component}
                     />
@@ -624,11 +624,10 @@ export const EventManager = ({
                 <div className="row mt-3">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.fileName', 'File name')}</div>
                   <div className="col-9">
-                    <CodeHinter
-                      theme={darkMode ? 'monokai' : 'default'}
+                    <NewCodeHinter
+                      type="basic"
                       initialValue={event.fileName}
                       onChange={(value) => handlerChanged(index, 'fileName', value)}
-                      enablePreview={true}
                       component={component}
                     />
                   </div>
@@ -636,11 +635,10 @@ export const EventManager = ({
                 <div className="row mt-3">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.data', 'Data')}</div>
                   <div className="col-9">
-                    <CodeHinter
-                      theme={darkMode ? 'monokai' : 'default'}
+                    <NewCodeHinter
+                      type="basic"
                       initialValue={event.data}
                       onChange={(value) => handlerChanged(index, 'data', value)}
-                      enablePreview={true}
                       component={component}
                     />
                   </div>
@@ -670,11 +668,10 @@ export const EventManager = ({
                 <div className="row mt-3">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.pageIndex', 'Page index')}</div>
                   <div className="col-9">
-                    <CodeHinter
-                      theme={darkMode ? 'monokai' : 'default'}
+                    <NewCodeHinter
+                      type="basic"
                       initialValue={event.pageIndex ?? '{{1}}'}
                       onChange={(value) => handlerChanged(index, 'pageIndex', value)}
-                      enablePreview={true}
                       usePortalEditor={false}
                       component={component}
                     />
@@ -687,8 +684,8 @@ export const EventManager = ({
                 <div className="row">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
-                    <CodeHinter
-                      theme={darkMode ? 'monokai' : 'default'}
+                    <NewCodeHinter
+                      type="basic"
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
@@ -700,11 +697,10 @@ export const EventManager = ({
                 <div className="row mt-3">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
                   <div className="col-9">
-                    <CodeHinter
-                      theme={darkMode ? 'monokai' : 'default'}
+                    <NewCodeHinter
+                      type="basic"
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
-                      enablePreview={true}
                       cyLabel={`variable`}
                       component={component}
                     />
@@ -717,11 +713,10 @@ export const EventManager = ({
                 <div className="row">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
-                    <CodeHinter
-                      theme={darkMode ? 'monokai' : 'default'}
+                    <NewCodeHinter
+                      type="basic"
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
-                      enablePreview={true}
                       component={component}
                     />
                   </div>
@@ -733,11 +728,10 @@ export const EventManager = ({
                 <div className="row">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
-                    <CodeHinter
-                      theme={darkMode ? 'monokai' : 'default'}
+                    <NewCodeHinter
+                      type="basic"
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
-                      enablePreview={true}
                       cyLabel={`key`}
                       component={component}
                     />
@@ -746,11 +740,10 @@ export const EventManager = ({
                 <div className="row mt-3">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
                   <div className="col-9">
-                    <CodeHinter
-                      theme={darkMode ? 'monokai' : 'default'}
+                    <NewCodeHinter
+                      type="basic"
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
-                      enablePreview={true}
                       cyLabel={`variable`}
                       component={component}
                     />
@@ -763,11 +756,10 @@ export const EventManager = ({
                 <div className="row">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
-                    <CodeHinter
-                      theme={darkMode ? 'monokai' : 'default'}
+                    <NewCodeHinter
+                      type="basic"
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
-                      enablePreview={true}
                       cyLabel={`key`}
                       component={component}
                     />
@@ -856,15 +848,13 @@ export const EventManager = ({
                           } fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
                           data-cy="action-options-text-input-field"
                         >
-                          <CodeHinter
-                            theme={darkMode ? 'monokai' : 'default'}
-                            mode="javascript"
+                          <NewCodeHinter
+                            type="basic"
                             initialValue={valueForComponentSpecificActionHandle(event, param)}
                             onChange={(value) => {
                               onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
                             }}
-                            enablePreview={true}
-                            type={param?.type}
+                            paramType={param?.type}
                             fieldMeta={{ options: param?.options }}
                             cyLabel={param.displayName}
                             component={component}
@@ -878,8 +868,8 @@ export const EventManager = ({
             <div className="row mt-3">
               <div className="col-3 p-2">{t('editor.inspector.eventManager.debounce', 'Debounce')}</div>
               <div className="col-9" data-cy="debounce-input-field">
-                <CodeHinter
-                  theme={darkMode ? 'monokai' : 'default'}
+                <NewCodeHinter
+                  type="basic"
                   initialValue={event.debounce}
                   onChange={(value) => handlerChanged(index, 'debounce', value)}
                   usePortalEditor={false}

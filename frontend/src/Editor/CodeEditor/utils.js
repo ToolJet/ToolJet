@@ -145,6 +145,8 @@ function resolveCode(code, state, customObjects = {}, withError = true, reserved
 }
 
 export const resolveReferences = (query, expectedParamType) => {
+  if (!query) return [null, null];
+
   let resolvedValue = query;
   let error = null;
 
@@ -175,6 +177,10 @@ export const resolveReferences = (query, expectedParamType) => {
 
     resolvedValue = resolvedCode;
     error = errorRef || null;
+  }
+
+  if (!expectedParamType) {
+    return [resolvedValue, error];
   }
 
   if (paramValidation(expectedParamType, resolvedValue)) {
