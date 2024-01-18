@@ -158,6 +158,34 @@ export const SubContainer = ({
 
   const containerWidth = getContainerCanvasWidth();
 
+  const placeComponentInsideListView = (newComponent, canvasBoundingRect) => {
+    const layout = newComponent?.layout?.desktop;
+    if (layout && canvasBoundingRect.height <= layout.top) {
+      let newTop = canvasBoundingRect.height - layout.height,
+        newHeight = layout.height;
+      if (newTop < 0) {
+        newTop = 0;
+        newHeight = canvasBoundingRect.height;
+      }
+      return {
+        ...newComponent,
+        layout: {
+          desktop: {
+            ...layout,
+            top: newTop,
+            height: newHeight,
+          },
+          mobile: {
+            ...layout,
+            top: newTop,
+            height: newHeight,
+          },
+        },
+      };
+    }
+    return newComponent;
+  };
+
   useEffect(() => {
     setSubContainerWidths(parent, containerWidth / noOfGrids);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -367,7 +395,7 @@ export const SubContainer = ({
               : 'Kanban_card'
             : parentComponent.component;
         if (!restrictedWidgetsObj[parentComp].includes(componentMeta?.component)) {
-          const newComponent = addNewWidgetToTheEditor(
+          let newComponent = addNewWidgetToTheEditor(
             componentMeta,
             monitor,
             boxes,
@@ -377,6 +405,10 @@ export const SubContainer = ({
             zoomLevel,
             true
           );
+
+          if (parentComp === 'Listview') {
+            newComponent = placeComponentInsideListView(newComponent, canvasBoundingRect);
+          }
 
           setBoxes({
             ...boxes,
