@@ -38,6 +38,8 @@
     "postbuild:server": "npm --prefix server prune --production",
     "build": "npm run build:plugins:prod && npm run build:frontend && npm run build:server",
     "start:prod": "npm --prefix server run start:prod",
+    "cloud:setup": "npm run db:setup && npm run plugins:install && npm run plugins:uninstall",
+    "cloud:setup:prod": "npm run db:setup:prod && npm run plugins:install:prod && npm run plugins:uninstall:prod",
     "db:create": "npm --prefix server run db:create",
     "db:create:prod": "npm --prefix server run db:create:prod",
     "db:migrate": "npm --prefix server run db:migrate",
