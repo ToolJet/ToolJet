@@ -310,7 +310,6 @@ const DynamicForm = ({
           darkMode,
         };
       case 'codehinter':
-        console.log('---mohaa:::', { height, width });
         return {
           type: height.split('px')[0] > 100 ? 'multiline' : 'basic',
           currentState,

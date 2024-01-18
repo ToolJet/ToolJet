@@ -63,6 +63,19 @@ const MultiLineCodeEditor = (props) => {
   };
 
   function autoCompleteExtensionConfig(context) {
+    const lasttWord = context.state.doc.text
+      .map((element) => element.trim())
+      .join(' ')
+      .split(' ')
+      .filter((element) => {
+        if (element === '' || element === ' ') {
+          return false;
+        }
+        return true;
+      });
+
+    const currentWord = lasttWord[lasttWord.length - 1];
+
     let JSLangHints = [];
     if (lang === 'javascript') {
       JSLangHints = Object.keys(hints['jsHints'])
@@ -73,13 +86,26 @@ const MultiLineCodeEditor = (props) => {
           }));
         })
         .flat();
+
+      JSLangHints = JSLangHints.filter((cm) => {
+        let lastWordAfterDot = currentWord.split('.');
+
+        lastWordAfterDot = lastWordAfterDot[lastWordAfterDot.length - 1];
+
+        if (cm.hint.includes(lastWordAfterDot)) return true;
+      });
     }
 
     const appHints = hints['appHints'];
 
-    const suggestions = generateHints([...JSLangHints, ...appHints]).map((hint) => {
-      delete hint['apply'];
+    let autoSuggestionList = appHints.filter((suggestion) => {
+      if (currentWord.length === 0) return true;
 
+      return suggestion.hint.includes(currentWord);
+    });
+
+    const suggestions = generateHints([...JSLangHints, ...autoSuggestionList]).map((hint) => {
+      delete hint['apply'];
       return hint;
     });
 

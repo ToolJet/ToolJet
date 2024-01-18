@@ -38,18 +38,17 @@ export const getAutocompletion = (input, fieldType, hints) => {
   });
 
   const jsHints = JSLangHints.filter((cm) => {
-    if (cm.hint.includes(actualInput)) return true;
+    const lastCharsAfterDot = actualInput.split('.').pop();
+    if (cm.hint.includes(lastCharsAfterDot)) return true;
   });
 
-  const finalHints = [...jsHints, ...appHints];
-
-  let autoSuggestionList = finalHints.filter((suggestion) => {
+  const autoSuggestionList = appHints.filter((suggestion) => {
     if (actualInput.length === 0) return true;
 
     return suggestion.hint.includes(actualInput);
   });
 
-  const suggestions = generateHints([...JSLangHints, ...autoSuggestionList]);
+  const suggestions = generateHints([...jsHints, ...autoSuggestionList]);
   return orderSuggestions(suggestions, fieldType).map((cm, index) => ({ ...cm, boost: 100 - index }));
 };
 
