@@ -372,7 +372,7 @@ export const NumberInput = function NumberInput({
                     right:
                       labelWidth == 0
                         ? padding == 'default'
-                          ? '2px'
+                          ? '3px'
                           : '0px'
                         : alignment == 'side' && direction === 'right'
                         ? `${labelWidth + 5}px`
@@ -395,7 +395,7 @@ export const NumberInput = function NumberInput({
                     right:
                       labelWidth == 0
                         ? padding == 'default'
-                          ? '2px'
+                          ? '3px'
                           : '0px'
                         : alignment == 'side' && direction === 'right'
                         ? `${labelWidth + 5}px`
