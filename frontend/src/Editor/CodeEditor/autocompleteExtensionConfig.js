@@ -48,7 +48,7 @@ export const getAutocompletion = (input, fieldType, hints) => {
     return suggestion.hint.includes(actualInput);
   });
 
-  const suggestions = generateHints([...jsHints, ...autoSuggestionList]);
+  const suggestions = generateHints([...jsHints, ...filterHintsByDepth(actualInput, autoSuggestionList)]);
   return orderSuggestions(suggestions, fieldType).map((cm, index) => ({ ...cm, boost: 100 - index }));
 };
 
@@ -101,3 +101,12 @@ export const generateHints = (hints) => {
 
   return suggestions;
 };
+
+function filterHintsByDepth(input, hints) {
+  const inputDepth = input.split('.').length;
+  const filteredHints = hints.filter((cm) => {
+    const hintParts = cm.hint.split('.');
+    return cm.hint.startsWith(input) && hintParts.length === inputDepth + 1;
+  });
+  return filteredHints;
+}
