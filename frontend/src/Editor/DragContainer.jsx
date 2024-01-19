@@ -4,105 +4,10 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import './DragContainer.css';
 import DragContainerNested from './DragContainerNested';
-import _, { isEmpty } from 'lodash';
+import _, { isEmpty, debounce } from 'lodash';
 import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
 import { useGridStoreActions, useDragTarget, useNoOfGrid, useGridStore } from '@/_stores/gridStore';
-
-const configHandleForMultiple = (id) => {
-  return (
-    <div
-      className={'multiple-components-config-handle'}
-      onMouseUpCapture={() => {
-        if (useGridStore.getState().isGroundHandleHoverd) {
-          useGridStore.getState().actions.setIsGroundHandleHoverd(false);
-        }
-      }}
-      onMouseDownCapture={() => {
-        if (!useGridStore.getState().isGroundHandleHoverd) {
-          useGridStore.getState().actions.setIsGroundHandleHoverd(true);
-        }
-      }}
-    >
-      <span className="badge handle-content" id={id} style={{ background: '#4d72fa' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <img
-            style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
-            src="assets/images/icons/settings.svg"
-            width="12"
-            height="12"
-            draggable="false"
-          />
-          <span>components</span>
-        </div>
-      </span>
-    </div>
-  );
-};
-
-const DimensionViewable = {
-  name: 'dimensionViewable',
-  props: [],
-  events: [],
-  render() {
-    return configHandleForMultiple('multiple-components-config-handle');
-  },
-};
-
-const DimensionViewableForSub = {
-  name: 'dimensionViewableForSub',
-  props: [],
-  events: [],
-  render() {
-    return configHandleForMultiple('multiple-components-config-handle-sub');
-  },
-};
-
-const MouseCustomAble = {
-  name: 'mouseTest',
-  props: {},
-  events: {},
-  mouseEnter(e) {
-    const controlBoxes = document.getElementsByClassName('moveable-control-box');
-    for (const element of controlBoxes) {
-      element.classList.remove('moveable-control-box-d-block');
-    }
-    e.props.target.classList.add('hovered');
-    e.controlBox.classList.add('moveable-control-box-d-block');
-  },
-  mouseLeave(e) {
-    console.log('MouseCustomAble LEAVE', e);
-    e.props.target.classList.remove('hovered');
-    e.controlBox.classList.remove('moveable-control-box-d-block');
-  },
-};
-
-const MouseEnterLeaveAble = makeAble('enterLeave', {
-  mouseEnter(moveable) {
-    console.log('enterLeave moveable', moveable);
-    if (moveable.moveables) {
-      // group
-      moveable.moveables.forEach((child) => {
-        console.log('enterLeave', child);
-      });
-    } else {
-      // single
-      // moveable.state.target.style.backgroundColor = '#e55';
-    }
-  },
-  mouseLeave(moveable) {
-    console.log('enterLeave moveable leave', moveable);
-    if (moveable.moveables) {
-      // group
-      moveable.moveables.forEach((child) => {
-        console.log('enterLeave', child);
-      });
-    } else {
-      // single
-      console.log('enterLeave e;se', moveable);
-    }
-  },
-});
 
 export default function DragContainer({
   boxes,
@@ -124,6 +29,85 @@ export default function DragContainer({
   draggedSubContainer,
   boxesAsObj,
 }) {
+  const lastDraggedEventsRef = useRef(null);
+  const configHandleForMultiple = (id) => {
+    return (
+      <div
+        className={'multiple-components-config-handle'}
+        onMouseUpCapture={() => {
+          if (lastDraggedEventsRef.current) {
+            onDrag(
+              lastDraggedEventsRef.current.map((ev) => ({
+                id: ev.target.id,
+                x: ev.translate[0],
+                y: ev.translate[1],
+              }))
+            );
+          }
+          if (useGridStore.getState().isGroundHandleHoverd) {
+            useGridStore.getState().actions.setIsGroundHandleHoverd(false);
+          }
+        }}
+        onMouseDownCapture={() => {
+          lastDraggedEventsRef.current = null;
+          if (!useGridStore.getState().isGroundHandleHoverd) {
+            useGridStore.getState().actions.setIsGroundHandleHoverd(true);
+          }
+        }}
+      >
+        <span className="badge handle-content" id={id} style={{ background: '#4d72fa' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img
+              style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
+              src="assets/images/icons/settings.svg"
+              width="12"
+              height="12"
+              draggable="false"
+            />
+            <span>components</span>
+          </div>
+        </span>
+      </div>
+    );
+  };
+
+  const DimensionViewable = {
+    name: 'dimensionViewable',
+    props: [],
+    events: [],
+    render() {
+      return configHandleForMultiple('multiple-components-config-handle');
+    },
+  };
+
+  const DimensionViewableForSub = {
+    name: 'dimensionViewableForSub',
+    props: [],
+    events: [],
+    render() {
+      return configHandleForMultiple('multiple-components-config-handle-sub');
+    },
+  };
+
+  const MouseCustomAble = {
+    name: 'mouseTest',
+    props: {},
+    events: {},
+    mouseEnter(e) {
+      const controlBoxes = document.getElementsByClassName('moveable-control-box');
+      for (const element of controlBoxes) {
+        element.classList.remove('moveable-control-box-d-block');
+      }
+      e.props.target.classList.add('hovered');
+      e.controlBox.classList.add('moveable-control-box-d-block');
+    },
+    mouseLeave(e) {
+      console.log('MouseCustomAble LEAVE', e);
+      e.props.target.classList.remove('hovered');
+      e.controlBox.classList.remove('moveable-control-box-d-block');
+    },
+  };
+
   const [dragTarget, setDragTarget] = useDragTarget();
   const [draggedTarget, setDraggedTarget] = useState();
   const moveableRef = useRef();
@@ -323,6 +307,12 @@ export default function DragContainer({
     e.setMax([maxWidth, maxHeight]);
     e.setMin([gridWidth, 10]);
   };
+
+  const updateNewPosition = (events) => {
+    lastDraggedEventsRef.current = events;
+  };
+
+  const debouncedOnDrag = debounce((events) => updateNewPosition(events), 100);
 
   return (
     <div className="root">
@@ -675,21 +665,10 @@ export default function DragContainer({
                 events.forEach((ev) => {
                   ev.target.style.transform = ev.transform;
                 });
-                // onDrag(
-                //   events.map((ev) => ({
-                //     id: ev.target.id,
-                //     x: ev.translate[0],
-                //     y: ev.translate[1],
-                //   }))
-                // );
+                debouncedOnDrag(events);
               }}
-              // onDragGroupStart={() => {
-              //   // if (currentLayout === 'mobile' && autoComputeLayout) {
-              //   //   turnOffAutoLayout();
-              //   //   return false;
-              //   // }
-              // }}
               onDragGroupEnd={(e) => {
+                debouncedOnDrag.cancel();
                 const { events } = e;
                 onDrag(
                   events.map((ev) => ({
