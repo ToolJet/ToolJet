@@ -1733,7 +1733,7 @@ export const widgets = [
       {
         handle: 'setText',
         displayName: 'Set text',
-        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
+        params: [{ handle: 'text', displayName: 'text', defaultValue: '100' }],
       },
       {
         handle: 'clear',
@@ -1771,7 +1771,6 @@ export const widgets = [
       isLoading: false,
     },
     validation: {
-      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
       regex: { type: 'code', displayName: 'Regex' },
       minValue: { type: 'code', displayName: 'Min value', placeholder: 'Enter min value' },
       maxValue: { type: 'code', displayName: 'Max value', placeholder: 'Enter max value' },
@@ -1780,6 +1779,7 @@ export const widgets = [
         displayName: 'Custom validation',
         placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
       },
+      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
     definition: {
       others: {
