@@ -24,7 +24,6 @@
 }
 
 .codehinter-input {
-    // font-family: "Roboto", sans-serif;
     font-family: IBM Plex Sans;
     font-size: 12px;
     display: block;
@@ -78,30 +77,38 @@
     color: #1E823B;
 }
 
+.cm-codehinter-dark-themed {
+
+
+    .cm-tooltip-autocomplete {
+        border-color: var(--slate5) !important;
+    }
+
+    .cm-tooltip-autocomplete > ul > completion-section {
+        background: var(--slate5);
+        color: #c9cbcf !important;
+    } 
+
+    .cm-tooltip-autocomplete > ul > li {
+        background: var(--slate3);
+        color: #c9cbcf !important;
+    }
+}
+
   
 .cm-tooltip-autocomplete {
-    // left: calc(70% - 150px) !important;
-    // top: calc(50% - 150px) !important;
+    
     height: 300px !important;
     max-width: 250px !important;
-  
-
-    // display: flex !important;
-    color: var(--Text-default, #1B1F24) !important;
+    color: var(--Text-default, #1B1F24);
     background: var(--slate1) !important;
-    border: none !important;
-    border-radius: 6px !important;
     border: 1px solid var(--Border-week, #E4E7EB) !important;
-
-    /* Elevations/light/300 */
-    box-shadow: 0px 4px 8px 0px rgba(48, 49, 51, 0.10), 0px 0px 1px 0px rgba(48, 49, 51, 0.05) !important;
-    
-
+    border-radius: 6px !important;
+    box-shadow: 0px 4px 8px 0px rgba(48, 49, 51, 0.10), 0px 0px 1px 0px rgba(48, 49, 51, 0.05);
     position: absolute !important;
     z-index: 99999 !important;
-
-    
-
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 
 
     ul {      
@@ -113,12 +120,11 @@
         completion-section {
          color: var(--Text-default, #1B1F24) !important;
          border-bottom: none !important;
-         background-color: var(--slate3) !important;
-         padding: 0px, 8px, 0px, 8px !important;
-        //  font-family: IBM Plex Sans !important;
+         background-color: var(--slate3);
          font-size: 13px !important;
          line-height: 20px !important;
          font-weight: 500 !important;
+         padding: 8px !important;
         }
 
         
@@ -129,19 +135,13 @@
             width: 100% !important;
             display: flex !important;
             align-items: start !important;
-            
             justify-content: space-between !important;
-            // padding: 0px, 8px, 0px, 8px !important;
             padding: 0.35rem !important;
             font-size: 11px !important;
             font-style: normal !important;
             font-weight: 400 !important;
             line-height: 16px !important;
             color: var(--Text-default, #1B1F24) !important;
-
-            
-
-            
 
             .cm-completionIcon-js_methods::after {
                 content: '';
@@ -237,6 +237,7 @@
 .cm-focused {
     outline: none !important;
 }
+
 
 
 

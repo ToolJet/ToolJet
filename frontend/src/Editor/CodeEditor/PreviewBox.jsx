@@ -3,7 +3,7 @@ import { useSpring, config, animated } from 'react-spring';
 import useHeight from '@/_hooks/use-height-transition';
 import { getCurrentNodeType, resolveReferences } from './utils';
 
-export const PreviewBox = ({ currentValue, isFocused, componentName, expectedType, setErrorStateActive }) => {
+export const PreviewBox = ({ currentValue, isFocused, expectedType, setErrorStateActive }) => {
   const [resolvedValue, error] = resolveReferences(currentValue, expectedType);
 
   const [heightRef, currentHeight] = useHeight();
