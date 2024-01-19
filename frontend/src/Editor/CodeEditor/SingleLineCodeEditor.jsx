@@ -24,6 +24,13 @@ const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
   const [errorStateActive, setErrorStateActive] = React.useState(false);
 
+  //! Re render the component when the componentName changes as the initialValue is not updated
+  //! as there are no mutations or state changes in the parent component like the old code hinter
+  React.useEffect(() => {
+    setCurrentValue(initialValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [componentName]);
+
   return (
     <div className=" code-editor-basic-wrapper d-flex">
       <div className="codehinter-container w-100 ">
