@@ -158,6 +158,36 @@ export const SubContainer = ({
 
   const containerWidth = getContainerCanvasWidth();
 
+  const placeComponentInsideParent = (newComponent, canvasBoundingRect) => {
+    const layout = newComponent?.layout?.desktop;
+    let newWidth = layout.width,
+      newHeight = layout.top + layout.height;
+    if (layout) {
+      if (newWidth + layout.left >= 43) {
+        newWidth = 43 - layout.left;
+      }
+      if (newHeight > canvasBoundingRect.height) {
+        newHeight = canvasBoundingRect.height - layout.top;
+      }
+      return {
+        ...newComponent,
+        layout: {
+          desktop: {
+            ...layout,
+            height: newHeight,
+            width: newWidth,
+          },
+          mobile: {
+            ...layout,
+            height: newHeight,
+            width: newWidth,
+          },
+        },
+      };
+    }
+    return newComponent;
+  };
+
   const placeComponentInsideListView = (newComponent, canvasBoundingRect) => {
     const layout = newComponent?.layout?.desktop;
     if (layout && canvasBoundingRect.height <= layout.top) {
@@ -408,6 +438,9 @@ export const SubContainer = ({
 
           if (parentComp === 'Listview') {
             newComponent = placeComponentInsideListView(newComponent, canvasBoundingRect);
+          }
+          if (componentMeta.component === 'Form') {
+            newComponent = placeComponentInsideParent(newComponent, canvasBoundingRect);
           }
 
           setBoxes({
