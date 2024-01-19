@@ -352,7 +352,9 @@ class GitSyncConfigComponent extends Component {
             <div className="gitsync-header">
               <div className="row">
                 <div className="col-md-2 git-header-cont">
-                  <div className="git-header-text">Configure git</div>
+                  <div className="git-header-text" data-cy="git-header-text">
+                    Configure git
+                  </div>
                 </div>
                 <div className="col-md-2">
                   <LicenseBanner
@@ -368,18 +370,30 @@ class GitSyncConfigComponent extends Component {
                     checked={gitSyncToogle}
                     onChange={this.setGitSync}
                     disabled={!isFinalized || !isGitSyncFeatureEnabled}
+                    dataCy={'git-sync'}
                   />
                 </div>
                 <div className="col-md-3 git-toggle-label">
-                  <div className={`main-text ${isGitSyncFeatureEnabled ? '' : 'disable-text'}`}>Connect</div>
-                  <div className={`helper-text ${isGitSyncFeatureEnabled ? '' : 'disable-text'}`}>{toggleMessage}</div>
+                  <div className={`main-text ${isGitSyncFeatureEnabled ? '' : 'disable-text'}`} data-cy="connect-label">
+                    Connect
+                  </div>
+                  <div
+                    className={`helper-text ${isGitSyncFeatureEnabled ? '' : 'disable-text'}`}
+                    data-cy="toggle-message"
+                  >
+                    {toggleMessage}
+                  </div>
                 </div>
               </div>
             </div>
             <div className="gitconfig-body">
               <div className="row git-url-container">
                 <div className="col-md-9 git-url-input">
-                  <label className={`label ${isGitSyncFeatureEnabled ? '' : 'disable-text'}`} for="git-url-input">
+                  <label
+                    className={`label ${isGitSyncFeatureEnabled ? '' : 'disable-text'}`}
+                    for="git-url-input"
+                    data-cy="git-repo-url-label"
+                  >
                     Git repo URL
                   </label>
                   <input
@@ -397,11 +411,13 @@ class GitSyncConfigComponent extends Component {
                     }
                     value={inputUrl}
                     readOnly={lockUrlinput | isFinalized | !isGitSyncFeatureEnabled}
+                    data-cy="git-ssh-input"
                   />
                   <div
                     className={`${validUrl ? 'help-text ' : 'alert-text'} ${
                       isGitSyncFeatureEnabled ? '' : 'disable-text'
                     }`}
+                    data-cy="git-ssh-input-helper-text"
                   >
                     {urlInputMessage}
                   </div>
@@ -412,6 +428,7 @@ class GitSyncConfigComponent extends Component {
                     disabled={disableGenerateButtonStatus | !isGitSyncFeatureEnabled}
                     onClick={this.generateSshKey}
                     loading={generateKeyLoader}
+                    data-cy="generate-ssh-key-button"
                   >
                     Generate SSH key
                   </Button>
@@ -420,12 +437,16 @@ class GitSyncConfigComponent extends Component {
               {!editingMode && sshKeyGenerated && (
                 <>
                   <div className="key-output-container">
-                    <label className={`label ${isGitSyncFeatureEnabled ? '' : 'disable-text'}`} for="ssh-key-box">
+                    <label
+                      className={`label ${isGitSyncFeatureEnabled ? '' : 'disable-text'}`}
+                      for="ssh-key-box"
+                      data-cy="ssh-key-label"
+                    >
                       SSH key
                     </label>
                     <div className="row key-box">
                       <div className={`col-md-11 key-display ${!isGitSyncFeatureEnabled ? 'disabled' : ''}`}>
-                        <p>{sshKey}</p>
+                        <p data-cy="ssh-key">{sshKey}</p>
                       </div>
                       <div className="col-md-1 copy-btn">
                         <CopyToClipboard onCopy={this.copyKeyToClipboard} text={sshKey}>
@@ -434,11 +455,15 @@ class GitSyncConfigComponent extends Component {
                             leftIcon="copy"
                             className="copy-btn"
                             disabled={!isGitSyncFeatureEnabled}
+                            data-cy="copy-button"
                           />
                         </CopyToClipboard>
                       </div>
                     </div>
-                    <div className={`help-text ${isGitSyncFeatureEnabled ? '' : 'disable-text'}`}>
+                    <div
+                      className={`help-text ${isGitSyncFeatureEnabled ? '' : 'disable-text'}`}
+                      data-cy="deploy-key-helper-text"
+                    >
                       This is your repository’s deploy key
                     </div>
                   </div>
@@ -447,12 +472,12 @@ class GitSyncConfigComponent extends Component {
                       <SolidIcon name="informationcircle" fill="#3E63DD" />
                     </div>
                     <div className="col-md-11">
-                      <div className="message">
+                      <div className="message" data-cy="warning-text">
                         While deploying the key, please ensure <b>write access permission</b> has been granted for the
                         connection to be successful
                       </div>
                       <a href={repoLink} target="_blank" rel="noopener noreferrer">
-                        <div className="open-git-btn">
+                        <div className="open-git-btn" data-cy="git-repo-link">
                           <SolidIcon name="open" className="open-icn" />
                           Open Git Repository
                         </div>

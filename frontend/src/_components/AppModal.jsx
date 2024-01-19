@@ -207,11 +207,16 @@ export function AppModal({
                     checked={commitEnabled}
                     type="checkbox"
                     onChange={handleCommitEnableChange}
+                    data-cy="git-commit-input"
                   />
                 </div>
                 <div>
-                  <div className="tj-text tj-text-xsm">Commit changes</div>
-                  <div className="tj-text-xxsm">This action commits the app&apos;s creation to the git repository</div>
+                  <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
+                    Commit changes
+                  </div>
+                  <div className="tj-text-xxsm" data-cy="commit-helper-text">
+                    This action commits the app&apos;s creation to the git repository
+                  </div>
                 </div>
               </div>
             )}

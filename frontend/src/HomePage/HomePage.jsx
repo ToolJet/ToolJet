@@ -874,8 +874,10 @@ class HomePageComponent extends React.Component {
             ) : (
               <>
                 <div className="form-group">
-                  <label className="mb-1 tj-text-sm tj-text font-weight-500">Create app from</label>
-                  <div className="tj-app-input">
+                  <label className="mb-1 tj-text-sm tj-text font-weight-500" data-cy="create-app-from-label">
+                    Create app from
+                  </label>
+                  <div className="tj-app-input" data-cy="app-select">
                     <Select
                       options={this.generateOptionsForRepository()}
                       disabled={importingApp}
@@ -897,7 +899,9 @@ class HomePageComponent extends React.Component {
                 {selectedAppRepo && (
                   <div className="commit-info">
                     <div className="form-group mb-3">
-                      <label className="mb-1 info-label mt-3 tj-text-xsm font-weight-500">App name</label>
+                      <label className="mb-1 info-label mt-3 tj-text-xsm font-weight-500" data-cy="app-name-label">
+                        App name
+                      </label>
                       <div className="tj-app-input">
                         <input
                           type="text"
@@ -906,6 +910,7 @@ class HomePageComponent extends React.Component {
                           className={cx('form-control font-weight-400 disabled', {
                             'tj-input-error-state': importingGitAppOperations?.message,
                           })}
+                          data-cy="app-name-field"
                         />
                       </div>
                       <div>
@@ -914,6 +919,7 @@ class HomePageComponent extends React.Component {
                             { 'tj-input-error': importingGitAppOperations?.message },
                             'tj-text-xxsm info-text'
                           )}
+                          data-cy="app-name-helper-text"
                         >
                           {importingGitAppOperations?.message
                             ? importingGitAppOperations?.message
@@ -922,13 +928,17 @@ class HomePageComponent extends React.Component {
                       </div>
                     </div>
                     <div className="form-group">
-                      <label className="mb-1 tj-text-xsm font-weight-500">Last commit</label>
+                      <label className="mb-1 tj-text-xsm font-weight-500" data-cy="last-commit-label">
+                        Last commit
+                      </label>
                       <div className="last-commit-info form-control">
                         <div className="message-info">
-                          <div>{appsFromRepos[selectedAppRepo]?.last_commit_message ?? 'No commits yet'}</div>
-                          <div>{appsFromRepos[selectedAppRepo]?.git_version_name}</div>
+                          <div data-cy="las-commit-message">
+                            {appsFromRepos[selectedAppRepo]?.last_commit_message ?? 'No commits yet'}
+                          </div>
+                          <div data-cy="last-commit-version">{appsFromRepos[selectedAppRepo]?.git_version_name}</div>
                         </div>
-                        <div className="author-info">
+                        <div className="author-info" data-cy="auther-info">
                           {`Done by ${appsFromRepos[selectedAppRepo]?.last_commit_user} at ${moment(
                             new Date(appsFromRepos[selectedAppRepo]?.lastpush_date)
                           ).format('DD MMM YYYY, h:mm a')}`}
