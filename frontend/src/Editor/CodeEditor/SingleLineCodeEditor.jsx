@@ -35,6 +35,7 @@ const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}
           validationType={validation?.schema?.type}
           onBlurUpdate={onChange}
           error={errorStateActive}
+          cyLabel={restProps.cyLabel}
         />
 
         {enablePreview && (
@@ -61,6 +62,7 @@ const EditorInput = ({
   onBlurUpdate,
   placeholder = '',
   error,
+  cyLabel,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let before = context.matchBefore(/\w+/);
@@ -109,27 +111,29 @@ const EditorInput = ({
   const theme = darkMode ? okaidia : githubLight;
 
   return (
-    <CodeMirror
-      value={currentValue}
-      placeholder={placeholder}
-      height={type === 'basic' ? '30px' : 'fit-content'}
-      maxHeight="320px"
-      width="100%"
-      extensions={[javascript({ jsx: false }), autoCompleteConfig]}
-      onChange={handleOnChange}
-      basicSetup={{
-        lineNumbers: false,
-        syntaxHighlighting: true,
-        bracketMatching: true,
-        foldGutter: false,
-        highlightActiveLine: false,
-        autocompletion: true,
-      }}
-      onFocus={() => setFocus(true)}
-      onBlur={handleOnBlur}
-      className={`codehinter-input ${error && 'border-danger'}`}
-      theme={theme}
-    />
+    <div className={` ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
+      <CodeMirror
+        value={currentValue}
+        placeholder={placeholder}
+        height={type === 'basic' ? '30px' : 'fit-content'}
+        maxHeight="320px"
+        width="100%"
+        extensions={[javascript({ jsx: false }), autoCompleteConfig]}
+        onChange={handleOnChange}
+        basicSetup={{
+          lineNumbers: false,
+          syntaxHighlighting: true,
+          bracketMatching: true,
+          foldGutter: false,
+          highlightActiveLine: false,
+          autocompletion: true,
+        }}
+        onFocus={() => setFocus(true)}
+        onBlur={handleOnBlur}
+        className={`codehinter-input ${error && 'border-danger'}`}
+        theme={theme}
+      />
+    </div>
   );
 };
 
