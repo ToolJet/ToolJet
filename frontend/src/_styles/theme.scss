@@ -9936,6 +9936,7 @@ tbody {
           justify-content: left;
           align-items: center; 
           display: flex;
+          z-index: 999999999;
         }
 
         .disable {
