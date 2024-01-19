@@ -11,7 +11,7 @@ import { Tabs } from './Components/Tabs';
 import { RichTextEditor } from './Components/RichTextEditor';
 import { DropDown } from './Components/DropDown';
 import { Checkbox } from './Components/Checkbox';
-import { Datepicker } from './Components/Datepicker';
+import { Datepicker } from './Components/Datepicker/Datepicker';
 import { DaterangePicker } from './Components/DaterangePicker';
 import { Multiselect } from './Components/Multiselect';
 import { Modal } from './Components/Modal';
