@@ -24,6 +24,8 @@ export const ProgramaticallyHandleProperties = ({
         return props.columnVisibility;
       case 'linkTarget':
         return props.linkTarget;
+      case 'isTimeChecked':
+        return props?.isTimeChecked;
       default:
         return;
     }

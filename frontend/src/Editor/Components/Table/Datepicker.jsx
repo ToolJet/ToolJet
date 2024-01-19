@@ -3,6 +3,7 @@ import Datetime from 'react-datetime';
 import moment from 'moment-timezone';
 import 'react-datetime/css/react-datetime.css';
 import '@/_styles/custom.scss';
+import { resolveReferences } from '@/_helpers/utils';
 
 const getDate = (value, parseDateFormat, displayFormat, timeZoneValue, timeZoneDisplay) => {
   if (value) {
@@ -26,13 +27,15 @@ export const Datepicker = function Datepicker({
   value,
   onChange,
   readOnly,
-  isTimeChecked,
+  isTimeChecked: enableTime,
   tableRef,
   dateDisplayFormat, //?Display date format
   parseDateFormat, //?Parse date format
   timeZoneValue,
   timeZoneDisplay,
+  currentState,
 }) {
+  const isTimeChecked = resolveReferences(enableTime, currentState);
   const [date, setDate] = React.useState(() =>
     getDate(value, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay)
   );

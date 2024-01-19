@@ -466,6 +466,7 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   tableRef={tableRef}
+                  currentState={currentState}
                 />
               </div>
             );

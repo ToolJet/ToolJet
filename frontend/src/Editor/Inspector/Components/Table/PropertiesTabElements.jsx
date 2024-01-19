@@ -151,6 +151,20 @@ export const PropertiesTabElements = ({
       )}
       {column.columnType === 'datepicker' && (
         <div>
+          <div className="field">
+            <ProgramaticallyHandleProperties
+              label="Show time"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="isTimeChecked"
+              props={column}
+              component={component}
+              paramType="properties"
+              paramMeta={{ type: 'toggle', displayName: 'Show time' }}
+            />
+          </div>
           <label data-cy={`label-date-display-format`} className="form-label">
             {t('widget.Table.dateDisplayformat', 'Date Display Format')}
           </label>
@@ -218,22 +232,6 @@ export const PropertiesTabElements = ({
               fuzzySearch
               placeholder="Select.."
             />
-          </div>
-          <div className="field mb-2">
-            <div className="form-check form-switch my-2">
-              <input
-                data-cy={`toggle-show-time`}
-                className="form-check-input"
-                type="checkbox"
-                onClick={() => {
-                  onColumnItemChange(index, 'isTimeChecked', !column.isTimeChecked);
-                }}
-                checked={column.isTimeChecked}
-              />
-              <span data-cy={`label-show-time`} className="form-check-label">
-                {t('widget.Table.showTime', 'show time')}
-              </span>
-            </div>
           </div>
         </div>
       )}
