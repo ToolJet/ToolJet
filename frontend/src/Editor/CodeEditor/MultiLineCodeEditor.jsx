@@ -7,8 +7,7 @@ import { sql } from '@codemirror/lang-sql';
 import { autocompletion } from '@codemirror/autocomplete';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
-import { generateHints, getAutocompletion } from './autocompleteExtensionConfig';
-
+import { generateHints } from './autocompleteExtensionConfig';
 const langSupport = Object.freeze({
   javascript: javascript(),
   python: python(),
@@ -35,9 +34,16 @@ const MultiLineCodeEditor = (props) => {
   } = props;
 
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
+  const diffOfCurrentValue = React.useRef(null);
 
   const handleChange = React.useCallback((val) => {
     setCurrentValue(val);
+
+    const diff = val.length - currentValue.length;
+
+    if (diff > 0) {
+      diffOfCurrentValue.current = val.slice(-diff);
+    }
   }, []);
 
   const handleOnBlur = React.useCallback(() => {
@@ -98,6 +104,11 @@ const MultiLineCodeEditor = (props) => {
 
     const appHints = hints['appHints'];
 
+    // const currentValue = context.state.doc.toString();
+    // const prevword = diffOfCurrentValue.current;
+
+    // // console.log('--arpit==>', { currentValue, prevword });
+
     let autoSuggestionList = appHints.filter((suggestion) => {
       if (currentWord.length === 0) return true;
 
@@ -106,6 +117,29 @@ const MultiLineCodeEditor = (props) => {
 
     const suggestions = generateHints([...JSLangHints, ...autoSuggestionList]).map((hint) => {
       delete hint['apply'];
+
+      hint.apply = (view, completion, from, to) => {
+        const doc = view.state.doc;
+
+        const start = doc.lineAt(from).text.slice(0, from - 1);
+
+        const word = start.split(' ').pop();
+
+        const index = start.lastIndexOf(word);
+
+        const changesStartIndexFromDocLine = doc.lineAt(from).from;
+
+        const changeIndex = changesStartIndexFromDocLine > 0 ? changesStartIndexFromDocLine + index : index;
+        const endIndex = changesStartIndexFromDocLine > 0 ? to : to;
+
+        view.dispatch({
+          changes: {
+            from: changeIndex,
+            to: endIndex,
+            insert: completion.label,
+          },
+        });
+      };
       return hint;
     });
 
@@ -125,7 +159,7 @@ const MultiLineCodeEditor = (props) => {
   });
 
   return (
-    <div className={className} cyLabel={cyLabel}>
+    <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
       <CodeMirror
         value={currentValue}
         placeholder={placeholder}
