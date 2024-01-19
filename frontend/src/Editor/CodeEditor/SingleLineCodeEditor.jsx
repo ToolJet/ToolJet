@@ -14,6 +14,7 @@ import { paramValidation, resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion } from './autocompleteExtensionConfig';
+import ErrorBoundary from '../ErrorBoundary';
 
 const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true } = restProps;
@@ -112,27 +113,29 @@ const EditorInput = ({
 
   return (
     <div className={` ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
-      <CodeMirror
-        value={currentValue}
-        placeholder={placeholder}
-        height={type === 'basic' ? '30px' : 'fit-content'}
-        maxHeight="320px"
-        width="100%"
-        extensions={[javascript({ jsx: false }), autoCompleteConfig]}
-        onChange={handleOnChange}
-        basicSetup={{
-          lineNumbers: false,
-          syntaxHighlighting: true,
-          bracketMatching: true,
-          foldGutter: false,
-          highlightActiveLine: false,
-          autocompletion: true,
-        }}
-        onFocus={() => setFocus(true)}
-        onBlur={handleOnBlur}
-        className={`codehinter-input ${error && 'border-danger'}`}
-        theme={theme}
-      />
+      <ErrorBoundary>
+        <CodeMirror
+          value={currentValue}
+          placeholder={placeholder}
+          height={type === 'basic' ? '30px' : 'fit-content'}
+          maxHeight="320px"
+          width="100%"
+          extensions={[javascript({ jsx: false }), autoCompleteConfig]}
+          onChange={handleOnChange}
+          basicSetup={{
+            lineNumbers: false,
+            syntaxHighlighting: true,
+            bracketMatching: true,
+            foldGutter: false,
+            highlightActiveLine: false,
+            autocompletion: true,
+          }}
+          onFocus={() => setFocus(true)}
+          onBlur={handleOnBlur}
+          className={`codehinter-input ${error && 'border-danger'}`}
+          theme={theme}
+        />
+      </ErrorBoundary>
     </div>
   );
 };

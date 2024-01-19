@@ -224,16 +224,6 @@ const inferJSExpAndReferences = (code, hintsMap) => {
   };
 };
 
-function evaluateJsExpression(jsExpression) {
-  try {
-    const evalFunction = new Function(`return ${jsExpression};`);
-
-    return evalFunction();
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 export const FxParamTypeMapping = Object.freeze({
   text: 'Text',
   string: 'Text',

@@ -8,6 +8,7 @@ import { autocompletion } from '@codemirror/autocomplete';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { generateHints } from './autocompleteExtensionConfig';
+import ErrorBoundary from '../ErrorBoundary';
 const langSupport = Object.freeze({
   javascript: javascript(),
   python: python(),
@@ -159,19 +160,21 @@ const MultiLineCodeEditor = (props) => {
   });
 
   return (
-    <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
-      <CodeMirror
-        value={currentValue}
-        placeholder={placeholder}
-        height={heightInPx}
-        // width=''
-        theme={theme}
-        extensions={[langExtention, autoCompleteConfig]}
-        onChange={handleChange}
-        onBlur={handleOnBlur}
-        basicSetup={setupConfig}
-      />
-    </div>
+    <ErrorBoundary>
+      <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
+        <CodeMirror
+          value={currentValue}
+          placeholder={placeholder}
+          height={heightInPx}
+          // width='100'
+          theme={theme}
+          extensions={[langExtention, autoCompleteConfig]}
+          onChange={handleChange}
+          onBlur={handleOnBlur}
+          basicSetup={setupConfig}
+        />
+      </div>
+    </ErrorBoundary>
   );
 };
 
