@@ -1099,6 +1099,7 @@ export const pageTitles = {
   WORKFLOW_EDITOR: 'workflowEditor',
   VIEWER: 'Viewer',
   DASHBOARD: 'Dashboard',
+  WORKSPACE_CONSTANTS: 'Workspace constants',
 };
 
 export const setWindowTitle = async (pageDetails, location) => {
@@ -1113,6 +1114,7 @@ export const setWindowTitle = async (pageDetails, location) => {
     'audit-logs': pageTitles.AUDIT_LOGS,
     'account-settings': pageTitles.ACCOUNT_SETTINGS,
     settings: pageTitles.SETTINGS,
+    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
   };
   const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
   let pageTitleKey = pageDetails?.page || '';
