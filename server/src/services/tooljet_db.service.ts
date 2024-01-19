@@ -446,10 +446,13 @@ export class TooljetDbService {
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
     let query = '';
 
-    if (column?.column_default)
-      query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${
-        column.column_name
-      } SET DEFAULT ${this.addQuotesIfString(column['column_default'])};`;
+    if ('column_default' in column) {
+      column.column_default.length
+        ? (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${
+            column.column_name
+          } SET DEFAULT ${this.addQuotesIfString(column['column_default'])};`)
+        : (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${column.column_name} DROP DEFAULT;`);
+    }
 
     if ('is_not_null' in constraints_type) {
       constraints_type.is_not_null

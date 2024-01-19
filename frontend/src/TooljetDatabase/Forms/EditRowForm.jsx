@@ -199,8 +199,10 @@ const EditRowForm = ({ onEdit, onClose }) => {
               className="form-check-input"
               type="checkbox"
               checked={inputValues[index]?.value}
-              onChange={(e) => handleInputChange(index, e.target.checked, columnName)}
-              disabled={inputValues[index]?.disabled}
+              onChange={(e) => {
+                if (!inputValues[index]?.disabled) handleInputChange(index, e.target.checked, columnName);
+              }}
+              disabled={inputValues[index]?.value === null}
             />
           </label>
         );

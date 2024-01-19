@@ -68,7 +68,9 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
         column_name: selectedColumn?.Header,
         data_type: selectedColumn?.dataType,
         ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
-        ...(defaultValue?.length > 0 ? { column_default: defaultValue } : {}),
+        ...(defaultValue?.length > 0 || defaultValue !== selectedColumn?.column_default
+          ? { column_default: defaultValue }
+          : {}),
         ...(nullValue !== isNotNull
           ? {
               constraints_type: {
@@ -79,7 +81,12 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
       },
     };
 
-    if (columnName !== selectedColumn?.Header || defaultValue?.length > 0 || nullValue !== isNotNull) {
+    if (
+      columnName !== selectedColumn?.Header ||
+      defaultValue?.length > 0 ||
+      defaultValue !== selectedColumn?.column_default ||
+      nullValue !== isNotNull
+    ) {
       setFetching(true);
       const { error } = await tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
       setFetching(false);
