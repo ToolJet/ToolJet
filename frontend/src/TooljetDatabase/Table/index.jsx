@@ -36,6 +36,8 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     setQueryFilters,
     setSortFilters,
     resetAll,
+    pageSize,
+    pageCount,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -79,7 +81,14 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     const handleScroll = () => {
       if (container) {
         const threshold = 1;
-        const scrollEnd = container.scrollLeft + container.clientWidth + threshold >= container.scrollWidth;
+        const scrollEnd = container.scrollLeft - 0.5 + container.clientWidth + threshold >= container.scrollWidth;
+
+        console.log({
+          scrollEnd,
+          scrollLeft: container.scrollLeft,
+          clientWidth: container.clientWidth,
+          scrollWidth: container.scrollWidth,
+        });
 
         setCreatorElement((prevElement) => ({
           ...prevElement,
@@ -287,6 +296,35 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
   };
 
+  const handleToggleCellEdit = async (cellVal, rowId, index) => {
+    const cellKey = headerGroups[0].headers[index].id;
+    const query = `id=eq.${rowId}&order=id`;
+    const cellData = { [cellKey]: !cellVal };
+    const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
+    if (error) {
+      toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
+      return;
+    }
+
+    const limit = pageSize;
+    const pageRange = `${(pageCount - 1) * pageSize + 1}`;
+    tooljetDatabaseService
+      .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}&offset=${pageRange - 1}`)
+      .then(({ headers, data = [], error }) => {
+        if (error) {
+          toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
+          return;
+        }
+
+        if (Array.isArray(data) && data?.length > 0) {
+          const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
+          setTotalRecords(totalContentRangeRecords);
+          setSelectedTableData(data);
+        }
+      });
+    toast.success(`cell edited successfully`);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (editColumnHeader.columnEditPopover && event.target.closest('.popover') === null) {
@@ -325,8 +363,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       columnEditPopover: !editColumnHeader.columnEditPopover,
     }));
   };
-
-  //console.log('first', editColumnHeader.columnEditPopover);
 
   const handleMouseOut = () => {
     setEditColumnHeader((prevState) => ({
@@ -568,7 +604,12 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                               <div className="row">
                                 <div className="col-1">
                                   <label className={`form-switch`}>
-                                    <input className="form-check-input" type="checkbox" checked={cell.value} />
+                                    <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      checked={cell.value}
+                                      onChange={() => handleToggleCellEdit(cell.value, row.values.id, index)}
+                                    />
                                   </label>
                                 </div>
                               </div>

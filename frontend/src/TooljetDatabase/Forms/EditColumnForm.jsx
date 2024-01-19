@@ -230,7 +230,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
         fetching={fetching}
         onClose={onClose}
         onEdit={handleEdit}
-        shouldDisableCreateBtn={columnName === ''}
+        shouldDisableCreateBtn={columnName === '' || (isNotNull && defaultValue.length <= 0)}
       />
     </div>
   );

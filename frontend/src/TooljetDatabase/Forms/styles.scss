@@ -151,8 +151,8 @@
   input.form-error {
 
     gap: 16px !important;
-    background: #FFF8F7 !important;
-    border: 1px solid #E54D2E !important;
+    background: var(--tomato4) !important;
+    border: 1px solid var(--tomato9) !important;
     border-radius: 6px !important;
     margin-bottom: 4px !important;
     color: var(--slate12) !important;
@@ -161,8 +161,8 @@
     padding: 7px 12px !important;
 
     &:hover {
-      background: #FFF8F7 !important;
-      border: 1px solid #E54D2E !important;
+      background: var(--tomato4) !important;
+      border: 1px solid var(--tomato9) !important;
       -webkit-box-shadow: none !important;
       box-shadow: none !important;
       outline: none;
@@ -240,6 +240,6 @@
 }
 
 .form-error-message {
-  color: #E54D2E;
+  color: var(--tomato9);
   font-size: 12px;
 }
