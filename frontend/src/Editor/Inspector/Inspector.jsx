@@ -370,7 +370,7 @@ export const Inspector = ({
               />
             </div>
           </div>
-          <div className="col-2">
+          <div className="col-2" data-cy={'component-inspector-options'}>
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-end'}
@@ -381,6 +381,7 @@ export const Inspector = ({
                   <Popover.Body bsPrefix="list-item-popover-body">
                     {INSPECTOR_HEADER_OPTIONS.map((option) => (
                       <div
+                        data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
                         className="list-item-popover-option"
                         key={option?.value}
                         onClick={(e) => {
