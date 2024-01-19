@@ -249,6 +249,7 @@ export const Checkbox = function Checkbox({
   const handleToggleChange = () => {
     const newCheckedState = !checked;
     setChecked(newCheckedState);
+    fireEvent('onChange');
     setExposedVariable('value', newCheckedState);
     if (newCheckedState) {
       fireEvent('onCheck');
