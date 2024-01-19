@@ -1604,7 +1604,7 @@ button {
  */
 .select-search__value {
   position: relative;
-  z-index: 1;
+  // z-index: 1;
 }
 
 .select-search__value::after {
@@ -6220,6 +6220,7 @@ a.step-item-disabled {
 .user-group-actions {
   display: flex;
   gap: 8px;
+  justify-content: right;
 }
 
 input.hide-input-arrows {
@@ -9002,7 +9003,18 @@ tbody {
 .org-users-page-container {
   width: 880px;
   margin: 0 auto;
+
+  
 }
+
+.group-duplcate-modal-body {
+    margin-top: 20px;
+
+    .check-row{
+      margin-left: 5px;
+      margin-bottom: 10px;
+    }
+  }
 
 .groups-main-header-wrap {
   padding: 20px 0px 8px;
@@ -9954,6 +9966,26 @@ tbody {
     overflow: hidden !important;
     text-overflow: ellipsis !important;
   }
+
+  .tooltip {
+    opacity: 0.7;
+  }
+
+  .groups-list-option-button{
+      background-color: var(--base) !important;
+      width: 24px;
+      height: 24px;
+      padding: 7px 0px 7px 0px;
+
+      &:focus-visible {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      }
+  }
+  
+
+  
 }
 
 .create-group-modal-footer {
@@ -9974,6 +10006,56 @@ tbody {
   width: 612px;
   height: 32px;
 }
+
+.popover-group-menu {
+    border-radius: 4px;
+    width: 190px;
+    box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
+    background: var(--base);
+    color: var(--slate12);
+    border: 1px solid var(--slate3);
+
+    .popover-arrow {
+      display: none;
+    }
+
+    .popover-body {
+      padding: 6px;
+      color: var(--slate12);
+
+      .field {
+        
+        width: 100%;
+        margin: 0 0 0 0;
+        height: 36px;
+        justify-content: center;
+        align-items: center; 
+        display: flex;
+
+        .option-row {
+          width: 100%;
+          height: 100%;
+          font-weight: 400;
+          font-size: 12px;
+          justify-content: left;
+          align-items: center; 
+          display: flex;
+          z-index: 999999999;
+        }
+
+        .disable {
+          color: var(--slate7);
+        }
+
+        &__danger {
+          color: var(--tomato9);
+        }
+        :hover {
+        background-color: var(--slate3);
+      }
+      }
+    }
+  }
 
 .workspace-settings-filter-wrap {
   background: var(--slate3);
@@ -12002,6 +12084,12 @@ tbody {
 
 .custom-gap-12 {
   gap: 12px
+}
+
+.overflow-tooltip {
+  .tooltip-inner {
+    max-width: 100%;
+  }
 }
 
 #inspector-tabpane-properties {

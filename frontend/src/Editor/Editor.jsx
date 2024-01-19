@@ -259,6 +259,8 @@ const EditorComponent = (props) => {
 
       computeComponentState(components);
 
+      if (appDiffOptions?.skipAutoSave === true) return;
+
       if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
         autoSave();
       }
@@ -1139,7 +1141,7 @@ const EditorComponent = (props) => {
       const diffPatches = diff(appDefinition, updatedAppDefinition);
 
       if (!isEmpty(diffPatches)) {
-        appDefinitionChanged(updatedAppDefinition, { skipAutoSave: true, componentDefinitionChanged: true, ...props });
+        appDefinitionChanged(updatedAppDefinition, { componentDefinitionChanged: true, ...props });
       }
     }
   };

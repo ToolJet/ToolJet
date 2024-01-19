@@ -44,6 +44,8 @@ import FolderDownload from './FolderDownload.jsx';
 import FolderUpload from './FolderUpload.jsx';
 import FullOuterJoin from './FullOuterJoin.jsx';
 import Globe from './Globe.jsx';
+import Delete from './Delete.jsx';
+import Options from './Options.jsx';
 import Grid from './Grid.jsx';
 import HelpPolygon from './HelpPolygon.jsx';
 import Home from './Home.jsx';
@@ -216,6 +218,8 @@ const Icon = (props) => {
       return <Diamond {...props} />;
     case 'downarrow':
       return <DownArrow {...props} />;
+    case 'delete':
+      return <Delete {...props} />;
     case 'editrectangle':
       return <EditRectangle {...props} />;
     case 'eye':
@@ -298,6 +302,8 @@ const Icon = (props) => {
       return <NotificationSilent {...props} />;
     case 'notificationunread':
       return <NotificationUnread {...props} />;
+    case 'options':
+      return <Options {...props} />;
     case 'page':
       return <Page {...props} />;
     case 'pageAdd':
