@@ -1061,6 +1061,24 @@ export const determineJustifyContentValue = (value) => {
   }
 };
 
+export const USER_DRAWER_MODES = {
+  EDIT: 'EDIT',
+  CREATE: 'CREATE',
+};
+
+export const humanizeifDefaultGroupName = (groupName) => {
+  switch (groupName) {
+    case 'all_users':
+      return 'All Users';
+
+    case 'admin':
+      return 'Admin';
+
+    default:
+      return groupName;
+  }
+};
+
 export const defaultWhiteLabellingSettings = {
   WHITE_LABEL_LOGO: 'https://app.tooljet.com/logo.svg',
   WHITE_LABEL_TEXT: 'ToolJet',
