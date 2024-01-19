@@ -1,11 +1,9 @@
 ---
 id: what-are-datasources
-title: What Are Data Sources?
+title: Data Sources
 ---
 
-
 Data sources are pivotal as they enable us to fetch and send data to and from different sources including databases, external APIs, or services. Once a data source is configured, it can be shared across all apps within a workspace.
-
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -14,19 +12,19 @@ Data sources are pivotal as they enable us to fetch and send data to and from di
 Apart from its built-in database, ToolJet supports a range of external data sources which can be broadly categorized into databases, external APIs, and services. To manage these data sources, ToolJet provides a data source manager that can be opened by clicking on the **Data Sources** button located on the left-sidebar of the App-Builder. 
 
 <div style={{textAlign: 'center'}}>
-    <img style={{padding: '10px'}} className="screenshot-full" src="/img/tooljet-concepts/what-are-datasources/data-source-manager.png" alt="Data Source Manager" />
+    <img className="screenshot-full" src="/img/tooljet-concepts/what-are-datasources/data-source-manager.png" alt="Data Source Manager" />
 </div>
 
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Adding A Data Source
+## Adding a Data Source
 
 Adding a new data source is as easy as filling out a form; users can click on the Data Sources button in the left-sidebar, navigate to the required data source, click on the corresponding **Add** button and enter the credentials.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{padding: '10px'}} className="screenshot-full" src="/img/tooljet-concepts/what-are-datasources/configure-data-source.gif" alt="Configuring Data Source" />
+    <img className="screenshot-full" src="/img/tooljet-concepts/what-are-datasources/configure-data-source.gif" alt="Configuring Data Source" />
 </div>
 
 </div>
