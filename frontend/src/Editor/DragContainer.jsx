@@ -37,10 +37,11 @@ export default function DragContainer({
         onMouseUpCapture={() => {
           if (lastDraggedEventsRef.current) {
             onDrag(
-              lastDraggedEventsRef.current.map((ev) => ({
+              lastDraggedEventsRef.current.events.map((ev) => ({
                 id: ev.target.id,
                 x: ev.translate[0],
                 y: ev.translate[1],
+                parent: lastDraggedEventsRef.current.parent,
               }))
             );
           }
@@ -308,11 +309,15 @@ export default function DragContainer({
     e.setMin([gridWidth, 10]);
   };
 
-  const updateNewPosition = (events) => {
-    lastDraggedEventsRef.current = events;
+  const updateNewPosition = (events, parent = null) => {
+    const posWithParent = {
+      events,
+      parent,
+    };
+    lastDraggedEventsRef.current = posWithParent;
   };
 
-  const debouncedOnDrag = debounce((events) => updateNewPosition(events), 100);
+  const debouncedOnDrag = debounce((events, parent = null) => updateNewPosition(events, parent), 100);
 
   return (
     <div className="root">
@@ -920,6 +925,7 @@ export default function DragContainer({
                         console.log('Grouped data=>', ev);
                         ev.target.style.transform = ev.transform;
                       });
+                      debouncedOnDrag(events, i.parent);
                     }}
                     onResizeStart={(e) => {
                       setResizingComponentId(e.target.id);
@@ -1003,6 +1009,7 @@ export default function DragContainer({
                     //   }
                     // }}
                     onDragGroupEnd={(e) => {
+                      debouncedOnDrag.cancel();
                       const { events } = e;
                       onDrag(
                         events.map((ev) => ({
