@@ -443,4 +443,28 @@ describe("Editor- Test Button widget", () => {
     ).should("not.be.visible");
     cy.apiDeleteApp();
   });
+  it("Should verify deletion of button component from right side panel", () => {
+    cy.get('.col-2').click();
+    cy.get('.list-item-popover-body > :nth-child(3)').click();
+    cy.get('[data-cy="yes-button"]').click();
+    cy.verifyToastMessage(
+      `[class=go3958317564]`,
+      "Component deleted! (⌘ + Z to undo)"
+    );
+    cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
+    cy.reload();
+    cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
+
+  });
+  it("Should delete button via keyboard action", () => {
+    cy.realPress("Backspace");
+    cy.get('[data-cy="yes-button"]').click();
+    cy.verifyToastMessage(
+      `[class=go3958317564]`,
+      "Component deleted! (⌘ + Z to undo)"
+    );
+    cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
+    cy.reload();
+    cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
+  });
 });
