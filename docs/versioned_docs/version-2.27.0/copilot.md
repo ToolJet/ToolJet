@@ -3,7 +3,9 @@ id: tooljet-copilot
 title: Copilot
 ---
 
+<a href="https://www.tooljet.com/pricing">
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+</a>
 
 :::info BETA
 ToolJet Copilot is currently in private beta for **Business** and **Enterprise** users only.
