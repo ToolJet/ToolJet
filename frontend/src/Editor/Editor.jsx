@@ -75,7 +75,7 @@ setAutoFreeze(false);
 enablePatches();
 
 function setWindowTitle(name) {
-  document.title = name ? `${name} - Tooljet` : `My App - Tooljet`;
+  document.title = name ? `${name} - Editor` : `My App - Editor`;
 }
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));

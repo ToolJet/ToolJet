@@ -77,6 +77,7 @@ class HomePageComponent extends React.Component {
   componentDidMount() {
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
+    document.title = 'Dashboard';
   }
 
   fetchApps = (page = 1, folder, searchKey) => {

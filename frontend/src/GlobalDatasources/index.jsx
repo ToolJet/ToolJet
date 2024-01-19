@@ -28,6 +28,7 @@ export const GlobalDatasources = (props) => {
 
   useEffect(() => {
     if (dataSources?.length == 0) updateSidebarNAV('Databases');
+    document.title = 'Data sources';
   }, []);
 
   useEffect(() => {

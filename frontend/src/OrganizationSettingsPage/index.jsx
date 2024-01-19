@@ -36,6 +36,10 @@ export function OrganizationSettings(props) {
   };
 
   useEffect(() => {
+    document.title = 'Workspace Settings';
+  }, []);
+
+  useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
       admin ? updateSidebarNAV('Users & permissions') : updateSidebarNAV('Workspace variables');
