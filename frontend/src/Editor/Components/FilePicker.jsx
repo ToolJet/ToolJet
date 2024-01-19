@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
+// eslint-disable-next-line import/no-unresolved
 import * as XLSX from 'xlsx/xlsx.mjs';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';

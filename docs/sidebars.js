@@ -183,15 +183,6 @@ const sidebars = {
         {
           'type': 'category',
           'label': 'Actions Reference',
-          'link': {
-            'type': 'generated-index',
-            'title': 'Actions Reference',
-            'description': 'All the actions that can be performed through event handlers',
-            'keywords': [
-              'actions',
-              'events',
-            ],
-          },
           'items': [
             'actions/show-alert',
             'actions/logout',
@@ -326,17 +317,6 @@ const sidebars = {
     {
       'type': 'category',
       'label': 'Marketplace',
-      'link': {
-        'type': 'generated-index',
-        'title': 'Marketplace',
-        //        'description': 'ToolJet Marketplace documentation',
-        'keywords': [
-          'Marketplace',
-          'Marketplace for plugins',
-          'Using Marketplace',
-          'Build plugins for marketplace',
-        ],
-      },
       'collapsed': true,
       'items': [
         'marketplace/marketplace-overview',
@@ -356,14 +336,6 @@ const sidebars = {
     {
       'type': 'category',
       'label': 'How To',
-      'link': {
-        'type': 'generated-index',
-        'title': 'How To Guides',
-        'description': 'How To Guides for all the things ToolJet',
-        'keywords': [
-          'how to',
-        ]
-      },
       'items': [
         'how-to/use-inspector',
         'how-to/use-form-component',
@@ -391,15 +363,6 @@ const sidebars = {
     {
       'type': 'category',
       'label': 'Contributing Guide',
-      'link': {
-        'type': 'generated-index',
-        'title': 'Contributing Guide',
-        'description': 'Guides for contributing to ToolJet',
-        'keywords': [
-          'contribute',
-          'contributing',
-        ],
-      },
       'collapsed': false,
       'items': [
         'contributing-guide/setup/architecture',
