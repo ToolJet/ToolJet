@@ -145,16 +145,18 @@ function resolveCode(code, state, customObjects = {}, withError = true, reserved
 }
 
 export const resolveReferences = (query, expectedParamType) => {
+  if (typeof query !== 'string') return [query, null];
+
   if (!query) return [null, null];
 
   let resolvedValue = query;
   let error = null;
 
-  if (!query.includes('{{') || !query.includes('}}')) {
+  if (!query?.includes('{{') || !query?.includes('}}')) {
     return [resolvedValue, error];
   }
 
-  const value = query.replace(/{{|}}/g, '').trim();
+  const value = query?.replace(/{{|}}/g, '').trim();
 
   const { lookupTable } = useResolveStore.getState();
 
