@@ -11,9 +11,30 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import './datepicker.scss';
+import CustomDatePickerHeader from './CustomDatePickerHeader';
 
-const MyDatePicker = forwardRef(({ value, onClick, styles }, ref) => {
-  return <input className="custom-input-datepicker" value={value} onClick={onClick} ref={ref} style={styles}></input>;
+const MyDatePicker = forwardRef(({ value, onClick, styles, setShowValidationError, setIsFocused, fireEvent }, ref) => {
+  return (
+    <input
+      onBlur={(e) => {
+        setShowValidationError(true);
+        setIsFocused(false);
+        e.stopPropagation();
+        fireEvent('onBlur');
+        setIsFocused(false);
+      }}
+      onFocus={(e) => {
+        setIsFocused(true);
+        e.stopPropagation();
+        fireEvent('onFocus');
+      }}
+      className="custom-input-datepicker"
+      value={value}
+      onClick={onClick}
+      ref={ref}
+      style={styles}
+    ></input>
+  );
 });
 
 export const Datepicker = function Datepicker({
@@ -31,8 +52,17 @@ export const Datepicker = function Datepicker({
   dataCy,
   isResizing,
 }) {
-  const { enableTime, enableDate, defaultValue, disabledDates, tooltip, label, loadingState, disabledState } =
-    properties;
+  const {
+    enableTime,
+    enableDate,
+    defaultValue,
+    disabledDates,
+    tooltip,
+    label,
+    loadingState,
+    disabledState,
+    timeFormat,
+  } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
   const {
     padding,
@@ -52,7 +82,14 @@ export const Datepicker = function Datepicker({
 
   const datepickerinputStyles = {
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
+    // borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
+    borderColor: isFocused
+      ? '#3E63DD'
+      : ['#D7DBDF'].includes(borderColor)
+      ? darkMode
+        ? '#4C5155'
+        : '#D7DBDF'
+      : borderColor,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     boxShadow,
     borderRadius: `${borderRadius}px`,
@@ -120,10 +157,32 @@ export const Datepicker = function Datepicker({
   const [isFocused, setIsFocused] = useState(false);
   const currentState = useCurrentState();
   const [disable, setDisable] = useState(disabledState || loadingState);
+
+  // Expose vars
+
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
+
+  useEffect(() => {
+    setExposedVariable('label', label);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [label]);
+
+  useEffect(() => {
+    const unixTimestamp = new Date(date).getTime() / 1000;
+    setExposedVariable('valueUnix', unixTimestamp);
+    // setExposedVariable('selectedDate', date);
+  }, [date]);
+
+  useEffect(() => {
+    setExposedVariable('dateFormat', selectedDateFormat);
+  }, [selectedDateFormat]);
+
+  useEffect(() => {
+    setExposedVariable('timeFormat', timeFormat);
+  }, [timeFormat]);
 
   useEffect(() => {
     if (labelRef.current) {
@@ -218,30 +277,6 @@ export const Datepicker = function Datepicker({
     top: `${defaultAlignment === 'top' ? '53%' : ''}`,
     transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
   };
-  const [startDate, setStartDate] = useState(new Date());
-  const years = range(1990, getYear(new Date()) + 1, 1);
-  const months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const [selectedTime, setSelectedTime] = useState('');
-
-  const ExampleCustomInput = ({ value, onClick }, ref) => (
-    <input onClick={onClick} ref={ref}>
-      {value}
-    </input>
-  );
 
   const renderDatePicker = () => (
     <>
@@ -310,7 +345,6 @@ export const Datepicker = function Datepicker({
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         )}
-
         <DatePickerComponent
           showIcon
           calendarIcon={<IconElement stroke={1.5} />}
@@ -326,7 +360,14 @@ export const Datepicker = function Datepicker({
           onFocus={(event) => {
             onComponentClick(id, component, event);
           }}
-          // customInput={<MyDatePicker styles={datepickerinputStyles} />}
+          customInput={
+            <MyDatePicker
+              styles={datepickerinputStyles}
+              setShowValidationError={setShowValidationError}
+              fireEvent={fireEvent}
+              setIsFocused={setIsFocused}
+            />
+          }
           showMonthDropdown
           showYearDropdown
           dropdownMode="select"
@@ -338,65 +379,11 @@ export const Datepicker = function Datepicker({
           // onChange={(date) => setStartDate(date)}
           minDate={new Date(component?.definition?.validation?.minDate?.value)}
           maxDate={component?.definition?.validation?.maxDate?.value}
-          renderCustomHeader={({
-            date,
-            changeYear,
-            changeMonth,
-            decreaseMonth,
-            increaseMonth,
-            prevMonthButtonDisabled,
-            nextMonthButtonDisabled,
-          }) => (
-            <>
-              <div
-                style={{
-                  margin: 10,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  height: '44px',
-                  borderBottom: `1px solid var(--slate7)`,
-                }}
-              >
-                <button
-                  className="tj-datepicker-widget-arrows tj-datepicker-widget-left "
-                  onClick={decreaseMonth}
-                  disabled={prevMonthButtonDisabled}
-                >
-                  <SolidIcon name="cheveronleft" />
-                </button>
-                <div>
-                  <select
-                    value={months[getMonth(date)]}
-                    onChange={({ target: { value } }) => changeMonth(months.indexOf(value))}
-                  >
-                    {months.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                  <select value={getYear(date)} onChange={({ target: { value } }) => changeYear(value)}>
-                    {years.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <button
-                  className="tj-datepicker-widget-arrows tj-datepicker-widget-right "
-                  onClick={increaseMonth}
-                  disabled={nextMonthButtonDisabled}
-                >
-                  <SolidIcon name="cheveronright" />
-                </button>
-              </div>
-            </>
-          )}
+          // minTime={setHours(setMinutes(new Date(), 0), 17)}
+          // maxTime={setHours(setMinutes(new Date(), 30), 20)}
+          renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
         />
         {loading && <Loader style={{ ...loaderStyle }} width="16" />}
-
         <div
           data-cy="date-picker-invalid-feedback"
           className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}

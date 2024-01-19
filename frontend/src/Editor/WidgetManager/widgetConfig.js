@@ -2223,7 +2223,6 @@ export const widgets = [
         displayName: 'Enable time selection?',
         validation: {
           schema: { type: 'boolean' },
-          defaultValue: false,
         },
       },
       timeFormat: {
@@ -2236,13 +2235,19 @@ export const widgets = [
           value: true,
         },
       },
+      timeZone: {
+        type: 'select',
+        displayName: 'timeZone',
+        validation: {
+          // schema: { type: 'boolean' },
+        },
+      },
 
       enableDate: {
         type: 'toggle',
         displayName: 'Enable date selection?',
         validation: {
           schema: { type: 'boolean' },
-          defaultValue: true,
         },
       },
       disabledDates: {
@@ -2279,6 +2284,8 @@ export const widgets = [
     },
     events: {
       onSelect: { displayName: 'On select' },
+      onFocus: { displayName: 'On focus' },
+      onBlur: { displayName: 'On blur' },
     },
     styles: {
       color: {
