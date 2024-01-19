@@ -42,7 +42,7 @@ export function OrganizationSettings(props) {
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
-      updateSidebarNAV('Users & permissions');
+      updateSidebarNAV('Users');
     });
 
     () => subscription.unsubsciption();
@@ -68,7 +68,7 @@ export function OrganizationSettings(props) {
                         key={index}
                         onClick={() => {
                           setSelectedTab(defaultOrgName(item));
-                          if (item == 'Users') updateSidebarNAV('Users & permissions');
+                          if (item == 'Users') updateSidebarNAV('Users');
                           else updateSidebarNAV(item);
                         }}
                         selectedItem={selectedTab == defaultOrgName(item)}

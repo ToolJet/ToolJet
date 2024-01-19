@@ -12036,6 +12036,10 @@ tbody {
   .groups-name-container {
     display: flex;
     column-gap: 8px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 185px;
   }
 
   .group-chip {
