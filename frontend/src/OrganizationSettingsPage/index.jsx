@@ -42,8 +42,8 @@ export function OrganizationSettings(props) {
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
-      updateSidebarNAV('Users');
     });
+    updateSidebarNAV('Users');
 
     () => subscription.unsubsciption();
     // eslint-disable-next-line react-hooks/exhaustive-deps

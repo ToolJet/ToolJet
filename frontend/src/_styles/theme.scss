@@ -12046,6 +12046,10 @@ tbody {
     padding: 5px 8px;
     border-radius: 6px;
     background-color: var(--slate3);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 95px;
   }
 
   .all-groups-list {

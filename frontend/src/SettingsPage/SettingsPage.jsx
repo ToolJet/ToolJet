@@ -36,8 +36,10 @@ function SettingsPage(props) {
   }
 
   const handleNameSplit = (fullName) => {
-    const [first, last] = fullName.split(' ');
-    return [first, last];
+    const words = fullName.split(' ');
+    const firstName = words.length > 1 ? words.slice(0, -1).join(' ') : words[0];
+    const lastName = words.length > 1 ? words[words.length - 1] : '';
+    return [firstName, lastName];
   };
 
   const updateDetails = async () => {
@@ -170,7 +172,7 @@ function SettingsPage(props) {
                     <div className="col">
                       <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="email-label">
-                          {t('header.profileSettingPage.email', 'Email')}
+                          {t('header.profileSettingPage.email', 'Email address')}
                         </label>
                         <input
                           type="text"
