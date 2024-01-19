@@ -334,6 +334,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     defaultSize: {
       width: 28.86,
@@ -474,6 +476,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         title: { value: 'Table' },
@@ -553,6 +557,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       text: {
@@ -665,6 +671,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         text: { value: `Button` },
@@ -694,6 +702,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       title: {
@@ -833,6 +843,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         title: { value: 'This title can be changed' },
@@ -890,6 +902,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       title: {
@@ -1024,6 +1038,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         title: { value: 'This title can be changed' },
@@ -1145,6 +1161,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       buttonToSubmit: {
@@ -1241,6 +1259,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         loadingState: { value: '{{false}}' },
@@ -1272,6 +1292,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       value: {
@@ -1374,6 +1396,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         value: { value: '' },
@@ -1403,6 +1427,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       value: {
@@ -1497,6 +1523,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         value: { value: '99' },
@@ -1529,6 +1557,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       placeholder: {
@@ -1585,6 +1615,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         placeholder: { value: 'password' },
@@ -1619,6 +1651,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       defaultValue: {
@@ -1692,6 +1726,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       validation: {
         customRule: { value: null },
@@ -1730,6 +1766,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       label: {
@@ -1788,6 +1826,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         label: { value: 'Checkbox label' },
@@ -1814,6 +1854,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       label: {
@@ -1898,6 +1940,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         label: { value: 'Select' },
@@ -1927,6 +1971,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       label: {
@@ -1984,6 +2030,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         label: { value: 'Toggle label' },
@@ -2010,6 +2058,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       value: {
@@ -2070,6 +2120,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         value: {
@@ -2098,6 +2150,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       defaultStartDate: {
@@ -2169,6 +2223,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         defaultStartDate: { value: '01/04/2022' },
@@ -2192,6 +2248,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       text: {
@@ -2331,6 +2389,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         text: { value: 'Hello, there!' },
@@ -2368,6 +2428,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       source: {
@@ -2470,6 +2532,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         source: { value: 'https://www.svgrepo.com/show/34217/image.svg' },
@@ -2502,6 +2566,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       loadingState: {
@@ -2558,6 +2624,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         visible: { value: '{{true}}' },
@@ -2585,6 +2653,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     validation: {
       customRule: { type: 'code', displayName: 'Custom validation' },
@@ -2740,6 +2810,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       validation: {
         customRule: { value: null },
@@ -2779,6 +2851,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     actions: [
       {
@@ -2878,6 +2952,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         label: { value: 'Select' },
@@ -2907,6 +2983,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       placeholder: {
@@ -2952,6 +3030,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         placeholder: { value: 'Placeholder text' },
@@ -2976,6 +3056,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       initialLocation: {
@@ -3086,6 +3168,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         initialLocation: {
@@ -3121,6 +3205,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {},
     events: {
@@ -3170,6 +3256,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       label: {
@@ -3248,6 +3336,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         label: { value: 'Select your rating' },
@@ -3278,6 +3368,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {},
     events: {},
@@ -3304,6 +3396,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {},
       events: [],
@@ -3325,6 +3419,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     actions: [
       {
@@ -3471,6 +3567,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         instructionText: { value: 'Drag and drop files here or click to select files' },
@@ -3504,6 +3602,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       dateFormat: { type: 'code', displayName: 'Date format' },
@@ -3558,6 +3658,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         dateFormat: {
@@ -3615,6 +3717,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       source: {
@@ -3647,6 +3751,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         source: { value: 'https://tooljet.io/' },
@@ -3671,6 +3777,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       enableLineNumber: {
@@ -3726,6 +3834,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         enableLineNumber: { value: '{{true}}' },
@@ -3791,6 +3901,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       tabs: {
@@ -3893,6 +4005,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         tabs: {
@@ -3924,6 +4038,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       value: {
@@ -3977,6 +4093,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         value: {
@@ -4050,6 +4168,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       data: {
@@ -4162,6 +4282,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         data: {
@@ -4203,6 +4325,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       data: {
@@ -4234,6 +4358,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         data: {
@@ -4259,6 +4385,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       numberOfPages: {
@@ -4305,6 +4433,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         numberOfPages: {
@@ -4333,6 +4463,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       text: {
@@ -4407,6 +4539,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         text: {
@@ -4440,6 +4574,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {},
     events: {},
@@ -4475,6 +4611,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {},
       events: [],
@@ -4497,6 +4635,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       primaryValueLabel: {
@@ -4556,6 +4696,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         primaryValueLabel: { value: 'This months earnings' },
@@ -4587,6 +4729,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       min: {
@@ -4708,6 +4852,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     events: {},
     styles: {
@@ -4724,6 +4870,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         data: {
@@ -4759,6 +4907,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     events: {},
     styles: {
@@ -4777,6 +4927,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         data: {
@@ -4811,6 +4963,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     events: {},
     styles: {
@@ -4827,6 +4981,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         rawHtml: {
@@ -4852,6 +5008,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {},
     events: {},
@@ -4878,6 +5036,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {},
       events: [],
@@ -4903,6 +5063,8 @@ export const widgets = [
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     events: {},
     styles: {
@@ -4919,6 +5081,8 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         visible: { value: '{{true}}' },
@@ -5011,6 +5175,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -5074,6 +5240,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         label: { value: `Button group` },
@@ -5116,6 +5284,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     events: {},
     styles: {
@@ -5130,6 +5300,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         url: {
@@ -5191,6 +5363,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     events: {
       onSelect: { displayName: 'On select' },
@@ -5237,6 +5411,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         steps: {
@@ -5266,6 +5442,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       columns: { type: 'code', displayName: 'Columns' },
@@ -5297,6 +5475,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         columns: {
@@ -5367,6 +5547,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       columnData: { type: 'code', displayName: 'Column data' },
@@ -5454,6 +5636,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         columnData: {
@@ -5507,6 +5691,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -5523,6 +5709,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         defaultColor: {
@@ -5547,6 +5735,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       label: { type: 'code', displayName: 'Title' },
@@ -5595,6 +5785,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         label: { value: 'Countries' },
@@ -5626,6 +5818,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       linkTarget: {
@@ -5704,6 +5898,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         linkTarget: { value: 'https://dev.to/' },
@@ -5731,6 +5927,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       icon: {
@@ -5777,6 +5975,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         icon: { value: 'IconHome2' },
@@ -5800,6 +6000,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+      positionSync: { type: 'toggle', displayName: 'Position sync' },
+      dimensionSync: { type: 'toggle', displayName: 'Dimension sync' },
     },
     properties: {
       imageUrl: {
@@ -5885,6 +6087,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+        positionSync: { value: '{{false}}' },
+        dimensionSync: { value: '{{false}}' },
       },
       properties: {
         defaultValue: {

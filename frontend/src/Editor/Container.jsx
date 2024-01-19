@@ -6,7 +6,7 @@ import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import { componentTypes } from './WidgetManager/components';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
 import config from 'config';
@@ -124,6 +124,27 @@ export const Container = ({
     },
     [isContainerFocused, appDefinition, focusedParentIdRef.current]
   );
+
+  useEffect(() => {
+    Object.keys(components).map((key) => {
+      const box = components[key];
+      const syncValues = {
+        position: resolveWidgetFieldValue(box?.component.definition.others.positionSync, currentState)?.value,
+        size: resolveWidgetFieldValue(box?.component.definition.others.dimensionSync, currentState)?.value,
+      };
+      if (syncValues.position || syncValues.size) {
+        const oldLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
+        if (syncValues.position) {
+          box.layouts[currentLayout].top = box.layouts[oldLayout].top;
+          box.layouts[currentLayout].left = box.layouts[oldLayout].left;
+        }
+        if (syncValues.size) {
+          box.layouts[currentLayout].width = box.layouts[oldLayout].width;
+          box.layouts[currentLayout].height = box.layouts[oldLayout].height;
+        }
+      }
+    });
+  }, []);
 
   useEffect(() => {
     setBoxes(components);

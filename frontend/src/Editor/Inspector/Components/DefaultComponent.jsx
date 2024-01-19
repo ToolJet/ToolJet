@@ -177,6 +177,26 @@ export const baseComponentProperties = (
           currentState,
           allComponents
         )}
+        {renderElement(
+          component,
+          componentMeta,
+          layoutPropertyChanged,
+          dataQueries,
+          'positionSync',
+          'others',
+          currentState,
+          allComponents
+        )}
+        {renderElement(
+          component,
+          componentMeta,
+          layoutPropertyChanged,
+          dataQueries,
+          'dimensionSync',
+          'others',
+          currentState,
+          allComponents
+        )}
       </>
     ),
   });
