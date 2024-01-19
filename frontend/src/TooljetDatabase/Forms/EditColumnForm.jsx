@@ -62,7 +62,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
     setDataType(value);
   };
 
-  const handleCreate = async () => {
+  const handleEdit = async () => {
     const colDetails = {
       column: {
         column_name: selectedColumn?.Header,
@@ -110,7 +110,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
     onClose && onClose();
   };
 
-  // const handleCreate = async () => {
+  // const handleEdit = async () => {
   //   if (isEmpty(columnName)) {
   //     toast.error('Column name cannot be empty');
   //     return;
@@ -218,7 +218,13 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
           </div>
         </div>
       </div>
-      <DrawerFooter fetching={fetching} onClose={onClose} onCreate={handleCreate} />
+      <DrawerFooter
+        isEditMode={true}
+        fetching={fetching}
+        onClose={onClose}
+        onEdit={handleEdit}
+        shouldDisableCreateBtn={columnName === ''}
+      />
     </div>
   );
 };
