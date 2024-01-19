@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
 import SelectSearch from 'react-select-search';
 import { useTranslation } from 'react-i18next';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
-import { EventManager } from '../../EventManager';
-import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
+import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
+import { EventManager } from '../../../EventManager';
+import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
+import { DatePickerProperties } from './DatePickerProperties';
 export const PropertiesTabElements = ({
   column,
   index,
@@ -150,90 +151,17 @@ export const PropertiesTabElements = ({
         </div>
       )}
       {column.columnType === 'datepicker' && (
-        <div>
-          <div className="field">
-            <ProgramaticallyHandleProperties
-              label="Show time"
-              currentState={currentState}
-              index={index}
-              darkMode={darkMode}
-              callbackFunction={onColumnItemChange}
-              property="isTimeChecked"
-              props={column}
-              component={component}
-              paramType="properties"
-              paramMeta={{ type: 'toggle', displayName: 'Show time' }}
-            />
-          </div>
-          <label data-cy={`label-date-display-format`} className="form-label">
-            {t('widget.Table.dateDisplayformat', 'Date Display Format')}
-          </label>
-          <div data-cy={`input-date-display-format`} className="field mb-2">
-            <CodeHinter
-              currentState={currentState}
-              initialValue={column.dateFormat}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={'DD-MM-YYYY'}
-              onChange={(value) => onColumnItemChange(index, 'dateFormat', value)}
-              componentName={getPopoverFieldSource(column.columnType, 'dateFormat')}
-              popOverCallback={(showing) => {
-                setColumnPopoverRootCloseBlocker('dateFormat', showing);
-              }}
-            />
-          </div>
-          <label data-cy={`label-date-parse-format`} className="form-label">
-            {t('widget.Table.dateParseformat', 'Date Parse Format')}
-          </label>
-          <div className="field mb-2 tj-app-input">
-            <input
-              data-cy={`input-date-parse-format`}
-              type="text"
-              className="form-control text-field"
-              onChange={(e) => {
-                e.stopPropagation();
-                onColumnItemChange(index, 'parseDateFormat', e.target.value);
-              }}
-              defaultValue={column.parseDateFormat}
-              placeholder={'DD-MM-YYYY'}
-            />
-          </div>
-          <label data-cy={`label-parse-timezone`} className="form-label">
-            Parse in timezone
-          </label>
-          <div data-cy={`input-parse-timezone`} className="field mb-2">
-            <SelectSearch
-              className={'select-search'}
-              options={timeZoneOptions}
-              value={column.timeZoneValue}
-              search={true}
-              closeOnSelect={true}
-              onChange={(value) => {
-                onColumnItemChange(index, 'timeZoneValue', value);
-              }}
-              fuzzySearch
-              placeholder="Select.."
-            />
-          </div>
-          <label data-cy={`label-display-time-zone`} className="form-label">
-            Display in timezone
-          </label>
-          <div ata-cy={`input-display-time-zone`} className="field mb-2">
-            <SelectSearch
-              className={'select-search'}
-              options={timeZoneOptions}
-              value={column.timeZoneDisplay}
-              search={true}
-              closeOnSelect={true}
-              onChange={(value) => {
-                onColumnItemChange(index, 'timeZoneDisplay', value);
-              }}
-              fuzzySearch
-              placeholder="Select.."
-            />
-          </div>
-        </div>
+        <DatePickerProperties
+          column={column}
+          index={index}
+          darkMode={darkMode}
+          currentState={currentState}
+          onColumnItemChange={onColumnItemChange}
+          getPopoverFieldSource={getPopoverFieldSource}
+          setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
+          component={component}
+          timeZoneOptions={timeZoneOptions}
+        />
       )}
       {column.columnType === 'link' && (
         <div className="field">

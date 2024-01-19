@@ -1,8 +1,8 @@
 import React from 'react';
 import SelectSearch from 'react-select-search';
 import { useTranslation } from 'react-i18next';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
-import { Color } from '../../Elements/Color';
+import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
+import { Color } from '../../../Elements/Color';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import AlignLeft from '@/_ui/Icon/solidIcons/AlignLeft';
