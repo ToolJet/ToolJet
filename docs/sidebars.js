@@ -323,7 +323,7 @@ const sidebars = {
                       'azureAD',
                     ],
                   },
-                  'collapsed': false,
+                  'collapsed': true,
                   'items': [
                     'user-authentication/sso/openid/setup',
                     'user-authentication/sso/openid/azuread',
