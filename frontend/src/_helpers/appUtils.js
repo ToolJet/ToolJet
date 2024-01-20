@@ -410,7 +410,10 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
     }
     switch (event.actionId) {
       case 'show-alert': {
-        const message = resolveReferences(event.message, getCurrentState(), undefined, customVariables);
+        let message = resolveReferences(event.message, getCurrentState(), undefined, customVariables);
+        if (!!message && ['object', 'function'].includes(typeof message)) {
+          message = 'Invalid data';
+        }
         switch (event.alertType) {
           case 'success':
           case 'error':
