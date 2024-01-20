@@ -183,7 +183,7 @@ export const Map = function Map({
               ))}
             </>
           )}
-          {polygonPoints.length > 1 && (
+          {window.public_config.GOOGLE_MAPS_API_KEY && polygonPoints.length > 1 && (
             <Polygon
               path={polygonPoints}
               onClick={() => {
