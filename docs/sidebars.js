@@ -25,9 +25,18 @@ const sidebars = {
         'tooljet-concepts/what-are-components',
         'tooljet-concepts/what-are-datasources',
         'tooljet-concepts/what-are-queries',
+        'tooljet-concepts/inspector',
         'tooljet-concepts/what-are-events',
+        'tooljet-concepts/actions',
         'tooljet-concepts/how-to-access-values',
+        'tooljet-concepts/component-specific-actions',
+        'tooljet-concepts/exposed-variables',
+        'tooljet-concepts/pages',
+        'tooljet-concepts/run-js',
+        'tooljet-concepts/styling-components',
+        'tooljet-concepts/workspace-constants',
         'tooljet-concepts/permissions',
+        'tooljet-concepts/super-admin',
       ],
     },
     {
@@ -359,17 +368,6 @@ const sidebars = {
     {
       'type': 'category',
       'label': 'Marketplace',
-      'link': {
-        'type': 'generated-index',
-        'title': 'Marketplace',
-        //        'description': 'ToolJet Marketplace documentation',
-        'keywords': [
-          'Marketplace',
-          'Marketplace for plugins',
-          'Using Marketplace',
-          'Build plugins for marketplace',
-        ],
-      },
       'collapsed': true,
       'items': [
         'marketplace/marketplace-overview',
@@ -392,7 +390,7 @@ const sidebars = {
     {
       'type': 'category',
       'label': 'Project Overview',
-      'collapsed': false,
+      'collapsed': true,
       'items': [
         {
           'type': 'link',
@@ -409,16 +407,7 @@ const sidebars = {
     {
       'type': 'category',
       'label': 'Contributing Guide',
-      'link': {
-        'type': 'generated-index',
-        'title': 'Contributing Guide',
-        'description': 'Guides for contributing to ToolJet',
-        'keywords': [
-          'contribute',
-          'contributing',
-        ],
-      },
-      'collapsed': false,
+      'collapsed': true,
       'items': [
         'contributing-guide/setup/architecture',
         {
