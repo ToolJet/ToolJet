@@ -152,6 +152,7 @@ async function executeRunPycode(_ref, code, query, isPreview, mode) {
       await pyodide.globals.set('client', currentState['client']);
       await pyodide.globals.set('server', currentState['server']);
       await pyodide.globals.set('constants', currentState['constants']);
+      await pyodide.globals.set('page', currentState['page']);
       await pyodide.globals.set('variables', appStateVars);
       await pyodide.globals.set('actions', actions);
 
