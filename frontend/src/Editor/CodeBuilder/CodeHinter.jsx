@@ -422,21 +422,23 @@ export function CodeHinter({
             className="d-flex align-items-center"
           >
             <div className="col-auto pt-0 fx-common">
-              {paramLabel !== 'Type' && paramLabel !== ' ' && (
-                <FxButton
-                  active={codeShow}
-                  onPress={() => {
-                    if (codeShow) {
-                      setForceCodeBox(false);
-                      onFxPress(false);
-                    } else {
-                      setForceCodeBox(true);
-                      onFxPress(true);
-                    }
-                  }}
-                  dataCy={cyLabel}
-                />
-              )}
+              {paramLabel !== 'Type' &&
+                paramLabel !== ' ' &&
+                paramLabel !== 'Padding' && ( //add some key if these extends
+                  <FxButton
+                    active={codeShow}
+                    onPress={() => {
+                      if (codeShow) {
+                        setForceCodeBox(false);
+                        onFxPress(false);
+                      } else {
+                        setForceCodeBox(true);
+                        onFxPress(true);
+                      }
+                    }}
+                    dataCy={cyLabel}
+                  />
+                )}
             </div>
             {!codeShow && (
               <ElementToRender
