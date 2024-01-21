@@ -53,7 +53,7 @@ export const PasswordInput = function PasswordInput({
   const [isFocused, setIsFocused] = useState(false);
 
   const computedStyles = {
-    height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height - 4 : height,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: isFocused
@@ -64,7 +64,8 @@ export const PasswordInput = function PasswordInput({
         : '#D7DBDF'
       : borderColor,
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    boxShadow: isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
+    boxShadow:
+      boxShadow !== '0px 0px 0px 0px #00000040' ? boxShadow : isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
         ? '3px 24px 3px 29px'
@@ -240,6 +241,7 @@ export const PasswordInput = function PasswordInput({
               textOverflow: 'ellipsis', // Display ellipsis for overflowed content
               fontWeight: 500,
               textAlign: direction == 'right' ? 'right' : 'left',
+              whiteSpace: 'nowrap',
             }}
           >
             {label}

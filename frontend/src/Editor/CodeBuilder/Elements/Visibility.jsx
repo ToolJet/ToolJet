@@ -5,14 +5,14 @@ export const Visibility = ({ value, onVisibilityChange, component }) => {
   return (
     <div
       className="cursor-pointer visibility-eye"
-      style={{ top: component.component.definition.styles.iconVisibility.value && '42%' }}
+      style={{ top: component.component.definition.styles.iconVisibility?.value && '42%' }}
       onClick={(e) => {
         e.stopPropagation();
-        onVisibilityChange(!component.component.definition.styles.iconVisibility.value);
+        onVisibilityChange(!component.component.definition.styles?.iconVisibility?.value);
       }}
     >
       <SolidIcon
-        name={component.component.definition.styles.iconVisibility.value ? 'eye1' : 'eyedisable'}
+        name={component.component.definition.styles?.iconVisibility?.value ? 'eye1' : 'eyedisable'}
         width="20"
         fill={'var(--slate8)'}
       />

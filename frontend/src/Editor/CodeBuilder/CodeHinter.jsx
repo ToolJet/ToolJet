@@ -398,11 +398,15 @@ export function CodeHinter({
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
-
   return (
-    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
-      <div className={cx('d-flex align-items-center justify-content-between')}>
-        {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
+    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow, 'd-flex': paramLabel == 'Tooltip' })}>
+      <div
+        className={cx('d-flex justify-content-between')}
+        style={{
+          marginRight: paramLabel == 'Tooltip' && '40px',
+          alignItems: paramLabel == 'Tooltip' ? 'flex-start' : 'center',
+        }}
+      >
         {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
@@ -470,7 +474,7 @@ export function CodeHinter({
       </div>
       <div
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''} custom-row`}
-        style={{ width: width, display: codeShow ? 'flex' : 'none' }}
+        style={{ width: paramLabel == 'Tooltip' ? '100%' : width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`}>
           <div className="d-flex">

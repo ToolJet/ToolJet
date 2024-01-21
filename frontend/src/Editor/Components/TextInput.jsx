@@ -51,7 +51,7 @@ export const TextInput = function TextInput({
   const [isFocused, setIsFocused] = useState(false);
 
   const computedStyles = {
-    height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height - 4 : height,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: isFocused
@@ -62,7 +62,8 @@ export const TextInput = function TextInput({
         : '#D7DBDF'
       : borderColor,
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    boxShadow: isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
+    boxShadow:
+      boxShadow !== '0px 0px 0px 0px #00000040' ? boxShadow : isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
         ? '3px 5px 3px 29px'
@@ -226,6 +227,7 @@ export const TextInput = function TextInput({
         style={{
           padding: padding === 'default' ? '2px' : '',
           position: 'relative',
+          whiteSpace: 'nowrap',
         }}
       >
         {label && width > 0 && (
