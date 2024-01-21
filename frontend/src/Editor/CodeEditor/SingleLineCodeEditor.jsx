@@ -32,7 +32,7 @@ const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}
   }, [componentName]);
 
   return (
-    <div className=" code-editor-basic-wrapper d-flex">
+    <div className="code-editor-basic-wrapper d-flex">
       <div className="codehinter-container w-100 ">
         <SingleLineCodeEditor.Editor
           type={type}
