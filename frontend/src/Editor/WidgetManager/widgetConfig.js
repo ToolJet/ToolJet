@@ -1314,16 +1314,16 @@ export const widgets = [
         section: 'additionalActions',
       },
       tooltip: {
-        type: 'input',
+        type: 'code',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
-        staticText: '',
+        placeholder: 'Enter tooltip text',
       },
     },
     validation: {
       mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
-      regex: { type: 'code', displayName: 'Regex' },
+      regex: { type: 'code', displayName: 'Regex', placeholder: '^[a-zA-Z0-9_ -]{3,16}$' },
       minLength: { type: 'code', displayName: 'Min length', placeholder: 'Enter min length' },
       maxLength: { type: 'code', displayName: 'Max length', placeholder: 'Enter max length' },
       customRule: {
@@ -1603,11 +1603,11 @@ export const widgets = [
         section: 'additionalActions',
       },
       tooltip: {
-        type: 'input',
+        type: 'code',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
-        staticText: '',
+        placeholder: 'Enter tooltip text',
       },
     },
     events: {
@@ -1771,7 +1771,7 @@ export const widgets = [
       isLoading: false,
     },
     validation: {
-      regex: { type: 'code', displayName: 'Regex' },
+      regex: { type: 'code', displayName: 'Regex', placeholder: '^d+$' },
       minValue: { type: 'code', displayName: 'Min value', placeholder: 'Enter min value' },
       maxValue: { type: 'code', displayName: 'Max value', placeholder: 'Enter max value' },
       customRule: {
@@ -1879,15 +1879,19 @@ export const widgets = [
         section: 'additionalActions',
       },
       tooltip: {
-        type: 'input',
+        type: 'code',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
-        staticText: '',
+        placeholder: 'Enter tooltip text',
       },
     },
     validation: {
-      regex: { type: 'code', displayName: 'Regex' },
+      regex: {
+        type: 'code',
+        displayName: 'Regex',
+        placeholder: '^(?=.*[a-z])(?=.*[A-Z])(?=.*d)[a-zA-Zd]{8,}$',
+      },
       minLength: { type: 'code', displayName: 'Min length', placeholder: 'Enter min length' },
       maxLength: { type: 'code', displayName: 'Max length', placeholder: 'Enter max length' },
       customRule: {
@@ -2068,7 +2072,7 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         loadingState: { value: '{{false}}' },
-        toolltip: { value: '' },
+        tooltip: { value: '' },
         label: { value: 'Label' },
         value: { value: 'Hello world' },
       },
@@ -2085,7 +2089,7 @@ export const widgets = [
         backgroundColor: { value: '#fff' },
         borderColor: { value: '#D7DBDF' },
         errTextColor: { value: '#DB4324' },
-        textColor: { value: '#232e3c' },
+        textColor: { value: '#11181C' },
         iconColor: { value: '#C1C8CD' },
         direction: { value: 'left' },
         width: { value: '33' },

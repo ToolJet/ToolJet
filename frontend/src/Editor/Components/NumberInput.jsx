@@ -166,7 +166,8 @@ export const NumberInput = function NumberInput({
         : '#D7DBDF'
       : borderColor,
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    boxShadow: isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
+    boxShadow:
+      boxShadow !== '0px 0px 0px 0px #00000040' ? boxShadow : isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
         ? '3px 5px 3px 29px'
@@ -314,7 +315,7 @@ export const NumberInput = function NumberInput({
             onChange={handleChange}
             onBlur={handleBlur}
             type="number"
-            className={`${!isValid && showValidationError ? 'is-invalid' : ''} input-number tj-text-input-widget`}
+            className={`${!isValid && showValidationError ? 'is-invalid' : ''} input-number  tj-text-input-widget`}
             placeholder={placeholder}
             style={computedStyles}
             value={value}
@@ -339,6 +340,9 @@ export const NumberInput = function NumberInput({
               <div onClick={(e) => handleIncrement(e)}>
                 <SolidIcon
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  height={`${
+                    height == 40 ? (padding == 'default' ? 18 : 20) : padding == 'default' ? height / 2 - 3 : height / 2
+                  }px`}
                   style={{
                     top:
                       defaultAlignment === 'top' && label?.length > 0 && width > 0
@@ -388,6 +392,9 @@ export const NumberInput = function NumberInput({
                     backgroundColor: !darkMode ? 'white' : 'black',
                   }}
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  height={`${
+                    height == 40 ? (padding == 'default' ? 18 : 20) : padding == 'default' ? height / 2 - 3 : height / 2
+                  }px`}
                   className="numberinput-down-arrow arrow"
                   name="cheverondown"
                 ></SolidIcon>

@@ -277,14 +277,14 @@ export const DraggableBox = React.memo(
               resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
               resizeHandleStyles={resizerStyles}
               enableResizing={{
-                top: isVerticalResizingAllowed(),
-                right: true,
-                bottom: isVerticalResizingAllowed(),
-                left: true,
-                topRight: isVerticalResizingAllowed(),
-                bottomRight: isVerticalResizingAllowed(),
-                bottomLeft: isVerticalResizingAllowed(),
-                topLeft: isVerticalResizingAllowed(),
+                top: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
+                right: mode == 'edit' && !readOnly && true,
+                bottom: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
+                left: mode == 'edit' && !readOnly && true,
+                topRight: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
+                bottomRight: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
+                bottomLeft: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
+                topLeft: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
               }}
               disableDragging={mode !== 'edit' || readOnly}
               onDragStop={(e, direction) => {
@@ -322,6 +322,18 @@ export const DraggableBox = React.memo(
                     scope.setTag('errorType', 'component');
                   }}
                 >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      height: '24px',
+                      width: '4px',
+                      left: '0px',
+                      backgroundColor: '#0c16dcedd',
+                      background: 'red',
+                      borderRadius: '12px',
+                    }}
+                  ></div>
+
                   <Box
                     component={component}
                     id={id}

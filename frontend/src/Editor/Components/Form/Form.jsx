@@ -295,6 +295,7 @@ export const Form = function Form(props) {
                     sideBarDebugger={containerProps.sideBarDebugger}
                     childComponents={childComponents}
                     adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
+                    height={item.defaultSize.height}
                   />
                 </div>
               );
