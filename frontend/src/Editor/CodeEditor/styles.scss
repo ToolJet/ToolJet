@@ -8,7 +8,7 @@
     align-self: stretch;
 
     .codehinter-container {
-        height: 32px;
+        // height: 32px;
         .codehinter-vertical-line {
             position: relative;
             width: 0;
@@ -31,19 +31,11 @@
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--slate9);
-    background-color: var(--base) !important;
     background-clip: padding-box;
-    border: 1px solid var(--slate7);
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    border-radius: 4px;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    padding: 0px 10px;
-
-    &:hover {
-        background-color: #FBFCFD;
-    }
+    height: inherit !important;
 
     &:focus {
         outline: none;
@@ -62,11 +54,9 @@
     font-weight: 400;
     line-height: 16px; /* 145.455% */
 
-    &:hover, &:active{
+    &:hover, &:active { 
         border-radius: 0 !important;
     }
-
-
 }
 
 .curly-braces {
@@ -78,8 +68,6 @@
 }
 
 .cm-codehinter-dark-themed {
-
-
     .cm-tooltip-autocomplete {
         border-color: var(--slate5) !important;
     }
@@ -224,9 +212,7 @@
       
 }
 
-.cm-line {
-    padding: 3px !important
-}
+
 
 .cm-scroller {
     overflow-y: hidden !important;
@@ -238,6 +224,16 @@
     outline: none !important;
 }
 
+.cm-editor {
+    border: 1px solid var(--slate7);
+    border-radius: 4px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    height: inherit !important;
+}
+
+.runjs-editor .cm-editor {
+    border: none !important;
+}
 
 
 

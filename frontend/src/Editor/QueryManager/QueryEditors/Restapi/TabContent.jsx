@@ -30,7 +30,7 @@ export default ({
             <>
               <div className="row-container query-manager-border-color" key={index}>
                 <div className="fields-container mb-2">
-                  <div className="field col-4 overflow-hidden border-top border-bottom border-start rounded-start">
+                  <div className="field col-4 overflow-hidden rounded-start">
                     <NewCodeHinter
                       type="basic"
                       initialValue={option[0]}
@@ -39,7 +39,7 @@ export default ({
                       componentName={`${componentName}/${tabType}::key::${index}`}
                     />
                   </div>
-                  <div className="field col overflow-hidden border ">
+                  <div className="field col overflow-hidden ">
                     <NewCodeHinter
                       type="basic"
                       initialValue={option[1]}
