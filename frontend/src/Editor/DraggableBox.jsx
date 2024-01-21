@@ -24,33 +24,6 @@ const resizerClasses = {
   topLeft: 'top-left',
 };
 
-const resizerStyles = {
-  topRight: {
-    width: '8px',
-    height: '8px',
-    right: '-4px',
-    top: '-4px',
-  },
-  bottomRight: {
-    width: '8px',
-    height: '8px',
-    right: '-4px',
-    bottom: '-4px',
-  },
-  bottomLeft: {
-    width: '8px',
-    height: '8px',
-    left: '-4px',
-    bottom: '-4px',
-  },
-  topLeft: {
-    width: '8px',
-    height: '8px',
-    left: '-4px',
-    top: '-4px',
-  },
-};
-
 function computeWidth(currentLayoutOptions) {
   return `${currentLayoutOptions?.width}%`;
 }
@@ -123,6 +96,60 @@ export const DraggableBox = React.memo(
     const currentState = useCurrentState();
     const [calculatedHeight, setCalculatedHeight] = useState(layoutData?.height);
 
+    const resizerStyles = {
+      topRight: {
+        width: '8px',
+        height: '8px',
+        right: '-4px',
+        top: '-4px',
+      },
+      bottomRight: {
+        width: '8px',
+        height: '8px',
+        right: '-4px',
+        bottom: '-4px',
+      },
+      right: {
+        position: 'absolute',
+        height: '20px',
+        width: '5px',
+        right: '-3px',
+        background: '#4368E3',
+        borderRadius: '8px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        display:
+          (mode == 'edit' && !readOnly && mouseOver) || isResizing || isDragging2 || isSelectedComponent
+            ? 'block'
+            : 'none',
+      },
+      left: {
+        position: 'absolute',
+        height: '20px',
+        width: '5px',
+        left: '-3px',
+        background: '#4368E3',
+        borderRadius: '8px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        display:
+          (mode == 'edit' && !readOnly && mouseOver) || isResizing || isDragging2 || isSelectedComponent
+            ? 'block'
+            : 'none',
+      },
+      bottomLeft: {
+        width: '8px',
+        height: '8px',
+        left: '-4px',
+        bottom: '-4px',
+      },
+      topLeft: {
+        width: '8px',
+        height: '8px',
+        left: '-4px',
+        top: '-4px',
+      },
+    };
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({
         type: ItemTypes.BOX,
@@ -322,18 +349,6 @@ export const DraggableBox = React.memo(
                     scope.setTag('errorType', 'component');
                   }}
                 >
-                  <div
-                    style={{
-                      position: 'absolute',
-                      height: '24px',
-                      width: '4px',
-                      left: '0px',
-                      backgroundColor: '#0c16dcedd',
-                      background: 'red',
-                      borderRadius: '12px',
-                    }}
-                  ></div>
-
                   <Box
                     component={component}
                     id={id}
