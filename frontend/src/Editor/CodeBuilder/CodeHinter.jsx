@@ -422,7 +422,7 @@ export function CodeHinter({
             className="d-flex align-items-center"
           >
             <div className="col-auto pt-0 fx-common">
-              {paramLabel !== 'Type' && (
+              {paramLabel !== 'Type' && paramLabel !== ' ' && (
                 <FxButton
                   active={codeShow}
                   onPress={() => {
