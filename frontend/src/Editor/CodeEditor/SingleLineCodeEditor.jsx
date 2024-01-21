@@ -100,6 +100,7 @@ const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}
           handleTogglePopupExapand={handleTogglePopupExapand}
           poralCallback={setIsOpen}
           forceUpdate={forceUpdate}
+          componentName={componentName}
         />
 
         {!isOpen && renderPreview()}
