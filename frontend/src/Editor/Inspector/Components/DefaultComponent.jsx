@@ -9,7 +9,7 @@ import { AllComponents } from '@/Editor/Box';
 
 const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'DropDown', 'NumberInput', 'PasswordInput'];
 const PROPERTIES_VS_ACCORDION_TITLE = {
-  Text: 'Text',
+  Text: 'Data',
   TextInput: 'Data',
 };
 

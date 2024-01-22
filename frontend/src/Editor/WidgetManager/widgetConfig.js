@@ -2717,7 +2717,7 @@ export const widgets = [
         section: 'additionalActions',
       },
       toolltip: {
-        type: 'code',
+        type: 'input',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
@@ -2842,7 +2842,7 @@ export const widgets = [
 
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background',
         validation: {
           schema: { type: 'string' },
         },
@@ -2908,7 +2908,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '#EDEFF5' },
+        backgroundColor: { value: '#edeff5' },
         textColor: { value: '#000000' },
         textSize: { value: 14 },
         textAlign: { value: 'left' },
@@ -2924,7 +2924,7 @@ export const widgets = [
         verticalAlignment: { value: 'top' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
-        borderColor: { value: '#F2F2F5' },
+        borderColor: { value: '#f2f2f5' },
         borderRadius: { value: 0 },
         isScrollRequired: { value: 'enabled' },
       },
