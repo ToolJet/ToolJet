@@ -6895,12 +6895,20 @@ tbody {
 
 .tooljet-database {
 
+  .tj-db-headerText {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 80%;
+  }
+
   .table-header,
   .table-name,
   .table-cell {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    border-width: 0px 1px 1px 1px;
   }
 
   .table-cell-hover-background {
@@ -9879,6 +9887,10 @@ tbody {
   table {
     border-collapse: collapse;
     width: max-content;
+
+    .row-tj {
+      border-width: 0px !important;
+    }
   }
 }
 
@@ -10411,65 +10423,50 @@ tbody {
   }
 }
 
-.add-row-btn-database-absolute {
-  position: absolute;
-  top: 0px;
-  right: -28px;
-  width: 29px;
-  height: 31px;
-  border-width: 0px 1px 1px 1px;
-  border-style: solid;
-  border-radius: 0px;
-  background: var(--slate7);
-  border-color: var(--slate4);
-}
-
-.add-row-btn-database-absolute-dark {
-  position: absolute;
-  top: 0px;
-  right: -28px;
-  width: 29px;
-  height: 31px;
-  border-width: 0px 1px 1px 1px;
-  border-style: solid;
-  border-radius: 0px;
-  background: #1c252f;
-  border: 0.4px solid white !important;
-  color: white !important;
-}
-
-.add-row-btn-database-fixed {
-  position: fixed;
-  top: 112px;
-  right: 0px;
-  width: 29px;
-  height: 31px;
-  border-width: 0px 1px 1px 1px;
-  border-style: solid;
-  border-radius: 0px;
+.add-icon-column {
+  position: sticky;
+  top: 0;
   z-index: 1;
-  background: var(--slate7);
-  border-color: var(--slate4);
-}
-
-.add-row-btn-database-fixed-dark {
-  position: fixed;
-  top: 112px;
-  right: 0px;
-  width: 29px;
+  right: 0;
+  padding: 0px !important;
+  width: 30px;
   height: 31px;
-  border-width: 0px 1px 1px 1px;
-  border-style: solid;
-  border-radius: 0px;
-  z-index: 1;
-  background: #1c252f;
-  border: 0.4px solid white !important;
-  color: white !important;
+  border-radius: 0px !important;
+  background: var(--slate7) !important;
+  cursor: pointer;
+
+  .icon-styles {
+    font-size: 14px !important;
+    font-weight: 400;
+    color: black;
+  }
 }
 
-.add-col-btn-database {
-  position: absolute;
-  top: 28;
+.add-icon-column-dark {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  right: 0;
+  padding: 0px !important;
+  width: 30px;
+  height: 31px;
+  border-radius: 0px !important;
+  cursor: pointer;
+
+  .icon-styles {
+    width: 100% !important;
+    height: 100% !important;
+    background: #1c252f !important;
+    border: 0.4px solid white !important;
+    font-size: 14px !important;
+    font-weight: 400;
+    color: white;
+  }
+}
+
+.add-icon-row {
+  position: sticky;
+  bottom: 0;
   left: 0px;
   width: 29px;
   height: 31px;
@@ -10479,11 +10476,17 @@ tbody {
   border-radius: 0px;
   border-color: var(--slate4);
   border-radius: 0px !important;
+  font-size: 14px !important;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
-.add-col-btn-database-dark {
-  position: absolute;
-  top: 28;
+.add-icon-row-dark {
+  position: sticky;
+  bottom: 0;
   left: 0px;
   width: 29px;
   height: 31px;
@@ -10491,9 +10494,15 @@ tbody {
   border-width: 0px 1px 1px 1px;
   border-style: solid;
   border-radius: 0px;
-  background: #1c252f;
+  background: #1c252f !important;
   border: 0.4px solid white !important;
-  color: white !important;
+  font-size: 14px !important;
+  font-weight: 400;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 // custom styles for users multiselect in manage users

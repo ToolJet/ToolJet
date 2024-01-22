@@ -68,7 +68,9 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
         column_name: selectedColumn?.Header,
         data_type: selectedColumn?.dataType,
         ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
-        ...(defaultValue?.length > 0 ? { column_default: defaultValue } : {}),
+        ...(defaultValue?.length > 0 || defaultValue !== selectedColumn?.column_default
+          ? { column_default: defaultValue }
+          : {}),
         ...(nullValue !== isNotNull
           ? {
               constraints_type: {
@@ -79,13 +81,17 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
       },
     };
 
-    if (columnName !== selectedColumn?.Header || defaultValue?.length > 0 || nullValue !== isNotNull) {
+    if (
+      columnName !== selectedColumn?.Header ||
+      defaultValue?.length > 0 ||
+      defaultValue !== selectedColumn?.column_default ||
+      nullValue !== isNotNull
+    ) {
       setFetching(true);
       const { error } = await tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
       setFetching(false);
       if (error) {
         toast.error(error?.message ?? `Failed to edit a column in "${selectedTable.table_name}" table`);
-        onClose && onClose();
         return;
       }
     }
@@ -190,12 +196,19 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
             value={defaultValue}
             type="text"
             placeholder="Enter default value"
-            className="form-control"
+            className={
+              isNotNull === true && (defaultValue?.length <= 0 || defaultValue === null)
+                ? 'form-control form-error'
+                : 'form-control'
+            }
             data-cy="default-value-input-field"
             autoComplete="off"
             onChange={(e) => setDefaultValue(e.target.value)}
             disabled={dataType === 'serial'}
           />
+          {isNotNull === true && (defaultValue?.length <= 0 || defaultValue === null) ? (
+            <span className="form-error-message">Default value cannot be empty when NOT NULL constraint is added</span>
+          ) : null}
         </div>
         <div className="row mb-3">
           <div className="col-1">
@@ -223,7 +236,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
         fetching={fetching}
         onClose={onClose}
         onEdit={handleEdit}
-        shouldDisableCreateBtn={columnName === ''}
+        shouldDisableCreateBtn={columnName === '' || (isNotNull && defaultValue.length <= 0)}
       />
     </div>
   );

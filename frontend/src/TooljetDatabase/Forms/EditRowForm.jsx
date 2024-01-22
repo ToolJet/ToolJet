@@ -1,10 +1,10 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 import Select from '@/_ui/Select';
-import _ from 'lodash';
+import _, { isEqual } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import BigInt from '../Icons/Biginteger.svg';
 import Float from '../Icons/Float.svg';
@@ -38,7 +38,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
       const initialInputValues = currentValue
         ? Object.keys(currentValue).map((key) => {
             const value =
-              currentValue[key] === null ? 'Null' : currentValue[key] === currentValue[key] ? currentValue[key] : '';
+              currentValue[key] === null ? null : currentValue[key] === currentValue[key] ? currentValue[key] : '';
             const disabledValue = currentValue[key] === null ? true : false;
             return { value: value, disabled: disabledValue };
           })
@@ -46,7 +46,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
 
       setInputValues(initialInputValues);
     }
-  }, [currentValue]);
+  }, [currentValue, selectedRow]);
 
   const [rowData, setRowData] = useState(() => {
     const data = {};
@@ -66,7 +66,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
     newActiveTabs[index] = tabData;
     setActiveTab(newActiveTabs);
     const customVal = currentValue === null || '' ? '' : currentValue;
-    const customBooleanVal = currentValue === null || false ? false : currentValue;
+    const customBooleanVal = currentValue === false ? false : currentValue;
     const actualDefaultVal = defaultValue === 'true' ? true : false;
     const newInputValues = [...inputValues];
     if (defaultValue && tabData === 'Default' && dataType !== 'boolean') {
@@ -74,41 +74,46 @@ const EditRowForm = ({ onEdit, onClose }) => {
     } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
       newInputValues[index] = { value: actualDefaultVal, disabled: true };
     } else if (nullValue && tabData === 'Null' && dataType !== 'boolean') {
-      newInputValues[index] = { value: 'Null', disabled: true };
+      newInputValues[index] = { value: null, disabled: true };
     } else if (nullValue && tabData === 'Null' && dataType === 'boolean') {
-      newInputValues[index] = { value: false, disabled: true };
+      newInputValues[index] = { value: null, disabled: true };
+    } else if (tabData === 'Custom' && customVal.length > 0) {
+      newInputValues[index] = { value: customVal, disabled: false };
+    } else if (tabData === 'Custom' && customVal.length <= 0) {
+      newInputValues[index] = { value: '', disabled: false };
     } else {
       newInputValues[index] = { value: customVal, disabled: false };
     }
+
     setInputValues(newInputValues);
     if (dataType === 'boolean') {
       setRowData({
         ...rowData,
         [columnName]:
-          newInputValues[index].value === 'Null'
-            ? false
-            : newInputValues[index].value === defaultValue
+          newInputValues[index].value === null
+            ? null
+            : newInputValues[index].value === actualDefaultVal
             ? defaultValue === 'true'
               ? true
               : false
             : newInputValues[index].value === currentValue
             ? currentValue
             : currentValue === null && customBooleanVal === false
-            ? false
+            ? null
             : null,
       });
     } else {
       setRowData({
         ...rowData,
         [columnName]:
-          newInputValues[index].value === 'Null'
+          newInputValues[index].value === null
             ? null
             : newInputValues[index].value === defaultValue
             ? defaultValue
             : newInputValues[index].value === currentValue
             ? currentValue
             : currentValue === null && customVal === ''
-            ? null
+            ? ''
             : null,
       });
     }
@@ -152,6 +157,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, rowData, query);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
+      setFetching(false);
       return;
     }
     setFetching(false);
@@ -170,19 +176,19 @@ const EditRowForm = ({ onEdit, onClose }) => {
           <div style={{ position: 'relative' }}>
             <input
               //defaultValue={currentValue}
-              value={inputValues[index]?.value}
+              value={inputValues[index]?.value !== null && inputValues[index]?.value}
               type="text"
               disabled={inputValues[index]?.disabled}
               onChange={(e) => handleInputChange(index, e.target.value, columnName)}
-              placeholder={'Enter a value'}
+              placeholder={inputValues[index]?.value !== null ? 'Enter a value' : null}
               className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
               data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
               autoComplete="off"
               // onFocus={onFocused}
             />
-            {inputValues[index]?.value === 'Null' && (
+            {inputValues[index]?.value === null ? (
               <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
-            )}
+            ) : null}
           </div>
         );
 
@@ -193,8 +199,10 @@ const EditRowForm = ({ onEdit, onClose }) => {
               className="form-check-input"
               type="checkbox"
               checked={inputValues[index]?.value}
-              onChange={(e) => handleInputChange(index, e.target.checked, columnName)}
-              disabled={inputValues[index]?.disabled}
+              onChange={(e) => {
+                if (!inputValues[index]?.disabled) handleInputChange(index, e.target.checked, columnName);
+              }}
+              disabled={inputValues[index]?.value === null}
             />
           </label>
         );
@@ -214,6 +222,25 @@ const EditRowForm = ({ onEdit, onClose }) => {
   });
 
   const headerText = primaryColumn.charAt(0).toUpperCase() + primaryColumn.slice(1);
+
+  let matchingObject = {};
+  let matchingObjectForCharacter = {};
+
+  columns.forEach((obj) => {
+    const keyName = Object.values(obj)[0];
+    const dataType = Object.values(obj)[2];
+
+    if (rowData[keyName] !== undefined && dataType !== 'character varying') {
+      matchingObject[keyName] = rowData[keyName];
+    } else if (rowData[keyName] !== undefined && dataType === 'character varying') {
+      matchingObjectForCharacter[keyName] = rowData[keyName];
+    }
+  });
+
+  const isSubset = Object.entries(matchingObject).every(([key, value]) => currentValue[key] === value);
+  const isSubsetForCharacter = Object.entries(matchingObjectForCharacter).every(
+    ([key, value]) => currentValue[key] === value
+  );
 
   return (
     <div className="drawer-card-wrapper ">
@@ -383,7 +410,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
           fetching={fetching}
           onClose={onClose}
           onEdit={handleSubmit}
-          shouldDisableCreateBtn={Object.values(rowData).includes('')}
+          shouldDisableCreateBtn={Object.values(matchingObject).includes('') || (isSubset && isSubsetForCharacter)}
         />
       )}
     </div>

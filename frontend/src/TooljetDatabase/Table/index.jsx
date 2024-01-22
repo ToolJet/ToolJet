@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
 import { isBoolean, isEmpty } from 'lodash';
@@ -36,6 +36,8 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     setQueryFilters,
     setSortFilters,
     resetAll,
+    pageSize,
+    pageCount,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -47,11 +49,8 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     deletePopupModal: false,
     columnEditPopover: false,
   });
-  const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
-  const [wholeScreenWidth, setWholeScreenWidth] = useState(window.innerWidth);
 
   const prevSelectedTableRef = useRef({});
-  const columnCreatorElement = useRef();
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const fetchTableMetadata = () => {
@@ -182,50 +181,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }
   );
 
-  const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
-
-  const moveColumnCreateElement = useCallback(() => {
-    setTimeout(() => {
-      const initialxAxis = columnCreatorElement.current?.getBoundingClientRect().x;
-      const fullWidth = window.innerWidth;
-      setWidth((prevState) => ({
-        ...prevState,
-        screenWidth: fullWidth,
-        xAxis: initialxAxis,
-      }));
-    }, 200);
-  }, [setWidth, columnCreatorElement]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWholeScreenWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  useEffect(() => {
-    moveColumnCreateElement();
-  }, []);
-
-  useEffect(() => {
-    moveColumnCreateElement();
-  }, [wholeScreenWidth, columHeaderLength]);
-
-  const widthOfScreen = width.screenWidth > 0 ? width.screenWidth : wholeScreenWidth;
-  const positionValue =
-    !darkMode && width.xAxis > widthOfScreen
-      ? 'add-row-btn-database-fixed'
-      : !darkMode && width.xAxis <= widthOfScreen
-      ? 'add-row-btn-database-absolute'
-      : darkMode && width.xAxis > widthOfScreen
-      ? 'add-row-btn-database-fixed-dark'
-      : 'add-row-btn-database-absolute-dark';
-
   const handleDeleteRow = async () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
     if (shouldDelete) {
@@ -264,6 +219,48 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
   };
 
+  const handleToggleCellEdit = async (cellVal, rowId, index) => {
+    const cellKey = headerGroups[0].headers[index].id;
+    const query = `id=eq.${rowId}&order=id`;
+    const cellData = { [cellKey]: !cellVal };
+    const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
+    if (error) {
+      toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
+      return;
+    }
+
+    const limit = pageSize;
+    const pageRange = `${(pageCount - 1) * pageSize + 1}`;
+    tooljetDatabaseService
+      .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}&offset=${pageRange - 1}`)
+      .then(({ headers, data = [], error }) => {
+        if (error) {
+          toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
+          return;
+        }
+
+        if (Array.isArray(data) && data?.length > 0) {
+          const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
+          setTotalRecords(totalContentRangeRecords);
+          setSelectedTableData(data);
+        }
+      });
+    toast.success(`cell edited successfully`);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (editColumnHeader.columnEditPopover && event.target.closest('.popover') === null) {
+        closeMenu();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [editColumnHeader.columnEditPopover]);
+
   const handleDelete = (column) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
@@ -282,11 +279,11 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }));
   };
 
-  const onMenuClick = (e, index) => {
+  const onMenuClick = (index, e) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
       clickedColumn: index,
-      columnEditPopover: !editColumnHeader?.columnEditPopover,
+      columnEditPopover: !editColumnHeader.columnEditPopover,
     }));
   };
 
@@ -391,16 +388,14 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           style={{ position: 'relative' }}
         >
           <thead>
-            <button ref={columnCreatorElement} onClick={() => openCreateColumnDrawer()} className={`${positionValue}`}>
-              +
-            </button>
             {headerGroups.map((headerGroup, index) => (
               <tr className="tj-database-column-row" {...headerGroup.getHeaderGroupProps()} key={index}>
                 {headerGroup.headers.map((column, index) => (
                   <th
                     key={column.Header}
                     width={index === 0 ? 66 : 230}
-                    title={column?.Header || ''}
+                    style={{ height: index === 0 ? '32px' : '' }}
+                    title={index === 1 ? '' : column?.Header}
                     className={
                       darkMode
                         ? 'table-header-dark tj-database-column-header tj-text-xsm'
@@ -417,7 +412,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                   >
                     {column.Header !== 'id' && index > 0 ? (
                       <div className="d-flex align-items-center justify-content-between">
-                        <div>
+                        <div className="tj-db-headerText">
                           <span className="tj-text-xsm tj-db-dataype text-lowercase">
                             {column.Header == 'id' ? (
                               <Integer width="18" height="18" className="tjdb-column-header-name" />
@@ -443,7 +438,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                               width="20"
                               height="20"
                               className="tjdb-menu-icon"
-                              onClick={(e) => onMenuClick(e, index)}
+                              onClick={(e) => onMenuClick(index, e)}
                             />
                           </div>
                         </TablePopover>
@@ -464,6 +459,12 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                     )}
                   </th>
                 ))}
+                <th
+                  onClick={() => openCreateColumnDrawer()}
+                  className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
+                >
+                  <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
+                </th>
               </tr>
             ))}
           </thead>
@@ -522,9 +523,26 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
                           >
-                            <span className="cell-text">
-                              {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
-                            </span>
+                            {cell.value === null ? (
+                              <span className="cell-text-null">Null</span>
+                            ) : cell.column.dataType === 'boolean' ? (
+                              <div className="row">
+                                <div className="col-1">
+                                  <label className={`form-switch`}>
+                                    <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      checked={cell.value}
+                                      onChange={() => handleToggleCellEdit(cell.value, row.values.id, index)}
+                                    />
+                                  </label>
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="cell-text">
+                                {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                              </span>
+                            )}
                           </td>
                         );
                       })}
@@ -533,12 +551,9 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                 );
               })
             )}
-            <button
-              onClick={() => openCreateRowDrawer()}
-              className={darkMode ? 'add-col-btn-database-dark' : 'add-col-btn-database'}
-            >
+            <div onClick={() => openCreateRowDrawer()} className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}>
               +
-            </button>
+            </div>
           </tbody>
         </table>
 

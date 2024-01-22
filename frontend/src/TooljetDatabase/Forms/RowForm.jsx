@@ -51,17 +51,31 @@ const RowForm = ({ onCreate, onClose }) => {
     } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
       newInputValues[index] = { value: defaultValue, checkboxValue: actualDefaultVal, disabled: true };
     } else if (nullValue && tabData === 'Null' && dataType !== 'boolean') {
-      newInputValues[index] = { value: 'Null', checkboxValue: false, disabled: true };
+      newInputValues[index] = { value: null, checkboxValue: false, disabled: true };
     } else if (nullValue && tabData === 'Null' && dataType === 'boolean') {
-      newInputValues[index] = { value: 'Null', checkboxValue: false, disabled: true };
+      newInputValues[index] = { value: null, checkboxValue: null, disabled: true };
+    } else if (tabData === 'Custom' && dataType === 'character varying') {
+      newInputValues[index] = { value: '', checkboxValue: false, disabled: false };
     } else {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false };
     }
+
     setInputValues(newInputValues);
     if (dataType === 'boolean') {
-      setData({ ...data, [columnName]: newInputValues[index].checkboxValue });
+      setData({
+        ...data,
+        [columnName]: newInputValues[index].checkboxValue === null ? null : newInputValues[index].checkboxValue,
+      });
     } else {
-      setData({ ...data, [columnName]: newInputValues[index].value === 'Null' ? null : defaultValue });
+      setData({
+        ...data,
+        [columnName]:
+          newInputValues[index].value === null
+            ? null
+            : newInputValues[index].value === 'Default'
+            ? defaultValue
+            : newInputValues[index].value,
+      });
     }
   };
 
@@ -143,7 +157,7 @@ const RowForm = ({ onCreate, onClose }) => {
               value={inputValues[index]?.value}
               onChange={(e) => handleInputChange(index, e.target.value, columnName)}
               disabled={isPrimaryKey || inputValues[index]?.disabled}
-              placeholder={isPrimaryKey ? 'Auto-generated' : 'Enter a value'}
+              placeholder={isPrimaryKey ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'}
               className={
                 isPrimaryKey && !darkMode
                   ? 'primary-idKey-light'
@@ -156,7 +170,7 @@ const RowForm = ({ onCreate, onClose }) => {
               data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
               autoComplete="off"
             />
-            {inputValues[index].value === 'Null' && (
+            {inputValues[index].value === null && (
               <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
             )}
           </div>
@@ -170,8 +184,10 @@ const RowForm = ({ onCreate, onClose }) => {
               data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-check-input`}
               type="checkbox"
               checked={inputValues[index].checkboxValue}
-              onChange={(e) => handleCheckboxChange(index, e.target.checked, columnName)}
-              disabled={inputValues[index].disabled}
+              onChange={(e) => {
+                if (!inputValues[index].disabled) handleCheckboxChange(index, e.target.checked, columnName);
+              }}
+              disabled={inputValues[index].checkboxValue === null}
             />
           </label>
         );
@@ -180,6 +196,17 @@ const RowForm = ({ onCreate, onClose }) => {
         break;
     }
   };
+
+  let matchingObject = {};
+
+  columns.forEach((obj) => {
+    const keyName = Object.values(obj)[0];
+    const dataType = Object.values(obj)[2];
+
+    if (data[keyName] !== undefined && dataType !== 'character varying') {
+      matchingObject[keyName] = data[keyName];
+    }
+  });
 
   return (
     <div className="drawer-card-wrapper ">
@@ -296,7 +323,7 @@ const RowForm = ({ onCreate, onClose }) => {
         fetching={fetching}
         onClose={onClose}
         onCreate={handleSubmit}
-        shouldDisableCreateBtn={Object.values(data).includes('')}
+        shouldDisableCreateBtn={Object.values(matchingObject).includes('')}
       />
     </div>
   );
