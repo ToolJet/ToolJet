@@ -85,7 +85,7 @@ export const Text = function Text({
       {!loadingState && (
         <div
           style={{ width: '100%', fontSize: textSize }}
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text || '0') }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
         />
       )}
       {loadingState === true && (

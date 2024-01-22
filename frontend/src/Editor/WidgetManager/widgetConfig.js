@@ -19,7 +19,6 @@ export const widgets = [
           schema: {
             type: 'array',
             element: { type: 'object' },
-            optional: true,
           },
         },
       },
@@ -149,7 +148,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Number of rows per page',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
 
@@ -185,7 +184,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Total records server side',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       // clientSidePagination: {
@@ -393,7 +392,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       visibility: {
@@ -1327,7 +1326,7 @@ export const widgets = [
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        validation: { schema: { type: 'number' } },
       },
       visibility: { type: 'toggle', displayName: 'Visibility', validation: { schema: { type: 'boolean' } } },
       disabledState: { type: 'toggle', displayName: 'Disable', validation: { schema: { type: 'boolean' } } },
@@ -1409,21 +1408,21 @@ export const widgets = [
         type: 'code',
         displayName: 'Default value',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       minValue: {
         type: 'code',
         displayName: 'Minimum value',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number', defaultValue: Number.NEGATIVE_INFINITY },
         },
       },
       maxValue: {
         type: 'code',
         displayName: 'Maximum value',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number', defaultValue: Number.POSITIVE_INFINITY },
         },
       },
       placeholder: {
@@ -1470,7 +1469,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       backgroundColor: {
@@ -1500,8 +1499,8 @@ export const widgets = [
       },
       properties: {
         value: { value: '99' },
-        maxValue: { value: '' },
-        minValue: { value: '' },
+        maxValue: { value: '{{Number.POSITIVE_INFINITY}}' },
+        minValue: { value: '{{Number.NEGATIVE_INFINITY}}' },
         placeholder: { value: '0' },
         decimalPlaces: { value: '{{2}}' },
         loadingState: { value: '{{false}}' },
@@ -1567,7 +1566,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       backgroundColor: {
@@ -1681,7 +1680,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
     },
@@ -2047,7 +2046,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
     },
@@ -2198,7 +2197,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Text',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'string' },
         },
       },
       loadingState: {
@@ -2434,7 +2433,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Padding',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       visibility: {
@@ -2852,7 +2851,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       visibility: {
@@ -3183,14 +3182,14 @@ export const widgets = [
         type: 'code',
         displayName: 'Number of stars',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       defaultSelected: {
         type: 'code',
         displayName: 'Default no of selected stars',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       allowHalfStar: {
@@ -3715,7 +3714,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
     },
@@ -4085,7 +4084,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Row height',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       showBorder: {
@@ -4151,7 +4150,7 @@ export const widgets = [
         type: 'number',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
     },
@@ -4346,7 +4345,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Progress',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
     },
@@ -4370,14 +4369,14 @@ export const widgets = [
         type: 'code',
         displayName: 'Text size',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       strokeWidth: {
         type: 'code',
         displayName: 'Stroke width',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       counterClockwise: {
@@ -4391,7 +4390,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Circle ratio',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       visibility: {
@@ -4607,7 +4606,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Value',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'number' },
         },
       },
       enableTwoHandle: {
