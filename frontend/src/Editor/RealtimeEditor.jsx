@@ -1,10 +1,11 @@
 /* eslint-disable import/no-unresolved */
-import React from 'react';
+import React, { useState } from 'react';
 import config from 'config';
 import { RoomProvider } from '@y-presence/react';
 import Spinner from '@/_ui/Spinner';
 import { Editor } from '@/Editor';
 import { useEditorStore } from '@/_stores/editorStore';
+import { licenseService } from '@/_services';
 const Y = require('yjs');
 const psl = require('psl');
 const { WebsocketProvider } = require('y-websocket');
@@ -27,21 +28,32 @@ const getWebsocketUrl = () => {
 };
 
 export const RealtimeEditor = (props) => {
-  const { multiPlayerEdit = false } = useEditorStore.getState().featureAccess;
-
   const appId = props.id;
-  const [provider, setProvider] = React.useState();
+  const [provider, setProvider] = React.useState(undefined);
+  const [multiPlayerEdit, setMultiPlayerEdit] = useState(false);
+  const [featuresLoaded, setFeaturesLoaded] = useState(false);
 
   React.useEffect(() => {
-    /* TODO: when we convert the editor.jsx to fn component. please try to avoid this extra call */
+    let isMultiplayerEditEnabled = false;
+
+    licenseService
+      .getFeatureAccess()
+      .then((data) => {
+        setMultiPlayerEdit(data?.multiPlayerEdit);
+        isMultiplayerEditEnabled = data?.multiPlayerEdit;
+        if (isMultiplayerEditEnabled) {
+          setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
+        }
+        setFeaturesLoaded(true);
+      })
+      .catch(({ error }) => {
+        setFeaturesLoaded(true);
+      });
+
     const domain = psl.parse(window.location.host).domain;
     document.cookie = domain ? `domain=.${domain}; path=/` : `path=/`;
     document.cookie = domain ? `app_id=${appId}; domain=.${domain}; path=/` : `app_id=${appId}; path=/`;
     document.cookie = `app_id=${appId}; domain=.${domain}; path=/`;
-
-    if (multiPlayerEdit) {
-      setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
 
@@ -53,7 +65,9 @@ export const RealtimeEditor = (props) => {
       });
     }
 
-    () => provider.disconnect();
+    () => {
+      if (provider) provider?.disconnect();
+    };
   }, [provider]);
 
   const initialPresence = {
@@ -67,12 +81,12 @@ export const RealtimeEditor = (props) => {
     color: '',
   };
 
-  if (!multiPlayerEdit || !provider) {
+  if ((featuresLoaded && !multiPlayerEdit) || !provider) {
     return <Editor {...props} />;
   }
 
   return (
-    <RoomProvider awareness={provider.awareness} initialPresence={initialPresence}>
+    <RoomProvider awareness={provider?.awareness} initialPresence={initialPresence}>
       <Editor provider={provider} ymap={ydoc.getMap('appDef')} {...props} />
     </RoomProvider>
   );

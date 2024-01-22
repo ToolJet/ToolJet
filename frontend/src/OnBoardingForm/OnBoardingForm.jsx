@@ -206,7 +206,28 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             <div className="onboarding-bubbles-container">
               {page >= 0 && page < 4 && <OnBoardingBubbles formData={formData} page={page} />}
             </div>
-            <div></div>
+            {page === 3 && (
+              <div
+                className="onboarding-back-button"
+                onClick={() => {
+                  setPage((currPage) => currPage + 1);
+                }}
+              >
+                <p className="onboarding-skip-text" data-cy="skip-arrow-text">
+                  Skip
+                </p>
+                <img
+                  src={
+                    darkMode
+                      ? 'assets/images/onboardingassets/Icons/Arrow_forward_dark.svg'
+                      : 'assets/images/onboardingassets/Icons/Arrow_forward.svg'
+                  }
+                  loading="lazy"
+                  alt="arrow front"
+                  data-cy="skip-button"
+                />
+              </div>
+            )}
             {/*Do not remove used for styling*/}
           </div>
           <div className="form-container">
