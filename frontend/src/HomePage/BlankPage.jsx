@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import TemplateLibraryModal from './TemplateLibraryModal/';
 import { useTranslation } from 'react-i18next';
 import EmptyIllustration from '@assets/images/no-apps.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -13,8 +12,6 @@ export const BlankPage = function BlankPage({
   openCreateAppFromTemplateModal,
   creatingApp,
   darkMode,
-  showTemplateLibraryModal,
-  hideTemplateLibraryModal,
   viewTemplateLibraryModal,
   canCreateApp,
 }) {
@@ -23,9 +20,9 @@ export const BlankPage = function BlankPage({
   const navigate = useNavigate();
 
   const staticTemplates = [
-    { id: 's3-file-explorer', name: 'S3 file explore' },
-    { id: 'job-application-tracker', name: 'Job application tracker' },
-    { id: 'whatsapp-and-sms-crm', name: 'Whatsapp and sms crm' },
+    { id: 'customer-ticketing-form', name: 'Customer ticketing form' },
+    { id: 'inventory-management-tooljet-db', name: 'Inventory management' },
+    { id: 'kpi-management-dashboard-tooljet-db', name: 'KPI management dashboard' },
   ];
 
   const appCreationDisabled = !canCreateApp();
@@ -114,7 +111,9 @@ export const BlankPage = function BlankPage({
                           >
                             <div
                               className="img-responsive img-responsive-21x9 card-img-top template-card-img"
-                              style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
+                              style={{
+                                backgroundImage: `url(assets/images/templates/${id}${darkMode ? '-dark' : ''}.png)`,
+                              }}
                               data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-image`}
                             />
                             <div className="card-body">
@@ -145,13 +144,6 @@ export const BlankPage = function BlankPage({
           </div>
         </div>
       </div>
-      <TemplateLibraryModal
-        show={showTemplateLibraryModal}
-        onHide={hideTemplateLibraryModal}
-        onCloseButtonClick={hideTemplateLibraryModal}
-        darkMode={darkMode}
-        appCreationDisabled={appCreationDisabled}
-      />
     </div>
   );
 };

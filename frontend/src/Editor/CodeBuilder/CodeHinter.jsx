@@ -399,21 +399,23 @@ export function CodeHinter({
 
   const fxBtn = (
     <div className="col-auto pt-0 fx-common">
-      {paramLabel !== 'Type' && (
-        <FxButton
-          active={codeShow}
-          onPress={() => {
-            if (codeShow) {
-              setForceCodeBox(false);
-              onFxPress(false);
-            } else {
-              setForceCodeBox(true);
-              onFxPress(true);
-            }
-          }}
-          dataCy={cyLabel}
-        />
-      )}
+      {paramLabel !== 'Type' &&
+        paramLabel !== ' ' &&
+        paramLabel !== 'Padding' && ( //add some key if these extends
+          <FxButton
+            active={codeShow}
+            onPress={() => {
+              if (codeShow) {
+                setForceCodeBox(false);
+                onFxPress(false);
+              } else {
+                setForceCodeBox(true);
+                onFxPress(true);
+              }
+            }}
+            dataCy={cyLabel}
+          />
+        )}
     </div>
   );
 
@@ -428,12 +430,17 @@ export function CodeHinter({
   return (
     <div
       ref={wrapperRef}
-      className={cx({ 'codeShow-active': codeShow })}
+      className={cx({ 'codeShow-active': codeShow, 'd-flex': paramLabel == 'Tooltip' })}
       onMouseEnter={() => setPropertyHovered(true)}
       onMouseLeave={() => setPropertyHovered(false)}
     >
-      <div className={cx('d-flex align-items-center justify-content-between', { 'w-full': fieldMeta?.fullWidth })}>
-        {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
+      <div
+        className={cx('d-flex justify-content-between', { 'w-full': fieldMeta?.fullWidth })}
+        style={{
+          marginRight: paramLabel == 'Tooltip' && '40px',
+          alignItems: paramLabel == 'Tooltip' ? 'flex-start' : 'center',
+        }}
+      >
         {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
@@ -451,7 +458,7 @@ export function CodeHinter({
             style={{ width: width, marginBottom: codeShow ? '0.5rem' : '0px' }}
             className={cx('d-flex align-items-center', { 'w-full': fieldMeta?.fullWidth })}
           >
-            {!fieldMeta?.isFxNotRequired && _renderFxBtn()}
+            <div className="col-auto pt-0 fx-common">{!fieldMeta?.isFxNotRequired && _renderFxBtn()}</div>
             {!codeShow && (
               <ElementToRender
                 value={resolveReferences(initialValue, realState)}
@@ -485,7 +492,7 @@ export function CodeHinter({
       </div>
       <div
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''} custom-row`}
-        style={{ width: width, display: codeShow ? 'flex' : 'none' }}
+        style={{ width: paramLabel == 'Tooltip' ? '100%' : width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`}>
           <div className="d-flex">
@@ -554,11 +561,6 @@ export function CodeHinter({
       </div>
     </div>
   );
-}
-
-// eslint-disable-next-line no-unused-vars
-function CodeHinterInputField() {
-  return <></>;
 }
 
 const PopupIcon = ({ callback, icon, tip, transformation = false }) => {

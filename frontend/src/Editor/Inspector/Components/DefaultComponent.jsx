@@ -188,7 +188,8 @@ export const baseComponentProperties = (
         paramType,
         currentState,
         allComponents,
-        darkMode
+        darkMode,
+        componentMeta.properties?.[property]?.placeholder
       );
     }),
   });

@@ -71,9 +71,8 @@ export const NumberInput = function NumberInput({
   }, [properties.value]);
 
   const handleBlur = (e) => {
-    if (!isNaN(parseFloat(minValue)) && parseFloat(e.target.value) < parseFloat(minValue)) {
-      setValue(Number(parseFloat(minValue)));
-    } else setValue(Number(parseFloat(e.target.value ? e.target.value : 0).toFixed(properties.decimalPlaces)));
+    setValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
+
     setShowValidationError(true);
     e.stopPropagation();
     fireEvent('onBlur');
@@ -150,6 +149,11 @@ export const NumberInput = function NumberInput({
     alignment,
   ]);
 
+  useEffect(() => {
+    setExposedVariable('isValid', isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
+
   const computedStyles = {
     height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height - 4 : height,
     borderRadius: `${borderRadius}px`,
@@ -162,7 +166,8 @@ export const NumberInput = function NumberInput({
         : '#D7DBDF'
       : borderColor,
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    boxShadow: isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
+    boxShadow:
+      boxShadow !== '0px 0px 0px 0px #00000040' ? boxShadow : isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
         ? '3px 5px 3px 29px'
@@ -179,12 +184,9 @@ export const NumberInput = function NumberInput({
   // eslint-disable-next-line import/namespace
 
   const handleChange = (e) => {
-    if (!isNaN(parseFloat(minValue)) && !isNaN(parseFloat(maxValue)) && parseFloat(minValue) > parseFloat(maxValue)) {
-      setValue(Number(parseFloat(maxValue)));
-    } else if (!isNaN(parseFloat(maxValue)) && parseFloat(e.target.value) > parseFloat(maxValue)) {
-      setValue(Number(parseFloat(maxValue)));
-    } else {
-      setValue(Number(parseFloat(e.target.value)));
+    setValue(Number(parseFloat(e.target.value)));
+    if (e.target.value == '') {
+      setValue(null);
     }
     fireEvent('onChange');
   };
@@ -205,29 +207,13 @@ export const NumberInput = function NumberInput({
     e.preventDefault(); // Prevent the default button behavior (form submission, page reload)
 
     const newValue = (value || 0) + 1;
-
-    if (!isNaN(parseFloat(maxValue)) && newValue > parseFloat(maxValue)) {
-      setValue(Number(parseFloat(maxValue)));
-    } else if (!isNaN(parseFloat(minValue)) && newValue < parseFloat(minValue)) {
-      setValue(Number(parseFloat(minValue)));
-    } else {
-      setValue(newValue);
-    }
-
+    setValue(newValue);
     fireEvent('onChange');
   };
   const handleDecrement = (e) => {
     e.preventDefault();
     const newValue = (value || 0) - 1;
-
-    if (!isNaN(parseFloat(minValue)) && newValue < parseFloat(minValue)) {
-      setValue(Number(parseFloat(minValue)));
-    } else if (!isNaN(parseFloat(maxValue)) && newValue > parseFloat(maxValue)) {
-      setValue(Number(parseFloat(maxValue)));
-    } else {
-      setValue(newValue);
-    }
-
+    setValue(newValue);
     fireEvent('onChange');
   };
   useEffect(() => {
@@ -240,13 +226,7 @@ export const NumberInput = function NumberInput({
     setExposedVariable('setText', async function (text) {
       if (text) {
         const newValue = Number(parseFloat(text));
-        if (!isNaN(parseFloat(minValue)) && newValue < parseFloat(minValue)) {
-          setValue(Number(parseFloat(minValue)));
-        } else if (!isNaN(parseFloat(maxValue)) && newValue > parseFloat(maxValue)) {
-          setValue(Number(parseFloat(maxValue)));
-        } else {
-          setValue(newValue);
-        }
+        setValue(newValue);
         setExposedVariable('value', text).then(fireEvent('onChange'));
       }
     });
@@ -335,7 +315,7 @@ export const NumberInput = function NumberInput({
             onChange={handleChange}
             onBlur={handleBlur}
             type="number"
-            className={`${!isValid && showValidationError ? 'is-invalid' : ''} input-number tj-text-input-widget`}
+            className={`${!isValid && showValidationError ? 'is-invalid' : ''} input-number  tj-text-input-widget`}
             placeholder={placeholder}
             style={computedStyles}
             value={value}
@@ -360,6 +340,9 @@ export const NumberInput = function NumberInput({
               <div onClick={(e) => handleIncrement(e)}>
                 <SolidIcon
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  height={`${
+                    height == 40 ? (padding == 'default' ? 18 : 20) : padding == 'default' ? height / 2 - 3 : height / 2
+                  }px`}
                   style={{
                     top:
                       defaultAlignment === 'top' && label?.length > 0 && width > 0
@@ -372,7 +355,7 @@ export const NumberInput = function NumberInput({
                     right:
                       labelWidth == 0
                         ? padding == 'default'
-                          ? '2px'
+                          ? '3px'
                           : '0px'
                         : alignment == 'side' && direction === 'right'
                         ? `${labelWidth + 5}px`
@@ -395,7 +378,7 @@ export const NumberInput = function NumberInput({
                     right:
                       labelWidth == 0
                         ? padding == 'default'
-                          ? '2px'
+                          ? '3px'
                           : '0px'
                         : alignment == 'side' && direction === 'right'
                         ? `${labelWidth + 5}px`
@@ -409,6 +392,9 @@ export const NumberInput = function NumberInput({
                     backgroundColor: !darkMode ? 'white' : 'black',
                   }}
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  height={`${
+                    height == 40 ? (padding == 'default' ? 18 : 20) : padding == 'default' ? height / 2 - 3 : height / 2
+                  }px`}
                   className="numberinput-down-arrow arrow"
                   name="cheverondown"
                 ></SolidIcon>

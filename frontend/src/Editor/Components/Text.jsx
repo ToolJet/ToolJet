@@ -142,6 +142,8 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
         ) : (
           <div
             style={{
+              width: '100%',
+              height: '100%',
               overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
             }}
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}

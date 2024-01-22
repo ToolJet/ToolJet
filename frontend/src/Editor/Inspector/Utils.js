@@ -28,7 +28,8 @@ export function renderCustomStyles(
   components = {},
   accordian,
   darkMode = false,
-  verticalLine = true
+  verticalLine = true,
+  placeholder = ''
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
@@ -80,6 +81,7 @@ export function renderCustomStyles(
         component={component}
         verticalLine={verticalLine}
         accordian={accordian}
+        placeholder={placeholder}
       />
     </>
   );
