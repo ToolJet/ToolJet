@@ -28,6 +28,35 @@ export default function DragContainer({
   setDraggedSubContainer,
   draggedSubContainer,
   boxesAsObj,
+  //props for DraggableBox
+  showComments,
+  onComponentClick,
+  onEvent,
+  // height={height}
+  onComponentOptionChanged,
+  onComponentOptionsChanged,
+  // key={key}
+  paramUpdated,
+  // id={key}
+  // {...boxes[key]}
+  // mode={mode}
+  resizingStatusChanged,
+  draggingStatusChanged,
+  inCanvas,
+  zoomLevel,
+  setSelectedComponent,
+  removeComponent,
+  deviceWindowWidth,
+  isSelectedComponent,
+  darkMode,
+  // onComponentHover={onComponentHover}
+  // hoveredComponent={hoveredComponent}
+  sideBarDebugger,
+  isMultipleComponentsSelected,
+  // childComponents={childComponents[key]}
+  containerProps,
+  isVersionReleased,
+  childComponents,
 }) {
   const lastDraggedEventsRef = useRef(null);
   const configHandleForMultiple = (id) => {
@@ -319,87 +348,612 @@ export default function DragContainer({
 
   const debouncedOnDrag = debounce((events, parent = null) => updateNewPosition(events, parent), 100);
 
-  return (
-    <div className="root">
-      <div className="container-fluid rm-container p-0">
-        {/* <div className={movableTargets.length == 0 ? `move-target` : ''} style={{ width: '1px' }}></div> */}
-        {list
-          .filter((i) => isEmpty(i.parent))
-          .map((i) => (
-            <div
-              className={`target widget-target target1 ele-${i.id} moveable-box`}
-              data-id={`${i.parent}`}
-              key={i.id}
-              id={i.id}
-              widgetid={i.id}
-              style={{
-                transform: `translate(332px, -134px)`,
-                ...getDimensions(i.id),
-                ...(hoveredComponent === i.id ? { zIndex: 2 } : {}),
-              }}
-            >
-              {renderWidget(i.id, undefined, (dragged) => {
-                console.log('====> dragged <=====', dragged);
-                setDraggedSubContainer(dragged);
-              })}
-            </div>
-          ))}
-        {mode === 'edit' && (
-          <>
+  console.log('hoveredComponent->', hoveredComponent);
+
+  return mode === 'edit' ? (
+    <>
+      <Moveable
+        dragTargetSelf={true}
+        dragTarget={
+          useGridStore.getState().isGroundHandleHoverd
+            ? document.getElementById('multiple-components-config-handle')
+            : undefined
+        }
+        ref={moveableRef}
+        ables={[MouseCustomAble, DimensionViewable]}
+        props={{
+          mouseTest: selectedComponents.length < 2,
+          dimensionViewable: selectedComponents.length > 1,
+        }}
+        flushSync={flushSync}
+        target={
+          draggedSubContainer || (groupedTargets.length < 2 && selectedComponents.length > 1)
+            ? '.empty-widget'
+            : groupedTargets.length > 1
+            ? [...groupedTargets]
+            : '.widget-target'
+        }
+        origin={false}
+        individualGroupable={selectedComponents.length <= 1}
+        draggable={true}
+        resizable={{
+          edge: ['e', 'w', 'n', 's'],
+          renderDirections: ['e', 'w', 'n', 's'],
+        }}
+        keepRatio={false}
+        key={list.length}
+        individualGroupableProps={(element) => {
+          if (element?.classList.contains('target2')) {
+            return {
+              resizable: false,
+            };
+          }
+        }}
+        onResize={(e) => {
+          console.log('onResize', e);
+          const width = Math.round(e.width / gridWidth) * gridWidth;
+          console.log('list---', list, e.target.id, boxList);
+          const currentLayout = list.find(({ id }) => id === e.target.id);
+          const currentWidth = currentLayout.width * gridWidth;
+          const diffWidth = e.width - currentWidth;
+          const diffHeight = e.height - currentLayout.height;
+          console.log('currentLayout width', currentWidth, e.width, diffWidth, e.direction);
+          const isLeftChanged = e.direction[0] === -1;
+          const isTopChanged = e.direction[1] === -1;
+
+          console.log(
+            'currentLayout transform',
+            `translate(${currentLayout.left * gridWidth}px, ${currentLayout.top}px)`,
+            `translate(${currentLayout.left * gridWidth - diffWidth}px, ${currentLayout.top}px)`
+          );
+
+          e.target.style.width = `${e.width}px`;
+          e.target.style.height = `${e.height}px`;
+          let transformX = currentLayout.left * gridWidth;
+          let transformY = currentLayout.top;
+          if (isLeftChanged) {
+            transformX = currentLayout.left * gridWidth - diffWidth;
+          }
+          if (isTopChanged) {
+            transformY = currentLayout.top - diffHeight;
+          }
+          e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
+
+          // e.target.style.transform = e.drag.transform;
+          // onResizeStop([
+          //   {
+          //     id: e.target.id,
+          //     height: e.height,
+          //     width: width,
+          //     x: e.drag.translate[0],
+          //     y: e.drag.translate[1],
+          //   },
+          // ]);
+        }}
+        onResizeEnd={(e) => {
+          try {
+            setResizingComponentId(null);
+            setIsResizing(false);
+            console.log('onResizeEnd>>>>>>>>>>>>>>', e);
+            // const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
+            // e.target.style.width = `${width}px`;
+            // e.target.style.height = `${e.lastEvent.height}px`;
+            // e.target.style.transform = e.lastEvent.drag.transform;
+            // onResizeStop([
+            //   {
+            //     id: e.target.id,
+            //     height: e.lastEvent.height,
+            //     width: width,
+            //     x: e.lastEvent.drag.translate[0],
+            //     y: e.lastEvent.drag.translate[1],
+            //   },
+            // ]);
+
+            const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
+            const height = Math.round(e.lastEvent.height / 10) * 10;
+
+            const currentLayout = list.find(({ id }) => id === e.target.id);
+            const currentWidth = currentLayout.width * gridWidth;
+            const diffWidth = e.lastEvent.width - currentWidth;
+            const diffHeight = e.lastEvent.height - currentLayout.height;
+            console.log('onResizeEnd data', currentWidth, e.width, diffWidth, e.direction, diffHeight);
+            const isLeftChanged = e.lastEvent.direction[0] === -1;
+            const isTopChanged = e.lastEvent.direction[1] === -1;
+
+            console.log(
+              'onResizeEnd => currentLayout transform',
+              `translate(${currentLayout.left * gridWidth}px, ${currentLayout.top}px)`,
+              `translate(${currentLayout.left * gridWidth - diffWidth}px, ${currentLayout.top}px)`
+            );
+
+            let transformX = currentLayout.left * gridWidth;
+            let transformY = currentLayout.top;
+            if (isLeftChanged) {
+              transformX = currentLayout.left * gridWidth - diffWidth;
+            }
+            if (isTopChanged) {
+              transformY = currentLayout.top - diffHeight;
+            }
+
+            // e.target.style.transform = e.drag.transform;
+            e.target.style.width = `${width}px`;
+            e.target.style.height = `${height}px`;
+            e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
+            onResizeStop([
+              {
+                id: e.target.id,
+                height: height,
+                width: width,
+                x: transformX,
+                y: transformY,
+              },
+            ]);
+          } catch (error) {
+            console.error('ResizeEnd error ->', error);
+          }
+        }}
+        onResizeStart={(e) => {
+          console.log('heree--- onResizeStart');
+          setResizingComponentId(e.target.id);
+          setIsResizing(true);
+          e.setMin([gridWidth, 10]);
+          // if (currentLayout === 'mobile' && autoComputeLayout) {
+          //   turnOffAutoLayout();
+          //   return false;
+          // }
+        }}
+        // onResizeGroupStart={(e) => {
+        //   console.log('heree--- onResizeGroupStart');
+        //   if (currentLayout === 'mobile' && autoComputeLayout) {
+        //     turnOffAutoLayout();
+        //     return false;
+        //   }
+        // }}
+        onResizeGroup={({ events }) => {
+          console.log('heree--- onResizeGroup');
+          const newBoxs = [];
+          events.forEach((ev) => {
+            ev.target.style.width = `${ev.width}px`;
+            ev.target.style.height = `${ev.height}px`;
+            ev.target.style.transform = ev.drag.transform;
+            newBoxs.push({
+              id: ev.target.id,
+              height: ev.height,
+              width: ev.width,
+              x: ev.drag.translate[0],
+              y: ev.drag.translate[1],
+            });
+          });
+          onResizeStop(newBoxs);
+        }}
+        onResizeGroupEnd={({ events }) => console.log('here--- onResizeGroupEnd')}
+        checkInput
+        onDragStart={(e) => {
+          console.log('On-drag start => ', e?.moveable?.getControlBoxElement());
+          // if (currentLayout === 'mobile' && autoComputeLayout) {
+          //   turnOffAutoLayout();
+          //   return false;
+          // }
+          const box = boxes.find((box) => box.id === e.target.id);
+          if (['RangeSlider', 'Container', 'BoundedBox'].includes(box?.component?.component)) {
+            const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+            const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
+            if (!isHandle) {
+              return false;
+            }
+          }
+          setDraggedTarget(e.target.id);
+        }}
+        // linePadding={10}
+        onDragEnd={(e) => {
+          try {
+            if (isDraggingRef.current) {
+              setDraggingComponentId(null);
+              isDraggingRef.current = false;
+              setIsDragging(false);
+            }
+            setDraggedTarget();
+            if (draggedSubContainer) {
+              return;
+            }
+
+            let draggedOverElemId;
+            if (document.elementFromPoint(e.clientX, e.clientY)) {
+              const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+              const draggedOverElem = targetElems.find((ele) => {
+                const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
+                if (isOwnChild) return false;
+
+                let isDroppable =
+                  ele.id !== e.target.id &&
+                  // ele.classList.contains('target') ||
+                  (ele.classList.contains('nested-target') || ele.classList.contains('drag-container-parent'));
+                if (isDroppable) {
+                  let widgetId = ele?.getAttribute('component-id') || ele.id;
+                  let widgetType = boxes.find(({ id }) => id === widgetId)?.component?.component;
+                  if (!widgetType) {
+                    widgetId = widgetId.split('-').slice(0, -1).join('-');
+                    widgetType = boxes.find(({ id }) => id === widgetId)?.component?.component;
+                  }
+                  if (
+                    !['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container', 'Table'].includes(
+                      widgetType
+                    )
+                  ) {
+                    isDroppable = false;
+                  }
+                }
+                return isDroppable;
+              });
+              draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
+            }
+            // console.log("draggedOverElemId", draggedOverElemId);
+
+            const parentElem = list.find(({ id }) => id === draggedOverElemId);
+            let left = e.lastEvent.translate[0];
+            let top = e.lastEvent.translate[1];
+            const currentWidget = boxes.find(({ id }) => id === e.target.id)?.component?.component;
+            const parentWidget = parentElem
+              ? boxes.find(({ id }) => id === parentElem.id)?.component?.component
+              : undefined;
+            const restrictedWidgets = restrictedWidgetsObj?.[parentWidget] || [];
+            const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
+            if (draggedOverElemId && isParentChangeAllowed) {
+              let { left: _left, top: _top } = getMouseDistanceFromParentDiv(e, draggedOverElemId);
+              left = _left;
+              top = _top;
+            } else {
+              e.target.style.transform = `translate(${Math.round(left / gridWidth) * gridWidth}px, ${
+                Math.round(top / 10) * 10
+              }px)`;
+            }
+
+            onDrag([
+              {
+                id: e.target.id,
+                x: left,
+                y: Math.round(top / 10) * 10,
+                parent: isParentChangeAllowed ? draggedOverElemId : undefined,
+              },
+            ]);
+            const box = boxes.find((box) => box.id === e.target.id);
+            useEditorStore.getState().actions.setSelectedComponents([{ ...box }]);
+          } catch (error) {
+            console.log('error', error);
+          }
+          setDragTarget(null);
+        }}
+        onDrag={(e) => {
+          if (!isDraggingRef.current) {
+            setDraggingComponentId(e.target.id);
+            isDraggingRef.current = true;
+            setIsDragging(true);
+          }
+          if (draggedSubContainer) {
+            return;
+          }
+          setDraggedTarget(e.target.id);
+          if (!draggedSubContainer) {
+            e.target.style.transform = `translate(${e.translate[0]}px, ${e.translate[1]}px)`;
+            e.target.setAttribute(
+              'widget-pos2',
+              `translate: ${e.translate[0]} | Round: ${
+                Math.round(e.translate[0] / gridWidth) * gridWidth
+              } | ${gridWidth}`
+            );
+          }
+
+          let draggedOverElemId;
+          if (document.elementFromPoint(e.clientX, e.clientY)) {
+            const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+            const draggedOverElements = targetElems.filter(
+              (ele) =>
+                ele.id !== e.target.id && (ele.classList.contains('target') || ele.classList.contains('real-canvas'))
+            );
+            const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
+            const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
+            // const draggedOverElem = targetElems.find(
+            //   (ele) => ele.id !== e.target.id && ele.classList.contains('target')
+            // );
+            if (dragTarget !== draggedOverElem?.id) {
+              setDragTarget(draggedOverElem?.id);
+            }
+            console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
+            draggedOverElemId = draggedOverElem?.id;
+            if (
+              draggedOverElemRef.current?.id !== draggedOverContainer?.id &&
+              !draggedOverContainer.classList.contains('hide-grid')
+            ) {
+              draggedOverContainer.classList.add('show-grid');
+              draggedOverElemRef.current && draggedOverElemRef.current.classList.remove('show-grid');
+              draggedOverElemRef.current = draggedOverContainer;
+            }
+          }
+          console.log('draggedOverElemId parent', draggedOverElemId, parent);
+        }}
+        onDragGroup={({ events }) => {
+          events.forEach((ev) => {
+            ev.target.style.transform = ev.transform;
+          });
+          debouncedOnDrag(events);
+        }}
+        // onDragGroupStart={() => {
+        //   // if (currentLayout === 'mobile' && autoComputeLayout) {
+        //   //   turnOffAutoLayout();
+        //   //   return false;
+        //   // }
+        // }}
+        onDragGroupEnd={(e) => {
+          const { events } = e;
+          onDrag(
+            events.map((ev) => ({
+              id: ev.target.id,
+              x: ev.lastEvent.translate[0],
+              y: ev.lastEvent.translate[1],
+            }))
+          );
+        }}
+        //snap settgins
+        snappable={true}
+        snapDirections={{
+          top: true,
+          left: true,
+          bottom: true,
+          right: true,
+          center: true,
+          middle: true,
+        }}
+        elementSnapDirections={{
+          top: true,
+          left: true,
+          bottom: true,
+          right: true,
+          center: true,
+          middle: true,
+        }}
+        snapThreshold={5}
+        elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
+        isDisplaySnapDigit={false}
+        // snapGridWidth={gridWidth}
+        bounds={{ left: 0, top: 0, right: 0, bottom: 0, position: 'css' }}
+      />
+      {removeDuplicates(list)
+        .filter((i) => !isEmpty(i.parent))
+        .map((i) => {
+          let groupedTargets1 = [
+            ...selectedComponents
+              .filter((component) => {
+                if (
+                  component?.component?.parent === i.parent &&
+                  !selectedComponents.some((comp) => comp.id === component?.component?.parent)
+                ) {
+                  console.log('selected===>' + i.parent, {
+                    i: component?.id,
+                    c: component?.component?.component,
+                    sp: component?.component?.parent,
+                    parent: i.parent,
+                    selectedComponents: selectedComponents.map((c) => ({
+                      i: c?.id,
+                      c: c?.component?.component,
+                    })),
+                    r:
+                      component?.component?.parent === i.parent &&
+                      !selectedComponents.some((comp) => comp.id === component?.component?.parent),
+                  });
+                }
+                return (
+                  component?.component?.parent === i.parent &&
+                  !selectedComponents.some((comp) => comp.id === component?.component?.parent)
+                );
+              })
+              .map((component) => '.ele-' + component.id),
+          ];
+          groupedTargets1 = [...new Set(groupedTargets1)];
+          console.log(
+            'groupedTargets-->target ' + i.parent,
+            selectedComponents,
+            groupedTargets1.length ? groupedTargets1 : `.target-${i.parent}`
+          );
+
+          console.log('slects-2', i);
+
+          return (
             <Moveable
               dragTargetSelf={true}
               dragTarget={
                 useGridStore.getState().isGroundHandleHoverd
-                  ? document.getElementById('multiple-components-config-handle')
+                  ? document.getElementById('multiple-components-config-handle-sub')
                   : undefined
               }
-              ref={moveableRef}
-              ables={[MouseCustomAble, DimensionViewable]}
+              flushSync={flushSync}
+              key={i.parent}
+              ref={(el) => (childMoveableRefs.current[i.parent] = el)}
+              ables={[MouseCustomAble, DimensionViewableForSub]}
               props={{
                 mouseTest: selectedComponents.length < 2,
-                dimensionViewable: selectedComponents.length > 1,
+                dimensionViewableForSub: selectedComponents.length > 1,
               }}
-              flushSync={flushSync}
               target={
-                draggedSubContainer || (groupedTargets.length < 2 && selectedComponents.length > 1)
-                  ? '.empty-widget'
-                  : groupedTargets.length > 1
-                  ? [...groupedTargets]
-                  : '.widget-target'
+                // groupedTargets.length
+                //   ? '.empty-widget'
+                //   : groupedTargets1.length
+                //   ? groupedTargets1
+                //   : `.target-${i.parent}`
+                groupedTargets1.length > 1 ? groupedTargets1 : `.target-${i.parent}`
               }
-              origin={false}
-              individualGroupable={selectedComponents.length <= 1}
               draggable={true}
               resizable={{
                 edge: ['e', 'w', 'n', 's'],
                 renderDirections: ['e', 'w', 'n', 's'],
               }}
-              keepRatio={false}
-              key={list.length}
-              individualGroupableProps={(element) => {
-                if (element?.classList.contains('target2')) {
-                  return {
-                    resizable: false,
-                  };
+              // stopPropagation={true}
+              origin={false}
+              // individualGroupable={true}
+              individualGroupable={groupedTargets1.length <= 1}
+              onDragStart={(e) => {
+                console.log('On-Drag start', e);
+                // if (currentLayout === 'mobile' && autoComputeLayout) {
+                //   turnOffAutoLayout();
+                //   return false;
+                // }
+                const box = boxes.find((box) => box.id === e.target.id);
+                if (['RangeSlider', 'Container', 'BoundedBox'].includes(box?.component?.component)) {
+                  const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+                  const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
+                  if (!isHandle) {
+                    console.log('eeeeeeee', e.inputEvent);
+                    // e.inputEvent.stopPropagation();
+                    return false;
+                  }
                 }
               }}
+              onDrag={(e) => {
+                if (!isDraggingRef.current) {
+                  setDraggingComponentId(e.target.id);
+                  isDraggingRef.current = true;
+                  setDraggedSubContainer(draggedSubContainer ? draggedSubContainer : i.parent);
+                }
+                console.log('Ondrag subcontainer', draggedSubContainer);
+                if (draggedSubContainer === i.parent) {
+                  e.target.style.transform = e.transform;
+                }
+                let draggedOverElemId = i.parent;
+                if (document.elementFromPoint(e.clientX, e.clientY)) {
+                  const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+                  const draggedOverElem = targetElems.find((ele) => {
+                    const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
+                    if (isOwnChild) return false;
+                    return (
+                      ele.id !== e.target.id &&
+                      (ele.classList.contains('target') ||
+                        ele.classList.contains('nested-target') ||
+                        ele.classList.contains('drag-container-parent'))
+                    );
+                  });
+                  draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
+                  if (dragTarget !== draggedOverElemId) {
+                    setDragTarget(draggedOverElemId ? draggedOverElemId : 'canvas');
+                  }
+                }
+              }}
+              onDragEnd={(e) => {
+                if (isDraggingRef.current) {
+                  setDraggingComponentId(null);
+                  isDraggingRef.current = false;
+                }
+                if (draggedSubContainer !== i.parent) {
+                  setDraggedSubContainer(false);
+                  return;
+                }
+                setDraggedSubContainer(false);
+                const { lastEvent, clientX, clientY } = e;
+                if (!lastEvent) {
+                  return;
+                }
+                let {
+                  translate: [left, top],
+                  width,
+                } = lastEvent;
+
+                if (top < 0) {
+                  top = 0;
+                }
+
+                let draggedOverElemId = i.parent;
+                const parentComponent = boxes.find((box) => box.id === i.parent);
+                const parentComponentType = parentComponent?.component?.component;
+
+                if (document.elementFromPoint(e.clientX, e.clientY) && parentComponentType !== 'Modal') {
+                  const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+                  const draggedOverElem = targetElems.find((ele) => {
+                    const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
+                    if (isOwnChild) return false;
+                    return (
+                      ele.id !== e.target.id &&
+                      (ele.classList.contains('target') ||
+                        ele.classList.contains('nested-target') ||
+                        ele.classList.contains('drag-container-parent'))
+                    );
+                  });
+                  draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
+                  console.log('draggedOverElem', draggedOverElem, draggedOverElemId);
+                  if (draggedOverElemId && !subContainerWidths[draggedOverElemId]) {
+                    draggedOverElemId = i.parent;
+                  }
+                  if (draggedOverElemId !== i.parent) {
+                    const newParentElem = list[draggedOverElemId]?.layouts?.desktop;
+                    let { left: _left, top: _top } = getMouseDistanceFromParentDiv(e, draggedOverElemId);
+                    left = _left;
+                    top = _top;
+                  }
+                }
+
+                let _left = Math.round(left / subContainerWidths[draggedSubContainer]);
+                let _width = Math.round(width / subContainerWidths[draggedSubContainer]);
+                if (_width + _left > noOfGrids && draggedOverElemId === i.parent) {
+                  _left = _left - (_width + _left - noOfGrids);
+                  if (_left < 0) {
+                    _left = 0;
+                    _width = noOfGrids;
+                  }
+                  e.target.style.transform = `translate(${_left * subContainerWidths[i.parent]}px, ${
+                    Math.round(top / 10) * 10
+                  }px)`;
+                } else if (_left < 0 && draggedOverElemId === i.parent) {
+                  _left = 0;
+                  if (_width > noOfGrids) {
+                    _width = noOfGrids;
+                  }
+                  e.target.style.transform = `translate(${_left * subContainerWidths[i.parent]}px, ${
+                    Math.round(top / 10) * 10
+                  }px)`;
+                } else {
+                  e.target.style.transform = `translate(${
+                    Math.round(left / subContainerWidths[i.parent]) * subContainerWidths[i.parent]
+                  }px, ${Math.round(top / 10) * 10}px)`;
+                }
+
+                const _x = draggedOverElemId
+                  ? Math.round(left / subContainerWidths[draggedOverElemId]) * subContainerWidths[draggedOverElemId]
+                  : Math.round(left / gridWidth) * gridWidth;
+                onDrag([
+                  {
+                    id: e.target.id,
+                    x: _x,
+                    y: Math.round(top / 10) * 10,
+                    parent: draggedOverElemId,
+                  },
+                ]);
+                const box = boxes.find((box) => box.id === e.target.id);
+                useEditorStore.getState().actions.setSelectedComponents([{ ...box }]);
+                setDragTarget(null);
+              }}
+              onDragGroup={({ events }) => {
+                events.forEach((ev) => {
+                  console.log('Grouped data=>', ev);
+                  ev.target.style.transform = ev.transform;
+                });
+                debouncedOnDrag(events, i.parent);
+              }}
+              onResizeStart={(e) => {
+                setResizingComponentId(e.target.id);
+                setActiveGrid(i.parent);
+                setResizingLimit(e, i);
+                // if (currentLayout === 'mobile' && autoComputeLayout) {
+                //   turnOffAutoLayout();
+                //   return false;
+                // }
+              }}
               onResize={(e) => {
-                console.log('onResize', e);
+                const gridWidth = subContainerWidths[i.parent];
                 const width = Math.round(e.width / gridWidth) * gridWidth;
 
                 const currentLayout = list.find(({ id }) => id === e.target.id);
                 const currentWidth = currentLayout.width * gridWidth;
                 const diffWidth = e.width - currentWidth;
                 const diffHeight = e.height - currentLayout.height;
-                console.log('currentLayout width', currentWidth, e.width, diffWidth, e.direction);
                 const isLeftChanged = e.direction[0] === -1;
                 const isTopChanged = e.direction[1] === -1;
-
-                console.log(
-                  'currentLayout transform',
-                  `translate(${currentLayout.left * gridWidth}px, ${currentLayout.top}px)`,
-                  `translate(${currentLayout.left * gridWidth - diffWidth}px, ${currentLayout.top}px)`
-                );
 
                 e.target.style.width = `${e.width}px`;
                 e.target.style.height = `${e.height}px`;
@@ -412,36 +966,12 @@ export default function DragContainer({
                   transformY = currentLayout.top - diffHeight;
                 }
                 e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
-
-                // e.target.style.transform = e.drag.transform;
-                // onResizeStop([
-                //   {
-                //     id: e.target.id,
-                //     height: e.height,
-                //     width: width,
-                //     x: e.drag.translate[0],
-                //     y: e.drag.translate[1],
-                //   },
-                // ]);
               }}
               onResizeEnd={(e) => {
+                setResizingComponentId(null);
+                setActiveGrid(null);
                 try {
-                  setResizingComponentId(null);
-                  setIsResizing(false);
-                  console.log('onResizeEnd>>>>>>>>>>>>>>', e);
-                  // const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
-                  // e.target.style.width = `${width}px`;
-                  // e.target.style.height = `${e.lastEvent.height}px`;
-                  // e.target.style.transform = e.lastEvent.drag.transform;
-                  // onResizeStop([
-                  //   {
-                  //     id: e.target.id,
-                  //     height: e.lastEvent.height,
-                  //     width: width,
-                  //     x: e.lastEvent.drag.translate[0],
-                  //     y: e.lastEvent.drag.translate[1],
-                  //   },
-                  // ]);
+                  const gridWidth = subContainerWidths[i.parent];
 
                   const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
                   const height = Math.round(e.lastEvent.height / 10) * 10;
@@ -450,15 +980,8 @@ export default function DragContainer({
                   const currentWidth = currentLayout.width * gridWidth;
                   const diffWidth = e.lastEvent.width - currentWidth;
                   const diffHeight = e.lastEvent.height - currentLayout.height;
-                  console.log('onResizeEnd data', currentWidth, e.width, diffWidth, e.direction, diffHeight);
                   const isLeftChanged = e.lastEvent.direction[0] === -1;
                   const isTopChanged = e.lastEvent.direction[1] === -1;
-
-                  console.log(
-                    'onResizeEnd => currentLayout transform',
-                    `translate(${currentLayout.left * gridWidth}px, ${currentLayout.top}px)`,
-                    `translate(${currentLayout.left * gridWidth - diffWidth}px, ${currentLayout.top}px)`
-                  );
 
                   let transformX = currentLayout.left * gridWidth;
                   let transformY = currentLayout.top;
@@ -480,198 +1003,19 @@ export default function DragContainer({
                       width: width,
                       x: transformX,
                       y: transformY,
+                      gw: gridWidth,
                     },
                   ]);
                 } catch (error) {
                   console.error('ResizeEnd error ->', error);
                 }
               }}
-              onResizeStart={(e) => {
-                console.log('heree--- onResizeStart');
-                setResizingComponentId(e.target.id);
-                setIsResizing(true);
-                e.setMin([gridWidth, 10]);
-                // if (currentLayout === 'mobile' && autoComputeLayout) {
-                //   turnOffAutoLayout();
-                //   return false;
-                // }
-              }}
-              // onResizeGroupStart={(e) => {
-              //   console.log('heree--- onResizeGroupStart');
+              // onDragGroupStart={() => {
               //   if (currentLayout === 'mobile' && autoComputeLayout) {
               //     turnOffAutoLayout();
               //     return false;
               //   }
               // }}
-              onResizeGroup={({ events }) => {
-                console.log('heree--- onResizeGroup');
-                const newBoxs = [];
-                events.forEach((ev) => {
-                  ev.target.style.width = `${ev.width}px`;
-                  ev.target.style.height = `${ev.height}px`;
-                  ev.target.style.transform = ev.drag.transform;
-                  newBoxs.push({
-                    id: ev.target.id,
-                    height: ev.height,
-                    width: ev.width,
-                    x: ev.drag.translate[0],
-                    y: ev.drag.translate[1],
-                  });
-                });
-                onResizeStop(newBoxs);
-              }}
-              onResizeGroupEnd={({ events }) => console.log('here--- onResizeGroupEnd')}
-              checkInput
-              onDragStart={(e) => {
-                console.log('On-drag start => ', e?.moveable?.getControlBoxElement());
-                // if (currentLayout === 'mobile' && autoComputeLayout) {
-                //   turnOffAutoLayout();
-                //   return false;
-                // }
-                const box = boxes.find((box) => box.id === e.target.id);
-                if (['RangeSlider', 'Container', 'BoundedBox'].includes(box?.component?.component)) {
-                  const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-                  const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
-                  if (!isHandle) {
-                    return false;
-                  }
-                }
-                setDraggedTarget(e.target.id);
-              }}
-              // linePadding={10}
-              onDragEnd={(e) => {
-                try {
-                  if (isDraggingRef.current) {
-                    setDraggingComponentId(null);
-                    isDraggingRef.current = false;
-                    setIsDragging(false);
-                  }
-                  setDraggedTarget();
-                  if (draggedSubContainer) {
-                    return;
-                  }
-
-                  let draggedOverElemId;
-                  if (document.elementFromPoint(e.clientX, e.clientY)) {
-                    const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-                    const draggedOverElem = targetElems.find((ele) => {
-                      const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
-                      if (isOwnChild) return false;
-
-                      let isDroppable =
-                        ele.id !== e.target.id &&
-                        // ele.classList.contains('target') ||
-                        (ele.classList.contains('nested-target') || ele.classList.contains('drag-container-parent'));
-                      if (isDroppable) {
-                        let widgetId = ele?.getAttribute('component-id') || ele.id;
-                        let widgetType = boxes.find(({ id }) => id === widgetId)?.component?.component;
-                        if (!widgetType) {
-                          widgetId = widgetId.split('-').slice(0, -1).join('-');
-                          widgetType = boxes.find(({ id }) => id === widgetId)?.component?.component;
-                        }
-                        if (
-                          !['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container', 'Table'].includes(
-                            widgetType
-                          )
-                        ) {
-                          isDroppable = false;
-                        }
-                      }
-                      return isDroppable;
-                    });
-                    draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
-                  }
-                  // console.log("draggedOverElemId", draggedOverElemId);
-
-                  const parentElem = list.find(({ id }) => id === draggedOverElemId);
-                  let left = e.lastEvent.translate[0];
-                  let top = e.lastEvent.translate[1];
-                  const currentWidget = boxes.find(({ id }) => id === e.target.id)?.component?.component;
-                  const parentWidget = parentElem
-                    ? boxes.find(({ id }) => id === parentElem.id)?.component?.component
-                    : undefined;
-                  const restrictedWidgets = restrictedWidgetsObj?.[parentWidget] || [];
-                  const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
-                  if (draggedOverElemId && isParentChangeAllowed) {
-                    let { left: _left, top: _top } = getMouseDistanceFromParentDiv(e, draggedOverElemId);
-                    left = _left;
-                    top = _top;
-                  } else {
-                    e.target.style.transform = `translate(${Math.round(left / gridWidth) * gridWidth}px, ${
-                      Math.round(top / 10) * 10
-                    }px)`;
-                  }
-
-                  onDrag([
-                    {
-                      id: e.target.id,
-                      x: left,
-                      y: Math.round(top / 10) * 10,
-                      parent: isParentChangeAllowed ? draggedOverElemId : undefined,
-                    },
-                  ]);
-                  const box = boxes.find((box) => box.id === e.target.id);
-                  useEditorStore.getState().actions.setSelectedComponents([{ ...box }]);
-                } catch (error) {
-                  console.log('error', error);
-                }
-                setDragTarget(null);
-              }}
-              onDrag={(e) => {
-                if (!isDraggingRef.current) {
-                  setDraggingComponentId(e.target.id);
-                  isDraggingRef.current = true;
-                  setIsDragging(true);
-                }
-                if (draggedSubContainer) {
-                  return;
-                }
-                setDraggedTarget(e.target.id);
-                if (!draggedSubContainer) {
-                  e.target.style.transform = `translate(${e.translate[0]}px, ${e.translate[1]}px)`;
-                  e.target.setAttribute(
-                    'widget-pos2',
-                    `translate: ${e.translate[0]} | Round: ${
-                      Math.round(e.translate[0] / gridWidth) * gridWidth
-                    } | ${gridWidth}`
-                  );
-                }
-
-                let draggedOverElemId;
-                if (document.elementFromPoint(e.clientX, e.clientY)) {
-                  const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-                  const draggedOverElements = targetElems.filter(
-                    (ele) =>
-                      ele.id !== e.target.id &&
-                      (ele.classList.contains('target') || ele.classList.contains('real-canvas'))
-                  );
-                  const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
-                  const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
-                  // const draggedOverElem = targetElems.find(
-                  //   (ele) => ele.id !== e.target.id && ele.classList.contains('target')
-                  // );
-                  if (dragTarget !== draggedOverElem?.id) {
-                    setDragTarget(draggedOverElem?.id);
-                  }
-                  console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
-                  draggedOverElemId = draggedOverElem?.id;
-                  if (
-                    draggedOverElemRef.current?.id !== draggedOverContainer?.id &&
-                    !draggedOverContainer.classList.contains('hide-grid')
-                  ) {
-                    draggedOverContainer.classList.add('show-grid');
-                    draggedOverElemRef.current && draggedOverElemRef.current.classList.remove('show-grid');
-                    draggedOverElemRef.current = draggedOverContainer;
-                  }
-                }
-                console.log('draggedOverElemId parent', draggedOverElemId, parent);
-              }}
-              onDragGroup={({ events }) => {
-                events.forEach((ev) => {
-                  ev.target.style.transform = ev.transform;
-                });
-                debouncedOnDrag(events);
-              }}
               onDragGroupEnd={(e) => {
                 debouncedOnDrag.cancel();
                 const { events } = e;
@@ -680,11 +1024,20 @@ export default function DragContainer({
                     id: ev.target.id,
                     x: ev.lastEvent.translate[0],
                     y: ev.lastEvent.translate[1],
+                    parent: i.parent,
                   }))
                 );
               }}
-              //snap settgins
+              onResizeGroupStart={(e) => {
+                // if (currentLayout === 'mobile' && autoComputeLayout) {
+                //   turnOffAutoLayout();
+                //   return false;
+                // }
+              }}
+              displayAroundControls={true}
+              controlPadding={10}
               snappable={true}
+              // snapDirections={{ top: true, left: true, bottom: true, right: true }}
               snapDirections={{
                 top: true,
                 left: true,
@@ -702,367 +1055,21 @@ export default function DragContainer({
                 middle: true,
               }}
               snapThreshold={5}
-              elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
+              // passing checkInput param breaks
+              // checkInput={true}
+              {...(draggedSubContainer === i.parent ? {} : { checkInput: true })}
+              // dragArea={false}
+              elementGuidelines={list
+                .filter((l) => l.parent === i.parent)
+                .map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
               isDisplaySnapDigit={false}
-              // snapGridWidth={gridWidth}
-              bounds={{ left: 0, top: 0, right: 0, bottom: 0, position: 'css' }}
+              snapGridWidth={subContainerWidths[i.parent]}
             />
-
-            {removeDuplicates(list)
-              .filter((i) => !isEmpty(i.parent))
-              .map((i) => {
-                let groupedTargets1 = [
-                  ...selectedComponents
-                    .filter((component) => {
-                      if (
-                        component?.component?.parent === i.parent &&
-                        !selectedComponents.some((comp) => comp.id === component?.component?.parent)
-                      ) {
-                        console.log('selected===>' + i.parent, {
-                          i: component?.id,
-                          c: component?.component?.component,
-                          sp: component?.component?.parent,
-                          parent: i.parent,
-                          selectedComponents: selectedComponents.map((c) => ({
-                            i: c?.id,
-                            c: c?.component?.component,
-                          })),
-                          r:
-                            component?.component?.parent === i.parent &&
-                            !selectedComponents.some((comp) => comp.id === component?.component?.parent),
-                        });
-                      }
-                      return (
-                        component?.component?.parent === i.parent &&
-                        !selectedComponents.some((comp) => comp.id === component?.component?.parent)
-                      );
-                    })
-                    .map((component) => '.ele-' + component.id),
-                ];
-                groupedTargets1 = [...new Set(groupedTargets1)];
-                console.log(
-                  'groupedTargets-->target ' + i.parent,
-                  selectedComponents,
-                  groupedTargets1.length ? groupedTargets1 : `.target-${i.parent}`
-                );
-
-                console.log('slects-2', i);
-
-                return (
-                  <Moveable
-                    dragTargetSelf={true}
-                    dragTarget={
-                      useGridStore.getState().isGroundHandleHoverd
-                        ? document.getElementById('multiple-components-config-handle-sub')
-                        : undefined
-                    }
-                    flushSync={flushSync}
-                    key={i.parent}
-                    ref={(el) => (childMoveableRefs.current[i.parent] = el)}
-                    ables={[MouseCustomAble, DimensionViewableForSub]}
-                    props={{
-                      mouseTest: selectedComponents.length < 2,
-                      dimensionViewableForSub: selectedComponents.length > 1,
-                    }}
-                    target={
-                      // groupedTargets.length
-                      //   ? '.empty-widget'
-                      //   : groupedTargets1.length
-                      //   ? groupedTargets1
-                      //   : `.target-${i.parent}`
-                      groupedTargets1.length > 1 ? groupedTargets1 : `.target-${i.parent}`
-                    }
-                    draggable={true}
-                    resizable={{
-                      edge: ['e', 'w', 'n', 's'],
-                      renderDirections: ['e', 'w', 'n', 's'],
-                    }}
-                    // stopPropagation={true}
-                    origin={false}
-                    // individualGroupable={true}
-                    individualGroupable={groupedTargets1.length <= 1}
-                    onDragStart={(e) => {
-                      console.log('On-Drag start', e);
-                      // if (currentLayout === 'mobile' && autoComputeLayout) {
-                      //   turnOffAutoLayout();
-                      //   return false;
-                      // }
-                      const box = boxes.find((box) => box.id === e.target.id);
-                      if (['RangeSlider', 'Container', 'BoundedBox'].includes(box?.component?.component)) {
-                        const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-                        const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
-                        if (!isHandle) {
-                          console.log('eeeeeeee', e.inputEvent);
-                          // e.inputEvent.stopPropagation();
-                          return false;
-                        }
-                      }
-                    }}
-                    onDrag={(e) => {
-                      if (!isDraggingRef.current) {
-                        setDraggingComponentId(e.target.id);
-                        isDraggingRef.current = true;
-                        setDraggedSubContainer(draggedSubContainer ? draggedSubContainer : i.parent);
-                      }
-                      console.log('Ondrag subcontainer', draggedSubContainer);
-                      if (draggedSubContainer === i.parent) {
-                        e.target.style.transform = e.transform;
-                      }
-                      let draggedOverElemId = i.parent;
-                      if (document.elementFromPoint(e.clientX, e.clientY)) {
-                        const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-                        const draggedOverElem = targetElems.find((ele) => {
-                          const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
-                          if (isOwnChild) return false;
-                          return (
-                            ele.id !== e.target.id &&
-                            (ele.classList.contains('target') ||
-                              ele.classList.contains('nested-target') ||
-                              ele.classList.contains('drag-container-parent'))
-                          );
-                        });
-                        draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
-                        if (dragTarget !== draggedOverElemId) {
-                          setDragTarget(draggedOverElemId ? draggedOverElemId : 'canvas');
-                        }
-                      }
-                    }}
-                    onDragEnd={(e) => {
-                      if (isDraggingRef.current) {
-                        setDraggingComponentId(null);
-                        isDraggingRef.current = false;
-                      }
-                      if (draggedSubContainer !== i.parent) {
-                        setDraggedSubContainer(false);
-                        return;
-                      }
-                      setDraggedSubContainer(false);
-                      const { lastEvent, clientX, clientY } = e;
-                      if (!lastEvent) {
-                        return;
-                      }
-                      let {
-                        translate: [left, top],
-                        width,
-                      } = lastEvent;
-
-                      if (top < 0) {
-                        top = 0;
-                      }
-
-                      let draggedOverElemId = i.parent;
-                      const parentComponent = boxes.find((box) => box.id === i.parent);
-                      const parentComponentType = parentComponent?.component?.component;
-
-                      if (document.elementFromPoint(e.clientX, e.clientY) && parentComponentType !== 'Modal') {
-                        const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-                        const draggedOverElem = targetElems.find((ele) => {
-                          const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
-                          if (isOwnChild) return false;
-                          return (
-                            ele.id !== e.target.id &&
-                            (ele.classList.contains('target') ||
-                              ele.classList.contains('nested-target') ||
-                              ele.classList.contains('drag-container-parent'))
-                          );
-                        });
-                        draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
-                        console.log('draggedOverElem', draggedOverElem, draggedOverElemId);
-                        if (draggedOverElemId && !subContainerWidths[draggedOverElemId]) {
-                          draggedOverElemId = i.parent;
-                        }
-                        if (draggedOverElemId !== i.parent) {
-                          const newParentElem = list[draggedOverElemId]?.layouts?.desktop;
-                          let { left: _left, top: _top } = getMouseDistanceFromParentDiv(e, draggedOverElemId);
-                          left = _left;
-                          top = _top;
-                        }
-                      }
-
-                      let _left = Math.round(left / subContainerWidths[draggedSubContainer]);
-                      let _width = Math.round(width / subContainerWidths[draggedSubContainer]);
-                      if (_width + _left > noOfGrids && draggedOverElemId === i.parent) {
-                        _left = _left - (_width + _left - noOfGrids);
-                        if (_left < 0) {
-                          _left = 0;
-                          _width = noOfGrids;
-                        }
-                        e.target.style.transform = `translate(${_left * subContainerWidths[i.parent]}px, ${
-                          Math.round(top / 10) * 10
-                        }px)`;
-                      } else if (_left < 0 && draggedOverElemId === i.parent) {
-                        _left = 0;
-                        if (_width > noOfGrids) {
-                          _width = noOfGrids;
-                        }
-                        e.target.style.transform = `translate(${_left * subContainerWidths[i.parent]}px, ${
-                          Math.round(top / 10) * 10
-                        }px)`;
-                      } else {
-                        e.target.style.transform = `translate(${
-                          Math.round(left / subContainerWidths[i.parent]) * subContainerWidths[i.parent]
-                        }px, ${Math.round(top / 10) * 10}px)`;
-                      }
-
-                      const _x = draggedOverElemId
-                        ? Math.round(left / subContainerWidths[draggedOverElemId]) *
-                          subContainerWidths[draggedOverElemId]
-                        : Math.round(left / gridWidth) * gridWidth;
-                      onDrag([
-                        {
-                          id: e.target.id,
-                          x: _x,
-                          y: Math.round(top / 10) * 10,
-                          parent: draggedOverElemId,
-                        },
-                      ]);
-                      const box = boxes.find((box) => box.id === e.target.id);
-                      useEditorStore.getState().actions.setSelectedComponents([{ ...box }]);
-                      setDragTarget(null);
-                    }}
-                    onDragGroup={({ events }) => {
-                      events.forEach((ev) => {
-                        console.log('Grouped data=>', ev);
-                        ev.target.style.transform = ev.transform;
-                      });
-                      debouncedOnDrag(events, i.parent);
-                    }}
-                    onResizeStart={(e) => {
-                      setResizingComponentId(e.target.id);
-                      setActiveGrid(i.parent);
-                      setResizingLimit(e, i);
-                      // if (currentLayout === 'mobile' && autoComputeLayout) {
-                      //   turnOffAutoLayout();
-                      //   return false;
-                      // }
-                    }}
-                    onResize={(e) => {
-                      const gridWidth = subContainerWidths[i.parent];
-                      const width = Math.round(e.width / gridWidth) * gridWidth;
-
-                      const currentLayout = list.find(({ id }) => id === e.target.id);
-                      const currentWidth = currentLayout.width * gridWidth;
-                      const diffWidth = e.width - currentWidth;
-                      const diffHeight = e.height - currentLayout.height;
-                      const isLeftChanged = e.direction[0] === -1;
-                      const isTopChanged = e.direction[1] === -1;
-
-                      e.target.style.width = `${e.width}px`;
-                      e.target.style.height = `${e.height}px`;
-                      let transformX = currentLayout.left * gridWidth;
-                      let transformY = currentLayout.top;
-                      if (isLeftChanged) {
-                        transformX = currentLayout.left * gridWidth - diffWidth;
-                      }
-                      if (isTopChanged) {
-                        transformY = currentLayout.top - diffHeight;
-                      }
-                      e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
-                    }}
-                    onResizeEnd={(e) => {
-                      setResizingComponentId(null);
-                      setActiveGrid(null);
-                      try {
-                        const gridWidth = subContainerWidths[i.parent];
-
-                        const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
-                        const height = Math.round(e.lastEvent.height / 10) * 10;
-
-                        const currentLayout = list.find(({ id }) => id === e.target.id);
-                        const currentWidth = currentLayout.width * gridWidth;
-                        const diffWidth = e.lastEvent.width - currentWidth;
-                        const diffHeight = e.lastEvent.height - currentLayout.height;
-                        const isLeftChanged = e.lastEvent.direction[0] === -1;
-                        const isTopChanged = e.lastEvent.direction[1] === -1;
-
-                        let transformX = currentLayout.left * gridWidth;
-                        let transformY = currentLayout.top;
-                        if (isLeftChanged) {
-                          transformX = currentLayout.left * gridWidth - diffWidth;
-                        }
-                        if (isTopChanged) {
-                          transformY = currentLayout.top - diffHeight;
-                        }
-
-                        // e.target.style.transform = e.drag.transform;
-                        e.target.style.width = `${width}px`;
-                        e.target.style.height = `${height}px`;
-                        e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
-                        onResizeStop([
-                          {
-                            id: e.target.id,
-                            height: height,
-                            width: width,
-                            x: transformX,
-                            y: transformY,
-                            gw: gridWidth,
-                          },
-                        ]);
-                      } catch (error) {
-                        console.error('ResizeEnd error ->', error);
-                      }
-                    }}
-                    // onDragGroupStart={() => {
-                    //   if (currentLayout === 'mobile' && autoComputeLayout) {
-                    //     turnOffAutoLayout();
-                    //     return false;
-                    //   }
-                    // }}
-                    onDragGroupEnd={(e) => {
-                      debouncedOnDrag.cancel();
-                      const { events } = e;
-                      onDrag(
-                        events.map((ev) => ({
-                          id: ev.target.id,
-                          x: ev.lastEvent.translate[0],
-                          y: ev.lastEvent.translate[1],
-                          parent: i.parent,
-                        }))
-                      );
-                    }}
-                    onResizeGroupStart={(e) => {
-                      // if (currentLayout === 'mobile' && autoComputeLayout) {
-                      //   turnOffAutoLayout();
-                      //   return false;
-                      // }
-                    }}
-                    displayAroundControls={true}
-                    controlPadding={10}
-                    snappable={true}
-                    // snapDirections={{ top: true, left: true, bottom: true, right: true }}
-                    snapDirections={{
-                      top: true,
-                      left: true,
-                      bottom: true,
-                      right: true,
-                      center: true,
-                      middle: true,
-                    }}
-                    elementSnapDirections={{
-                      top: true,
-                      left: true,
-                      bottom: true,
-                      right: true,
-                      center: true,
-                      middle: true,
-                    }}
-                    snapThreshold={5}
-                    // passing checkInput param breaks
-                    // checkInput={true}
-                    {...(draggedSubContainer === i.parent ? {} : { checkInput: true })}
-                    // dragArea={false}
-                    elementGuidelines={list
-                      .filter((l) => l.parent === i.parent)
-                      .map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
-                    isDisplaySnapDigit={false}
-                    snapGridWidth={subContainerWidths[i.parent]}
-                  />
-                );
-              })}
-          </>
-        )}
-      </div>
-    </div>
+          );
+        })}
+    </>
+  ) : (
+    ''
   );
 }
 
