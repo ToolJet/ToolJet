@@ -227,6 +227,7 @@ class TableComponent extends React.Component {
               popOverCallback={(showing) => {
                 this.setColumnPopoverRootCloseBlocker('name', showing);
               }}
+              ignoreValidation={true}
             />
           </div>
           {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
@@ -265,6 +266,7 @@ class TableComponent extends React.Component {
               popOverCallback={(showing) => {
                 this.setColumnPopoverRootCloseBlocker('tableKey', showing);
               }}
+              ignoreValidation={true}
             />
           </div>
           <div className="field mb-2">
@@ -301,7 +303,7 @@ class TableComponent extends React.Component {
                   onChange={(value) => this.onColumnItemChange(index, 'textColor', value)}
                   componentName={this.getPopoverFieldSource(column.columnType, 'textColor')}
                   fieldMeta={column}
-                  component={this.state.component}
+                  ignoreValidation={true}
                   // !check
                   popOverCallback={(showing) => {
                     this.setColumnPopoverRootCloseBlocker('textColor', showing);
@@ -323,6 +325,7 @@ class TableComponent extends React.Component {
                   popOverCallback={(showing) => {
                     this.setColumnPopoverRootCloseBlocker('cellBackgroundColor', showing);
                   }}
+                  ignoreValidation={true}
                 />
               </div>
 
@@ -344,6 +347,7 @@ class TableComponent extends React.Component {
                       popOverCallback={(showing) => {
                         this.setColumnPopoverRootCloseBlocker('regex', showing);
                       }}
+                      ignoreValidation={true}
                     />
                   </div>
                   <div data-cy={`input-and-label-min-length`} className="field mb-2">
@@ -359,6 +363,7 @@ class TableComponent extends React.Component {
                       popOverCallback={(showing) => {
                         this.setColumnPopoverRootCloseBlocker('minLength', showing);
                       }}
+                      ignoreValidation={true}
                     />
                   </div>
                   <div data-cy={`input-and-label-max-length`} className="field mb-2">
@@ -374,6 +379,7 @@ class TableComponent extends React.Component {
                       popOverCallback={(showing) => {
                         this.setColumnPopoverRootCloseBlocker('maxLength', showing);
                       }}
+                      ignoreValidation={true}
                     />
                   </div>
                   <div data-cy={`input-and-label-custom-rule`} className="field mb-2">
@@ -389,6 +395,7 @@ class TableComponent extends React.Component {
                       popOverCallback={(showing) => {
                         this.setColumnPopoverRootCloseBlocker('customRule', showing);
                       }}
+                      ignoreValidation={true}
                     />
                   </div>
                 </div>
@@ -414,6 +421,7 @@ class TableComponent extends React.Component {
                   popOverCallback={(showing) => {
                     this.setColumnPopoverRootCloseBlocker('minValue', showing);
                   }}
+                  ignoreValidation={true}
                 />
               </div>
               <div data-cy={`input-and-label-max-value`} className="field mb-2">
@@ -429,6 +437,7 @@ class TableComponent extends React.Component {
                   popOverCallback={(showing) => {
                     this.setColumnPopoverRootCloseBlocker('maxValue', showing);
                   }}
+                  ignoreValidation={true}
                 />
               </div>
             </div>
@@ -483,6 +492,7 @@ class TableComponent extends React.Component {
                   popOverCallback={(showing) => {
                     this.setColumnPopoverRootCloseBlocker('values', showing);
                   }}
+                  ignoreValidation={true}
                 />
               </div>
               <div data-cy={`input-and-label-labels`} className="field mb-2">
@@ -498,6 +508,7 @@ class TableComponent extends React.Component {
                   popOverCallback={(showing) => {
                     this.setColumnPopoverRootCloseBlocker('labels', showing);
                   }}
+                  ignoreValidation={true}
                 />
               </div>
             </div>
@@ -523,6 +534,7 @@ class TableComponent extends React.Component {
                       popOverCallback={(showing) => {
                         this.setColumnPopoverRootCloseBlocker('customRule', showing);
                       }}
+                      ignoreValidation={true}
                     />
                   </div>
                 </div>
@@ -547,6 +559,7 @@ class TableComponent extends React.Component {
                   popOverCallback={(showing) => {
                     this.setColumnPopoverRootCloseBlocker('dateFormat', showing);
                   }}
+                  ignoreValidation={true}
                 />
               </div>
               <label data-cy={`label-date-parse-format`} className="form-label">
@@ -628,6 +641,7 @@ class TableComponent extends React.Component {
                   placeholder={''}
                   onChange={(value) => this.onColumnItemChange(index, 'borderRadius', value)}
                   componentName={this.getPopoverFieldSource(column.columnType, 'borderRadius')}
+                  ignoreValidation={true}
                 />
               </div>
               <div data-cy={`input-and-label-width`} className="field mb-2">
@@ -639,6 +653,7 @@ class TableComponent extends React.Component {
                   placeholder={''}
                   onChange={(value) => this.onColumnItemChange(index, 'width', value)}
                   componentName={this.getPopoverFieldSource(column.columnType, 'width')}
+                  ignoreValidation={true}
                 />
               </div>
               <div data-cy={`input-and-label-height`} className="field mb-2">
@@ -650,6 +665,7 @@ class TableComponent extends React.Component {
                   placeholder={''}
                   onChange={(value) => this.onColumnItemChange(index, 'height', value)}
                   componentName={this.getPopoverFieldSource(column.columnType, 'height')}
+                  ignoreValidation={true}
                 />
               </div>
               <div data-cy={`input-and-label-object-fit`} className="field mb-2">

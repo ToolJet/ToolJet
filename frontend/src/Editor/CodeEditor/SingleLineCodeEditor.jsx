@@ -16,7 +16,6 @@ import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import NewCodeHinter from './NewCodeHinter';
-import { EditorContext } from '../Context/EditorContextWrapper';
 
 const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
@@ -43,6 +42,8 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
         componentName={componentName}
         expectedType={validation?.schema?.type}
         setErrorStateActive={setErrorStateActive}
+        ignoreValidation={restProps?.ignoreValidation ?? null}
+        componentId={restProps?.componentId ?? null}
       />
     );
   };
@@ -63,6 +64,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
             renderPreview={renderPreview}
             portalProps={portalProps}
             componentName={componentName}
+            {...restProps}
           />
 
           {!portalProps?.isOpen && renderPreview()}
@@ -86,6 +88,7 @@ const EditorInput = ({
   usePortalEditor = true,
   renderPreview,
   portalProps,
+  ignoreValidation,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let before = context.matchBefore(/\w+/);
@@ -120,6 +123,9 @@ const EditorInput = ({
   const handleOnBlur = React.useCallback(() => {
     setFocus(false);
 
+    if (ignoreValidation) {
+      return onBlurUpdate(currentValue);
+    }
     const [value] = resolveReferences(currentValue);
 
     const shouldUpdate = validationType ? paramValidation(validationType, value) : true;
@@ -134,10 +140,6 @@ const EditorInput = ({
   const theme = darkMode ? okaidia : githubLight;
 
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
-
-  const { variablesExposedForPreview } = useContext(EditorContext);
-
-  console.log('---arpit::::', { variablesExposedForPreview });
 
   return (
     <div className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
@@ -207,6 +209,7 @@ const DynamicEditorBridge = (props) => {
     verticalLine = false,
     onChange,
   } = props;
+
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
 

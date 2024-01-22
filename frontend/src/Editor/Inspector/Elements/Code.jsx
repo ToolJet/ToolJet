@@ -114,6 +114,7 @@ export const Code = ({
         onChange={(value) => handleCodeChanged(value)}
         verticalLine={verticalLine}
         className={options?.className}
+        componentId={component?.id}
       />
     </div>
   );

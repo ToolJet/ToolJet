@@ -1,10 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import useHeight from '@/_hooks/use-height-transition';
 import { getCurrentNodeType, resolveReferences } from './utils';
+import { EditorContext } from '../Context/EditorContextWrapper';
 
-export const PreviewBox = ({ currentValue, isFocused, expectedType, setErrorStateActive }) => {
-  const [resolvedValue, error] = resolveReferences(currentValue, expectedType);
+export const PreviewBox = ({ currentValue, isFocused, expectedType, setErrorStateActive, componentId }) => {
+  const { variablesExposedForPreview } = useContext(EditorContext);
+
+  const customVariables = variablesExposedForPreview?.[componentId] ?? {};
+
+  const [resolvedValue, error] = resolveReferences(currentValue, expectedType, customVariables);
 
   const [heightRef, currentHeight] = useHeight();
   const darkMode = localStorage.getItem('darkMode') === 'true';

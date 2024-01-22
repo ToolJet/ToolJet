@@ -42,22 +42,24 @@ export const getAutocompletion = (input, fieldType, hints) => {
     if (cm.hint.includes(lastCharsAfterDot)) return true;
   });
 
-  const autoSuggestionList = appHints.filter((suggestion) => {
+  const appHintsFilteredByDepth = filterHintsByDepth(actualInput, appHints);
+
+  const autoSuggestionList = appHintsFilteredByDepth.filter((suggestion) => {
     if (actualInput.length === 0) return true;
 
     return suggestion.hint.includes(actualInput);
   });
 
-  const suggestions = generateHints([...jsHints, ...filterHintsByDepth(actualInput, autoSuggestionList)]);
+  const suggestions = generateHints([...jsHints, ...autoSuggestionList]);
   return orderSuggestions(suggestions, fieldType).map((cm, index) => ({ ...cm, boost: 100 - index }));
 };
 
 function orderSuggestions(suggestions, validationType) {
   if (!validationType) return suggestions;
 
-  const matchingSuggestions = suggestions.filter((s) => s.type === validationType);
+  const matchingSuggestions = suggestions.filter((s) => s.detail === validationType);
 
-  const otherSuggestions = suggestions.filter((s) => s.type !== validationType);
+  const otherSuggestions = suggestions.filter((s) => s.detail !== validationType);
 
   return [...matchingSuggestions, ...otherSuggestions];
 }

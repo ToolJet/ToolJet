@@ -144,7 +144,7 @@ function resolveCode(code, state, customObjects = {}, withError = true, reserved
   return result;
 }
 
-export const resolveReferences = (query, expectedParamType) => {
+export const resolveReferences = (query, expectedParamType, customResolvers = {}) => {
   if (typeof query !== 'string') return [query, null];
 
   if (!query) return [null, null];
@@ -173,7 +173,7 @@ export const resolveReferences = (query, expectedParamType) => {
       resolvedValue = resolveCode(jscode, currentState);
     }
   } else {
-    const [resolvedCode, errorRef] = resolveCode(value, currentState);
+    const [resolvedCode, errorRef] = resolveCode(value, currentState, customResolvers);
 
     resolvedValue = resolvedCode;
     error = errorRef || null;

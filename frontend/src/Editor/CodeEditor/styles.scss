@@ -239,6 +239,12 @@
     padding: 2px;
 }
 
+.border-danger {
+    .cm-editor {
+        border: 1px solid red !important;
+    }
+}
+
 .runjs-editor .cm-editor {
     border: none !important;
 }
