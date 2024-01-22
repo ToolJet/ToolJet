@@ -721,7 +721,8 @@
             "addColumn": "Add column",
             "addNewColumn": "Add new column",
             "noActionMessage": "This table doesn't have any action buttons",
-            "horizontalAlignment":"Horizontal alignment"
+            "horizontalAlignment":"Horizontal alignment",
+            "timeFormat":"Tme Format"
         },
         "Button": {
             "displayName": "Button",

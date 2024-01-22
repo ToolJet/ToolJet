@@ -26,6 +26,8 @@ export const ProgramaticallyHandleProperties = ({
         return props.linkTarget;
       case 'isTimeChecked':
         return props?.isTimeChecked;
+      case 'enableTwentyFourHrFormat':
+        return props?.enableTwentyHourFormat;
       default:
         return;
     }
