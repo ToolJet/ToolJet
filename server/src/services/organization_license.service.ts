@@ -38,11 +38,11 @@ export class OrganizationLicenseService {
     return {
       month: {
         [this.configService.get<string>('STRIPE_PRICE_ID_MONTHLY_EDITOR')]: 'editor',
-        [this.configService.get<string>('STRIPE_PRICE_ID_MONTHLY_EDITOR')]: 'reader',
+        [this.configService.get<string>('STRIPE_PRICE_ID_MONTHLY_VIEWER')]: 'reader',
       },
       year: {
-        [this.configService.get<string>('STRIPE_PRICE_ID_MONTHLY_EDITOR')]: 'editor',
-        [this.configService.get<string>('STRIPE_PRICE_ID_MONTHLY_EDITOR')]: 'reader',
+        [this.configService.get<string>('STRIPE_PRICE_ID_YEARLY_EDITOR')]: 'editor',
+        [this.configService.get<string>('STRIPE_PRICE_ID_YEARLY_VIEWER')]: 'reader',
       },
     };
   }
@@ -628,8 +628,8 @@ export class OrganizationLicenseService {
     const lineItems = invoiceObject.lines.data;
     lineItems.map(createItemsList);
 
-    if (!productList || !interval) {
-      throw new BadRequestException('Product list or interval missing');
+    if (!productList?.noOfReaders || !productList?.noOfEditors || !interval) {
+      throw new BadRequestException(`Product list ${productList} or interval missing`);
     }
     interval += 'ly';
 
