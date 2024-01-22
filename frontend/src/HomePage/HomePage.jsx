@@ -1118,6 +1118,7 @@ class HomePageComponent extends React.Component {
                               <Dropdown.Item
                                 className="homepage-dropdown-style tj-text tj-text-xsm"
                                 onClick={orgGit?.is_enabled && this.toggleGitRepositoryImportModal}
+                                data-cy="import-from-git-button"
                               >
                                 Import from git repository
                               </Dropdown.Item>

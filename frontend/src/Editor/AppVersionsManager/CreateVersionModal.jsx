@@ -183,11 +183,16 @@ export const CreateVersion = ({
                   checked={cancommit}
                   type="checkbox"
                   onChange={handleCommitEnableChange}
+                  data-cy="git-commit-input"
                 />
               </div>
               <div>
-                <div className="tj-text tj-text-xsm">Commit changes</div>
-                <div className="tj-text-xxsm">This will commit the creation of the new version to the git repo</div>
+                <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
+                  Commit changes
+                </div>
+                <div className="tj-text-xxsm" data-cy="commit-helper-text">
+                  This will commit the creation of the new version to the git repo
+                </div>
               </div>
             </div>
           )}
