@@ -27,7 +27,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, setWindowTitle, pageTitles } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -320,13 +320,18 @@ class ViewerComponent extends React.Component {
       .fetchAppBySlug(slug)
       .then((data) => {
         const isAppPublic = data?.is_public;
+        const preview = !!queryString.parse(this.props?.location?.search)?.version;
         if (authentication_failed && !isAppPublic) {
           return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
         }
         this.setStateForApp(data, true);
         this.setState({ appId: data.id });
         this.setStateForContainer(data);
-        this.setWindowTitle(data.name);
+        setWindowTitle({
+          page: pageTitles.VIEWER,
+          appName: data.name,
+          preview,
+        });
       })
       .catch((error) => {
         this.setState({
@@ -504,10 +509,6 @@ class ViewerComponent extends React.Component {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
     return canvasBoundingRect?.width;
   };
-
-  setWindowTitle(name) {
-    document.title = name ?? 'My App';
-  }
 
   computeCanvasBackgroundColor = () => {
     const bgColor =

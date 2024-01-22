@@ -14,6 +14,7 @@ import {
   UpdateGroupsUsersDto,
   UpdateGroupsDataSourcesDto,
   UpdateGroupDto,
+  DuplucateGroupDto,
 } from '@dto/group-permission.dto';
 
 @Controller('group_permissions')
@@ -26,6 +27,14 @@ export class GroupPermissionsController {
   async create(@User() user, @Body() createGroupPermissionDto: CreateGroupPermissionDto) {
     await this.groupPermissionsService.create(user, createGroupPermissionDto.group);
     return;
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
+  @Post(':id/duplicate')
+  async duplicate(@User() user, @Param('id') id: string, @Body() body: DuplucateGroupDto) {
+    const duplicateGroup = await this.groupPermissionsService.duplicateGroup(user, id, body);
+    return duplicateGroup;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
-import TemplateLibraryModal from './TemplateLibraryModal/';
 import { useTranslation } from 'react-i18next';
 import { appsService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';

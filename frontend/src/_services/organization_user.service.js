@@ -8,16 +8,10 @@ export const organizationUserService = {
   create,
   changeRole,
   inviteBulkUsers,
+  updateOrgUser,
 };
 
-function create(first_name, last_name, email, groupIds = []) {
-  const body = {
-    first_name,
-    last_name,
-    email,
-    groups: groupIds,
-  };
-
+function create(id, body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/organization_users`, requestOptions).then(handleResponse);
 }
@@ -60,4 +54,9 @@ function unarchive(id, organizationId) {
     body: JSON.stringify({ ...(organizationId && { organizationId }) }),
   };
   return fetch(`${config.apiUrl}/organization_users/${id}/unarchive`, requestOptions).then(handleResponse);
+}
+
+function updateOrgUser(id, body) {
+  const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/organization_users/${id}`, requestOptions).then(handleResponse);
 }

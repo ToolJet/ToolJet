@@ -19,7 +19,8 @@ type Actions =
   | 'updateOrganizations'
   | 'updateGroupUserPermission'
   | 'updateGroupAppPermission'
-  | 'updateGroupDataSourcePermission';
+  | 'updateGroupDataSourcePermission'
+  | 'updateUser';
 
 type Subjects = InferSubjects<typeof OrganizationUser | typeof User> | 'all';
 
@@ -43,6 +44,7 @@ export class CaslAbilityFactory {
       can('accessGroupPermission', User);
       can('updateOrganizations', User);
       can('viewAllUsers', User);
+      can('updateUser', User);
       can('updateGroupUserPermission', User);
       can('updateGroupAppPermission', User);
 

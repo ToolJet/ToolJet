@@ -291,10 +291,16 @@ export class OrganizationsService {
           });
       });
     };
-    const query = createQueryBuilder(OrganizationUser, 'organization_user').innerJoinAndSelect(
-      'organization_user.user',
-      'user'
-    );
+    const query = createQueryBuilder(OrganizationUser, 'organization_user')
+      .innerJoinAndSelect('organization_user.user', 'user')
+      .innerJoinAndSelect(
+        'user.groupPermissions',
+        'group_permissions',
+        'group_permissions.organization_id = :organizationId',
+        {
+          organizationId,
+        }
+      );
 
     if (getSuperAdmin) {
       query.andWhere(
@@ -335,6 +341,7 @@ export class OrganizationsService {
         role: orgUser.role,
         status: orgUser.status,
         avatarId: orgUser.user.avatarId,
+        groups: orgUser.user.groupPermissions.map((groupPermission) => groupPermission.group),
         ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
         ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken
           ? { accountSetupToken: orgUser.user.invitationToken }
