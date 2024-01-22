@@ -485,8 +485,9 @@ const EditorComponent = (props) => {
   };
 
   const fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
-    await useDataQueriesStore
+    await useSuperStore
       .getState()
+      .modules[moduleName].useDataQueriesStore.getState()
       .actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, getEditorRef(), moduleName);
   };
 

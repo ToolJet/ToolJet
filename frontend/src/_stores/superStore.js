@@ -1,3 +1,4 @@
+import { createDataQueriesStore } from './dataQueriesStore';
 import { createEditorStore } from './editorStore';
 import { createQueryPanelStore } from './queryPanelStore';
 import { create } from './utils';
@@ -5,8 +6,9 @@ import { create } from './utils';
 export const useSuperStore = create((set, get) => ({
   modules: {
     '#main': {
-      useEditorStore: createEditorStore(),
-      useQueryPanelStore: createQueryPanelStore(),
+      useEditorStore: createEditorStore('#main'),
+      useQueryPanelStore: createQueryPanelStore('#main'),
+      useDataQueriesStore: createDataQueriesStore('#main'),
     },
   },
 }));

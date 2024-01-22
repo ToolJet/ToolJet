@@ -59,7 +59,7 @@ const QueryPanel = ({
         delete formattedPrevQuery.updated_at;
 
         if (!isEqual(formattedQuery, formattedPrevQuery)) {
-          useDataQueriesStore.getState().actions.saveData(selectedQuery);
+          useSuperStore.getState().modules[moduleName].useDataQueriesStore.getState().actions.saveData(selectedQuery);
         }
       });
 

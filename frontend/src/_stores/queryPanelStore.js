@@ -5,7 +5,7 @@ import { ModuleContext } from '../_contexts/ModuleContext';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useSuperStore } from '@/_stores/superStore';
 
-export function createQueryPanelStore() {
+export function createQueryPanelStore(moduleName) {
   const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
   const initialState = {
     queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
@@ -16,11 +16,12 @@ export function createQueryPanelStore() {
     queryPreviewData: '',
     showCreateQuery: false,
     nameInputFocussed: false,
+    moduleName,
   };
 
   return create(
     zustandDevTools(
-      (set) => ({
+      (set, get) => ({
         ...initialState,
         actions: {
           updateQueryPanelHeight: (newHeight) => set(() => ({ queryPanelHeight: newHeight })),
@@ -29,7 +30,10 @@ export function createQueryPanelStore() {
               if (queryId === null) {
                 return { selectedQuery: null };
               }
-              const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
+              const query = useSuperStore
+                .getState()
+                .modules[get().moduleName].useDataQueriesStore.getState()
+                .dataQueries.find((query) => query.id === queryId);
               return { selectedQuery: query };
             });
           },

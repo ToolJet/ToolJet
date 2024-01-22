@@ -163,7 +163,7 @@ class ViewerComponent extends React.Component {
     const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
 
-    useDataQueriesStore.getState().actions.setDataQueries(dataQueries);
+    useSuperStore.getState().modules[this.context].useDataQueriesStore.getState().actions.setDataQueries(dataQueries);
     this.props.setCurrentState({
       queries: queryState,
       components: {},

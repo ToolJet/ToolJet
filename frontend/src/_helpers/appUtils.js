@@ -438,7 +438,10 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           );
         }
         const name =
-          useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
+          useSuperStore
+            .getState()
+            .modules[_ref.moduleName].useDataQueriesStore.getState()
+            .dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
         return runQuery(_ref, queryId, name, undefined, mode, resolvedParams);
       }
       case 'logout': {
@@ -945,7 +948,10 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
 }
 
 export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', parameters = {}) {
-  const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
+  const query = useSuperStore
+    .getState()
+    .modules[_ref.moduleName].useDataQueriesStore.getState()
+    .dataQueries.find((query) => query.id === queryId);
   const queryEvents = useAppDataStore
     .getState()
     .events.filter((event) => event.target === 'data_query' && event.sourceId === queryId);
@@ -1817,8 +1823,11 @@ function convertMapSet(obj) {
   }
 }
 
-export const checkExistingQueryName = (newName) =>
-  useDataQueriesStore.getState().dataQueries.some((query) => query.name === newName);
+export const checkExistingQueryName = (newName, moduleName) =>
+  useSuperStore
+    .getState()
+    .modules[moduleName].useDataQueriesStore.getState()
+    .dataQueries.some((query) => query.name === newName);
 
 export const runQueries = (queries, _ref) => {
   queries.forEach((query) => {
