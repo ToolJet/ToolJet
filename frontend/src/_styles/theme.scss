@@ -11972,3 +11972,17 @@ tbody {
 .CodeMirror-placeholder {
   min-width: 265px !important;
 }
+
+.tj-number-input-element {
+  // Remove increment/decrement arrows
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+}

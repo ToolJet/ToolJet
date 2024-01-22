@@ -2707,7 +2707,7 @@ export const widgets = [
       },
       text: {
         type: 'code',
-        displayName: 'Text',
+        displayName: 'TextComponentTextInput', // Keeping this name unique so that we can filter it in Codehinter
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
@@ -2736,11 +2736,12 @@ export const widgets = [
         },
         section: 'additionalActions',
       },
-      toolltip: {
-        type: 'input',
+      tooltip: {
+        type: 'code',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
+        placeholder: 'Enter tooltip text',
       },
     },
     defaultSize: {
@@ -2753,10 +2754,10 @@ export const widgets = [
     },
     styles: {
       textSize: {
-        type: 'input',
+        type: 'numberInput',
         displayName: 'Size',
         validation: {
-          schema: { type: 'number' },
+          schema: [{ type: 'string' }, { type: 'number' }],
         },
         accordian: 'Text',
       },
@@ -2799,8 +2800,8 @@ export const widgets = [
         ],
         accordian: 'Text',
       },
-      lineHeight: { type: 'input', displayName: 'Line Height', accordian: 'Text' },
-      textIndent: { type: 'input', displayName: 'Text Indent', accordian: 'Text' },
+      lineHeight: { type: 'numberInput', displayName: 'Line Height', accordian: 'Text' },
+      textIndent: { type: 'numberInput', displayName: 'Text Indent', accordian: 'Text' },
       textAlign: {
         type: 'alignButtons',
         displayName: 'Alignment',
@@ -2846,8 +2847,8 @@ export const widgets = [
         ],
         accordian: 'Text',
       },
-      letterSpacing: { type: 'input', displayName: 'Letter Spacing', accordian: 'Text' },
-      wordSpacing: { type: 'input', displayName: 'Word Spacing', accordian: 'Text' },
+      letterSpacing: { type: 'numberInput', displayName: 'Letter Spacing', accordian: 'Text' },
+      wordSpacing: { type: 'numberInput', displayName: 'Word Spacing', accordian: 'Text' },
       fontVariant: {
         type: 'select',
         displayName: 'Font variant',
@@ -2877,9 +2878,9 @@ export const widgets = [
         accordian: 'Container',
       },
       borderRadius: {
-        type: 'input',
+        type: 'numberInput',
         displayName: 'Border radius',
-        validation: { schema: { type: 'number' } },
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'Container',
       },
       boxShadow: {
@@ -2893,8 +2894,8 @@ export const widgets = [
         displayName: 'Padding',
         validation: { schema: { type: 'string' } },
         options: [
-          { displayName: 'None', value: 'none' },
           { displayName: 'Default', value: 'default' },
+          { displayName: 'None', value: 'none' },
         ],
         accordian: 'Container',
       },

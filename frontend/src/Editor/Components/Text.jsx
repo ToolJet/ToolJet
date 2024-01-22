@@ -150,7 +150,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
           />
         ))}
       {isLoading && (
-        <div style={{ width: '100%' }}>
+        <div style={{ width: '100%', height: '100%' }} className="d-flex align-items-center justify-content-center">
           <center>
             <div className="spinner-border" role="status"></div>
           </center>

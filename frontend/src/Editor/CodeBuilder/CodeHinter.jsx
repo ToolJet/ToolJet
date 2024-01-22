@@ -41,9 +41,10 @@ import Slider from './Elements/Slider';
 import { Input } from './Elements/Input';
 import { Icon } from './Elements/Icon';
 import { Visibility } from './Elements/Visibility';
+import { NumberInput } from './Elements/NumberInput';
 import { validateProperty } from '../component-properties-validation';
 
-const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
+const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'TextComponentTextInput'];
 
 const AllElements = {
   Color,
@@ -60,6 +61,7 @@ const AllElements = {
   Checkbox,
   Icon,
   Visibility,
+  NumberInput,
 };
 
 export function CodeHinter({
@@ -397,7 +399,7 @@ export function CodeHinter({
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
-  const fxBtn = (
+  const fxBtn = () => (
     <div className="col-auto pt-0 fx-common">
       {paramLabel !== 'Type' &&
         paramLabel !== ' ' &&
@@ -421,9 +423,9 @@ export function CodeHinter({
 
   const _renderFxBtn = () => {
     if (inspectorTab === 'styles') {
-      return isPropertyHovered || codeShow ? fxBtn : null;
+      return isPropertyHovered || codeShow ? fxBtn() : null;
     } else {
-      return fxBtn;
+      return fxBtn();
     }
   };
 
@@ -458,7 +460,7 @@ export function CodeHinter({
             style={{ width: width, marginBottom: codeShow ? '0.5rem' : '0px' }}
             className={cx('d-flex align-items-center', { 'w-full': fieldMeta?.fullWidth })}
           >
-            <div className="col-auto pt-0 fx-common">{!fieldMeta?.isFxNotRequired && _renderFxBtn()}</div>
+            {!fieldMeta?.isFxNotRequired && _renderFxBtn()}
             {!codeShow && (
               <ElementToRender
                 value={resolveReferences(initialValue, realState)}
