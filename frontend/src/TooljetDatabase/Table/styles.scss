@@ -1,0 +1,54 @@
+.tjdb-column-header-name {
+  margin-right: 10px;
+}
+
+.tjdb-menu-icon {
+  display: none;
+}
+
+.tjdb-menu-icon-parent {
+  width: 20px;
+  height: 20px;
+}
+
+.primaryKeyTooltip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.primary-key-text {
+  font-size: 8px;
+  color: #687076;
+}
+
+.tjdb-primary-key-parent {
+  border-radius: 10px !important;
+  background-color: #D7DBDF !important;
+  padding: 0px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+}
+
+.column-popover {
+  width: 137px !important;
+}
+
+.column-popover-parent {
+  background-color: white !important;
+}
+
+.cell-text-null {
+  background-color: var(--slate3) !important;
+  color: var(--slate11) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  border-radius: 6px;
+  width: 50px;
+}
