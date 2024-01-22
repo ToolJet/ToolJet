@@ -775,11 +775,16 @@ export class UsersService {
     const userIdsWithEditPermissions = (
       await manager
         .createQueryBuilder(User, 'users')
-        .innerJoin('users.groupPermissions', 'group_permissions')
-        .leftJoin('group_permissions.appGroupPermission', 'app_group_permissions')
         .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
           statusList,
         })
+        .innerJoin(
+          'users.groupPermissions',
+          'group_permissions',
+          'organization_users.organizationId = group_permissions.organizationId'
+        )
+        .innerJoin('group_permissions.organization', 'organization')
+        .leftJoin('group_permissions.appGroupPermission', 'app_group_permissions')
         .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
         .andWhere(
           new Brackets((qb) => {
