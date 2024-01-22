@@ -49,7 +49,6 @@ import FolderUpload from './FolderUpload.jsx';
 import GitSync from './GitSync.jsx';
 import FullOuterJoin from './FullOuterJoin.jsx';
 import Globe from './Globe.jsx';
-import Delete from './Delete.jsx';
 import Options from './Options.jsx';
 import Grid from './Grid.jsx';
 import HelpPolygon from './HelpPolygon.jsx';
@@ -243,8 +242,6 @@ const Icon = (props) => {
       return <Diamond {...props} />;
     case 'downarrow':
       return <DownArrow {...props} />;
-    case 'delete':
-      return <Delete {...props} />;
     case 'editrectangle':
       return <EditRectangle {...props} />;
     case 'enterprise':
