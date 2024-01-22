@@ -365,7 +365,9 @@ export default function GitSyncModal({
                     ) : (
                       <SolidIcon name={checkingForUpdate?.status === UPDATE_STATUS.UNAVAILABLE ? 'tick' : 'gitsync'} />
                     )}
-                    <div className="font-weight-500 tj-text-xsm">{checkingForUpdate?.message}</div>
+                    <div className="font-weight-500 tj-text-xsm" data-cy="check-for-updates-label">
+                      {checkingForUpdate?.message}
+                    </div>
                   </div>
                 </div>
               )}
@@ -487,7 +489,7 @@ export default function GitSyncModal({
         darkMode={darkMode}
         title={modalToShow === MODAL_TYPE.COMMIT ? 'Commit changes' : 'Pull changes'}
         body={
-          <div className="tj-text-sm">
+          <div className="tj-text-sm" data-cy="modal-message">
             {modalToShow === MODAL_TYPE.COMMIT
               ? `Commiting changes to ${editingVersion?.name} will replace ${
                   modalToShow === MODAL_TYPE.COMMIT ? appGitData?.git_version_name : appPullData?.git_version_name
