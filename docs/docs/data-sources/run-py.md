@@ -11,7 +11,7 @@ You can write custom Python code to interact with components and queries. To do 
 
 </div>
 
-#### Example: Using Python code to trigger component specific actions
+## Using Python code to trigger component specific actions
 
 - Let's drag a **button** and a **text** widget onto the canvas. We will set a text on the text component and trigger button click event from the Python query.
 - Click on the `+` on the query panel to create a query and select **Run Python code** from the available datasources
@@ -50,6 +50,57 @@ You can write custom Python code to interact with components and queries. To do 
 </div>
 
 You can also write custom Python code to get the data from **External APIs** and manipulate the response for graphical representation. 
+
+## Get Query Data
+
+To obtain the latest data returned by a specific query, you can use the below functions. 
+
+#### Retrieve the latest data of a query:
+```py
+queries.<queryName>.getData()
+```
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/custom-python/get-query-data.png" alt="Get Latest Query Data" />
+</div>
+
+#### Retrieve the latest raw data of a query:
+```py
+queries.<queryName>.getRawData()
+```
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/custom-python/get-raw-query-data.png" alt="Get Raw Query Data" />
+</div>
+
+#### Retreive the loading state of a query:
+```py
+queries.<queryName>.getLoadingState()
+```
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/custom-python/get-loading-state.png" alt="Get Loading State of a Query Data" />
+</div>
+
+## Get Variables
+
+To access variables through actions, you can use the below functions.
+
+#### Retrieve the current value of a variable: 
+```js
+actions.getVariable('<variableName>')
+```
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/custom-python/get-variable-action.png" alt="Get Variable Action" />
+</div>
+
+#### Retrieve the current value of a page-specific variable:
+```js
+actions.getPageVariable('<pageVariableName>')
+```
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/custom-python/get-page-variable-action.png" alt="Get Page Specific Variable Action" />
+</div>
 
 :::info
 Issues with writing custom Python code? Ask in our [Slack community](https://www.tooljet.com/slack).

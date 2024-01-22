@@ -27,7 +27,40 @@ await actions.runQuery('queryName')
 
 </div>
 
-### Set Variable
+### Get Query Data
+
+To obtain the latest data returned by a specific query, you can use the below functions. 
+
+#### Retrieve the latest data of a query:
+```js
+let value = queries.<queryName>.getData();
+return value;
+```
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/get-query-data.png" alt="Get Latest Query Data" />
+</div>
+
+#### Retrieve the latest raw data of a query:
+```js
+let value = queries.<queryName>.getRawData();
+return value;
+```
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0'}} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/get-raw-query-data.png" alt="Get Raw Query Data" />
+</div>
+
+#### Retreive the loading state of a query:
+```js
+let value = queries.<queryName>.getLoadingState();
+return value;
+```
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0'}} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/get-loading-state.png" alt="Get Loading State" />
+</div>
+
+### Set Variables
 
 **Syntax:**
 
@@ -211,6 +244,30 @@ async function countdown(){
   await actions.showAlert('info','This is an information')
 }
 ```
+
+## Get Variables
+
+To access variables through actions, you can use the below functions.
+
+#### Retrieve the current value of a variable: 
+```js
+let value = actions.getVariable('<variableName>');
+return value;
+```
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBotton:'15px' }} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/get-variable.png" alt="Get Variable Action" />
+</div>
+
+#### Retrieve the current value of a page-specific variable:
+```js
+let value = actions.getPageVariable('<pageVariableName>');
+return value;
+```
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/get-page-variable.png" alt="Get Page Variable Action" />
+</div>
+
 
 
 
