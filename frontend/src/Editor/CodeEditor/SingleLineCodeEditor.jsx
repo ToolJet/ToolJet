@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React from 'react';
+import React, { useContext } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,7 @@ import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import NewCodeHinter from './NewCodeHinter';
+import { EditorContext } from '../Context/EditorContextWrapper';
 
 const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
@@ -133,6 +134,10 @@ const EditorInput = ({
   const theme = darkMode ? okaidia : githubLight;
 
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
+
+  const { variablesExposedForPreview } = useContext(EditorContext);
+
+  console.log('---arpit::::', { variablesExposedForPreview });
 
   return (
     <div className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>

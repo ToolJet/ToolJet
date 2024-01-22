@@ -223,9 +223,8 @@
 
 
 .cm-scroller {
-    overflow-y: hidden !important;
+    overflow-y: auto !important;
     overflow-x: hidden !important;
-
 }
 
 .cm-focused {
