@@ -128,7 +128,10 @@ module.exports = {
           customCss: require.resolve('./src/css/custom.css'),
         },
         sitemap: {
-          ignorePatterns: ['/1.x.x/', '/docs/1.x.x/'],
+          changefreq: 'weekly',
+          priority: 0.5,
+          ignorePatterns: ['/docs/1.x.x/**'],
+          filename: 'sitemap.xml',
         },
         googleTagManager: isProd
           ? {
