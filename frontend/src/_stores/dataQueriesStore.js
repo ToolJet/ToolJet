@@ -9,7 +9,7 @@ import { runQueries } from '@/_helpers/appUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
 import _, { isEmpty, throttle } from 'lodash';
-import { useEditorStore } from './editorStore';
+import { useSuperStore } from './superStore';
 import { shallow } from 'zustand/shallow';
 import { useCurrentStateStore } from './currentStateStore';
 
@@ -33,7 +33,13 @@ export const useDataQueriesStore = create(
       ...initialState,
       actions: {
         // TODO: Remove editor state while changing currentState
-        fetchDataQueries: async (appVersionId, selectFirstQuery = false, runQueriesOnAppLoad = false, ref) => {
+        fetchDataQueries: async (
+          appVersionId,
+          selectFirstQuery = false,
+          runQueriesOnAppLoad = false,
+          ref,
+          moduleName
+        ) => {
           set({ loadingDataQueries: true });
           const data = await dataqueryService.getAll(appVersionId);
           set((state) => ({
@@ -54,7 +60,10 @@ export const useDataQueriesStore = create(
             });
 
             if (queryConfirmationList.length !== 0) {
-              useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
+              useSuperStore
+                .getState()
+                .modules[moduleName].useEditorStore.getState()
+                .actions.updateQueryConfirmationList(queryConfirmationList);
             }
 
             useCurrentStateStore.getState().actions.setCurrentState({

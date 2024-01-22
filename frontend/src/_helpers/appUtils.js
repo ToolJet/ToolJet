@@ -35,6 +35,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { camelizeKeys } from 'humps';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useSuperStore } from '@/_stores/superStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -970,8 +971,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, getCurrentState());
 
   if (dataQuery.options?.requestConfirmation) {
-    const queryConfirmationList = useEditorStore.getState().queryConfirmationList
-      ? [...useEditorStore.getState().queryConfirmationList]
+    const queryConfirmationList = useSuperStore.getState().modules[_ref.moduleName].useEditorStore.getState()
+      .queryConfirmationList
+      ? [...useSuperStore.getState().modules[_ref.moduleName].useEditorStore.getState().queryConfirmationList]
       : [];
 
     const queryConfirmation = {
@@ -1223,7 +1225,7 @@ for computing component state. It replaces the previous try-catch block with
 a more efficient approach, precomputing the parent component types and using
 conditional checks for better performance and error handling.*/
 
-export function computeComponentState(components = {}) {
+export function computeComponentState(components = {}, moduleName) {
   try {
     let componentState = {};
     const currentComponents = getCurrentState().components;
@@ -1270,7 +1272,7 @@ export function computeComponentState(components = {}) {
     });
 
     return new Promise((resolve) => {
-      useEditorStore.getState().actions.updateEditorState({
+      useSuperStore.getState().modules[moduleName].useEditorStore.getState().actions.updateEditorState({
         defaultComponentStateComputed: true,
       });
       resolve();
@@ -1437,7 +1439,8 @@ export const cloneComponents = (
   currentPageId,
   updateAppDefinition,
   isCloning = true,
-  isCut = false
+  isCut = false,
+  moduleName
 ) => {
   if (selectedComponents.length < 1) return getSelectedText();
 
@@ -1504,7 +1507,7 @@ export const cloneComponents = (
   }
 
   return new Promise((resolve) => {
-    useEditorStore.getState().actions.updateEditorState({
+    useSuperStore.getState().modules[moduleName].useEditorStore.getState().actions.updateEditorState({
       currentSidebarTab: 2,
     });
     resolve();

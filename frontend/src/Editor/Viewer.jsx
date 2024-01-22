@@ -38,8 +38,12 @@ import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { getPreviewQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
+import { useSuperStore } from '../_stores/superStore';
+import { ModuleContext } from '../_contexts/ModuleContext';
 
 class ViewerComponent extends React.Component {
+  static contextType = ModuleContext;
+
   constructor(props) {
     super(props);
 
@@ -180,7 +184,10 @@ class ViewerComponent extends React.Component {
       ...variables,
       ...constants,
     });
-    useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
+    useSuperStore
+      .getState()
+      .modules[this.context].useEditorStore.getState()
+      .actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
     this.props.updateState({ events: data.events ?? [] });
     this.setState(
       {
@@ -201,9 +208,8 @@ class ViewerComponent extends React.Component {
       () => {
         const components = appDefData?.pages[currentPageId]?.components || {};
 
-        computeComponentState(components).then(async () => {
+        computeComponentState(components, this.context).then(async () => {
           this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
-          console.log('Default component state computed and set');
           this.runQueries(dataQueries);
 
           const currentPageEvents = this.state.events.filter(
@@ -236,8 +242,6 @@ class ViewerComponent extends React.Component {
 
       variablesResult = constants;
     }
-
-    console.log('--org constant 2.0', { variablesResult });
 
     if (variablesResult && Array.isArray(variablesResult)) {
       variablesResult.map((constant) => {
@@ -317,7 +321,10 @@ class ViewerComponent extends React.Component {
   };
 
   updateQueryConfirmationList = (queryConfirmationList) =>
-    useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
+    useSuperStore
+      .getState()
+      .modules[this.context].useEditorStore.getState()
+      .actions.updateQueryConfirmationList(queryConfirmationList);
 
   setupViewer() {
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
@@ -376,7 +383,10 @@ class ViewerComponent extends React.Component {
   componentDidMount() {
     this.setupViewer();
     const isMobileDevice = this.state.deviceWindowWidth < 600;
-    useEditorStore.getState().actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
+    useSuperStore
+      .getState()
+      .modules[this.context].useEditorStore.getState()
+      .actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
     window.addEventListener('message', this.handleMessage);
   }
 
@@ -434,7 +444,10 @@ class ViewerComponent extends React.Component {
           name: targetPage.name,
         },
         async () => {
-          computeComponentState(this.state.appDefinition?.pages[this.state.currentPageId].components).then(async () => {
+          computeComponentState(
+            this.state.appDefinition?.pages[this.state.currentPageId].components,
+            this.context
+          ).then(async () => {
             const currentPageEvents = this.state.events.filter(
               (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
             );
@@ -546,6 +559,8 @@ class ViewerComponent extends React.Component {
       dataQueries,
       canvasWidth,
     } = this.state;
+
+    const moduleName = this.context;
 
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];

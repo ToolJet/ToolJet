@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useContext } from 'react';
 import {
   appService,
   authenticationService,
@@ -32,6 +32,7 @@ import {
   buildComponentMetaDefinition,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
+// eslint-disable-next-line import/no-unresolved
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
@@ -70,6 +71,8 @@ import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import { getQueryParams } from '@/_helpers/routes';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
+import { ModuleContext } from '../_contexts/ModuleContext';
+import { useSuperStore } from '../_stores/superStore';
 
 setAutoFreeze(false);
 enablePatches();
@@ -81,6 +84,7 @@ function setWindowTitle(name) {
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
 const EditorComponent = (props) => {
+  const moduleName = useContext(ModuleContext);
   const { socket } = createWebsocketConnection(props?.params?.id);
   const isSocketOpen = useSocketOpen(socket);
   const mounted = useMounted();
@@ -243,7 +247,7 @@ const EditorComponent = (props) => {
       socket && socket?.close();
       subscription.unsubscribe();
       if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
-      useEditorStore.getState().actions.setIsEditorActive(false);
+      useSuperStore.getState().modules[moduleName].useEditorStore.getState().actions.setIsEditorActive(false);
       prevAppDefinition.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -261,9 +265,9 @@ const EditorComponent = (props) => {
     if (mounted && didAppDefinitionChanged && currentPageId) {
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
-      computeComponentState(components);
+      computeComponentState(components, moduleName);
 
-      if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
+      if (useSuperStore.getState().modules[moduleName].useEditorStore.getState().isUpdatingEditorStateInProcess) {
         autoSave();
       }
     }
@@ -273,7 +277,7 @@ const EditorComponent = (props) => {
   useEffect(
     () => {
       const components = appDefinition?.pages?.[currentPageId]?.components || {};
-      computeComponentState(components);
+      computeComponentState(components, moduleName);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentPageId]
@@ -328,12 +332,14 @@ const EditorComponent = (props) => {
 
   const getEditorRef = () => {
     const editorRef = {
-      appDefinition: useEditorStore.getState().appDefinition,
-      queryConfirmationList: useEditorStore.getState().queryConfirmationList,
+      appDefinition: useSuperStore.getState().modules[moduleName].useEditorStore.getState().appDefinition,
+      queryConfirmationList: useSuperStore.getState().modules[moduleName].useEditorStore.getState()
+        .queryConfirmationList,
       updateQueryConfirmationList: updateQueryConfirmationList,
       navigate: props.navigate,
       switchPage: switchPage,
-      currentPageId: useEditorStore.getState().currentPageId,
+      currentPageId: useSuperStore.getState().modules[moduleName].useEditorStore.getState().currentPageId,
+      moduleName,
     };
     return editorRef;
   };
@@ -482,7 +488,7 @@ const EditorComponent = (props) => {
   const fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
     await useDataQueriesStore
       .getState()
-      .actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, getEditorRef());
+      .actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, getEditorRef(), moduleName);
   };
 
   const fetchDataSources = (id) => {
@@ -613,7 +619,10 @@ const EditorComponent = (props) => {
   };
 
   const setSelectedComponent = (id, component, multiSelect = false) => {
-    const isAlreadySelected = useEditorStore.getState()?.selectedComponents.find((component) => component.id === id);
+    const isAlreadySelected = useSuperStore
+      .getState()
+      .modules[moduleName].useEditorStore.getState()
+      ?.selectedComponents.find((component) => component.id === id);
 
     if (!isAlreadySelected) {
       setSelectedComponents([{ id, component }], multiSelect);
@@ -786,11 +795,13 @@ const EditorComponent = (props) => {
       });
     }
     let updatedAppDefinition;
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
+    const copyOfAppDefinition = JSON.parse(
+      JSON.stringify(useSuperStore.getState().modules[moduleName].useEditorStore.getState().appDefinition)
+    );
 
     if (opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
       updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
-        const _currentPageId = useEditorStore.getState().currentPageId;
+        const _currentPageId = useSuperStore.getState().modules[moduleName].useEditorStore.getState().currentPageId;
         if (opts?.componentDeleting) {
           const currentPageComponentIds = Object.keys(copyOfAppDefinition.pages[_currentPageId]?.components);
           const newComponentIds = Object.keys(newDefinition.pages[_currentPageId]?.components);
@@ -1197,7 +1208,9 @@ const EditorComponent = (props) => {
     const gridWidth = (1 * 100) / 43; // width of the canvas grid in percentage
     const _appDefinition = _.cloneDeep(appDefinition);
     let newComponents = _appDefinition?.pages[currentPageId].components;
-    const selectedComponents = useEditorStore.getState()?.selectedComponents;
+    const selectedComponents = useSuperStore
+      .getState()
+      .modules[moduleName].useEditorStore.getState()?.selectedComponents;
 
     for (const selectedComponent of selectedComponents) {
       let top = newComponents[selectedComponent.id].layouts[currentLayout].top;
@@ -1229,7 +1242,7 @@ const EditorComponent = (props) => {
 
   const copyComponents = () =>
     cloneComponents(
-      useEditorStore.getState()?.selectedComponents,
+      useSuperStore.getState().modules[moduleName].useEditorStore.getState()?.selectedComponents,
       appDefinition,
       currentPageId,
       appDefinitionChanged,
@@ -1244,7 +1257,7 @@ const EditorComponent = (props) => {
     }
 
     cloneComponents(
-      useEditorStore.getState()?.selectedComponents,
+      useSuperStore.getState().modules[moduleName].useEditorStore.getState()?.selectedComponents,
       appDefinition,
       currentPageId,
       appDefinitionChanged,
@@ -1259,7 +1272,7 @@ const EditorComponent = (props) => {
       return;
     }
     cloneComponents(
-      useEditorStore.getState()?.selectedComponents,
+      useSuperStore.getState().modules[moduleName].useEditorStore.getState()?.selectedComponents,
       appDefinition,
       currentPageId,
       appDefinitionChanged,
@@ -1269,7 +1282,7 @@ const EditorComponent = (props) => {
   };
 
   const handleEditorEscapeKeyPress = () => {
-    if (useEditorStore.getState()?.selectedComponents?.length > 0) {
+    if (useSuperStore.getState().modules[moduleName].useEditorStore.getState()?.selectedComponents?.length > 0) {
       updateEditorState({
         selectedComponents: [],
       });
@@ -1277,7 +1290,9 @@ const EditorComponent = (props) => {
   };
 
   const removeComponents = () => {
-    const selectedComponents = useEditorStore.getState()?.selectedComponents;
+    const selectedComponents = useSuperStore
+      .getState()
+      .modules[moduleName].useEditorStore.getState()?.selectedComponents;
     if (!isVersionReleased && selectedComponents?.length > 1) {
       let newDefinition = cloneDeep(appDefinition);
 
@@ -1392,8 +1407,8 @@ const EditorComponent = (props) => {
 
   const switchPage = (pageId, queryParams = []) => {
     // This are fetched from store to handle runQueriesOnAppLoad
-    const currentPageId = useEditorStore.getState().currentPageId;
-    const appDefinition = useEditorStore.getState().appDefinition;
+    const currentPageId = useSuperStore.getState().modules[moduleName].useEditorStore.getState().currentPageId;
+    const appDefinition = useSuperStore.getState().modules[moduleName].useEditorStore.getState().appDefinition;
     const pageHandle = getCurrentState().pageHandle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
@@ -1646,7 +1661,7 @@ const EditorComponent = (props) => {
   const handleCanvasContainerMouseUp = (e) => {
     if (
       ['real-canvas', 'modal'].includes(e.target.className) &&
-      useEditorStore.getState()?.selectedComponents?.length
+      useSuperStore.getState().modules[moduleName].useEditorStore.getState()?.selectedComponents?.length
     ) {
       setSelectedComponents(EMPTY_ARRAY);
     }
