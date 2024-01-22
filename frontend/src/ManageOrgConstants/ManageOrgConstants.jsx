@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   authenticationService,
   orgEnvironmentConstantService,
@@ -18,6 +18,7 @@ import ConstantForm from './ConstantForm';
 import EmptyState from './EmptyState';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { LicenseTooltip } from '@/LicenseTooltip';
+import { BreadCrumbContext } from '@/App';
 
 const MODES = Object.freeze({
   CREATE: 'create',
@@ -43,6 +44,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [errors, setErrors] = useState([]);
   const [showConstantDeleteConfirmation, setShowConstantDeleteConfirmation] = useState(false);
   const [selectedConstant, setSelectedConstant] = useState(null);
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   const { group_permissions, super_admin, admin } = authenticationService.currentSessionValue;
   const [licenseValid, setLicenseValid] = useState(true);
@@ -142,15 +144,15 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   };
 
   const canCreateVariable = () => {
-    return canAnyGroupPerformAction('org_environment_constant_create', group_permissions) || super_admin || admin;
+    return canAnyGroupPerformAction('org_environment_variable_create', group_permissions) || super_admin || admin;
   };
 
   const canUpdateVariable = () => {
-    return canAnyGroupPerformAction('org_environment_constant_create', group_permissions) || super_admin || admin;
+    return canAnyGroupPerformAction('org_environment_variable_create', group_permissions) || super_admin || admin;
   };
 
   const canDeleteVariable = () => {
-    return canAnyGroupPerformAction('org_environment_constant_delete', group_permissions) || super_admin || admin;
+    return canAnyGroupPerformAction('org_environment_variable_delete', group_permissions) || super_admin || admin;
   };
 
   const fetchEnvironments = () => {
@@ -278,6 +280,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
   useEffect(() => {
     fetchConstantsAndEnvironments(true);
+    updateSidebarNAV('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

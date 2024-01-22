@@ -12,6 +12,7 @@ import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT } from 'src/helpers/license.helper';
+import { UpdateUserDto } from '@dto/user.dto';
 const uuid = require('uuid');
 
 @Injectable()
@@ -55,6 +56,16 @@ export class OrganizationUsersService {
       }
     }
     return await this.organizationUsersRepository.update(id, { role });
+  }
+
+  async updateOrgUser(organizationUserId: string, updateUserDto: UpdateUserDto) {
+    const organizationUser = await this.organizationUsersRepository.findOne({ where: { id: organizationUserId } });
+    return await this.usersService.update(
+      organizationUser.userId,
+      updateUserDto,
+      null,
+      organizationUser.organizationId
+    );
   }
 
   async archive(id: string, organizationId: string, user?: User): Promise<void> {

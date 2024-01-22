@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import AppLogo from '@/_components/AppLogo';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
@@ -13,16 +12,16 @@ import { ToolTip } from '@/_components/ToolTip';
 import PromoteConfirmationModal from '../EnvironmentsManager/PromoteConfirmationModal';
 import cx from 'classnames';
 import { useAppVersionState, useAppVersionStore } from '@/_stores/appVersionStore';
-import { useCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { useAppInfo, useCurrentUser, useAppDataActions } from '@/_stores/appDataStore';
 import UpdatePresence from './UpdatePresence';
-import { redirectToDashboard } from '@/_helpers/utils';
 import { useEditorActions, useEditorState } from '@/_stores/editorStore';
 import { isEmpty } from 'lodash';
 import queryString from 'query-string';
+import LogoNavDropdown from '@/_components/LogoNavDropdown';
 
 export default function EditorHeader({
   M,
@@ -43,7 +42,6 @@ export default function EditorHeader({
   setCurrentAppVersionPromoted,
   fetchEnvironments,
   isEditorFreezed,
-  isSocketOpen,
 }) {
   const currentUser = useCurrentUser();
   const {
@@ -81,11 +79,6 @@ export default function EditorHeader({
     shallow
   );
 
-  const handleLogoClick = (e) => {
-    e.preventDefault();
-    // Force a reload for clearing interval triggers
-    redirectToDashboard();
-  };
   const handlePromote = () => {
     const curentEnvIndex = environments.findIndex((env) => env.id === currentAppEnvironmentId);
 
@@ -128,9 +121,7 @@ export default function EditorHeader({
         <div className="container-xl header-container">
           <div className="d-flex w-100">
             <h1 className="navbar-brand d-none-navbar-horizontal p-0">
-              <Link data-cy="editor-page-logo" onClick={handleLogoClick}>
-                <AppLogo isLoadingFromHeader={false} />
-              </Link>
+              <LogoNavDropdown darkMode={darkMode} />
             </h1>
             <div
               style={{

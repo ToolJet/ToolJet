@@ -33,6 +33,10 @@ export const GlobalDatasources = (props) => {
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const [featureAccess, setFeatureAccess] = useState({});
 
+  if (!admin) {
+    navigate('/');
+  }
+
   useEffect(() => {
     if (dataSources?.length == 0) updateSidebarNAV('Databases');
     fetchFeatureAccess();

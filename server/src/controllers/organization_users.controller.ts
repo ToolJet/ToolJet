@@ -9,6 +9,7 @@ import {
   Res,
   BadRequestException,
   NotAcceptableException,
+  Put,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
@@ -70,6 +71,14 @@ export class OrganizationUsersController {
       throw new NotAcceptableException('Self archive not allowed');
     }
     await this.organizationUsersService.archiveFromAll(userId);
+    return;
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateUser', UserEntity))
+  @Put(':id')
+  async updateUser(@Param('id') id: string, @Body() updateUserDto) {
+    await this.organizationUsersService.updateOrgUser(id, updateUserDto);
     return;
   }
 

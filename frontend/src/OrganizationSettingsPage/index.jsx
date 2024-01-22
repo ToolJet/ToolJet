@@ -20,16 +20,7 @@ export function OrganizationSettings(props) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const sideBarNavs = [
-    'Users',
-    'Groups',
-    'SSO',
-    'Workspace variables',
-    'Copilot',
-    'Custom styles',
-    'Workspace constants',
-    'Configure git',
-  ];
+  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Copilot', 'Custom styles', 'Configure git'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'users':
@@ -44,8 +35,6 @@ export function OrganizationSettings(props) {
         return 'Copilot';
       case 'custom-styles':
         return 'Custom styles';
-      case 'workspace-constants':
-        return 'Workspace constants';
       case 'configure-git':
         return 'Configure git';
       default:
@@ -59,6 +48,20 @@ export function OrganizationSettings(props) {
       setFeaturesLoaded(true);
     });
   };
+
+  if (!admin) {
+    navigate('/');
+  }
+
+  useEffect(() => {
+    const subscription = authenticationService.currentSession.subscribe((newOrd) => {
+      setAdmin(newOrd?.admin);
+    });
+    updateSidebarNAV('Users');
+
+    () => subscription.unsubsciption();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authenticationService.currentSessionValue?.admin]);
 
   useEffect(() => {
     const fetchData = async () => {

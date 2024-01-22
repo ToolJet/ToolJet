@@ -45,6 +45,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 import LdapLoginPage from '../LdapLogin';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
+import WorkspaceConstants from '@/WorkspaceConstants';
 
 const AppWrapper = (props) => {
   return (
@@ -209,6 +210,15 @@ class AppComponent extends React.Component {
                 element={
                   <PrivateRoute>
                     <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/:workspaceId/workspace-constants"
+                element={
+                  <PrivateRoute>
+                    <WorkspaceConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </PrivateRoute>
                 }
               />

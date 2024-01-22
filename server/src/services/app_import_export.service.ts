@@ -139,9 +139,13 @@ export class AppImportExportService {
 
         dataSourceOptions = await manager
           .createQueryBuilder(DataSourceOptions, 'data_source_options')
-          .where('data_source_options.environmentId IN(:...environmentId)', {
-            environmentId: appEnvironments.map((v) => v.id),
-          })
+          .where(
+            'data_source_options.environmentId IN(:...environmentId) AND data_source_options.dataSourceId IN(:...dataSourceId)',
+            {
+              environmentId: appEnvironments.map((v) => v.id),
+              dataSourceId: dataSources.map((v) => v.id),
+            }
+          )
           .orderBy('data_source_options.createdAt', 'ASC')
           .getMany();
 
@@ -1194,7 +1198,7 @@ export class AppImportExportService {
         version.homePageId = appVersion.homePageId;
         version.globalSettings = appVersion.globalSettings;
       } else {
-        version.showViewerNavigation = appVersion.definition.showViewerNavigation || true;
+        version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
         version.homePageId = appVersion.definition?.homePageId;
 
         if (!appVersion.definition?.globalSettings) {

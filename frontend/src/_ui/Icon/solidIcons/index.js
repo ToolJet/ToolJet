@@ -49,6 +49,7 @@ import FolderUpload from './FolderUpload.jsx';
 import GitSync from './GitSync.jsx';
 import FullOuterJoin from './FullOuterJoin.jsx';
 import Globe from './Globe.jsx';
+import Options from './Options.jsx';
 import Grid from './Grid.jsx';
 import HelpPolygon from './HelpPolygon.jsx';
 import Home from './Home.jsx';
@@ -156,6 +157,8 @@ import Check from './Check.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
+import WorkspaceConstants from './WorkspaceConstants.jsx';
+import ArrowBackDown from './ArrowBackDown.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -169,6 +172,8 @@ const Icon = (props) => {
       return <Archive {...props} />;
     case 'arrowback':
       return <ArrowBack {...props} />;
+    case 'arrowbackdown':
+      return <ArrowBackDown {...props} />;
     case 'arrowdown':
       return <ArrowDown {...props} />;
     case 'arroweft':
@@ -337,6 +342,8 @@ const Icon = (props) => {
       return <NotificationUnread {...props} />;
     case 'open':
       return <Open {...props} />;
+    case 'options':
+      return <Options {...props} />;
     case 'page':
       return <Page {...props} />;
     case 'pageAdd':
@@ -431,6 +438,8 @@ const Icon = (props) => {
       return <Variable {...props} />;
     case 'warning':
       return <Warning {...props} />;
+    case 'workspaceconstants':
+      return <WorkspaceConstants {...props} />;
     case 'zoomin':
       return <ZoomIn {...props} />;
     case 'zoomout':

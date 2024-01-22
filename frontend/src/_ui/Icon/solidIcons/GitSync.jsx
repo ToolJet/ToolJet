@@ -8,6 +8,7 @@ const GitSync = ({ fill = '#F0F4FF', width = '29', className = '', viewBox = '0 
     className={className}
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
+    data-cy="git-sync-icon"
   >
     <rect x="0.382812" y="0.654297" width="28" height="28" rx="6" fill="#F0F4FF" />
     <path

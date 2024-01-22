@@ -48,7 +48,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { retrieveWhiteLabelText, getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, setWindowTitle, defaultWhiteLabellingSettings, pageTitles } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -75,10 +75,6 @@ import { shallow } from 'zustand/shallow';
 
 setAutoFreeze(false);
 enablePatches();
-
-function setWindowTitle(name) {
-  return (document.title = name ? `${name} - ${retrieveWhiteLabelText()}` : `My App - ${retrieveWhiteLabelText()}`);
-}
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
@@ -255,7 +251,7 @@ const EditorComponent = (props) => {
 
     // 6. Unsubscribe from the observable when the component is unmounted
     return () => {
-      document.title = 'Tooljet - Dashboard';
+      document.title = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
       socket && socket?.close();
       subscription.unsubscribe();
       if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
@@ -585,7 +581,7 @@ const EditorComponent = (props) => {
 
   const onNameChanged = (newName) => {
     updateState({ appName: newName });
-    setWindowTitle(newName);
+    setWindowTitle({ page: pageTitles.EDITOR, appName: newName });
   };
 
   const onZoomChanged = (zoom) => {
@@ -730,7 +726,7 @@ const EditorComponent = (props) => {
     environmentSwitch = false,
     selectedEnvironmentId = null
   ) => {
-    setWindowTitle(data.name);
+    setWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
 
     if (!environmentSwitch && (!releasedVersionId || !versionSwitched)) {
