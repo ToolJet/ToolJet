@@ -13850,6 +13850,10 @@ tbody {
   .groups-name-container {
     padding-left: 6px;
   }
+
+  .group-chip {
+    max-width: unset !important;
+  }
 }
 
 .groups-hover {

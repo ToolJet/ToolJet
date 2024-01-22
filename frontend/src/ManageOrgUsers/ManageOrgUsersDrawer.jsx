@@ -28,7 +28,7 @@ const ManageOrgUsersDrawer = ({
   const humanizeifDefaultGroupName = (groupName) => {
     switch (groupName) {
       case 'all_users':
-        return 'All Users';
+        return 'All users';
 
       case 'admin':
         return 'Admin';

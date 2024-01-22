@@ -1117,7 +1117,7 @@ export const USER_DRAWER_MODES = {
 export const humanizeifDefaultGroupName = (groupName) => {
   switch (groupName) {
     case 'all_users':
-      return 'All Users';
+      return 'All users';
 
     case 'admin':
       return 'Admin';
@@ -1147,6 +1147,7 @@ export const pageTitles = {
   WORKFLOW_EDITOR: 'workflowEditor',
   VIEWER: 'Viewer',
   DASHBOARD: 'Dashboard',
+  WORKSPACE_CONSTANTS: 'Workspace constants',
 };
 
 export const setWindowTitle = async (pageDetails, location) => {
@@ -1161,6 +1162,7 @@ export const setWindowTitle = async (pageDetails, location) => {
     'audit-logs': pageTitles.AUDIT_LOGS,
     'account-settings': pageTitles.ACCOUNT_SETTINGS,
     settings: pageTitles.SETTINGS,
+    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
   };
   const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
   let pageTitleKey = pageDetails?.page || '';
@@ -1185,6 +1187,6 @@ export const setWindowTitle = async (pageDetails, location) => {
     }
   }
   if (pageTitle) {
-    document.title = pageDetails && pageDetails?.preview ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
+    document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
   }
 };
