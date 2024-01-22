@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
 import { isBoolean, isEmpty } from 'lodash';
@@ -49,66 +49,9 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     deletePopupModal: false,
     columnEditPopover: false,
   });
-  const [creatorElement, setCreatorElement] = useState({
-    width: false,
-    height: false,
-    scrollToEnd: false,
-  });
 
   const prevSelectedTableRef = useRef({});
-  const containerRef = useRef(null);
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
-  useEffect(() => {
-    const container = containerRef.current;
-
-    const handleResize = () => {
-      if (container) {
-        const hasScrollbarWidth = container.scrollWidth > container.clientWidth;
-        const hasScrollbarHeight = container.scrollHeight > container.clientHeight;
-        const threshold = 1;
-        const scrollEnd = container.scrollLeft + container.clientWidth + threshold >= container.scrollWidth;
-
-        setCreatorElement((prevElement) => ({
-          ...prevElement,
-          width: hasScrollbarWidth,
-          height: hasScrollbarHeight,
-          scrollToEnd: scrollEnd,
-        }));
-      }
-    };
-
-    const handleScroll = () => {
-      if (container) {
-        const threshold = 1;
-        const scrollEnd = container.scrollLeft - 0.5 + container.clientWidth + threshold >= container.scrollWidth;
-
-        console.log({
-          scrollEnd,
-          scrollLeft: container.scrollLeft,
-          clientWidth: container.clientWidth,
-          scrollWidth: container.scrollWidth,
-        });
-
-        setCreatorElement((prevElement) => ({
-          ...prevElement,
-          scrollToEnd: scrollEnd,
-        }));
-      }
-    };
-
-    const resizeObserver = new ResizeObserver(handleResize);
-    if (container) {
-      resizeObserver.observe(container);
-      // container.addEventListener('scroll', handleScroll);
-    }
-    return () => {
-      if (container) {
-        resizeObserver.unobserve(container);
-        // container.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, []);
 
   const fetchTableMetadata = () => {
     if (!isEmpty(selectedTable)) {
@@ -238,25 +181,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       ]);
     }
   );
-
-  const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
-
-  const positionValue =
-    !darkMode && Object.keys(selectedRowIds).length > 0 && creatorElement.width === true
-      ? 'add-row-btn-database-fixed-id'
-      : darkMode && Object.keys(selectedRowIds).length > 0 && creatorElement.width === true
-      ? 'add-row-btn-database-fixed-id-dark'
-      : !darkMode && creatorElement.scrollToEnd === true
-      ? 'add-row-btn-database-absolute'
-      : darkMode && creatorElement.scrollToEnd === true
-      ? 'add-row-btn-database-absolute-dark'
-      : !darkMode && creatorElement.width === true
-      ? 'add-row-btn-database-fixed'
-      : !darkMode && creatorElement.width !== true
-      ? 'add-row-btn-database-absolute'
-      : darkMode && creatorElement.width === true
-      ? 'add-row-btn-database-fixed-dark'
-      : 'add-row-btn-database-absolute-dark';
 
   const handleDeleteRow = async () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
@@ -458,8 +382,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           height: 'calc(100vh - 164px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
         className={cx('table-responsive border-0 tj-db-table animation-fade')}
-        ref={containerRef}
-        //onScroll={handleScroll}
       >
         <table
           {...getTableProps()}
@@ -473,6 +395,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                   <th
                     key={column.Header}
                     width={index === 0 ? 66 : 230}
+                    style={{ height: index === 0 ? '32px' : '' }}
                     title={index === 1 ? '' : column?.Header}
                     className={
                       darkMode
@@ -537,8 +460,11 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                     )}
                   </th>
                 ))}
-                <th onClick={() => openCreateColumnDrawer()} className={positionValue}>
-                  +
+                <th
+                  onClick={() => openCreateColumnDrawer()}
+                  className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
+                >
+                  <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
                 </th>
               </tr>
             ))}
@@ -626,12 +552,9 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                 );
               })
             )}
-            <button
-              onClick={() => openCreateRowDrawer()}
-              className={darkMode ? 'add-col-btn-database-dark' : 'add-col-btn-database'}
-            >
+            <div onClick={() => openCreateRowDrawer()} className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}>
               +
-            </button>
+            </div>
           </tbody>
         </table>
 
