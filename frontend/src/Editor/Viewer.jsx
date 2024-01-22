@@ -73,6 +73,7 @@ class ViewerComponent extends React.Component {
       navigate: this.props.navigate,
       switchPage: this.switchPage,
       currentPageId: this.state.currentPageId,
+      moduleName: this.context,
     };
   }
 

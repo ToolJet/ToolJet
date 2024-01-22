@@ -831,7 +831,7 @@ export function getQueryVariables(options, state) {
 export function previewQuery(_ref, query, calledFromQuery = false, parameters = {}, hasParamSupport = false) {
   const options = getQueryVariables(query.options, getCurrentState());
 
-  const queryPanelState = useQueryPanelStore.getState();
+  const queryPanelState = useSuperStore.getState().modules[_ref.moduleName].useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
   const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
 
@@ -952,8 +952,8 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
 
   let dataQuery = {};
 
-  // const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
-  const queryPanelState = useQueryPanelStore.getState();
+  // const { setPreviewLoading, setPreviewData } = useSuperStore.getState().modules[_ref.moduleName].useQueryPanelStore.getState().actions;
+  const queryPanelState = useSuperStore.getState().modules[_ref.moduleName].useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
   const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
   if (parameters?.shouldSetPreviewData) {

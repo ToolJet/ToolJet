@@ -3,7 +3,6 @@ import { getDefaultOptions } from './storeHelper';
 import { dataqueryService } from '@/_services';
 // import debounce from 'lodash/debounce';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { runQueries } from '@/_helpers/appUtils';
 import { v4 as uuidv4 } from 'uuid';
@@ -25,6 +24,7 @@ const initialState = {
   isUpdatingQueryInProcess: false,
   /** When a 'Create Data Query' operation is in progress, rename/update API calls are cached in the variable. */
   queuedActions: {},
+  moduleName: '#main', // TODOS: change this
 };
 
 export const useDataQueriesStore = create(
@@ -73,7 +73,9 @@ export const useDataQueriesStore = create(
           }
 
           // Compute query state to be added in the current state
-          const { actions, selectedQuery } = useQueryPanelStore.getState();
+          const { actions, selectedQuery } = useSuperStore
+            .getState()
+            .modules[get().moduleName].useQueryPanelStore.getState();
           if (selectFirstQuery) {
             actions.setSelectedQuery(data.data_queries[0]?.id, data.data_queries[0]);
           } else if (selectedQuery?.id) {
@@ -91,7 +93,7 @@ export const useDataQueriesStore = create(
           dataqueryService
             .del(queryId)
             .then(() => {
-              const { actions } = useQueryPanelStore.getState();
+              const { actions } = useSuperStore.getState().modules[get().moduleName].useQueryPanelStore.getState();
               const { dataQueries } = useDataQueriesStore.getState();
               const newSelectedQuery = dataQueries.find((query) => query.id !== queryId);
               actions.setSelectedQuery(newSelectedQuery?.id || null);
@@ -112,7 +114,9 @@ export const useDataQueriesStore = create(
         },
         updateDataQuery: (options) => {
           set({ isUpdatingQueryInProcess: true });
-          const { actions, selectedQuery } = useQueryPanelStore.getState();
+          const { actions, selectedQuery } = useSuperStore
+            .getState()
+            .modules[get().moduleName].useQueryPanelStore.getState();
           set((state) => ({
             isUpdatingQueryInProcess: false,
             dataQueries: state.dataQueries.map((query) => {
@@ -135,7 +139,9 @@ export const useDataQueriesStore = create(
           const kind = selectedDataSource.kind;
           const tempId = uuidv4();
           set({ creatingQueryInProcessId: tempId });
-          const { actions, selectedQuery } = useQueryPanelStore.getState();
+          const { actions, selectedQuery } = useSuperStore
+            .getState()
+            .modules[get().moduleName].useQueryPanelStore.getState();
           const dataSourceId = selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;
           const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
           useAppDataStore.getState().actions.setIsSaving(true);
@@ -223,12 +229,15 @@ export const useDataQueriesStore = create(
                   return query;
                 }),
               }));
-              useQueryPanelStore.getState().actions.setSelectedQuery(id);
+              useSuperStore
+                .getState()
+                .modules[get().moduleName].useQueryPanelStore.getState()
+                .actions.setSelectedQuery(id);
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
         changeDataQuery: (newDataSource) => {
-          const { selectedQuery } = useQueryPanelStore.getState();
+          const { selectedQuery } = useSuperStore.getState().modules[get().moduleName].useQueryPanelStore.getState();
           set({
             isUpdatingQueryInProcess: true,
           });
@@ -245,8 +254,14 @@ export const useDataQueriesStore = create(
                   return query;
                 }),
               }));
-              useQueryPanelStore.getState().actions.setSelectedQuery(selectedQuery.id);
-              useQueryPanelStore.getState().actions.setSelectedDataSource(newDataSource);
+              useSuperStore
+                .getState()
+                .modules[get().moduleName].useQueryPanelStore.getState()
+                .actions.setSelectedQuery(selectedQuery.id);
+              useSuperStore
+                .getState()
+                .modules[get().moduleName].useQueryPanelStore.getState()
+                .actions.setSelectedDataSource(newDataSource);
             })
             .catch(() => {
               set({
@@ -257,7 +272,7 @@ export const useDataQueriesStore = create(
         },
         duplicateQuery: (id, appId) => {
           set({ creatingQueryInProcessId: uuidv4() });
-          const { actions } = useQueryPanelStore.getState();
+          const { actions } = useSuperStore.getState().modules[get().moduleName].useQueryPanelStore.getState();
           const { dataQueries } = useDataQueriesStore.getState();
           const queryToClone = { ...dataQueries.find((query) => query.id === id) };
           let newName = queryToClone.name + '_copy';
