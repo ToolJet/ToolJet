@@ -825,6 +825,14 @@ export const widgets = [
           },
         },
       },
+      borderRadius: {
+        type: 'number',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'number' },
+          defaultValue: false,
+        },
+      },
     },
     exposedVariables: {
       show: null,
@@ -875,6 +883,7 @@ export const widgets = [
         padding: { value: '50' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{4}}' },
       },
     },
   },
