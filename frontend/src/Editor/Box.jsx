@@ -68,7 +68,6 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
-import WidgetIcon from '@/../assets/images/icons/widgets';
 
 export const AllComponents = {
   Button,
@@ -279,15 +278,7 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
-    const shouldAddBoxShadow = ['TextInput', 'Text', 'DropDown', 'Multiselect'];
-
-    const calculateHeight = useCallback(() => {
-      // 2px needs to be added since we are removing 1px each from top bottom padding when padding selected to none
-      if (validatedStyles?.padding === 'none') {
-        return height + 2;
-      }
-      return height;
-    }, [validatedStyles?.padding, height]);
+    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'DropDown', 'Multiselect'];
 
     return (
       <OverlayTrigger
@@ -322,7 +313,7 @@ export const Box = memo(
                 width={width}
                 changeCanDrag={changeCanDrag}
                 onComponentOptionsChanged={onComponentOptionsChanged}
-                height={calculateHeight()}
+                height={height}
                 component={component}
                 containerProps={containerProps}
                 darkMode={darkMode}
@@ -358,32 +349,7 @@ export const Box = memo(
               <></>
             )
           ) : (
-            <div className="component-image-wrapper" style={{ height: '56px', width: '72px' }}>
-              <div
-                className="component-image-holder d-flex flex-column justify-content-center"
-                style={{ height: '100%' }}
-                data-cy={`widget-list-box-${component.displayName.toLowerCase().replace(/\s+/g, '-')}`}
-              >
-                <center>
-                  <div
-                    className="widget-svg-container"
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      backgroundSize: 'contain',
-                      backgroundRepeat: 'no-repeat',
-                    }}
-                  >
-                    <WidgetIcon
-                      name={component.name.toLowerCase()}
-                      width="32"
-                      fill={darkMode ? '#3A3F42' : '#D7DBDF'}
-                    />
-                  </div>
-                </center>
-              </div>
-              <div className="component-title">{t(`widget.${component.name}.displayName`, component.displayName)}</div>
-            </div>
+            <></>
           )}
         </div>
       </OverlayTrigger>

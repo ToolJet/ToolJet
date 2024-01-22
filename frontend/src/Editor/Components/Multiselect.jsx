@@ -183,6 +183,7 @@ export const Multiselect = function Multiselect({
   styles,
   exposedVariables,
   setExposedVariable,
+  setExposedVariables,
   onComponentClick,
   darkMode,
   fireEvent,

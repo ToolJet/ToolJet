@@ -5,6 +5,7 @@ import Select, { components } from 'react-select';
 import * as Icons from '@tabler/icons-react';
 import CheckMark from '@/_ui/Icon/solidIcons/CheckMark';
 import { CustomMenuList } from './Table/SelectComponent';
+import { Spinner } from 'react-bootstrap';
 
 const { ValueContainer, SingleValue, Placeholder } = components;
 
@@ -19,7 +20,7 @@ const CustomValueContainer = ({ children, ...props }) => {
           style={{
             width: '16px',
             height: '16px',
-            fill: 'var(--slate8)',
+            color: selectProps?.iconColor,
           }}
         />
       )}
@@ -51,7 +52,7 @@ const Option = (props) => {
       <div className="d-flex justify-content-between">
         <span style={{ color: props.isDisabled ? '#889096' : 'unset' }}>{props.label}</span>
         {props.isSelected && (
-          <span>
+          <span style={{ maxHeight: '20px' }}>
             <CheckMark
               width={'20'}
               fill={isFirstOption && props.isFocused ? '#3E63DD' : props.isFocused ? '#FFFFFF' : '#3E63DD'}
@@ -106,6 +107,8 @@ export const DropDown = function DropDown({
     iconVisibility,
     errTextColor,
     labelAutoWidth,
+    iconColor,
+    padding,
   } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
@@ -120,7 +123,7 @@ export const DropDown = function DropDown({
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
   const [isFocused, setIsFocused] = useState(false);
   const [inputValue, setInputValue] = useState('');
-
+  const _height = padding === 'default' ? 32 : height;
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
     if (isDropdownLoading !== dropdownLoadingState) setIsDropdownLoading(dropdownLoadingState);
@@ -286,22 +289,35 @@ export const DropDown = function DropDown({
     control: (provided, state) => {
       return {
         ...provided,
-        minHeight: height,
-        height: height,
+        minHeight: _height,
+        height: _height,
         boxShadow: state.isFocused ? boxShadow : boxShadow,
         borderRadius: Number.parseFloat(fieldBorderRadius),
-        borderColor: !isValid ? 'var(--tj-text-input-widget-error)' : fieldBorderColor,
-        backgroundColor: fieldBackgroundColor,
+        // borderColor: !isValid ? 'var(--tj-text-input-widget-error)' : fieldBorderColor,
+        borderColor: !isValid
+          ? 'var(--tj-text-input-widget-error)'
+          : state.isFocused
+          ? '#3E63DD'
+          : ['#D7DBDF'].includes(fieldBorderColor)
+          ? darkMode
+            ? '#4C5155'
+            : '#D7DBDF'
+          : fieldBorderColor,
+        backgroundColor:
+          darkMode && ['#fff'].includes(fieldBackgroundColor)
+            ? '#313538'
+            : state.isDisabled
+            ? '#F1F3F5'
+            : fieldBackgroundColor,
         '&:hover': {
-          backgroundColor: '#f1f3f5',
+          backgroundColor: 'var(--tj-text-input-widget-hover) !important',
           borderColor: '#3E63DD',
         },
       };
     },
-
     valueContainer: (provided, _state) => ({
       ...provided,
-      height: height,
+      height: _height,
       padding: '0 6px',
       justifyContent,
       display: 'flex',
@@ -310,7 +326,8 @@ export const DropDown = function DropDown({
 
     singleValue: (provided, _state) => ({
       ...provided,
-      color: disabledState ? 'grey' : selectedTextColor ? selectedTextColor : darkMode ? 'white' : 'black',
+      // color: disabledState ? 'grey' : selectedTextColor ? selectedTextColor : darkMode ? 'white' : 'black',
+      color: darkMode && selectedTextColor === '#11181C' ? '#ECEDEE' : selectedTextColor,
     }),
 
     input: (provided, _state) => ({
@@ -323,7 +340,7 @@ export const DropDown = function DropDown({
     }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
-      height: height,
+      height: _height,
     }),
     clearIndicator: (provided, _state) => ({
       ...provided,
@@ -335,11 +352,10 @@ export const DropDown = function DropDown({
     }),
     option: (provided, state) => ({
       ...provided,
-      backgroundColor: 'white',
-      // backgroundColor: state.isFocused && !state.isSelected ? 'transparent' : 'white',
-      color: '#11181C',
+      backgroundColor: darkMode && ['#fff'].includes(fieldBackgroundColor) ? '#313538' : fieldBackgroundColor,
+      color: darkMode && ['#11181C'].includes(selectedTextColor) ? '#ECEDEE' : selectedTextColor,
       '&:hover': {
-        backgroundColor: '#3E63DD',
+        backgroundColor: '#ACB2B9',
         color: 'white',
       },
     }),
@@ -350,12 +366,16 @@ export const DropDown = function DropDown({
       display: 'flex',
       flexDirection: 'column',
       gap: '4px !important',
-      backgroundColor: 'var(--base) !important',
       overflowY: 'auto',
+    }),
+    menu: (provided, state) => ({
+      ...provided,
+      marginTop: '5px',
+      backgroundColor: darkMode && ['#fff'].includes(fieldBackgroundColor) ? '#313538' : fieldBackgroundColor,
     }),
   };
 
-  const onDomClick = (e) => {
+  const handleOutsideClick = (e) => {
     let menu = ref.current.querySelector('.select__menu');
     if (!ref.current.contains(e.target) || !menu || !menu.contains(e.target)) {
       setIsFocused(false);
@@ -364,15 +384,15 @@ export const DropDown = function DropDown({
   };
 
   useEffect(() => {
-    document.addEventListener('mousedown', onDomClick);
+    document.addEventListener('mousedown', handleOutsideClick);
     return () => {
-      document.removeEventListener('mousedown', onDomClick);
+      document.removeEventListener('mousedown', handleOutsideClick);
     };
   }, []);
 
   const labelStyles = {
-    marginRight: label !== '' ? '1rem' : '0.001rem',
-    color: labelColor,
+    [alignment === 'side' && direction === 'alignRight' ? 'marginLeft' : 'marginRight']: label ? '1rem' : '0.001rem',
+    color: darkMode && labelColor === '#11181C' ? '#ECEDEE' : labelColor,
     alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
   };
 
@@ -393,6 +413,7 @@ export const DropDown = function DropDown({
           height,
           display: visibility ? 'flex' : 'none',
           flexDirection: alignment === 'top' ? 'column' : direction === 'alignRight' ? 'row-reverse' : 'row',
+          padding: padding === 'default' ? '3px 2px' : '',
         }}
         onMouseDown={(event) => {
           onComponentClick(id, component, event);
@@ -403,11 +424,11 @@ export const DropDown = function DropDown({
           className="my-auto"
           style={{
             alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
-            width: alignment === 'side' || labelAutoWidth ? 'auto' : `${labelWidth}%`,
-            maxWidth: alignment === 'side' || labelAutoWidth ? '100%' : `${labelWidth}%`,
+            width: alignment === 'top' || labelAutoWidth ? 'auto' : `${labelWidth}%`,
+            maxWidth: alignment === 'top' || labelAutoWidth ? '100%' : `${labelWidth}%`,
           }}
         >
-          <label style={labelStyles} className="form-label py-0 my-0">
+          <label style={labelStyles} className="font-size-12 font-weight-500 py-0 my-0">
             {label}
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
@@ -436,7 +457,6 @@ export const DropDown = function DropDown({
             onInputChange={onSearchTextChange}
             onFocus={(event) => {
               fireEvent('onFocus');
-              onComponentClick(event, component, id);
             }}
             onMenuInputFocus={() => setIsFocused(true)}
             onBlur={() => {
@@ -448,10 +468,12 @@ export const DropDown = function DropDown({
               MenuList: CustomMenuList,
               ValueContainer: CustomValueContainer,
               Option,
+              LoadingIndicator: () => <Spinner style={{ width: '16px', height: '16px', color: 'var(--indigo9)' }} />,
             }}
             isClearable
             icon={icon}
             doShowIcon={iconVisibility}
+            iconColor={iconColor}
             isSearchable={false}
             {...{
               menuIsOpen: isFocused || undefined,
@@ -465,7 +487,7 @@ export const DropDown = function DropDown({
         className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
         style={{
           color: errTextColor,
-          justifyContent: direction === 'alignRight' ? 'flex-end' : 'flex-start',
+          justifyContent: direction === 'alignRight' ? 'flex-start' : 'flex-end',
           marginTop: alignment === 'top' ? '1.25rem' : '0.25rem',
         }}
       >

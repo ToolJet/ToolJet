@@ -12,7 +12,12 @@
       "data": {},
       "rawData": {}
     },
-    "options": {},
+    "options": {
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
     "customTesting": true,
     "hideSave": true
   },

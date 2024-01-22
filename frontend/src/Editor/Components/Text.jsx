@@ -8,6 +8,12 @@ const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   bottom: 'flex-end',
 };
 
+const HORIZONTAL_ALIGNMENT_VS_CSS_VALUE = {
+  center: 'center',
+  left: 'fles-start',
+  right: 'flex-end',
+};
+
 export const Text = function Text({ height, properties, fireEvent, styles, darkMode, setExposedVariable, dataCy }) {
   let {
     textSize,
@@ -29,7 +35,6 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     borderRadius,
     isScrollRequired,
   } = styles;
-
   const { loadingState, textFormat, disabledState } = properties;
   const [text, setText] = useState(() => computeText());
   const [visibility, setVisibility] = useState(properties.visibility);
@@ -45,7 +50,6 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, loadingState, disabledState]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const text = computeText();
     setText(text);
@@ -105,7 +109,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     color,
     display: visibility ? 'flex' : 'none',
     alignItems: VERTICAL_ALIGNMENT_VS_CSS_VALUE[verticalAlignment],
-    textAlign,
+    justifyContent: HORIZONTAL_ALIGNMENT_VS_CSS_VALUE[textAlign],
     fontWeight: fontWeight ? fontWeight : fontWeight === '0' ? 0 : 'normal',
     lineHeight: lineHeight ?? 1.5,
     textDecoration: decoration ?? 'none',
@@ -119,6 +123,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     border: '1px solid',
     borderColor: borderColor,
     borderRadius: borderRadius ? `${borderRadius}px` : '0px',
+    fontSize: `${textSize}px`,
   };
   return (
     <div
@@ -137,10 +142,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
         ) : (
           <div
             style={{
-              width: '100%',
-              height: '100%',
-              fontSize: textSize,
-              overflowY: isScrollRequired == 'enabled' ? 'auto' : 'unset',
+              overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
             }}
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
           />

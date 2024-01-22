@@ -7,7 +7,7 @@ import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
 import { AllComponents } from '@/Editor/Box';
 
-const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'DropDown'];
+const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'NumberInput', 'PasswordInput', 'DropDown'];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Text',
   TextInput: 'Data',
@@ -85,7 +85,7 @@ export const baseComponentProperties = (
     'Additional Actions': Object.keys(AllComponents).filter(
       (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component)
     ),
-    General: ['Modal', 'Text', 'TextInput', 'DropDown'],
+    General: ['Modal', 'TextInput', 'PasswordInput', 'NumberInput', 'Text', 'DropDown'],
     Layout: [],
   };
   if (component.component.component === 'Listview') {
@@ -150,6 +150,7 @@ export const baseComponentProperties = (
           apps={apps}
           darkMode={darkMode}
           pages={pages}
+          component={component}
         />
       ),
     });
@@ -196,7 +197,7 @@ export const baseComponentProperties = (
   items.push({
     title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
     isOpen: true,
-    children: additionalActions.map((property) => {
+    children: additionalActions?.map((property) => {
       const paramType = property === 'Tooltip' ? 'general' : 'properties';
       return renderElement(
         component,
