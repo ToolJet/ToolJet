@@ -10419,30 +10419,28 @@ tbody {
 }
 
 .add-row-btn-database-absolute {
-  position: absolute;
-  top: 0px;
-  right: -28px;
-  width: 29px;
-  height: 31px;
-  border-width: 0px 1px 1px 1px;
-  border-style: solid;
-  border-radius: 0px;
-  background: var(--slate7);
-  border-color: var(--slate4);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  right: 0;
+  // border-width: 0px 1px 1px 1px;
+  // border-style: solid;
+  // border-radius: 0px;
+  // background: var(--slate7);
+  // border-color: var(--slate4);
 }
 
 .add-row-btn-database-absolute-dark {
-  position: absolute;
-  top: 0px;
-  right: -28px;
-  width: 29px;
-  height: 31px;
-  border-width: 0px 1px 1px 1px;
-  border-style: solid;
-  border-radius: 0px;
-  background: #1c252f;
-  border: 0.4px solid white !important;
-  color: white !important;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  right: 0;
+  // border-width: 0px 1px 1px 1px;
+  // border-style: solid;
+  // border-radius: 0px;
+  // background: #1c252f;
+  // border: 0.4px solid white !important;
+  // color: white !important;
 }
 
 .add-row-btn-database-fixed {
@@ -12056,3 +12054,4 @@ tbody {
     }
   }
 }
+

@@ -100,12 +100,12 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     const resizeObserver = new ResizeObserver(handleResize);
     if (container) {
       resizeObserver.observe(container);
-      container.addEventListener('scroll', handleScroll);
+      // container.addEventListener('scroll', handleScroll);
     }
     return () => {
       if (container) {
         resizeObserver.unobserve(container);
-        container.removeEventListener('scroll', handleScroll);
+        // container.removeEventListener('scroll', handleScroll);
       }
     };
   }, []);
@@ -467,9 +467,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           style={{ position: 'relative' }}
         >
           <thead>
-            <button onClick={() => openCreateColumnDrawer()} className={`${positionValue}`}>
-              +
-            </button>
             {headerGroups.map((headerGroup, index) => (
               <tr className="tj-database-column-row" {...headerGroup.getHeaderGroupProps()} key={index}>
                 {headerGroup.headers.map((column, index) => (
@@ -540,6 +537,9 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                     )}
                   </th>
                 ))}
+                <th onClick={() => openCreateColumnDrawer()} className={positionValue}>
+                  +
+                </th>
               </tr>
             ))}
           </thead>
