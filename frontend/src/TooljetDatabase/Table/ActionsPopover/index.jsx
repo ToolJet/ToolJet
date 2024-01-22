@@ -2,28 +2,29 @@
 import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import DeleteIcon from './Icons/Delete.svg';
+import DeleteIcon from '../../Icons/DeleteIcon.svg';
+import EditIcon from '../../Icons/EditColumn.svg';
 
 // eslint-disable-next-line no-unused-vars
-export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
+export const TablePopover = ({ disabled, children, onEdit, onDelete, show }) => {
   if (disabled) return children;
   const popover = (
     <Popover>
       <Popover.Body>
-        {/* <div className="w-min-100 row list-group-item-action cursor-pointer">
+        <div className="column-popover row list-group-item-action cursor-pointer p-1">
           <div className="col-auto">
-            <EditIcon />
+            <EditIcon width="17" height="18" />
           </div>
           <div className="col text-truncate" onClick={onEdit}>
-            Edit
+            Edit column
           </div>
-        </div> */}
-        <div className="w-min-100 row list-group-item-action cursor-pointer" onClick={onDelete}>
+        </div>
+        <div className="column-popover row list-group-item-action cursor-pointer p-1 mt-2" onClick={onDelete}>
           <div className="col-auto">
-            <DeleteIcon />
+            <DeleteIcon width="14" height="15" />
           </div>
-          <div className="col text-truncate" data-cy="column-delete-option">
-            Delete
+          <div className="col text-truncate text-danger" data-cy="column-delete-option">
+            Delete column
           </div>
         </div>
       </Popover.Body>
@@ -31,7 +32,7 @@ export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
   );
 
   return (
-    <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={popover}>
+    <OverlayTrigger show={show} rootClose={true} trigger="click" placement="bottom" overlay={popover}>
       {children}
     </OverlayTrigger>
   );

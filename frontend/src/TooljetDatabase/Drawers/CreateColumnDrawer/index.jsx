@@ -34,11 +34,10 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
 
               if (data?.result?.length > 0) {
                 setColumns(
-                  data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
+                  data?.result.map(({ column_name, data_type, ...rest }) => ({
                     Header: column_name,
                     accessor: column_name,
                     dataType: data_type,
-                    isPrimaryKey: keytype?.toLowerCase() === 'primary key',
                     ...rest,
                   }))
                 );
