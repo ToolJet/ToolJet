@@ -236,15 +236,21 @@ export const PasswordInput = function PasswordInput({
               maxWidth: auto && defaultAlignment === 'side' ? '70%' : '100%',
               marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '9px' : '',
               marginLeft: label?.length > 0 && direction === 'right' && defaultAlignment === 'side' ? '9px' : '',
-              display: 'block',
-              overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
-              textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+              display: 'flex',
               fontWeight: 500,
-              textAlign: direction == 'right' ? 'right' : 'left',
-              whiteSpace: 'nowrap',
+              justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
             }}
           >
-            {label}
+            <span
+              style={{
+                overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
+                textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+                whiteSpace: 'nowrap',
+                display: 'block',
+              }}
+            >
+              {label}
+            </span>{' '}
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         )}
