@@ -15,14 +15,10 @@ import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
-import usePortal from '@/_hooks/use-portal';
-
-import Tooltip from 'react-bootstrap/Tooltip';
-
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import NewCodeHinter from './NewCodeHinter';
 
 const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}, ...restProps }) => {
-  const { initialValue, onChange, enablePreview = true, popOverCallback } = restProps;
+  const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
   const { validation = {} } = fieldMeta;
 
   const [isFocused, setIsFocused] = React.useState(false);
@@ -35,38 +31,6 @@ const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}
     setCurrentValue(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [componentName]);
-
-  const [isOpen, setIsOpen] = React.useState(false);
-
-  const handleTogglePopupExapand = () => {
-    const changeOpen = (newOpen) => {
-      setIsOpen(newOpen);
-      if (typeof popOverCallback === 'function') popOverCallback(newOpen);
-    };
-
-    if (!isOpen) {
-      changeOpen(true);
-    }
-
-    return new Promise((resolve) => {
-      const element = document.getElementsByClassName('portal-container');
-      if (element) {
-        const checkPortalExits = element[0]?.classList.contains(componentName);
-
-        if (checkPortalExits === false) {
-          const parent = element[0].parentNode;
-          parent.removeChild(element[0]);
-        }
-
-        changeOpen(false);
-        resolve();
-      }
-    }).then(() => {
-      changeOpen(true);
-      forceUpdate();
-    });
-  };
-  const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
   const renderPreview = () => {
     if (!enablePreview) return null;
@@ -83,34 +47,31 @@ const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}
   };
 
   return (
-    <div className="code-editor-basic-wrapper d-flex">
-      <div className="codehinter-container w-100 ">
-        <SingleLineCodeEditor.Editor
-          type={type}
-          currentValue={currentValue}
-          setCurrentValue={setCurrentValue}
-          hints={suggestions}
-          setFocus={setIsFocused}
-          validationType={validation?.schema?.type}
-          onBlurUpdate={onChange}
-          error={errorStateActive}
-          cyLabel={restProps.cyLabel}
-          renderPreview={renderPreview}
-          isOpen={isOpen}
-          handleTogglePopupExapand={handleTogglePopupExapand}
-          poralCallback={setIsOpen}
-          forceUpdate={forceUpdate}
-          componentName={componentName}
-        />
+    <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
+      <div className="code-editor-basic-wrapper d-flex">
+        <div className="codehinter-container w-100">
+          <SingleLineCodeEditor.Editor
+            currentValue={currentValue}
+            setCurrentValue={setCurrentValue}
+            hints={suggestions}
+            setFocus={setIsFocused}
+            validationType={validation?.schema?.type}
+            onBlurUpdate={onChange}
+            error={errorStateActive}
+            cyLabel={restProps.cyLabel}
+            renderPreview={renderPreview}
+            portalProps={portalProps}
+            componentName={componentName}
+          />
 
-        {!isOpen && renderPreview()}
+          {!portalProps?.isOpen && renderPreview()}
+        </div>
       </div>
     </div>
   );
 };
 
 const EditorInput = ({
-  type,
   currentValue,
   setCurrentValue,
   hints,
@@ -123,10 +84,7 @@ const EditorInput = ({
   componentName,
   usePortalEditor = true,
   renderPreview,
-  isOpen,
-  handleTogglePopupExapand,
-  poralCallback,
-  forceUpdate,
+  portalProps,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let before = context.matchBefore(/\w+/);
@@ -174,22 +132,22 @@ const EditorInput = ({
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const theme = darkMode ? okaidia : githubLight;
 
-  // const height = type === 'basic' ? '100%' : 'fit-content';
+  const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
 
   return (
     <div className={` ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
       {usePortalEditor && (
-        <PopupIcon
+        <NewCodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
           icon="portal-open"
           tip="Pop out code editor into a new window"
           transformation={componentName === 'transformation'}
         />
       )}
-      <Portal
+      <NewCodeHinter.Portal
         isCopilotEnabled={false}
         isOpen={isOpen}
-        callback={poralCallback}
+        callback={setIsOpen}
         componentName={componentName}
         key={componentName}
         customComponent={renderPreview}
@@ -222,7 +180,7 @@ const EditorInput = ({
             theme={theme}
           />
         </ErrorBoundary>
-      </Portal>
+      </NewCodeHinter.Portal>
     </div>
   );
 };
@@ -312,45 +270,11 @@ const DynamicEditorBridge = (props) => {
           <div className={`col code-hinter-col`}>
             <div className="d-flex">
               <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div>
-              <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
-                <SingleLineCodeEditor initialValue {...props} />
-              </div>
+              <SingleLineCodeEditor initialValue {...props} />
             </div>
           </div>
         </div>
       )}
-    </div>
-  );
-};
-
-const Portal = ({ children, ...restProps }) => {
-  const renderPortal = usePortal({ children, ...restProps });
-
-  return <React.Fragment>{renderPortal}</React.Fragment>;
-};
-
-const PopupIcon = ({ callback, icon, tip, transformation = false }) => {
-  const size = transformation ? 20 : 12;
-
-  return (
-    <div className="d-flex justify-content-end w-100 position-absolute arpit" style={{ top: 0 }}>
-      <OverlayTrigger
-        trigger={['hover', 'focus']}
-        placement="top"
-        delay={{ show: 800, hide: 100 }}
-        overlay={<Tooltip id="button-tooltip">{tip}</Tooltip>}
-      >
-        <img
-          className="svg-icon m-2 popup-btn"
-          src={`assets/images/icons/${icon}.svg`}
-          width={size}
-          height={size}
-          onClick={(e) => {
-            e.stopPropagation();
-            callback();
-          }}
-        />
-      </OverlayTrigger>
     </div>
   );
 };

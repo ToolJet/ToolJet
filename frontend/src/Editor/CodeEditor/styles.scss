@@ -36,6 +36,7 @@
     -moz-appearance: none;
     appearance: none;
     height: inherit !important;
+    cursor: text;
 
     &:focus {
         outline: none;

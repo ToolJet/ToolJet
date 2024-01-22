@@ -9,6 +9,7 @@ import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { generateHints } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
+import NewCodeHinter from './NewCodeHinter';
 const langSupport = Object.freeze({
   javascript: javascript(),
   python: python(),
@@ -20,7 +21,6 @@ const MultiLineCodeEditor = (props) => {
   const {
     darkMode,
     height,
-    width,
     initialValue,
     lang,
     className,
@@ -32,6 +32,7 @@ const MultiLineCodeEditor = (props) => {
     placeholder,
     hideSuggestion,
     suggestions: hints,
+    portalProps,
   } = props;
 
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
@@ -45,14 +46,17 @@ const MultiLineCodeEditor = (props) => {
     if (diff > 0) {
       diffOfCurrentValue.current = val.slice(-diff);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleOnBlur = React.useCallback(() => {
     onChange(currentValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentValue]);
 
   useEffect(() => {
     setCurrentValue(initialValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
 
   const heightInPx = typeof height === 'string' && height?.includes('px') ? height : `${height}px`;
@@ -105,11 +109,6 @@ const MultiLineCodeEditor = (props) => {
 
     const appHints = hints['appHints'];
 
-    // const currentValue = context.state.doc.toString();
-    // const prevword = diffOfCurrentValue.current;
-
-    // // console.log('--arpit==>', { currentValue, prevword });
-
     let autoSuggestionList = appHints.filter((suggestion) => {
       if (currentWord.length === 0) return true;
 
@@ -159,22 +158,53 @@ const MultiLineCodeEditor = (props) => {
     defaultKeymap: true,
   });
 
+  const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
+
   return (
-    <ErrorBoundary>
+    <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
-        <CodeMirror
-          value={currentValue}
-          placeholder={placeholder}
-          height={heightInPx}
-          // width='100'
-          theme={theme}
-          extensions={[langExtention, autoCompleteConfig]}
-          onChange={handleChange}
-          onBlur={handleOnBlur}
-          basicSetup={setupConfig}
+        <NewCodeHinter.PopupIcon
+          callback={handleTogglePopupExapand}
+          icon="portal-open"
+          tip="Pop out code editor into a new window"
+          transformation={componentName === 'transformation'}
         />
+        <NewCodeHinter.Portal
+          isCopilotEnabled={false}
+          isOpen={isOpen}
+          callback={setIsOpen}
+          componentName={componentName}
+          key={componentName}
+          forceUpdate={forceUpdate}
+          optionalProps={{ styles: { height: 300 }, cls: '' }}
+          darkMode={darkMode}
+          selectors={{ className: 'preview-block-portal' }}
+          dragResizePortal={true}
+          callgpt={null}
+        >
+          <ErrorBoundary>
+            <div className="codehinter-container w-100 ">
+              <CodeMirror
+                value={currentValue}
+                placeholder={placeholder}
+                height={'100%'}
+                minHeight={heightInPx}
+                maxHeight={heightInPx}
+                width="100%"
+                theme={theme}
+                extensions={[langExtention, autoCompleteConfig]}
+                onChange={handleChange}
+                onBlur={handleOnBlur}
+                basicSetup={setupConfig}
+                style={{
+                  overflowY: 'auto',
+                }}
+              />
+            </div>
+          </ErrorBoundary>
+        </NewCodeHinter.Portal>
       </div>
-    </ErrorBoundary>
+    </div>
   );
 };
 
