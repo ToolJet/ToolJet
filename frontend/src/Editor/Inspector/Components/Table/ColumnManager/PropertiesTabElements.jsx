@@ -17,7 +17,6 @@ export const PropertiesTabElements = ({
   component,
   props,
   columnEventChanged,
-  timeZoneOptions,
   handleEventManagerPopoverCallback,
 }) => {
   const { t } = useTranslation();
@@ -160,7 +159,6 @@ export const PropertiesTabElements = ({
           getPopoverFieldSource={getPopoverFieldSource}
           setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
           component={component}
-          timeZoneOptions={timeZoneOptions}
         />
       )}
       {column.columnType === 'link' && (
