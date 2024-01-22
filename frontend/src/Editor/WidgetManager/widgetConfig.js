@@ -1322,7 +1322,6 @@ export const widgets = [
       },
     },
     validation: {
-      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
       regex: { type: 'code', displayName: 'Regex', placeholder: '^[a-zA-Z0-9_ -]{3,16}$' },
       minLength: { type: 'code', displayName: 'Min length', placeholder: 'Enter min length' },
       maxLength: { type: 'code', displayName: 'Max length', placeholder: 'Enter max length' },
@@ -1331,6 +1330,7 @@ export const widgets = [
         displayName: 'Custom validation',
         placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
       },
+      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
     events: {
       onChange: { displayName: 'On change' },

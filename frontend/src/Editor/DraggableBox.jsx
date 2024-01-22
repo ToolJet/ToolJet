@@ -119,8 +119,10 @@ export const DraggableBox = React.memo(
         top: '50%',
         transform: 'translateY(-50%)',
         display:
-          (mode == 'edit' && !readOnly && mouseOver) || isResizing || isDragging2 || isSelectedComponent
-            ? 'block'
+          (mode === 'edit' && !readOnly && mouseOver) || isResizing || isDragging2 || isSelectedComponent
+            ? isVerticalResizingAllowed()
+              ? 'none'
+              : 'block'
             : 'none',
       },
       left: {
@@ -133,8 +135,10 @@ export const DraggableBox = React.memo(
         top: '50%',
         transform: 'translateY(-50%)',
         display:
-          (mode == 'edit' && !readOnly && mouseOver) || isResizing || isDragging2 || isSelectedComponent
-            ? 'block'
+          (mode === 'edit' && !readOnly && mouseOver) || isResizing || isDragging2 || isSelectedComponent
+            ? isVerticalResizingAllowed()
+              ? 'none'
+              : 'block'
             : 'none',
       },
       bottomLeft: {
