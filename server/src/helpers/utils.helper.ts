@@ -240,5 +240,5 @@ export function isTooljetVersionWithNormalizedAppDefinitionSchem(version) {
  * Checks if a given Tooljet version is compatible with the grid compatibility fix.
  */
 export function shouldApplyGridCompatibilityFix(version) {
-  return semver.satisfies(semver.coerce(version), '>= 2.24.0 < 2.27.7');
+  return semver.satisfies(semver.coerce(version), '>= 2.24.0 < 2.27.8');
 }

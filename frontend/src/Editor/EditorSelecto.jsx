@@ -1,7 +1,8 @@
-import React, { useCallback, memo } from 'react';
+import React, { useCallback, memo, useState } from 'react';
 import Selecto from 'react-selecto';
 import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
+import Moveable from 'react-moveable';
 
 const EditorSelecto = ({
   selectionRef,
@@ -20,6 +21,8 @@ const EditorSelecto = ({
     shallow
   );
 
+  const [dragTarget, setDragTarget] = useState([]);
+
   const onAreaSelectionStart = useCallback(
     (e) => {
       const isMultiSelect = e.inputEvent.shiftKey || useEditorStore.getState().selectedComponents.length > 0;
@@ -30,6 +33,7 @@ const EditorSelecto = ({
   );
 
   const onAreaSelection = useCallback((e) => {
+    setDragTarget(e.selected);
     e.added.forEach((el) => {
       el.classList.add('resizer-select');
     });
@@ -83,24 +87,54 @@ const EditorSelecto = ({
   };
 
   return (
-    <Selecto
-      dragContainer={'.canvas-container'}
-      selectableTargets={['.moveable-box']}
-      hitRate={0}
-      selectByClick={true}
-      toggleContinueSelect={['shift']}
-      ref={selectionRef}
-      scrollOptions={scrollOptions}
-      onSelectStart={onAreaSelectionStart}
-      onSelectEnd={onAreaSelectionEnd}
-      onSelect={onAreaSelection}
-      onDragStart={onAreaSelectionDragStart}
-      onDrag={onAreaSelectionDrag}
-      onDragEnd={onAreaSelectionDragEnd}
-      onScroll={(e) => {
-        canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
-      }}
-    />
+    <>
+      <Selecto
+        dragContainer={'.canvas-container'}
+        selectableTargets={['.moveable-box']}
+        hitRate={0}
+        selectByClick={true}
+        toggleContinueSelect={['shift']}
+        ref={selectionRef}
+        scrollOptions={scrollOptions}
+        onSelectStart={onAreaSelectionStart}
+        onSelectEnd={onAreaSelectionEnd}
+        onSelect={onAreaSelection}
+        onDragStart={onAreaSelectionDragStart}
+        onDrag={onAreaSelectionDrag}
+        onDragEnd={onAreaSelectionDragEnd}
+        onScroll={(e) => {
+          canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
+        }}
+      />
+      {/* <Moveable
+        target={dragTarget}
+        // ref={moveableEditorRef}
+        draggable={true}
+        resizable={true}
+        onDrag={(e) => {
+          e.target.style.transform = e.transform;
+        }}
+        onDragGroup={(e) => {
+          console.log('Dragging--------new');
+          e.events.forEach((ev) => {
+            ev.target.style.transform = ev.transform;
+          });
+        }}
+        onClickGroup={(e) => window.objSelecto.clickTarget(e.inputEvent, e.inputTarget)}
+        onRender={(ev) => (ev.target.style.cssText += ev.cssText)}
+        // onDragStart={(_a) => {
+        //   var target = _a.target,
+        //     clientX = _a.clientX,
+        //     clientY = _a.clientY;
+        // }}
+        // onDragEnd={(_a) => {
+        //   var target = _a.target,
+        //     isDrag = _a.isDrag,
+        //     clientX = _a.clientX,
+        //     clientY = _a.clientY;
+        // }}
+      /> */}
+    </>
   );
 };
 

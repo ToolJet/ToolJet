@@ -19,7 +19,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
-import _, { cloneDeep } from 'lodash';
+import _, { cloneDeep, isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
@@ -62,11 +62,12 @@ export const Container = ({
   const [draggedSubContainer, setDraggedSubContainer] = useDraggedSubContainer(false);
   const [dragTarget] = useDragTarget();
 
-  const { showComments, currentLayout, selectedComponents } = useEditorStore(
+  const { showComments, currentLayout, selectedComponents, hoveredComponent } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
       selectedComponents: state?.selectedComponents,
+      hoveredComponent: state?.hoveredComponent,
     }),
     shallow
   );
@@ -801,26 +802,189 @@ export const Container = ({
           ))}
         </>
       )}
-      <DragContainer
-        boxes={Object.keys(boxes).map((key) => ({ ...boxes[key], id: key }))}
-        renderWidget={renderWidget}
-        canvasWidth={canvasWidth}
-        onResizeStop={onResizeStop}
-        onDrag={onDragStop}
-        gridWidth={gridWidth}
-        selectedComponents={selectedComponents}
-        setIsDragging={setIsDragging}
-        setIsResizing={setIsResizing}
-        currentLayout={currentLayout}
-        subContainerWidths={subContainerWidths}
-        // turnOffAutoLayout={turnOffAutoLayout}
-        currentPageId={currentPageId}
-        autoComputeLayout={appDefinition.pages[currentPageId]?.autoComputeLayout}
-        setDraggedSubContainer={setDraggedSubContainer}
-        draggedSubContainer={draggedSubContainer}
-        mode={isVersionReleased ? 'view' : mode}
-        boxesAsObj={boxes}
-      />
+      <div className="root">
+        <div className="container-fluid rm-container p-0">
+          {Object.entries(boxes)
+            .filter(([, box]) => isEmpty(box?.component?.parent))
+            .map(([id, box]) => {
+              const { component } = box;
+              let layoutData = box?.layouts?.[currentLayout];
+              if (isEmpty(layoutData)) {
+                layoutData = box?.layouts?.['desktop'];
+              }
+              // const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
+              const width = gridWidth * layoutData.width;
+
+              const styles = {
+                width: width + 'px',
+                height: layoutData.height + 'px',
+                transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
+              };
+
+              return (
+                <div
+                  className={`target widget-target target1 ele-${id} moveable-box`}
+                  data-id={`${component.parent}`}
+                  key={id}
+                  id={id}
+                  widgetid={id}
+                  style={{
+                    transform: `translate(332px, -134px)`,
+                    ...styles,
+                    ...(hoveredComponent === id ? { zIndex: 2 } : {}),
+                  }}
+                >
+                  <DraggableBox
+                    className={showComments && 'pointer-events-none'}
+                    canvasWidth={canvasWidth}
+                    onComponentClick={
+                      config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
+                    }
+                    onEvent={onEvent}
+                    // height={height}
+                    onComponentOptionChanged={onComponentOptionChanged}
+                    onComponentOptionsChanged={onComponentOptionsChanged}
+                    key={id}
+                    paramUpdated={paramUpdated}
+                    id={id}
+                    {...box}
+                    mode={mode}
+                    resizingStatusChanged={(status) => setIsResizing(status)}
+                    draggingStatusChanged={(status) => setIsDragging(status)}
+                    inCanvas={true}
+                    zoomLevel={zoomLevel}
+                    setSelectedComponent={setSelectedComponent}
+                    removeComponent={removeComponent}
+                    deviceWindowWidth={deviceWindowWidth}
+                    isSelectedComponent={
+                      mode === 'edit' ? selectedComponents.find((component) => component.id === id) : false
+                    }
+                    darkMode={darkMode}
+                    // onComponentHover={onComponentHover}
+                    // hoveredComponent={hoveredComponent}
+                    sideBarDebugger={sideBarDebugger}
+                    isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+                    childComponents={childComponents[id]}
+                    containerProps={{
+                      // turnOffAutoLayout,
+                      mode,
+                      snapToGrid,
+                      onComponentClick,
+                      onEvent,
+                      appDefinition,
+                      appDefinitionChanged,
+                      currentState,
+                      onComponentOptionChanged,
+                      onComponentOptionsChanged,
+                      appLoading,
+                      zoomLevel,
+                      setSelectedComponent,
+                      removeComponent,
+                      currentLayout,
+                      deviceWindowWidth,
+                      selectedComponents,
+                      darkMode,
+                      // onComponentHover,
+                      // hoveredComponent,
+                      sideBarDebugger,
+                      addDefaultChildren: box.withDefaultChildren,
+                      currentPageId,
+                      childComponents,
+                      // setIsChildDragged,
+                      setSubContainerWidths: (id, width) =>
+                        setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
+                      parentGridWidth: gridWidth,
+                      subContainerWidths,
+                      draggedSubContainer,
+                    }}
+                    isVersionReleased={isVersionReleased}
+                  />
+                </div>
+              );
+            })}
+          <DragContainer
+            boxes={Object.keys(boxes).map((key) => ({ ...boxes[key], id: key }))}
+            renderWidget={renderWidget}
+            canvasWidth={canvasWidth}
+            onResizeStop={onResizeStop}
+            onDrag={onDragStop}
+            gridWidth={gridWidth}
+            selectedComponents={selectedComponents}
+            setIsDragging={setIsDragging}
+            setIsResizing={setIsResizing}
+            currentLayout={currentLayout}
+            subContainerWidths={subContainerWidths}
+            // turnOffAutoLayout={turnOffAutoLayout}
+            currentPageId={currentPageId}
+            autoComputeLayout={appDefinition.pages[currentPageId]?.autoComputeLayout}
+            setDraggedSubContainer={setDraggedSubContainer}
+            draggedSubContainer={draggedSubContainer}
+            mode={isVersionReleased ? 'view' : mode}
+            boxesAsObj={boxes}
+            //for DraggableBox
+            showComments={showComments}
+            onComponentClick={
+              config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
+            }
+            onEvent={onEvent}
+            // height={height}
+            onComponentOptionChanged={onComponentOptionChanged}
+            onComponentOptionsChanged={onComponentOptionsChanged}
+            // key={key}
+            paramUpdated={paramUpdated}
+            // id={key}
+            // {...boxes[key]}
+            // mode={mode}
+            resizingStatusChanged={(status) => setIsResizing(status)}
+            draggingStatusChanged={(status) => setIsDragging(status)}
+            inCanvas={true}
+            zoomLevel={zoomLevel}
+            setSelectedComponent={setSelectedComponent}
+            removeComponent={removeComponent}
+            deviceWindowWidth={deviceWindowWidth}
+            // isSelectedComponent={mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false}
+            darkMode={darkMode}
+            // onComponentHover={onComponentHover}
+            // hoveredComponent={hoveredComponent}
+            sideBarDebugger={sideBarDebugger}
+            isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+            // childComponents={childComponents[key]}
+            containerProps={{
+              // turnOffAutoLayout,
+              mode,
+              snapToGrid,
+              onComponentClick,
+              onEvent,
+              appDefinition,
+              appDefinitionChanged,
+              currentState,
+              onComponentOptionChanged,
+              onComponentOptionsChanged,
+              appLoading,
+              zoomLevel,
+              setSelectedComponent,
+              removeComponent,
+              currentLayout,
+              deviceWindowWidth,
+              selectedComponents,
+              darkMode,
+              // onComponentHover,
+              // hoveredComponent,
+              sideBarDebugger,
+              // addDefaultChildren,
+              currentPageId,
+              childComponents,
+              // setIsChildDragged,
+              setSubContainerWidths: (id, width) => setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
+              parentGridWidth: gridWidth,
+              subContainerWidths,
+              draggedSubContainer,
+            }}
+            isVersionReleased={isVersionReleased}
+            childComponents={childComponents}
+          />
+        </div>
+      </div>
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div style={{ paddingTop: '10%' }}>
           <div className="mx-auto w-50 p-5 bg-light no-components-box">
