@@ -217,9 +217,9 @@ export const PasswordInput = function PasswordInput({
     <>
       <div
         data-disabled={disable || loading}
-        className={`text-input d-flex overflow-hidden ${
-          defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '
-        }  ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+        className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
+          direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
+        }
       ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
       ${visibility || 'invisible'}`}
         style={{

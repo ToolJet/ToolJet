@@ -250,9 +250,9 @@ export const NumberInput = function NumberInput({
       <>
         <div
           data-disabled={disable || loading}
-          className={`text-input overflow-hidden d-flex ${
-            defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '
-          }  ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+          className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
+            direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
+          }
          ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
          ${visibility || 'invisible'}`}
           style={{
