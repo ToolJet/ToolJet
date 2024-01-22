@@ -73,9 +73,9 @@ const EditRowForm = ({ onEdit, onClose }) => {
       newInputValues[index] = { value: defaultValue, disabled: true };
     } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
       newInputValues[index] = { value: actualDefaultVal, disabled: true };
-    } else if (nullValue === 'YES' && tabData === 'Null' && dataType !== 'boolean') {
+    } else if (nullValue && tabData === 'Null' && dataType !== 'boolean') {
       newInputValues[index] = { value: 'Null', disabled: true };
-    } else if (nullValue === 'YES' && tabData === 'Null' && dataType === 'boolean') {
+    } else if (nullValue && tabData === 'Null' && dataType === 'boolean') {
       newInputValues[index] = { value: false, disabled: true };
     } else {
       newInputValues[index] = { value: customVal, disabled: false };
@@ -204,7 +204,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
     }
   };
 
-  const primaryColumn = columns.find((column) => column.isPrimaryKey)?.accessor || null;
+  const primaryColumn = columns.find((column) => column.constraints_type.is_primary_key)?.accessor || null;
 
   const options = selectedTableData.map((row) => {
     return {
@@ -247,9 +247,12 @@ const EditRowForm = ({ onEdit, onClose }) => {
 
           {selectedRow &&
             Array.isArray(columns) &&
-            columns?.map(({ Header, accessor, dataType, isPrimaryKey, column_default, is_nullable }, index) => {
+            columns?.map(({ Header, accessor, dataType, column_default, constraints_type }, index) => {
               const currentValue = selectedTableData.find((row) => row.id === selectedRow)?.[accessor];
               const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);
+              const isPrimaryKey = constraints_type.is_primary_key;
+              const isNullable = !constraints_type.is_not_null;
+
               if (isPrimaryKey) return null;
 
               return (
@@ -270,14 +273,14 @@ const EditRowForm = ({ onEdit, onClose }) => {
                           darkMode ? 'row-tabs-dark' : 'row-tabs'
                         } d-flex align-items-center justify-content-start gap-2`}
                       >
-                        {is_nullable === 'YES' && (
+                        {isNullable && (
                           <div
                             onClick={() =>
                               handleTabClick(
                                 index,
                                 'Null',
                                 column_default,
-                                is_nullable,
+                                isNullable,
                                 accessor,
                                 dataType,
                                 currentValue
@@ -309,7 +312,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
                                 index,
                                 'Default',
                                 column_default,
-                                is_nullable,
+                                isNullable,
                                 accessor,
                                 dataType,
                                 currentValue
@@ -340,7 +343,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
                               index,
                               'Custom',
                               column_default,
-                              is_nullable,
+                              isNullable,
                               accessor,
                               dataType,
                               currentValue

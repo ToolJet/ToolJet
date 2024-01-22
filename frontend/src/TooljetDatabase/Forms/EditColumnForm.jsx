@@ -9,7 +9,7 @@ import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import WarningInfo from '../Icons/Edit-information.svg';
 
 const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
-  const nullValue = selectedColumn.is_nullable === 'YES' ? false : true;
+  const nullValue = selectedColumn.constraints_type.is_not_null;
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
   const [defaultValue, setDefaultValue] = useState(selectedColumn?.column_default);
@@ -97,11 +97,10 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
 
       if (data?.result?.length > 0) {
         setColumns(
-          data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
+          data?.result.map(({ column_name, data_type, ...rest }) => ({
             Header: column_name,
             accessor: column_name,
             dataType: data_type,
-            isPrimaryKey: keytype?.toLowerCase() === 'primary key',
             ...rest,
           }))
         );
