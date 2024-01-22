@@ -16,7 +16,13 @@ import WidgetBox from './WidgetBox';
 import * as Sentry from '@sentry/react';
 
 const NO_OF_GRIDS = 43;
-
+const COMPONENTS_NOT_ALLOWING_VERTICAL_RESIZING = [
+  'TextInput',
+  'PasswordInput',
+  'NumberInput',
+  'DropDown',
+  'Multiselect',
+];
 const resizerClasses = {
   topRight: 'top-right',
   bottomRight: 'bottom-right',
@@ -207,14 +213,7 @@ export const DraggableBox = React.memo(
     };
     function isVerticalResizingAllowed() {
       // Return true if vertical resizing is allowed, false otherwise
-      return (
-        mode === 'edit' &&
-        component.component !== 'TextInput' &&
-        component.component !== 'PasswordInput' &&
-        component.component !== 'NumberInput' &&
-        component.component !== 'Dropdown' &&
-        !readOnly
-      );
+      return mode === 'edit' && !COMPONENTS_NOT_ALLOWING_VERTICAL_RESIZING.includes(component.component) && !readOnly;
     }
 
     const adjustHeightBasedOnAlignment = (increase) => {

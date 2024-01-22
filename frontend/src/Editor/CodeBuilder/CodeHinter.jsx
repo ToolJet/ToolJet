@@ -431,7 +431,7 @@ export function CodeHinter({
         disabled: component?.component?.definition?.styles?.auto?.value,
       };
     }
-    if (component.component.component === 'DropDown') {
+    if (component.component.component === 'DropDown' || component.component.component === 'Multiselect') {
       return {
         disabled: component?.component?.definition?.styles?.labelAutoWidth?.value,
       };

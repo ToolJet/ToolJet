@@ -3616,7 +3616,7 @@ export const widgets = [
         },
         accordian: 'Options',
       },
-      dropdownLoadingState: {
+      multiSelectLoadingState: {
         type: 'toggle',
         displayName: 'Show loading state',
         validation: {
@@ -3642,8 +3642,8 @@ export const widgets = [
         },
         section: 'additionalActions',
       },
-      toolltip: {
-        type: 'code',
+      tooltip: {
+        type: 'input',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
@@ -3739,6 +3739,14 @@ export const widgets = [
         accordian: 'field',
         visibility: false,
       },
+      iconColor: {
+        type: 'color',
+        displayName: 'Icon color',
+        validation: {
+          schema: { type: 'string' },
+        },
+        accordian: 'field',
+      },
       borderRadius: {
         type: 'input',
         displayName: 'Border radius',
@@ -3778,10 +3786,10 @@ export const widgets = [
       },
       properties: {
         label: { value: 'Select' },
-        value: { value: '{{["1","2"]}}' },
+        value: { value: '{{["1","2",]}}' },
         advanced: { value: `{{false}}` },
         values: { value: '{{["1","2","3"]}}' },
-        display_values: { value: '{{["one", "two", "three"]}}' },
+        display_values: { value: '{{["option1", "option2", "option3"]}}' },
         showAllOption: { value: '{{false}}' },
         loadingState: { value: '{{false}}' },
         placeholder: { value: '-Select' },
@@ -3790,14 +3798,15 @@ export const widgets = [
         dropdownLoadingState: { value: '{{false}}' },
         schema: {
           value:
-            "{{[\t{label: 'One',value: 1,disable: false,visible: true,default: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}\t]}}",
+            "{{[\t{label: 'option1',value: '1',disable: false,visible: true,default: true},{label: 'option2',value: '2',disable: false,visible: true},{label: 'option3',value: '3',disable: false,visible: true}\t]}}",
         },
+        tooltip: { value: '' },
       },
       events: [],
       styles: {
         labelColor: { value: '#11181C' },
         labelWidth: { value: '33' },
-        labelAutoWidth: { value: '{{false}}' },
+        labelAutoWidth: { value: '{{true}}' },
         borderRadius: { value: '6' },
         justifyContent: { value: 'left' },
         selectedTextColor: { value: '#11181C' },

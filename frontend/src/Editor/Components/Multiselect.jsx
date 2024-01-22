@@ -95,7 +95,7 @@ const CustomValueContainer = ({ ...props }) => {
             style={{
               width: '16px',
               height: '16px',
-              fill: 'var(--slate8)',
+              color: selectProps?.iconColor,
             }}
           />
         )}
@@ -190,6 +190,7 @@ export const Multiselect = function Multiselect({
   dataCy,
   validate,
   width,
+  adjustHeightBasedOnAlignment,
 }) {
   let {
     label,
@@ -201,7 +202,7 @@ export const Multiselect = function Multiselect({
     advanced,
     schema,
     placeholder,
-    dropdownLoadingState,
+    multiSelectLoadingState,
   } = properties;
   const {
     selectedTextColor,
@@ -214,9 +215,12 @@ export const Multiselect = function Multiselect({
     fieldBorderColor,
     fieldBackgroundColor,
     labelWidth,
+    labelAutoWidth,
     icon,
     iconVisibility,
     errTextColor,
+    iconColor,
+    padding,
   } = styles;
   const [selected, setSelected] = useState([]);
   const currentState = useCurrentState();
@@ -229,17 +233,18 @@ export const Multiselect = function Multiselect({
   const [visibleElements, setVisibleElements] = useState([]);
   const [showMore, setShowMore] = useState(false);
   const [visibility, setVisibility] = useState(properties.visibility);
-  const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
-  const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
+  const [isMultiSelectLoading, setIsMultiSelectLoading] = useState(multiSelectLoadingState);
+  const [isMultiSelectDisabled, setIsMultiSelectDisabled] = useState(disabledState);
   const [isSelectAllSelected, setIsSelectAllSelected] = useState(false);
+  const _height = padding === 'default' ? 32 : height;
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
-    if (isDropdownLoading !== dropdownLoadingState) setIsDropdownLoading(dropdownLoadingState);
-    if (isDropdownDisabled !== disabledState) setIsDropdownDisabled(disabledState);
+    if (isMultiSelectLoading !== multiSelectLoadingState) setIsMultiSelectLoading(multiSelectLoadingState);
+    if (isMultiSelectDisabled !== disabledState) setIsMultiSelectDisabled(disabledState);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, dropdownLoadingState, disabledState]);
+  }, [properties.visibility, multiSelectLoadingState, disabledState]);
 
   useEffect(() => {
     const updateVisibleElements = () => {
@@ -330,7 +335,7 @@ export const Multiselect = function Multiselect({
 
   useEffect(() => {
     setExposedVariable('isVisible', properties.visibility);
-    setExposedVariable('isLoading', dropdownLoadingState);
+    setExposedVariable('isLoading', multiSelectLoadingState);
     setExposedVariable('isDisabled', disabledState);
     setExposedVariable('isMandatory', isMandatory);
 
@@ -338,14 +343,14 @@ export const Multiselect = function Multiselect({
       setVisibility(value);
     });
     setExposedVariable('setLoading', async function (value) {
-      setIsDropdownLoading(value);
+      setIsMultiSelectLoading(value);
     });
     setExposedVariable('setDisabled', async function (value) {
-      setIsDropdownDisabled(value);
+      setIsMultiSelectDisabled(value);
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, dropdownLoadingState, disabledState, isMandatory]);
+  }, [properties.visibility, multiSelectLoadingState, disabledState, isMandatory]);
 
   useEffect(() => {
     // Expose selectOption
@@ -422,12 +427,18 @@ export const Multiselect = function Multiselect({
     }
   }, [selectOptions, selected]);
 
+  useEffect(() => {
+    if (alignment == 'top' && label) adjustHeightBasedOnAlignment(true);
+    else adjustHeightBasedOnAlignment(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alignment, label]);
+
   const customStyles = {
     control: (provided, state) => {
       return {
         ...provided,
-        minHeight: height,
-        height: height,
+        minHeight: _height,
+        height: _height,
         boxShadow: state.isFocused ? boxShadow : boxShadow,
         borderRadius: Number.parseFloat(borderRadius),
         borderColor: !isValid ? 'var(--tj-text-input-widget-error)' : fieldBorderColor,
@@ -441,7 +452,7 @@ export const Multiselect = function Multiselect({
 
     valueContainer: (provided, _state) => ({
       ...provided,
-      height: height,
+      height: _height,
       padding: '0 6px',
       display: 'flex',
       gap: '0.13rem',
@@ -476,7 +487,7 @@ export const Multiselect = function Multiselect({
     }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
-      height: height,
+      height: _height,
     }),
     clearIndicator: (provided, _state) => ({
       ...provided,
@@ -503,7 +514,7 @@ export const Multiselect = function Multiselect({
     alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
   };
 
-  if (isDropdownLoading) {
+  if (isMultiSelectLoading) {
     return (
       <div className="d-flex align-items-center justify-content-center" style={{ width: '100%', height }}>
         <center>
@@ -521,12 +532,20 @@ export const Multiselect = function Multiselect({
           height,
           display: visibility ? 'flex' : 'none',
           flexDirection: alignment === 'top' ? 'column' : direction === 'alignRight' ? 'row-reverse' : 'row',
+          padding: padding === 'default' ? '3px 2px' : '',
         }}
         onFocus={() => {
           onComponentClick(this, id, component);
         }}
       >
-        <div className="col-auto my-auto" style={{ alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start' }}>
+        <div
+          className="my-auto"
+          style={{
+            alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
+            width: alignment === 'top' || labelAutoWidth ? 'auto' : `${labelWidth}%`,
+            maxWidth: alignment === 'top' || labelAutoWidth ? '100%' : `${labelWidth}%`,
+          }}
+        >
           <label
             style={labelStyles}
             className="font-size-12 font-weight-500 py-0 my-0"
@@ -538,7 +557,7 @@ export const Multiselect = function Multiselect({
         </div>
         <div className="col px-0 h-100" ref={multiselectRef}>
           <Select
-            isDisabled={isDropdownDisabled}
+            isDisabled={isMultiSelectDisabled}
             value={selected}
             onChange={onChangeHandler}
             options={selectOptions}
@@ -576,6 +595,7 @@ export const Multiselect = function Multiselect({
             isSelectAllSelected={isSelectAllSelected}
             setIsSelectAllSelected={setIsSelectAllSelected}
             setSelected={setSelected}
+            iconColor={iconColor}
           />
         </div>
       </div>
