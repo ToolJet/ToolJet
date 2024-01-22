@@ -8,7 +8,7 @@
     align-self: stretch;
 
     .codehinter-container {
-        // height: 32px;
+        height: inherit !important;
         .codehinter-vertical-line {
             position: relative;
             width: 0;
@@ -23,6 +23,12 @@
     }
 }
 
+.code-editor-basic-wrapper {
+    height: inherit !important;
+}
+
+
+
 .codehinter-input {
     font-family: IBM Plex Sans;
     font-size: 12px;
@@ -35,8 +41,9 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    height: inherit !important;
     cursor: text;
+
+    height: inherit;
 
     &:focus {
         outline: none;
@@ -230,6 +237,7 @@
     border-radius: 4px;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     height: inherit !important;
+    padding: 2px;
 }
 
 .runjs-editor .cm-editor {

@@ -17,7 +17,7 @@ import { getAutocompletion } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import NewCodeHinter from './NewCodeHinter';
 
-const SingleLineCodeEditor = ({ type, suggestions, componentName, fieldMeta = {}, ...restProps }) => {
+const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
   const { validation = {} } = fieldMeta;
 
@@ -135,7 +135,7 @@ const EditorInput = ({
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
 
   return (
-    <div className={` ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
+    <div className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
       {usePortalEditor && (
         <NewCodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
