@@ -2922,7 +2922,7 @@ export const widgets = [
       },
       properties: {
         textFormat: { value: 'plainText' },
-        text: { value: 'Hello, there!' },
+        text: { value: 'Hello World👋' },
         loadingState: { value: `{{false}}` },
         disabledState: { value: '{{false}}' },
         visibility: { value: '{{true}}' },
