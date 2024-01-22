@@ -6895,12 +6895,61 @@ tbody {
 
 .tooljet-database {
 
+  .tj-db-headerText {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 80%;
+  }
+
   .table-header,
   .table-name,
   .table-cell {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    border-width: 0px 1px 1px 1px;
+  }
+
+  .table-cell-hover-background {
+    background-color: #F8F9FA;
+  }
+
+  .table-cell-hover-background-dark {
+    background-color: #242f3c;
+  }
+
+  .table-cell-click {
+    // background-color: #fbfdff;
+    background-color: #F8F9FA;
+    border-left: 1.5px solid #3E63DD !important;
+    border-right: 1.5px solid #3E63DD !important;
+  }
+
+  .table-cell-click-dark {
+    background-color: #242f3c;
+    border-left: 1.5px solid white !important;
+    border-right: 1.5px solid white !important;
+  }
+
+  .row-tj:first-child {
+    .table-cell-click {
+      border-top: 1.5px solid #3E63DD !important;
+    }
+
+    .table-cell-click-dark {
+      border-top: 1.5px solid white !important;
+    }
+  }
+
+  .row-tj:last-of-type {
+    .table-cell-click {
+      border-bottom: 1.5px solid #3E63DD !important;
+    }
+
+    .table-cell-click-dark {
+      border-bottom: 1.5px solid white !important;
+    }
   }
 
   .table-cell-hover-background {
@@ -6951,8 +7000,6 @@ tbody {
         cursor: pointer;
       }
     }
-
-
   }
 
   .table-header {
@@ -6961,6 +7008,14 @@ tbody {
 
   .table-header:hover {
     background: #E6E8EB;
+
+    .tjdb-menu-icon {
+      display: block;
+      cursor: pointer;
+    }
+  }
+
+  .table-header-dark:hover {
 
     .tjdb-menu-icon {
       display: block;
@@ -9858,6 +9913,10 @@ tbody {
   table {
     border-collapse: collapse;
     width: max-content;
+
+    .row-tj {
+      border-width: 0px !important;
+    }
   }
 }
 
@@ -10254,7 +10313,8 @@ tbody {
 
 
 //TJ APP INPUT
-.tj-app-input {
+.tj-app-input,
+.edit-row-container {
   display: flex;
   flex-direction: column;
   font-family: 'IBM Plex Sans';
@@ -10416,17 +10476,86 @@ tbody {
   border-color: var(--slate4);
 }
 
-.add-col-btn-database {
-  position: absolute;
-  top: 28;
+.add-icon-column {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  right: 0;
+  padding: 0px !important;
+  width: 30px;
+  height: 31px;
+  border-radius: 0px !important;
+  background: var(--slate7) !important;
+  cursor: pointer;
+
+  .icon-styles {
+    font-size: 14px !important;
+    font-weight: 400;
+    color: black;
+  }
+}
+
+.add-icon-column-dark {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  right: 0;
+  padding: 0px !important;
+  width: 30px;
+  height: 31px;
+  border-radius: 0px !important;
+  cursor: pointer;
+
+  .icon-styles {
+    width: 100% !important;
+    height: 100% !important;
+    background: #1c252f !important;
+    border: 0.4px solid white !important;
+    font-size: 14px !important;
+    font-weight: 400;
+    color: white;
+  }
+}
+
+.add-icon-row {
+  position: sticky;
+  bottom: 0;
   left: 0px;
-  width: 28px;
-  height: 28px;
+  width: 29px;
+  height: 31px;
   background: var(--slate7);
   border-width: 0px 1px 1px 1px;
   border-style: solid;
+  border-radius: 0px;
   border-color: var(--slate4);
   border-radius: 0px !important;
+  font-size: 14px !important;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.add-icon-row-dark {
+  position: sticky;
+  bottom: 0;
+  left: 0px;
+  width: 29px;
+  height: 31px;
+  background: var(--slate7);
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-radius: 0px;
+  background: #1c252f !important;
+  border: 0.4px solid white !important;
+  font-size: 14px !important;
+  font-weight: 400;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 // custom styles for users multiselect in manage users

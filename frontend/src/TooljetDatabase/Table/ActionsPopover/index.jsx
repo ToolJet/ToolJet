@@ -32,7 +32,7 @@ export const TablePopover = ({ disabled, children, onEdit, onDelete, show }) => 
   );
 
   return (
-    <OverlayTrigger show={show} rootClose trigger="click" placement="bottom" overlay={popover}>
+    <OverlayTrigger show={show} rootClose={true} trigger="click" placement="bottom" overlay={popover}>
       {children}
     </OverlayTrigger>
   );

@@ -9,7 +9,7 @@ import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import WarningInfo from '../Icons/Edit-information.svg';
 
 const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
-  const nullValue = selectedColumn.is_nullable === 'YES' ? false : true;
+  const nullValue = selectedColumn.constraints_type.is_not_null;
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
   const [defaultValue, setDefaultValue] = useState(selectedColumn?.column_default);
@@ -62,13 +62,15 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
     setDataType(value);
   };
 
-  const handleCreate = async () => {
+  const handleEdit = async () => {
     const colDetails = {
       column: {
         column_name: selectedColumn?.Header,
         data_type: selectedColumn?.dataType,
         ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
-        ...(defaultValue?.length > 0 ? { column_default: defaultValue } : {}),
+        ...(defaultValue?.length > 0 || defaultValue !== selectedColumn?.column_default
+          ? { column_default: defaultValue }
+          : {}),
         ...(nullValue !== isNotNull
           ? {
               constraints_type: {
@@ -79,13 +81,17 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
       },
     };
 
-    if (columnName !== selectedColumn?.Header || defaultValue?.length > 0 || nullValue !== isNotNull) {
+    if (
+      columnName !== selectedColumn?.Header ||
+      defaultValue?.length > 0 ||
+      defaultValue !== selectedColumn?.column_default ||
+      nullValue !== isNotNull
+    ) {
       setFetching(true);
       const { error } = await tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
       setFetching(false);
       if (error) {
         toast.error(error?.message ?? `Failed to edit a column in "${selectedTable.table_name}" table`);
-        onClose && onClose();
         return;
       }
     }
@@ -97,11 +103,10 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
 
       if (data?.result?.length > 0) {
         setColumns(
-          data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
+          data?.result.map(({ column_name, data_type, ...rest }) => ({
             Header: column_name,
             accessor: column_name,
             dataType: data_type,
-            isPrimaryKey: keytype?.toLowerCase() === 'primary key',
             ...rest,
           }))
         );
@@ -111,7 +116,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
     onClose && onClose();
   };
 
-  // const handleCreate = async () => {
+  // const handleEdit = async () => {
   //   if (isEmpty(columnName)) {
   //     toast.error('Column name cannot be empty');
   //     return;
@@ -191,12 +196,19 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
             value={defaultValue}
             type="text"
             placeholder="Enter default value"
-            className="form-control"
+            className={
+              isNotNull === true && (defaultValue?.length <= 0 || defaultValue === null)
+                ? 'form-control form-error'
+                : 'form-control'
+            }
             data-cy="default-value-input-field"
             autoComplete="off"
             onChange={(e) => setDefaultValue(e.target.value)}
             disabled={dataType === 'serial'}
           />
+          {isNotNull === true && (defaultValue?.length <= 0 || defaultValue === null) ? (
+            <span className="form-error-message">Default value cannot be empty when NOT NULL constraint is added</span>
+          ) : null}
         </div>
         <div className="row mb-3">
           <div className="col-1">
@@ -219,7 +231,13 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
           </div>
         </div>
       </div>
-      <DrawerFooter fetching={fetching} onClose={onClose} onCreate={handleCreate} />
+      <DrawerFooter
+        isEditMode={true}
+        fetching={fetching}
+        onClose={onClose}
+        onEdit={handleEdit}
+        shouldDisableCreateBtn={columnName === '' || (isNotNull && defaultValue.length <= 0)}
+      />
     </div>
   );
 };
