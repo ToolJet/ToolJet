@@ -219,30 +219,39 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   const handleKeyDown = (e) => {
     if (cellClick.rowIndex !== null) {
       if (e.key === 'ArrowRight') {
+        const cIndex = rows[cellClick.rowIndex].cells[cellClick.cellIndex + 1].value;
         const newIndex =
           cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
         setCellClick((prevState) => ({
           ...prevState,
           cellIndex: newIndex,
         }));
+        setCellVal(cIndex);
       } else if (e.key === 'ArrowLeft') {
+        const cellIndexValue = cellClick.cellIndex === 2 ? 2 : cellClick.cellIndex - 1;
+        const cIndex = rows[cellClick.rowIndex].cells[cellIndexValue].value;
         const newIndex = cellClick.cellIndex === 2 ? 2 : cellClick.cellIndex - 1;
         setCellClick((prevState) => ({
           ...prevState,
           cellIndex: newIndex,
         }));
+        setCellVal(cIndex);
       } else if (e.key === 'ArrowUp') {
+        const rIndex = rows[cellClick.rowIndex - 1].cells[cellClick.cellIndex].value;
         const newRowIndex = cellClick.rowIndex === 0 ? 0 : cellClick.rowIndex - 1;
         setCellClick((prevState) => ({
           ...prevState,
           rowIndex: newRowIndex,
         }));
+        setCellVal(rIndex);
       } else if (e.key === 'ArrowDown') {
+        const rIndex = rows[cellClick.rowIndex + 1].cells[cellClick.cellIndex].value;
         const newRowIndex = cellClick.rowIndex === rows.length - 1 ? rows.length - 1 : cellClick.rowIndex + 1;
         setCellClick((prevState) => ({
           ...prevState,
           rowIndex: newRowIndex,
         }));
+        setCellVal(rIndex);
       }
     }
   };
@@ -262,23 +271,23 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     moveColumnCreateElement();
   }, [wholeScreenWidth, columHeaderLength]);
 
-  const handleCellOutsideClick = (event) => {
-    if (!event.target.closest('.table-cell-click') && !event.target.closest('.table-editable-parent-cell')) {
-      setCellClick((prevState) => ({
-        ...prevState,
-        rowIndex: null,
-        cellIndex: null,
-        editable: false,
-      }));
-    }
-  };
+  // const handleCellOutsideClick = (event) => {
+  //   if (!event.target.closest('.table-cell-click') && !event.target.closest('.table-editable-parent-cell')) {
+  //     setCellClick((prevState) => ({
+  //       ...prevState,
+  //       rowIndex: null,
+  //       cellIndex: null,
+  //       editable: false,
+  //     }));
+  //   }
+  // };
 
-  useEffect(() => {
-    document.addEventListener('click', handleCellOutsideClick);
-    return () => {
-      document.removeEventListener('click', handleCellOutsideClick);
-    };
-  }, []);
+  // useEffect(() => {
+  //   document.addEventListener('click', handleCellOutsideClick);
+  //   return () => {
+  //     document.removeEventListener('click', handleCellOutsideClick);
+  //   };
+  // }, []);
 
   const widthOfScreen = width.screenWidth > 0 ? width.screenWidth : wholeScreenWidth;
 
@@ -372,7 +381,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           ...prevState,
           rowIndex: rowIndex,
           cellIndex: cellIndex,
-          editable: !cellClick.editable,
+          editable: true,
         }));
       }
     }
@@ -574,6 +583,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                           <td
                             key={`cell.value-${index}`}
                             title={cell.value || ''}
+                            //tabIndex="0"
                             className={`${
                               editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
                                 ? `table-columnHeader-click`
@@ -589,6 +599,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                             }`}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
+                            //onKeyDown={(e) => handleKeyDown(e, cell.value)}
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
                             {/* {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')} */}
