@@ -20,7 +20,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
 
   const overlay = (
     <div className={classNames({ 'dark-theme theme-dark': darkMode })}>
-      <div className="preview-settings-overlay">
+      <div className="preview-settings-overlay" style={{ borderColor: darkMode ? '#2B3036' : '#E4E7EB' }}>
         <span className="preview-settings-text">Preview settings</span>
         <span>
           {editingVersion && (

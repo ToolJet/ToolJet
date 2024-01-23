@@ -315,7 +315,6 @@ export const Container = ({
         return;
       }
       // const id = componentId ? componentId : uuidv4();
-      console.log('useDrop');
 
       // Get the width of the canvas
       const canvasBounds = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
