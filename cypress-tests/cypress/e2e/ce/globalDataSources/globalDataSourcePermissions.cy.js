@@ -14,7 +14,6 @@ import {
 } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
-import { addNewUserMW } from "Support/utils/userPermissions";
 import { groupsSelector } from "Selectors/manageGroups";
 import {
   logout,

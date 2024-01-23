@@ -7,7 +7,6 @@ import {
   releaseApp,
 } from "Support/utils/common";
 import { commonText } from "Texts/common";
-import { addNewUserMW } from "Support/utils/userPermissions";
 import { userSignUp } from "Support/utils/onboarding";
 
 describe(

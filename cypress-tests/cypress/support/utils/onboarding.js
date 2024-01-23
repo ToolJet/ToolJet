@@ -159,7 +159,7 @@ export const userSignUp = (fullName, email, workspaceName) => {
     cy.get(commonSelectors.setUpToolJetButton).click();
     cy.wait(4000);
     verifyOnboardingQuestions(fullName, workspaceName);
-    updateWorkspaceName(workspaceName);
+    updateWorkspaceName(email, workspaceName);
   });
 };
 
@@ -217,7 +217,7 @@ export const addNewUser = (firstName, email) => {
   updateWorkspaceName(email);
 };
 
-export const updateWorkspaceName = (email) => {
+export const updateWorkspaceName = (email, workspaceName = email) => {
   let workspaceNametimeStamp, workspaceId, userId, defuserId, defWorkspaceId;
 
   cy.task("updateId", {
@@ -253,7 +253,7 @@ export const updateWorkspaceName = (email) => {
 
             cy.task("updateId", {
               dbconfig: Cypress.env("app_db"),
-              sql: `update organizations set name ='${email}' where name='${workspaceNametimeStamp}';`,
+              sql: `update organizations set name ='${workspaceName}' where name='${workspaceNametimeStamp}';`,
             });
           });
         });

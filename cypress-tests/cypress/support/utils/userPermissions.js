@@ -43,45 +43,6 @@ export const reset = () => {
   });
 };
 
-export const addNewUser = (firstName, email, companyName) => {
-  common.navigateToManageUsers();
-  users.inviteUser(firstName, email);
-  updateWorkspaceName(email);
-};
-
-// export const reset = (groupName) => {
-//   cy.intercept("GET", "http://localhost:3000/api/group_permissions").as(`${groupName}`);
-//   cy.wait(2000)
-
-//   common.navigateToManageGroups();
-//   cy.wait(2000)
-//   cy.get('[data-cy="all-users-list-item"] > span > div').click()
-
-//   cy.wait(`@${groupName}`).then((groupResponse) => {
-//     const groupId = groupResponse.response.body.group_permissions.find(
-//       (group) => group.group === groupName
-//     ).id;
-
-//     cy.task("updateId", {
-//       dbconfig: Cypress.env("app_db"),
-//       sql: `
-//         UPDATE group_permissions
-//         SET app_create = false,
-//             app_delete = false,
-//             folder_create = false,
-//             org_environment_variable_create = false,
-//             org_environment_variable_update = false,
-//             org_environment_variable_delete = false,
-//             org_environment_constant_create = false,
-//             org_environment_constant_delete = false,
-//             folder_delete = false,
-//             folder_update = false
-//         WHERE id = ${groupId};
-//       `,
-//     });
-//   });
-// };
-
 export const updateWorkspaceName = (email) => {
   let workspaceNametimeStamp, workspaceId, userId, defuserId, defWorkspaceId;
 
