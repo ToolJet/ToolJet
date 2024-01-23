@@ -1,3 +1,3 @@
-import NewCodeHinter from './NewCodeHinter';
+import CodeHinter from './CodeHinter';
 
-export default NewCodeHinter;
+export default CodeHinter;

@@ -9,7 +9,7 @@ import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { generateHints } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
-import NewCodeHinter from './NewCodeHinter';
+import CodeHinter from './CodeHinter';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -163,13 +163,13 @@ const MultiLineCodeEditor = (props) => {
   return (
     <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
-        <NewCodeHinter.PopupIcon
+        <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
           icon="portal-open"
           tip="Pop out code editor into a new window"
           transformation={componentName === 'transformation'}
         />
-        <NewCodeHinter.Portal
+        <CodeHinter.Portal
           isCopilotEnabled={false}
           isOpen={isOpen}
           callback={setIsOpen}
@@ -202,7 +202,7 @@ const MultiLineCodeEditor = (props) => {
               />
             </div>
           </ErrorBoundary>
-        </NewCodeHinter.Portal>
+        </CodeHinter.Portal>
       </div>
     </div>
   );

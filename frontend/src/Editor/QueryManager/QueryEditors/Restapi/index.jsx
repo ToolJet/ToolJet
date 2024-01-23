@@ -5,10 +5,9 @@ import { isEmpty, defaults } from 'lodash';
 import Tabs from './Tabs';
 import Select from '@/_ui/Select';
 import { changeOption } from '../utils';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { BaseUrl } from './BaseUrl';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -168,7 +167,7 @@ class Restapi extends React.Component {
                   <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
                 )}
                 <div className={`flex-grow-1  ${dataSourceURL ? 'url-input-group' : ''}`}>
-                  <NewCodeHinter
+                  <CodeHinter
                     type="basic"
                     currentState={this.props.currentState}
                     initialValue={options.url}

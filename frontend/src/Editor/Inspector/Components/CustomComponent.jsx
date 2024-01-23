@@ -1,8 +1,7 @@
 import React from 'react';
 import { renderElement } from '../Utils';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import Accordion from '@/_ui/Accordion';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const CustomComponent = function CustomComponent({
   dataQueries,
@@ -20,7 +19,7 @@ export const CustomComponent = function CustomComponent({
   items.push({
     title: 'Data',
     children: (
-      <NewCodeHinter
+      <CodeHinter
         type="basic"
         initialValue={args.value ?? {}}
         onChange={(value) => paramUpdated({ name: 'data' }, 'value', value, 'properties')}
@@ -32,7 +31,7 @@ export const CustomComponent = function CustomComponent({
   items.push({
     title: 'Code',
     children: (
-      <NewCodeHinter
+      <CodeHinter
         type="multiLine"
         initialValue={code.value ?? {}}
         theme={darkMode ? 'monokai' : 'base16-light'}

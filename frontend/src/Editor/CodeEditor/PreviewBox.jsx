@@ -3,7 +3,7 @@ import { useSpring, config, animated } from 'react-spring';
 import useHeight from '@/_hooks/use-height-transition';
 import { computeCoercion, getCurrentNodeType, resolveReferences } from './utils';
 import { EditorContext } from '../Context/EditorContextWrapper';
-import NewCodeHinter from '.';
+import CodeHinter from '.';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';
 import { isEmpty } from 'lodash';
@@ -143,7 +143,7 @@ const RenderResolvedValue = ({ previewType, resolvedValue, coersionData, isFocus
         </div>
         {isFocused && (
           <div className="preview-icons position-relative">
-            <NewCodeHinter.PopupIcon
+            <CodeHinter.PopupIcon
               callback={() => {
                 copyToClipboard(resolvedValue);
               }}

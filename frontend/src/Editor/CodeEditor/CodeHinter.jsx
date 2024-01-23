@@ -15,7 +15,7 @@ const CODE_EDITOR_TYPE = {
   multiline: MultiLineCodeEditor,
 };
 
-const NewCodeHinter = ({ type = 'basic', initialValue, componentName, ...restProps }) => {
+const CodeHinter = ({ type = 'basic', initialValue, componentName, ...restProps }) => {
   const { suggestions } = useResolveStore(
     (state) => ({
       suggestions: state.suggestions,
@@ -110,11 +110,11 @@ const PopupIcon = ({ callback, icon, tip, transformation = false }) => {
   );
 };
 
-NewCodeHinter.Portal = Portal;
-NewCodeHinter.PopupIcon = PopupIcon;
+CodeHinter.Portal = Portal;
+CodeHinter.PopupIcon = PopupIcon;
 
-NewCodeHinter.propTypes = {
+CodeHinter.propTypes = {
   type: PropTypes.string.isRequired,
 };
 
-export default NewCodeHinter;
+export default CodeHinter;

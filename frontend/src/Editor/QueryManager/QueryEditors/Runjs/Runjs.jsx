@@ -3,7 +3,7 @@ import { defaults } from 'lodash';
 import { Card } from 'react-bootstrap';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import ParameterList from './ParameterList';
-import NewCodehinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 const Runjs = (props) => {
   const currentState = useCurrentState();
@@ -62,7 +62,7 @@ const Runjs = (props) => {
         />
       )}
 
-      <NewCodehinter
+      <CodeHinter
         type="multiline"
         initialValue={props.options.code}
         lang="javascript"

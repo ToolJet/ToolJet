@@ -58,11 +58,9 @@ export const useCurrentState = () =>
 
 useCurrentStateStore.subscribe(
   (state) => {
-    // This function is called whenever the state changes.
-    // You can access the updated state and perform actions in another store.
     useResolveStore.getState().actions.updateAppSuggestions(state);
   },
-  (state) => [state] // Specify the part of the state to listen for changes
+  (state) => [state]
 );
 
 export const getCurrentState = () => {

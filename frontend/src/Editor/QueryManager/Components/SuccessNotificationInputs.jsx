@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export default function SuccessNotificationInputs({ currentState, options, darkMode, optionchanged }) {
   const { t } = useTranslation();
@@ -15,7 +14,7 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
           {t('editor.queryManager.successMessage', 'Message')}
         </label>
         <div className="flex-grow-1">
-          <NewCodeHinter
+          <CodeHinter
             type="basic"
             currentState={currentState}
             initialValue={options.successMessage}

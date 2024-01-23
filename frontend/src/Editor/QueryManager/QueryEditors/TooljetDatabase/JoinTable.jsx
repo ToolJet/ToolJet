@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { Col, Container, Row } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
@@ -12,7 +11,7 @@ import JoinSelect from './JoinSelect';
 import JoinSort from './JoinSort';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { filterOperatorOptions, nullOperatorOptions } from './util';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -150,7 +149,7 @@ const SelectTableMenu = ({ darkMode }) => {
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Limit</label>
         <div className="field flex-grow-1 overflow-hidden">
-          <NewCodeHinter
+          <CodeHinter
             type="basic"
             className="tjdb-codehinter border rounded"
             height={'32px'}
@@ -170,7 +169,7 @@ const SelectTableMenu = ({ darkMode }) => {
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Offset</label>
         <div className="field flex-grow-1 overflow-hidden">
-          <NewCodeHinter
+          <CodeHinter
             className="tjdb-codehinter border rounded"
             placeholder="Enter offset"
             type="basic"
@@ -444,7 +443,7 @@ const RenderFilterSection = ({ darkMode }) => {
                 value={nullOperatorOptions.find((op) => op.value === rightField.value)}
               />
             ) : (
-              <NewCodeHinter
+              <CodeHinter
                 type="basic"
                 initialValue={
                   rightField?.value

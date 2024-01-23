@@ -1,7 +1,7 @@
 import React from 'react';
 import { changeOption } from './utils';
 import { defaults } from 'lodash';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export class Runpy extends React.Component {
   constructor(props) {
@@ -17,7 +17,7 @@ export class Runpy extends React.Component {
   render() {
     return (
       <div className="runps-editor">
-        <NewCodeHinter
+        <CodeHinter
           type="multiline"
           initialValue={this.props.options.code}
           lang="python"

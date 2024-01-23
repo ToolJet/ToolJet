@@ -2,8 +2,7 @@ import React from 'react';
 import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
   const protobufDefintion = JSON.parse(selectedDataSource?.options?.protobuf?.value);
@@ -211,7 +210,7 @@ function ControlledTabs({
             <Tab.Pane eventKey="message" bsPrefix="rest-api-tabpanes" transition={false}>
               <div className="tab-content-wrapper">
                 <div>
-                  <NewCodeHinter
+                  <CodeHinter
                     type="multiline"
                     initialValue={messageJSON || '{\n\n}'}
                     lang="javascript"
@@ -249,7 +248,7 @@ const TabContent = ({
             <div className="fields-container ">
               <div className="d-flex justify-content-center align-items-center query-number">{index + 1}</div>
               <div className="field col-4 overflow-hidden">
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   initialValue={option[0]}
                   placeholder="Key"
@@ -258,7 +257,7 @@ const TabContent = ({
                 />
               </div>
               <div className="field col overflow-hidden">
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   initialValue={option[1]}
                   placeholder="Value"

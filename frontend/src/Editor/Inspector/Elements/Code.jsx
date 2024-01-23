@@ -1,5 +1,4 @@
 import React from 'react';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import _ from 'lodash';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
@@ -83,24 +82,6 @@ export const Code = ({
   }, [param]);
   return (
     <div className={`field ${options.className}`} style={{ marginBottom: '20px' }}>
-      {/* <CodeHinter
-        enablePreview={true}
-        initialValue={initialValue}
-        mode={options.mode}
-        theme={darkMode ? 'monokai' : options.theme}
-        lineWrapping={true}
-        className={options.className}
-        onChange={(value) => handleCodeChanged(value)}
-        componentName={`component/${componentName}::${getfieldName}`}
-        type={paramMeta.type}
-        paramName={param.name}
-        paramLabel={displayName}
-        fieldMeta={paramMeta}
-        onFxPress={onFxPress}
-        fxActive={CLIENT_SERVER_TOGGLE_FIELDS.includes(param.name) ? false : fxActive} // Client Server Toggle don't support Fx
-        component={component}
-        verticalLine={verticalLine}
-      /> */}
       <CodeEditor
         type="fxEditor"
         initialValue={initialValue}

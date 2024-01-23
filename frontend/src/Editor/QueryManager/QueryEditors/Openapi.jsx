@@ -1,10 +1,9 @@
 import React from 'react';
 import Select from '@/_ui/Select';
 import DOMPurify from 'dompurify';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 const operationColorMapping = {
   get: 'azure',
@@ -289,7 +288,7 @@ class OpenapiComponent extends React.Component {
                           <input type="text" value={param.name} className="form-control border-0" placeholder="key" />
                         </div>
                         <div className="col field overflow-hidden">
-                          <NewCodeHinter
+                          <CodeHinter
                             type="basic"
                             initialValue={this.state.options.params.path[param.name]}
                             placeholder={'Value'}
@@ -334,7 +333,7 @@ class OpenapiComponent extends React.Component {
                           <input type="text" value={param.name} className="form-control border-0" placeholder="key" />
                         </div>
                         <div className="col field overflow-hidden">
-                          <NewCodeHinter
+                          <CodeHinter
                             type="basic"
                             initialValue={this.state.options.params.path[param.name]}
                             placeholder={'Value'}
@@ -380,7 +379,7 @@ class OpenapiComponent extends React.Component {
                           <input type="text" value={param.name} className="form-control" placeholder="key" disabled />
                         </div>
                         <div className="col field overflow-hidden">
-                          <NewCodeHinter
+                          <CodeHinter
                             type="basic"
                             initialValue={this.state.options.params?.query[param.name] ?? ''}
                             placeholder={'Value'}
@@ -429,7 +428,7 @@ class OpenapiComponent extends React.Component {
                           <input type="text" value={param} className="form-control" placeholder="key" disabled />
                         </div>
                         <div className="col field overflow-hiddel">
-                          <NewCodeHinter
+                          <CodeHinter
                             type="basic"
                             initialValue={this.state.options.params?.request[param] ?? ''}
                             placeholder={'Value'}

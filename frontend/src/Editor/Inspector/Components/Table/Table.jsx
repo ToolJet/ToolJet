@@ -10,7 +10,6 @@ import { Color } from '../../Elements/Color';
 import SelectSearch from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../../EventManager';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import List from '@/ToolJetUI/List/List';
@@ -18,7 +17,7 @@ import { capitalize, has } from 'lodash';
 import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -216,7 +215,7 @@ class TableComponent extends React.Component {
             <label data-cy={`label-column-name`} className="form-label">
               {this.props.t('widget.Table.columnName', 'Column name')}
             </label>
-            <NewCodeHinter
+            <CodeHinter
               type="basic"
               currentState={this.props.currentState}
               initialValue={column.name}
@@ -255,7 +254,7 @@ class TableComponent extends React.Component {
           )}
           <div data-cy={`input-and-label-key`} className="field mb-2">
             <label className="form-label">{this.props.t('widget.Table.key', 'key')}</label>
-            <NewCodeHinter
+            <CodeHinter
               type="basic"
               currentState={this.props.currentState}
               initialValue={column.key}
@@ -295,7 +294,7 @@ class TableComponent extends React.Component {
             <div>
               <div data-cy={`input-and-label-text-color`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.textColor', 'Text color')}</label>
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   currentState={this.props.currentState}
                   initialValue={column.textColor}
@@ -314,7 +313,7 @@ class TableComponent extends React.Component {
                 <label className="form-label">
                   {this.props.t('widget.Table.cellBgColor', 'Cell Background Color')}
                 </label>
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   currentState={this.props.currentState}
                   initialValue={column.cellBackgroundColor ?? 'inherit'}
@@ -336,7 +335,7 @@ class TableComponent extends React.Component {
                   </div>
                   <div data-cy={`input-and-label-regex`} className="field mb-2">
                     <label className="form-label">{this.props.t('widget.Table.regex', 'Regex')}</label>
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       currentState={this.props.currentState}
                       initialValue={column.regex}
@@ -352,7 +351,7 @@ class TableComponent extends React.Component {
                   </div>
                   <div data-cy={`input-and-label-min-length`} className="field mb-2">
                     <label className="form-label">{this.props.t('widget.Table.minLength', 'Min length')}</label>
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       currentState={this.props.currentState}
                       initialValue={column.minLength}
@@ -368,7 +367,7 @@ class TableComponent extends React.Component {
                   </div>
                   <div data-cy={`input-and-label-max-length`} className="field mb-2">
                     <label className="form-label">{this.props.t('widget.Table.maxLength', 'Max length')}</label>
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       currentState={this.props.currentState}
                       initialValue={column.maxLength}
@@ -384,7 +383,7 @@ class TableComponent extends React.Component {
                   </div>
                   <div data-cy={`input-and-label-custom-rule`} className="field mb-2">
                     <label className="form-label">{this.props.t('widget.Table.customRule', 'Custom rule')}</label>
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       currentState={this.props.currentState}
                       initialValue={column.customRule}
@@ -410,7 +409,7 @@ class TableComponent extends React.Component {
               </div>
               <div data-cy={`input-and-label-min-value`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.minValue', 'Min value')}</label>
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   currentState={this.props.currentState}
                   initialValue={column.minLength}
@@ -426,7 +425,7 @@ class TableComponent extends React.Component {
               </div>
               <div data-cy={`input-and-label-max-value`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.maxValue', 'Max value')}</label>
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   currentState={this.props.currentState}
                   initialValue={column.maxLength}
@@ -481,7 +480,7 @@ class TableComponent extends React.Component {
             <div>
               <div data-cy={`input-and-label-values`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.values', 'Values')}</label>
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   currentState={this.props.currentState}
                   initialValue={column.values}
@@ -497,7 +496,7 @@ class TableComponent extends React.Component {
               </div>
               <div data-cy={`input-and-label-labels`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.labels', 'Labels')}</label>
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   currentState={this.props.currentState}
                   initialValue={column.labels}
@@ -523,7 +522,7 @@ class TableComponent extends React.Component {
                   </div>
                   <div data-cy={`input-and-label-custom-rule`} className="field mb-2">
                     <label className="form-label">{this.props.t('widget.Table.customRule', 'Custom Rule')}</label>
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       currentState={this.props.currentState}
                       initialValue={column.customRule}
@@ -548,7 +547,7 @@ class TableComponent extends React.Component {
                 {this.props.t('widget.Table.dateDisplayformat', 'Date Display Format')}
               </label>
               <div data-cy={`input-date-display-format`} className="field mb-2">
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   currentState={this.props.currentState}
                   initialValue={column.dateFormat}
@@ -634,7 +633,7 @@ class TableComponent extends React.Component {
             <>
               <div data-cy={`input-and-label-border-radius`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.borderRadius', 'Border radius')}</label>
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   currentState={this.props.currentState}
                   initialValue={column.borderRadius}
@@ -646,7 +645,7 @@ class TableComponent extends React.Component {
               </div>
               <div data-cy={`input-and-label-width`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.width', 'Width')}</label>
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   currentState={this.props.currentState}
                   initialValue={column.width}
@@ -658,7 +657,7 @@ class TableComponent extends React.Component {
               </div>
               <div data-cy={`input-and-label-height`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.height', 'Height')}</label>
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   currentState={this.props.currentState}
                   initialValue={column.height}

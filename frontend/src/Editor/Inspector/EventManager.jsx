@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -20,7 +19,7 @@ import { shallow } from 'zustand/shallow';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import NoListItem from './Components/Table/NoListItem';
 import ManageEventButton from './ManageEventButton';
-import NewCodeHinter from '../CodeEditor';
+import CodeHinter from '../CodeEditor';
 
 export const EventManager = ({
   sourceId,
@@ -397,7 +396,7 @@ export const EventManager = ({
               {t('editor.inspector.eventManager.runOnlyIf', 'Run Only If')}
             </div>
             <div className="col-9" data-cy="alert-message-type">
-              <NewCodeHinter
+              <CodeHinter
                 type="basic"
                 initialValue={event.runOnlyIf}
                 onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
@@ -420,7 +419,7 @@ export const EventManager = ({
                     {t('editor.inspector.eventManager.message', 'Message')}
                   </div>
                   <div className="col-9" data-cy="alert-message-input-field">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       theme={darkMode ? 'monokai' : 'default'}
                       initialValue={event.message}
@@ -454,7 +453,7 @@ export const EventManager = ({
             {event.actionId === 'open-webpage' && (
               <div className="p-1">
                 <label className="form-label mt-1">{t('editor.inspector.eventManager.url', 'URL')}</label>
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   initialValue={event.url}
                   onChange={(value) => handlerChanged(index, 'url', value)}
@@ -519,7 +518,7 @@ export const EventManager = ({
             {event.actionId === 'copy-to-clipboard' && (
               <div className="p-1">
                 <label className="form-label mt-1">{t('editor.inspector.eventManager.text', 'Text')}</label>
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   initialValue={event.contentToCopy}
                   onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
@@ -574,7 +573,7 @@ export const EventManager = ({
                 <div className="row">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
@@ -586,7 +585,7 @@ export const EventManager = ({
                 <div className="row mt-3">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
                   <div className="col-9">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
@@ -624,7 +623,7 @@ export const EventManager = ({
                 <div className="row mt-3">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.fileName', 'File name')}</div>
                   <div className="col-9">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       initialValue={event.fileName}
                       onChange={(value) => handlerChanged(index, 'fileName', value)}
@@ -635,7 +634,7 @@ export const EventManager = ({
                 <div className="row mt-3">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.data', 'Data')}</div>
                   <div className="col-9">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       initialValue={event.data}
                       onChange={(value) => handlerChanged(index, 'data', value)}
@@ -668,7 +667,7 @@ export const EventManager = ({
                 <div className="row mt-3">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.pageIndex', 'Page index')}</div>
                   <div className="col-9">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       initialValue={event.pageIndex ?? '{{1}}'}
                       onChange={(value) => handlerChanged(index, 'pageIndex', value)}
@@ -684,7 +683,7 @@ export const EventManager = ({
                 <div className="row">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
@@ -697,7 +696,7 @@ export const EventManager = ({
                 <div className="row mt-3">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
                   <div className="col-9">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
@@ -713,7 +712,7 @@ export const EventManager = ({
                 <div className="row">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
@@ -728,7 +727,7 @@ export const EventManager = ({
                 <div className="row">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
@@ -740,7 +739,7 @@ export const EventManager = ({
                 <div className="row mt-3">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
                   <div className="col-9">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
@@ -756,7 +755,7 @@ export const EventManager = ({
                 <div className="row">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
@@ -848,7 +847,7 @@ export const EventManager = ({
                           } fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
                           data-cy="action-options-text-input-field"
                         >
-                          <NewCodeHinter
+                          <CodeHinter
                             type="basic"
                             initialValue={valueForComponentSpecificActionHandle(event, param)}
                             onChange={(value) => {
@@ -868,7 +867,7 @@ export const EventManager = ({
             <div className="row mt-3">
               <div className="col-3 p-2">{t('editor.inspector.eventManager.debounce', 'Debounce')}</div>
               <div className="col-9" data-cy="debounce-input-field">
-                <NewCodeHinter
+                <CodeHinter
                   type="basic"
                   initialValue={event.debounce}
                   onChange={(value) => handlerChanged(index, 'debounce', value)}

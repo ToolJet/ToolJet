@@ -15,7 +15,7 @@ import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
-import NewCodeHinter from './NewCodeHinter';
+import CodeHinter from './CodeHinter';
 
 const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
@@ -160,14 +160,14 @@ const EditorInput = ({
   return (
     <div className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
       {usePortalEditor && (
-        <NewCodeHinter.PopupIcon
+        <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
           icon="portal-open"
           tip="Pop out code editor into a new window"
           transformation={componentName === 'transformation'}
         />
       )}
-      <NewCodeHinter.Portal
+      <CodeHinter.Portal
         isCopilotEnabled={false}
         isOpen={isOpen}
         callback={setIsOpen}
@@ -203,7 +203,7 @@ const EditorInput = ({
             theme={theme}
           />
         </ErrorBoundary>
-      </NewCodeHinter.Portal>
+      </CodeHinter.Portal>
     </div>
   );
 };

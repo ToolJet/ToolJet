@@ -1,10 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// import 'codemirror/theme/base16-light.css';
-// import 'codemirror/mode/javascript/javascript';
-// import 'codemirror/addon/hint/show-hint';
-// import 'codemirror/addon/search/match-highlighter';
-// import 'codemirror/addon/hint/show-hint.css';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
@@ -16,7 +10,7 @@ import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 const noop = () => {};
 import { Button } from '@/_ui/LeftSidebar';
 import Information from '@/_ui/Icon/solidIcons/Information';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const Transformation = ({ changeOption, options, darkMode, queryId }) => {
   const { t } = useTranslation();
@@ -212,7 +206,7 @@ return [row for row in data if row['amount'] > 1000]
                 </div>
               </div>
               <div className="codehinter-border-bottom mx-3"></div>
-              <NewCodeHinter
+              <CodeHinter
                 type="multiline"
                 initialValue={state[lang] ?? ''}
                 lang={lang}

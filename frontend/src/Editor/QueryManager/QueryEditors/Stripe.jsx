@@ -3,10 +3,9 @@ import React from 'react';
 import DOMPurify from 'dompurify';
 import Select from '@/_ui/Select';
 import { openapiService } from '@/_services';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 const operationColorMapping = {
   get: 'azure',
@@ -231,7 +230,7 @@ class StripeComponent extends React.Component {
                               />
                             </div>
                             <div className="col field overflow-hidden">
-                              <NewCodeHinter
+                              <CodeHinter
                                 type="basic"
                                 initialValue={this.state.options.params.path[param.name]}
                                 placeholder={'Value'}
@@ -284,7 +283,7 @@ class StripeComponent extends React.Component {
                               />
                             </div>
                             <div className="col field overflow-hidden">
-                              <NewCodeHinter
+                              <CodeHinter
                                 type="basic"
                                 initialValue={this.state.options.params?.query[param.name] ?? ''}
                                 placeholder={'Value'}
@@ -337,7 +336,7 @@ class StripeComponent extends React.Component {
                               <input type="text" value={param} className="form-control" placeholder="key" disabled />
                             </div>
                             <div className="col field overflow-hidden">
-                              <NewCodeHinter
+                              <CodeHinter
                                 type="basic"
                                 initialValue={this.state.options.params?.request[param] ?? ''}
                                 placeholder={'Value'}

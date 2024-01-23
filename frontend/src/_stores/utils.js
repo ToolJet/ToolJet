@@ -3,7 +3,7 @@ import { devtools } from 'zustand/middleware';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/Editor/WidgetManager/components';
-import _, { uniqueId } from 'lodash';
+import _ from 'lodash';
 import { getCurrentNodeType } from '@/Editor/CodeEditor/utils';
 
 export const zustandDevTools = (fn, options = {}) =>

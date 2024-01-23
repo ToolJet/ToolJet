@@ -1,10 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export default ({
   options = [],
@@ -31,7 +30,7 @@ export default ({
               <div className="row-container query-manager-border-color" key={index}>
                 <div className="fields-container mb-2">
                   <div className="field col-4 overflow-hidden rounded-start">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       initialValue={option[0]}
                       placeholder="Key"
@@ -40,7 +39,7 @@ export default ({
                     />
                   </div>
                   <div className="field col overflow-hidden ">
-                    <NewCodeHinter
+                    <CodeHinter
                       type="basic"
                       initialValue={option[1]}
                       placeholder="Value"
@@ -66,7 +65,7 @@ export default ({
         })}
       {bodyToggle ? (
         <div>
-          <NewCodeHinter
+          <CodeHinter
             type="multiline"
             initialValue={jsonBody ?? ''}
             lang="javascript"

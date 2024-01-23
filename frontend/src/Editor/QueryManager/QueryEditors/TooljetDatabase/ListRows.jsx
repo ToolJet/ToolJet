@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
@@ -7,7 +6,7 @@ import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const ListRows = React.memo(({ darkMode }) => {
   const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, offsetOptionChanged } =
@@ -162,7 +161,7 @@ export const ListRows = React.memo(({ darkMode }) => {
               Limit
             </label>
             <div className="field flex-grow-1">
-              <NewCodeHinter
+              <CodeHinter
                 type="basic"
                 initialValue={listRowsOptions?.limit ?? ''}
                 className="codehinter-plugins"
@@ -177,7 +176,7 @@ export const ListRows = React.memo(({ darkMode }) => {
               Offset
             </label>
             <div className="field flex-grow-1">
-              <NewCodeHinter
+              <CodeHinter
                 type="basic"
                 initialValue={listRowsOptions?.offset ?? ''}
                 className="codehinter-plugins"
@@ -332,7 +331,7 @@ const RenderFilterFields = ({
               width={'auto'}
             />
           ) : (
-            <NewCodeHinter
+            <CodeHinter
               type="basic"
               initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
               className="codehinter-plugins"

@@ -1,6 +1,5 @@
 import React from 'react';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const ProgramaticallyHandleProperties = ({
   darkMode,
@@ -48,7 +47,7 @@ export const ProgramaticallyHandleProperties = ({
   const options = {};
   return (
     <div className={`mb-2 field ${options.className}`} onClick={(e) => e.stopPropagation()}>
-      <NewCodeHinter
+      <CodeHinter
         type="fxEditor"
         initialValue={initialValue}
         onChange={(value) => callbackFunction(index, property, value)}

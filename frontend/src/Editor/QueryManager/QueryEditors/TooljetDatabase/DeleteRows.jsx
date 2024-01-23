@@ -2,12 +2,11 @@ import React, { useContext } from 'react';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const DeleteRows = React.memo(({ darkMode }) => {
   const { columns, deleteOperationLimitOptionChanged, deleteRowsOptions, handleDeleteRowsOptionsChange } =
@@ -90,7 +89,7 @@ export const DeleteRows = React.memo(({ darkMode }) => {
           Limit
         </label>
         <div className="field flex-grow-1">
-          <NewCodeHinter
+          <CodeHinter
             type="basic"
             initialValue={deleteRowsOptions?.limit ?? 1}
             className="codehinter-plugins"
@@ -165,7 +164,7 @@ const RenderFilterFields = ({
               width="auto"
             />
           ) : (
-            <NewCodeHinter
+            <CodeHinter
               type="basic"
               initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
               className="codehinter-plugins"

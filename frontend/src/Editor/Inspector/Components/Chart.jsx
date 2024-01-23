@@ -1,9 +1,8 @@
 import React from 'react';
 import { renderElement } from '../Utils';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import Accordion from '@/_ui/Accordion';
 import { resolveReferences } from '@/_helpers/utils';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 
 class Chart extends React.Component {
   constructor(props) {
@@ -117,7 +116,7 @@ class Chart extends React.Component {
       items.push({
         title: 'JSON description',
         children: (
-          <NewCodeHinter
+          <CodeHinter
             type="basic"
             currentState={this.props.currentState}
             initialValue={jsonDescription?.value ?? {}}
@@ -145,7 +144,7 @@ class Chart extends React.Component {
       items.push({
         title: 'Chart data',
         children: (
-          <NewCodeHinter
+          <CodeHinter
             type="basic"
             currentState={this.props.currentState}
             initialValue={data.value}
