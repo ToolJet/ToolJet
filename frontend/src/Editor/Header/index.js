@@ -86,7 +86,7 @@ export default function EditorHeader({
       <header className="navbar navbar-expand-md d-print-none">
         <div className="container-xl header-container">
           <div className="d-flex w-100">
-            <h1 className="navbar-brand d-none-navbar-horizontal p-0">
+            <h1 className="navbar-brand d-none-navbar-horizontal p-0" data-cy="editor-page-logo">
               <LogoNavDropdown darkMode={darkMode} />
             </h1>
             <div

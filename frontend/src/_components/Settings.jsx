@@ -32,6 +32,7 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
               onClick={(event) => checkForUnsavedChanges('/integrations', event)}
               to={'/integrations'}
               className="dropdown-item tj-text-xsm"
+              data-cy="marketplace-option"
             >
               <span>Marketplace</span>
             </Link>
@@ -43,6 +44,7 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
             onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
             to={getPrivateRoute('workspace_settings')}
             className="dropdown-item tj-text-xsm"
+            data-cy="workspace-settings"
           >
             <span>Workspace settings</span>
           </Link>
@@ -52,6 +54,7 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
           onClick={(event) => checkForUnsavedChanges(getPrivateRoute('settings'), event)}
           to={getPrivateRoute('settings')}
           className="dropdown-item tj-text-xsm"
+          data-cy="profile-settings"
         >
           <span>Profile settings</span>
         </Link>
@@ -77,7 +80,7 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
       placement={'top'}
       overlay={getOverlay()}
     >
-      <div className={cx('settings-nav-item cursor-pointer', { active: showOverlay })}>
+      <div className={cx('settings-nav-item cursor-pointer', { active: showOverlay })} data-cy="settings-icon">
         <div className="d-xl-block">
           <SolidIcon name="settings" fill={showOverlay ? '#3E63DD' : 'var(--slate8)'} width={28} />
         </div>

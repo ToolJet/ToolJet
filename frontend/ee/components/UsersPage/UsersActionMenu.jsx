@@ -36,6 +36,7 @@ export default function UsersActionMenu({
                 variant="tertiary"
                 leftIcon="editable"
                 iconWidth="12"
+                data-cy="edit-user-details-button"
               >
                 Edit user details
               </ButtonSolid>
@@ -49,6 +50,7 @@ export default function UsersActionMenu({
                 onClick={() => {
                   user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
                 }}
+                data-cy="archive-button"
               >
                 {user.status === 'archived' ? 'Unarchive user' : 'Archive user'}
               </ButtonSolid>

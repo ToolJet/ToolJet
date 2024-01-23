@@ -37,7 +37,7 @@ const UsersTable = ({
                 <th data-cy="users-table-email-column-header">
                   {translator('header.organization.menus.manageUsers.email', 'Email')}
                 </th>
-                <th data-cy="users-table-email-column-header">Groups</th>
+                <th data-cy="users-table-groups-column-header">Groups</th>
                 {users && users[0]?.status ? (
                   <th data-cy="users-table-status-column-header">
                     {translator('header.organization.menus.manageUsers.status', 'Status')}
@@ -150,7 +150,7 @@ const UsersTable = ({
                           )}
                         </td>
                       )}
-                      <td className="user-actions-button">
+                      <td className="user-actions-button" data-cy="user-actions-button">
                         <UsersActionMenu
                           archivingUser={archivingUser}
                           user={user}
@@ -220,7 +220,7 @@ const GroupChipTD = ({ groups = [] }) => {
   };
 
   const renderGroupChip = (group, index) => (
-    <span className="group-chip" key={index}>
+    <span className="group-chip" key={index} data-cy="group-chip">
       {humanizeifDefaultGroupName(group)}
     </span>
   );
