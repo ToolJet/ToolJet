@@ -44,7 +44,7 @@ export default function LogoNavDropdown({ darkMode }) {
       style={{ transform: 'translate(5px, 52px)' }}
     >
       <div className="cursor-pointer">
-        <AppLogo isLoadingFromHeader={true} />
+        <AppLogo isLoadingFromHeader={false} />
       </div>
     </OverlayTrigger>
   );

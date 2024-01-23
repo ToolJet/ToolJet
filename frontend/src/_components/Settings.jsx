@@ -12,6 +12,7 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
   const [showOverlay, setShowOverlay] = useState(false);
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
+  const superAdmin = currentUserValue?.super_admin;
   const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
 
   const { t } = useTranslation();
@@ -27,16 +28,34 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
     return (
       <div className={`settings-card tj-text card ${darkMode && 'dark-theme'}`}>
         {marketplaceEnabled && (
+          <Link
+            onClick={(event) => checkForUnsavedChanges('/integrations', event)}
+            to={'/integrations'}
+            className="dropdown-item tj-text-xsm"
+          >
+            <span>Marketplace</span>
+          </Link>
+        )}
+        {admin && (
           <>
             <Link
-              onClick={(event) => checkForUnsavedChanges('/integrations', event)}
-              to={'/integrations'}
+              onClick={(event) => checkForUnsavedChanges(getPrivateRoute('audit_logs'), event)}
+              to={getPrivateRoute('audit_logs')}
               className="dropdown-item tj-text-xsm"
             >
-              <span>Marketplace</span>
+              <span>Audit logs</span>
             </Link>
             <div className="divider"></div>
           </>
+        )}
+        {superAdmin && (
+          <Link
+            onClick={(event) => checkForUnsavedChanges('/instance-settings', event)}
+            to={'/instance-settings'}
+            className="dropdown-item tj-text-xsm"
+          >
+            <span>Settings</span>
+          </Link>
         )}
         {admin && (
           <Link
