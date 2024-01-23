@@ -384,7 +384,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       >
         <table
           {...getTableProps()}
-          className="table card-table table-vcenter text-nowrap datatable"
+          className={`table card-table table-vcenter text-nowrap datatable ${darkMode && 'dark-background'}`}
           style={{ position: 'relative' }}
         >
           <thead>
