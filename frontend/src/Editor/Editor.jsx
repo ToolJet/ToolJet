@@ -492,12 +492,15 @@ const EditorComponent = (props) => {
   };
 
   const fetchDataSources = (id) => {
-    useDataSourcesStore.getState().actions.fetchDataSources(id);
+    useSuperStore.getState().modules[moduleName].useDataSourcesStore.getState().actions.fetchDataSources(id);
   };
 
   const fetchGlobalDataSources = () => {
     const { current_organization_id: organizationId } = currentUser;
-    useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
+    useSuperStore
+      .getState()
+      .modules[moduleName].useDataSourcesStore.getState()
+      .actions.fetchGlobalDataSources(organizationId);
   };
 
   const onVersionDelete = () => {
@@ -742,7 +745,10 @@ const EditorComponent = (props) => {
       });
     }
 
-    await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id);
+    await useSuperStore
+      .getState()
+      .modules[moduleName].useDataSourcesStore.getState()
+      .actions.fetchGlobalDataSources(data?.organization_id);
     await fetchDataSources(data.editing_version?.id);
     await fetchDataQueries(data.editing_version?.id, true, true);
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
