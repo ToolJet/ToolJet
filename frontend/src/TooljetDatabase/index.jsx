@@ -4,7 +4,7 @@ import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
 import { authenticationService } from '../_services/authentication.service';
 import { BreadCrumbContext } from '@/App/App';
-import { pageTitles, setWindowTitle } from '@/_helpers/utils';
+import { pageTitles, fetchAndSetWindowTitle } from '@/_helpers/utils';
 import { useNavigate } from 'react-router-dom';
 
 export const TooljetDatabaseContext = createContext({
@@ -117,7 +117,7 @@ export const TooljetDatabase = (props) => {
   }, []);
 
   useEffect(() => {
-    setWindowTitle({ page: `${selectedTable?.table_name || pageTitles.DATABASE}` });
+    fetchAndSetWindowTitle({ page: `${selectedTable?.table_name || pageTitles.DATABASE}` });
   }, [selectedTable]);
 
   return (

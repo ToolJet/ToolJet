@@ -48,7 +48,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId, setWindowTitle, defaultWhiteLabellingSettings, pageTitles } from '@/_helpers/utils';
+import { getWorkspaceId, fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -57,7 +57,13 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
-import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, resetAllStores } from '@/_stores/utils';
+import {
+  computeAppDiff,
+  computeComponentPropertyDiff,
+  isParamFromTableColumn,
+  resetAllStores,
+  defaultWhiteLabellingSettings,
+} from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import GitSyncModal from './GitSyncModal';
 import { EMPTY_ARRAY, useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
@@ -581,7 +587,7 @@ const EditorComponent = (props) => {
 
   const onNameChanged = (newName) => {
     updateState({ appName: newName });
-    setWindowTitle({ page: pageTitles.EDITOR, appName: newName });
+    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: newName });
   };
 
   const onZoomChanged = (zoom) => {
@@ -726,7 +732,7 @@ const EditorComponent = (props) => {
     environmentSwitch = false,
     selectedEnvironmentId = null
   ) => {
-    setWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
+    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
 
     if (!environmentSwitch && (!releasedVersionId || !versionSwitched)) {

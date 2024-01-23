@@ -21,7 +21,7 @@ import TemplateLibraryModal from './TemplateLibraryModal/';
 import HomeHeader from './Header';
 import Modal from './Modal';
 import configs from './Configs/AppIcon.json';
-import { retrieveWhiteLabelText, getWorkspaceId } from '../_helpers/utils';
+import { fetchAndSetWindowTitle, getWorkspaceId, pageTitles } from '../_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { sample, isEmpty } from 'lodash';
 import ExportAppModal from './ExportAppModal';
@@ -103,6 +103,7 @@ class HomePageComponent extends React.Component {
   }
 
   async componentDidMount() {
+    fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     await Promise.all([
       this.fetchApps(1, this.state.currentFolder.id),
       this.fetchFolders(),
@@ -112,7 +113,6 @@ class HomePageComponent extends React.Component {
       this.fetchWorkflowsWorkspaceLimit(),
       this.fetchOrgGit(),
     ]);
-    document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
 
   componentDidUpdate(prevProps) {

@@ -13,6 +13,7 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -583,7 +584,86 @@ export const hightlightMentionedUserInComment = (comment) => {
 
 export const retrieveWhiteLabelText = () => {
   const custom_label = window.public_config?.WHITE_LABEL_TEXT;
-  return custom_label ? custom_label : 'ToolJet';
+  return custom_label ? custom_label : defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+};
+
+export const pageTitles = {
+  INSTANCE_SETTINGS: 'Settings',
+  WORKSPACE_SETTINGS: 'Workspace settings',
+  INTEGRATIONS: 'Marketplace',
+  WORKFLOWS: 'Workflows',
+  DATABASE: 'Database',
+  DATA_SOURCES: 'Data sources',
+  AUDIT_LOGS: 'Audit logs',
+  ACCOUNT_SETTINGS: 'Profile settings',
+  SETTINGS: 'Profile settings',
+  EDITOR: 'Editor',
+  WORKFLOW_EDITOR: 'workflowEditor',
+  VIEWER: 'Viewer',
+  DASHBOARD: 'Dashboard',
+  WORKSPACE_CONSTANTS: 'Workspace constants',
+};
+
+export const fetchAndSetWindowTitle = async (pageDetails) => {
+  const whiteLabelText = `${retrieveWhiteLabelText()}`;
+  let pageTitleKey = pageDetails?.page || '';
+  let pageTitle = '';
+  switch (pageTitleKey) {
+    case pageTitles.VIEWER: {
+      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
+      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
+      break;
+    }
+    case pageTitles.EDITOR:
+    case pageTitles.WORKFLOW_EDITOR: {
+      pageTitle = pageDetails?.appName || 'My App';
+      break;
+    }
+    default: {
+      pageTitle = pageTitleKey;
+      break;
+    }
+  }
+  document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
+};
+
+// to set favicon and title from router for individual pages
+export const setFaviconAndTitle = async (whiteLabelFavicon, whiteLabelText, location) => {
+  // Set favicon
+  let links = document.querySelectorAll("link[rel='icon']");
+  if (links.length === 0) {
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.type = 'image/png';
+    document.getElementsByTagName('head')[0].appendChild(link);
+    links = [link];
+  }
+  links.forEach((link) => {
+    link.href = `${whiteLabelFavicon || defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON}`;
+  });
+  // Set title
+  const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
+  const pathToTitle = {
+    'instance-settings': pageTitles.INSTANCE_SETTINGS,
+    'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
+    integrations: pageTitles.INTEGRATIONS,
+    workflows: pageTitles.WORKFLOWS,
+    database: pageTitles.DATABASE,
+    'data-sources': pageTitles.DATA_SOURCES,
+    'audit-logs': pageTitles.AUDIT_LOGS,
+    'account-settings': pageTitles.ACCOUNT_SETTINGS,
+    settings: pageTitles.SETTINGS,
+    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
+    login: '',
+    'forgot-password': '',
+  };
+  const pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path));
+  const pageTitle = pathToTitle[pageTitleKey];
+  if (pageTitleKey && !isEditorOrViewerGoingToRender) {
+    document.title = pageTitle
+      ? `${pageTitle} | ${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`
+      : `${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
+  }
 };
 
 export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
@@ -1124,69 +1204,5 @@ export const humanizeifDefaultGroupName = (groupName) => {
 
     default:
       return groupName;
-  }
-};
-
-export const defaultWhiteLabellingSettings = {
-  WHITE_LABEL_LOGO: 'https://app.tooljet.com/logo.svg',
-  WHITE_LABEL_TEXT: 'ToolJet',
-  WHITE_LABEL_FAVICON: 'https://app.tooljet.com/favico.png',
-};
-
-export const pageTitles = {
-  INSTANCE_SETTINGS: 'Settings',
-  WORKSPACE_SETTINGS: 'Workspace settings',
-  INTEGRATIONS: 'Marketplace',
-  WORKFLOWS: 'Workflows',
-  DATABASE: 'Database',
-  DATA_SOURCES: 'Data sources',
-  AUDIT_LOGS: 'Audit logs',
-  ACCOUNT_SETTINGS: 'Profile settings',
-  SETTINGS: 'Profile settings',
-  EDITOR: 'Editor',
-  WORKFLOW_EDITOR: 'workflowEditor',
-  VIEWER: 'Viewer',
-  DASHBOARD: 'Dashboard',
-  WORKSPACE_CONSTANTS: 'Workspace constants',
-};
-
-export const setWindowTitle = async (pageDetails, location) => {
-  const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
-  const pathToTitle = {
-    'instance-settings': pageTitles.INSTANCE_SETTINGS,
-    'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
-    integrations: pageTitles.INTEGRATIONS,
-    workflows: pageTitles.WORKFLOWS,
-    database: pageTitles.DATABASE,
-    'data-sources': pageTitles.DATA_SOURCES,
-    'audit-logs': pageTitles.AUDIT_LOGS,
-    'account-settings': pageTitles.ACCOUNT_SETTINGS,
-    settings: pageTitles.SETTINGS,
-    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
-  };
-  const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
-  let pageTitleKey = pageDetails?.page || '';
-  let pageTitle = '';
-  if (!pageTitleKey && !isEditorOrViewerGoingToRender) {
-    pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path)) || '';
-  }
-  switch (pageTitleKey) {
-    case pageTitles.VIEWER: {
-      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
-      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
-      break;
-    }
-    case pageTitles.EDITOR:
-    case pageTitles.WORKFLOW_EDITOR: {
-      pageTitle = pageDetails?.appName || 'My App';
-      break;
-    }
-    default: {
-      pageTitle = pathToTitle[pageTitleKey] || pageTitleKey;
-      break;
-    }
-  }
-  if (pageTitle) {
-    document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
   }
 };

@@ -16,8 +16,8 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
 import { canDeleteDataSource } from '@/_helpers';
+import { fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
 import { ToolTip } from '@/_components/ToolTip';
-import { pageTitles, setWindowTitle } from '@/_helpers/utils';
 
 export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
@@ -71,7 +71,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   }, []);
 
   useEffect(() => {
-    setWindowTitle({ page: `${selectedDataSource?.name || pageTitles.DATA_SOURCES}` });
+    fetchAndSetWindowTitle({ page: `${selectedDataSource?.name || pageTitles.DATA_SOURCES}` });
     if (selectedDataSource) {
       setModalProps({ ...modalProps, backdrop: false });
     }

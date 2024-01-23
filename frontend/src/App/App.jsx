@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import { retrieveWhiteLabelText } from '@/_helpers/utils';
+import { retrieveWhiteLabelText, setFaviconAndTitle } from '@/_helpers/utils';
 import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute } from '@/_components';
@@ -82,22 +82,8 @@ class AppComponent extends React.Component {
     });
   };
 
-  setFaviconAndTitle() {
-    const favicon_url = window.public_config?.WHITE_LABEL_FAVICON;
-    let links = document.querySelectorAll("link[rel='icon']");
-    links.forEach((link) => {
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.getElementsByTagName('head')[0].appendChild(link);
-      }
-      link.href = favicon_url ? favicon_url : 'assets/images/logo.svg';
-    });
-    document.title = `${retrieveWhiteLabelText()} - Dashboard`;
-  }
-
   componentDidMount() {
-    this.setFaviconAndTitle();
+    setFaviconAndTitle();
     authorizeWorkspace();
     this.fetchMetadata();
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
