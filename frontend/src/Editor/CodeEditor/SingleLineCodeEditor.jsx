@@ -61,7 +61,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
         currentValue={currentValue}
         isFocused={isFocused}
         componentName={componentName}
-        validatinSchema={validation}
+        validationSchema={validation}
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation ?? null}
         componentId={restProps?.componentId ?? null}
@@ -232,7 +232,7 @@ const DynamicEditorBridge = (props) => {
   const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
   const { t } = useTranslation();
-  const [value, error] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
+  const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
 
   return (
     <div className={cx({ 'codeShow-active': codeShow })}>

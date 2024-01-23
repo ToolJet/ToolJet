@@ -137,8 +137,7 @@ function resolveCode(code, state, customObjects = {}, withError = true, reserved
         null
       );
     } catch (err) {
-      error = err;
-      // console.log('eval_error', err);
+      error = err.toString();
     }
   }
 
@@ -147,15 +146,18 @@ function resolveCode(code, state, customObjects = {}, withError = true, reserved
 }
 
 export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
-  if (typeof query !== 'string') return [query, null];
-
-  if (!query) return [null, null];
+  if (!query) return [false, null, null];
 
   let resolvedValue = query;
   let error = null;
 
-  if (!query?.includes('{{') || !query?.includes('}}')) {
-    return [resolvedValue, error];
+  if (!validationSchema && (!query?.includes('{{') || !query?.includes('}}'))) {
+    return [true, error, resolvedValue];
+  }
+
+  if (validationSchema && !query?.includes('{{') && !query?.includes('}}')) {
+    const [valid, errors, newValue] = validateComponentProperty(query, validationSchema);
+    return [valid, errors, newValue, resolvedValue];
   }
 
   const value = query?.replace(/{{|}}/g, '').trim();
@@ -165,7 +167,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
   const { toResolveReference, jsExpression } = inferJSExpAndReferences(value, lookupTable.hints);
   const currentState = useCurrentStateStore.getState();
 
-  if (lookupTable.hints.has(toResolveReference)) {
+  if (toResolveReference && lookupTable.hints.has(toResolveReference)) {
     const idToLookUp = lookupTable.hints.get(toResolveReference);
     resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);
 
@@ -182,7 +184,11 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
   }
 
   if (!validationSchema) {
-    return [resolvedValue, error];
+    return [true, error, resolvedValue];
+  }
+
+  if (error) {
+    return [false, error, query, query];
   }
 
   if (validationSchema) {
@@ -198,14 +204,16 @@ export const paramValidation = (expectedType, value) => {
 };
 
 const inferJSExpAndReferences = (code, hintsMap) => {
-  const references = code.split('.');
+  if (!code) return { toResolveReference: null, jsExpression: null };
+
+  const references = code?.split('.');
 
   let prevReference;
 
   let toResolveReference;
   let jsExpression;
 
-  for (let i = 0; i < references.length; i++) {
+  for (let i = 0; i < references?.length; i++) {
     const currentRef = references[i];
 
     const ref = prevReference ? prevReference + '.' + currentRef : currentRef;
@@ -245,8 +253,14 @@ export function computeCoercion(oldValue, newValue) {
   const oldValueType = Array.isArray(oldValue) ? 'array' : typeof oldValue;
   const newValueType = Array.isArray(newValue) ? 'array' : typeof newValue;
 
+  // Check if newValue is valid for coercion
+  // if (!isValidForCoercion(oldValueType, newValue)) {
+  //   // throw new Error(`Invalid coercion: Cannot convert ${newValue} to ${oldValueType}`);
+  //   return ['', newValueType, oldValueType];
+  // }
+
   if (oldValueType === newValueType) {
-    if (JSON.stringify(oldValue) != JSON.stringify(newValue)) {
+    if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
       return [` → ${JSON.stringify(newValue)}`, newValueType, oldValueType];
     }
   } else {
@@ -254,6 +268,24 @@ export function computeCoercion(oldValue, newValue) {
   }
 
   return ['', newValueType, oldValueType];
+}
+
+function isValidForCoercion(oldValueType, newValue) {
+  try {
+    switch (oldValueType) {
+      case 'number':
+        return !isNaN(Number(newValue)) && newValue.trim() !== '';
+      case 'string':
+        return typeof newValue === 'string' || !isNaN(newValue);
+      case 'array':
+        return Array.isArray(newValue) || newValue.split(',').length > 0;
+
+      default:
+        return true;
+    }
+  } catch (error) {
+    return false;
+  }
 }
 
 export const validateComponentProperty = (resolvedValue, validation) => {

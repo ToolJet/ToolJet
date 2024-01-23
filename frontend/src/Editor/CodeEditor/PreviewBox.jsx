@@ -7,7 +7,7 @@ import NewCodeHinter from '.';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';
 
-export const PreviewBox = ({ currentValue, isFocused, validatinSchema, setErrorStateActive, componentId }) => {
+export const PreviewBox = ({ currentValue, isFocused, validationSchema, setErrorStateActive, componentId }) => {
   // Todo: |isWorkspaceVariable| Remove this when workspace variables are deprecated
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
@@ -25,15 +25,15 @@ export const PreviewBox = ({ currentValue, isFocused, validatinSchema, setErrorS
 
   const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
 
-  const getPreviewContent = (content) => {
+  const getPreviewContent = (content, type) => {
     if (!content) return currentValue;
 
-    const type = typeof content;
     try {
       switch (type) {
-        case 'object':
+        case 'Object':
+        case 'Array':
           return JSON.stringify(content);
-        case 'boolean':
+        case 'Boolean':
           return content.toString();
         default:
           return content;
@@ -55,7 +55,7 @@ export const PreviewBox = ({ currentValue, isFocused, validatinSchema, setErrorS
   let previewType = getCurrentNodeType(resolvedValue);
   let previewContent = resolvedValue;
 
-  const content = getPreviewContent(previewContent);
+  const content = getPreviewContent(previewContent, previewType);
 
   useEffect(() => {
     if (error) {
@@ -67,14 +67,14 @@ export const PreviewBox = ({ currentValue, isFocused, validatinSchema, setErrorS
   }, [error]);
 
   useEffect(() => {
-    const [valid, error, newValue, resolvedValue] = resolveReferences(currentValue, validatinSchema, customVariables);
-    const [coercionPreview, typeAfterCoercion, typeBeforeCoercion] = computeCoercion(resolvedValue, newValue);
+    const [valid, error, newValue, resolvedValue] = resolveReferences(currentValue, validationSchema, customVariables);
 
-    if (!validatinSchema) {
+    if (!validationSchema) {
       return setResolvedValue(newValue);
     }
 
     if (valid) {
+      const [coercionPreview, typeAfterCoercion, typeBeforeCoercion] = computeCoercion(resolvedValue, newValue);
       setResolvedValue(resolvedValue);
 
       setCoersionData({
@@ -83,6 +83,9 @@ export const PreviewBox = ({ currentValue, isFocused, validatinSchema, setErrorS
         typeBeforeCoercion,
       });
       setError(null);
+    } else if (!valid && !newValue && !resolvedValue) {
+      const err = !error ? `Invalid value for ${validationSchema?.schema?.type}` : `${error}`;
+      setError(err);
     } else {
       setError(error);
       setCoersionData(null);
@@ -93,20 +96,25 @@ export const PreviewBox = ({ currentValue, isFocused, validatinSchema, setErrorS
   return (
     <animated.div className={isFocused ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
       <div ref={heightRef} className={`dynamic-variable-preview px-1 py-1 ${!error ? 'bg-green-lt' : 'bg-red-lt'}`}>
-        {!error ? (
-          <RenderResolvedValue
-            previewType={previewType}
-            resolvedValue={content}
-            coersionData={coersionData}
-            isFocused={isFocused}
-          />
-        ) : (
-          <RenderError error={error} />
-        )}
+        <PreviewBox.PreviewCode
+          error={error}
+          previewType={previewType}
+          resolvedValue={content}
+          coersionData={coersionData}
+          isFocused={isFocused}
+        />
       </div>
       {isWorkspaceVariable && <DepericatedAlertForWorkspaceVariable text={'Deprecating soon'} />}
     </animated.div>
   );
+};
+
+const Preview = ({ error, ...restProps }) => {
+  if (error) {
+    return <PreviewBox.RenderError error={error} heightRef={restProps.heightRef} />;
+  }
+
+  return <PreviewBox.RenderResolvedValue {...restProps} />;
 };
 
 const RenderResolvedValue = ({ previewType, resolvedValue, coersionData, isFocused }) => {
@@ -141,11 +149,16 @@ const RenderResolvedValue = ({ previewType, resolvedValue, coersionData, isFocus
 };
 
 const RenderError = ({ error }) => {
+  const typeofError = getCurrentNodeType(error);
+
+  const errorMessage = typeofError === 'Array' ? error[0] : JSON.stringify(error);
+
   return (
     <div>
       <div className="heading my-1">
-        <span>{JSON.stringify(error)}</span>
+        <span>Error</span>
       </div>
+      {errorMessage}
     </div>
   );
 };
@@ -165,3 +178,7 @@ const DepericatedAlertForWorkspaceVariable = ({ text }) => {
     </Alert>
   );
 };
+
+PreviewBox.PreviewCode = Preview;
+PreviewBox.RenderResolvedValue = RenderResolvedValue;
+PreviewBox.RenderError = RenderError;
