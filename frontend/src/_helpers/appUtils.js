@@ -1004,8 +1004,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     .getState()
     .modules[_ref.moduleName].useDataQueriesStore.getState()
     .dataQueries.find((query) => query.id === queryId);
-  const queryEvents = useAppDataStore
+  const queryEvents = useSuperStore
     .getState()
+    .modules[_ref.moduleName].useAppDataStore.getState()
     .events.filter((event) => event.target === 'data_query' && event.sourceId === queryId);
 
   let dataQuery = {};

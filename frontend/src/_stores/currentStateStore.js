@@ -5,7 +5,7 @@ import { useContext } from 'react';
 import { useSuperStore } from './superStore';
 import { ModuleContext } from '../_contexts/ModuleContext';
 
-export function createCurrentStateStore() {
+export function createCurrentStateStore(moduleName) {
   const initialState = {
     queries: {},
     components: {},
@@ -22,6 +22,7 @@ export function createCurrentStateStore() {
       variables: {},
     },
     succededQuery: {},
+    moduleName,
   };
 
   return create(

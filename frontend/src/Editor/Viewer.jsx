@@ -335,7 +335,7 @@ class ViewerComponent extends React.Component {
 
       if (currentSession?.load_app && slug) {
         if (currentSession?.group_permissions) {
-          useAppDataStore.getState().actions.setAppId(appId);
+          useSuperStore.getState().modules[this.context].useAppDataStore.getState().actions.setAppId(appId);
 
           const currentUser = currentSession.current_user;
           const userVars = {

@@ -3,15 +3,16 @@ import { useContext } from 'react';
 import { useSuperStore } from './superStore';
 import { ModuleContext } from '../_contexts/ModuleContext';
 
-const initialState = {
-  editingVersion: null,
-  isUserEditingTheVersion: false,
-  releasedVersionId: null,
-  isVersionReleased: false,
-  appVersions: [],
-};
+export function createAppVersionStore(moduleName) {
+  const initialState = {
+    editingVersion: null,
+    isUserEditingTheVersion: false,
+    releasedVersionId: null,
+    isVersionReleased: false,
+    appVersions: [],
+    moduleName,
+  };
 
-export function createAppVersionStore() {
   return create(
     zustandDevTools(
       (set, get) => ({

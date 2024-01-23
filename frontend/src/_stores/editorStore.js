@@ -17,7 +17,7 @@ const ACTIONS = {
   SET_IS_EDITOR_ACTIVE: 'SET_IS_EDITOR_ACTIVE',
 };
 
-export function createEditorStore() {
+export function createEditorStore(moduleName) {
   const initialState = {
     currentLayout: 'desktop',
     showComments: false,
@@ -44,6 +44,7 @@ export function createEditorStore() {
     queryConfirmationList: [],
     currentPageId: null,
     currentSessionId: uuid(),
+    moduleName,
   };
 
   return create(

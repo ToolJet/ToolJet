@@ -3,14 +3,12 @@ import { getDefaultOptions } from './storeHelper';
 import { dataqueryService } from '@/_services';
 // import debounce from 'lodash/debounce';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { runQueries } from '@/_helpers/appUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
 import _, { isEmpty, throttle } from 'lodash';
 import { useSuperStore } from './superStore';
 import { shallow } from 'zustand/shallow';
-import { useCurrentStateStore } from './currentStateStore';
 import { useContext } from 'react';
 import { ModuleContext } from '../_contexts/ModuleContext';
 
@@ -36,13 +34,7 @@ export function createDataQueriesStore(moduleName) {
         ...initialState,
         actions: {
           // TODO: Remove editor state while changing currentState
-          fetchDataQueries: async (
-            appVersionId,
-            selectFirstQuery = false,
-            runQueriesOnAppLoad = false,
-            ref,
-            moduleName
-          ) => {
+          fetchDataQueries: async (appVersionId, selectFirstQuery = false, runQueriesOnAppLoad = false, ref) => {
             set({ loadingDataQueries: true });
             const data = await dataqueryService.getAll(appVersionId);
             set((state) => ({
@@ -55,7 +47,7 @@ export function createDataQueriesStore(moduleName) {
               const updatedQueries = {};
               const currentQueries = useSuperStore
                 .getState()
-                .modules[moduleName].useCurrentStateStore.getState().queries;
+                .modules[get().moduleName].useCurrentStateStore.getState().queries;
 
               data.data_queries.forEach(({ id, name, options }) => {
                 updatedQueries[name] = _.merge(currentQueries[name], { id: id });
@@ -67,15 +59,15 @@ export function createDataQueriesStore(moduleName) {
               if (queryConfirmationList.length !== 0) {
                 useSuperStore
                   .getState()
-                  .modules[moduleName].useEditorStore.getState()
+                  .modules[get().moduleName].useEditorStore.getState()
                   .actions.updateQueryConfirmationList(queryConfirmationList);
               }
 
               useSuperStore
                 .getState()
-                .modules[moduleName].useCurrentStateStore.getState()
+                .modules[get().moduleName].useCurrentStateStore.getState()
                 .actions.setCurrentState({
-                  ...useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState(),
+                  ...useSuperStore.getState().modules[get().moduleName].useCurrentStateStore.getState(),
                   queries: updatedQueries,
                 });
             }
@@ -97,7 +89,7 @@ export function createDataQueriesStore(moduleName) {
           setDataQueries: (dataQueries) => set({ dataQueries }),
           deleteDataQueries: (queryId) => {
             set({ isDeletingQueryInProcess: true });
-            useAppDataStore.getState().actions.setIsSaving(true);
+            useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(true);
             dataqueryService
               .del(queryId)
               .then(() => {
@@ -118,7 +110,9 @@ export function createDataQueriesStore(moduleName) {
                   isDeletingQueryInProcess: false,
                 });
               })
-              .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
+              .finally(() =>
+                useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(false)
+              );
           },
           updateDataQuery: (options) => {
             set({ isUpdatingQueryInProcess: true });
@@ -143,7 +137,7 @@ export function createDataQueriesStore(moduleName) {
           createDataQuery: (selectedDataSource, shouldRunQuery) => {
             const appVersionId = useSuperStore.getState().modules[get().moduleName].useAppVersionStore.getState()
               .editingVersion?.id;
-            const appId = useAppDataStore.getState().appId;
+            const appId = useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().appId;
             const { options, name } = getDefaultOptions(selectedDataSource, get().moduleName);
             const kind = selectedDataSource.kind;
             const tempId = uuidv4();
@@ -153,7 +147,7 @@ export function createDataQueriesStore(moduleName) {
               .modules[get().moduleName].useQueryPanelStore.getState();
             const dataSourceId = selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;
             const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
-            useAppDataStore.getState().actions.setIsSaving(true);
+            useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(true);
             const { dataQueries } = get();
             const currDataQueries = [...dataQueries];
             set(() => ({
@@ -211,7 +205,9 @@ export function createDataQueriesStore(moduleName) {
                 actions.setSelectedQuery(null);
                 toast.error(`Failed to create query: ${error.message}`);
               })
-              .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
+              .finally(() =>
+                useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(false)
+              );
           },
           renameQuery: (id, newName) => {
             /** If query creation in progress, skips call and pushes the update to queue */
@@ -219,7 +215,7 @@ export function createDataQueriesStore(moduleName) {
               set({ queuedActions: { ...get().queuedActions, renameQuery: newName } });
               return;
             }
-            useAppDataStore.getState().actions.setIsSaving(true);
+            useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(true);
             /**
              * Seting name to store before api call for instant UI update and better UX.
              * Name is again set to state post api call to handle if renaming fails in backend.
@@ -243,14 +239,16 @@ export function createDataQueriesStore(moduleName) {
                   .modules[get().moduleName].useQueryPanelStore.getState()
                   .actions.setSelectedQuery(id);
               })
-              .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
+              .finally(() =>
+                useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(false)
+              );
           },
           changeDataQuery: (newDataSource) => {
             const { selectedQuery } = useSuperStore.getState().modules[get().moduleName].useQueryPanelStore.getState();
             set({
               isUpdatingQueryInProcess: true,
             });
-            useAppDataStore.getState().actions.setIsSaving(true);
+            useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(true);
             dataqueryService
               .changeQueryDataSource(selectedQuery?.id, newDataSource.id)
               .then(() => {
@@ -277,7 +275,9 @@ export function createDataQueriesStore(moduleName) {
                   isUpdatingQueryInProcess: false,
                 });
               })
-              .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
+              .finally(() =>
+                useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(false)
+              );
           },
           duplicateQuery: (id, appId) => {
             set({ creatingQueryInProcessId: uuidv4() });
@@ -293,7 +293,7 @@ export function createDataQueriesStore(moduleName) {
             }
             queryToClone.name = newName;
 
-            useAppDataStore.getState().actions.setIsSaving(true);
+            useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(true);
             dataqueryService
               .create(
                 appId,
@@ -327,7 +327,10 @@ export function createDataQueriesStore(moduleName) {
                       attachedTo: data.id,
                       index: event?.index,
                     };
-                    useAppDataStore.getState().actions?.createAppVersionEventHandlers(newEvent);
+                    useSuperStore
+                      .getState()
+                      .modules[get().moduleName].useAppDataStore.getState()
+                      .actions?.createAppVersionEventHandlers(newEvent);
                   })
                 );
               })
@@ -337,7 +340,9 @@ export function createDataQueriesStore(moduleName) {
                   creatingQueryInProcessId: null,
                 });
               })
-              .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
+              .finally(() =>
+                useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(false)
+              );
           },
           saveData: throttle((newValues) => {
             /** If query creation in progress, skips call and pushes the update to queue */
@@ -345,7 +350,7 @@ export function createDataQueriesStore(moduleName) {
               set({ queuedActions: { ...get().queuedActions, saveData: newValues } });
               return;
             }
-            useAppDataStore.getState().actions.setIsSaving(true);
+            useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(true);
             set({ isUpdatingQueryInProcess: true });
             dataqueryService
               .update(newValues?.id, newValues?.name, newValues?.options)
@@ -366,7 +371,9 @@ export function createDataQueriesStore(moduleName) {
                   isUpdatingQueryInProcess: false,
                 });
               })
-              .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
+              .finally(() =>
+                useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(false)
+              );
           }, 500),
           sortDataQueries: (sortBy, sortOrder) => {
             set(({ dataQueries, sortOrder: currSortOrder }) => {

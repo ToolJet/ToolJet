@@ -1440,7 +1440,7 @@ const EditorComponent = (props) => {
   };
 
   const navigateToPage = (queryParams = [], handle) => {
-    const appId = useAppDataStore.getState()?.appId;
+    const appId = useSuperStore.getState().modules[moduleName].useAppDataStore.getState()?.appId;
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
     props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {

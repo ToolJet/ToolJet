@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import { useSuperStore } from './superStore';
 import { ModuleContext } from '../_contexts/ModuleContext';
 
-export function createDataSourcesStore() {
+export function createDataSourcesStore(moduleName) {
   const initialState = {
     dataSources: [],
     loadingDataSources: true,
@@ -16,6 +16,7 @@ export function createDataSourcesStore() {
       action: null,
       saveAction: null,
     },
+    moduleName,
   };
 
   return create(
