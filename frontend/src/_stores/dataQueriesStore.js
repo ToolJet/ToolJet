@@ -53,7 +53,9 @@ export function createDataQueriesStore() {
             if (data.data_queries.length !== 0) {
               const queryConfirmationList = [];
               const updatedQueries = {};
-              const currentQueries = useCurrentStateStore.getState().queries;
+              const currentQueries = useSuperStore
+                .getState()
+                .modules[moduleName].useCurrentStateStore.getState().queries;
 
               data.data_queries.forEach(({ id, name, options }) => {
                 updatedQueries[name] = _.merge(currentQueries[name], { id: id });
@@ -69,10 +71,13 @@ export function createDataQueriesStore() {
                   .actions.updateQueryConfirmationList(queryConfirmationList);
               }
 
-              useCurrentStateStore.getState().actions.setCurrentState({
-                ...useCurrentStateStore.getState(),
-                queries: updatedQueries,
-              });
+              useSuperStore
+                .getState()
+                .modules[moduleName].useCurrentStateStore.getState()
+                .actions.setCurrentState({
+                  ...useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState(),
+                  queries: updatedQueries,
+                });
             }
 
             // Compute query state to be added in the current state

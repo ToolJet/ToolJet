@@ -63,9 +63,10 @@ export function setCurrentStateAsync(_ref, changes) {
   });
 }
 
-export function onComponentOptionsChanged(component, options) {
+export function onComponentOptionsChanged(moduleName, component, options) {
   const componentName = component.name;
-  const components = getCurrentState().components;
+  console.log({ moduleName });
+  const components = getCurrentState(moduleName).components;
   let componentData = components[componentName];
   componentData = componentData || {};
 
@@ -73,27 +74,36 @@ export function onComponentOptionsChanged(component, options) {
     componentData[option[0]] = option[1];
   }
 
-  useCurrentStateStore.getState().actions.setCurrentState({
-    components: { ...components, [componentName]: componentData },
-  });
+  useSuperStore
+    .getState()
+    .modules[moduleName].useCurrentStateStore.getState()
+    .actions.setCurrentState({
+      components: { ...components, [componentName]: componentData },
+    });
   return Promise.resolve();
 }
 
-export function onComponentOptionChanged(component, option_name, value) {
+export function onComponentOptionChanged(moduleName, component, option_name, value) {
   const componentName = component.name;
-  const components = getCurrentState().components;
+  const components = getCurrentState(moduleName).components;
   let componentData = components[componentName];
   componentData = componentData || {};
   componentData[option_name] = value;
 
   if (option_name !== 'id') {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: { ...components, [componentName]: componentData },
-    });
+    useSuperStore
+      .getState()
+      .modules[moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({
+        components: { ...components, [componentName]: componentData },
+      });
   } else if (!componentData?.id) {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: { ...components, [componentName]: componentData },
-    });
+    useSuperStore
+      .getState()
+      .modules[moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({
+        components: { ...components, [componentName]: componentData },
+      });
   }
 
   return Promise.resolve();
@@ -134,7 +144,7 @@ async function executeRunPycode(_ref, code, query, isPreview, mode) {
 
   const evaluatePythonCode = async (pyodide) => {
     let result = {};
-    const currentState = getCurrentState();
+    const currentState = getCurrentState(_ref.moduleName);
     try {
       const appStateVars = currentState['variables'] ?? {};
 
@@ -285,7 +295,7 @@ export async function runTransformation(
 
   let result = [];
 
-  const currentState = getCurrentState() || {};
+  const currentState = getCurrentState(_ref.moduleName) || {};
 
   if (transformationLanguage === 'python') {
     result = await runPythonTransformation(currentState, data, transformation, query, mode);
@@ -365,13 +375,13 @@ function showModal(_ref, modal, show) {
   const modalMeta = _ref.appDefinition.pages[_ref.currentPageId].components[modalId]; //! NeedToFix
 
   const _components = {
-    ...getCurrentState().components,
+    ...getCurrentState(_ref.moduleName).components,
     [modalMeta.component.name]: {
-      ...getCurrentState().components[modalMeta.component.name],
+      ...getCurrentState(_ref.moduleName).components[modalMeta.component.name],
       show: show,
     },
   };
-  useCurrentStateStore.getState().actions.setCurrentState({
+  useSuperStore.getState().modules[_ref.moduleName].useCurrentStateStore.getState().actions.setCurrentState({
     components: _components,
   });
   return Promise.resolve();
@@ -403,14 +413,19 @@ export const executeAction = debounce(executeActionWithDebounce);
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
   if (event) {
     if (event.runOnlyIf) {
-      const shouldRun = resolveReferences(event.runOnlyIf, getCurrentState(), undefined, customVariables);
+      const shouldRun = resolveReferences(
+        event.runOnlyIf,
+        getCurrentState(_ref.moduleName),
+        undefined,
+        customVariables
+      );
       if (!shouldRun) {
         return false;
       }
     }
     switch (event.actionId) {
       case 'show-alert': {
-        const message = resolveReferences(event.message, getCurrentState(), undefined, customVariables);
+        const message = resolveReferences(event.message, getCurrentState(_ref.moduleName), undefined, customVariables);
         switch (event.alertType) {
           case 'success':
           case 'error':
@@ -434,7 +449,8 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const resolvedParams = {};
         if (params) {
           Object.keys(params).map(
-            (param) => (resolvedParams[param] = resolveReferences(params[param], getCurrentState(), undefined))
+            (param) =>
+              (resolvedParams[param] = resolveReferences(params[param], getCurrentState(_ref.moduleName), undefined))
           );
         }
         const name =
@@ -449,20 +465,20 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'open-webpage': {
-        const url = resolveReferences(event.url, getCurrentState(), undefined, customVariables);
+        const url = resolveReferences(event.url, getCurrentState(_ref.moduleName), undefined, customVariables);
         window.open(url, '_blank');
         return Promise.resolve();
       }
 
       case 'go-to-app': {
-        const slug = resolveReferences(event.slug, getCurrentState(), undefined, customVariables);
+        const slug = resolveReferences(event.slug, getCurrentState(_ref.moduleName), undefined, customVariables);
         const queryParams = event.queryParams?.reduce(
           (result, queryParam) => ({
             ...result,
             ...{
-              [resolveReferences(queryParam[0], getCurrentState())]: resolveReferences(
+              [resolveReferences(queryParam[0], getCurrentState(_ref.moduleName))]: resolveReferences(
                 queryParam[1],
-                getCurrentState(),
+                getCurrentState(_ref.moduleName),
                 undefined,
                 customVariables
               ),
@@ -496,15 +512,20 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         return showModal(_ref, event.modal, false);
 
       case 'copy-to-clipboard': {
-        const contentToCopy = resolveReferences(event.contentToCopy, getCurrentState(), undefined, customVariables);
+        const contentToCopy = resolveReferences(
+          event.contentToCopy,
+          getCurrentState(_ref.moduleName),
+          undefined,
+          customVariables
+        );
         copyToClipboard(contentToCopy);
 
         return Promise.resolve();
       }
 
       case 'set-localstorage-value': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
-        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences(event.key, getCurrentState(_ref.moduleName), undefined, customVariables);
+        const value = resolveReferences(event.value, getCurrentState(_ref.moduleName), undefined, customVariables);
         localStorage.setItem(key, value);
 
         return Promise.resolve();
@@ -512,9 +533,11 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'generate-file': {
         // const fileType = event.fileType;
-        const data = resolveReferences(event.data, getCurrentState(), undefined, customVariables) ?? [];
-        const fileName = resolveReferences(event.fileName, getCurrentState(), undefined, customVariables) ?? 'data.txt';
-        const fileType = resolveReferences(event.fileType, getCurrentState(), undefined, customVariables) ?? 'csv';
+        const data = resolveReferences(event.data, getCurrentState(_ref.moduleName), undefined, customVariables) ?? [];
+        const fileName =
+          resolveReferences(event.fileName, getCurrentState(_ref.moduleName), undefined, customVariables) ?? 'data.txt';
+        const fileType =
+          resolveReferences(event.fileType, getCurrentState(_ref.moduleName), undefined, customVariables) ?? 'csv';
         const fileData = {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
@@ -525,57 +548,69 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-table-page': {
-        setTablePageIndex(event.table, event.pageIndex);
+        setTablePageIndex(event.table, event.pageIndex, _ref);
         break;
       }
 
       case 'set-custom-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
-        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
-        const customAppVariables = { ...getCurrentState().variables };
+        const key = resolveReferences(event.key, getCurrentState(_ref.moduleName), undefined, customVariables);
+        const value = resolveReferences(event.value, getCurrentState(_ref.moduleName), undefined, customVariables);
+        const customAppVariables = { ...getCurrentState(_ref.moduleName).variables };
         customAppVariables[key] = value;
-        return useCurrentStateStore.getState().actions.setCurrentState({
-          variables: customAppVariables,
-        });
+        return useSuperStore
+          .getState()
+          .modules[_ref.moduleName].useCurrentStateStore.getState()
+          .actions.setCurrentState({
+            variables: customAppVariables,
+          });
       }
 
       case 'unset-custom-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
-        const customAppVariables = { ...getCurrentState().variables };
+        const key = resolveReferences(event.key, getCurrentState(_ref.moduleName), undefined, customVariables);
+        const customAppVariables = { ...getCurrentState(_ref.moduleName).variables };
         delete customAppVariables[key];
-        return useCurrentStateStore.getState().actions.setCurrentState({
-          variables: customAppVariables,
-        });
+        return useSuperStore
+          .getState()
+          .modules[_ref.moduleName].useCurrentStateStore.getState()
+          .actions.setCurrentState({
+            variables: customAppVariables,
+          });
       }
 
       case 'set-page-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
-        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences(event.key, getCurrentState(_ref.moduleName), undefined, customVariables);
+        const value = resolveReferences(event.value, getCurrentState(_ref.moduleName), undefined, customVariables);
         const customPageVariables = {
-          ...getCurrentState().page.variables,
+          ...getCurrentState(_ref.moduleName).page.variables,
           [key]: value,
         };
-        return useCurrentStateStore.getState().actions.setCurrentState({
-          page: {
-            ...getCurrentState().page,
-            variables: customPageVariables,
-          },
-        });
+        return useSuperStore
+          .getState()
+          .modules[_ref.moduleName].useCurrentStateStore.getState()
+          .actions.setCurrentState({
+            page: {
+              ...getCurrentState(_ref.moduleName).page,
+              variables: customPageVariables,
+            },
+          });
       }
 
       case 'unset-page-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
-        const customPageVariables = _.omit(getCurrentState().page.variables, key);
-        return useCurrentStateStore.getState().actions.setCurrentState({
-          page: {
-            ...getCurrentState().page,
-            variables: customPageVariables,
-          },
-        });
+        const key = resolveReferences(event.key, getCurrentState(_ref.moduleName), undefined, customVariables);
+        const customPageVariables = _.omit(getCurrentState(_ref.moduleName).page.variables, key);
+        return useSuperStore
+          .getState()
+          .modules[_ref.moduleName].useCurrentStateStore.getState()
+          .actions.setCurrentState({
+            page: {
+              ...getCurrentState(_ref.moduleName).page,
+              variables: customPageVariables,
+            },
+          });
       }
 
       case 'control-component': {
-        let component = Object.values(getCurrentState()?.components ?? {}).filter(
+        let component = Object.values(getCurrentState(_ref.moduleName)?.components ?? {}).filter(
           (component) => component.id === event.componentId
         )[0];
         let action = '';
@@ -583,8 +618,10 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         // check if component id not found then try to find if its available as child widget else continue
         //  with normal flow finding action
         if (component == undefined) {
-          component = _ref.appDefinition.pages[getCurrentState()?.page?.id].components[event.componentId].component;
-          const parent = Object.values(getCurrentState()?.components ?? {}).find(
+          component =
+            _ref.appDefinition.pages[getCurrentState(_ref.moduleName)?.page?.id].components[event.componentId]
+              .component;
+          const parent = Object.values(getCurrentState(_ref.moduleName)?.components ?? {}).find(
             (item) => item.id === component.parent
           );
           const child = Object.values(parent?.children).find((item) => item.id === event.componentId);
@@ -597,7 +634,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         }
         actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
           ...param,
-          value: resolveReferences(param.value, getCurrentState(), undefined, customVariables),
+          value: resolveReferences(param.value, getCurrentState(_ref.moduleName), undefined, customVariables),
         }));
         const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
         return actionPromise ?? Promise.resolve();
@@ -608,7 +645,10 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
         // Don't allow switching to disabled page in editor as well as viewer
         if (!disabled) {
-          _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
+          _ref.switchPage(
+            event.pageId,
+            resolveReferences(event.queryParams, getCurrentState(_ref.moduleName), [], customVariables)
+          );
         }
         if (_ref.appDefinition.pages[event.pageId]) {
           if (disabled) {
@@ -622,7 +662,10 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
                 },
               },
             };
-            useCurrentStateStore.getState().actions.setErrors(generalProps);
+            useSuperStore
+              .getState()
+              .modules[_ref.moduleName].useCurrentStateStore.getState()
+              .actions.setErrors(generalProps);
           }
         }
 
@@ -645,44 +688,53 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
 
   if (eventName === 'onTrigger') {
     const { component, queryId, queryName, parameters } = options;
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: {
-        ...getCurrentState().components,
-        [component.name]: {
-          ...getCurrentState().components[component.name],
+    useSuperStore
+      .getState()
+      .modules[_ref.moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({
+        components: {
+          ...getCurrentState(_ref.moduleName).components,
+          [component.name]: {
+            ...getCurrentState(_ref.moduleName).components[component.name],
+          },
         },
-      },
-    });
+      });
     runQuery(_ref, queryId, queryName, true, mode, parameters);
   }
 
   if (eventName === 'onCalendarEventSelect') {
     const { component, calendarEvent } = options;
 
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: {
-        ...getCurrentState().components,
-        [component.name]: {
-          ...getCurrentState().components[component.name],
-          selectedEvent: { ...calendarEvent },
+    useSuperStore
+      .getState()
+      .modules[_ref.moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({
+        components: {
+          ...getCurrentState(_ref.moduleName).components,
+          [component.name]: {
+            ...getCurrentState(_ref.moduleName).components[component.name],
+            selectedEvent: { ...calendarEvent },
+          },
         },
-      },
-    });
+      });
 
     executeActionsForEventId(_ref, 'onCalendarEventSelect', events, mode, customVariables);
   }
 
   if (eventName === 'onCalendarSlotSelect') {
     const { component, selectedSlots } = options;
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: {
-        ...getCurrentState().components,
-        [component.name]: {
-          ...getCurrentState().components[component.name],
-          selectedSlots,
+    useSuperStore
+      .getState()
+      .modules[_ref.moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({
+        components: {
+          ...getCurrentState(_ref.moduleName).components,
+          [component.name]: {
+            ...getCurrentState(_ref.moduleName).components[component.name],
+            selectedSlots,
+          },
         },
-      },
-    });
+      });
 
     executeActionsForEventId(_ref, 'onCalendarSlotSelect', events, mode, customVariables);
   }
@@ -832,7 +884,7 @@ export function getQueryVariables(options, state) {
 }
 
 export function previewQuery(_ref, query, calledFromQuery = false, parameters = {}, hasParamSupport = false) {
-  const options = getQueryVariables(query.options, getCurrentState());
+  const options = getQueryVariables(query.options, getCurrentState(_ref.moduleName));
 
   const queryPanelState = useSuperStore.getState().modules[_ref.moduleName].useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
@@ -866,7 +918,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
         hasParamSupport
       );
     } else if (query.kind === 'tooljetdb') {
-      queryExecutionPromise = tooljetDbOperations.perform(query, getCurrentState());
+      queryExecutionPromise = tooljetDbOperations.perform(query, getCurrentState(_ref.moduleName));
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
     } else {
@@ -974,7 +1026,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     return;
   }
 
-  const options = getQueryVariables(dataQuery.options, getCurrentState());
+  const options = getQueryVariables(dataQuery.options, getCurrentState(_ref.moduleName));
 
   if (dataQuery.options?.requestConfirmation) {
     const queryConfirmationList = useSuperStore.getState().modules[_ref.moduleName].useEditorStore.getState()
@@ -1001,25 +1053,28 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
 
   // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      queries: {
-        ...getCurrentState().queries,
-        [queryName]: {
-          ...getCurrentState().queries[queryName],
-          isLoading: true,
-          data: [],
-          rawData: [],
+    useSuperStore
+      .getState()
+      .modules[_ref.moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({
+        queries: {
+          ...getCurrentState(_ref.moduleName).queries,
+          [queryName]: {
+            ...getCurrentState(_ref.moduleName).queries[queryName],
+            isLoading: true,
+            data: [],
+            rawData: [],
+          },
         },
-      },
-      errors: {},
-    });
+        errors: {},
+      });
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode, parameters);
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode);
     } else if (query.kind === 'tooljetdb') {
-      queryExecutionPromise = tooljetDbOperations.perform(query, getCurrentState());
+      queryExecutionPromise = tooljetDbOperations.perform(query, getCurrentState(_ref.moduleName));
     } else {
       queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
     }
@@ -1074,33 +1129,39 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             setPreviewData(errorData);
           }
           // errorData = query.kind === 'runpy' ? data.data : data;
-          useCurrentStateStore.getState().actions.setErrors({
-            [queryName]: {
-              type: 'query',
-              kind: query.kind,
-              data: errorData,
-              options: options,
-            },
-          });
+          useSuperStore
+            .getState()
+            .modules[_ref.moduleName].useCurrentStateStore.getState()
+            .actions.setErrors({
+              [queryName]: {
+                type: 'query',
+                kind: query.kind,
+                data: errorData,
+                options: options,
+              },
+            });
 
-          useCurrentStateStore.getState().actions.setCurrentState({
-            queries: {
-              ...getCurrentState().queries,
-              [queryName]: _.assign(
-                {
-                  ...getCurrentState().queries[queryName],
-                  isLoading: false,
-                },
-                query.kind === 'restapi'
-                  ? {
-                      request: data.data.requestObject,
-                      response: data.data.responseObject,
-                      responseHeaders: data.data.responseHeaders,
-                    }
-                  : {}
-              ),
-            },
-          });
+          useSuperStore
+            .getState()
+            .modules[_ref.moduleName].useCurrentStateStore.getState()
+            .actions.setCurrentState({
+              queries: {
+                ...getCurrentState(_ref.moduleName).queries,
+                [queryName]: _.assign(
+                  {
+                    ...getCurrentState(_ref.moduleName).queries[queryName],
+                    isLoading: false,
+                  },
+                  query.kind === 'restapi'
+                    ? {
+                        request: data.data.requestObject,
+                        response: data.data.responseObject,
+                        responseHeaders: data.data.responseHeaders,
+                      }
+                    : {}
+                ),
+              },
+            });
           resolve(data);
           onEvent(_self, 'onDataQueryFailure', queryEvents);
           if (mode !== 'view') {
@@ -1127,23 +1188,29 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               'edit'
             );
             if (finalData.status === 'failed') {
-              useCurrentStateStore.getState().actions.setCurrentState({
-                queries: {
-                  ...getCurrentState().queries,
-                  [queryName]: {
-                    ...getCurrentState().queries[queryName],
-                    isLoading: false,
+              useSuperStore
+                .getState()
+                .modules[_ref.moduleName].useCurrentStateStore.getState()
+                .actions.setCurrentState({
+                  queries: {
+                    ...getCurrentState(_ref.moduleName).queries,
+                    [queryName]: {
+                      ...getCurrentState(_ref.moduleName).queries[queryName],
+                      isLoading: false,
+                    },
                   },
-                },
-              });
+                });
 
-              useCurrentStateStore.getState().actions.setErrors({
-                [queryName]: {
-                  type: 'transformations',
-                  data: finalData,
-                  options: options,
-                },
-              });
+              useSuperStore
+                .getState()
+                .modules[_ref.moduleName].useCurrentStateStore.getState()
+                .actions.setErrors({
+                  [queryName]: {
+                    type: 'transformations',
+                    data: finalData,
+                    options: options,
+                  },
+                });
               resolve(finalData);
               onEvent(_self, 'onDataQueryFailure', queryEvents);
               return;
@@ -1156,61 +1223,69 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               duration: notificationDuration,
             });
           }
-          useCurrentStateStore.getState().actions.setCurrentState({
-            queries: {
-              ...getCurrentState().queries,
-              [queryName]: _.assign(
-                {
-                  ...getCurrentState().queries[queryName],
-                  isLoading: false,
-                  data: finalData,
-                  rawData,
-                },
-                query.kind === 'restapi'
-                  ? {
-                      request: data.request,
-                      response: data.response,
-                      responseHeaders: data.responseHeaders,
-                    }
-                  : {}
-              ),
-            },
-            // Used to generate logs
-            succededQuery: {
-              [queryName]: {
-                type: 'query',
-                kind: query.kind,
+          useSuperStore
+            .getState()
+            .modules[_ref.moduleName].useCurrentStateStore.getState()
+            .actions.setCurrentState({
+              queries: {
+                ...getCurrentState(_ref.moduleName).queries,
+                [queryName]: _.assign(
+                  {
+                    ...getCurrentState(_ref.moduleName).queries[queryName],
+                    isLoading: false,
+                    data: finalData,
+                    rawData,
+                  },
+                  query.kind === 'restapi'
+                    ? {
+                        request: data.request,
+                        response: data.response,
+                        responseHeaders: data.responseHeaders,
+                      }
+                    : {}
+                ),
               },
-            },
-          });
+              // Used to generate logs
+              succededQuery: {
+                [queryName]: {
+                  type: 'query',
+                  kind: query.kind,
+                },
+              },
+            });
           resolve({ status: 'ok', data: finalData });
           onEvent(_self, 'onDataQuerySuccess', queryEvents, mode);
         }
       })
       .catch(({ error }) => {
         if (mode !== 'view') toast.error(error ?? 'Unknown error');
-        useCurrentStateStore.getState().actions.setCurrentState({
-          queries: {
-            ...getCurrentState().queries,
-            [queryName]: {
-              isLoading: false,
+        useSuperStore
+          .getState()
+          .modules[_ref.moduleName].useCurrentStateStore.getState()
+          .actions.setCurrentState({
+            queries: {
+              ...getCurrentState(_ref.moduleName).queries,
+              [queryName]: {
+                isLoading: false,
+              },
             },
-          },
-        });
+          });
 
         resolve({ status: 'failed', message: error });
       });
   });
 }
 
-export function setTablePageIndex(tableId, index) {
+export function setTablePageIndex(tableId, index, _ref) {
   if (_.isEmpty(tableId)) {
     console.log('No table is associated with this event.');
     return Promise.resolve();
   }
 
-  const table = Object.entries(getCurrentState().components).filter((entry) => entry[1].id === tableId)[0][1];
-  const newPageIndex = resolveReferences(index, getCurrentState());
+  const table = Object.entries(getCurrentState(_ref.moduleName).components).filter(
+    (entry) => entry[1].id === tableId
+  )[0][1];
+  const newPageIndex = resolveReferences(index, getCurrentState(_ref.moduleName));
   table.setPage(newPageIndex ?? 1);
   return Promise.resolve();
 }
@@ -1234,7 +1309,7 @@ conditional checks for better performance and error handling.*/
 export function computeComponentState(components = {}, moduleName) {
   try {
     let componentState = {};
-    const currentComponents = getCurrentState().components;
+    const currentComponents = getCurrentState(moduleName).components;
 
     // Precompute parent component types
     const parentComponentTypes = {};
@@ -1271,11 +1346,14 @@ export function computeComponentState(components = {}, moduleName) {
       }
     });
 
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: {
-        ...componentState,
-      },
-    });
+    useSuperStore
+      .getState()
+      .modules[moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({
+        components: {
+          ...componentState,
+        },
+      });
 
     return new Promise((resolve) => {
       useSuperStore.getState().modules[moduleName].useEditorStore.getState().actions.updateEditorState({
@@ -1302,14 +1380,17 @@ export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, s
 };
 
 export const debuggerActions = {
-  error: (errors) => {
-    useCurrentStateStore.getState().actions.setErrors({
-      ...errors,
-    });
+  error: (errors, moduleName) => {
+    useSuperStore
+      .getState()
+      .modules[moduleName].useCurrentStateStore.getState()
+      .actions.setErrors({
+        ...errors,
+      });
   },
 
-  flush: () => {
-    useCurrentStateStore.getState().actions.setCurrentState({
+  flush: (moduleName) => {
+    useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
       errors: {},
     });
   },
@@ -1403,8 +1484,8 @@ export const debuggerActions = {
     });
     return querySuccesslogs;
   },
-  flushAllLog: () => {
-    useCurrentStateStore.getState().actions.setCurrentState({
+  flushAllLog: (moduleName) => {
+    useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
       succededQuery: {},
     });
   },
@@ -1837,30 +1918,33 @@ export const runQueries = (queries, _ref) => {
   });
 };
 
-export const computeQueryState = (queries) => {
+export const computeQueryState = (queries, moduleName) => {
   let queryState = {};
   queries.forEach((query) => {
     if (query.plugin?.plugin_id) {
       queryState[query.name] = {
         ...query.plugin.manifest_file.data?.source?.exposedVariables,
         kind: query.plugin.manifest_file.data.source.kind,
-        ...getCurrentState().queries[query.name],
+        ...getCurrentState(moduleName).queries[query.name],
       };
     } else {
       queryState[query.name] = {
         ...DataSourceTypes.find((source) => source.kind === query.kind)?.exposedVariables,
         kind: DataSourceTypes.find((source) => source.kind === query.kind)?.kind,
-        ...getCurrentState()?.queries[query.name],
+        ...getCurrentState(moduleName)?.queries[query.name],
       };
     }
   });
-  const hasDiffQueryState = !_.isEqual(getCurrentState()?.queries, queryState);
+  const hasDiffQueryState = !_.isEqual(getCurrentState(moduleName)?.queries, queryState);
   if (hasDiffQueryState) {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      queries: {
-        ...queryState,
-      },
-    });
+    useSuperStore
+      .getState()
+      .modules[moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({
+        queries: {
+          ...queryState,
+        },
+      });
   }
 };
 

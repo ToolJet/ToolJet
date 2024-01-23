@@ -418,7 +418,7 @@ export async function executeMultilineJS(
   parameters = {},
   hasParamSupport = false
 ) {
-  const currentState = getCurrentState();
+  const currentState = getCurrentState(_ref.moduleName);
   let result = {},
     error = null;
 

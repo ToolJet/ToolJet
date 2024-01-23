@@ -70,6 +70,7 @@ import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import WidgetIcon from '@/../assets/images/icons/widgets';
+import { useModuleName } from '../_contexts/ModuleContext';
 
 const AllComponents = {
   Button,
@@ -155,6 +156,7 @@ export const Box = memo(
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
+    const moduleName = useModuleName();
 
     let styles = {
       height: '100%',

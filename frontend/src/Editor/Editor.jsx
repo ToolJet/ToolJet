@@ -223,18 +223,21 @@ const EditorComponent = (props) => {
         updateState({
           currentUser: appUserDetails,
         });
-        useCurrentStateStore.getState().actions.setCurrentState({
-          globals: {
-            ...currentState.globals,
-            theme: { name: props?.darkMode ? 'dark' : 'light' },
-            urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
-            currentUser: userVars,
-            /* Constant value.it will only change for viewer */
-            mode: {
-              value: 'edit',
+        useSuperStore
+          .getState()
+          .modules[moduleName].useCurrentStateStore.getState()
+          .actions.setCurrentState({
+            globals: {
+              ...currentState.globals,
+              theme: { name: props?.darkMode ? 'dark' : 'light' },
+              urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
+              currentUser: userVars,
+              /* Constant value.it will only change for viewer */
+              mode: {
+                value: 'edit',
+              },
             },
-          },
-        });
+          });
       }
     });
 
@@ -302,7 +305,7 @@ const EditorComponent = (props) => {
 
   useEffect(() => {
     if (mounted) {
-      useCurrentStateStore.getState().actions.setCurrentState({
+      useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
         layout: currentLayout,
       });
     }
@@ -368,7 +371,7 @@ const EditorComponent = (props) => {
         }
       });
 
-      useCurrentStateStore.getState().actions.setCurrentState({
+      useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
         server: server_variables,
         client: client_variables,
       });
@@ -384,7 +387,7 @@ const EditorComponent = (props) => {
         orgConstants[constant.name] = constantValue;
       });
 
-      useCurrentStateStore.getState().actions.setCurrentState({
+      useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
         constants: orgConstants,
       });
     });
@@ -581,11 +584,11 @@ const EditorComponent = (props) => {
   const handleQueryPaneExpanding = (bool) => setIsQueryPaneExpanded(bool);
 
   const handleOnComponentOptionChanged = (component, optionName, value) => {
-    return onComponentOptionChanged(component, optionName, value);
+    return onComponentOptionChanged(moduleName, component, optionName, value);
   };
 
   const handleOnComponentOptionsChanged = (component, options) => {
-    return onComponentOptionsChanged(component, options);
+    return onComponentOptionsChanged(moduleName, component, options);
   };
 
   const handleComponentClick = (id, component) => {
@@ -596,21 +599,24 @@ const EditorComponent = (props) => {
 
   const sideBarDebugger = {
     error: (data) => {
-      debuggerActions.error(data);
+      debuggerActions.error(data, moduleName);
     },
     flush: () => {
-      debuggerActions.flush();
+      debuggerActions.flush(moduleName);
     },
-    generateErrorLogs: (errors) => debuggerActions.generateErrorLogs(errors),
+    generateErrorLogs: (errors) => debuggerActions.generateErrorLogs(errors, moduleName),
   };
 
   const changeDarkMode = (newMode) => {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      globals: {
-        ...currentState.globals,
-        theme: { name: newMode ? 'dark' : 'light' },
-      },
-    });
+    useSuperStore
+      .getState()
+      .modules[moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({
+        globals: {
+          ...currentState.globals,
+          theme: { name: newMode ? 'dark' : 'light' },
+        },
+      });
     props.switchDarkMode(newMode);
   };
 
@@ -727,7 +733,7 @@ const EditorComponent = (props) => {
 
     setCurrentPageId(homePageId);
 
-    useCurrentStateStore.getState().actions.setCurrentState({
+    useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
     });
 
@@ -1400,7 +1406,10 @@ const EditorComponent = (props) => {
     const globals = {
       ...currentState.globals,
     };
-    useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
+    useSuperStore
+      .getState()
+      .modules[moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({ globals, page });
   };
 
   const navigateToPage = (queryParams = [], handle) => {
@@ -1418,7 +1427,7 @@ const EditorComponent = (props) => {
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useSuperStore.getState().modules[moduleName].useEditorStore.getState().currentPageId;
     const appDefinition = useSuperStore.getState().modules[moduleName].useEditorStore.getState().appDefinition;
-    const pageHandle = getCurrentState().pageHandle;
+    const pageHandle = getCurrentState(moduleName).pageHandle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
       return;
@@ -1441,7 +1450,10 @@ const EditorComponent = (props) => {
       ...currentState.globals,
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
     };
-    useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
+    useSuperStore
+      .getState()
+      .modules[moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({ globals, page });
 
     setCurrentPageId(pageId);
 
