@@ -105,6 +105,7 @@ describe("dashboard", () => {
       .should("have.attr", "class")
       .and("contain", "bg-light-gray");
 
+    cy.wait(500)
     cy.get(commonSelectors.settingsIcon).click();
     cy.get(commonSelectors.marketplaceOption).verifyVisibleElement(
       "have.text",
