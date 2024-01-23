@@ -69,7 +69,7 @@ describe(
       cy.wait(4000);
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.forceClickOnCanvas();
-      cy.get(commonSelectors.editorPageLogo).click();
+      cy.backToApps()
 
       logout();
       cy.wait(4000);
@@ -99,7 +99,7 @@ describe(
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).check();
       cy.get(commonWidgetSelector.modalCloseButton).click();
-      cy.get(commonSelectors.editorPageLogo).click();
+      cy.backToApps()
 
       logout();
       cy.wait(4000);
@@ -125,7 +125,7 @@ describe(
         }
       });
       cy.get(commonWidgetSelector.modalCloseButton).click();
-      cy.get(commonSelectors.editorPageLogo).click();
+      cy.backToApps()
 
       addNewUserMW(data.firstName, data.email);
       logout();
@@ -147,7 +147,7 @@ describe(
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).uncheck();
       cy.get(commonWidgetSelector.modalCloseButton).click();
-      cy.get(commonSelectors.editorPageLogo).click();
+      cy.backToApps()
 
       logout();
       cy.wait(4000);
@@ -198,7 +198,7 @@ describe(
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).check();
       cy.get(commonWidgetSelector.modalCloseButton).click();
-      cy.get(commonSelectors.editorPageLogo).click();
+      cy.backToApps()
 
       logout();
       cy.wait(4000);

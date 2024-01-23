@@ -12,9 +12,11 @@ const newGroupname = `New ${groupName}`;
 describe("Manage Groups", () => {
   before(() => {
     cy.defaultWorkspaceLogin();
-    permissions.reset();
+    permissions.reset('all_users');
+
   });
   it("Should verify the elements and functionalities on manage groups page", () => {
+    cy.removeAssignedApps()
     common.navigateToManageGroups();
     cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
       expect($el.contents().first().text().trim()).to.eq("Workspace settings");
@@ -55,12 +57,13 @@ describe("Manage Groups", () => {
       groupName
     );
 
+    groups.OpenGroupCardOption(groupName)
     cy.get(groupsSelector.updateGroupNameLink(groupName)).verifyVisibleElement(
       "have.text",
       groupsText.editGroupNameButton
     );
 
-    cy.get(groupsSelector.deleteGroupLink(groupName)).verifyVisibleElement(
+    cy.get('[data-cy="delete-group-card-option"]').verifyVisibleElement(
       "have.text",
       groupsText.deleteGroupButton
     );
@@ -95,19 +98,10 @@ describe("Manage Groups", () => {
       "have.text",
       groupsText.permissionstableHedaer
     );
-
-    cy.get("body").then(($title) => {
-      if ($title.text().includes(groupsText.helperTextNoAppsAdded)) {
-        cy.get(groupsSelector.helperTextNoAppsAdded).verifyVisibleElement(
-          "have.text",
-          groupsText.helperTextNoAppsAdded
-        );
-        cy.get(groupsSelector.helperTextPermissions).verifyVisibleElement(
-          "have.text",
-          groupsText.helperTextPermissions
-        );
-      }
-    });
+    cy.get(groupsSelector.helperTextNoAppsAdded).eq(0).verifyVisibleElement(
+      "have.text",
+      groupsText.helperTextNoAppsAdded
+    );
 
     cy.get(groupsSelector.searchBox).should("be.visible");
 
@@ -205,8 +199,9 @@ describe("Manage Groups", () => {
       newGroupname
     );
     cy.get(groupsSelector.groupLink(newGroupname)).click();
+    groups.OpenGroupCardOption(newGroupname)
 
-    cy.get(groupsSelector.deleteGroupLink(newGroupname)).click();
+    cy.get('[data-cy="delete-group-card-option"]').click();
     cy.get(groupsSelector.confirmText).verifyVisibleElement(
       "have.text",
       groupsText.confirmText
@@ -221,7 +216,9 @@ describe("Manage Groups", () => {
     );
     cy.get(commonSelectors.buttonSelector("Cancel")).click();
 
-    cy.get(groupsSelector.deleteGroupLink(newGroupname)).click();
+    cy.get(groupsSelector.groupLink(newGroupname)).click()
+    groups.OpenGroupCardOption(newGroupname)
+    cy.get('[data-cy="delete-group-card-option"]').click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
   });
 });

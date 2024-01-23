@@ -8,13 +8,13 @@ import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 
 export const navigateToProfile = () => {
+  cy.get(commonSelectors.settingsIcon).click()
   cy.get(commonSelectors.profileSettings).click();
-  cy.get(profileSelector.profileLink).click();
   cy.url().should("include", "settings");
 };
 
 export const logout = () => {
-  cy.get(commonSelectors.profileSettings).click();
+  cy.get(commonSelectors.settingsIcon).click()
   cy.get(commonSelectors.logoutLink).click();
   cy.intercept("GET", "/api/metadata").as("publicConfig");
   cy.wait("@publicConfig");
@@ -22,14 +22,16 @@ export const logout = () => {
 };
 
 export const navigateToManageUsers = () => {
-  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.settingsIcon).click()
+  cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.manageUsersOption).click();
 };
 
 export const navigateToManageGroups = () => {
-  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.settingsIcon).click()
+  cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.manageGroupsOption).click();
-  navigateToAllUserGroup();
+  // navigateToAllUserGroup();
 
 };
 
@@ -55,12 +57,14 @@ export const navigateToAllUserGroup = () => {
 };
 
 export const navigateToWorkspaceVariable = () => {
-  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.settingsIcon).click()
+  cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.workspaceVariableOption).click();
 };
 
 export const navigateToManageSSO = () => {
-  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.settingsIcon).click()
+  cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.manageSSOOption).click();
 };
 
@@ -121,6 +125,7 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
+  cy.wait(1000);
   cy.reloadAppForTheElement(appName);
   cy.contains("div", appName)
     .parent()

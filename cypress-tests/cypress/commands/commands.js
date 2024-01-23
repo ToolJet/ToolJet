@@ -382,3 +382,15 @@ Cypress.Commands.add('visitSlug', ({ actualUrl, currentUrl = 'http://localhost:8
     }
   });
 });
+
+Cypress.Commands.add('backToApps', () => {
+  cy.get(commonSelectors.editorPageLogo).click();
+  cy.get(commonSelectors.backToAppOption).click();
+})
+
+Cypress.Commands.add('removeAssignedApps', () => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `DELETE FROM app_group_permissions;`,
+  })
+})
