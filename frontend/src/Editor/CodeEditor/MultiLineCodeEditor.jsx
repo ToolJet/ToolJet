@@ -10,6 +10,7 @@ import { githubLight } from '@uiw/codemirror-theme-github';
 import { generateHints } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import NewCodeHinter from './NewCodeHinter';
+
 const langSupport = Object.freeze({
   javascript: javascript(),
   python: python(),
@@ -27,7 +28,6 @@ const MultiLineCodeEditor = (props) => {
     onChange,
     componentName,
     cyLabel,
-    currentState,
     lineNumbers,
     placeholder,
     hideSuggestion,

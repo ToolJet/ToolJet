@@ -11,7 +11,6 @@ export const getAutocompletion = (input, fieldType, hints) => {
       type: 'js_method',
     }));
   } else {
-    // add all js methods
     JSLangHints = Object.keys(hints['jsHints'])
       .map((key) => {
         return hints['jsHints'][key]['methods'].map((hint) => ({

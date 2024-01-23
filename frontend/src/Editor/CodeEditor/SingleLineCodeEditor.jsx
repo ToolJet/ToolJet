@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
@@ -21,9 +21,9 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
   const { validation = {} } = fieldMeta;
 
-  const [isFocused, setIsFocused] = React.useState(false);
-  const [currentValue, setCurrentValue] = React.useState(() => initialValue);
-  const [errorStateActive, setErrorStateActive] = React.useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [currentValue, setCurrentValue] = useState(() => initialValue);
+  const [errorStateActive, setErrorStateActive] = useState(false);
 
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
@@ -142,8 +142,6 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = React.useCallback(() => {
-    // setFocus(false);
-
     if (ignoreValidation) {
       return onBlurUpdate(currentValue);
     }
