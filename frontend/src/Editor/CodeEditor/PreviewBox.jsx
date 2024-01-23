@@ -6,9 +6,10 @@ import { EditorContext } from '../Context/EditorContextWrapper';
 import NewCodeHinter from '.';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';
+import { isEmpty } from 'lodash';
 
 export const PreviewBox = ({ currentValue, isFocused, validationSchema, setErrorStateActive, componentId }) => {
-  // Todo: |isWorkspaceVariable| Remove this when workspace variables are deprecated
+  // Todo: (isWorkspaceVariable) Remove this when workspace variables are deprecated
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
 
@@ -69,7 +70,7 @@ export const PreviewBox = ({ currentValue, isFocused, validationSchema, setError
   useEffect(() => {
     const [valid, error, newValue, resolvedValue] = resolveReferences(currentValue, validationSchema, customVariables);
 
-    if (!validationSchema) {
+    if (!validationSchema || isEmpty(validationSchema)) {
       return setResolvedValue(newValue);
     }
 
@@ -102,6 +103,7 @@ export const PreviewBox = ({ currentValue, isFocused, validationSchema, setError
           resolvedValue={content}
           coersionData={coersionData}
           isFocused={isFocused}
+          withValidation={!isEmpty(validationSchema)}
         />
       </div>
       {isWorkspaceVariable && <DepericatedAlertForWorkspaceVariable text={'Deprecating soon'} />}
@@ -117,13 +119,15 @@ const Preview = ({ error, ...restProps }) => {
   return <PreviewBox.RenderResolvedValue {...restProps} />;
 };
 
-const RenderResolvedValue = ({ previewType, resolvedValue, coersionData, isFocused }) => {
+const RenderResolvedValue = ({ previewType, resolvedValue, coersionData, isFocused, withValidation }) => {
   const previewValueType =
-    coersionData && coersionData?.typeBeforeCoercion
+    withValidation || (coersionData && coersionData?.typeBeforeCoercion)
       ? `${coersionData?.typeBeforeCoercion} ${
           coersionData?.coercionPreview ? ` → ${coersionData?.typeAfterCoercion}` : ''
         }`
       : previewType;
+
+  const previewContent = !withValidation ? resolvedValue : resolvedValue + coersionData?.coercionPreview;
 
   return (
     <div className="dynamic-variable-preview-content" style={{ whiteSpace: 'pre-wrap' }}>
@@ -143,7 +147,7 @@ const RenderResolvedValue = ({ previewType, resolvedValue, coersionData, isFocus
           </div>
         )}
       </div>
-      {resolvedValue + coersionData?.coercionPreview}
+      {previewContent}
     </div>
   );
 };

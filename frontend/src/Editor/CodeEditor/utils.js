@@ -1,13 +1,13 @@
 import { useResolveStore } from '@/_stores/resolverStore';
 import moment from 'moment';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { any } from 'superstruct';
 import { generateSchemaFromValidationDefinition, validate } from '../component-properties-validation';
 
 const acorn = require('acorn');
 
-const code = `
+const acorn_code = `
 const array = [1, 2, 3];
 const string = "hello";
 const object = {};
@@ -15,7 +15,7 @@ const boolean = true;
 const number = 1;
 `;
 
-const ast = acorn.parse(code, { ecmaVersion: 2020 });
+const ast = acorn.parse(acorn_code, { ecmaVersion: 2020 });
 
 export const getCurrentNodeType = (node) => Object.prototype.toString.call(node).slice(8, -1);
 
@@ -96,6 +96,35 @@ export const createJavaScriptSuggestions = () => {
   return allMethods;
 };
 
+const resolveWorkspaceVariables = (query, state) => {
+  let resolvedStr = query;
+  let error = null;
+  let valid = false;
+  // Resolve %%object%%
+  const serverRegex = /(%%.+?%%)/g;
+  const serverMatch = resolvedStr.match(serverRegex)?.[0];
+
+  if (serverMatch) {
+    const code = serverMatch.replace(/%%/g, '');
+
+    if (code.includes('server.')) {
+      resolvedStr = resolvedStr.replace(serverMatch, 'HiddenEnvironmentVariable');
+      error = 'Server variables cannot be resolved in the client.';
+    } else {
+      const [resolvedCode, err] = resolveCode(code, state);
+
+      if (!resolvedCode) {
+        error = err ? err : `Cannot resolve ${query}`;
+      } else {
+        resolvedStr = resolvedStr.replace(serverMatch, resolvedCode);
+        valid = true;
+      }
+    }
+  }
+
+  return [valid, error, resolvedStr];
+};
+
 function resolveCode(code, state, customObjects = {}, withError = true, reservedKeyword, isJsCode) {
   let result = '';
   let error;
@@ -151,7 +180,13 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
   let resolvedValue = query;
   let error = null;
 
-  if (!validationSchema && (!query?.includes('{{') || !query?.includes('}}'))) {
+  const currentState = useCurrentStateStore.getState();
+
+  if (query.startsWith('%%') && query.endsWith('%%')) {
+    return resolveWorkspaceVariables(query, currentState);
+  }
+
+  if ((!validationSchema || isEmpty(validationSchema)) && (!query?.includes('{{') || !query?.includes('}}'))) {
     return [true, error, resolvedValue];
   }
 
@@ -165,7 +200,6 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
   const { lookupTable } = useResolveStore.getState();
 
   const { toResolveReference, jsExpression } = inferJSExpAndReferences(value, lookupTable.hints);
-  const currentState = useCurrentStateStore.getState();
 
   if (toResolveReference && lookupTable.hints.has(toResolveReference)) {
     const idToLookUp = lookupTable.hints.get(toResolveReference);
@@ -183,7 +217,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
     error = errorRef || null;
   }
 
-  if (!validationSchema) {
+  if (!validationSchema || isEmpty(validationSchema)) {
     return [true, error, resolvedValue];
   }
 
@@ -253,12 +287,6 @@ export function computeCoercion(oldValue, newValue) {
   const oldValueType = Array.isArray(oldValue) ? 'array' : typeof oldValue;
   const newValueType = Array.isArray(newValue) ? 'array' : typeof newValue;
 
-  // Check if newValue is valid for coercion
-  // if (!isValidForCoercion(oldValueType, newValue)) {
-  //   // throw new Error(`Invalid coercion: Cannot convert ${newValue} to ${oldValueType}`);
-  //   return ['', newValueType, oldValueType];
-  // }
-
   if (oldValueType === newValueType) {
     if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
       return [` → ${JSON.stringify(newValue)}`, newValueType, oldValueType];
@@ -268,24 +296,6 @@ export function computeCoercion(oldValue, newValue) {
   }
 
   return ['', newValueType, oldValueType];
-}
-
-function isValidForCoercion(oldValueType, newValue) {
-  try {
-    switch (oldValueType) {
-      case 'number':
-        return !isNaN(Number(newValue)) && newValue.trim() !== '';
-      case 'string':
-        return typeof newValue === 'string' || !isNaN(newValue);
-      case 'array':
-        return Array.isArray(newValue) || newValue.split(',').length > 0;
-
-      default:
-        return true;
-    }
-  } catch (error) {
-    return false;
-  }
 }
 
 export const validateComponentProperty = (resolvedValue, validation) => {
