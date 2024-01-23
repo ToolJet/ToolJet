@@ -27,7 +27,7 @@ export const ProgramaticallyHandleProperties = ({
       case 'isTimeChecked':
         return props?.isTimeChecked;
       case 'enableTwentyFourHrFormat':
-        return props?.enableTwentyHourFormat;
+        return props?.enableTwentyFourHrFormat;
       case 'parseInUnixTimestamp':
         return props?.parseInUnixTimestamp;
       default:
