@@ -58,6 +58,7 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
           isMobileLayout={false}
           showHeader={showHeader}
           setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+          darkMode={darkMode}
         />
       )}
       <div className="d-flex align-items-center">

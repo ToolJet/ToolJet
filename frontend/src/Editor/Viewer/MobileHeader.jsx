@@ -98,6 +98,7 @@ const MobileHeader = ({
             isMobileLayout
             showHeader={showHeader}
             setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+            darkMode={darkMode}
           />
           {!showViewerNavigation && (
             <span className="released-version-no-header-dark-mode-icon" style={{ position: 'absolute', top: '7px' }}>
@@ -136,6 +137,7 @@ const MobileHeader = ({
           isMobileLayout
           showHeader={showHeader}
           setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+          darkMode={darkMode}
         />
       )}
       {!showViewerNavigation && (

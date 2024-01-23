@@ -9,8 +9,9 @@ import HeaderActions from '../Header/HeaderActions';
 import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import classNames from 'classnames';
 
-const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHeader }) => {
+const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHeader, darkMode }) => {
   const { editingVersion } = useAppVersionStore((state) => ({
     editingVersion: state?.editingVersion,
   }));
@@ -18,7 +19,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
   const [previewNavbar, togglePreviewNavbar] = useState(false);
 
   const overlay = (
-    <div>
+    <div className={classNames({ 'dark-theme theme-dark': darkMode })}>
       <div className="preview-settings-overlay">
         <span className="preview-settings-text">Preview settings</span>
         <span>
@@ -35,7 +36,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
           )}
         </span>
         <span>
-          <HeaderActions showToggleLayoutBtn />
+          <HeaderActions showToggleLayoutBtn darkMode={darkMode} />
         </span>
       </div>
     </div>
@@ -57,7 +58,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
             return (
               <div
                 className="released-version-no-header-mbl-preview"
-                style={{ backgroundColor: 'var(--slate5)', top: '7px', left: showHeader ? '65%' : '41%' }}
+                style={{ backgroundColor: 'var(--slate5)', top: '7px', left: showHeader ? '75%' : '41%' }}
               >
                 <span
                   style={{
@@ -80,7 +81,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
             );
           }}
         />
-        <Navbar.Offcanvas placement="top">
+        <Navbar.Offcanvas placement="top" className={classNames({ 'dark-theme theme-dark': darkMode })}>
           <Offcanvas.Header closeButton>
             <Offcanvas.Title>Preview settings</Offcanvas.Title>
           </Offcanvas.Header>
