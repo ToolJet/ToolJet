@@ -26,11 +26,7 @@ describe("Profile Settings", () => {
 
     cy.get(profileSelector.userNameInput).clear();
     cy.get(profileSelector.updateButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Name can't be empty!"
-    );
-
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Name can't be empty!");
 
     cy.clearAndType(profileSelector.userNameInput, randomFirstName);
     cy.get(profileSelector.updateButton).click();
@@ -43,7 +39,6 @@ describe("Profile Settings", () => {
       randomFirstName
     );
 
-
     cy.clearAndType(profileSelector.userNameInput, profileText.userName);
     cy.get(profileSelector.avatarUploadField).selectFile(avatarImage);
     cy.get(profileSelector.updateButton).click();
@@ -55,7 +50,7 @@ describe("Profile Settings", () => {
       "have.value",
       profileText.userName
     );
-    common.navigateToManageUsers()
+    common.navigateToManageUsers();
     cy.clearAndType(commonSelectors.inputUserSearch, "dev@tooljet.io");
     cy.get(commonSelectors.avatarImage).should("have.css", "background-image");
     common.logout();

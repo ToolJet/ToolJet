@@ -30,13 +30,12 @@ describe("Bulk user upload", () => {
     "cypress/fixtures/bulkUser/without_lastname - Sheet1.csv";
   const invite_users = "cypress/fixtures/bulkUser/invite_users - Sheet1 .csv";
 
-
   it("Verfiy bulk user upload invalid files", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase();
     data.workspaceName = data.firstName.toLowerCase();
 
-    userSignUp(data.firstName, data.email, "Test");
+    userSignUp(data.firstName, data.email, data.workspaceName);
 
     common.navigateToManageUsers();
 

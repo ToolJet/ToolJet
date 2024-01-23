@@ -34,14 +34,7 @@ describe("Global Datasource Manager", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     cy.viewport(1200, 1300);
-    cy.removeAssignedApps();
   });
-  // before(() => {
-  //   cy.defaultWorkspaceLogin();
-  //   cy.apiCreateApp(data.appName);
-  //   // addNewUserMW(data.firstName, data.email);
-  //   // logout();
-  // });
 
   it("Should verify the global data source manager UI", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
@@ -167,6 +160,7 @@ describe("Global Datasource Manager", () => {
 
   it("Should verify the Datasource connection and query creation using global data source", () => {
     data.appName = `${fake.companyName}-App`;
+    cy.removeAssignedApps();
 
     selectAndAddDataSource(
       "databases",
@@ -228,7 +222,7 @@ describe("Global Datasource Manager", () => {
     );
 
     navigateToManageGroups();
-    cy.get(groupsSelector.appsLink).click()
+    cy.get(groupsSelector.appsLink).click();
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
     cy.get(groupsSelector.selectAddButton).click();
@@ -250,7 +244,7 @@ describe("Global Datasource Manager", () => {
   });
   it("Should validate the user's global data source permissions on apps created by admin", () => {
     logout();
-    cy.apiLogin('test@tooljet.com', "password");
+    cy.apiLogin("test@tooljet.com", "password");
     cy.visit("/my-workspace");
 
     cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
@@ -281,9 +275,11 @@ describe("Global Datasource Manager", () => {
     verifyValueOnInspector("student_data", "4 items ");
   });
   it("Should verify the query creation and scope changing functionality.", () => {
+    cy.removeAssignedApps();
+
     data.appName = `${fake.companyName}-App`;
     logout();
-    cy.apiLogin('test@tooljet.com', "password");
+    cy.apiLogin("test@tooljet.com", "password");
     cy.apiCreateApp(data.appName);
     cy.openApp();
 

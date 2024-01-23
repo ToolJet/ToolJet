@@ -8,13 +8,13 @@ import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 
 export const navigateToProfile = () => {
-  cy.get(commonSelectors.settingsIcon).click()
+  cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.profileSettings).click();
   cy.url().should("include", "settings");
 };
 
 export const logout = () => {
-  cy.get(commonSelectors.settingsIcon).click()
+  cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.logoutLink).click();
   cy.intercept("GET", "/api/metadata").as("publicConfig");
   cy.wait("@publicConfig");
@@ -22,17 +22,16 @@ export const logout = () => {
 };
 
 export const navigateToManageUsers = () => {
-  cy.get(commonSelectors.settingsIcon).click()
+  cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.manageUsersOption).click();
 };
 
 export const navigateToManageGroups = () => {
-  cy.get(commonSelectors.settingsIcon).click()
+  cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.manageGroupsOption).click();
   // navigateToAllUserGroup();
-
 };
 
 export const navigateToAllUserGroup = () => {
@@ -57,13 +56,13 @@ export const navigateToAllUserGroup = () => {
 };
 
 export const navigateToWorkspaceVariable = () => {
-  cy.get(commonSelectors.settingsIcon).click()
+  cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.workspaceVariableOption).click();
 };
 
 export const navigateToManageSSO = () => {
-  cy.get(commonSelectors.settingsIcon).click()
+  cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.manageSSOOption).click();
 };
@@ -213,7 +212,7 @@ export const createWorkspace = (workspaceName) => {
   cy.get(commonSelectors.addWorkspaceButton).click();
   cy.clearAndType(commonSelectors.workspaceNameInput, workspaceName);
   cy.clearAndType('[data-cy="workspace-slug-input-field"]', workspaceName);
-  cy.wait(1000)
+  cy.wait(1000);
   cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
   cy.get(commonSelectors.createWorkspaceButton).click();
   cy.wait("@homePage");

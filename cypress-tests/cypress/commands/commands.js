@@ -366,31 +366,36 @@ Cypress.Commands.add("getPosition", (componentName) => {
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
   cy.apiLogin();
-  cy.intercept('GET', "http://localhost:3000/api/library_apps/").as("library_apps")
-  cy.visit('/my-workspace');
-  cy.get(commonSelectors.homePageLogo, { timeout: 10000 })
-  cy.wait("@library_apps")
-})
-
-Cypress.Commands.add('visitSlug', ({ actualUrl, currentUrl = 'http://localhost:8082/error/unknown' }) => {
-  cy.visit(actualUrl);
-  cy.wait(3000);
-
-  cy.url().then((url) => {
-    if (url === currentUrl) {
-      cy.visit(actualUrl);
-    }
-  });
+  cy.intercept("GET", "http://localhost:3000/api/library_apps/").as(
+    "library_apps"
+  );
+  cy.visit("/my-workspace");
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+  cy.wait("@library_apps");
 });
 
-Cypress.Commands.add('backToApps', () => {
+Cypress.Commands.add(
+  "visitSlug",
+  ({ actualUrl, currentUrl = "http://localhost:8082/error/unknown" }) => {
+    cy.visit(actualUrl);
+    cy.wait(3000);
+
+    cy.url().then((url) => {
+      if (url === currentUrl) {
+        cy.visit(actualUrl);
+      }
+    });
+  }
+);
+
+Cypress.Commands.add("backToApps", () => {
   cy.get(commonSelectors.editorPageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
-})
+});
 
-Cypress.Commands.add('removeAssignedApps', () => {
+Cypress.Commands.add("removeAssignedApps", () => {
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
     sql: `DELETE FROM app_group_permissions;`,
-  })
-})
+  });
+});

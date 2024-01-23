@@ -9,8 +9,6 @@ import {
     releaseApp,
 } from "Support/utils/common";
 import { commonText } from "Texts/common";
-import { inviteUser } from "Support/utils/manageUsers";
-import { userSignUp } from "Support/utils/onboarding";
 
 describe("Redirection error pages", () => {
     const data = {};

@@ -24,6 +24,8 @@ describe("Manage Users", () => {
     userId,
     url = "";
   it("Should verify the Manage users page", () => {
+    data.firstName = fake.firstName;
+    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     common.navigateToManageUsers();
 
     users.manageUsersElements();
@@ -74,10 +76,12 @@ describe("Manage Users", () => {
   it("Should verify the confirm invite page and new user account", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+    cy.removeAssignedApps();
 
     common.navigateToManageUsers();
     users.fillUserInviteForm(data.firstName, data.email);
     cy.get(usersSelector.buttonInviteUsers).click();
+    cy.wait(2000);
     users.fetchAndVisitInviteLink(data.email);
     users.confirmInviteElements();
 
@@ -113,8 +117,9 @@ describe("Manage Users", () => {
     cy.defaultWorkspaceLogin();
     common.navigateToManageUsers();
     common.searchUser(data.email);
+    cy.wait(1000);
     cy.get('[data-cy="user-actions-button"]').click();
-    cy.get('[data-cy="archive-button"]').click()
+    cy.get('[data-cy="archive-button"]').click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       usersText.archivedToast
@@ -140,8 +145,9 @@ describe("Manage Users", () => {
     cy.defaultWorkspaceLogin();
     common.navigateToManageUsers();
     common.searchUser(data.email);
+    cy.wait(1000);
     cy.get('[data-cy="user-actions-button"]').click();
-    cy.get('[data-cy="archive-button"]').click()
+    cy.get('[data-cy="archive-button"]').click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       usersText.unarchivedToast
@@ -200,30 +206,33 @@ describe("Manage Users", () => {
       });
   });
 
-  it.skip("Should verify the user onboarding with groups", () => {
+  it("Should verify the user onboarding with groups", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     common.navigateToManageUsers();
 
     users.fillUserInviteForm(data.firstName, data.email);
     cy.wait(1500);
-    cy.get('.css-1c6ox7i-Input').dblclick();
+    cy.get(".css-1c6ox7i-Input").dblclick();
     cy.get("body").then(($body) => {
       if (!$body.find(".css-1c6ox7i-Input").length > 0) {
-        cy.get('.css-1c6ox7i-Input').click();
+        cy.get(".css-1c6ox7i-Input").click();
       }
     });
     cy.get(".css-1c6ox7i-Input>").type("Test");
-    cy.get(".no-options").verifyVisibleElement("have.text", "No options");
-    users.selectUserGroup("Admin");
-    cy.get(".dropdown-heading-value > span").verifyVisibleElement(
+    cy.get(".css-1wlit7h-NoOptionsMessage").verifyVisibleElement(
       "have.text",
-      "Admin"
+      "No groups found"
     );
     cy.get(commonSelectors.cancelButton).click();
 
     cy.get(usersSelector.buttonAddUsers).click();
-    cy.get('.css-1c6ox7i-Input').verifyVisibleElement(
+    users.selectUserGroup("Admin");
+    cy.get(".selected-value").verifyVisibleElement("have.text", "Admin");
+    cy.get(commonSelectors.cancelButton).click();
+
+    cy.get(usersSelector.buttonAddUsers).click();
+    cy.get(".css-1jqq78o-placeholder").should(
       "have.text",
       "Select groups to add for this user"
     );

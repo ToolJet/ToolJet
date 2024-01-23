@@ -106,8 +106,14 @@ describe("dashboard", () => {
       .and("contain", "bg-light-gray");
 
     cy.get(commonSelectors.settingsIcon).click();
-    cy.get(commonSelectors.marketplaceOption).verifyVisibleElement("have.text", "Marketplace")
-    cy.get(commonSelectors.workspaceSettings).verifyVisibleElement("have.text", "Workspace settings")
+    cy.get(commonSelectors.marketplaceOption).verifyVisibleElement(
+      "have.text",
+      "Marketplace"
+    );
+    cy.get(commonSelectors.workspaceSettings).verifyVisibleElement(
+      "have.text",
+      "Workspace settings"
+    );
     cy.get(commonSelectors.profileSettings).verifyVisibleElement(
       "have.text",
       "Profile settings"
@@ -156,7 +162,10 @@ describe("dashboard", () => {
     verifyTooltip(commonSelectors.dashboardIcon, "Apps");
     verifyTooltip(commonSelectors.databaseIcon, "ToolJet Database");
     verifyTooltip(commonSelectors.globalDataSourceIcon, "Data sources");
-    verifyTooltip('[data-cy="icon-workspace-constants"]', "Workspace constants");
+    verifyTooltip(
+      '[data-cy="icon-workspace-constants"]',
+      "Workspace constants"
+    );
     verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");
     verifyTooltip(dashboardSelector.modeToggle, "Mode");
   });
@@ -167,7 +176,7 @@ describe("dashboard", () => {
     cy.openApp();
     cy.dragAndDropWidget("Table", 250, 250);
 
-    cy.backToApps()
+    cy.backToApps();
 
     cy.wait(500);
     cy.get(commonSelectors.appCard(data.appName))
@@ -238,7 +247,7 @@ describe("dashboard", () => {
       .contains(data.appName)
       .should("be.visible");
 
-    cy.wait(2000)
+    cy.wait(2000);
     viewAppCardOptions(data.appName);
 
     cy.get(commonSelectors.appCardOptions(commonText.removeFromFolderOption))
@@ -271,11 +280,13 @@ describe("dashboard", () => {
     viewAppCardOptions(data.appName);
     cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
     cy.get('[data-cy="clone-app"]').click();
-    cy.get('.go3958317564').should('be.visible').and('have.text', dashboardText.appClonedToast)
+    cy.get(".go3958317564")
+      .should("be.visible")
+      .and("have.text", dashboardText.appClonedToast);
     cy.wait(3000);
     cy.renameApp(data.cloneAppName);
     cy.dragAndDropWidget("button", 25, 25);
-    cy.backToApps()
+    cy.backToApps();
     cy.wait("@appLibrary");
     cy.wait(1000);
     cy.reloadAppForTheElement(data.cloneAppName);
@@ -331,7 +342,7 @@ describe("dashboard", () => {
     cy.createApp(data.appName);
     cy.dragAndDropWidget("Button", 450, 450);
 
-    cy.backToApps()
+    cy.backToApps();
 
     cy.get(commonSelectors.appCard(data.appName)).should(
       "contain.text",
@@ -340,7 +351,7 @@ describe("dashboard", () => {
 
     navigateToAppEditor(data.appName);
     cy.get(commonSelectors.canvas).should("contain", "Button");
-    cy.backToApps()
+    cy.backToApps();
     cy.wait("@appLibrary");
 
     cy.deleteApp(data.appName);
@@ -357,7 +368,7 @@ describe("dashboard", () => {
     cy.createApp(data.appName);
     cy.dragAndDropWidget("Button", 100, 100);
 
-    cy.backToApps()
+    cy.backToApps();
 
     cy.get(commonSelectors.createNewFolderButton).click();
     verifyModal(

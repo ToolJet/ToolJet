@@ -5,7 +5,7 @@ import {
   verifyandModifyUserRole,
   verifyandModifySizeOftheCompany,
 } from "Support/utils/selfHostSignUp";
-import { navigateToManageUsers } from "Support/utils/common"
+import { navigateToManageUsers } from "Support/utils/common";
 
 export const verifyConfirmEmailPage = (email) => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
@@ -158,17 +158,10 @@ export const userSignUp = (fullName, email, workspaceName) => {
     cy.visit(invitationLink);
     cy.get(commonSelectors.setUpToolJetButton).click();
     cy.wait(4000);
-    cy.get("body").then(($el) => {
-      if (!$el.text().includes(dashboardText.emptyPageHeader)) {
-        verifyOnboardingQuestions(fullName, workspaceName);
-        updateWorkspaceName(email);
-      } else {
-        updateWorkspaceName(email);
-      }
-    });
+    verifyOnboardingQuestions(fullName, workspaceName);
+    updateWorkspaceName(workspaceName);
   });
 };
-
 
 export const fetchAndVisitInviteLink = (email) => {
   let invitationToken,

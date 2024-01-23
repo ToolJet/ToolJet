@@ -12,29 +12,27 @@ import { workspaceVarText } from "Texts/workspacevarText";
 const data = {};
 
 describe("User permissions", () => {
-
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
-    cy.removeAssignedApps()
+    cy.removeAssignedApps();
     permissions.reset();
-
   });
   it("Should verify the Create and Delete app permission", () => {
     data.appName = `${fake.companyName}-App`;
 
     cy.logoutApi();
-    cy.apiLogin('test@tooljet.com', usersText.password);
-    cy.visit('/my-workspace')
-    cy.get(commonSelectors.dashboardAppCreateButton).should('be.disabled');
+    cy.apiLogin("test@tooljet.com", usersText.password);
+    cy.visit("/my-workspace");
+    cy.get(commonSelectors.dashboardAppCreateButton).should("be.disabled");
     cy.logoutApi();
 
-    cy.apiLogin()
+    cy.apiLogin();
     cy.apiCreateApp(data.appName);
-    cy.visit('/my-workspace')
+    cy.visit("/my-workspace");
     cy.wait(500);
 
     common.navigateToManageGroups();
-    cy.get(groupsSelector.appsLink).click()
+    cy.get(groupsSelector.appsLink).click();
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
     cy.get(groupsSelector.selectAddButton).click();
@@ -44,15 +42,15 @@ describe("User permissions", () => {
       .within(() => {
         cy.get("td input").first().should("be.checked");
       });
-    cy.wait(1000)
+    cy.wait(1000);
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsCreateCheck).check();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsDeleteCheck).check();
 
     cy.logoutApi();
-    cy.apiLogin('test@tooljet.com', usersText.password);
-    cy.visit('/my-workspace');
+    cy.apiLogin("test@tooljet.com", usersText.password);
+    cy.visit("/my-workspace");
     cy.get(commonSelectors.appCreateButton).should("exist");
     common.viewAppCardOptions(data.appName);
     cy.contains("Delete app").should("exist");
@@ -64,9 +62,9 @@ describe("User permissions", () => {
     cy.get(groupsSelector.appsDeleteCheck).uncheck();
 
     cy.logoutApi();
-    cy.apiLogin('test@tooljet.com', usersText.password);
+    cy.apiLogin("test@tooljet.com", usersText.password);
     cy.visit("/my-workspace");
-    cy.wait(1000)
+    cy.wait(1000);
     common.viewAppCardOptions(data.appName);
     cy.contains("Delete app").should("not.exist");
 
@@ -74,22 +72,22 @@ describe("User permissions", () => {
     cy.createApp(data.appName);
 
     cy.dragAndDropWidget("Table", 50, 50);
-    cy.backToApps()
+    cy.backToApps();
     common.viewAppCardOptions(data.appName);
     cy.contains("Delete app").should("exist");
     cy.get(commonSelectors.appCardOptions(commonText.deleteAppOption)).click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
 
-    common.logout()
+    common.logout();
     cy.defaultWorkspaceLogin();
     common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsCreateCheck).uncheck();
 
     cy.logoutApi();
-    cy.apiLogin('test@tooljet.com', usersText.password);
+    cy.apiLogin("test@tooljet.com", usersText.password);
     cy.visit("/my-workspace");
-    cy.wait(1000)
+    cy.wait(1000);
     cy.contains("Create new application").should("not.exist");
   });
 
@@ -100,7 +98,7 @@ describe("User permissions", () => {
     cy.reload();
     common.navigateToManageGroups();
     cy.wait(1000);
-    cy.get(groupsSelector.appsLink).click()
+    cy.get(groupsSelector.appsLink).click();
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
     cy.get(groupsSelector.selectAddButton).click();
@@ -112,9 +110,9 @@ describe("User permissions", () => {
       });
 
     cy.logoutApi();
-    cy.apiLogin('test@tooljet.com', usersText.password);
+    cy.apiLogin("test@tooljet.com", usersText.password);
     cy.visit("/my-workspace");
-    cy.wait(500)
+    cy.wait(500);
     cy.contains(data.appName).should("exist");
     cy.get(commonSelectors.appCard(data.appName)).should(
       "contain.text",
@@ -133,8 +131,8 @@ describe("User permissions", () => {
 
     cy.defaultWorkspaceLogin();
     common.navigateToManageGroups();
-    cy.get(groupsSelector.appsLink).click()
-    cy.wait(500)
+    cy.get(groupsSelector.appsLink).click();
+    cy.wait(500);
     cy.contains("tr", data.appName)
       .parent()
       .within(() => {
@@ -146,9 +144,9 @@ describe("User permissions", () => {
     );
 
     cy.logoutApi();
-    cy.apiLogin('test@tooljet.com', usersText.password);
+    cy.apiLogin("test@tooljet.com", usersText.password);
     cy.visit("/my-workspace");
-    cy.wait(500)
+    cy.wait(500);
     cy.get(commonSelectors.appCard(data.appName)).should(
       "contain.text",
       data.appName
@@ -173,9 +171,9 @@ describe("User permissions", () => {
     cy.get(groupsSelector.foldersCreateCheck).check();
 
     cy.logoutApi();
-    cy.apiLogin('test@tooljet.com', usersText.password);
+    cy.apiLogin("test@tooljet.com", usersText.password);
     cy.visit("/my-workspace");
-    cy.wait(500)
+    cy.wait(500);
 
     cy.get(commonSelectors.createNewFolderButton).click();
     cy.clearAndType(commonSelectors.folderNameInput, data.folderName);
@@ -199,10 +197,9 @@ describe("User permissions", () => {
     cy.get(groupsSelector.foldersCreateCheck).uncheck();
 
     common.logout();
-    cy.apiLogin('test@tooljet.com', usersText.password);
+    cy.apiLogin("test@tooljet.com", usersText.password);
     cy.visit("/my-workspace");
-    cy.get(commonSelectors.createNewFolderButton).should('not.exist')
-
+    cy.get(commonSelectors.createNewFolderButton).should("not.exist");
   });
 
   it("Should verify Create/Update/Delete workspace variable permission", () => {

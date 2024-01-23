@@ -49,7 +49,6 @@ export const addNewUser = (firstName, email, companyName) => {
   updateWorkspaceName(email);
 };
 
-
 // export const reset = (groupName) => {
 //   cy.intercept("GET", "http://localhost:3000/api/group_permissions").as(`${groupName}`);
 //   cy.wait(2000)

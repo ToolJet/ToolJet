@@ -250,7 +250,6 @@ export const commonSelectors = {
   databaseOption: '[data-cy="database-option"]',
   datasourceOption: '[data-cy="data-source-option"]',
   workspaceConstantsOption: '[data-cy="workspace-constants-option"]',
-
 };
 
 export const commonWidgetSelector = {
