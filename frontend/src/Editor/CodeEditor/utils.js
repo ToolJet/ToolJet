@@ -182,6 +182,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
 
   const currentState = useCurrentStateStore.getState();
 
+  //Todo : remove resolveWorkspaceVariables when workspace variables are removed
   if (query.startsWith('%%') && query.endsWith('%%')) {
     return resolveWorkspaceVariables(query, currentState);
   }
