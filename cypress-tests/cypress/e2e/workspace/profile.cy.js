@@ -24,52 +24,34 @@ describe("Profile Settings", () => {
       profileText.nameSuccessToast
     );
 
-    cy.get(profileSelector.firstNameInput).clear();
+    cy.get(profileSelector.userNameInput).clear();
     cy.get(profileSelector.updateButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      profileText.firstNameErrorToast
-    );
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Name can't be empty!");
 
-    cy.get(profileSelector.lastNameInput).clear();
-    cy.get(profileSelector.updateButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      profileText.firstNameErrorToast
-    );
-
-    cy.clearAndType(profileSelector.firstNameInput, randomFirstName);
-    cy.clearAndType(profileSelector.lastNameInput, randomLastName);
+    cy.clearAndType(profileSelector.userNameInput, randomFirstName);
     cy.get(profileSelector.updateButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       profileText.nameSuccessToast
     );
-    cy.get(profileSelector.firstNameInput).verifyVisibleElement(
+    cy.get(profileSelector.userNameInput).verifyVisibleElement(
       "have.value",
       randomFirstName
     );
-    cy.get(profileSelector.lastNameInput).verifyVisibleElement(
-      "have.value",
-      randomLastName
-    );
 
-    cy.clearAndType(profileSelector.firstNameInput, profileText.firstName);
-    cy.clearAndType(profileSelector.lastNameInput, profileText.lastName);
+    cy.clearAndType(profileSelector.userNameInput, profileText.userName);
     cy.get(profileSelector.avatarUploadField).selectFile(avatarImage);
     cy.get(profileSelector.updateButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       profileText.nameSuccessToast
     );
-    cy.get(profileSelector.firstNameInput).verifyVisibleElement(
+    cy.get(profileSelector.userNameInput).verifyVisibleElement(
       "have.value",
-      profileText.firstName
+      profileText.userName
     );
-    cy.get(profileSelector.lastNameInput).verifyVisibleElement(
-      "have.value",
-      profileText.lastName
-    );
+    common.navigateToManageUsers();
+    cy.clearAndType(commonSelectors.inputUserSearch, "dev@tooljet.io");
     cy.get(commonSelectors.avatarImage).should("have.css", "background-image");
     common.logout();
   });
