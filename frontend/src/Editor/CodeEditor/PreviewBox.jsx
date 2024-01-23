@@ -7,6 +7,7 @@ import NewCodeHinter from '.';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';
 import { isEmpty } from 'lodash';
+import { handleCircularStructureToJSON, hasCircularDependency } from '@/_helpers/utils';
 
 export const PreviewBox = ({ currentValue, isFocused, validationSchema, setErrorStateActive, componentId }) => {
   // Todo: (isWorkspaceVariable) Remove this when workspace variables are deprecated
@@ -55,6 +56,11 @@ export const PreviewBox = ({ currentValue, isFocused, validationSchema, setError
 
   let previewType = getCurrentNodeType(resolvedValue);
   let previewContent = resolvedValue;
+
+  if (hasCircularDependency(resolvedValue)) {
+    previewContent = JSON.stringify(resolvedValue, handleCircularStructureToJSON());
+    previewType = typeof previewContent;
+  }
 
   const content = getPreviewContent(previewContent, previewType);
 

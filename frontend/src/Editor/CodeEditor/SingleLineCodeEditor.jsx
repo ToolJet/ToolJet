@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
-import { camelCase } from 'lodash';
+import { camelCase, isEmpty } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { autocompletion } from '@codemirror/autocomplete';
@@ -63,7 +63,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
         componentName={componentName}
         validationSchema={validation}
         setErrorStateActive={setErrorStateActive}
-        ignoreValidation={restProps?.ignoreValidation ?? null}
+        ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
         componentId={restProps?.componentId ?? null}
       />
     );

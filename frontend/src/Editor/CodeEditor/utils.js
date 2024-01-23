@@ -4,6 +4,7 @@ import _, { isEmpty } from 'lodash';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { any } from 'superstruct';
 import { generateSchemaFromValidationDefinition, validate } from '../component-properties-validation';
+import { hasCircularDependency } from '@/_helpers/utils';
 
 const acorn = require('acorn');
 
@@ -224,6 +225,10 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
 
   if (error) {
     return [false, error, query, query];
+  }
+
+  if (hasCircularDependency(resolvedValue)) {
+    return [false, `${resolvedValue} has circular dependency, unable to resolve`, query, query];
   }
 
   if (validationSchema) {
