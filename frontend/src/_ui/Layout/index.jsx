@@ -21,6 +21,14 @@ function Layout({ children, switchDarkMode, darkMode }) {
   const [featureAccess, setFeatureAccess] = useState({});
   let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
 
+  const canAnyGroupPerformAction = (action, permissions) => {
+    if (!permissions) {
+      return false;
+    }
+
+    return permissions.some((p) => p[action]);
+  };
+
   const fetchFeatureAccess = () => {
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess({ ...data });
@@ -78,14 +86,6 @@ function Layout({ children, switchDarkMode, darkMode }) {
     nextRoute,
   } = useGlobalDatasourceUnsavedChanges();
   const workflowsEnabled = admin && window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
-
-  const canAnyGroupPerformAction = (action, permissions) => {
-    if (!permissions) {
-      return false;
-    }
-
-    return permissions.some((p) => p[action]);
-  };
 
   const canCreateVariableOrConstant = () => {
     return canAnyGroupPerformAction(
