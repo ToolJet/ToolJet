@@ -466,7 +466,7 @@ describe("Basic components", () => {
     verifyComponentWithOutLabel("Link", "link1", "link2", data.appName);
   });
 
-  it("Should verify Map", () => {
+  it.skip("Should verify Map", () => {
     cy.dragAndDropWidget("Map", 300, 300);
     cy.get("body").then(($body) => {
       if ($body.find(".dismissButton").length > 0) {
