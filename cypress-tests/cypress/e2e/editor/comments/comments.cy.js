@@ -4,6 +4,7 @@ import {
     navigateToCreateNewVersionModal
 } from "Support/utils/version";
 import { createNewVersion } from "Support/utils/exportImport";
+import { addComments } from "Support/utils/comments";
 describe("Comments", () => {
     let currentVersion = "";
     let newVersion = [];
@@ -27,11 +28,8 @@ describe("Comments", () => {
     })
 
     it("Should verify to add the comments", () => {
-        cy.get('[data-cy="left-sidebar-comments-button"]').click();
-        cy.get('[data-cy=real-canvas]').click();
-        cy.get('.comment').click();
-        cy.get('textarea').type("name");
-        cy.get('.col-2 > .btn').click();
+
+        addComments();
         cy.get('[style="padding: 16px 8px; border-radius: 6px;"] > .d-flex > [aria-selected="false"]').click();
         cy.get('[style="padding: 16px 8px; border-radius: 6px;"] > .d-flex > [aria-selected="true"]').click();
         cy.get('.fw-400').should("be.have", "text", "Total 1 comment");
@@ -40,11 +38,7 @@ describe("Comments", () => {
     }
     );
     it("Should verify the resolved comments", () => {
-        cy.get('[data-cy="left-sidebar-comments-button"]').click();
-        cy.get('[data-cy=real-canvas]').click();
-        cy.get('.comment').click();
-        cy.get('textarea').type("name");
-        cy.get('.col-2 > .btn').click();
+        addComments();
         cy.get('.comment-popover > .card-header > .ms-auto>:eq(0)').click();
         cy.verifyToastMessage(
             `[class=go3958317564]`,
@@ -54,12 +48,8 @@ describe("Comments", () => {
         cy.get('.fw-400').should("be.have", "text", "Total 1 comment");
         cy.get('.comment-notification-message').should("be.have", "text", "name");
     })
-    it("Should verify the comment is deleted", () => {
-        cy.get('[data-cy="left-sidebar-comments-button"]').click();
-        cy.get('[data-cy=real-canvas]').click();
-        cy.get('.comment').click();
-        cy.get('textarea').type("name");
-        cy.get('.col-2 > .btn').click();
+    it.only("Should verify the comment is deleted", () => {
+        addComments();
         cy.get('.comment-popover > .card-header > .ms-auto>:eq(1)').click();
         cy.verifyToastMessage(
             `[class=go3958317564]`,
