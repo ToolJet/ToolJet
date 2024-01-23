@@ -925,7 +925,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
       queryExecutionPromise = dataqueryService.preview(
         query,
         options,
-        useAppVersionStore.getState().editingVersion?.id
+        useSuperStore.getState().modules[_ref.moduleName].useAppVersionStore.getState().editingVersion?.id
       );
     }
 

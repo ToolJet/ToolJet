@@ -642,7 +642,10 @@ const EditorComponent = (props) => {
   };
 
   const onVersionRelease = (versionId) => {
-    useAppVersionStore.getState().actions.updateReleasedVersionId(versionId);
+    useSuperStore
+      .getState()
+      .modules[moduleName].useAppVersionStore.getState()
+      .actions.updateReleasedVersionId(versionId);
 
     if (socket instanceof WebSocket && socket?.readyState === WebSocket.OPEN) {
       socket.send(
@@ -694,9 +697,15 @@ const EditorComponent = (props) => {
 
   const callBack = async (data, startingPageHandle, versionSwitched = false) => {
     setWindowTitle(data.name);
-    useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
+    useSuperStore
+      .getState()
+      .modules[moduleName].useAppVersionStore.getState()
+      .actions.updateEditingVersion(data.editing_version);
     if (!releasedVersionId || !versionSwitched) {
-      useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
+      useSuperStore
+        .getState()
+        .modules[moduleName].useAppVersionStore.getState()
+        .actions.updateReleasedVersionId(data.current_version_id);
     }
 
     const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
@@ -954,7 +963,7 @@ const EditorComponent = (props) => {
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
-    const editingVersion = useAppVersionStore.getState().editingVersion;
+    const editingVersion = useSuperStore.getState().modules[moduleName].useAppVersionStore.getState().editingVersion;
     if (isVersionReleased && !isUserSwitchedVersion) {
       updateEditorState({
         isUpdatingEditorStateInProcess: false,
@@ -984,7 +993,10 @@ const EditorComponent = (props) => {
             ...editingVersion,
             ...{ definition: appDefinition },
           };
-          useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
+          useSuperStore
+            .getState()
+            .modules[moduleName].useAppVersionStore.getState()
+            .actions.updateEditingVersion(_editingVersion);
 
           if (config.ENABLE_MULTIPLAYER_EDITING) {
             props.ymap?.set('appDef', {
@@ -1157,7 +1169,10 @@ const EditorComponent = (props) => {
 
   const componentDefinitionChanged = (componentDefinition, props) => {
     if (isVersionReleased) {
-      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
+      useSuperStore
+        .getState()
+        .modules[moduleName].useAppVersionStore.getState()
+        .actions.enableReleasedVersionPopupState();
       return;
     }
 
@@ -1215,7 +1230,10 @@ const EditorComponent = (props) => {
         componentDeleted: true,
       });
     } else {
-      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
+      useSuperStore
+        .getState()
+        .modules[moduleName].useAppVersionStore.getState()
+        .actions.enableReleasedVersionPopupState();
     }
   };
 
@@ -1266,7 +1284,10 @@ const EditorComponent = (props) => {
 
   const cutComponents = () => {
     if (isVersionReleased) {
-      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
+      useSuperStore
+        .getState()
+        .modules[moduleName].useAppVersionStore.getState()
+        .actions.enableReleasedVersionPopupState();
 
       return;
     }
@@ -1283,7 +1304,10 @@ const EditorComponent = (props) => {
 
   const cloningComponents = () => {
     if (isVersionReleased) {
-      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
+      useSuperStore
+        .getState()
+        .modules[moduleName].useAppVersionStore.getState()
+        .actions.enableReleasedVersionPopupState();
       return;
     }
     cloneComponents(
@@ -1323,7 +1347,10 @@ const EditorComponent = (props) => {
         });
       }
     } else if (isVersionReleased) {
-      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
+      useSuperStore
+        .getState()
+        .modules[moduleName].useAppVersionStore.getState()
+        .actions.enableReleasedVersionPopupState();
     }
   };
 

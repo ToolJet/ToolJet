@@ -14,22 +14,22 @@ import { useCurrentStateStore } from './currentStateStore';
 import { useContext } from 'react';
 import { ModuleContext } from '../_contexts/ModuleContext';
 
-const initialState = {
-  dataQueries: [],
-  sortBy: 'updated_at',
-  sortOrder: 'desc',
-  loadingDataQueries: true,
-  isDeletingQueryInProcess: false,
-  /** TODO: Below two params are primarily used only for websocket invocation post update. Can be removed onece websocket logic is revamped */
-  // isCreatingQueryInProcess: false,
-  creatingQueryInProcessId: null,
-  isUpdatingQueryInProcess: false,
-  /** When a 'Create Data Query' operation is in progress, rename/update API calls are cached in the variable. */
-  queuedActions: {},
-  moduleName: '#main', // TODOS: change this
-};
+export function createDataQueriesStore(moduleName) {
+  const initialState = {
+    dataQueries: [],
+    sortBy: 'updated_at',
+    sortOrder: 'desc',
+    loadingDataQueries: true,
+    isDeletingQueryInProcess: false,
+    /** TODO: Below two params are primarily used only for websocket invocation post update. Can be removed onece websocket logic is revamped */
+    // isCreatingQueryInProcess: false,
+    creatingQueryInProcessId: null,
+    isUpdatingQueryInProcess: false,
+    /** When a 'Create Data Query' operation is in progress, rename/update API calls are cached in the variable. */
+    queuedActions: {},
+    moduleName, // TODOS: change this
+  };
 
-export function createDataQueriesStore() {
   return create(
     zustandDevTools(
       (set, get) => ({
@@ -141,7 +141,8 @@ export function createDataQueriesStore() {
           },
           // createDataQuery: (appId, appVersionId, options, kind, name, selectedDataSource, shouldRunQuery) => {
           createDataQuery: (selectedDataSource, shouldRunQuery) => {
-            const appVersionId = useAppVersionStore.getState().editingVersion?.id;
+            const appVersionId = useSuperStore.getState().modules[get().moduleName].useAppVersionStore.getState()
+              .editingVersion?.id;
             const appId = useAppDataStore.getState().appId;
             const { options, name } = getDefaultOptions(selectedDataSource, get().moduleName);
             const kind = selectedDataSource.kind;

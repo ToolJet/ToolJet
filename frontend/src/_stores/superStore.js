@@ -4,6 +4,7 @@ import { createQueryPanelStore } from './queryPanelStore';
 import { createDataSourcesStore } from './dataSourcesStore';
 import { createCurrentStateStore } from './currentStateStore';
 import { create } from './utils';
+import { createAppVersionStore } from './appVersionStore';
 
 export const useSuperStore = create((set, get) => ({
   modules: {
@@ -13,6 +14,7 @@ export const useSuperStore = create((set, get) => ({
       useDataQueriesStore: createDataQueriesStore('#main'),
       useDataSourcesStore: createDataSourcesStore('#main'),
       useCurrentStateStore: createCurrentStateStore('#main'),
+      useAppVersionStore: createAppVersionStore('#main'),
     },
   },
 }));
