@@ -8767,8 +8767,8 @@ tbody {
   color: var(--slate12) !important;
 
   &:first-child {
-    display: flex !important;
-    align-items: center !important;
+    // display: flex !important;
+    // align-items: center !important;
     padding-left: 1rem !important;
   }
 
@@ -8778,8 +8778,8 @@ tbody {
   margin: 0;
   width: 300px;
 
-  th:first-child {
-    height: 29px;
+  th {
+    height: 30px;
   }
 
   th:first-child>div {
@@ -8787,7 +8787,7 @@ tbody {
     width: 16px;
     display: flex;
     align-items: center;
-    height: 29px;
+    height: 30px;
 
     input {
       border-radius: 4px;
@@ -9856,7 +9856,8 @@ tbody {
   height: 110px;
 
   table {
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     width: max-content;
   }
 }

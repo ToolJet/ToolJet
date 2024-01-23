@@ -40,7 +40,48 @@
   background-color: white !important;
 }
 
-.tjdb-sticky-column-header {
-  position: sticky;
-  top: 0;
+.tj-table {
+
+  thead th {
+    position: sticky;
+    top: 0px;
+  }
+
+  td:nth-child(1) {
+    position: sticky;
+    left: 0;
+  }
+
+  td:nth-child(2) {
+    position: sticky;
+    left: 66px;
+    border-right: 2px solid var(--light-slate-08, #C1C8CD);
+  }
+
+  th {
+    border-top: 1px solid;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+    border-color: inherit;
+  }
+
+  td {
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+    border-color: inherit;
+    background-color: #ffffff;
+  }
+
+  th:nth-child(1) {
+    left: 0;
+    top: 0;
+    z-index: 1;
+  }
+
+  th:nth-child(2) {
+    z-index: 1;
+    left: 66px;
+    border-right: 2px solid var(--light-slate-08, #C1C8CD);
+  }
+
 }
