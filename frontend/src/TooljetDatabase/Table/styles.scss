@@ -40,7 +40,15 @@
   background-color: white !important;
 }
 
-.tjdb-sticky-column-header {
-  position: sticky;
-  top: 0;
+.cell-text-null {
+  background-color: var(--slate3) !important;
+  color: var(--slate11) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  border-radius: 6px;
+  width: 50px;
 }

@@ -6,6 +6,7 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { isEmpty } from 'lodash';
 import { BreadCrumbContext } from '@/App/App';
+import WarningInfo from '../Icons/Edit-information.svg';
 
 const TableForm = ({
   selectedTable = {},
@@ -120,6 +121,16 @@ const TableForm = ({
       </div>
       <div>
         <div className="card-body">
+          {isEditMode && (
+            <div className="edit-warning-info mb-3">
+              <div className="edit-warning-icon">
+                <WarningInfo />
+              </div>
+              <span className="edit-warning-text">
+                Editing the table name could break queries and apps connected with this table.
+              </span>
+            </div>
+          )}
           <div className="mb-3">
             <div className="form-label" data-cy="table-name-label">
               Table name

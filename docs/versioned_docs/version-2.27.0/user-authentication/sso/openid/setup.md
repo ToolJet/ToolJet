@@ -3,7 +3,9 @@ id: setup
 title: Setup
 ---
 
+<a href="https://www.tooljet.com/pricing">
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+</a>
 
 # Configure OpenId Connect Single Sign-on
 
