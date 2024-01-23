@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
 import { isBoolean, isEmpty } from 'lodash';
@@ -25,7 +25,7 @@ import TjdbTableHeader from './Header';
 
 import './styles.scss';
 
-const Table = () => {
+const Table = ({ collapseSidebar }) => {
   const {
     organizationId,
     columns,
@@ -37,6 +37,8 @@ const Table = () => {
     setQueryFilters,
     setSortFilters,
     resetAll,
+    pageSize,
+    pageCount,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -50,12 +52,9 @@ const Table = () => {
     deletePopupModal: false,
     columnEditPopover: false,
   });
-  const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
-  const [wholeScreenWidth, setWholeScreenWidth] = useState(window.innerWidth);
 
   const prevSelectedTableRef = useRef({});
-  const columnCreatorElement = useRef();
-  //const wholeScreenWidth = window.innerWidth;
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const fetchTableMetadata = () => {
     if (!isEmpty(selectedTable)) {
@@ -67,11 +66,10 @@ const Table = () => {
 
         if (data?.result?.length > 0) {
           setColumns(
-            data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
+            data?.result.map(({ column_name, data_type, ...rest }) => ({
               Header: column_name,
               accessor: column_name,
               dataType: data_type,
-              isPrimaryKey: keytype?.toLowerCase() === 'primary key',
               ...rest,
             }))
           );
@@ -186,64 +184,30 @@ const Table = () => {
     }
   );
 
-  const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
-
-  const moveColumnCreateElement = useCallback(() => {
-    setTimeout(() => {
-      const initialxAxis = columnCreatorElement.current?.getBoundingClientRect().x;
-      const fullWidth = window.innerWidth;
-      setWidth((prevState) => ({
-        ...prevState,
-        screenWidth: fullWidth,
-        xAxis: initialxAxis,
-      }));
-    }, 200);
-  }, [setWidth, columnCreatorElement]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWholeScreenWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  useEffect(() => {
-    moveColumnCreateElement();
-  }, []);
-
-  useEffect(() => {
-    moveColumnCreateElement();
-  }, [wholeScreenWidth, columHeaderLength]);
-
-  const widthOfScreen = width.screenWidth > 0 ? width.screenWidth : wholeScreenWidth;
-
-  const positionValue = width.xAxis > widthOfScreen ? 'add-row-btn-database-fixed' : 'add-row-btn-database-absolute';
-
   const handleDeleteRow = async () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
     if (shouldDelete) {
       const selectedRows = Object.keys(selectedRowIds).map((key) => rows[key]);
-      const primaryKey = columns.find((column) => column.isPrimaryKey);
-      const deletionKeys = selectedRows.map((row) => {
-        return row.values[primaryKey.accessor];
-      });
+      const primaryKey = columns.find((column) => column?.constraints_type?.is_primary_key);
+      if (primaryKey) {
+        const deletionKeys = selectedRows.map((row) => {
+          return row.values[primaryKey?.accessor];
+        });
 
-      let query = `?${primaryKey.accessor}=in.(${deletionKeys.toString()})`;
+        let query = `?${primaryKey?.accessor}=in.(${deletionKeys.toString()})`;
 
-      const { error } = await tooljetDatabaseService.deleteRows(organizationId, selectedTable.id, query);
+        const { error } = await tooljetDatabaseService.deleteRows(organizationId, selectedTable.id, query);
 
-      if (error) {
-        toast.error(error?.message ?? `Error deleting rows from table "${selectedTable.table_name}"`);
-        return;
+        if (error) {
+          toast.error(error?.message ?? `Error deleting rows from table "${selectedTable.table_name}"`);
+          return;
+        }
+
+        toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable.table_name}"`);
+        fetchTableData();
+      } else {
+        toast.error('Something went wrong - Record Id is incorrect');
       }
-
-      toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable.table_name}"`);
-      fetchTableData();
     }
   };
 
@@ -262,6 +226,48 @@ const Table = () => {
     toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
   };
 
+  const handleToggleCellEdit = async (cellVal, rowId, index) => {
+    const cellKey = headerGroups[0].headers[index].id;
+    const query = `id=eq.${rowId}&order=id`;
+    const cellData = { [cellKey]: !cellVal };
+    const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
+    if (error) {
+      toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
+      return;
+    }
+
+    const limit = pageSize;
+    const pageRange = `${(pageCount - 1) * pageSize + 1}`;
+    tooljetDatabaseService
+      .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}&offset=${pageRange - 1}`)
+      .then(({ headers, data = [], error }) => {
+        if (error) {
+          toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
+          return;
+        }
+
+        if (Array.isArray(data) && data?.length > 0) {
+          const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
+          setTotalRecords(totalContentRangeRecords);
+          setSelectedTableData(data);
+        }
+      });
+    toast.success(`cell edited successfully`);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (editColumnHeader.columnEditPopover && event.target.closest('.popover') === null) {
+        closeMenu();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [editColumnHeader.columnEditPopover]);
+
   const handleDelete = (column) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
@@ -273,8 +279,6 @@ const Table = () => {
 
   if (!selectedTable) return null;
 
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-
   const handleMouseOver = (index) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
@@ -282,11 +286,11 @@ const Table = () => {
     }));
   };
 
-  const onMenuClick = (e, index) => {
+  const onMenuClick = (index, _e) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
       clickedColumn: index,
-      columnEditPopover: !editColumnHeader?.columnEditPopover,
+      columnEditPopover: !editColumnHeader.columnEditPopover,
     }));
   };
 
@@ -349,25 +353,23 @@ const Table = () => {
           style={{ position: 'relative' }}
         >
           <thead>
-            <button
-              ref={columnCreatorElement}
-              onClick={() => setIsCreateColumnDrawerOpen(true)}
-              className={`${positionValue}`}
-            >
-              +
-            </button>
             {headerGroups.map((headerGroup, index) => (
               <tr className="tj-database-column-row" {...headerGroup.getHeaderGroupProps()} key={index}>
                 {headerGroup.headers.map((column, index) => (
                   <th
                     key={column.Header}
                     width={index === 0 ? 66 : 230}
-                    title={column?.Header || ''}
-                    className={`${
-                      editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
+                    style={{ height: index === 0 ? '32px' : '' }}
+                    title={index === 1 ? '' : column?.Header}
+                    className={
+                      darkMode
+                        ? 'table-header-dark tj-database-column-header tj-text-xsm'
+                        : !darkMode
+                        ? 'table-header tj-database-column-header tj-text-xsm'
+                        : editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
                         ? 'table-header-click tj-database-column-header tj-text-xsm'
                         : 'table-header tj-database-column-header tj-text-xsm'
-                    }`}
+                    }
                     data-cy={`${String(column.Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-header`}
                     {...column.getHeaderProps()}
                     onMouseOver={() => handleMouseOver(index)}
@@ -375,7 +377,7 @@ const Table = () => {
                   >
                     {column.Header !== 'id' && index > 0 ? (
                       <div className="d-flex align-items-center justify-content-between">
-                        <div>
+                        <div className="tj-db-headerText">
                           <span className="tj-text-xsm tj-db-dataype text-lowercase">
                             {column.Header == 'id' ? (
                               <Integer width="18" height="18" className="tjdb-column-header-name" />
@@ -401,7 +403,7 @@ const Table = () => {
                               width="20"
                               height="20"
                               className="tjdb-menu-icon"
-                              onClick={(e) => onMenuClick(e, index)}
+                              onClick={(e) => onMenuClick(index, e)}
                             />
                           </div>
                         </TablePopover>
@@ -422,6 +424,12 @@ const Table = () => {
                     )}
                   </th>
                 ))}
+                <th
+                  onClick={() => setIsCreateColumnDrawerOpen(true)}
+                  className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
+                >
+                  <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
+                </th>
               </tr>
             ))}
           </thead>
@@ -462,17 +470,44 @@ const Table = () => {
                           <td
                             key={`cell.value-${index}`}
                             title={cell.value || ''}
-                            className={`${
-                              editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
+                            className={
+                              editColumnHeader?.clickedColumn === index &&
+                              editColumnHeader?.columnEditPopover === true &&
+                              !darkMode
                                 ? `table-cell-click`
-                                : editColumnHeader?.hoveredColumn === index
+                                : editColumnHeader?.clickedColumn === index &&
+                                  editColumnHeader?.columnEditPopover === true &&
+                                  darkMode
+                                ? 'table-cell-click-dark'
+                                : editColumnHeader?.hoveredColumn === index && !darkMode
                                 ? 'table-cell-hover-background'
+                                : editColumnHeader?.hoveredColumn === index && darkMode
+                                ? 'table-cell-hover-background-dark'
                                 : `table-cell`
-                            }`}
+                            }
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
                           >
-                            {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                            {cell.value === null ? (
+                              <span className="cell-text-null">Null</span>
+                            ) : cell.column.dataType === 'boolean' ? (
+                              <div className="row">
+                                <div className="col-1">
+                                  <label className={`form-switch`}>
+                                    <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      checked={cell.value}
+                                      onChange={() => handleToggleCellEdit(cell.value, row.values.id, index)}
+                                    />
+                                  </label>
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="cell-text">
+                                {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                              </span>
+                            )}
                           </td>
                         );
                       })}
@@ -481,13 +516,21 @@ const Table = () => {
                 );
               })
             )}
-            <button onClick={() => setIsCreateRowDrawerOpen(true)} className="add-col-btn-database">
+            <div
+              onClick={() => setIsCreateRowDrawerOpen(true)}
+              className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
+            >
               +
-            </button>
+            </div>
           </tbody>
         </table>
 
-        <TableFooter darkMode={darkMode} dataLoading={loading} tableDataLength={tableData.length} />
+        <TableFooter
+          darkMode={darkMode}
+          dataLoading={loading}
+          tableDataLength={tableData.length}
+          collapseSidebar={collapseSidebar}
+        />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
         <EditColumnForm

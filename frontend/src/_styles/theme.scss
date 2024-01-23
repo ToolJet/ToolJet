@@ -6895,16 +6895,28 @@ tbody {
 
 .tooljet-database {
 
+  .tj-db-headerText {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 80%;
+  }
+
   .table-header,
   .table-name,
   .table-cell {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    border-width: 0px 1px 1px 1px;
   }
 
   .table-cell-hover-background {
     background-color: #F8F9FA;
+  }
+
+  .table-cell-hover-background-dark {
+    background-color: #242f3c;
   }
 
   .table-cell-click {
@@ -6914,15 +6926,29 @@ tbody {
     border-right: 1.5px solid #3E63DD !important;
   }
 
+  .table-cell-click-dark {
+    background-color: #242f3c;
+    border-left: 1.5px solid white !important;
+    border-right: 1.5px solid white !important;
+  }
+
   .row-tj:first-child {
     .table-cell-click {
       border-top: 1.5px solid #3E63DD !important;
+    }
+
+    .table-cell-click-dark {
+      border-top: 1.5px solid white !important;
     }
   }
 
   .row-tj:last-of-type {
     .table-cell-click {
       border-bottom: 1.5px solid #3E63DD !important;
+    }
+
+    .table-cell-click-dark {
+      border-bottom: 1.5px solid white !important;
     }
   }
 
@@ -6951,8 +6977,6 @@ tbody {
         cursor: pointer;
       }
     }
-
-
   }
 
   .table-header {
@@ -6961,6 +6985,14 @@ tbody {
 
   .table-header:hover {
     background: #E6E8EB;
+
+    .tjdb-menu-icon {
+      display: block;
+      cursor: pointer;
+    }
+  }
+
+  .table-header-dark:hover {
 
     .tjdb-menu-icon {
       display: block;
@@ -7275,7 +7307,7 @@ tbody {
 
 .workspace-content-wrapper,
 .database-page-content-wrap {
-  // background: var(--slate2);
+  height: calc(100vh - 64px) !important;
 }
 
 .workspace-variable-table-card {
@@ -7326,6 +7358,7 @@ tbody {
   max-width: 288px;
   background: var(--base);
   border-right: 1px solid var(--slate5);
+  height: calc(100vh - 64px) !important;
 
 
   .sidebar-container {
@@ -7813,11 +7846,10 @@ tbody {
 }
 
 .toojet-db-table-footer,
+.toojet-db-table-footer-collapse,
 .home-page-footer {
   position: fixed;
   bottom: 0px;
-  right: 0;
-  left: 336px;
 }
 
 .home-page-footer {
@@ -7942,6 +7974,12 @@ tbody {
 .toojet-db-table-footer {
   height: 52px;
   background: var(--base) !important;
+}
+
+.toojet-db-table-footer-collapse {
+  height: 52px;
+  background: var(--base) !important;
+  width: calc(100vw - 48px);
 }
 
 .home-app-card-header {
@@ -9855,6 +9893,10 @@ tbody {
   table {
     border-collapse: collapse;
     width: max-content;
+
+    .row-tj {
+      border-width: 0px !important;
+    }
   }
 }
 
@@ -10036,8 +10078,9 @@ tbody {
 .template-card {
   padding: 16px;
   gap: 16px;
-  width: 272px;
-  height: 184px;
+  min-width: 280px;
+  max-width: 100%;
+  height: 210px;
   background: var(--base);
   border: 1px solid var(--slate3);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
@@ -10050,8 +10093,8 @@ tbody {
 
 .template-card-img {
   padding: 0px;
-  width: 240px;
-  height: 112px;
+  width: 100%;
+  height: 77.5%;
   border-radius: 4px;
 }
 
@@ -10250,11 +10293,13 @@ tbody {
 
 
 //TJ APP INPUT
-.tj-app-input {
+.tj-app-input,
+.edit-row-container {
   display: flex;
   flex-direction: column;
   font-family: 'IBM Plex Sans';
   font-style: normal;
+  position: relative;
 
   .text-danger {
     font-weight: 400 !important;
@@ -10325,6 +10370,21 @@ tbody {
 
 }
 
+.tj-app-input-wrapper {
+  display: flex;
+
+  .eye-icon {
+    position: absolute;
+    right: 8px;
+    top: 5px;
+    cursor: pointer;
+  }
+
+  .form-control {
+    padding-right: 2.2rem;
+  }
+}
+
 
 
 .tj-sub-helper-text {
@@ -10369,44 +10429,86 @@ tbody {
   }
 }
 
-.add-row-btn-database-absolute {
-  position: absolute;
-  top: 0px;
-  right: -28px;
-  width: 29px;
-  height: 31px;
-  border-width: 0px 1px 1px 1px;
-  border-style: solid;
-  border-radius: 0px;
-  background: var(--slate7);
-  border-color: var(--slate4);
-}
-
-.add-row-btn-database-fixed {
-  position: fixed;
-  top: 112px;
-  right: 0px;
-  width: 29px;
-  height: 31px;
-  border-width: 0px 1px 1px 1px;
-  border-style: solid;
-  border-radius: 0px;
+.add-icon-column {
+  position: sticky;
+  top: 0;
   z-index: 1;
-  background: var(--slate7);
-  border-color: var(--slate4);
+  right: 0;
+  padding: 0px !important;
+  width: 30px;
+  height: 31px;
+  border-radius: 0px !important;
+  background: var(--slate7) !important;
+  cursor: pointer;
+
+  .icon-styles {
+    font-size: 14px !important;
+    font-weight: 400;
+    color: black;
+  }
 }
 
-.add-col-btn-database {
-  position: absolute;
-  top: 28;
+.add-icon-column-dark {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  right: 0;
+  padding: 0px !important;
+  width: 30px;
+  height: 31px;
+  border-radius: 0px !important;
+  cursor: pointer;
+
+  .icon-styles {
+    width: 100% !important;
+    height: 100% !important;
+    background: #1c252f !important;
+    border: 0.4px solid white !important;
+    font-size: 14px !important;
+    font-weight: 400;
+    color: white;
+  }
+}
+
+.add-icon-row {
+  position: sticky;
+  bottom: 0;
   left: 0px;
-  width: 28px;
-  height: 28px;
+  width: 29px;
+  height: 31px;
   background: var(--slate7);
   border-width: 0px 1px 1px 1px;
   border-style: solid;
+  border-radius: 0px;
   border-color: var(--slate4);
   border-radius: 0px !important;
+  font-size: 14px !important;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.add-icon-row-dark {
+  position: sticky;
+  bottom: 0;
+  left: 0px;
+  width: 29px;
+  height: 31px;
+  background: var(--slate7);
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-radius: 0px;
+  background: #1c252f !important;
+  border: 0.4px solid white !important;
+  font-size: 14px !important;
+  font-weight: 400;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 // custom styles for users multiselect in manage users

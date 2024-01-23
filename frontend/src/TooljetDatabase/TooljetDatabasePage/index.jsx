@@ -6,7 +6,7 @@ import { TooljetDatabaseContext } from '../index';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import { isEmpty } from 'lodash';
 
-const TooljetDatabasePage = ({ totalTables }) => {
+const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
   const { selectedTable } = useContext(TooljetDatabaseContext);
 
   const EmptyState = () => {
@@ -34,12 +34,12 @@ const TooljetDatabasePage = ({ totalTables }) => {
 
   return (
     <div className="row gx-0">
-      <Sidebar />
-      <div className={cx('col animation-fade database-page-content-wrap')}>
+      <Sidebar collapseSidebar={collapseSidebar} />
+      <div className={cx('col animation-fade database-page-content-wrap vh-100')}>
         {totalTables === 0 && <EmptyState />}
         {!isEmpty(selectedTable) && (
           <div className={cx('col')}>
-            <Table />
+            <Table collapseSidebar={collapseSidebar} />
           </div>
         )}
       </div>

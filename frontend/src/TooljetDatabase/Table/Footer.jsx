@@ -4,7 +4,7 @@ import Pagination from '@/_ui/Pagination';
 import Skeleton from 'react-loading-skeleton';
 import { TooljetDatabaseContext } from '../index';
 
-const Footer = ({ darkMode, dataLoading, tableDataLength }) => {
+const Footer = ({ darkMode, dataLoading, tableDataLength, collapseSidebar }) => {
   const selectOptions = [
     { label: '50 records', value: 50 },
     { label: '100 records', value: 100 },
@@ -13,10 +13,8 @@ const Footer = ({ darkMode, dataLoading, tableDataLength }) => {
     { label: '1000 records', value: 1000 },
   ];
 
-  const { selectedTable, totalRecords, buildPaginationQuery } = useContext(TooljetDatabaseContext);
-
-  const [pageCount, setPageCount] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const { selectedTable, totalRecords, buildPaginationQuery, setPageCount, pageCount, setPageSize, pageSize } =
+    useContext(TooljetDatabaseContext);
 
   const totalPage = Math.ceil(totalRecords / pageSize);
   const pageRange = `${(pageCount - 1) * pageSize + 1} - ${
@@ -47,7 +45,6 @@ const Footer = ({ darkMode, dataLoading, tableDataLength }) => {
 
     const limit = pageSize;
     const offset = pageCount * pageSize;
-
     buildPaginationQuery(limit, offset);
   };
 
@@ -61,7 +58,6 @@ const Footer = ({ darkMode, dataLoading, tableDataLength }) => {
 
     const limit = pageSize;
     const offset = (pageCount - 2) * pageSize;
-
     buildPaginationQuery(limit, offset);
   };
 
@@ -75,61 +71,68 @@ const Footer = ({ darkMode, dataLoading, tableDataLength }) => {
   }, [totalRecords, selectedTable]);
 
   return (
-    <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
-      <div className="table-footer row gx-0" data-cy="table-footer-section">
-        <div className="col-5 d-flex align-items-center justify-content-start" data-cy="add-new-row-button">
-          {/* <Button
-            disabled={dataLoading}
-            onClick={openCreateRowDrawer}
-            darkMode={darkMode}
-            size="sm"
-            styles={{ width: '118px', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
-          >
-            <Button.Content title={'Add new row'} iconSrc={'assets/images/icons/add-row.svg'} direction="left" />
-          </Button> */}
+    <div
+      className={`${
+        collapseSidebar ? 'toojet-db-table-footer-collapse' : 'toojet-db-table-footer'
+      } card-footer d-flex align-items-center jet-table-footer justify-content-center col-12`}
+    >
+      {tableDataLength > 0 && (
+        <div
+          className="table-footer d-flex align-items-center justify-content-between gx-0"
+          data-cy="table-footer-section"
+        >
+          <div className="keyPress-actions h-100 d-flex align-items-center">
+            {/* <div className="navigate-keyActions">
+              <div className="leftNav-parent-container">
+                <LeftNav style={{ verticalAlign: 'baseline' }} width={10} height={10} />
+              </div>
+              <div className="rightNav-parent-container">
+                <RightNav style={{ verticalAlign: 'baseline' }} width={10} height={10} />
+              </div>
+              <div className="navigate-title">Navigate</div>
+            </div>
+            <div className="enter-keyActions">
+              <div className="editEnter-parent-container">
+                <Enter style={{ verticalAlign: 'baseline' }} width={10} height={10} />
+              </div>
+              <div className="navigate-title">Enter to edit</div>
+            </div> */}
+          </div>
+          <div>
+            <Pagination
+              darkMode={darkMode}
+              gotoNextPage={gotoNextPage}
+              gotoPreviousPage={gotoPreviousPage}
+              currentPage={pageCount}
+              totalPage={totalPage}
+              isDisabled={dataLoading}
+            />
+          </div>
+          <div className="d-flex align-items-center justify-content-between">
+            <div className="mx-2" data-cy="total-records-section">
+              {dataLoading ? (
+                <Skeleton count={1} height={3} className="mt-3" />
+              ) : (
+                <span className="animation-fade" data-cy={`${pageRange}-of-${totalRecords}-records-text}`}>
+                  {pageRange} of {totalRecords} Records
+                </span>
+              )}
+            </div>
+            <div className="mx-2 records-dropdown-field" data-cy="records-dropdown-field">
+              <Select
+                isLoading={dataLoading}
+                options={selectOptions}
+                value={selectOptions.find((option) => option.value === pageSize)}
+                search={false}
+                onChange={(value) => handleSelectChange(value)}
+                placeholder={'Select page'}
+                useMenuPortal={false}
+                menuPlacement="top"
+              />
+            </div>
+          </div>
         </div>
-        {tableDataLength > 0 && (
-          <>
-            <div className="col d-flex align-items-center">
-              <div className="col">
-                <Pagination
-                  darkMode={darkMode}
-                  gotoNextPage={gotoNextPage}
-                  gotoPreviousPage={gotoPreviousPage}
-                  currentPage={pageCount}
-                  totalPage={totalPage}
-                  isDisabled={dataLoading}
-                />
-              </div>
-            </div>
-            <div className="col-5 d-flex justify-content-end align-items-center" style={{ fontSize: '12px' }}>
-              <div className="mx-2" data-cy="total-records-section">
-                {dataLoading ? (
-                  <Skeleton count={1} height={3} className="mt-3" />
-                ) : (
-                  <span className="animation-fade" data-cy={`${pageRange}-of-${totalRecords}-records-text}`}>
-                    {pageRange} of {totalRecords} Records
-                  </span>
-                )}
-              </div>
-              <div className="mx-2 records-dropdown-field" data-cy="records-dropdown-field">
-                <Select
-                  isLoading={dataLoading}
-                  options={selectOptions}
-                  value={selectOptions.find((option) => option.value === pageSize)}
-                  search={false}
-                  onChange={(value) => handleSelectChange(value)}
-                  placeholder={'Select page'}
-                  useMenuPortal={false}
-                  menuPlacement="top"
-                  width={'150px'}
-                  styles={{ fontSize: '12px' }}
-                />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+      )}
     </div>
   );
 };
