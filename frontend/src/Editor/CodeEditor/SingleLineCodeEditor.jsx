@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useContext } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,7 @@ import { autocompletion } from '@codemirror/autocomplete';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
-import { paramValidation, resolveReferences } from './utils';
+import { resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion } from './autocompleteExtensionConfig';
@@ -25,12 +25,33 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
   const [errorStateActive, setErrorStateActive] = React.useState(false);
 
+  const isPreviewFocused = useRef(false);
+  const wrapperRef = useRef(null);
+
   //! Re render the component when the componentName changes as the initialValue is not updated
   //! as there are no mutations or state changes in the parent component like the old code hinter
-  React.useEffect(() => {
+  useEffect(() => {
     setCurrentValue(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [componentName]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (portalProps?.isOpen) {
+        return;
+      }
+
+      if (wrapperRef.current && isFocused && !wrapperRef.current.contains(event.target)) {
+        isPreviewFocused.current = false;
+        setIsFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wrapperRef, isFocused, isPreviewFocused, currentValue, portalProps?.isOpen]);
 
   const renderPreview = () => {
     if (!enablePreview) return null;
@@ -40,7 +61,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
         currentValue={currentValue}
         isFocused={isFocused}
         componentName={componentName}
-        expectedType={validation?.schema?.type}
+        validatinSchema={validation}
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation ?? null}
         componentId={restProps?.componentId ?? null}
@@ -49,7 +70,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
   };
 
   return (
-    <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
+    <div ref={wrapperRef} className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
       <div className="code-editor-basic-wrapper d-flex">
         <div className="codehinter-container w-100">
           <SingleLineCodeEditor.Editor
@@ -121,16 +142,13 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = React.useCallback(() => {
-    setFocus(false);
+    // setFocus(false);
 
     if (ignoreValidation) {
       return onBlurUpdate(currentValue);
     }
-    const [value] = resolveReferences(currentValue);
 
-    const shouldUpdate = validationType ? paramValidation(validationType, value) : true;
-
-    if (!error && shouldUpdate) {
+    if (!error) {
       onBlurUpdate(currentValue);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

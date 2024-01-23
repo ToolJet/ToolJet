@@ -2,6 +2,8 @@ import { useResolveStore } from '@/_stores/resolverStore';
 import moment from 'moment';
 import _ from 'lodash';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { any } from 'superstruct';
+import { generateSchemaFromValidationDefinition, validate } from '../component-properties-validation';
 
 const acorn = require('acorn');
 
@@ -144,7 +146,7 @@ function resolveCode(code, state, customObjects = {}, withError = true, reserved
   return result;
 }
 
-export const resolveReferences = (query, expectedParamType, customResolvers = {}) => {
+export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
   if (typeof query !== 'string') return [query, null];
 
   if (!query) return [null, null];
@@ -179,15 +181,14 @@ export const resolveReferences = (query, expectedParamType, customResolvers = {}
     error = errorRef || null;
   }
 
-  if (!expectedParamType) {
+  if (!validationSchema) {
     return [resolvedValue, error];
   }
 
-  if (paramValidation(expectedParamType, resolvedValue)) {
-    return [resolvedValue, error];
+  if (validationSchema) {
+    const [valid, errors, newValue] = validateComponentProperty(resolvedValue, validationSchema);
+    return [valid, errors, newValue, resolvedValue];
   }
-
-  return [null, `Expected ${expectedParamType} but got ${getCurrentNodeType(resolvedValue)}`];
 };
 
 export const paramValidation = (expectedType, value) => {
@@ -239,3 +240,30 @@ export const FxParamTypeMapping = Object.freeze({
   boxShadow: 'BoxShadow',
   clientServerSwitch: 'ClientServerSwitch',
 });
+
+export function computeCoercion(oldValue, newValue) {
+  const oldValueType = Array.isArray(oldValue) ? 'array' : typeof oldValue;
+  const newValueType = Array.isArray(newValue) ? 'array' : typeof newValue;
+
+  if (oldValueType === newValueType) {
+    if (JSON.stringify(oldValue) != JSON.stringify(newValue)) {
+      return [` → ${JSON.stringify(newValue)}`, newValueType, oldValueType];
+    }
+  } else {
+    return [` → ${JSON.stringify(newValue)}`, newValueType, oldValueType];
+  }
+
+  return ['', newValueType, oldValueType];
+}
+
+export const validateComponentProperty = (resolvedValue, validation) => {
+  const validationDefinition = validation?.schema;
+
+  const defaultValue = validation?.defaultValue;
+
+  const schema = _.isUndefined(validationDefinition)
+    ? any()
+    : generateSchemaFromValidationDefinition(validationDefinition);
+
+  return validate(resolvedValue, schema, defaultValue);
+};

@@ -1,15 +1,24 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import useHeight from '@/_hooks/use-height-transition';
-import { getCurrentNodeType, resolveReferences } from './utils';
+import { computeCoercion, getCurrentNodeType, resolveReferences } from './utils';
 import { EditorContext } from '../Context/EditorContextWrapper';
+import NewCodeHinter from '.';
+import { copyToClipboard } from '@/_helpers/appUtils';
+import { Alert } from '@/_ui/Alert/Alert';
 
-export const PreviewBox = ({ currentValue, isFocused, expectedType, setErrorStateActive, componentId }) => {
+export const PreviewBox = ({ currentValue, isFocused, validatinSchema, setErrorStateActive, componentId }) => {
+  // Todo: |isWorkspaceVariable| Remove this when workspace variables are deprecated
+  const isWorkspaceVariable =
+    typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
+
   const { variablesExposedForPreview } = useContext(EditorContext);
 
   const customVariables = variablesExposedForPreview?.[componentId] ?? {};
 
-  const [resolvedValue, error] = resolveReferences(currentValue, expectedType, customVariables);
+  const [resolvedValue, setResolvedValue] = useState('');
+  const [error, setError] = useState(null);
+  const [coersionData, setCoersionData] = useState(null);
 
   const [heightRef, currentHeight] = useHeight();
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -39,7 +48,7 @@ export const PreviewBox = ({ currentValue, isFocused, expectedType, setErrorStat
     from: { opacity: 0, height: 0 },
     to: {
       opacity: isFocused ? 1 : 0,
-      height: isFocused ? currentHeight : 0,
+      height: isFocused ? currentHeight + (isWorkspaceVariable ? 30 : 0) : 0,
     },
   });
 
@@ -55,30 +64,78 @@ export const PreviewBox = ({ currentValue, isFocused, expectedType, setErrorStat
       setErrorStateActive(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [error, resolvedValue]);
+  }, [error]);
+
+  useEffect(() => {
+    const [valid, error, newValue, resolvedValue] = resolveReferences(currentValue, validatinSchema, customVariables);
+    const [coercionPreview, typeAfterCoercion, typeBeforeCoercion] = computeCoercion(resolvedValue, newValue);
+
+    if (!validatinSchema) {
+      return setResolvedValue(newValue);
+    }
+
+    if (valid) {
+      setResolvedValue(resolvedValue);
+
+      setCoersionData({
+        coercionPreview,
+        typeAfterCoercion,
+        typeBeforeCoercion,
+      });
+      setError(null);
+    } else {
+      setError(error);
+      setCoersionData(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentValue]);
 
   return (
     <animated.div className={isFocused ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
       <div ref={heightRef} className={`dynamic-variable-preview px-1 py-1 ${!error ? 'bg-green-lt' : 'bg-red-lt'}`}>
         {!error ? (
-          <RenderResolvedValue previewType={previewType} resolvedValue={content} />
+          <RenderResolvedValue
+            previewType={previewType}
+            resolvedValue={content}
+            coersionData={coersionData}
+            isFocused={isFocused}
+          />
         ) : (
           <RenderError error={error} />
         )}
       </div>
+      {isWorkspaceVariable && <DepericatedAlertForWorkspaceVariable text={'Deprecating soon'} />}
     </animated.div>
   );
 };
 
-const RenderResolvedValue = ({ previewType, resolvedValue }) => {
+const RenderResolvedValue = ({ previewType, resolvedValue, coersionData, isFocused }) => {
+  const previewValueType =
+    coersionData && coersionData?.typeBeforeCoercion
+      ? `${coersionData?.typeBeforeCoercion} ${
+          coersionData?.coercionPreview ? ` → ${coersionData?.typeAfterCoercion}` : ''
+        }`
+      : previewType;
+
   return (
-    <div>
+    <div className="dynamic-variable-preview-content" style={{ whiteSpace: 'pre-wrap' }}>
       <div className="d-flex my-1">
         <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
-          {previewType}
+          {previewValueType}
         </div>
+        {isFocused && (
+          <div className="preview-icons position-relative">
+            <NewCodeHinter.PopupIcon
+              callback={() => {
+                copyToClipboard(resolvedValue);
+              }}
+              icon="copy"
+              tip="Copy to clipboard"
+            />
+          </div>
+        )}
       </div>
-      {resolvedValue}
+      {resolvedValue + coersionData?.coercionPreview}
     </div>
   );
 };
@@ -90,5 +147,21 @@ const RenderError = ({ error }) => {
         <span>{JSON.stringify(error)}</span>
       </div>
     </div>
+  );
+};
+
+const DepericatedAlertForWorkspaceVariable = ({ text }) => {
+  return (
+    <Alert
+      svg="tj-info-warning"
+      cls="codehinter workspace-variables-alert-banner p-1 mb-0"
+      data-cy={``}
+      imgHeight={18}
+      imgWidth={18}
+    >
+      <div className="d-flex align-items-center">
+        <div class="">{text}</div>
+      </div>
+    </Alert>
   );
 };

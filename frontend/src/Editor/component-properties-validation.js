@@ -16,7 +16,7 @@ const {
 
 import _ from 'lodash';
 
-const generateSchemaFromValidationDefinition = (definition, recursionDepth = 0) => {
+export const generateSchemaFromValidationDefinition = (definition, recursionDepth = 0) => {
   let schema;
 
   switch (definition?.type ?? '') {
@@ -91,7 +91,7 @@ const generateSchemaFromValidationDefinition = (definition, recursionDepth = 0) 
   return definition.optional ? optional(schema) : schema;
 };
 
-const validate = (value, schema, _defaultValue) => {
+export const validate = (value, schema, _defaultValue) => {
   let valid = true;
   const errors = [];
   let newValue = undefined;
