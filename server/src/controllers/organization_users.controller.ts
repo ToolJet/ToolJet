@@ -8,6 +8,7 @@ import {
   UploadedFile,
   Res,
   BadRequestException,
+  Put,
 } from '@nestjs/common';
 import { Response, Express } from 'express';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
@@ -56,6 +57,14 @@ export class OrganizationUsersController {
   @Post(':id/archive')
   async archive(@User() user, @Param('id') id: string) {
     await this.organizationUsersService.archive(id, user.organizationId);
+    return;
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateUser', UserEntity))
+  @Put(':id')
+  async updateUser(@Param('id') id: string, @Body() updateUserDto) {
+    await this.organizationUsersService.updateOrgUser(id, updateUserDto);
     return;
   }
 
