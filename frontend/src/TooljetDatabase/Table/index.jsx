@@ -54,6 +54,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     rowIndex: null,
     cellIndex: null,
     editable: false,
+    errorState: false,
   });
 
   const [cellVal, setCellVal] = useState('');
@@ -63,7 +64,8 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
 
   const prevSelectedTableRef = useRef({});
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const updateCellProgressPercentage = useRef(0);
+  const [progress, setProgress] = useState(0);
+  const duration = 300;
   const [showUpdateProgressBar, setShowUpdateProgressBar] = useState(false);
 
   const fetchTableMetadata = () => {
@@ -307,22 +309,54 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
   };
 
-  const handleToggleCellEdit = async (cellValue, rowId, index, directToggle) => {
+  const handleProgressAnimation = (message, status) => {
+    setShowUpdateProgressBar(true);
+    const startTime = Date.now();
+    const updateProgress = () => {
+      const runningTime = Date.now() - startTime;
+      const progressPercentage = Math.min(1, runningTime / duration);
+      setProgress(progressPercentage * 100);
+
+      if (progressPercentage < 1) {
+        requestAnimationFrame(updateProgress);
+      } else {
+        setTimeout(() => {
+          setShowUpdateProgressBar(false);
+          setProgress(0);
+          if (status === true) {
+            toast.success(message);
+          } else {
+            toast.error(message);
+          }
+        }, 100);
+      }
+    };
+    requestAnimationFrame(updateProgress);
+  };
+
+  const handleToggleCellEdit = async (cellValue, rowId, index, rIndex, directToggle) => {
     const cellKey = headerGroups[0].headers[index].id;
     const query = `id=eq.${rowId}&order=id`;
     const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
-    setShowUpdateProgressBar(true);
-    updateCellProgressPercentage.current = 30;
+
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
-    updateCellProgressPercentage.current = 100;
-    setShowUpdateProgressBar(false);
-    updateCellProgressPercentage.current = 0;
+
     if (error) {
-      toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
+      handleProgressAnimation(
+        error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`,
+        false
+      );
       setEditPopover(false);
-      setCellVal(cellValue);
       setNullValue(false);
       setDefaultValue(false);
+      setTimeout(() => {
+        setCellClick((prev) => ({
+          ...prev,
+          editable: false,
+          errorState: true,
+        }));
+        setCellVal(cellValue);
+      }, 400);
       return;
     }
 
@@ -335,7 +369,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
           return;
         }
-
         if (Array.isArray(data) && data?.length > 0) {
           const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
           setTotalRecords(totalContentRangeRecords);
@@ -345,13 +378,19 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     setEditPopover(false);
     setDefaultValue(false);
     setNullValue(false);
-    toast.success(`cell edited successfully`);
+    setCellClick((prev) => ({
+      ...prev,
+      rowIndex: rIndex,
+      cellIndex: index,
+      errorState: false,
+    }));
+    handleProgressAnimation('column edited successfully', true);
   };
 
-  const handleInputKeyDown = (event, cellValue, rowId, index, directToggle) => {
+  const handleInputKeyDown = (event, cellValue, rowId, index, rIndex, directToggle) => {
     if (event.key === 'Enter') {
       if (cellValue != cellVal) {
-        handleToggleCellEdit(cellValue, rowId, index, directToggle);
+        handleToggleCellEdit(cellValue, rowId, index, rIndex, directToggle);
         document.getElementById('edit-input-blur').blur();
       } else {
         setEditPopover(false);
@@ -375,22 +414,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [editColumnHeader.columnEditPopover]);
-
-  // useEffect(() => {
-  //   const handleClickOnToggle = (event) => {
-  //     if (cellClick.editable) {
-  //       if (event.target.closest('.form-check-input')) {
-  //         setEditPopover(false);
-  //       }
-  //     }
-  //   };
-  //   document.addEventListener('click', handleClickOnToggle);
-  //   return () => {
-  //     document.removeEventListener('click', handleClickOnToggle);
-  //   };
-  // }, [editPopover]);
-
-  //console.log('first', editPopover);
 
   const handleDelete = (column) => {
     setEditColumnHeader((prevState) => ({
@@ -441,6 +464,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           rowIndex: rowIndex,
           cellIndex: cellIndex,
           editable: true,
+          errorState: false,
         }));
         setEditPopover(false);
       }
@@ -472,6 +496,8 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       </ToolTip>
     );
   }
+
+  //console.log('first', cellVal);
 
   return (
     <div>
@@ -678,14 +704,17 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                   cellClick.cellIndex !== 0 &&
                                   cellClick.cellIndex !== 1
                                 ? 'table-editable-parent-cell'
+                                : cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index &&
+                                  cellClick.errorState === true
+                                ? 'tjdb-cell-error'
                                 : `table-cell`
                             }`}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
-                            onKeyDown={(e) => handleInputKeyDown(e, cell.value, row.values.id, index, false)}
+                            onKeyDown={(e) => handleInputKeyDown(e, cell.value, row.values.id, index, rIndex, false)}
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
-                            {/* {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')} */}
                             {cellClick.editable &&
                             index !== 0 &&
                             index !== 1 &&
@@ -697,7 +726,9 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                 show={editPopover}
                                 close={closeEditPopover}
                                 columnDetails={headerGroups[0].headers[index]}
-                                saveFunction={() => handleToggleCellEdit(cell.value, row.values.id, index, false)}
+                                saveFunction={() =>
+                                  handleToggleCellEdit(cell.value, row.values.id, index, rIndex, false)
+                                }
                                 setCellValue={setCellVal}
                                 cellValue={cellVal}
                                 previousCellValue={cell.value}
@@ -714,17 +745,18 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                       style={{ marginLeft: '0px' }}
                                       onClick={() => setEditPopover(true)}
                                     >
-                                      <div className="col-1">
+                                      <div className="col-1 p-0">
                                         <label className={`form-switch`}>
                                           <input
-                                            id="checkboxId"
                                             className="form-check-input"
                                             type="checkbox"
                                             checked={cell.value}
                                             onChange={() =>
-                                              handleToggleCellEdit(cell.value, row.values.id, index, true)
+                                              handleToggleCellEdit(cell.value, row.values.id, index, rIndex, true)
                                             }
-                                            onClick={(e) => e.stopPropagation()}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                            }}
                                           />
                                         </label>
                                       </div>
@@ -740,7 +772,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                     />
                                   )}
                                   {cellVal === null && !editPopover ? (
-                                    <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
+                                    <span className="cell-text-null-input">Null</span>
                                   ) : null}
                                 </div>
                               </CellEditMenu>
@@ -756,7 +788,9 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                           className="form-check-input"
                                           type="checkbox"
                                           checked={cell.value}
-                                          onChange={() => handleToggleCellEdit(cell.value, row.values.id, index, true)}
+                                          onChange={() =>
+                                            handleToggleCellEdit(cell.value, row.values.id, index, rIndex, true)
+                                          }
                                         />
                                       </label>
                                     </div>
@@ -772,8 +806,8 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                             cellClick.cellIndex === index &&
                             showUpdateProgressBar ? (
                               <progress
-                                class="progress progress-sm tjdb-cell-save-progress"
-                                value={`${updateCellProgressPercentage.current}`}
+                                className="progress progress-sm tjdb-cell-save-progress"
+                                value={progress}
                                 max="100"
                               />
                             ) : null}

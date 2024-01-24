@@ -6945,12 +6945,22 @@ tbody {
     border: 1.5px solid var(--indigo9);
     background-color: var(--indigo2);
     cursor: pointer;
-    padding: 0;
+    padding: 0.5rem;
 
     .form-control {
+      background-color: var(--indigo2);
       border: none;
-      padding: 0.5rem;
+      padding: 0;
+      border-radius: 0px;
     }
+
+    .popover-body {
+      margin-top: 10px;
+    }
+  }
+
+  .tjdb-cell-error {
+    border: 1.5px solid var(--Tomato-09, #E54D2E) !important;
   }
 
   .table-columnHeader-click {
@@ -7063,10 +7073,6 @@ tbody {
 
   .delete-row-btn {
     max-width: 140px;
-  }
-
-  .tjdb-cell-error {
-    border: 1.5px solid var(--Tomato-09, #E54D2E) !important;
   }
 }
 

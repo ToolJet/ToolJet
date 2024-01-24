@@ -47,63 +47,46 @@
   align-items: center;
   justify-content: center;
   cursor: default;
-  padding-top: 2px;
-  padding-bottom: 2px;
   border-radius: 6px;
-  width: 50px;
+  width: 40px;
+  height: 20px;
+  font-size: 12px;
 }
 
 .input-cell-parent {
 
   position: relative !important;
+  //height: 37px;
 
-  // .null-tag-1 {
-  //   background-color: var(--slate5) !important;
-  //   color: var(--slate11) !important;
-  //   display: flex;
-  //   align-items: center;
-  //   justify-content: center;
-  //   cursor: default;
-  //   padding-top: 2px;
-  //   padding-bottom: 2px;
-  //   border-radius: 6px;
-  //   width: 50px;
-  //   position: absolute;
-  //   top: 5px;
-  //   left: 10px;
-  // }
-
-  .null-tag {
-    background-color: var(--slate5) !important;
+  .cell-text-null-input {
+    background-color: var(--slate3) !important;
     color: var(--slate11) !important;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: default;
-    padding-top: 2px;
-    padding-bottom: 2px;
     border-radius: 6px;
-    width: 50px;
+    width: 40px;
+    height: 20px;
+    font-size: 12px;
     position: absolute;
-    top: 5.5px;
-    left: 10px;
+    top: 0px;
+    left: 0px;
   }
 
-  .null-tag-dark {
-    background-color: var(--slate3) !important;
-    color: white !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: default;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    border-radius: 6px;
-    width: 50px;
-    position: absolute;
-    top: 5.5px;
-    left: 7px !important;
-  }
+  // .form-switch-1 .form-check-input-1 {
+  //   width: 2rem;
+  //   margin-left: -2.5rem;
+  //   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23e6e8e9'/%3e%3c/svg%3e");
+  //   background-position: left center;
+  //   border-radius: 2rem;
+  //   transition: background-position .15s ease-in-out
+  // }
+
+  // .form-switch-1 .form-check-input-1:checked {
+  //   background-position: right center;
+  //   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e")
+  // }
 
 }
 
@@ -113,6 +96,8 @@
   bottom: 0;
   height: 2px;
   background: var(--Indigo-09, #3E63DD);
+
+
   .tjdb-cell-save-progress-bar {
     background: var(--Indigo-09, #3E63DD);
   }
