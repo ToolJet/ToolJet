@@ -68,7 +68,8 @@ export const generateHints = (hints) => {
 
   const suggestions = hints.map(({ hint, type }) => {
     return {
-      label: hint,
+      displayLabel: hint,
+      label: type === 'js_method' ? `${hint}()` : hint,
       type: type === 'js_method' ? 'js_methods' : type?.toLowerCase(),
       section: type === 'js_method' ? { name: 'JS methods', rank: 2 } : { name: 'Suggestions', rank: 1 },
       detail: type === 'js_method' ? 'method' : type?.toLowerCase() || '',
@@ -90,7 +91,9 @@ export const generateHints = (hints) => {
         };
 
         if (completion.type === 'js_methods') {
-          pickedCompletionConfig.from = from;
+          const lastDotPosition = word.lastIndexOf('.') + 1;
+
+          pickedCompletionConfig.from = lastDotPosition;
         }
 
         view.dispatch({
