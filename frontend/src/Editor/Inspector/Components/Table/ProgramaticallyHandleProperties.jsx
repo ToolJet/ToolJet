@@ -30,6 +30,8 @@ export const ProgramaticallyHandleProperties = ({
         return props?.enableTwentyFourHrFormat;
       case 'parseInUnixTimestamp':
         return props?.parseInUnixTimestamp;
+      case 'enableDateSelection':
+        return props?.enableDateSelection;
       default:
         return;
     }
@@ -41,6 +43,9 @@ export const ProgramaticallyHandleProperties = ({
     }
     if (property === 'linkTarget') {
       return definitionObj?.value ?? '_blank';
+    }
+    if (property === 'enableDateSelection') {
+      return definitionObj?.value ?? `{{true}}`;
     }
     return definitionObj?.value ?? `{{false}}`;
   };

@@ -1,3 +1,4 @@
+import { resolveReferences } from '@/_helpers/utils';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
@@ -10,7 +11,6 @@ export const ValidationProperties = ({
   onColumnItemChange,
   getPopoverFieldSource,
   setColumnPopoverRootCloseBlocker,
-  component,
 }) => {
   const { t } = useTranslation();
   const columnType = column.columnType;
@@ -68,24 +68,32 @@ export const ValidationProperties = ({
         ];
       case 'dropdown':
         return [{ property: 'customRule', dateCy: 'input-and-label-custom-rule', label: 'Custom rule' }];
-      case 'datepicker':
-        return [
-          [
-            { property: 'minDate', dateCy: '', label: 'Min date', placeholder: 'MM/DD/YYYY' },
-            { property: 'maxDate', dateCy: '', label: 'Max date', placeholder: 'MM/DD/YYYY' },
-          ],
-          [
+      case 'datepicker': {
+        const propertiesArray = [];
+
+        if (resolveReferences(column?.enableDateSelection, currentState)) {
+          propertiesArray.push(
+            [
+              { property: 'minDate', dateCy: '', label: 'Min date', placeholder: 'MM/DD/YYYY' },
+              { property: 'maxDate', dateCy: '', label: 'Max date', placeholder: 'MM/DD/YYYY' },
+            ],
+            { property: 'disabledDates', dateCy: '', label: 'Disabled dates', placeholder: '{{[]}}' }
+          );
+        }
+        if (resolveReferences(column?.isTimeChecked, currentState)) {
+          propertiesArray.push([
             { property: 'minTime', dateCy: '', label: 'Min time', placeholder: 'MM/DD/YYYY' },
             { property: 'maxTime', dateCy: '', label: 'Max time', placeholder: 'MM/DD/YYYY' },
-          ],
-          { property: 'disabledDates', dateCy: '', label: 'Disabled dates', placeholder: '{{[]}}' },
-          {
-            property: 'customRule',
-            dateCy: 'input-and-label-custom-rule',
-            label: 'Custom rule',
-            placeholder: 'eg. {{ 1 < 2 }}',
-          },
-        ];
+          ]);
+        }
+        propertiesArray.push({
+          property: 'customRule',
+          dateCy: 'input-and-label-custom-rule',
+          label: 'Custom rule',
+          placeholder: 'eg. {{ 1 < 2 }}',
+        });
+        return propertiesArray;
+      }
       default:
         break;
     }

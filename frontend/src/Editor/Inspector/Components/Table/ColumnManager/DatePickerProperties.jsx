@@ -1,22 +1,11 @@
 import React from 'react';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
-import SelectSearch from 'react-select-search';
 import Select from '@/_ui/Select';
 import { useTranslation } from 'react-i18next';
 import Accordion from '@/_ui/Accordion';
 import { resolveReferences } from '@/_helpers/utils';
-
-export const DatePickerProperties = ({
-  column,
-  index,
-  darkMode,
-  currentState,
-  onColumnItemChange,
-  getPopoverFieldSource,
-  setColumnPopoverRootCloseBlocker,
-  component,
-}) => {
+import styles from '@/_ui/Select/styles';
+export const DatePickerProperties = ({ column, index, darkMode, currentState, onColumnItemChange, component }) => {
   const timeZoneOptions = [
     { name: 'UTC', value: 'Etc/UTC' },
     { name: '-12:00', value: 'Etc/GMT+12' },
@@ -59,85 +48,129 @@ export const DatePickerProperties = ({
       title: 'Formatting',
       children: (
         <>
-          <div data-cy={`input-date-display-format`} className="field mb-2" onClick={(e) => e.stopPropagation()}>
-            <label data-cy={`label-date-display-format`} className="form-label">
-              {t('widget.Table.dateDisplayformat', 'Date Display Format')}
-            </label>
-            <Select
-              options={[
-                {
-                  label: 'DD/MM/YYYY',
-                  value: 'DD/MM/YYYY',
-                },
-                {
-                  label: 'MM/DD/YYYY',
-                  value: 'MM/DD/YYYY',
-                },
-                {
-                  label: 'YYYY/DD/MM',
-                  value: 'YYYY/DD/MM',
-                },
-                {
-                  label: 'YYYY/MM/DD',
-                  value: 'YYYY/MM/DD',
-                },
-              ]}
-              value={column?.dateFormat ?? 'DD/MM/YYYY'}
-              search={true}
-              closeOnSelect={true}
-              onChange={(value) => {
-                onColumnItemChange(index, 'dateFormat', value);
-              }}
-              fuzzySearch
-              placeholder="Select.."
+          <div className="grey-bg-section mb-2">
+            <ProgramaticallyHandleProperties
+              label="Enable date selection"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="enableDateSelection"
+              props={column}
+              component={component}
+              paramType="properties"
+              paramMeta={{ type: 'toggle', displayName: 'Enable date selection' }}
             />
+            {resolveReferences(column?.enableDateSelection, currentState) && (
+              <div
+                data-cy={`input-date-display-format`}
+                className="field mb-2 w-100"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <label data-cy={`label-date-display-format`} className="form-label">
+                  {t('widget.Table.dateDisplayformat', 'Date Display Format')}
+                </label>
+                <Select
+                  options={[
+                    {
+                      label: 'DD/MM/YYYY',
+                      value: 'DD/MM/YYYY',
+                    },
+                    {
+                      label: 'MM/DD/YYYY',
+                      value: 'MM/DD/YYYY',
+                    },
+                    {
+                      label: 'YYYY/DD/MM',
+                      value: 'YYYY/DD/MM',
+                    },
+                    {
+                      label: 'YYYY/MM/DD',
+                      value: 'YYYY/MM/DD',
+                    },
+                  ]}
+                  value={column?.dateFormat ?? 'DD/MM/YYYY'}
+                  search={true}
+                  closeOnSelect={true}
+                  onChange={(value) => {
+                    onColumnItemChange(index, 'dateFormat', value);
+                  }}
+                  fuzzySearch
+                  placeholder="Select.."
+                  useCustomStyles={true}
+                  styles={styles(darkMode, '100%')}
+                />
+              </div>
+            )}
           </div>
-          <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
-            <label className="form-label">{t('widget.Table.timeFormat', 'Time Format')}</label>
-            <Select
-              options={[
-                {
-                  label: 'HH:mm',
-                  value: 'HH:mm',
-                },
-              ]}
-              value={column?.timeFormat ?? 'HH:mm'}
-              search={true}
-              closeOnSelect={true}
-              onChange={(value) => {
-                onColumnItemChange(index, 'timeFormat', value);
-              }}
-              fuzzySearch
-              placeholder="Select.."
+          <div className="grey-bg-section">
+            <ProgramaticallyHandleProperties
+              label="Show time"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="isTimeChecked"
+              props={column}
+              component={component}
+              paramType="properties"
+              paramMeta={{ type: 'toggle', displayName: 'Show time' }}
             />
-          </div>
-          <ProgramaticallyHandleProperties
-            label="Enable 24 hr time format"
-            currentState={currentState}
-            index={index}
-            darkMode={darkMode}
-            callbackFunction={onColumnItemChange}
-            property="enableTwentyFourHrFormat"
-            props={column}
-            component={component}
-            paramType="properties"
-            paramMeta={{ type: 'toggle', displayName: 'Enable 24 hr time format' }}
-          />
-          <div ata-cy={`input-display-time-zone`} className="field mb-2" onClick={(e) => e.stopPropagation()}>
-            <label data-cy={`label-display-time-zone`} className="form-label">
-              Display in timezone
-            </label>
-            <Select
-              options={timeZoneOptions}
-              value={column?.timeZoneDisplay ?? 'Etc/UTC'}
-              search={true}
-              closeOnSelect={true}
-              onChange={(value) => {
-                onColumnItemChange(index, 'timeZoneDisplay', value);
-              }}
-              fuzzySearch
-              placeholder="Select.."
-            />
+            {resolveReferences(column?.isTimeChecked, currentState) && (
+              <>
+                <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
+                  <label className="form-label">{t('widget.Table.timeFormat', 'Time Format')}</label>
+                  <Select
+                    options={[
+                      {
+                        label: 'HH:mm',
+                        value: 'HH:mm',
+                      },
+                    ]}
+                    value={column?.timeFormat ?? 'HH:mm'}
+                    search={true}
+                    closeOnSelect={true}
+                    onChange={(value) => {
+                      onColumnItemChange(index, 'timeFormat', value);
+                    }}
+                    fuzzySearch
+                    placeholder="Select.."
+                    useCustomStyles={true}
+                    styles={styles(darkMode, '100%')}
+                  />
+                </div>
+                <ProgramaticallyHandleProperties
+                  label="Enable 24 hr time format"
+                  currentState={currentState}
+                  index={index}
+                  darkMode={darkMode}
+                  callbackFunction={onColumnItemChange}
+                  property="enableTwentyFourHrFormat"
+                  props={column}
+                  component={component}
+                  paramType="properties"
+                  paramMeta={{ type: 'toggle', displayName: 'Enable 24 hr time format' }}
+                />
+                <div ata-cy={`input-display-time-zone`} className="field mb-2" onClick={(e) => e.stopPropagation()}>
+                  <label data-cy={`label-display-time-zone`} className="form-label">
+                    Display in timezone
+                  </label>
+                  <Select
+                    options={timeZoneOptions}
+                    value={column?.timeZoneDisplay ?? 'Etc/UTC'}
+                    search={true}
+                    closeOnSelect={true}
+                    onChange={(value) => {
+                      onColumnItemChange(index, 'timeZoneDisplay', value);
+                    }}
+                    fuzzySearch
+                    placeholder="Select.."
+                    useCustomStyles={true}
+                    styles={styles(darkMode, '100%')}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </>
       ),
@@ -178,74 +211,86 @@ export const DatePickerProperties = ({
             </>
           ) : (
             <>
-              <div data-cy={`input-parse-timezone`} className="field mb-2">
-                <label data-cy={`label-parse-timezone`} className="form-label">
-                  Parse in timezone
-                </label>
-                <Select
-                  options={[
-                    {
-                      label: 'DD/MM/YYYY',
-                      value: 'DD/MM/YYYY',
-                    },
-                    {
-                      label: 'MM/DD/YYYY',
-                      value: 'MM/DD/YYYY',
-                    },
-                    {
-                      label: 'YYYY/DD/MM',
-                      value: 'YYYY/DD/MM',
-                    },
-                    {
-                      label: 'YYYY/MM/DD',
-                      value: 'YYYY/MM/DD',
-                    },
-                  ]}
-                  value={column?.parseDateFormat ?? 'DD/MM/YYYY'}
-                  search={true}
-                  closeOnSelect={true}
-                  onChange={(value) => {
-                    onColumnItemChange(index, 'parseDateFormat', value);
-                  }}
-                  fuzzySearch
-                  placeholder="Select.."
-                />
-              </div>
-              <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
-                <label className="form-label">{t('widget.Table.timeFormat', 'Time Format')}</label>
-                <Select
-                  options={[
-                    {
-                      label: 'HH:mm',
-                      value: 'HH:mm',
-                    },
-                  ]}
-                  value={column?.parseTimeFormat ?? 'HH:mm'}
-                  search={true}
-                  closeOnSelect={true}
-                  onChange={(value) => {
-                    onColumnItemChange(index, 'parseTimeFormat', value);
-                  }}
-                  fuzzySearch
-                  placeholder="Select.."
-                />
-              </div>
-              <div data-cy={`input-parse-timezone`} className="field mb-2">
-                <label data-cy={`label-parse-timezone`} className="form-label">
-                  Parse in timezone
-                </label>
-                <Select
-                  options={timeZoneOptions}
-                  value={column?.timeZoneValue ?? 'Etc/UTC'}
-                  search={true}
-                  closeOnSelect={true}
-                  onChange={(value) => {
-                    onColumnItemChange(index, 'timeZoneValue', value);
-                  }}
-                  fuzzySearch
-                  placeholder="Select.."
-                />
-              </div>
+              {resolveReferences(column?.enableDateSelection, currentState) && (
+                <div data-cy={`input-parse-timezone`} className="field mb-2">
+                  <label data-cy={`label-parse-timezone`} className="form-label">
+                    Date parse format
+                  </label>
+                  <Select
+                    options={[
+                      {
+                        label: 'DD/MM/YYYY',
+                        value: 'DD/MM/YYYY',
+                      },
+                      {
+                        label: 'MM/DD/YYYY',
+                        value: 'MM/DD/YYYY',
+                      },
+                      {
+                        label: 'YYYY/DD/MM',
+                        value: 'YYYY/DD/MM',
+                      },
+                      {
+                        label: 'YYYY/MM/DD',
+                        value: 'YYYY/MM/DD',
+                      },
+                    ]}
+                    value={column?.parseDateFormat ?? 'DD/MM/YYYY'}
+                    search={true}
+                    closeOnSelect={true}
+                    onChange={(value) => {
+                      onColumnItemChange(index, 'parseDateFormat', value);
+                    }}
+                    fuzzySearch
+                    placeholder="Select.."
+                    useCustomStyles={true}
+                    styles={styles(darkMode, '100%')}
+                  />
+                </div>
+              )}
+              {resolveReferences(column?.isTimeChecked, currentState) && (
+                <>
+                  <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
+                    <label className="form-label">{t('widget.Table.timeFormat', 'Time Format')}</label>
+                    <Select
+                      options={[
+                        {
+                          label: 'HH:mm',
+                          value: 'HH:mm',
+                        },
+                      ]}
+                      value={column?.parseTimeFormat ?? 'HH:mm'}
+                      search={true}
+                      closeOnSelect={true}
+                      onChange={(value) => {
+                        onColumnItemChange(index, 'parseTimeFormat', value);
+                      }}
+                      fuzzySearch
+                      placeholder="Select.."
+                      useCustomStyles={true}
+                      styles={styles(darkMode, '100%')}
+                    />
+                  </div>
+                  <div data-cy={`input-parse-timezone`} className="field mb-2">
+                    <label data-cy={`label-parse-timezone`} className="form-label">
+                      Parse in timezone
+                    </label>
+                    <Select
+                      options={timeZoneOptions}
+                      value={column?.timeZoneValue ?? 'Etc/UTC'}
+                      search={true}
+                      closeOnSelect={true}
+                      onChange={(value) => {
+                        onColumnItemChange(index, 'timeZoneValue', value);
+                      }}
+                      fuzzySearch
+                      placeholder="Select.."
+                      useCustomStyles={true}
+                      styles={styles(darkMode, '100%')}
+                    />
+                  </div>
+                </>
+              )}
             </>
           )}
         </>
@@ -253,23 +298,5 @@ export const DatePickerProperties = ({
     }
   );
 
-  return (
-    <div>
-      <div className="field">
-        <ProgramaticallyHandleProperties
-          label="Show time"
-          currentState={currentState}
-          index={index}
-          darkMode={darkMode}
-          callbackFunction={onColumnItemChange}
-          property="isTimeChecked"
-          props={column}
-          component={component}
-          paramType="properties"
-          paramMeta={{ type: 'toggle', displayName: 'Show time' }}
-        />
-      </div>
-      <Accordion items={items} />
-    </div>
-  );
+  return <Accordion items={items} />;
 };

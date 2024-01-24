@@ -157,8 +157,6 @@ export const PropertiesTabElements = ({
           darkMode={darkMode}
           currentState={currentState}
           onColumnItemChange={onColumnItemChange}
-          getPopoverFieldSource={getPopoverFieldSource}
-          setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
           component={component}
         />
       )}
@@ -215,7 +213,7 @@ export const PropertiesTabElements = ({
           paramType="properties"
         />
       )}
-      {resolveReferences(column.isEditable, currentState) && (
+      {resolveReferences(column?.isEditable, currentState) && (
         <ValidationProperties
           column={column}
           index={index}
@@ -224,10 +222,8 @@ export const PropertiesTabElements = ({
           onColumnItemChange={onColumnItemChange}
           getPopoverFieldSource={getPopoverFieldSource}
           setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
-          component={component}
         />
       )}
-
       <ProgramaticallyHandleProperties
         label="Column visibility"
         currentState={currentState}

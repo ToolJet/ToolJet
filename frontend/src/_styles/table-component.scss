@@ -652,7 +652,7 @@
     align-self: stretch;
     background-color: var(--slate1) !important;
     border-radius: 0;
-    .optional-properties-when-editable-true{
+    .optional-properties-when-editable-true,.grey-bg-section{
       background-color: var(--slate3);
       padding: 12px 16px;
       border-radius: 6px;
@@ -669,6 +669,13 @@
     }
     .ToggleGroupItem{
       flex : 1 1 0;
+    }
+    .accordion{
+      .accordion-button,.accordion-body{
+        padding-left:  0 !important;
+        padding-right: 0 !important;
+      }
+      
     }
   }
   .popover-header{
