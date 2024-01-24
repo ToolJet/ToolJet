@@ -47,7 +47,8 @@ export const useDataQueriesStore = create(
             const currentQueries = useCurrentStateStore.getState().queries;
 
             data.data_queries.forEach(({ id, name, options }) => {
-              updatedQueries[name] = _.merge(currentQueries[name], { id: id });
+              updatedQueries[name] = _.merge(currentQueries[name], { id: id, isLoading: true, data: [], rawData: [] });
+
               if (options && options?.requestConfirmation && options?.runOnPageLoad) {
                 queryConfirmationList.push({ queryId: id, queryName: name });
               }

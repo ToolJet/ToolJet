@@ -368,7 +368,7 @@ export function createReferencesLookup(refState) {
   const buildMap = (data, path = '') => {
     const keys = Object.keys(data);
     keys.forEach((key, index) => {
-      const uniqueId = uniqueId();
+      const uniqueId = _.uniqueId();
       const value = data[key];
       const _type = Object.prototype.toString.call(value).slice(8, -1);
       const prevType = map.get(path)?.type;
