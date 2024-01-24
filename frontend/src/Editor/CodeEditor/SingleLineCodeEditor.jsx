@@ -155,7 +155,9 @@ const EditorInput = ({
     }
 
     if (!error) {
-      onBlurUpdate(currentValue);
+      const _value = fxActive ? `{{${currentValue}}}` : currentValue;
+
+      onBlurUpdate(_value);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentValue, error]);
