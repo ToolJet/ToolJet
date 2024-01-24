@@ -175,7 +175,7 @@ function resolveCode(code, state, customObjects = {}, withError = true, reserved
   return result;
 }
 
-export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
+export const resolveReferences = (query, validationSchema, customResolvers = {}, fxActive = false) => {
   if (!query) return [false, null, null];
 
   let resolvedValue = query;
@@ -192,28 +192,29 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
     return [true, error, resolvedValue];
   }
 
-  if (validationSchema && !query?.includes('{{') && !query?.includes('}}')) {
+  if (validationSchema && !fxActive && !query?.includes('{{') && !query?.includes('}}')) {
     const [valid, errors, newValue] = validateComponentProperty(query, validationSchema);
     return [valid, errors, newValue, resolvedValue];
   }
 
-  const value = query?.replace(/{{|}}/g, '').trim();
+  const value = !fxActive ? query?.replace(/{{|}}/g, '').trim() : query;
 
   const { lookupTable } = useResolveStore.getState();
 
-  const { toResolveReference, jsExpression } = inferJSExpAndReferences(value, lookupTable.hints);
-
-  if (toResolveReference && lookupTable.hints.has(toResolveReference)) {
+  const { toResolveReference, jsExpression, jsExpMatch } = inferJSExpAndReferences(value, lookupTable.hints);
+  //{{JSON.stringify(queries)}}
+  if (!jsExpMatch && toResolveReference && lookupTable.hints.has(toResolveReference)) {
     const idToLookUp = lookupTable.hints.get(toResolveReference);
     resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);
 
     if (jsExpression) {
       let jscode = value.replace(toResolveReference, resolvedValue);
       jscode = value.replace(toResolveReference, `'${resolvedValue}'`);
-      resolvedValue = resolveCode(jscode, currentState);
+
+      resolvedValue = resolveCode(jscode, currentState, customResolvers);
     }
   } else {
-    const [resolvedCode, errorRef] = resolveCode(value, currentState, customResolvers);
+    const [resolvedCode, errorRef] = resolveCode(value, currentState, customResolvers, true, [], true);
 
     resolvedValue = resolvedCode;
     error = errorRef || null;
@@ -243,35 +244,73 @@ export const paramValidation = (expectedType, value) => {
   return type === expectedType;
 };
 
+// const inferJSExpAndReferences = (code, hintsMap) => {
+//   if (!code) return { toResolveReference: null, jsExpression: null };
+
+//   const references = code?.split('.');
+
+//   let prevReference;
+
+//   let toResolveReference;
+//   let jsExpression;
+
+//   for (let i = 0; i < references?.length; i++) {
+//     const currentRef = references[i];
+
+//     const ref = prevReference ? prevReference + '.' + currentRef : currentRef;
+
+//     const existsInMap = hintsMap.has(ref);
+
+//     if (!existsInMap) {
+//       break;
+//     }
+
+//     prevReference = ref;
+//     toResolveReference = ref;
+//     jsExpression = code.substring(ref.length);
+//   }
+
+//   return {
+//     toResolveReference,
+//     jsExpression,
+//   };
+// };
+
 const inferJSExpAndReferences = (code, hintsMap) => {
   if (!code) return { toResolveReference: null, jsExpression: null };
 
-  const references = code?.split('.');
+  //check starts with JS expression like JSON.parse or JSON.stringify !
+  const jsExpRegex = /(JSON\..+?\(.+?\))/g;
 
-  let prevReference;
+  const jsExpMatch = code.match(jsExpRegex)?.[0];
 
-  let toResolveReference;
-  let jsExpression;
+  if (jsExpMatch) {
+    return { toResolveReference: null, jsExpression: null, jsExpMatch };
+  }
 
-  for (let i = 0; i < references?.length; i++) {
-    const currentRef = references[i];
+  // Split the code into segments using '.' as a delimiter
+  const segments = code.split('.');
+  let referenceChain = '';
+  let jsExpression = '';
 
-    const ref = prevReference ? prevReference + '.' + currentRef : currentRef;
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
+    const potentialReference = referenceChain ? referenceChain + '.' + segment : segment;
 
-    const existsInMap = hintsMap.has(ref);
-
-    if (!existsInMap) {
+    // Check if the potential reference exists in hintsMap
+    if (hintsMap.has(potentialReference)) {
+      // If it does, update the referenceChain
+      referenceChain = potentialReference;
+    } else {
+      // If it doesn't, treat the rest as a JS expression
+      jsExpression = segments.slice(i).join('.');
       break;
     }
-
-    prevReference = ref;
-    toResolveReference = ref;
-    jsExpression = code.substring(ref.length);
   }
 
   return {
-    toResolveReference,
-    jsExpression,
+    toResolveReference: referenceChain || null,
+    jsExpression: jsExpression || null,
   };
 };
 

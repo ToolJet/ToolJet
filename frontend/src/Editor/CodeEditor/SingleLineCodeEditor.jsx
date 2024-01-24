@@ -17,20 +17,25 @@ import { getAutocompletion } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
 
-const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...restProps }) => {
+const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxActive, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
   const { validation = {} } = fieldMeta;
 
   const [isFocused, setIsFocused] = useState(false);
-  const [currentValue, setCurrentValue] = useState(() => initialValue);
+  const [currentValue, setCurrentValue] = useState('');
   const [errorStateActive, setErrorStateActive] = useState(false);
 
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
 
   //! Re render the component when the componentName changes as the initialValue is not updated
-  //! as there are no mutations or state changes in the parent component like the old code hinter
+
   useEffect(() => {
+    if (fxActive && initialValue?.startsWith('{{')) {
+      const _value = initialValue?.replace(/{{/g, '').replace(/}}/g, '');
+      return setCurrentValue(_value);
+    }
+
     setCurrentValue(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [componentName]);
@@ -65,6 +70,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
         componentId={restProps?.componentId ?? null}
+        fxActive={fxActive}
       />
     );
   };
@@ -85,6 +91,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
             renderPreview={renderPreview}
             portalProps={portalProps}
             componentName={componentName}
+            fxActive={fxActive}
             {...restProps}
           />
 
@@ -110,6 +117,7 @@ const EditorInput = ({
   renderPreview,
   portalProps,
   ignoreValidation,
+  fxActive,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let before = context.matchBefore(/\w+/);
@@ -118,12 +126,12 @@ const EditorInput = ({
       return null;
     }
 
-    let completions = getAutocompletion(context.state.doc.toString(), validationType, hints);
+    let completions = getAutocompletion(context.state.doc.toString(), validationType, hints, fxActive);
 
     return {
       from: context.pos,
       options: [...completions],
-      validFor: /^\{\{.*\}\}$/,
+      validFor: !fxActive ? /^\{\{.*\}\}$/ : '',
     };
   }
 

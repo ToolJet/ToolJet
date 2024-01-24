@@ -9,7 +9,14 @@ import { Alert } from '@/_ui/Alert/Alert';
 import { isEmpty } from 'lodash';
 import { handleCircularStructureToJSON, hasCircularDependency } from '@/_helpers/utils';
 
-export const PreviewBox = ({ currentValue, isFocused, validationSchema, setErrorStateActive, componentId }) => {
+export const PreviewBox = ({
+  currentValue,
+  isFocused,
+  validationSchema,
+  setErrorStateActive,
+  componentId,
+  fxActive,
+}) => {
   // Todo: (isWorkspaceVariable) Remove this when workspace variables are deprecated
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
@@ -74,7 +81,12 @@ export const PreviewBox = ({ currentValue, isFocused, validationSchema, setError
   }, [error]);
 
   useEffect(() => {
-    const [valid, error, newValue, resolvedValue] = resolveReferences(currentValue, validationSchema, customVariables);
+    const [valid, error, newValue, resolvedValue] = resolveReferences(
+      currentValue,
+      validationSchema,
+      customVariables,
+      fxActive
+    );
 
     if (!validationSchema || isEmpty(validationSchema)) {
       return setResolvedValue(newValue);

@@ -1,7 +1,7 @@
-export const getAutocompletion = (input, fieldType, hints) => {
-  if (!input.startsWith('{{') || !input.endsWith('}}')) return [];
+export const getAutocompletion = (input, fieldType, hints, fxActive = false) => {
+  if (!fxActive && (!input.startsWith('{{') || !input.endsWith('}}'))) return [];
 
-  const actualInput = input.replace(/{{|}}/g, '');
+  const actualInput = !fxActive ? input.replace(/{{|}}/g, '') : input;
 
   let JSLangHints = [];
 
@@ -45,11 +45,10 @@ export const getAutocompletion = (input, fieldType, hints) => {
 
   const autoSuggestionList = appHintsFilteredByDepth.filter((suggestion) => {
     if (actualInput.length === 0) return true;
-
     return suggestion.hint.includes(actualInput);
   });
 
-  const suggestions = generateHints([...jsHints, ...autoSuggestionList]);
+  const suggestions = generateHints([...jsHints, ...autoSuggestionList], fxActive);
   return orderSuggestions(suggestions, fieldType).map((cm, index) => ({ ...cm, boost: 100 - index }));
 };
 
@@ -63,7 +62,7 @@ function orderSuggestions(suggestions, validationType) {
   return [...matchingSuggestions, ...otherSuggestions];
 }
 
-export const generateHints = (hints) => {
+export const generateHints = (hints, fxActive = false) => {
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
@@ -80,7 +79,11 @@ export const generateHints = (hints) => {
 
         const word = doc.sliceString(start, end);
 
-        const wordStart = start + word.indexOf('{{');
+        let wordStart = start;
+
+        if (!fxActive) {
+          wordStart = start + word.indexOf('{{');
+        }
 
         const wordEnd = wordStart + word.length;
 
@@ -110,7 +113,14 @@ function filterHintsByDepth(input, hints) {
   const inputDepth = input.split('.').length;
   const filteredHints = hints.filter((cm) => {
     const hintParts = cm.hint.split('.');
-    return cm.hint.startsWith(input) && hintParts.length === inputDepth + 1;
+
+    let shouldInclude = cm.hint.startsWith(input) && hintParts.length === inputDepth + 1;
+
+    if (input.endsWith('.')) {
+      shouldInclude = cm.hint.startsWith(input) && hintParts.length === inputDepth;
+    }
+
+    return shouldInclude;
   });
   return filteredHints;
 }
