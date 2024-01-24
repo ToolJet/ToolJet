@@ -128,6 +128,24 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background: transparent;
 }
 
+.react-datepicker-popper,
+.tj-datepicker-widget {
+    background-color: #fff;
+}
+
+.react-datepicker__month-container {
+    float: inherit;
+}
+
+.dark-theme {
+
+    .react-datepicker-popper,
+    .tj-datepicker-widget {
+        background-color: #232e3c;
+    }
+}
+
+
 .react-datepicker-popper[data-placement^=bottom] {
     padding-top: 0px !important;
 }

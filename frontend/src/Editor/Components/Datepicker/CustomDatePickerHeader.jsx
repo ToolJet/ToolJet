@@ -33,7 +33,8 @@ const CustomDatePickerHeader = ({
     <>
       <div
         style={{
-          margin: 10,
+          marginBottom: 10,
+          marginTop: 10,
           display: 'flex',
           justifyContent: 'center',
           height: '44px',
