@@ -366,7 +366,7 @@ Cypress.Commands.add("getPosition", (componentName) => {
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
   cy.apiLogin();
-  cy.intercept("GET", "http://localhost:3000/api/library_apps").as(
+  cy.intercept("GET", "http://localhost:3000/api/library_apps/").as(
     "library_apps"
   );
   cy.visit("/my-workspace");
@@ -393,4 +393,16 @@ Cypress.Commands.add("verifyLabel", (labelName) => {
     "have.text",
     labelName
   );
+});
+
+Cypress.Commands.add("backToApps", () => {
+  cy.get(commonSelectors.editorPageLogo).click();
+  cy.get(commonSelectors.backToAppOption).click();
+});
+
+Cypress.Commands.add("removeAssignedApps", () => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `DELETE FROM app_group_permissions;`,
+  });
 });

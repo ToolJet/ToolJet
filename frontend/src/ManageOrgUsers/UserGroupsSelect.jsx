@@ -155,7 +155,7 @@ export function UserGroupsSelect(props) {
       {...props}
       styles={selectStyles}
       placeholder="Select groups to add for this user"
-      noOptionsMessage={'No groups found'}
+      noOptionsMessage={() => 'No groups found'}
     />
   );
 }
