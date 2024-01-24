@@ -164,6 +164,7 @@ function SettingsPage(props) {
                           value={fullName}
                           onChange={(event) => setFullName(event.target.value)}
                           autoComplete="off"
+                          data-cy="name-input-field"
                         />
                       </div>
                     </div>

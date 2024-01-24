@@ -195,7 +195,7 @@ const UsersTable = ({
                         </td>
                       )}
                       {!isLoadingAllUsers ? (
-                        <td className="user-actions-button">
+                        <td className="user-actions-button" data-cy="user-actions-button">
                           <UsersActionMenu
                             archivingUser={archivingUser}
                             user={user}
@@ -281,7 +281,7 @@ const GroupChipTD = ({ groups = [] }) => {
   };
 
   const renderGroupChip = (group, index) => (
-    <span className="group-chip" key={index}>
+    <span className="group-chip" key={index} data-cy="group-chip">
       {humanizeifDefaultGroupName(group)}
     </span>
   );

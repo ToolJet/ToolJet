@@ -66,6 +66,6 @@ export const groupsSelector = {
     return `[data-cy="${cyParamName(groupname)}-title"]`;
   },
   userRow: (email) => {
-    return `[data-cy="${cyParamName(email)}-user-row"]`
-  }
+    return `[data-cy="${cyParamName(email)}-user-row"]`;
+  },
 };
