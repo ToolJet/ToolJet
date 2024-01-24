@@ -52,3 +52,38 @@
   border-radius: 6px;
   width: 50px;
 }
+
+.input-cell-parent {
+
+  position: relative !important;
+
+  .null-tag {
+    background-color: var(--slate3) !important;
+    color: var(--slate11) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border-radius: 6px;
+    width: 50px;
+  }
+
+  .null-tag-dark {
+    background-color: var(--slate3) !important;
+    color: white !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border-radius: 6px;
+    width: 50px;
+    position: absolute;
+    top: 6px;
+    left: 7px !important;
+  }
+
+}

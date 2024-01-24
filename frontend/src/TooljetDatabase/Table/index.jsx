@@ -6,6 +6,7 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { toast } from 'react-hot-toast';
 import { TablePopover } from './ActionsPopover';
+import { CellEditMenu } from '../Menu/CellEditMenu';
 import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import Skeleton from 'react-loading-skeleton';
@@ -54,7 +55,11 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     cellIndex: null,
     editable: false,
   });
+
   const [cellVal, setCellVal] = useState('');
+  const [editPopover, setEditPopover] = useState(false);
+  const [defaultValue, setDefaultValue] = useState(false);
+  const [nullValue, setNullValue] = useState(false);
 
   const prevSelectedTableRef = useRef({});
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -192,7 +197,9 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   const handleKeyDown = (e) => {
     if (cellClick.rowIndex !== null) {
       if (e.key === 'ArrowRight') {
-        const cIndex = rows[cellClick.rowIndex].cells[cellClick.cellIndex + 1].value;
+        const cellIndexValue =
+          cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
+        const cIndex = rows[cellClick.rowIndex].cells[cellIndexValue].value;
         const newIndex =
           cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
         setCellClick((prevState) => ({
@@ -292,13 +299,17 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
   };
 
-  const handleToggleCellEdit = async (cellVal, rowId, index) => {
+  const handleToggleCellEdit = async (cellValue, rowId, index, dataType) => {
     const cellKey = headerGroups[0].headers[index].id;
     const query = `id=eq.${rowId}&order=id`;
-    const cellData = { [cellKey]: !cellVal };
+    const cellData = dataType === 'boolean' ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
+      setEditPopover(false);
+      setCellVal(cellValue);
+      //setNullValue(null);
+      setDefaultValue(false);
       return;
     }
 
@@ -318,7 +329,25 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           setSelectedTableData(data);
         }
       });
+    setEditPopover(false);
+    setDefaultValue(false);
+    //setNullValue(null);
     toast.success(`cell edited successfully`);
+  };
+
+  const handleInputKeyDown = (event, cellValue, rowId, index, dataType) => {
+    if (event.key === 'Enter') {
+      if (cellValue != cellVal) {
+        handleToggleCellEdit(cellValue, rowId, index, dataType);
+        document.getElementById('edit-input-blur').blur();
+      } else {
+        setEditPopover(false);
+        document.getElementById('edit-input-blur').blur();
+      }
+    } else if (event.key === 'Escape') {
+      setEditPopover(false);
+      document.getElementById('edit-input-blur').blur();
+    }
   };
 
   useEffect(() => {
@@ -386,6 +415,10 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
         }));
       }
     }
+  };
+
+  const closeEditPopover = () => {
+    setEditPopover(false);
   };
 
   function showTooltipForId(column) {
@@ -616,7 +649,9 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                             }`}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
-                            //onKeyDown={(e) => handleKeyDown(e, cell.value)}
+                            onKeyDown={(e) =>
+                              handleInputKeyDown(e, cell.value, row.values.id, index, cell.column?.dataType)
+                            }
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
                             {/* {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')} */}
@@ -627,32 +662,83 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                             cellClick.cellIndex !== 1 &&
                             cellClick.rowIndex === rIndex &&
                             cellClick.cellIndex === index ? (
-                              <input
-                                className="form-control"
-                                value={cellVal}
-                                onChange={(e) => setCellVal(e.target.value)}
-                              />
+                              <CellEditMenu
+                                show={editPopover}
+                                close={closeEditPopover}
+                                columnDetails={headerGroups[0].headers[index]}
+                                saveFunction={() =>
+                                  handleToggleCellEdit(cell.value, row.values.id, index, cell.column?.dataType)
+                                }
+                                setCellValue={setCellVal}
+                                cellValue={cellVal}
+                                previousCellValue={cell.value}
+                                setDefaultValue={setDefaultValue}
+                                defaultValue={defaultValue}
+                                setNullValue={setNullValue}
+                                nullValue={nullValue}
+                              >
+                                <div className="input-cell-parent">
+                                  {cell.column?.dataType === 'boolean' ? (
+                                    <div className="row" style={{ width: '33px', marginLeft: '0px' }}>
+                                      <div className="col-1">
+                                        <label className={`form-switch`}>
+                                          <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            checked={cell.value}
+                                            onChange={() =>
+                                              handleToggleCellEdit(
+                                                cell.value,
+                                                row.values.id,
+                                                index,
+                                                cell.column?.dataType
+                                              )
+                                            }
+                                          />
+                                        </label>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <input
+                                      className="form-control"
+                                      id="edit-input-blur"
+                                      value={cellVal}
+                                      onChange={(e) => setCellVal(e.target.value)}
+                                      onFocus={() => setEditPopover(true)}
+                                      disabled={defaultValue === true || nullValue === true ? true : false}
+                                    />
+                                  )}
+                                  {cellVal === null && !editPopover ? (
+                                    <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
+                                  ) : null}
+                                </div>
+                              </CellEditMenu>
                             ) : (
                               <>
                                 {cell.value === null ? (
                                   <span className="cell-text-null">Null</span>
                                 ) : cell.column.dataType === 'boolean' ? (
-                                  <div className="row">
+                                  <div className="row" style={{ width: '33px' }}>
                                     <div className="col-1">
                                       <label className={`form-switch`}>
                                         <input
                                           className="form-check-input"
                                           type="checkbox"
                                           checked={cell.value}
-                                          onChange={() => handleToggleCellEdit(cell.value, row.values.id, index)}
+                                          onChange={() =>
+                                            handleToggleCellEdit(
+                                              cell.value,
+                                              row.values.id,
+                                              index,
+                                              cell.column?.dataType
+                                            )
+                                          }
                                         />
                                       </label>
                                     </div>
                                   </div>
                                 ) : (
-                                  <span className="cell-text">
-                                    {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
-                                  </span>
+                                  <>{isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}</>
                                 )}
                               </>
                             )}
