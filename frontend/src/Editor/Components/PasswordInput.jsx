@@ -332,7 +332,6 @@ export const PasswordInput = function PasswordInput({
           }}
           onFocus={(e) => {
             setIsFocused(true);
-
             e.stopPropagation();
             fireEvent('onFocus');
           }}
