@@ -41,11 +41,19 @@ export const manageUsersElements = () => {
       cy.get(
         usersSelector.userStatus(usersText.adminUserName)
       ).verifyVisibleElement("have.text", usersText.activeStatus);
-      cy.get("td button").verifyVisibleElement(
-        "have.text",
-        usersText.adminUserState
-      );
+      cy.wait(1000);
+      cy.get('[data-cy="user-actions-button"]').click();
     });
+
+  cy.get('[data-cy="edit-user-details-button"]').verifyVisibleElement(
+    "have.text",
+    "Edit user details"
+  );
+  cy.get('[data-cy="archive-button"]').verifyVisibleElement(
+    "have.text",
+    "Archive user"
+  );
+
   cy.get(usersSelector.userFilterInput).should("be.visible");
 
   cy.get(usersSelector.buttonAddUsers)
@@ -67,7 +75,7 @@ export const manageUsersElements = () => {
 
   cy.get(commonSelectors.labelFullNameInput).verifyVisibleElement(
     "have.text",
-    commonText.labelFullNameInput
+    "Name"
   );
   cy.get(commonSelectors.inputFieldFullName).should("be.visible");
   cy.get(commonSelectors.labelEmailInput).verifyVisibleElement(
@@ -81,10 +89,8 @@ export const manageUsersElements = () => {
     "have.text",
     commonText.groupInputFieldLabel
   );
-  cy.get(".dropdown-heading-value > .gray").verifyVisibleElement(
-    "have.text",
-    "Select groups to add for this user"
-  );
+  cy.wait(1000);
+  cy.get(".css-1c6ox7i-Input").should("be.visible");
   cy.get(commonSelectors.cancelButton).verifyVisibleElement(
     "have.text",
     usersText.cancelButton
@@ -264,15 +270,15 @@ export const fillUserInviteForm = (firstName, email) => {
 export const selectUserGroup = (groupName) => {
   cy.wait(1500);
   cy.get("body").then(($body) => {
-    if (!$body.find(".search > input").length > 0) {
-      cy.get(".dropdown-heading-value > .gray").click();
-      cy.clearAndType(".search > input", groupName);
+    if (!$body.find(".css-1c6ox7i-Input").length > 0) {
+      cy.get(".css-1c6ox7i-Input").click();
+      cy.get(".css-1c6ox7i-Input>").clear().type(groupName);
       cy.wait(500);
-      cy.get("li > .select-item > .item-renderer").last().click();
+      cy.get(".css-1pirhtr-menu>>>:input:eq(0)").click();
     } else {
-      cy.clearAndType(".search > input", groupName);
+      cy.get(".css-1c6ox7i-Input>").clear().type(groupName);
       cy.wait(500);
-      cy.get("li > .select-item > .item-renderer").last().click();
+      cy.get(".css-1pirhtr-menu>>>:input:eq(0)").click();
     }
   });
 };
