@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import EmptyIllustration from '@assets/images/no-apps.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useNavigate } from 'react-router-dom';
+import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 
 export const BlankPage = function BlankPage({
   readAndImport,
@@ -26,6 +27,24 @@ export const BlankPage = function BlankPage({
   ];
 
   const appCreationDisabled = !canCreateApp();
+
+  const EmptyState = () => {
+    return (
+      <div
+        style={{
+          transform: 'translateY(80%)',
+        }}
+        className="d-flex justify-content-center align-items-center flex-column mt-3"
+      >
+        <div className="mb-4">
+          <EmptyFoldersIllustration />
+        </div>
+        <div className="tj-text-md text-secondary" data-cy="empty-ds-page-text">
+          No datasources added
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -143,6 +162,12 @@ export const BlankPage = function BlankPage({
             </div>
           </div>
         </div>
+      </div>
+      <div className="justify-content-center align-items-center flex-column mt-3 blank-page-wrapper-mobile">
+        <div className="mb-4">
+          <EmptyFoldersIllustration />
+        </div>
+        <div className="tj-text-md text-secondary">No apps created yet</div>
       </div>
     </div>
   );
