@@ -41,9 +41,10 @@ import Slider from './Elements/Slider';
 import { Input } from './Elements/Input';
 import { Icon } from './Elements/Icon';
 import { Visibility } from './Elements/Visibility';
+import { NumberInput } from './Elements/NumberInput';
 import { validateProperty } from '../component-properties-validation';
 
-const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
+const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'TextComponentTextInput'];
 
 const AllElements = {
   Color,
@@ -60,6 +61,7 @@ const AllElements = {
   Checkbox,
   Icon,
   Visibility,
+  NumberInput,
 };
 
 export function CodeHinter({
@@ -397,31 +399,33 @@ export function CodeHinter({
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
-  const fxBtn = (
+  const fxBtn = () => (
     <div className="col-auto pt-0 fx-common">
-      {paramLabel !== 'Type' && (
-        <FxButton
-          active={codeShow}
-          onPress={() => {
-            if (codeShow) {
-              setForceCodeBox(false);
-              onFxPress(false);
-            } else {
-              setForceCodeBox(true);
-              onFxPress(true);
-            }
-          }}
-          dataCy={cyLabel}
-        />
-      )}
+      {paramLabel !== 'Type' &&
+        paramLabel !== ' ' &&
+        paramLabel !== 'Padding' && ( //add some key if these extends
+          <FxButton
+            active={codeShow}
+            onPress={() => {
+              if (codeShow) {
+                setForceCodeBox(false);
+                onFxPress(false);
+              } else {
+                setForceCodeBox(true);
+                onFxPress(true);
+              }
+            }}
+            dataCy={cyLabel}
+          />
+        )}
     </div>
   );
 
   const _renderFxBtn = () => {
     if (inspectorTab === 'styles') {
-      return isPropertyHovered || codeShow ? fxBtn : null;
+      return isPropertyHovered || codeShow ? fxBtn() : null;
     } else {
-      return fxBtn;
+      return fxBtn();
     }
   };
 
@@ -441,12 +445,17 @@ export function CodeHinter({
   return (
     <div
       ref={wrapperRef}
-      className={cx({ 'codeShow-active': codeShow })}
+      className={cx({ 'codeShow-active': codeShow, 'd-flex': paramLabel == 'Tooltip' })}
       onMouseEnter={() => setPropertyHovered(true)}
       onMouseLeave={() => setPropertyHovered(false)}
     >
-      <div className={cx('d-flex align-items-center justify-content-between', { 'w-full': fieldMeta?.fullWidth })}>
-        {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
+      <div
+        className={cx('d-flex justify-content-between', { 'w-full': fieldMeta?.fullWidth })}
+        style={{
+          marginRight: paramLabel == 'Tooltip' && '40px',
+          alignItems: paramLabel == 'Tooltip' ? 'flex-start' : 'center',
+        }}
+      >
         {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
@@ -499,7 +508,7 @@ export function CodeHinter({
       </div>
       <div
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''} custom-row`}
-        style={{ width: width, display: codeShow ? 'flex' : 'none' }}
+        style={{ width: paramLabel == 'Tooltip' ? '100%' : width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`}>
           <div className="d-flex">
@@ -568,11 +577,6 @@ export function CodeHinter({
       </div>
     </div>
   );
-}
-
-// eslint-disable-next-line no-unused-vars
-function CodeHinterInputField() {
-  return <></>;
 }
 
 const PopupIcon = ({ callback, icon, tip, transformation = false }) => {

@@ -1107,9 +1107,10 @@ export const widgets = [
           height: 30,
           width: 25,
         },
-        properties: ['placeholder'],
+        properties: ['placeholder', 'label'],
         defaultValue: {
           placeholder: 'Enter your name',
+          label: '',
         },
       },
       {
@@ -1120,11 +1121,10 @@ export const widgets = [
           height: 30,
           width: 25,
         },
-        properties: ['value'],
-        styles: ['borderColor'],
+        properties: ['value', 'label'],
         defaultValue: {
           value: 24,
-          borderColor: '#dadcde',
+          label: '',
         },
       },
       {
@@ -1314,15 +1314,15 @@ export const widgets = [
         section: 'additionalActions',
       },
       tooltip: {
-        type: 'input',
+        type: 'code',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
+        placeholder: 'Enter tooltip text',
       },
     },
     validation: {
-      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
-      regex: { type: 'code', displayName: 'Regex' },
+      regex: { type: 'code', displayName: 'Regex', placeholder: '^[a-zA-Z0-9_ -]{3,16}$' },
       minLength: { type: 'code', displayName: 'Min length', placeholder: 'Enter min length' },
       maxLength: { type: 'code', displayName: 'Max length', placeholder: 'Enter max length' },
       customRule: {
@@ -1330,6 +1330,7 @@ export const widgets = [
         displayName: 'Custom validation',
         placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
       },
+      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -1515,7 +1516,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        value: { value: '' },
+        value: { value: 'Hello World👋' },
         label: { value: 'Label' },
         placeholder: { value: 'Enter your input' },
         visibility: { value: '{{true}}' },
@@ -1602,11 +1603,11 @@ export const widgets = [
         section: 'additionalActions',
       },
       tooltip: {
-        type: 'input',
+        type: 'code',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
-        staticText: '',
+        placeholder: 'Enter tooltip text',
       },
     },
     events: {
@@ -1732,7 +1733,7 @@ export const widgets = [
       {
         handle: 'setText',
         displayName: 'Set text',
-        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
+        params: [{ handle: 'text', displayName: 'text', defaultValue: '100' }],
       },
       {
         handle: 'clear',
@@ -1770,8 +1771,7 @@ export const widgets = [
       isLoading: false,
     },
     validation: {
-      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
-      regex: { type: 'code', displayName: 'Regex' },
+      regex: { type: 'code', displayName: 'Regex', placeholder: '^d+$' },
       minValue: { type: 'code', displayName: 'Min value', placeholder: 'Enter min value' },
       maxValue: { type: 'code', displayName: 'Max value', placeholder: 'Enter max value' },
       customRule: {
@@ -1779,6 +1779,7 @@ export const widgets = [
         displayName: 'Custom validation',
         placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
       },
+      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
     definition: {
       others: {
@@ -1850,6 +1851,15 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
       loadingState: {
         type: 'toggle',
         displayName: 'Loading state',
@@ -1869,17 +1879,26 @@ export const widgets = [
         section: 'additionalActions',
       },
       tooltip: {
-        type: 'input',
+        type: 'code',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
+        placeholder: 'Enter tooltip text',
       },
     },
     validation: {
-      regex: { type: 'code', displayName: 'Regex' },
-      minLength: { type: 'code', displayName: 'Min length' },
-      maxLength: { type: 'code', displayName: 'Max length' },
-      customRule: { type: 'code', displayName: 'Custom validation' },
+      regex: {
+        type: 'code',
+        displayName: 'Regex',
+        placeholder: '^(?=.*[a-z])(?=.*[A-Z])(?=.*d)[a-zA-Zd]{8,}$',
+      },
+      minLength: { type: 'code', displayName: 'Min length', placeholder: 'Enter min length' },
+      maxLength: { type: 'code', displayName: 'Max length', placeholder: 'Enter max length' },
+      customRule: {
+        type: 'code',
+        displayName: 'Custom validation',
+        placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
+      },
       mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
     events: {
@@ -2053,8 +2072,9 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         loadingState: { value: '{{false}}' },
-        toolltip: { value: '' },
+        tooltip: { value: '' },
         label: { value: 'Label' },
+        value: { value: 'Hello world' },
       },
       validation: {
         mandatory: { value: false },
@@ -2069,7 +2089,7 @@ export const widgets = [
         backgroundColor: { value: '#fff' },
         borderColor: { value: '#D7DBDF' },
         errTextColor: { value: '#DB4324' },
-        textColor: { value: '#232e3c' },
+        textColor: { value: '#11181C' },
         iconColor: { value: '#C1C8CD' },
         direction: { value: 'left' },
         width: { value: '33' },
@@ -2687,7 +2707,7 @@ export const widgets = [
       },
       text: {
         type: 'code',
-        displayName: 'Text',
+        displayName: 'TextComponentTextInput', // Keeping this name unique so that we can filter it in Codehinter
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
@@ -2716,11 +2736,12 @@ export const widgets = [
         },
         section: 'additionalActions',
       },
-      toolltip: {
+      tooltip: {
         type: 'code',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
+        placeholder: 'Enter tooltip text',
       },
     },
     defaultSize: {
@@ -2733,10 +2754,10 @@ export const widgets = [
     },
     styles: {
       textSize: {
-        type: 'input',
+        type: 'numberInput',
         displayName: 'Size',
         validation: {
-          schema: { type: 'number' },
+          schema: [{ type: 'string' }, { type: 'number' }],
         },
         accordian: 'Text',
       },
@@ -2779,8 +2800,8 @@ export const widgets = [
         ],
         accordian: 'Text',
       },
-      lineHeight: { type: 'input', displayName: 'Line Height', accordian: 'Text' },
-      textIndent: { type: 'input', displayName: 'Text Indent', accordian: 'Text' },
+      lineHeight: { type: 'numberInput', displayName: 'Line Height', accordian: 'Text' },
+      textIndent: { type: 'numberInput', displayName: 'Text Indent', accordian: 'Text' },
       textAlign: {
         type: 'alignButtons',
         displayName: 'Alignment',
@@ -2826,8 +2847,8 @@ export const widgets = [
         ],
         accordian: 'Text',
       },
-      letterSpacing: { type: 'input', displayName: 'Letter Spacing', accordian: 'Text' },
-      wordSpacing: { type: 'input', displayName: 'Word Spacing', accordian: 'Text' },
+      letterSpacing: { type: 'numberInput', displayName: 'Letter Spacing', accordian: 'Text' },
+      wordSpacing: { type: 'numberInput', displayName: 'Word Spacing', accordian: 'Text' },
       fontVariant: {
         type: 'select',
         displayName: 'Font variant',
@@ -2842,7 +2863,7 @@ export const widgets = [
 
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background',
         validation: {
           schema: { type: 'string' },
         },
@@ -2857,9 +2878,9 @@ export const widgets = [
         accordian: 'Container',
       },
       borderRadius: {
-        type: 'input',
+        type: 'numberInput',
         displayName: 'Border radius',
-        validation: { schema: { type: 'number' } },
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'Container',
       },
       boxShadow: {
@@ -2873,8 +2894,8 @@ export const widgets = [
         displayName: 'Padding',
         validation: { schema: { type: 'string' } },
         options: [
-          { displayName: 'None', value: 'none' },
           { displayName: 'Default', value: 'default' },
+          { displayName: 'None', value: 'none' },
         ],
         accordian: 'Container',
       },
@@ -2901,14 +2922,14 @@ export const widgets = [
       },
       properties: {
         textFormat: { value: 'plainText' },
-        text: { value: 'Hello, there!' },
+        text: { value: 'Hello World👋' },
         loadingState: { value: `{{false}}` },
         disabledState: { value: '{{false}}' },
         visibility: { value: '{{true}}' },
       },
       events: [],
       styles: {
-        backgroundColor: { value: '#EDEFF5' },
+        backgroundColor: { value: '#edeff5' },
         textColor: { value: '#000000' },
         textSize: { value: 14 },
         textAlign: { value: 'left' },
@@ -2924,7 +2945,7 @@ export const widgets = [
         verticalAlignment: { value: 'top' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
-        borderColor: { value: '#F2F2F5' },
+        borderColor: { value: '#f2f2f5' },
         borderRadius: { value: 0 },
         isScrollRequired: { value: 'enabled' },
       },
@@ -6076,24 +6097,24 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      columnData: { type: 'code', displayName: 'Column Data' },
-      cardData: { type: 'code', displayName: 'Card Data' },
+      columnData: { type: 'code', displayName: 'Column data' },
+      cardData: { type: 'code', displayName: 'Card data' },
       cardWidth: {
         type: 'code',
-        displayName: 'Card Width',
+        displayName: 'Card width',
         validation: {
           schema: { type: 'number' },
         },
       },
       cardHeight: {
         type: 'code',
-        displayName: 'Card Height',
+        displayName: 'Card height',
         validation: {
           schema: { type: 'number' },
         },
       },
-      enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
-      showDeleteButton: { type: 'toggle', displayName: 'Show Delete Button' },
+      enableAddCard: { type: 'toggle', displayName: 'Enable add card' },
+      showDeleteButton: { type: 'toggle', displayName: 'Show delete button' },
     },
     events: {
       onUpdate: { displayName: 'On update' },
@@ -6258,8 +6279,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       label: { type: 'code', displayName: 'Title' },
       data: { type: 'code', displayName: 'Structure' },
-      checkedData: { type: 'code', displayName: 'Checked Values' },
-      expandedData: { type: 'code', displayName: 'Expanded Values' },
+      checkedData: { type: 'code', displayName: 'Checked values' },
+      expandedData: { type: 'code', displayName: 'Expanded values' },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -6268,7 +6289,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
-      checkboxColor: { type: 'color', displayName: 'Checkbox Color' },
+      checkboxColor: { type: 'color', displayName: 'Checkbox color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },

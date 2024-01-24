@@ -509,7 +509,7 @@
             "showOnDesktop": "Show on desktop",
             "showOnMobile": "Show on mobile",
             "showLoadingState": "Show loading state",
-            "backgroundColor": "Background Color",
+            "backgroundColor": "Background color",
             "textColor": "Text color",
             "loaderColor": "Loader color",
             "defaultValue": "Default value",

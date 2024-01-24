@@ -9,7 +9,7 @@ import { AllComponents } from '@/Editor/Box';
 
 const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'NumberInput', 'PasswordInput', 'DropDown'];
 const PROPERTIES_VS_ACCORDION_TITLE = {
-  Text: 'Text',
+  Text: 'Data',
   TextInput: 'Data',
   DropDown: 'Data',
 };
@@ -208,7 +208,8 @@ export const baseComponentProperties = (
         paramType,
         currentState,
         allComponents,
-        darkMode
+        darkMode,
+        componentMeta.properties?.[property]?.placeholder
       );
     }),
   });

@@ -24,33 +24,6 @@ const resizerClasses = {
   topLeft: 'top-left',
 };
 
-const resizerStyles = {
-  topRight: {
-    width: '8px',
-    height: '8px',
-    right: '-4px',
-    top: '-4px',
-  },
-  bottomRight: {
-    width: '8px',
-    height: '8px',
-    right: '-4px',
-    bottom: '-4px',
-  },
-  bottomLeft: {
-    width: '8px',
-    height: '8px',
-    left: '-4px',
-    bottom: '-4px',
-  },
-  topLeft: {
-    width: '8px',
-    height: '8px',
-    left: '-4px',
-    top: '-4px',
-  },
-};
-
 function computeWidth(currentLayoutOptions) {
   return `${currentLayoutOptions?.width}%`;
 }
@@ -123,6 +96,60 @@ export const DraggableBox = React.memo(
     const currentState = useCurrentState();
     const [calculatedHeight, setCalculatedHeight] = useState(layoutData?.height);
 
+    const resizerStyles = {
+      topRight: {
+        width: '8px',
+        height: '8px',
+        right: '-4px',
+        top: '-4px',
+      },
+      bottomRight: {
+        width: '8px',
+        height: '8px',
+        right: '-4px',
+        bottom: '-4px',
+      },
+      right: {
+        position: 'absolute',
+        height: '20px',
+        width: '5px',
+        right: '-3px',
+        background: '#4368E3',
+        borderRadius: '8px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        display:
+          (mode == 'edit' && !readOnly && mouseOver) || isResizing || isDragging2 || isSelectedComponent
+            ? 'block'
+            : 'none',
+      },
+      left: {
+        position: 'absolute',
+        height: '20px',
+        width: '5px',
+        left: '-3px',
+        background: '#4368E3',
+        borderRadius: '8px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        display:
+          (mode == 'edit' && !readOnly && mouseOver) || isResizing || isDragging2 || isSelectedComponent
+            ? 'block'
+            : 'none',
+      },
+      bottomLeft: {
+        width: '8px',
+        height: '8px',
+        left: '-4px',
+        bottom: '-4px',
+      },
+      topLeft: {
+        width: '8px',
+        height: '8px',
+        left: '-4px',
+        top: '-4px',
+      },
+    };
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({
         type: ItemTypes.BOX,
@@ -278,14 +305,14 @@ export const DraggableBox = React.memo(
               resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
               resizeHandleStyles={resizerStyles}
               enableResizing={{
-                top: isVerticalResizingAllowed(),
-                right: true,
-                bottom: isVerticalResizingAllowed(),
-                left: true,
-                topRight: isVerticalResizingAllowed(),
-                bottomRight: isVerticalResizingAllowed(),
-                bottomLeft: isVerticalResizingAllowed(),
-                topLeft: isVerticalResizingAllowed(),
+                top: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
+                right: mode == 'edit' && !readOnly && true,
+                bottom: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
+                left: mode == 'edit' && !readOnly && true,
+                topRight: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
+                bottomRight: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
+                bottomLeft: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
+                topLeft: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
               }}
               disableDragging={mode !== 'edit' || readOnly}
               onDragStop={(e, direction) => {

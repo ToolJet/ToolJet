@@ -8,10 +8,12 @@ function Slider1({ value, onChange, disabled }) {
     setSliderValue(event.target.value);
     onChange(`{{${event.target.value}}}`);
   };
+
   const onInputChange = (e) => {
-    setSliderValue(e.target.value);
-    if (e.target.value > 100) onChange(`{{${100}}}`);
-    else onChange(`{{${e.target.value}}}`);
+    let inputValue = parseInt(e.target.value, 10) || 0; // Parse the value as an integer, default to 0 if parsing fails
+    inputValue = Math.min(inputValue, 100);
+    setSliderValue(inputValue);
+    onChange(`{{${inputValue}}}`);
   };
   return (
     <div className="d-flex flex-column" style={{ width: '142px' }}>
