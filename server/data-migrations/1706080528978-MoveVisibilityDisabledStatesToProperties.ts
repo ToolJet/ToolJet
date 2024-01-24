@@ -20,6 +20,7 @@ export class MoveVisibilityDisabledStatesToProperties1706080528978 implements Mi
       // Extracting properties and styles from the component
       const properties = component.properties;
       const styles = component.styles;
+      const general = component.general;
 
       // Moving 'visibility' from styles to properties
       if (styles.visibility) {
@@ -33,8 +34,14 @@ export class MoveVisibilityDisabledStatesToProperties1706080528978 implements Mi
         delete styles.disabledState; // Removing 'disabledState' from styles
       }
 
+      // Moving 'tooltip' from general to properties
+      if (general?.tooltip) {
+        properties.tooltip = general?.tooltip;
+        delete general?.tooltip; // Removing 'tooltip' from general
+      }
+
       // Updating the component in the database with the modified properties and styles
-      await entityManager.update(Component, component.id, { properties, styles });
+      await entityManager.update(Component, component.id, { properties, styles, general });
     }
   }
 
