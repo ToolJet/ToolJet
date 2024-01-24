@@ -716,6 +716,7 @@ export function Table({
       }
     });
   }, [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]);
+
   useEffect(() => {
     setExposedVariable('discardNewlyAddedRows', async function () {
       if (
@@ -1683,20 +1684,19 @@ export function Table({
           </div>
         </div>
       )}
-      {tableDetails.filterDetails.filtersVisible && (
-        <Filter
-          hideFilters={hideFilters}
-          filters={tableDetails.filterDetails.filters}
-          columns={columnData.map((column) => {
-            return { name: column.Header, value: column.id };
-          })}
-          mergeToFilterDetails={mergeToFilterDetails}
-          filterDetails={tableDetails.filterDetails}
-          darkMode={darkMode}
-          setAllFilters={setAllFilters}
-          fireEvent={fireEvent}
-        />
-      )}
+      <Filter
+        hideFilters={hideFilters}
+        filters={tableDetails.filterDetails.filters}
+        columns={columnData.map((column) => {
+          return { name: column.Header, value: column.id };
+        })}
+        mergeToFilterDetails={mergeToFilterDetails}
+        filterDetails={tableDetails.filterDetails}
+        darkMode={darkMode}
+        setAllFilters={setAllFilters}
+        fireEvent={fireEvent}
+        setExposedVariable={setExposedVariable}
+      />
       {tableDetails.addNewRowsDetails.addingNewRows && (
         <AddNewRowComponent
           hideAddNewRowPopup={hideAddNewRowPopup}
