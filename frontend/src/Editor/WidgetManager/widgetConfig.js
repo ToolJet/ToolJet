@@ -2119,6 +2119,10 @@ export const widgets = [
       maxDate: { type: 'code', displayName: 'Maximum date' },
       minTime: { type: 'code', displayName: 'Minimum time' },
       maxTime: { type: 'code', displayName: 'Maximum time' },
+      disabledDates: {
+        type: 'code',
+        displayName: 'Disabled dates',
+      },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -2144,74 +2148,75 @@ export const widgets = [
       {
         handle: 'clearValue',
         displayName: 'clearValue',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setValue',
         displayName: 'setValue',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        params: [{ handle: 'text', displayName: 'Value', defaultValue: '02/03/2022 11:00 PM' }],
       },
       {
         handle: 'setDate',
         displayName: 'setDate',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        params: [{ handle: 'text', displayName: 'Date', defaultValue: 'New Text' }],
       },
       {
         handle: 'setTime',
         displayName: 'setTime',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        params: [{ handle: 'text', displayName: 'Time', defaultValue: 'New Text' }],
       },
 
       {
         handle: 'setValueinTimeStamp',
         displayName: 'setValueinTimeStamp',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        params: [{ handle: 'text', displayName: 'Timestamp( in seconds )', defaultValue: '1654320000' }],
       },
 
       {
-        handle: 'disableDate',
-        displayName: 'disableDate',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        handle: 'setDisabledDates',
+        displayName: 'setDisabledDates',
+        params: [{ handle: 'text', displayName: 'Date', defaultValue: '{{[]}}' }],
+      },
+      {
+        handle: 'clearDisabledDates',
+        displayName: 'clearDisabledDates',
       },
 
       {
         handle: 'setMinDate',
         displayName: 'setMinDate',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        params: [{ handle: 'text', displayName: 'Min date', defaultValue: 'New Text' }],
       },
       {
         handle: 'setMaxDate',
         displayName: 'setMaxDate',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        params: [{ handle: 'text', displayName: 'Max date', defaultValue: 'New Text' }],
       },
 
       {
         handle: 'setMinTime',
         displayName: 'setMinTime',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        params: [{ handle: 'text', displayName: 'Min time', defaultValue: 'New Text' }],
       },
 
       {
         handle: 'setMaxTime',
         displayName: 'setMaxTime',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        params: [{ handle: 'text', displayName: 'Max time', defaultValue: 'New Text' }],
       },
 
       {
         handle: 'setTimezone',
         displayName: 'setTimezone',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        params: [{ handle: 'text', displayName: 'Timezone', defaultValue: 'New Text' }],
       },
       {
         handle: 'setFocus',
         displayName: 'setFocus',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
 
       {
         handle: 'setBlur',
         displayName: 'setBlur',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
     ],
     properties: {
@@ -2228,26 +2233,63 @@ export const widgets = [
         validation: {
           schema: { type: 'string' },
         },
+        placeholder: 'DD/MM/YYYY MM:HH',
+      },
+      enableDate: {
+        type: 'toggle',
+        styleClass: 'custom-toggle-field-wrapper',
+        displayName: 'Enable date selection?',
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
       format: {
-        type: 'code',
-        displayName: 'Format',
+        type: 'select',
+        displayName: 'Date format',
         validation: {
           schema: { type: 'string' },
         },
+        styleClass: 'custom-dropdown-field-wrapper rounded-bottom-div',
+        conditionallyRender: {
+          key: 'enableDate',
+          value: true,
+        },
+        options: [
+          { name: 'MM/DD/YYYY', value: 'MM/DD/YYYY' },
+          { name: 'DD/MM/YYYY', value: 'DD/MM/YYYY' },
+          { name: 'YYYY/MM/DD', value: 'YYYY/MM/DD' },
+          { name: 'YYYY/DD/MM', value: 'YYYY/DD/MM' },
+        ],
       },
       enableTime: {
         type: 'toggle',
+        styleClass: 'custom-toggle-field-wrapper',
         displayName: 'Enable time selection?',
         validation: {
           schema: { type: 'boolean' },
         },
       },
+
       timeFormat: {
-        type: 'toggleDropdown',
+        type: 'select',
         displayName: 'timeFormat',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'label',
+        // bold: true,
+        conditionallyRender: {
+          key: 'enableTime',
+          value: true,
+        },
+        styleClass: 'custom-dropdown-field-wrapper',
+        options: [{ name: 'HH:mm', value: 'HH:mm' }],
+      },
+      enableTwentyFourHour: {
+        type: 'toggle',
+        styleClass: 'sub-section-field-wrapper',
+        displayName: 'Enable 24h time format',
+        validation: {
+          schema: { type: 'boolean' },
+        },
         conditionallyRender: {
           key: 'enableTime',
           value: true,
@@ -2256,23 +2298,56 @@ export const widgets = [
       timeZone: {
         type: 'select',
         displayName: 'timeZone',
+        styleClass: 'sub-section-field-wrapper rounded-bottom-div',
         validation: {
           // schema: { type: 'boolean' },
         },
-      },
 
-      enableDate: {
-        type: 'toggle',
-        displayName: 'Enable date selection?',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-      disabledDates: {
-        type: 'code',
-        displayName: 'Disabled dates',
-        validation: {
-          schema: { type: 'array', element: { type: 'string' } },
+        options: [
+          { name: 'Local', value: 'Local' },
+          { name: 'UTC', value: 'UTC' },
+          { name: 'UTC-12:00', value: 'UTC-12:00' },
+          { name: 'UTC-11:00', value: 'UTC-11:00' },
+          { name: 'UTC-10:00', value: 'UTC-10:00' },
+          { name: 'UTC-09:30', value: 'UTC-09:30' },
+          { name: 'UTC-09:00', value: 'UTC-09:00' },
+          { name: 'UTC-08:00', value: 'UTC-08:00' },
+          { name: 'UTC-07:00', value: 'UTC-07:00' },
+          { name: 'UTC-06:00', value: 'UTC-06:00' },
+          { name: 'UTC-05:00', value: 'UTC-05:00' },
+          { name: 'UTC-04:00', value: 'UTC-04:00' },
+          { name: 'UTC-03:30', value: 'UTC-03:30' },
+          { name: 'UTC-03:00', value: 'UTC-03:00' },
+          { name: 'UTC-02:00', value: 'UTC-02:00' },
+          { name: 'UTC-01:00', value: 'UTC-01:00' },
+          { name: 'UTC+01:00', value: 'UTC+01:00' },
+          { name: 'UTC+02:00', value: 'UTC+02:00' },
+          { name: 'UTC+03:00', value: 'UTC+03:00' },
+          { name: 'UTC+03:30', value: 'UTC+03:30' },
+          { name: 'UTC+04:00', value: 'UTC+04:00' },
+          { name: 'UTC+04:30', value: 'UTC+04:30' },
+          { name: 'UTC+05:00', value: 'UTC+05:00' },
+          { name: 'UTC+05:30', value: 'UTC+05:30' },
+          { name: 'UTC+05:45', value: 'UTC+05:45' },
+          { name: 'UTC+06:00', value: 'UTC+06:00' },
+          { name: 'UTC+06:30', value: 'UTC+06:30' },
+          { name: 'UTC+07:00', value: 'UTC+07:00' },
+          { name: 'UTC+08:00', value: 'UTC+08:00' },
+          { name: 'UTC+08:45', value: 'UTC+08:45' },
+          { name: 'UTC+09:00', value: 'UTC+09:00' },
+          { name: 'UTC+09:30', value: 'UTC+09:30' },
+          { name: 'UTC+10:00', value: 'UTC+10:00' },
+          { name: 'UTC+10:30', value: 'UTC+10:30' },
+          { name: 'UTC+11:00', value: 'UTC+11:00' },
+          { name: 'UTC+12:00', value: 'UTC+12:00' },
+          { name: 'UTC+12:45', value: 'UTC+12:45' },
+          { name: 'UTC+13:00', value: 'UTC+13:00' },
+          { name: 'UTC+14:00', value: 'UTC+14:00' },
+        ],
+
+        conditionallyRender: {
+          key: 'enableTime',
+          value: true,
         },
       },
       loadingState: {
@@ -2294,7 +2369,7 @@ export const widgets = [
         section: 'additionalActions',
       },
       tooltip: {
-        type: 'input',
+        type: 'code',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
@@ -2449,10 +2524,13 @@ export const widgets = [
       properties: {
         label: { value: 'Label' },
         defaultValue: { value: '01/01/2022' },
+        enableDate: { value: '{{true}}' },
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
-        enableDate: { value: '{{true}}' },
-        disabledDates: { value: '{{[]}}' },
+        timeFormat: { value: 'HH:mm' },
+        enableTwentyFourHour: { value: '{{false}}' },
+        timeZone: { value: 'Local' },
+        // disabledDates: { value: '{{[]}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         loadingState: { value: '{{false}}' },

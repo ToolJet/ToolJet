@@ -1,7 +1,5 @@
 import React, { useEffect, forwardRef, useState, useRef } from 'react';
 import DatePickerComponent from 'react-datepicker';
-import { getMonth, getYear } from 'date-fns';
-import range from 'lodash/range';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -12,30 +10,34 @@ import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import './datepicker.scss';
 import CustomDatePickerHeader from './CustomDatePickerHeader';
+import { valueinTimeStamp } from './datepickerUtils';
+import { setHours, setMinutes, set, format } from 'date-fns';
 
-const MyDatePicker = forwardRef(({ value, onClick, styles, setShowValidationError, setIsFocused, fireEvent }, ref) => {
-  return (
-    <input
-      onBlur={(e) => {
-        setShowValidationError(true);
-        setIsFocused(false);
-        e.stopPropagation();
-        fireEvent('onBlur');
-        setIsFocused(false);
-      }}
-      onFocus={(e) => {
-        setIsFocused(true);
-        e.stopPropagation();
-        fireEvent('onFocus');
-      }}
-      className="custom-input-datepicker"
-      value={value}
-      onClick={onClick}
-      ref={ref}
-      style={styles}
-    ></input>
-  );
-});
+const TjDatepicker = forwardRef(
+  ({ value, onClick, styles, setShowValidationError, setIsFocused, fireEvent, dateInputRef }, ref) => {
+    return (
+      <input
+        onBlur={(e) => {
+          setShowValidationError(true);
+          setIsFocused(false);
+          e.stopPropagation();
+          fireEvent('onBlur');
+          setIsFocused(false);
+        }}
+        onFocus={(e) => {
+          setIsFocused(true);
+          e.stopPropagation();
+          fireEvent('onFocus');
+        }}
+        className="custom-input-datepicker"
+        value={value}
+        onClick={onClick}
+        ref={dateInputRef}
+        style={styles}
+      ></input>
+    );
+  }
+);
 
 export const Datepicker = function Datepicker({
   height,
@@ -52,17 +54,8 @@ export const Datepicker = function Datepicker({
   dataCy,
   isResizing,
 }) {
-  const {
-    enableTime,
-    enableDate,
-    defaultValue,
-    disabledDates,
-    tooltip,
-    label,
-    loadingState,
-    disabledState,
-    timeFormat,
-  } = properties;
+  const { enableTime, enableDate, defaultValue, tooltip, label, loadingState, disabledState, timeFormat, timeZone } =
+    properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
   const {
     padding,
@@ -97,6 +90,7 @@ export const Datepicker = function Datepicker({
     paddingLeft: !component?.definition?.styles?.iconVisibility?.value ? '10px' : '29px',
   };
   const labelRef = useRef();
+  const dateInputRef = useRef(null); // Create a ref
 
   const [date, setDate] = useState(null);
   const [excludedDates, setExcludedDates] = useState([]);
@@ -133,7 +127,10 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
 
+  const disabledDates = component?.definition?.validation?.disabledDates?.value;
+
   useEffect(() => {
+    console.log('log---', disabledDates);
     if (Array.isArray(disabledDates) && disabledDates.length > 0) {
       const _exluded = [];
       disabledDates?.map((item) => {
@@ -148,7 +145,13 @@ export const Datepicker = function Datepicker({
 
   const validationData = validate(exposedVariables.value);
   const { isValid, validationError } = validationData;
-
+  const convertTime = (timeInput) => {
+    if (timeInput) {
+      const [hours, minutes] = timeInput.split(':').map(Number);
+      return { hours, minutes };
+    }
+    return {};
+  };
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const [labelWidth, setLabelWidth] = useState(0);
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState) ?? false;
@@ -157,8 +160,16 @@ export const Datepicker = function Datepicker({
   const [isFocused, setIsFocused] = useState(false);
   const currentState = useCurrentState();
   const [disable, setDisable] = useState(disabledState || loadingState);
+  const [minDate, setMinDate] = useState(component?.definition?.validation?.minDate?.value);
+  const [maxDate, setMaxDate] = useState(component?.definition?.validation?.maxDate?.value);
+  const [minTime, setMinTime] = useState(convertTime(component?.definition?.validation?.minTime?.value));
+  const [maxTime, setMaxTime] = useState(convertTime(component?.definition?.validation?.maxTime?.value));
 
-  // Expose vars
+  console.log('try---', minTime, maxTime);
+
+  // Adjust minTime and maxTime based on the selected date and user input
+  // setMinTime(setHours(setMinutes(date, minutes), hours));
+  // setMaxTime(setHours(setMinutes(date, minutes + 30), hours));
 
   useEffect(() => {
     setExposedVariable('isValid', isValid);
@@ -183,6 +194,10 @@ export const Datepicker = function Datepicker({
   useEffect(() => {
     setExposedVariable('timeFormat', timeFormat);
   }, [timeFormat]);
+
+  useEffect(() => {
+    setExposedVariable('selectedTimeZone', timeZone);
+  }, [timeZone]);
 
   useEffect(() => {
     if (labelRef.current) {
@@ -278,6 +293,146 @@ export const Datepicker = function Datepicker({
     transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
   };
 
+  // CSA's
+
+  // clearValue
+  useEffect(() => {
+    setExposedVariable('clearValue', async function () {
+      setDate(null);
+      setExposedVariable('value', null);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // setValue
+
+  useEffect(() => {
+    setExposedVariable('setValue', async function (value) {
+      const parsedDate = new Date(value);
+      if (!isNaN(parsedDate.getTime())) {
+        setDate(parsedDate);
+      }
+      setExposedVariable('value', value);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // setDate
+  useEffect(() => {
+    setExposedVariable('setDate', async function (value) {
+      // const newDate = moment(value); // Change the date as needed
+      // const originalDate = new Date('Sat Jan 01 2022 00:00:00 GMT+0530');
+
+      const dateObject = new Date(value);
+      const formattedDate = format(dateObject, 'dd/mm/yyyy');
+
+      const month = formattedDate.getMonth() + 1; // Months are 0-indexed, so add 1
+      const day = formattedDate.getDate();
+      const year = formattedDate.getFullYear();
+      const newDate = set(new Date(), {
+        year: year,
+        month: month, // Months are zero-based, so May is 4
+        date: day,
+        hours: date?.getHours(),
+        minutes: date?.getMinutes(),
+      });
+      console.log('Date----', newDate);
+      setDate(newDate);
+      setExposedVariable('value', newDate);
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date]);
+
+  useEffect(() => {
+    // console.log('Date----', date);
+  }, [date]);
+
+  const handleSetTime = (userInputTime) => {
+    const [hours, minutes] = userInputTime.split(':');
+    const newDate = new Date(date);
+    newDate.setHours(parseInt(hours, 10));
+    newDate.setMinutes(parseInt(minutes, 10));
+    setDate(newDate);
+    setExposedVariable('value', newDate);
+  };
+
+  // setTime
+  useEffect(() => {
+    setExposedVariable('setTime', async function (value) {
+      handleSetTime(value);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setExposedVariable('setDisabledDates', async function (disabledDates) {
+      if (Array.isArray(disabledDates) && disabledDates.length > 0) {
+        const _exluded = [];
+        disabledDates?.map((item) => {
+          if (moment(item, format).isValid()) {
+            _exluded.push(moment(item, format).toDate());
+          }
+        });
+        setExcludedDates(_exluded);
+      }
+    });
+
+    setExposedVariable('clearDisabledDates', async function () {
+      setExcludedDates([]);
+    });
+
+    setExposedVariable('setValueinTimeStamp', async function (value) {
+      const date = moment.unix(value).format(format);
+      setDate(new Date(date));
+      const dateMomentInstance = date && moment(date, selectedDateFormat);
+      if (dateMomentInstance && dateMomentInstance.isValid()) {
+        setDate(dateMomentInstance.toDate());
+        setExposedVariable('value', date);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setExposedVariable('setFocus', async function () {
+      if (dateInputRef.current) {
+        dateInputRef.current.focus();
+      }
+    });
+
+    setExposedVariable('setBlur', async function () {
+      if (dateInputRef.current) {
+        dateInputRef.current.blur();
+      }
+    });
+  }, [dateInputRef]);
+
+  useEffect(() => {
+    setExposedVariable('timezone', async function (date) {
+      setDate(date);
+      // moment(1369266934311).utcOffset(-420).format('YYYY-MM-DD HH:mm');
+    });
+  }, []);
+
+  // useEffect(() => {
+  //   setExposedVariable('setMinDate', async function (date) {
+  //     setMinDate(date);
+  //   });
+  //   setExposedVariable('setMaxDate', async function (date) {
+  //     setMaxDate(date);
+  //   });
+  // }, []);
+
+  // useEffect(() => {
+  //   setExposedVariable('setMinTime', async function (time) {
+  //     setMinTime(convertTime(time));
+  //   });
+  //   setExposedVariable('setMaxTime', async function (time) {
+  //     setMaxTime(convertTime(time));
+  //   });
+  // }, []);
+
   const renderDatePicker = () => (
     <>
       <div
@@ -319,7 +474,6 @@ export const Datepicker = function Datepicker({
               transform: ' translateY(-50%)',
               color: iconColor,
               zIndex: 100,
-              // backgroundColor: 'red',
             }}
             stroke={1.5}
           />
@@ -333,20 +487,28 @@ export const Datepicker = function Datepicker({
               maxWidth: auto && defaultAlignment === 'side' ? '70%' : '100%',
               marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '9px' : '',
               marginLeft: label?.length > 0 && direction === 'right' && defaultAlignment === 'side' ? '9px' : '',
-              display: 'block',
-              overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
-              textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+              display: 'flex',
+              // overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
+              // textOverflow: 'ellipsis', // Display ellipsis for overflowed content
               fontWeight: 500,
               textAlign: direction == 'right' ? 'right' : 'left',
-              whiteSpace: 'nowrap', // Keep the text in a single line
+              // whiteSpace: 'nowrap', // Keep the text in a single line
             }}
           >
-            {label}
+            <span
+              style={{
+                overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
+                textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+                whiteSpace: 'nowrap',
+                display: 'block',
+              }}
+            >
+              {label}
+            </span>
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         )}
         <DatePickerComponent
-          showIcon
           calendarIcon={<IconElement stroke={1.5} />}
           className={`input-field form-control tj-text-input-widget  ${
             !isValid && showValidationError ? 'is-invalid' : ''
@@ -361,11 +523,12 @@ export const Datepicker = function Datepicker({
             onComponentClick(id, component, event);
           }}
           customInput={
-            <MyDatePicker
+            <TjDatepicker
               styles={datepickerinputStyles}
               setShowValidationError={setShowValidationError}
               fireEvent={fireEvent}
               setIsFocused={setIsFocused}
+              dateInputRef={dateInputRef}
             />
           }
           showMonthDropdown
@@ -374,13 +537,11 @@ export const Datepicker = function Datepicker({
           excludeDates={excludedDates}
           timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
           showPopperArrow={false}
-          // timeFormat="HH:mm:ss:ssss"
-          // selected={startDate}
-          // onChange={(date) => setStartDate(date)}
-          minDate={new Date(component?.definition?.validation?.minDate?.value)}
-          maxDate={component?.definition?.validation?.maxDate?.value}
-          // minTime={setHours(setMinutes(new Date(), 0), 17)}
-          // maxTime={setHours(setMinutes(new Date(), 30), 20)}
+          timeFormat={timeFormat === 'HH:mm' ? 'HH:mm' : 'hh:mm a'}
+          minDate={minDate && new Date(minDate)}
+          maxDate={maxDate && new Date(maxDate)}
+          minTime={setHours(setMinutes(new Date(), minTime.minutes), minTime.hours)}
+          maxTime={setHours(setMinutes(new Date(), maxTime.minutes), maxTime.hours)}
           renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
         />
         {loading && <Loader style={{ ...loaderStyle }} width="16" />}

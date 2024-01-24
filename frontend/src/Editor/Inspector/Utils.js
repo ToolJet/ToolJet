@@ -43,8 +43,8 @@ export function renderCustomStyles(
     componentConfig.component == 'Listview' ||
     componentConfig.component == 'TextInput' ||
     componentConfig.component == 'NumberInput' ||
-    componentConfig.component == 'PasswordInput' ||
-    componentConfig.component == 'Datepicker'
+    componentConfig.component == 'Datepicker' ||
+    componentConfig.component == 'PasswordInput'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -110,7 +110,8 @@ export function renderElement(
   if (
     componentConfig.component == 'DropDown' ||
     componentConfig.component == 'Form' ||
-    componentConfig.component == 'Listview'
+    componentConfig.component == 'Listview' ||
+    componentConfig.component == 'Datepicker'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -144,6 +145,7 @@ export function renderElement(
       component={component}
       verticalLine={verticalLine}
       placeholder={placeholder}
+      // value={paramTypeDefinition?.[key]}
     />
   );
 }
