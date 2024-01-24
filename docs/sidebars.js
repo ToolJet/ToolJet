@@ -80,6 +80,7 @@ const sidebars = {
         'tutorial/pages',
         'app-builder/customstyles',
         'tutorial/keyboard-shortcuts',
+        'app-builder/importing-exporting-applications',
         {
           'type': 'category',
           'label': 'Components Catalog',
