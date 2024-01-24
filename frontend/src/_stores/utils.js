@@ -4,7 +4,6 @@ import { devtools } from 'zustand/middleware';
 import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import _ from 'lodash';
-import { getCurrentNodeType } from '@/Editor/CodeEditor/utils';
 
 export const zustandDevTools = (fn, options = {}) =>
   devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : true });
@@ -331,6 +330,8 @@ function toRemoveExposedvariablesFromComponentDiff(object) {
 }
 
 export function createReferencesLookup(refState) {
+  const getCurrentNodeType = (node) => Object.prototype.toString.call(node).slice(8, -1);
+
   const state = _.cloneDeep(refState);
   const queries = state['queries'];
   const actions = [
