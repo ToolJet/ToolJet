@@ -63,6 +63,8 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
 
   const prevSelectedTableRef = useRef({});
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const updateCellProgressPercentage = useRef(0);
+  const [showUpdateProgressBar, setShowUpdateProgressBar] = useState(false);
 
   const fetchTableMetadata = () => {
     if (!isEmpty(selectedTable)) {
@@ -303,7 +305,12 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     const cellKey = headerGroups[0].headers[index].id;
     const query = `id=eq.${rowId}&order=id`;
     const cellData = dataType === 'boolean' ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
+    setShowUpdateProgressBar(true);
+    updateCellProgressPercentage.current = 30;
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
+    updateCellProgressPercentage.current = 100;
+    setShowUpdateProgressBar(false);
+    updateCellProgressPercentage.current = 0;
     if (error) {
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
       setEditPopover(false);
@@ -626,6 +633,9 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                             key={`cell.value-${index}`}
                             title={cell.value || ''}
                             //tabIndex="0"
+                            style={{
+                              position: 'relative',
+                            }}
                             className={`${
                               editColumnHeader?.clickedColumn === index &&
                               editColumnHeader?.columnEditPopover === true &&
@@ -742,6 +752,17 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                 )}
                               </>
                             )}
+                            {cellClick.cellIndex !== 0 &&
+                            cellClick.cellIndex !== 1 &&
+                            cellClick.rowIndex === rIndex &&
+                            cellClick.cellIndex === index &&
+                            showUpdateProgressBar ? (
+                              <progress
+                                class="progress progress-sm tjdb-cell-save-progress"
+                                value={`${updateCellProgressPercentage.current}`}
+                                max="100"
+                              />
+                            ) : null}
                           </td>
                         );
                       })}

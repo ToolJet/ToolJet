@@ -87,3 +87,14 @@
   }
 
 }
+
+.tjdb-cell-save-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--Indigo-09, #3E63DD);
+  .tjdb-cell-save-progress-bar {
+    background: var(--Indigo-09, #3E63DD);
+  }
+}

@@ -7038,6 +7038,10 @@ tbody {
   .delete-row-btn {
     max-width: 140px;
   }
+
+  .tjdb-cell-error {
+    border: 1.5px solid var(--Tomato-09, #E54D2E) !important;
+  }
 }
 
 .apploader {
