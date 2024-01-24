@@ -6920,11 +6920,25 @@ tbody {
   .table-cell-hover-background {
     background-color: #F8F9FA;
     border-width: 0px 1px 1px 1px;
+    padding: 0.5rem !important;
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+      background-color: #F8F9FA;
+    }
   }
 
   .table-cell-hover-background-dark {
     background-color: #242f3c;
     border-width: 0px 1px 1px 1px;
+    padding: 0.5rem !important;
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+      background-color: #242f3c;
+    }
   }
 
   .table-editable-parent-cell {
@@ -6945,6 +6959,12 @@ tbody {
     border-left: 1.5px solid #3E63DD !important;
     border-right: 1.5px solid #3E63DD !important;
     border-width: 0px 1px 1px 1px;
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+      background-color: #F8F9FA;
+    }
   }
 
   .table-columnHeader-click-dark {
@@ -6952,6 +6972,12 @@ tbody {
     border-left: 1.5px solid white !important;
     border-right: 1.5px solid white !important;
     border-width: 0px 1px 1px 1px;
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+      background-color: #242f3c;
+    }
   }
 
   .row-tj:first-child {

@@ -201,7 +201,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       if (e.key === 'ArrowRight') {
         const cellIndexValue =
           cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
-        const cIndex = rows[cellClick.rowIndex].cells[cellIndexValue].value;
+        const cIndex = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
         const newIndex =
           cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
         setCellClick((prevState) => ({
@@ -211,7 +211,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
         setCellVal(cIndex);
       } else if (e.key === 'ArrowLeft') {
         const cellIndexValue = cellClick.cellIndex === 2 ? 2 : cellClick.cellIndex - 1;
-        const cIndex = rows[cellClick.rowIndex].cells[cellIndexValue].value;
+        const cIndex = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
         const newIndex = cellClick.cellIndex === 2 ? 2 : cellClick.cellIndex - 1;
         setCellClick((prevState) => ({
           ...prevState,
@@ -219,7 +219,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
         }));
         setCellVal(cIndex);
       } else if (e.key === 'ArrowUp') {
-        const rIndex = rows[cellClick.rowIndex - 1].cells[cellClick.cellIndex].value;
+        const rIndex = rows[cellClick.rowIndex - 1].cells[cellClick.cellIndex].value; // row Index's value
         const newRowIndex = cellClick.rowIndex === 0 ? 0 : cellClick.rowIndex - 1;
         setCellClick((prevState) => ({
           ...prevState,
@@ -227,13 +227,15 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
         }));
         setCellVal(rIndex);
       } else if (e.key === 'ArrowDown') {
-        const rIndex = rows[cellClick.rowIndex + 1].cells[cellClick.cellIndex].value;
+        const rIndex = rows[cellClick.rowIndex + 1].cells[cellClick.cellIndex].value; // row Index's value
         const newRowIndex = cellClick.rowIndex === rows.length - 1 ? rows.length - 1 : cellClick.rowIndex + 1;
         setCellClick((prevState) => ({
           ...prevState,
           rowIndex: newRowIndex,
         }));
         setCellVal(rIndex);
+      } else if (e.key === 'Enter') {
+        document.getElementById('edit-input-blur').focus();
       }
     }
   };
@@ -245,23 +247,27 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     };
   }, [cellClick]);
 
-  // const handleCellOutsideClick = (event) => {
-  //   if (!event.target.closest('.table-cell-click') && !event.target.closest('.table-editable-parent-cell')) {
-  //     setCellClick((prevState) => ({
-  //       ...prevState,
-  //       rowIndex: null,
-  //       cellIndex: null,
-  //       editable: false,
-  //     }));
-  //   }
-  // };
+  const handleCellOutsideClick = (event) => {
+    if (
+      !event.target.closest('.table-cell-click') &&
+      !event.target.closest('.table-editable-parent-cell') &&
+      !event.target.closest('.popover-body')
+    ) {
+      setCellClick((prevState) => ({
+        ...prevState,
+        rowIndex: null,
+        cellIndex: null,
+        editable: false,
+      }));
+    }
+  };
 
-  // useEffect(() => {
-  //   document.addEventListener('click', handleCellOutsideClick);
-  //   return () => {
-  //     document.removeEventListener('click', handleCellOutsideClick);
-  //   };
-  // }, []);
+  useEffect(() => {
+    document.addEventListener('click', handleCellOutsideClick);
+    return () => {
+      document.removeEventListener('click', handleCellOutsideClick);
+    };
+  }, []);
 
   const handleDeleteRow = async () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
@@ -301,10 +307,10 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
   };
 
-  const handleToggleCellEdit = async (cellValue, rowId, index, dataType) => {
+  const handleToggleCellEdit = async (cellValue, rowId, index, directToggle) => {
     const cellKey = headerGroups[0].headers[index].id;
     const query = `id=eq.${rowId}&order=id`;
-    const cellData = dataType === 'boolean' ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
+    const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
     setShowUpdateProgressBar(true);
     updateCellProgressPercentage.current = 30;
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
@@ -315,7 +321,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
       setEditPopover(false);
       setCellVal(cellValue);
-      //setNullValue(null);
+      setNullValue(false);
       setDefaultValue(false);
       return;
     }
@@ -338,14 +344,14 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       });
     setEditPopover(false);
     setDefaultValue(false);
-    //setNullValue(null);
+    setNullValue(false);
     toast.success(`cell edited successfully`);
   };
 
-  const handleInputKeyDown = (event, cellValue, rowId, index, dataType) => {
+  const handleInputKeyDown = (event, cellValue, rowId, index, directToggle) => {
     if (event.key === 'Enter') {
       if (cellValue != cellVal) {
-        handleToggleCellEdit(cellValue, rowId, index, dataType);
+        handleToggleCellEdit(cellValue, rowId, index, directToggle);
         document.getElementById('edit-input-blur').blur();
       } else {
         setEditPopover(false);
@@ -369,6 +375,22 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [editColumnHeader.columnEditPopover]);
+
+  // useEffect(() => {
+  //   const handleClickOnToggle = (event) => {
+  //     if (cellClick.editable) {
+  //       if (event.target.closest('.form-check-input')) {
+  //         setEditPopover(false);
+  //       }
+  //     }
+  //   };
+  //   document.addEventListener('click', handleClickOnToggle);
+  //   return () => {
+  //     document.removeEventListener('click', handleClickOnToggle);
+  //   };
+  // }, [editPopover]);
+
+  //console.log('first', editPopover);
 
   const handleDelete = (column) => {
     setEditColumnHeader((prevState) => ({
@@ -420,6 +442,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           cellIndex: cellIndex,
           editable: true,
         }));
+        setEditPopover(false);
       }
     }
   };
@@ -659,9 +682,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                             }`}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
-                            onKeyDown={(e) =>
-                              handleInputKeyDown(e, cell.value, row.values.id, index, cell.column?.dataType)
-                            }
+                            onKeyDown={(e) => handleInputKeyDown(e, cell.value, row.values.id, index, false)}
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
                             {/* {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')} */}
@@ -676,9 +697,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                 show={editPopover}
                                 close={closeEditPopover}
                                 columnDetails={headerGroups[0].headers[index]}
-                                saveFunction={() =>
-                                  handleToggleCellEdit(cell.value, row.values.id, index, cell.column?.dataType)
-                                }
+                                saveFunction={() => handleToggleCellEdit(cell.value, row.values.id, index, false)}
                                 setCellValue={setCellVal}
                                 cellValue={cellVal}
                                 previousCellValue={cell.value}
@@ -686,24 +705,26 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                 defaultValue={defaultValue}
                                 setNullValue={setNullValue}
                                 nullValue={nullValue}
+                                isBoolean={cell.column?.dataType === 'boolean' ? true : false}
                               >
                                 <div className="input-cell-parent">
                                   {cell.column?.dataType === 'boolean' ? (
-                                    <div className="row" style={{ width: '33px', marginLeft: '0px' }}>
+                                    <div
+                                      className="row"
+                                      style={{ marginLeft: '0px' }}
+                                      onClick={() => setEditPopover(true)}
+                                    >
                                       <div className="col-1">
                                         <label className={`form-switch`}>
                                           <input
+                                            id="checkboxId"
                                             className="form-check-input"
                                             type="checkbox"
                                             checked={cell.value}
                                             onChange={() =>
-                                              handleToggleCellEdit(
-                                                cell.value,
-                                                row.values.id,
-                                                index,
-                                                cell.column?.dataType
-                                              )
+                                              handleToggleCellEdit(cell.value, row.values.id, index, true)
                                             }
+                                            onClick={(e) => e.stopPropagation()}
                                           />
                                         </label>
                                       </div>
@@ -712,7 +733,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                     <input
                                       className="form-control"
                                       id="edit-input-blur"
-                                      value={cellVal}
+                                      value={cellVal === null ? '' : cellVal}
                                       onChange={(e) => setCellVal(e.target.value)}
                                       onFocus={() => setEditPopover(true)}
                                       disabled={defaultValue === true || nullValue === true ? true : false}
@@ -735,14 +756,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                           className="form-check-input"
                                           type="checkbox"
                                           checked={cell.value}
-                                          onChange={() =>
-                                            handleToggleCellEdit(
-                                              cell.value,
-                                              row.values.id,
-                                              index,
-                                              cell.column?.dataType
-                                            )
-                                          }
+                                          onChange={() => handleToggleCellEdit(cell.value, row.values.id, index, true)}
                                         />
                                       </label>
                                     </div>

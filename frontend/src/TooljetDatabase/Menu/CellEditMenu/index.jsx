@@ -19,8 +19,9 @@ export const CellEditMenu = ({
   defaultValue,
   setNullValue,
   nullValue,
+  isBoolean,
 }) => {
-  const [isBoolean] = useState(false);
+  const [selectedValue, setSelectedValue] = useState(previousCellValue);
 
   const handleDefaultChange = (defaultColumnValue, defaultBooleanValue) => {
     if (defaultBooleanValue === true) {
@@ -40,6 +41,11 @@ export const CellEditMenu = ({
     setNullValue(nullVal);
   };
 
+  const handleSelectedState = (value) => {
+    setSelectedValue(value);
+    setCellValue(value);
+  };
+
   const popover = (
     <Popover className={`${darkMode && 'dark-theme'} tjdb-table-cell-edit-popover`}>
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
@@ -47,11 +53,35 @@ export const CellEditMenu = ({
           {/*  Boolean View */}
           {isBoolean && (
             <div className="d-flex align-items-start gap-2">
-              <span className="d-flex align-items-center gap-2 fw-500 tjdb-bool-cell-menu-badge-default">False</span>
-              <span className="d-flex align-items-center gap-2 fw-500 tjdb-bool-cell-menu-badge-default">True</span>
-              <span className="d-flex align-items-center gap-2 fw-500 tjdb-bool-cell-menu-badge-default tjdb-bool-cell-menu-badge-selected">
-                Null
+              <span
+                className={`boolean-state-${
+                  selectedValue === false ? 'selected' : ''
+                } d-flex align-items-center gap-2 fw-500 tjdb-bool-cell-menu-badge-default`}
+                tabIndex="0"
+                onClick={() => handleSelectedState(false)}
+              >
+                False
               </span>
+              <span
+                className={`boolean-state-${
+                  selectedValue === true ? 'selected' : ''
+                } d-flex align-items-center gap-2 fw-500 tjdb-bool-cell-menu-badge-default`}
+                tabIndex="0"
+                onClick={() => handleSelectedState(true)}
+              >
+                True
+              </span>
+              {columnDetails?.constraints_type.is_not_null === false && (
+                <span
+                  className={`boolean-state-${
+                    selectedValue === null ? 'selected' : ''
+                  } d-flex align-items-center gap-2 fw-500 tjdb-bool-cell-menu-badge-default`}
+                  tabIndex="0"
+                  onClick={() => handleSelectedState(null)}
+                >
+                  Null
+                </span>
+              )}
             </div>
           )}
 
