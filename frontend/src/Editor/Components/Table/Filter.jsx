@@ -32,19 +32,16 @@ export function Filter(props) {
 
   function filterColumnChanged(index, value) {
     const filter = props.columns.find((column) => column.value === value);
-    console.log(props.columns, 'props.columns');
     const newFilters = filters;
     newFilters[index].id = filter.value;
     newFilters[index].value.column = filter.name;
     mergeToFilterDetails({
       filters: newFilters,
     });
-    console.log(newFilters, 'newFilters');
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
   }
 
   function filterOperationChanged(index, value) {
-    console.log(value, 'value');
     const newFilters = filters;
     newFilters[index].value = {
       ...newFilters[index].value,
@@ -55,8 +52,6 @@ export function Filter(props) {
     if (value === 'isEmpty' || value === 'isNotEmpty') {
       newFilters[index].value.value = '';
     }
-    console.log(newFilters, 'filterOperationChanged');
-
     mergeToFilterDetails({
       filters: newFilters,
     });
@@ -72,7 +67,6 @@ export function Filter(props) {
     mergeToFilterDetails({
       filters: newFilters,
     });
-    console.log(newFilters, 'filterValueChanged');
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
   }
 
