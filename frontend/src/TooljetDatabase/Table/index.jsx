@@ -335,6 +335,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   };
 
   const handleToggleCellEdit = async (cellValue, rowId, index, rIndex, directToggle) => {
+    console.log('first', directToggle);
     const cellKey = headerGroups[0].headers[index].id;
     const query = `id=eq.${rowId}&order=id`;
     const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
@@ -497,7 +498,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     );
   }
 
-  //console.log('first', cellVal);
+  //console.log('first', cellClick.editable);
 
   return (
     <div>
@@ -748,14 +749,20 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                       <div className="col-1 p-0">
                                         <label className={`form-switch`}>
                                           <input
+                                            id="edit-input-blur"
                                             className="form-check-input"
+                                            //disabled={editPopover ? true : false}
                                             type="checkbox"
-                                            checked={cell.value}
+                                            checked={cellClick.editable ? cellVal : cell.value}
                                             onChange={() =>
                                               handleToggleCellEdit(cell.value, row.values.id, index, rIndex, true)
                                             }
                                             onClick={(e) => {
                                               e.stopPropagation();
+                                              setCellClick((prev) => ({
+                                                ...prev,
+                                                editable: false,
+                                              }));
                                             }}
                                           />
                                         </label>
