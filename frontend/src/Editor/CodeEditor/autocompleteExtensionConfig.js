@@ -24,7 +24,7 @@ export const getAutocompletion = (input, fieldType, hints) => {
   const appHints = hints['appHints'].filter((cm) => {
     const { hint } = cm;
 
-    if (hint.includes('actions')) {
+    if (hint.includes('actions') || hint.endsWith('run()')) {
       return false;
     }
 
