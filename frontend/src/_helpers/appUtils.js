@@ -325,7 +325,8 @@ export async function runTransformation(
 }
 
 export async function executeActionsForEventId(_ref, eventId, events = [], mode, customVariables) {
-  const filteredEvents = events.filter((event) => event?.event.eventId === eventId);
+  if (!events || events.length === 0) return;
+  const filteredEvents = events?.filter((event) => event?.event.eventId === eventId)?.sort((a, b) => a.index - b.index);
 
   for (const event of filteredEvents) {
     await executeAction(_ref, event.event, mode, customVariables); // skipcq: JS-0032
@@ -1862,8 +1863,15 @@ export const buildComponentMetaDefinition = (components = {}) => {
 
     const mergedDefinition = {
       ...componentMeta.definition,
-
-      properties: _.merge(componentMeta.definition.properties, currentComponentData?.component.definition.properties),
+      properties: _.mergeWith(
+        componentMeta.definition.properties,
+        currentComponentData?.component?.definition?.properties,
+        (objValue, srcValue) => {
+          if (currentComponentData?.component?.component === 'Table' && _.isArray(objValue)) {
+            return srcValue;
+          }
+        }
+      ),
       styles: _.merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
       generalStyles: _.merge(
         componentMeta.definition.generalStyles,

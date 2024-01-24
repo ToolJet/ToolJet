@@ -34,6 +34,7 @@ export default function EditorHeader({
   onVersionDelete,
   slug,
   darkMode,
+  isSocketOpen,
 }) {
   const currentUser = useCurrentUser();
 
@@ -197,14 +198,16 @@ export default function EditorHeader({
                   </div>
                 </div>
 
-                <div className="nav-item dropdown promote-release-btn">
-                  <ReleaseVersionButton
-                    appId={appId}
-                    appName={appName}
-                    onVersionRelease={onVersionRelease}
-                    saveEditingVersion={saveEditingVersion}
-                  />
-                </div>
+                {isSocketOpen && (
+                  <div className="nav-item dropdown promote-release-btn">
+                    <ReleaseVersionButton
+                      appId={appId}
+                      appName={appName}
+                      onVersionRelease={onVersionRelease}
+                      saveEditingVersion={saveEditingVersion}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
