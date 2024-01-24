@@ -112,7 +112,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     let currentNumber = options.length + 1;
     let value = currentNumber;
     while (!found) {
-      label = `option${currentNumber}`;
+      label = `Option ${currentNumber}`;
       value = currentNumber.toString();
       if (options.find((option) => option.label === label) === undefined) {
         found = true;
@@ -505,14 +505,13 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     title: `Additional Actions`,
     isOpen: true,
     children: additionalActions.map((property) => {
-      const paramType = property === 'Tooltip' ? 'general' : 'properties';
       return renderElement(
         component,
         componentMeta,
         paramUpdated,
         dataQueries,
         property,
-        paramType,
+        'properties',
         currentState,
         allComponents,
         darkMode

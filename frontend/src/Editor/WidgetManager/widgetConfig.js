@@ -3226,7 +3226,6 @@ export const widgets = [
           },
         },
         accordian: 'Options',
-        popoverId: 'abc',
       },
       values: {
         type: 'code',
@@ -3242,7 +3241,6 @@ export const widgets = [
           },
         },
         accordian: 'Options',
-        popoverId: 'abc',
       },
       display_values: {
         type: 'code',
@@ -3258,7 +3256,6 @@ export const widgets = [
           },
         },
         accordian: 'Options',
-        popoverId: 'abc',
       },
 
       schema: {
@@ -3458,18 +3455,17 @@ export const widgets = [
         advanced: { value: `{{false}}` },
         schema: {
           value:
-            "{{[\t{label: 'One',value: 1,disable: false,visible: true,default: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}\t]}}",
+            "{{[\t{label: 'Option 1',value: '1',disable: false,visible: true,default: true},{label: 'Option 2',value: '2',disable: false,visible: true},{label: 'Option 3',value: '3',disable: false,visible: true}\t]}}",
         },
         label: { value: 'Select' },
         value: { value: '{{"2"}}' },
         values: { value: '{{["1","2","3"]}}' },
-        display_values: { value: '{{["option1", "option2", "option3"]}}' },
+        display_values: { value: '{{["Option 1", "Option 2", "Option 3"]}}' },
         loadingState: { value: '{{false}}' },
         placeholder: { value: '-Select' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         dropdownLoadingState: { value: '{{false}}' },
-        // This two following properties are
         optionVisibility: { value: '{{[true, true, true]}}' },
         optionDisable: { value: '{{[false, false, false]}}' },
       },
