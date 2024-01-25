@@ -333,7 +333,9 @@ export const PasswordInput = function PasswordInput({
           onFocus={(e) => {
             setIsFocused(true);
             e.stopPropagation();
-            fireEvent('onFocus');
+            setTimeout(() => {
+              fireEvent('onFocus');
+            }, 0);
           }}
           type={!iconVisibility ? 'password' : 'text'}
           placeholder={placeholder}

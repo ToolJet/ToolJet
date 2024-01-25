@@ -345,7 +345,9 @@ export const NumberInput = function NumberInput({
             onFocus={(e) => {
               setIsFocused(true);
               e.stopPropagation();
-              fireEvent('onFocus');
+              setTimeout(() => {
+                fireEvent('onFocus');
+              }, 0);
             }}
           />
           {!isResizing && (
