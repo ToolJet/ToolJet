@@ -6902,12 +6902,12 @@ tbody {
     overflow: hidden;
     text-overflow: ellipsis;
     &:hover {
-      background: #F1F3F5 !important;
+      background: var(--Slate-03, #F1F3F5) !important;
     }
   }
 
   .table-cell-hover-background {
-    background-color: #F8F9FA;
+    background: var(--Slate-03, #F1F3F5);
   }
 
   .table-cell-click {
@@ -6989,7 +6989,7 @@ tbody {
   }
 
   .tjdb-table-row:hover{
-    background: #F8F9FA;
+    background: var(--Slate-02, #F8F9FA);
   
     .tjdb-checkbox-cell {
       display: block !important;
