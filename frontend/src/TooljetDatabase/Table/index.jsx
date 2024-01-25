@@ -61,12 +61,12 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   const [editPopover, setEditPopover] = useState(false);
   const [defaultValue, setDefaultValue] = useState(false);
   const [nullValue, setNullValue] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [showUpdateProgressBar, setShowUpdateProgressBar] = useState(false);
 
   const prevSelectedTableRef = useRef({});
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-  const [progress, setProgress] = useState(0);
   const duration = 300;
-  const [showUpdateProgressBar, setShowUpdateProgressBar] = useState(false);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const fetchTableMetadata = () => {
     if (!isEmpty(selectedTable)) {
@@ -777,7 +777,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                       onChange={(e) => setCellVal(e.target.value)}
                                       onFocus={() => {
                                         setEditPopover(true);
-                                        setCellVal('');
                                       }}
                                       disabled={defaultValue === true || nullValue === true ? true : false}
                                     />
