@@ -399,6 +399,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       }
     } else if (event.key === 'Escape') {
       setEditPopover(false);
+      setCellVal(cellValue);
       document.getElementById('edit-input-blur').blur();
     }
   };
