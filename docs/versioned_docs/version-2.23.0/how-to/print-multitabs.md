@@ -136,7 +136,7 @@ actions.setVariable( // set tabsHtml variable
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-**This query will have 1 events handler:**
+**This query will have 1 event handler:**
 
 **1. Query Success:**
 
