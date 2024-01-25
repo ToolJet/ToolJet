@@ -24,7 +24,7 @@ import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 
 import './styles.scss';
 
-const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
+const Table = ({ openCreateRowDrawer, openCreateColumnDrawer, collapseSidebar }) => {
   const {
     organizationId,
     columns,
@@ -186,73 +186,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       ]);
     }
   );
-
-  const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
-
-  const handleKeyDown = (e) => {
-    if (cellClick.rowIndex !== null) {
-      if (e.key === 'ArrowRight') {
-        const cIndex = rows[cellClick.rowIndex].cells[cellClick.cellIndex + 1].value;
-        const newIndex =
-          cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
-        setCellClick((prevState) => ({
-          ...prevState,
-          cellIndex: newIndex,
-        }));
-        setCellVal(cIndex);
-      } else if (e.key === 'ArrowLeft') {
-        const cellIndexValue = cellClick.cellIndex === 2 ? 2 : cellClick.cellIndex - 1;
-        const cIndex = rows[cellClick.rowIndex].cells[cellIndexValue].value;
-        const newIndex = cellClick.cellIndex === 2 ? 2 : cellClick.cellIndex - 1;
-        setCellClick((prevState) => ({
-          ...prevState,
-          cellIndex: newIndex,
-        }));
-        setCellVal(cIndex);
-      } else if (e.key === 'ArrowUp') {
-        const rIndex = rows[cellClick.rowIndex - 1].cells[cellClick.cellIndex].value;
-        const newRowIndex = cellClick.rowIndex === 0 ? 0 : cellClick.rowIndex - 1;
-        setCellClick((prevState) => ({
-          ...prevState,
-          rowIndex: newRowIndex,
-        }));
-        setCellVal(rIndex);
-      } else if (e.key === 'ArrowDown') {
-        const rIndex = rows[cellClick.rowIndex + 1].cells[cellClick.cellIndex].value;
-        const newRowIndex = cellClick.rowIndex === rows.length - 1 ? rows.length - 1 : cellClick.rowIndex + 1;
-        setCellClick((prevState) => ({
-          ...prevState,
-          rowIndex: newRowIndex,
-        }));
-        setCellVal(rIndex);
-      }
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [cellClick]);
-
-  // const handleCellOutsideClick = (event) => {
-  //   if (!event.target.closest('.table-cell-click') && !event.target.closest('.table-editable-parent-cell')) {
-  //     setCellClick((prevState) => ({
-  //       ...prevState,
-  //       rowIndex: null,
-  //       cellIndex: null,
-  //       editable: false,
-  //     }));
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   document.addEventListener('click', handleCellOutsideClick);
-  //   return () => {
-  //     document.removeEventListener('click', handleCellOutsideClick);
-  //   };
-  // }, []);
 
   const handleDeleteRow = async () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
@@ -675,6 +608,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           openCreateRowDrawer={openCreateRowDrawer}
           dataLoading={loading}
           tableDataLength={tableData.length}
+          collapseSidebar={collapseSidebar}
         />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
