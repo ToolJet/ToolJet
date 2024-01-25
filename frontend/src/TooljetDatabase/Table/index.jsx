@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, { useEffect, useState, useContext, useRef, useMemo } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
 import { isBoolean, isEmpty } from 'lodash';
@@ -49,6 +49,12 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     deletePopupModal: false,
     columnEditPopover: false,
   });
+  const [cellClick, setCellClick] = useState({
+    rowIndex: null,
+    cellIndex: null,
+    editable: false,
+  });
+  const [cellVal, setCellVal] = useState('');
 
   const prevSelectedTableRef = useRef({});
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -181,6 +187,73 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }
   );
 
+  const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
+
+  const handleKeyDown = (e) => {
+    if (cellClick.rowIndex !== null) {
+      if (e.key === 'ArrowRight') {
+        const cIndex = rows[cellClick.rowIndex].cells[cellClick.cellIndex + 1].value;
+        const newIndex =
+          cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
+        setCellClick((prevState) => ({
+          ...prevState,
+          cellIndex: newIndex,
+        }));
+        setCellVal(cIndex);
+      } else if (e.key === 'ArrowLeft') {
+        const cellIndexValue = cellClick.cellIndex === 2 ? 2 : cellClick.cellIndex - 1;
+        const cIndex = rows[cellClick.rowIndex].cells[cellIndexValue].value;
+        const newIndex = cellClick.cellIndex === 2 ? 2 : cellClick.cellIndex - 1;
+        setCellClick((prevState) => ({
+          ...prevState,
+          cellIndex: newIndex,
+        }));
+        setCellVal(cIndex);
+      } else if (e.key === 'ArrowUp') {
+        const rIndex = rows[cellClick.rowIndex - 1].cells[cellClick.cellIndex].value;
+        const newRowIndex = cellClick.rowIndex === 0 ? 0 : cellClick.rowIndex - 1;
+        setCellClick((prevState) => ({
+          ...prevState,
+          rowIndex: newRowIndex,
+        }));
+        setCellVal(rIndex);
+      } else if (e.key === 'ArrowDown') {
+        const rIndex = rows[cellClick.rowIndex + 1].cells[cellClick.cellIndex].value;
+        const newRowIndex = cellClick.rowIndex === rows.length - 1 ? rows.length - 1 : cellClick.rowIndex + 1;
+        setCellClick((prevState) => ({
+          ...prevState,
+          rowIndex: newRowIndex,
+        }));
+        setCellVal(rIndex);
+      }
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [cellClick]);
+
+  // const handleCellOutsideClick = (event) => {
+  //   if (!event.target.closest('.table-cell-click') && !event.target.closest('.table-editable-parent-cell')) {
+  //     setCellClick((prevState) => ({
+  //       ...prevState,
+  //       rowIndex: null,
+  //       cellIndex: null,
+  //       editable: false,
+  //     }));
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   document.addEventListener('click', handleCellOutsideClick);
+  //   return () => {
+  //     document.removeEventListener('click', handleCellOutsideClick);
+  //   };
+  // }, []);
+
   const handleDeleteRow = async () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
     if (shouldDelete) {
@@ -299,6 +372,20 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       ...prevState,
       columnEditPopover: false,
     }));
+  };
+
+  const handleCellClick = (e, cellIndex, rowIndex, cellVal) => {
+    if (e.target.classList.value === 'table-cell') {
+      if (cellIndex !== 0 && cellIndex !== 1) {
+        setCellVal(cellVal);
+        setCellClick((prevState) => ({
+          ...prevState,
+          rowIndex: rowIndex,
+          cellIndex: cellIndex,
+          editable: true,
+        }));
+      }
+    }
   };
 
   function showTooltipForId(column) {
@@ -490,11 +577,11 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                 </td>
               </tr>
             ) : (
-              rows.map((row, index) => {
+              rows.map((row, rIndex) => {
                 prepareRow(row);
                 return (
                   <>
-                    <tr className={`${`row-tj`}`} {...row.getRowProps()} key={index}>
+                    <tr className={`${`row-tj`}`} {...row.getRowProps()} key={rIndex}>
                       {row.cells.map((cell, index) => {
                         const dataCy =
                           cell.column.id === 'selection'
@@ -505,43 +592,69 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                           <td
                             key={`cell.value-${index}`}
                             title={cell.value || ''}
-                            className={
+                            //tabIndex="0"
+                            className={`${
                               editColumnHeader?.clickedColumn === index &&
                               editColumnHeader?.columnEditPopover === true &&
                               !darkMode
-                                ? `table-cell-click`
+                                ? `table-columnHeader-click`
                                 : editColumnHeader?.clickedColumn === index &&
                                   editColumnHeader?.columnEditPopover === true &&
                                   darkMode
-                                ? 'table-cell-click-dark'
+                                ? `table-columnHeader-click-dark`
                                 : editColumnHeader?.hoveredColumn === index && !darkMode
                                 ? 'table-cell-hover-background'
                                 : editColumnHeader?.hoveredColumn === index && darkMode
                                 ? 'table-cell-hover-background-dark'
+                                : cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index &&
+                                  cellClick.editable === true &&
+                                  cellClick.cellIndex !== 0 &&
+                                  cellClick.cellIndex !== 1
+                                ? 'table-editable-parent-cell'
                                 : `table-cell`
-                            }
+                            }`}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
+                            //onKeyDown={(e) => handleKeyDown(e, cell.value)}
+                            onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
-                            {cell.value === null ? (
-                              <span className="cell-text-null">Null</span>
-                            ) : cell.column.dataType === 'boolean' ? (
-                              <div className="row">
-                                <div className="col-1">
-                                  <label className={`form-switch`}>
-                                    <input
-                                      className="form-check-input"
-                                      type="checkbox"
-                                      checked={cell.value}
-                                      onChange={() => handleToggleCellEdit(cell.value, row.values.id, index)}
-                                    />
-                                  </label>
-                                </div>
-                              </div>
+                            {/* {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')} */}
+                            {cellClick.editable &&
+                            index !== 0 &&
+                            index !== 1 &&
+                            cellClick.cellIndex !== 0 &&
+                            cellClick.cellIndex !== 1 &&
+                            cellClick.rowIndex === rIndex &&
+                            cellClick.cellIndex === index ? (
+                              <input
+                                className="form-control"
+                                value={cellVal}
+                                onChange={(e) => setCellVal(e.target.value)}
+                              />
                             ) : (
-                              <span className="cell-text">
-                                {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
-                              </span>
+                              <>
+                                {cell.value === null ? (
+                                  <span className="cell-text-null">Null</span>
+                                ) : cell.column.dataType === 'boolean' ? (
+                                  <div className="row">
+                                    <div className="col-1">
+                                      <label className={`form-switch`}>
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          checked={cell.value}
+                                          onChange={() => handleToggleCellEdit(cell.value, row.values.id, index)}
+                                        />
+                                      </label>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="cell-text">
+                                    {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                                  </span>
+                                )}
+                              </>
                             )}
                           </td>
                         );
