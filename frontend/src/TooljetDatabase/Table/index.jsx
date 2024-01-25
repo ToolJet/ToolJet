@@ -472,9 +472,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }
   };
 
-  // console.log('first', editPopover);
-  //console.log('first', cellVal);
-
   const closeEditPopover = (previousValue) => {
     setEditPopover(false);
     setCellVal(previousValue);
