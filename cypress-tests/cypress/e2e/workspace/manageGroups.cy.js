@@ -62,7 +62,7 @@ describe("Manage Groups", () => {
       groupsText.editGroupNameButton
     );
 
-    cy.get('[data-cy="delete-group-card-option"]').verifyVisibleElement(
+    cy.get(groupsSelector.deleteGroupOption).verifyVisibleElement(
       "have.text",
       groupsText.deleteGroupButton
     );
@@ -199,7 +199,7 @@ describe("Manage Groups", () => {
     cy.get(groupsSelector.groupLink(newGroupname)).click();
     groups.OpenGroupCardOption(newGroupname);
 
-    cy.get('[data-cy="delete-group-card-option"]').click();
+    cy.get(groupsSelector.deleteGroupOption).click();
     cy.get(groupsSelector.confirmText).verifyVisibleElement(
       "have.text",
       groupsText.confirmText
@@ -216,7 +216,7 @@ describe("Manage Groups", () => {
 
     cy.get(groupsSelector.groupLink(newGroupname)).click();
     groups.OpenGroupCardOption(newGroupname);
-    cy.get('[data-cy="delete-group-card-option"]').click();
+    cy.get(groupsSelector.deleteGroupOption).click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
   });
 });
