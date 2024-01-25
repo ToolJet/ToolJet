@@ -774,7 +774,10 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                       id="edit-input-blur"
                                       value={cellVal === null ? '' : cellVal}
                                       onChange={(e) => setCellVal(e.target.value)}
-                                      onFocus={() => setEditPopover(true)}
+                                      onFocus={() => {
+                                        setEditPopover(true);
+                                        setCellVal('');
+                                      }}
                                       disabled={defaultValue === true || nullValue === true ? true : false}
                                     />
                                   )}

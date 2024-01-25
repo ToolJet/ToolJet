@@ -36,7 +36,11 @@ export const CellEditMenu = ({
     if (nullVal === true) {
       setCellValue(null);
     } else {
-      setCellValue(previousCellValue);
+      if (previousCellValue === null) {
+        setCellValue('');
+      } else {
+        setCellValue(previousCellValue);
+      }
     }
     setNullValue(nullVal);
   };
