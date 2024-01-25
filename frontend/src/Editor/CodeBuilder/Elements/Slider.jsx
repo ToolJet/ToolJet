@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import CustomInput from '@/_ui/CustomInput';
+import debounce from 'lodash/debounce';
 
 function Slider1({ value, onChange, component }) {
   const [sliderValue, setSliderValue] = useState(value ? value : 33); // Initial value of the slider
@@ -9,12 +10,13 @@ function Slider1({ value, onChange, component }) {
     onChange(`{{${event.target.value}}}`);
   };
 
-  const onInputChange = (e) => {
-    let inputValue = parseInt(e.target.value, 10) || 0; // Parse the value as an integer, default to 0 if parsing fails
+  // Debounce function to handle input changes
+  const onInputChange = debounce((e) => {
+    let inputValue = parseInt(e.target.value, 10) || 0;
     inputValue = Math.min(inputValue, 100);
     setSliderValue(inputValue);
     onChange(`{{${inputValue}}}`);
-  };
+  }, 300);
 
   return (
     <div className="d-flex flex-column" style={{ width: '142px' }}>
