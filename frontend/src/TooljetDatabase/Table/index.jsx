@@ -260,6 +260,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
         rowIndex: null,
         cellIndex: null,
         editable: false,
+        errorState: false,
       }));
     }
   };
@@ -335,7 +336,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   };
 
   const handleToggleCellEdit = async (cellValue, rowId, index, rIndex, directToggle) => {
-    console.log('first', directToggle);
     const cellKey = headerGroups[0].headers[index].id;
     const query = `id=eq.${rowId}&order=id`;
     const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
@@ -472,8 +472,12 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }
   };
 
-  const closeEditPopover = () => {
+  // console.log('first', editPopover);
+  //console.log('first', cellVal);
+
+  const closeEditPopover = (previousValue) => {
     setEditPopover(false);
+    setCellVal(previousValue);
   };
 
   function showTooltipForId(column) {
@@ -497,8 +501,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       </ToolTip>
     );
   }
-
-  //console.log('first', cellClick.editable);
 
   return (
     <div>
@@ -725,7 +727,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                             cellClick.cellIndex === index ? (
                               <CellEditMenu
                                 show={editPopover}
-                                close={closeEditPopover}
+                                close={() => closeEditPopover(cell.value)}
                                 columnDetails={headerGroups[0].headers[index]}
                                 saveFunction={() =>
                                   handleToggleCellEdit(cell.value, row.values.id, index, rIndex, false)
@@ -753,10 +755,11 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                             className="form-check-input"
                                             //disabled={editPopover ? true : false}
                                             type="checkbox"
-                                            checked={cellClick.editable ? cellVal : cell.value}
-                                            onChange={() =>
-                                              handleToggleCellEdit(cell.value, row.values.id, index, rIndex, true)
-                                            }
+                                            checked={editPopover ? cellVal : cell.value}
+                                            onChange={() => {
+                                              if (!editPopover)
+                                                handleToggleCellEdit(cell.value, row.values.id, index, rIndex, true);
+                                            }}
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               setCellClick((prev) => ({
@@ -778,9 +781,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                       disabled={defaultValue === true || nullValue === true ? true : false}
                                     />
                                   )}
-                                  {cellVal === null && !editPopover ? (
-                                    <span className="cell-text-null-input">Null</span>
-                                  ) : null}
+                                  {cellVal === null ? <span className="cell-text-null-input">Null</span> : null}
                                 </div>
                               </CellEditMenu>
                             ) : (
