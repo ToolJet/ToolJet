@@ -3,6 +3,7 @@ import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import classNames from 'classnames';
 
 const { MenuList, ValueContainer, SingleValue, Placeholder } = components;
 export const SelectComponent = ({
@@ -68,10 +69,12 @@ export const SelectComponent = ({
 };
 
 export const CustomMenuList = ({ selectProps, ...props }) => {
-  const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
-
+  const { onInputChange, inputValue, onMenuInputFocus, isDarkMode } = selectProps;
   return (
-    <div className="table-select-custom-menu-list" onClick={(e) => e.stopPropagation()}>
+    <div
+      className={classNames('table-select-custom-menu-list', { 'theme-dark dark-theme': isDarkMode })}
+      onClick={(e) => e.stopPropagation()}
+    >
       <div className="table-select-column-type-search-box-wrapper ">
         {!inputValue && (
           <span className="">
@@ -84,11 +87,11 @@ export const CustomMenuList = ({ selectProps, ...props }) => {
           spellCheck="false"
           type="text"
           value={inputValue}
-          onChange={(e) =>
+          onChange={(e) => {
             onInputChange(e.currentTarget.value, {
               action: 'input-change',
-            })
-          }
+            });
+          }}
           onMouseDown={(e) => {
             e.stopPropagation();
             e.target.focus();

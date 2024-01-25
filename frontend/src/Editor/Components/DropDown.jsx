@@ -293,7 +293,6 @@ export const DropDown = function DropDown({
         height: _height,
         boxShadow: state.isFocused ? boxShadow : boxShadow,
         borderRadius: Number.parseFloat(fieldBorderRadius),
-        // borderColor: !isValid ? 'var(--tj-text-input-widget-error)' : fieldBorderColor,
         borderColor: !isValid
           ? 'var(--tj-text-input-widget-error)'
           : state.isFocused
@@ -326,7 +325,6 @@ export const DropDown = function DropDown({
 
     singleValue: (provided, _state) => ({
       ...provided,
-      // color: disabledState ? 'grey' : selectedTextColor ? selectedTextColor : darkMode ? 'white' : 'black',
       color: darkMode && selectedTextColor === '#11181C' ? '#ECEDEE' : selectedTextColor,
     }),
 
@@ -475,6 +473,7 @@ export const DropDown = function DropDown({
             doShowIcon={iconVisibility}
             iconColor={iconColor}
             isSearchable={false}
+            isDarkMode={darkMode}
             {...{
               menuIsOpen: isFocused || undefined,
               isFocused: isFocused || undefined,

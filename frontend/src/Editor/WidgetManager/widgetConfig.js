@@ -3301,11 +3301,12 @@ export const widgets = [
         },
         section: 'additionalActions',
       },
-      toolltip: {
+      tooltip: {
         type: 'code',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
+        placeholder: 'Enter tooltip text',
       },
     },
     events: {
