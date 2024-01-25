@@ -7,7 +7,8 @@ import { tooljetDatabaseService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
-  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords, pageSize } =
+    useContext(TooljetDatabaseContext);
 
   return (
     <>
@@ -25,8 +26,9 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm
           onCreate={() => {
+            const limit = pageSize;
             tooljetDatabaseService
-              .findOne(organizationId, selectedTable.id, 'order=id.desc')
+              .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}`)
               .then(({ headers, data = [], error }) => {
                 if (error) {
                   toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
