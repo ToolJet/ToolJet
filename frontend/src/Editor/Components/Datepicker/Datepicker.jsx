@@ -12,32 +12,7 @@ import './datepicker.scss';
 import CustomDatePickerHeader from './CustomDatePickerHeader';
 import { valueinTimeStamp } from './datepickerUtils';
 import { setHours, setMinutes, set, format } from 'date-fns';
-
-const TjDatepicker = forwardRef(
-  ({ value, onClick, styles, setShowValidationError, setIsFocused, fireEvent, dateInputRef }, ref) => {
-    return (
-      <input
-        onBlur={(e) => {
-          setShowValidationError(true);
-          setIsFocused(false);
-          e.stopPropagation();
-          fireEvent('onBlur');
-          setIsFocused(false);
-        }}
-        onFocus={(e) => {
-          setIsFocused(true);
-          e.stopPropagation();
-          fireEvent('onFocus');
-        }}
-        className="custom-input-datepicker"
-        value={value}
-        onClick={onClick}
-        ref={dateInputRef}
-        style={styles}
-      ></input>
-    );
-  }
-);
+import { DatePickerUI } from '@/_ui/TJDatepicker/DatePicker';
 
 export const Datepicker = function Datepicker({
   height,
@@ -127,10 +102,9 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
 
-  const disabledDates = component?.definition?.validation?.disabledDates?.value;
+  const disabledDates = resolveReferences(component?.definition?.validation?.disabledDates?.value, currentState);
 
   useEffect(() => {
-    console.log('log---', disabledDates);
     if (Array.isArray(disabledDates) && disabledDates.length > 0) {
       const _exluded = [];
       disabledDates?.map((item) => {
@@ -508,7 +482,7 @@ export const Datepicker = function Datepicker({
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         )}
-        <DatePickerComponent
+        <DatePickerUI
           calendarIcon={<IconElement stroke={1.5} />}
           className={`input-field form-control tj-text-input-widget  ${
             !isValid && showValidationError ? 'is-invalid' : ''
@@ -522,15 +496,6 @@ export const Datepicker = function Datepicker({
           onFocus={(event) => {
             onComponentClick(id, component, event);
           }}
-          customInput={
-            <TjDatepicker
-              styles={datepickerinputStyles}
-              setShowValidationError={setShowValidationError}
-              fireEvent={fireEvent}
-              setIsFocused={setIsFocused}
-              dateInputRef={dateInputRef}
-            />
-          }
           showMonthDropdown
           showYearDropdown
           dropdownMode="select"
@@ -542,7 +507,7 @@ export const Datepicker = function Datepicker({
           maxDate={maxDate && new Date(maxDate)}
           minTime={setHours(setMinutes(new Date(), minTime.minutes), minTime.hours)}
           maxTime={setHours(setMinutes(new Date(), maxTime.minutes), maxTime.hours)}
-          renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
+          datepickerinputStyles={datepickerinputStyles}
         />
         {loading && <Loader style={{ ...loaderStyle }} width="16" />}
         <div
