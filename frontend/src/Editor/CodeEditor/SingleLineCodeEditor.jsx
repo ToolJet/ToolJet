@@ -120,17 +120,13 @@ const EditorInput = ({
   fxActive,
 }) => {
   function autoCompleteExtensionConfig(context) {
-    let before = context.matchBefore(/\w+/);
-
-    if (!context.explicit && !before) {
-      return null;
-    }
+    let word = context.matchBefore(/\w*/);
+    if (word.from == word.to && !context.explicit) return null;
 
     let completions = getAutocompletion(context.state.doc.toString(), validationType, hints, fxActive);
-
     return {
-      from: context.pos,
-      options: [...completions],
+      from: word.from,
+      options: completions,
       validFor: !fxActive ? /^\{\{.*\}\}$/ : '',
     };
   }
