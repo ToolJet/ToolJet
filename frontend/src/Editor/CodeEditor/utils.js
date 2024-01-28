@@ -244,38 +244,6 @@ export const paramValidation = (expectedType, value) => {
   return type === expectedType;
 };
 
-// const inferJSExpAndReferences = (code, hintsMap) => {
-//   if (!code) return { toResolveReference: null, jsExpression: null };
-
-//   const references = code?.split('.');
-
-//   let prevReference;
-
-//   let toResolveReference;
-//   let jsExpression;
-
-//   for (let i = 0; i < references?.length; i++) {
-//     const currentRef = references[i];
-
-//     const ref = prevReference ? prevReference + '.' + currentRef : currentRef;
-
-//     const existsInMap = hintsMap.has(ref);
-
-//     if (!existsInMap) {
-//       break;
-//     }
-
-//     prevReference = ref;
-//     toResolveReference = ref;
-//     jsExpression = code.substring(ref.length);
-//   }
-
-//   return {
-//     toResolveReference,
-//     jsExpression,
-//   };
-// };
-
 const inferJSExpAndReferences = (code, hintsMap) => {
   if (!code) return { toResolveReference: null, jsExpression: null };
 

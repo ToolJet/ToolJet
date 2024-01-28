@@ -62,7 +62,7 @@ function orderSuggestions(suggestions, validationType) {
   return [...matchingSuggestions, ...otherSuggestions];
 }
 
-export const generateHints = (hints, fxActive = false) => {
+export const generateHints = (hints) => {
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
@@ -79,16 +79,8 @@ export const generateHints = (hints, fxActive = false) => {
 
         const word = doc.sliceString(start, end);
 
-        let wordStart = start;
-
-        if (!fxActive) {
-          wordStart = start + word.indexOf('{{');
-        }
-
-        const wordEnd = wordStart + word.length;
-
         const pickedCompletionConfig = {
-          from: wordEnd - from,
+          from: from,
           to: to,
           insert: completion.label,
         };
