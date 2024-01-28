@@ -129,14 +129,19 @@ const MultiLineCodeEditor = (props) => {
         const changesStartIndexFromDocLine = doc.lineAt(from).from;
 
         const changeIndex = changesStartIndexFromDocLine > 0 ? changesStartIndexFromDocLine + index : index;
-        const endIndex = changesStartIndexFromDocLine > 0 ? to : to;
+
+        const pickedCompletionConfig = {
+          from: changeIndex,
+          to: to,
+          insert: completion.label,
+        };
+
+        if (completion.type === 'js_methods') {
+          pickedCompletionConfig.from = to;
+        }
 
         view.dispatch({
-          changes: {
-            from: changeIndex,
-            to: endIndex,
-            insert: completion.label,
-          },
+          changes: pickedCompletionConfig,
         });
       };
       return hint;
