@@ -1,10 +1,9 @@
 /* eslint-disable import/no-unresolved */
 import React, { useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
+import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
-import { autocompletion } from '@codemirror/autocomplete';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { generateHints } from './autocompleteExtensionConfig';
@@ -149,15 +148,6 @@ const MultiLineCodeEditor = (props) => {
     };
   }
 
-  const autoCompleteConfig = autocompletion({
-    override: [autoCompleteExtensionConfig],
-    compareCompletions: (a, b) => {
-      return a.label < b.label ? -1 : 1;
-    },
-    aboveCursor: false,
-    defaultKeymap: true,
-  });
-
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
 
   return (
@@ -192,7 +182,12 @@ const MultiLineCodeEditor = (props) => {
                 maxHeight={heightInPx}
                 width="100%"
                 theme={theme}
-                extensions={[langExtention, autoCompleteConfig]}
+                extensions={[
+                  langExtention,
+                  javascriptLanguage.data.of({
+                    autocomplete: autoCompleteExtensionConfig,
+                  }),
+                ]}
                 onChange={handleChange}
                 onBlur={handleOnBlur}
                 basicSetup={setupConfig}
