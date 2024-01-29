@@ -388,7 +388,7 @@ const Table = ({ collapseSidebar }) => {
           className="table card-table table-bordered table-vcenter text-nowrap datatable"
           style={{ position: 'relative' }}
         >
-          <thead>
+          <thead style={{ position: 'sticky', top: 0 }}>
             {headerGroups.map((headerGroup, index) => (
               <tr className="tj-database-column-row" {...headerGroup.getHeaderGroupProps()} key={index}>
                 <th
@@ -542,7 +542,6 @@ const Table = ({ collapseSidebar }) => {
                           cell.column.id === 'selection'
                             ? `${cell.row.values?.id}-checkbox`
                             : `id-${cell.row.values?.id}-column-${cell.column.id}`;
-                        const cellValue = cell.value === null ? '' : cell.value;
                         return (
                           <td
                             {...cell.getCellProps()}
