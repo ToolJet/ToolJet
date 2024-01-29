@@ -2068,7 +2068,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        placeholder: { value: 'password' },
+        placeholder: { value: 'Password' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         loadingState: { value: '{{false}}' },
