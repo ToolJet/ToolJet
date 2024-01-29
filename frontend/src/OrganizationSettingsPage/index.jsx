@@ -42,6 +42,10 @@ export function OrganizationSettings(props) {
     }
   };
 
+  if (!admin) {
+    navigate('/');
+  }
+
   const fetchFeatureAccess = () => {
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess(data);

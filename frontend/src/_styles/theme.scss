@@ -8467,7 +8467,7 @@ tbody {
   padding-left: 20px;
   padding-bottom: 24px;
   border-right: 1px solid var(--slate5);
-  &[data-name="Workspace constants"], &[data-name="Profile settings"] {
+  &[data-name="Profile settings"] {
     border-right: none;
     border-bottom: 1px solid var(--slate5);
   }
@@ -8624,7 +8624,9 @@ tbody {
       width: unset;
       img {
         width: 20px;
-        height: 20px
+        height: 20px;
+        margin-left: 0px !important;
+        margin-right: 0px !important;
       }
     }
   }
@@ -9801,7 +9803,7 @@ tbody {
   background: transparent;
   border-radius: 6px !important;
   display: flex;
-  flex-direction: row;
+flex-direction: row;
   justify-content: center;
   align-items: center;
   gap: 6px;
@@ -11041,6 +11043,9 @@ tbody {
 }
 
 .workspace-variable-container-wrap {
+  &.constants-list {
+    overflow: auto;
+  }
 
   .card,
   thead {
@@ -11877,7 +11882,6 @@ tbody {
   }
 
   .workspace-constant-card-body {
-    height: calc(100vh - 295px);
     min-height: calc(100vh - 408px);
     background: var(--base);
   }
@@ -11885,6 +11889,7 @@ tbody {
   .constant-table-wrapper {
     height: calc(100vh - 403px);
     overflow-y: auto;
+   height: 100%;
   }
 
   .constant-table-card {
@@ -11925,7 +11930,23 @@ tbody {
 
     .app-list {
       overflow-y: auto;
-      height: calc(100vh - 23rem);
+      height: calc(100vh - 26rem);
+
+      .skeleton-container {
+        display: flex;
+        flex-direction: column;
+
+        .col {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 1rem;
+        }
+
+        .card-skeleton-container {
+          width: 304px;
+
+        }
+      }
     }
 
     .menu-ico {
@@ -13949,10 +13970,6 @@ tbody {
 
 .workspace-constants-wrapper {
   height: calc(100vh - 64px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 1.5rem;
 }
 
 .blank-page-wrapper {
@@ -13962,10 +13979,10 @@ tbody {
 }
 
 .blank-page-wrapper-mobile {
-  display: none;
+  display: none !important;
   @media only screen and (max-width: 768px) {
-    transform: translateY(80%);
-    display: flex;
+    transform: translateY(50%);
+    display: flex !important;
     align-items: center;
     justify-content: center;
   }

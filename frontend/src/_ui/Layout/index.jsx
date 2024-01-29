@@ -88,9 +88,11 @@ function Layout({ children, switchDarkMode, darkMode }) {
   const workflowsEnabled = admin && window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
 
   const canCreateVariableOrConstant = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_variable_create',
-      authenticationService.currentSessionValue.group_permissions
+    return (
+      canAnyGroupPerformAction(
+        'org_environment_variable_create',
+        authenticationService.currentSessionValue.group_permissions
+      ) || admin
     );
   };
 
@@ -235,39 +237,8 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     </ToolTip>
                   </li>
                 )}
+
                 <li className="tj-leftsidebar-icon-items-bottom text-center">
-                  {admin && (
-                    <LicenseTooltip
-                      limits={featureAccess}
-                      feature={'Audit logs'}
-                      isAvailable={featureAccess?.auditLogs}
-                      customMessage={
-                        licenseValid
-                          ? 'Audit logs are not included in your current plan'
-                          : 'Audit logs are available only in paid plans'
-                      }
-                    >
-                      <Link
-                        to={featureAccess?.auditLogs && getPrivateRoute('audit_logs')}
-                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('audit_logs'), event)}
-                        className={`tj-leftsidebar-icon-items ${
-                          router.pathname === getPrivateRoute('audit_logs') && `current-seleted-route`
-                        }`}
-                        data-cy="icon-audit-logs"
-                      >
-                        <SolidIcon
-                          name="auditlogs"
-                          fill={
-                            router.pathname === getPrivateRoute('audit_logs')
-                              ? '#3E63DD'
-                              : darkMode
-                              ? '#4C5155'
-                              : '#C1C8CD'
-                          }
-                        />
-                      </Link>
-                    </LicenseTooltip>
-                  )}
                   <NotificationCenter darkMode={darkMode} />
                   <ToolTip delay={{ show: 0, hide: 0 }} message="Mode" placement="right">
                     <Link
@@ -278,7 +249,11 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill="var(--slate8)" />
                     </Link>
                   </ToolTip>
-                  <Settings darkMode={darkMode} checkForUnsavedChanges={checkForUnsavedChanges} />
+                  <Settings
+                    featureAccess={featureAccess}
+                    darkMode={darkMode}
+                    checkForUnsavedChanges={checkForUnsavedChanges}
+                  />
                 </li>
               </ul>
             </div>

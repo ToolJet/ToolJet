@@ -4,18 +4,28 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { authenticationService } from '@/_services';
 import { getPrivateRoute } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import AppLogo from './AppLogo';
+import Logo from '@assets/images/rocket.svg';
 
-export default function LogoNavDropdown({ darkMode }) {
+export default function LogoNavDropdown({ darkMode, type = 'apps' }) {
   const getOverlay = () => {
+    const isWorkflows = type === 'workflows';
     const { admin } = authenticationService?.currentSessionValue ?? {};
     return (
       <div className={`logo-nav-card settings-card card ${darkMode && 'dark-theme'}`}>
-        <Link to={getPrivateRoute('dashboard')} className="dropdown-item tj-text-xsm" data-cy="back-to-app-option">
+        <Link to={getPrivateRoute(isWorkflows ? 'workflows' : 'dashboard')} className="dropdown-item tj-text-xsm" data-cy="back-to-app-option">
           <SolidIcon name="arrowbackdown" width="20" viewBox="0 0 20 20" />
-          <span>Back to apps</span>
+          <span>Back to {isWorkflows ? 'workflows' : 'apps'}</span>
         </Link>
         <div className="divider"></div>
+        <Link
+          target="_blank"
+          to={getPrivateRoute(!isWorkflows ? 'workflows' : 'dashboard')}
+          className="dropdown-item tj-text-xsm"
+        >
+          <SolidIcon name={isWorkflows ? 'apps' : 'workflows'} width="20" fill="var(--slate8)" />
+          <span>{isWorkflows ? 'Apps' : 'Workflows'}</span>
+        </Link>
+
         {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
           <Link
             target="_blank"

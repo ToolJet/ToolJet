@@ -7,13 +7,15 @@ import { useTranslation } from 'react-i18next';
 import { ToolTip } from '@/_components/ToolTip';
 import { getPrivateRoute } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { LicenseTooltip } from '@/LicenseTooltip';
 
-export default function Settings({ darkMode, checkForUnsavedChanges }) {
+export default function Settings({ darkMode, checkForUnsavedChanges, featureAccess }) {
   const [showOverlay, setShowOverlay] = useState(false);
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
   const superAdmin = currentUserValue?.super_admin;
   const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
+  let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
 
   const { t } = useTranslation();
 
@@ -46,7 +48,6 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
             >
               <span>Audit logs</span>
             </Link>
-            <div className="divider"></div>
           </>
         )}
         {superAdmin && (
@@ -59,15 +60,43 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
           </Link>
         )}
         {admin && (
+          <LicenseTooltip
+            limits={featureAccess}
+            feature={'Audit logs'}
+            isAvailable={featureAccess?.auditLogs}
+            customMessage={
+              licenseValid
+                ? 'Audit logs are not included in your current plan'
+                : 'Audit logs are available only in paid plans'
+            }
+          >
+            <Link
+              onClick={(event) => checkForUnsavedChanges(getPrivateRoute('audit_logs'), event)}
+              to={featureAccess?.auditLogs && getPrivateRoute('audit_logs')}
+              className="dropdown-item tj-text-xsm"
+            >
+              <span>Audit logs</span>
+            </Link>
+          </LicenseTooltip>
+        )}
+        {admin && <div className="divider"></div>}
+        {superAdmin && (
           <Link
-            onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
-            to={getPrivateRoute('workspace_settings')}
+            onClick={(event) => checkForUnsavedChanges('/instance-settings', event)}
+            to={'/instance-settings'}
             className="dropdown-item tj-text-xsm"
             data-cy="workspace-settings"
           >
-            <span>Workspace settings</span>
+            <span>Settings</span>
           </Link>
         )}
+        <Link
+          onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
+          to={getPrivateRoute('workspace_settings')}
+          className="dropdown-item tj-text-xsm"
+        >
+          <span>Workspace settings</span>
+        </Link>
 
         <Link
           onClick={(event) => checkForUnsavedChanges(getPrivateRoute('settings'), event)}

@@ -7,6 +7,7 @@ import { authenticationService } from '@/_services';
 
 export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
   const navigate = useNavigate();
+  const { admin } = authenticationService?.currentSessionValue ?? {};
 
   const canAnyGroupPerformAction = (action, permissions) => {
     if (!permissions) {
@@ -17,9 +18,11 @@ export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
   };
 
   const canCreateVariableOrConstant = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_variable_create',
-      authenticationService.currentSessionValue.group_permissions
+    return (
+      canAnyGroupPerformAction(
+        'org_environment_variable_create',
+        authenticationService.currentSessionValue.group_permissions
+      ) || admin
     );
   };
 
