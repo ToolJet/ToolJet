@@ -198,9 +198,15 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
 
   const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
 
+  const handleOnCloseEditMenu = () => {
+    setNullValue(false);
+    setDefaultValue(false);
+  };
+
   const handleKeyDown = (e) => {
     if (cellClick.rowIndex !== null) {
       if (e.key === 'ArrowRight') {
+        setEditPopover(false);
         const cellIndexValue =
           cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
         const cellValue = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
@@ -211,7 +217,10 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           cellIndex: newIndex,
         }));
         setCellVal(cellValue);
+        cellValue === null ? setNullValue(true) : setNullValue(false);
+        setDefaultValue(false);
       } else if (e.key === 'ArrowLeft') {
+        setEditPopover(false);
         const cellIndexValue = cellClick.cellIndex === 2 ? 2 : cellClick.cellIndex - 1;
         const cellValue = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
         const newIndex = cellClick.cellIndex === 2 ? 2 : cellClick.cellIndex - 1;
@@ -220,7 +229,10 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           cellIndex: newIndex,
         }));
         setCellVal(cellValue);
+        cellValue === null ? setNullValue(true) : setNullValue(false);
+        setDefaultValue(false);
       } else if (e.key === 'ArrowUp') {
+        setEditPopover(false);
         const cellValue = rows[cellClick.rowIndex - 1].cells[cellClick.cellIndex].value; // row Index's value
         const newRowIndex = cellClick.rowIndex === 0 ? 0 : cellClick.rowIndex - 1;
         setCellClick((prevState) => ({
@@ -228,7 +240,10 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           rowIndex: newRowIndex,
         }));
         setCellVal(cellValue);
+        cellValue === null ? setNullValue(true) : setNullValue(false);
+        setDefaultValue(false);
       } else if (e.key === 'ArrowDown') {
+        setEditPopover(false);
         const cellValue = rows[cellClick.rowIndex + 1].cells[cellClick.cellIndex].value; // row Index's value
         const newRowIndex = cellClick.rowIndex === rows.length - 1 ? rows.length - 1 : cellClick.rowIndex + 1;
         setCellClick((prevState) => ({
@@ -236,6 +251,8 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           rowIndex: newRowIndex,
         }));
         setCellVal(cellValue);
+        cellValue === null ? setNullValue(true) : setNullValue(false);
+        setDefaultValue(false);
       } else if (e.key === 'Enter') {
         document.getElementById('edit-input-blur').focus();
       }
@@ -262,6 +279,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
         editable: false,
         errorState: false,
       }));
+      handleOnCloseEditMenu();
     }
   };
 
@@ -348,8 +366,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
         false
       );
       setEditPopover(false);
-      setNullValue(false);
-      setDefaultValue(false);
+      handleOnCloseEditMenu();
       setTimeout(() => {
         setCellClick((prev) => ({
           ...prev,
@@ -377,8 +394,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
         }
       });
     setEditPopover(false);
-    setDefaultValue(false);
-    setNullValue(false);
+    handleOnCloseEditMenu();
     setCellClick((prev) => ({
       ...prev,
       rowIndex: rIndex,
@@ -395,10 +411,13 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
         document.getElementById('edit-input-blur').blur();
       } else {
         setEditPopover(false);
+        handleOnCloseEditMenu();
         document.getElementById('edit-input-blur').blur();
       }
     } else if (event.key === 'Escape') {
       setEditPopover(false);
+      cellValue === null ? setNullValue(true) : setNullValue(false);
+      setDefaultValue(false);
       setCellVal(cellValue);
       document.getElementById('edit-input-blur').blur();
     }
@@ -468,6 +487,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           editable: true,
           errorState: false,
         }));
+        cellVal === null ? setNullValue(true) : setNullValue(false);
         setEditPopover(false);
       }
     }
@@ -475,6 +495,8 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
 
   const closeEditPopover = (previousValue) => {
     setEditPopover(false);
+    previousValue === null ? setNullValue(true) : setNullValue(false);
+    setDefaultValue(false);
     setCellVal(previousValue);
   };
 
