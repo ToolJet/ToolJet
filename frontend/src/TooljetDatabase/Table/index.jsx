@@ -203,39 +203,39 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       if (e.key === 'ArrowRight') {
         const cellIndexValue =
           cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
-        const cIndex = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
+        const cellValue = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
         const newIndex =
           cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
         setCellClick((prevState) => ({
           ...prevState,
           cellIndex: newIndex,
         }));
-        setCellVal(cIndex);
+        setCellVal(cellValue);
       } else if (e.key === 'ArrowLeft') {
         const cellIndexValue = cellClick.cellIndex === 2 ? 2 : cellClick.cellIndex - 1;
-        const cIndex = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
+        const cellValue = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
         const newIndex = cellClick.cellIndex === 2 ? 2 : cellClick.cellIndex - 1;
         setCellClick((prevState) => ({
           ...prevState,
           cellIndex: newIndex,
         }));
-        setCellVal(cIndex);
+        setCellVal(cellValue);
       } else if (e.key === 'ArrowUp') {
-        const rIndex = rows[cellClick.rowIndex - 1].cells[cellClick.cellIndex].value; // row Index's value
+        const cellValue = rows[cellClick.rowIndex - 1].cells[cellClick.cellIndex].value; // row Index's value
         const newRowIndex = cellClick.rowIndex === 0 ? 0 : cellClick.rowIndex - 1;
         setCellClick((prevState) => ({
           ...prevState,
           rowIndex: newRowIndex,
         }));
-        setCellVal(rIndex);
+        setCellVal(cellValue);
       } else if (e.key === 'ArrowDown') {
-        const rIndex = rows[cellClick.rowIndex + 1].cells[cellClick.cellIndex].value; // row Index's value
+        const cellValue = rows[cellClick.rowIndex + 1].cells[cellClick.cellIndex].value; // row Index's value
         const newRowIndex = cellClick.rowIndex === rows.length - 1 ? rows.length - 1 : cellClick.rowIndex + 1;
         setCellClick((prevState) => ({
           ...prevState,
           rowIndex: newRowIndex,
         }));
-        setCellVal(rIndex);
+        setCellVal(cellValue);
       } else if (e.key === 'Enter') {
         document.getElementById('edit-input-blur').focus();
       }
@@ -739,8 +739,10 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                 nullValue={nullValue}
                                 isBoolean={cell.column?.dataType === 'boolean' ? true : false}
                               >
-                                <div className="input-cell-parent">
-                                  {cell.column?.dataType === 'boolean' ? (
+                                <div className="input-cell-parent" onClick={() => setEditPopover(true)}>
+                                  {cellVal === null ? (
+                                    <span className="cell-text-null-input">Null</span>
+                                  ) : cell.column?.dataType === 'boolean' ? (
                                     <div
                                       className="row"
                                       style={{ marginLeft: '0px' }}
@@ -783,7 +785,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                       disabled={defaultValue === true || nullValue === true ? true : false}
                                     />
                                   )}
-                                  {cellVal === null ? <span className="cell-text-null-input">Null</span> : null}
                                 </div>
                               </CellEditMenu>
                             ) : (
