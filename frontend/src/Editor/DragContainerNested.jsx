@@ -27,7 +27,7 @@ export default function DragContainerNested({
 
   const getDimensions = (id) => {
     const box = boxes.find((b) => b.id === id);
-    const layoutData = box?.layouts?.[currentLayout];
+    const layoutData = box?.layouts?.[currentLayout] || box?.layouts?.['desktop'];
     if (isEmpty(layoutData)) {
       return {};
     }

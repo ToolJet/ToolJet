@@ -164,7 +164,32 @@ export const Container = ({
   );
 
   useEffect(() => {
-    setBoxes(components);
+    if (mode === 'view' && currentLayout === 'mobile') {
+      const mobLayouts = Object.keys(components)
+        .filter((key) => !components[key]?.component?.parent)
+        .map((key) => {
+          return { ...cloneDeep(components[key]?.layouts?.desktop), i: key };
+        });
+      const updatedBoxes = cloneDeep(components);
+      let newmMobLayouts = correctBounds(mobLayouts, { cols: 43 });
+      newmMobLayouts = compact(newmMobLayouts, 'vertical', 43);
+      Object.keys(components).forEach((id) => {
+        const mobLayout = newmMobLayouts.find((layout) => layout.i === id);
+        updatedBoxes[id].layouts.mobile = mobLayout
+          ? {
+              left: mobLayout.left,
+              height: mobLayout.height,
+              top: mobLayout.top,
+              width: mobLayout.width,
+            }
+          : updatedBoxes[id].layouts.desktop;
+      });
+      console.log(updatedBoxes);
+      setBoxes({ ...updatedBoxes });
+    } else {
+      setBoxes(components);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(components)]);
 
