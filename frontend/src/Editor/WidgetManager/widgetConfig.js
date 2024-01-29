@@ -3368,7 +3368,7 @@ export const widgets = [
 
       fieldBackgroundColor: {
         type: 'color',
-        displayName: 'BG Color',
+        displayName: 'Background',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
