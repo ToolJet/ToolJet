@@ -5,16 +5,21 @@ import * as Slider from '@radix-ui/react-slider';
 import './Slider.scss';
 
 function Slider1({ value, onChange, component }) {
+  console.log('type', typeof value);
   const [sliderValue, setSliderValue] = useState(value ? value : 33); // Initial value of the slider
 
   useEffect(() => {
     setSliderValue(value);
   }, [value]);
 
+  useEffect(() => {
+    console.log('sliderValue--', sliderValue);
+  }, [sliderValue]);
+
   const handleSliderChange = (value) => {
-    const newValue = value;
+    console.log('Slider Value Changed:', value);
     setSliderValue(value);
-    onChange(newValue);
+    onChange(value);
   };
 
   // Throttle function to handle input changes
@@ -22,7 +27,7 @@ function Slider1({ value, onChange, component }) {
     let inputValue = parseInt(e.target.value, 10) || 0;
     inputValue = Math.min(inputValue, 100);
     setSliderValue(inputValue);
-    onChange(`{{${inputValue}}}`);
+    onChange(inputValue);
   };
 
   return (
@@ -41,7 +46,7 @@ function Slider1({ value, onChange, component }) {
           min={0}
           max={100}
           step={1}
-          value={sliderValue}
+          value={[sliderValue]}
           onValueChange={handleSliderChange}
           disabled={component.component.definition.styles.auto.value == true}
         >

@@ -1370,7 +1370,7 @@ export const widgets = [
       width: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        validation: { schema: { type: 'number' } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
@@ -1533,7 +1533,7 @@ export const widgets = [
         backgroundColor: { value: '#fff' },
         iconColor: { value: '#C1C8CD' },
         direction: { value: 'left' },
-        width: { value: '33' },
+        width: { value: '{{33}}' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
         auto: { value: '{{true}}' },
@@ -1648,7 +1648,7 @@ export const widgets = [
       width: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        validation: { schema: { type: 'number' } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
@@ -1814,7 +1814,7 @@ export const widgets = [
         textColor: { value: '#232e3c' },
         iconColor: { value: '#C1C8CD' },
         direction: { value: 'left' },
-        width: { value: '33' },
+        width: { value: '{{33}}' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
         auto: { value: '{{true}}' },
@@ -1939,7 +1939,7 @@ export const widgets = [
       width: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        validation: { schema: { type: 'number' } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
@@ -2092,7 +2092,7 @@ export const widgets = [
         textColor: { value: '#11181C' },
         iconColor: { value: '#C1C8CD' },
         direction: { value: 'left' },
-        width: { value: '33' },
+        width: { value: '{{33}}' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
         auto: { value: '{{true}}' },
