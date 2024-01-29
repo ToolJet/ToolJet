@@ -4,7 +4,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { authenticationService } from '@/_services';
 import { getPrivateRoute } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import Logo from '@assets/images/rocket.svg';
+import AppLogo from '@/_components/AppLogo';
 
 export default function LogoNavDropdown({ darkMode, type = 'apps' }) {
   const getOverlay = () => {
@@ -12,7 +12,11 @@ export default function LogoNavDropdown({ darkMode, type = 'apps' }) {
     const { admin } = authenticationService?.currentSessionValue ?? {};
     return (
       <div className={`logo-nav-card settings-card card ${darkMode && 'dark-theme'}`}>
-        <Link to={getPrivateRoute(isWorkflows ? 'workflows' : 'dashboard')} className="dropdown-item tj-text-xsm" data-cy="back-to-app-option">
+        <Link
+          to={getPrivateRoute(isWorkflows ? 'workflows' : 'dashboard')}
+          className="dropdown-item tj-text-xsm"
+          data-cy="back-to-app-option"
+        >
           <SolidIcon name="arrowbackdown" width="20" viewBox="0 0 20 20" />
           <span>Back to {isWorkflows ? 'workflows' : 'apps'}</span>
         </Link>
