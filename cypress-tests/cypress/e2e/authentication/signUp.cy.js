@@ -45,18 +45,19 @@ describe("User signup", () => {
     verifyConfirmEmailPage(data.email);
   });
   it("Verify the singup invitation and onboarding flow", () => {
+    const verificationFunction =
+      Cypress.env("environment") === "Enterprise"
+        ? verifyOnboardingQuestions
+        : verifyCloudOnboardingQuestions;
+
     cy.visit(invitationLink);
     verifyConfirmPageElements();
     cy.get(commonSelectors.setUpToolJetButton).click();
     cy.wait(4000);
-    if (envVar === "Enterprise") {
-      verifyOnboardingQuestions(data.fullName, data.workspaceName);
-    }
-    else {
-      verifyCloudOnboardingQuestions(data.fullName, data.workspaceName)
-    }
+    verificationFunction(data.fullName, data.workspaceName);
     updateWorkspaceName(data.email);
-  });
+  })
+
   it("Verify invalid invitation link", () => {
     cy.visit(invitationLink);
     verifyInvalidInvitationLink();

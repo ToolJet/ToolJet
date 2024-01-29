@@ -252,6 +252,8 @@ export const commonSelectors = {
       .replace(/\s+|(?<=[\w-])\s+(?=\w)|[^\w\s]/g, "-")
       .toLowerCase()}-label"]`;
   },
+  linkReadDocumentation: '[data-cy="link-read-documentation"]',
+
 };
 
 export const commonWidgetSelector = {

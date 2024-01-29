@@ -82,6 +82,7 @@ module.exports = defineConfig({
             "cypress/e2e/ee/superadmin/*.cy.js",
             "cypress/e2e/ee/globalDataSource/*.cy.js",
             "cypress/e2e/ee/multi-env/*cy.js",
+            "cypress/e2e/ee/gitSync/*cy.js",
             "cypress/e2e/authentication/*.cy.js",
             "cypress/e2e/ee/licensing/*.cy.js",
         ],

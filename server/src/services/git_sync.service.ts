@@ -17,7 +17,7 @@ import { AppGitPullDto, AppGitPullUpdateDto, AppGitPushDto } from '@dto/app_git.
 import * as Crypto from 'crypto';
 import { User } from 'src/entities/user.entity';
 import * as path from 'path';
-import * as NodeGit from 'nodegit';
+import * as NodeGit from '@figma/nodegit';
 import * as fs from 'fs';
 import { AppVersion } from 'src/entities/app_version.entity';
 import * as Sshpk from 'sshpk';
