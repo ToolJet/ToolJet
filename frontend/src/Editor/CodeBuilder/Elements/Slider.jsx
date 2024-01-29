@@ -5,9 +5,14 @@ import throttle from 'lodash/throttle';
 function Slider1({ value, onChange, component }) {
   const [sliderValue, setSliderValue] = useState(value ? value : 33); // Initial value of the slider
 
+  useEffect(() => {
+    setSliderValue(value);
+  }, [value]);
+
   const handleSliderChange = (event) => {
+    const newValue = `{{${event.target.value}}}`;
     setSliderValue(event.target.value);
-    onChange(`{{${event.target.value}}}`);
+    throttledOnChange(newValue);
   };
 
   // Throttle function to handle input changes
@@ -16,6 +21,10 @@ function Slider1({ value, onChange, component }) {
     inputValue = Math.min(inputValue, 100);
     setSliderValue(inputValue);
     onChange(`{{${inputValue}}}`);
+  }, 300);
+
+  const throttledOnChange = throttle((newValue) => {
+    onChange(newValue);
   }, 300);
 
   useEffect(() => {

@@ -252,7 +252,7 @@ export const widgets = [
       },
       actionButtonBackgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -577,7 +577,7 @@ export const widgets = [
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
           defaultValue: false,
@@ -1186,7 +1186,7 @@ export const widgets = [
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1391,7 +1391,7 @@ export const widgets = [
 
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -1504,7 +1504,7 @@ export const widgets = [
     ],
     definition: {
       validation: {
-        mandatory: { value: false },
+        mandatory: { value: '{{false}}' },
         regex: { value: '' },
         minLength: { value: null },
         maxLength: { value: null },
@@ -1536,7 +1536,7 @@ export const widgets = [
         width: { value: '33' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
-        auto: { value: true },
+        auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
         icon: { value: 'IconHome2' },
@@ -1669,7 +1669,7 @@ export const widgets = [
 
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -1787,7 +1787,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       validation: {
-        mandatory: { value: false },
+        mandatory: { value: '{{false}}' },
         regex: { value: '' },
         minValue: { value: '' },
         maxValue: { value: '' },
@@ -1817,7 +1817,7 @@ export const widgets = [
         width: { value: '33' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
-        auto: { value: true },
+        auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
         icon: { value: 'IconHome2' },
@@ -1960,7 +1960,7 @@ export const widgets = [
 
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -2023,7 +2023,7 @@ export const widgets = [
     },
     exposedVariables: {
       value: '',
-      isMandatory: false,
+      mandatory: { value: '{{false}}' },
       isVisible: true,
       isDisabled: false,
       isLoading: false,
@@ -2095,7 +2095,7 @@ export const widgets = [
         width: { value: '33' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
-        auto: { value: true },
+        auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
         icon: { value: 'IconLock' },
@@ -2777,7 +2777,7 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -2924,7 +2924,7 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3015,7 +3015,7 @@ export const widgets = [
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -4620,7 +4620,7 @@ export const widgets = [
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -5517,7 +5517,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
