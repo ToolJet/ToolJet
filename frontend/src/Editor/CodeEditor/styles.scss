@@ -93,7 +93,8 @@
 
   
 .cm-tooltip-autocomplete {
-    
+    left: 0 !important;
+    top: 35px !important;
     height: 300px !important;
     max-width: 250px !important;
     color: var(--Text-default, #1B1F24);
@@ -108,7 +109,6 @@
 
 
     ul {      
-        
         width: 100% !important;
         max-width: 100% !important;
         max-height: 100% !important;
