@@ -4,7 +4,7 @@ import AppLogo from '@/_components/AppLogo';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
-import { AppVersionsManager } from '../AppVersionsManager/AppVersionsManager';
+import { AppVersionsManager } from '@/Editor/AppVersionsManager/AppVersionsManager';
 import { ManageAppUsers } from '../ManageAppUsers';
 import { ReleaseVersionButton } from '../ReleaseVersionButton';
 import cx from 'classnames';

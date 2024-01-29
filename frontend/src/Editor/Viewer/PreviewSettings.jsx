@@ -3,9 +3,9 @@ import Icon from '@/_ui/Icon/solidIcons/index';
 import { OverlayTrigger } from 'react-bootstrap';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useAppInfo } from '@/_stores/appDataStore';
-import { AppVersionsManager } from '../AppVersionsManager/AppVersionsManager';
+import { AppVersionsManager } from '@/Editor/AppVersionsManager/AppVersionsManager';
 import { noop } from 'lodash';
-import HeaderActions from '../Header/HeaderActions';
+import HeaderActions from '@/Editor/Header/HeaderActions';
 import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -58,7 +58,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
             return (
               <div
                 className="released-version-no-header-mbl-preview"
-                style={{ backgroundColor: 'var(--slate5)', top: '7px', left: showHeader ? '75%' : '41%' }}
+                style={{ backgroundColor: 'var(--slate5)', top: '7px', left: showHeader ? '61%' : '41%' }}
               >
                 <span
                   style={{

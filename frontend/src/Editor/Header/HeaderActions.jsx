@@ -35,8 +35,7 @@ function HeaderActions({
             <button
               className={cx('btn border-0 p-1', {
                 'bg-transparent': currentLayout !== 'desktop',
-                'bg-white': currentLayout === 'desktop',
-                'opacity-100': currentLayout === 'desktop',
+                'bg-white opacity-100': currentLayout === 'desktop',
                 'w-100': showFullWidth,
               })}
               style={{ height: 20 }}
@@ -56,8 +55,7 @@ function HeaderActions({
             <button
               className={cx('btn border-0 p-1', {
                 'bg-transparent': currentLayout !== 'mobile',
-                'bg-white': currentLayout === 'mobile',
-                'opacity-100': currentLayout === 'mobile',
+                'bg-white opacity-100': currentLayout === 'mobile',
                 'w-100': showFullWidth,
               })}
               role="tab"

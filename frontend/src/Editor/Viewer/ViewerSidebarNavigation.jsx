@@ -12,7 +12,6 @@ export const ViewerSidebarNavigation = ({ isMobileDevice, pages, currentPageId, 
       className={`navigation-area`}
       style={{
         width: 200,
-        // backgroundColor: canvasBackgroundColor,
       }}
     >
       <div className="page-handler-wrapper">

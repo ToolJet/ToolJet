@@ -49,26 +49,40 @@ const MobileHeader = ({
     </div>
   );
 
-  // Mobile layout
-  if (!showHeader && isVersionReleased) {
+  const _renderMobileNavigationMenu = () => (
+    <MobileNavigationMenu
+      pages={pages}
+      currentPageId={currentPageId}
+      switchPage={switchPage}
+      darkMode={darkMode}
+      changeDarkMode={changeDarkMode}
+      showHeader={showHeader}
+    />
+  );
+
+  const _renderPreviewSettings = () => (
+    <PreviewSettings
+      isMobileLayout
+      showHeader={showHeader}
+      setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+      darkMode={darkMode}
+    />
+  );
+
+  const _renderDarkModeBtn = (args) => {
+    const styles = args?.styles ?? {};
     return (
-      <>
-        {showViewerNavigation ? (
-          <MobileNavigationMenu
-            pages={pages}
-            currentPageId={currentPageId}
-            switchPage={switchPage}
-            darkMode={darkMode}
-            changeDarkMode={changeDarkMode}
-            showHeader={showHeader}
-          />
-        ) : (
-          <span className="released-version-no-header-dark-mode-icon" style={{ position: 'absolute', top: '7px' }}>
-            <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
-          </span>
-        )}
-      </>
+      <span
+        className="released-version-no-header-dark-mode-icon"
+        style={{ position: 'absolute', top: '7px', ...styles }}
+      >
+        <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
+      </span>
     );
+  };
+
+  if (!showHeader && isVersionReleased) {
+    return <>{showViewerNavigation ? _renderMobileNavigationMenu() : _renderDarkModeBtn()}</>;
   }
 
   if (!showHeader && !isVersionReleased) {
@@ -84,27 +98,9 @@ const MobileHeader = ({
           }}
           showNavbarClass={false}
         >
-          {showViewerNavigation && (
-            <MobileNavigationMenu
-              pages={pages}
-              currentPageId={currentPageId}
-              switchPage={switchPage}
-              darkMode={darkMode}
-              changeDarkMode={changeDarkMode}
-              showHeader={showHeader}
-            />
-          )}
-          <PreviewSettings
-            isMobileLayout
-            showHeader={showHeader}
-            setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-            darkMode={darkMode}
-          />
-          {!showViewerNavigation && (
-            <span className="released-version-no-header-dark-mode-icon" style={{ position: 'absolute', top: '7px' }}>
-              <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
-            </span>
-          )}
+          {showViewerNavigation && _renderMobileNavigationMenu()}
+          {_renderPreviewSettings()}
+          {!showViewerNavigation && _renderDarkModeBtn()}
         </Header>
       </>
     );
@@ -121,30 +117,10 @@ const MobileHeader = ({
     >
       <div className="d-flex">
         <span style={{}}>{_renderAppNameAndLogo()}</span>
-        {showViewerNavigation && (
-          <MobileNavigationMenu
-            pages={pages}
-            currentPageId={currentPageId}
-            switchPage={switchPage}
-            darkMode={darkMode}
-            changeDarkMode={changeDarkMode}
-            showHeader={showHeader}
-          />
-        )}
+        {showViewerNavigation && _renderMobileNavigationMenu()}
       </div>
-      {!isVersionReleased && (
-        <PreviewSettings
-          isMobileLayout
-          showHeader={showHeader}
-          setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-          darkMode={darkMode}
-        />
-      )}
-      {!showViewerNavigation && (
-        <span className="released-version-no-header-dark-mode-icon" style={{ position: 'absolute', top: '7px' }}>
-          <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
-        </span>
-      )}
+      {!isVersionReleased && _renderPreviewSettings()}
+      {!showViewerNavigation && _renderDarkModeBtn({ styles: { top: '2px' } })}
     </Header>
   );
 };

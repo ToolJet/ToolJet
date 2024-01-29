@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { slide as MobileMenu } from 'react-burger-menu';
@@ -7,7 +7,7 @@ import Header from './Header';
 import Cross from '@/_ui/Icon/solidIcons/Cross';
 
 const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, changeDarkMode }) => {
-  const [hamburgerMenuOpen, setHamburgerMenuOpen] = React.useState(false);
+  const [hamburgerMenuOpen, setHamburgerMenuOpen] = useState(false);
   const handlepageSwitch = (pageId) => {
     setHamburgerMenuOpen(false);
     switchPage(pageId);
@@ -25,6 +25,7 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
     },
     bmCrossButton: {
       display: 'none',
+      cursor: 'pointer',
     },
     bmCross: {
       background: '#bdc3c7',
@@ -75,7 +76,7 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
               <div className="col">
                 <span style={{ color: 'var(--slate12)' }}>Menu</span>
               </div>
-              <div onClick={() => setHamburgerMenuOpen(false)} className="col-1">
+              <div onClick={() => setHamburgerMenuOpen(false)} className="col-1 cursor-pointer">
                 <Cross fill={'var(--slate12)'} />
               </div>
             </div>
