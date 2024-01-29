@@ -339,7 +339,7 @@ export default function DragContainer({
         // target={groupedTargets?.[0] ? groupedTargets?.[0] : `.ele-${draggedTarget ? draggedTarget : hoveredComponent}`}
         target={groupedTargets?.length > 1 ? groupedTargets : '.target'}
         origin={false}
-        individualGroupable={selectedComponents.length <= 1}
+        individualGroupable={groupedTargets.length <= 1}
         draggable={true}
         resizable={{
           edge: ['e', 'w', 'n', 's'],
@@ -540,15 +540,15 @@ export default function DragContainer({
           try {
             if (isDraggingRef.current) {
               console.log('timeDifference0', performance.now() - startTime);
-              useGridStore.getState().actions.setDraggingComponentId(null);
+              runAsync(() => useGridStore.getState().actions.setDraggingComponentId(null));
               console.log('timeDifference1.1', performance.now() - startTime);
               isDraggingRef.current = false;
-              setIsDragging(false);
+              runAsync(() => setIsDragging(false));
               console.log('timeDifference1.2', performance.now() - startTime);
             }
             console.log('timeDifference1', performance.now() - startTime);
 
-            setDraggedTarget();
+            runAsync(() => setDraggedTarget());
             if (draggedSubContainer) {
               return;
             }
@@ -564,8 +564,10 @@ export default function DragContainer({
                 let isDroppable =
                   ele.id !== e.target.id &&
                   // ele.classList.contains('target') ||
-                  (ele.classList.contains('nested-target') || ele.classList.contains('drag-container-parent'));
+                  // (ele.classList.contains('nested-target') || ele.classList.contains('drag-container-parent'));
+                  ele.classList.contains('drag-container-parent');
                 if (isDroppable) {
+                  // debugger;
                   let widgetId = ele?.getAttribute('component-id') || ele.id;
                   let widgetType = boxes.find(({ id }) => id === widgetId)?.component?.component;
                   if (!widgetType) {
@@ -588,7 +590,7 @@ export default function DragContainer({
             // console.log("draggedOverElemId", draggedOverElemId);
 
             console.log('draggedOverElemId->', draggedOverElemId);
-
+            const _gridWidth = subContainerWidths[draggedOverElemId] || gridWidth;
             const parentElem = list.find(({ id }) => id === draggedOverElemId);
             const currentParentId = boxes.find(({ id: widgetId }) => e.target.id === widgetId)?.component?.parent;
             let left = e.lastEvent.translate[0];
@@ -604,41 +606,43 @@ export default function DragContainer({
               left = _left;
               top = _top;
             } else {
-              e.target.style.transform = `translate(${Math.round(left / gridWidth) * gridWidth}px, ${
+              e.target.style.transform = `translate(${Math.round(left / _gridWidth) * _gridWidth}px, ${
                 Math.round(top / 10) * 10
               }px)`;
             }
             console.log('timeDifference4', performance.now() - startTime);
 
             console.log('draggedOverElemId->', draggedOverElemId, currentParentId);
-            onDrag([
-              {
-                id: e.target.id,
-                x: left,
-                y: Math.round(top / 10) * 10,
-                parent: isParentChangeAllowed ? draggedOverElemId : undefined,
-              },
-            ]);
+            runAsync(() =>
+              onDrag([
+                {
+                  id: e.target.id,
+                  x: left,
+                  y: Math.round(top / 10) * 10,
+                  parent: isParentChangeAllowed ? draggedOverElemId : undefined,
+                },
+              ])
+            );
             const box = boxes.find((box) => box.id === e.target.id);
             console.log('timeDifference5', performance.now() - startTime);
-            useEditorStore.getState().actions.setSelectedComponents([{ ...box }]);
+            runAsync(() => useEditorStore.getState().actions.setSelectedComponents([{ ...box }]));
             console.log('timeDifference6', performance.now() - startTime);
           } catch (error) {
             console.log('draggedOverElemId->error', error);
           }
-          useGridStore.getState().actions.setDragTarget(null);
+          runAsync(() => useGridStore.getState().actions.setDragTarget(null));
         }}
         onDrag={(e) => {
           console.log('onDrager----', e.target.id, hoveredComponent);
           if (!isDraggingRef.current) {
-            useGridStore.getState().actions.setDraggingComponentId(e.target.id);
+            runAsync(() => useGridStore.getState().actions.setDraggingComponentId(e.target.id));
             isDraggingRef.current = true;
-            setIsDragging(true);
+            runAsync(() => setIsDragging(true));
           }
           if (draggedSubContainer) {
             return;
           }
-          setDraggedTarget(e.target.id);
+          runAsync(() => setDraggedTarget(e.target.id));
           // setDraggedTarget(e.target.id);
           if (!draggedSubContainer) {
             e.target.style.transform = `translate(${e.translate[0]}px, ${e.translate[1]}px)`;
@@ -663,7 +667,7 @@ export default function DragContainer({
             //   (ele) => ele.id !== e.target.id && ele.classList.contains('target')
             // );
             if (useGridStore.getState().dragTarget !== draggedOverElem?.id) {
-              useGridStore.getState().actions.setDragTarget(draggedOverElem?.id);
+              runAsync(() => useGridStore.getState().actions.setDragTarget(draggedOverElem?.id));
             }
             // console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
             draggedOverElemId = draggedOverElem?.id;
@@ -692,7 +696,7 @@ export default function DragContainer({
         // }}
         onDragGroupEnd={(e) => {
           const { events } = e;
-          const parentId = boxes.find((box) => (box.id = events[0]?.target?.id))?.component?.parent;
+          const parentId = widgets[events[0]?.target?.id]?.component?.parent;
           onDrag(
             events.map((ev) => ({
               id: ev.target.id,
@@ -1123,10 +1127,31 @@ function extractWidgetClassOnHover(element) {
 }
 
 function findHighestLevelofSelection(selectedComponents) {
-  const result = selectedComponents.filter(
-    (widget) =>
-      widget?.component?.parent !== undefined && !selectedComponents.some((e) => e.id === widget?.component?.parent)
-  );
+  let result = [...selectedComponents];
+  if (selectedComponents.some((widget) => !widget?.component?.parent)) {
+    result = selectedComponents.filter((widget) => !widget?.component?.parent);
+  } else {
+    result = selectedComponents.filter(
+      (widget) => widget?.component?.parent === selectedComponents[0]?.component?.parent
+    );
+  }
+  // const result = selectedComponents.filter((widget) => {
+  //   console.log(
+  //     'groupedTargets-->result------>',
+  //     widget?.component?.parent,
+  //     selectedComponents,
+  //     selectedComponents.some((e) => e.id === widget?.component?.parent)
+  //   );
+  //   return (
+  //     widget?.component?.parent !== undefined && !selectedComponents.some((e) => e.id === widget?.component?.parent)
+  //   );
+  // });
   console.log('groupedTargets-->result------', result, selectedComponents);
   return result;
+}
+
+async function runAsync(fn) {
+  setImmediate(() => {
+    fn();
+  });
 }
