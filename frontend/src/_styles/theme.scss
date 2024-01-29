@@ -6908,45 +6908,67 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: pointer;
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+    }
   }
 
   .table-cell-hover-background {
     background-color: #F8F9FA;
+    border-width: 0px 1px 1px 1px;
   }
 
   .table-cell-hover-background-dark {
     background-color: #242f3c;
+    border-width: 0px 1px 1px 1px;
   }
 
-  .table-cell-click {
+  .table-editable-parent-cell {
+    border: 1.5px solid var(--indigo9);
+    background-color: var(--indigo2);
+    cursor: pointer;
+    padding: 0;
+
+    .form-control {
+      border: none;
+      padding: 0.5rem;
+    }
+  }
+
+  .table-columnHeader-click {
     // background-color: #fbfdff;
     background-color: #F8F9FA;
     border-left: 1.5px solid #3E63DD !important;
     border-right: 1.5px solid #3E63DD !important;
+    border-width: 0px 1px 1px 1px;
   }
 
-  .table-cell-click-dark {
+  .table-columnHeader-click-dark {
     background-color: #242f3c;
     border-left: 1.5px solid white !important;
     border-right: 1.5px solid white !important;
+    border-width: 0px 1px 1px 1px;
   }
 
   .row-tj:first-child {
-    .table-cell-click {
+    .table-columnHeader-click {
       border-top: 1.5px solid #3E63DD !important;
     }
 
-    .table-cell-click-dark {
+    .table-columnHeader-click-dark {
       border-top: 1.5px solid white !important;
     }
   }
 
   .row-tj:last-of-type {
-    .table-cell-click {
+    .table-columnHeader-click {
       border-bottom: 1.5px solid #3E63DD !important;
     }
 
-    .table-cell-click-dark {
+    .table-columnHeader-click-dark {
       border-bottom: 1.5px solid white !important;
     }
   }
@@ -7845,11 +7867,12 @@ tbody {
 }
 
 .toojet-db-table-footer,
+.toojet-db-table-footer-collapse,
 .home-page-footer {
   position: fixed;
   bottom: 0px;
   right: 0;
-    left: 336px;
+  left: 336px;
 }
 
 .home-page-footer {
@@ -7974,6 +7997,13 @@ tbody {
 .toojet-db-table-footer {
   height: 52px;
   background: var(--base) !important;
+  width: calc(100vw - 336px);
+}
+
+.toojet-db-table-footer-collapse {
+  height: 52px;
+  background: var(--base) !important;
+  width: calc(100vw - 48px);
 }
 
 .home-app-card-header {
