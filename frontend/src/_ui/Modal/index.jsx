@@ -24,8 +24,10 @@ export default function ModalBase({
       contentClassName={`${darkMode ? 'theme-dark dark-theme modal-base' : 'modal-base'}`}
     >
       <Modal.Header>
-        <Modal.Title className="font-weight-500">{title}</Modal.Title>
-        <div onClick={handleClose} className="cursor-pointer">
+        <Modal.Title className="font-weight-500" data-cy="modal-title">
+          {title}
+        </Modal.Title>
+        <div onClick={handleClose} className="cursor-pointer" data-cy="modal-close-button">
           <SolidIcon name="remove" width="20" />
         </div>
       </Modal.Header>
@@ -39,7 +41,7 @@ export default function ModalBase({
         )}
       </Modal.Body>
       <Modal.Footer>
-        <ButtonSolid disabled={cancelDisabled} variant={'tertiary'} onClick={handleClose}>
+        <ButtonSolid disabled={cancelDisabled} variant={'tertiary'} onClick={handleClose} data-cy="cancel-button">
           Cancel
         </ButtonSolid>
         <ButtonSolid
@@ -48,6 +50,7 @@ export default function ModalBase({
           variant={confirmBtnProps?.variant || 'primary'}
           onClick={handleConfirm}
           {...confirmBtnProps}
+          data-cy="confim-button"
         >
           {confirmBtnProps?.title || 'Continue'}
         </ButtonSolid>
