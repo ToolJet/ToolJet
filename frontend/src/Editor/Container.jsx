@@ -55,19 +55,17 @@ export const Container = ({
   // Dont update first time to skip
   // redundant save on app definition load
   const firstUpdate = useRef(true);
-  const [noOfGrids, setNoOfGrids] = useNoOfGrid();
-  const { confirm, ConfirmDialog } = useConfirm();
-  // import { useActiveGrid } from '@/_stores/gridStore';
+  // const [noOfGrids, setNoOfGrids] = useNoOfGrid();
+  const noOfGrids = 43;
   const [subContainerWidths, setSubContainerWidths] = useState({});
   const [draggedSubContainer, setDraggedSubContainer] = useDraggedSubContainer(false);
   const [dragTarget] = useDragTarget();
 
-  const { showComments, currentLayout, selectedComponents, hoveredComponent } = useEditorStore(
+  const { showComments, currentLayout, selectedComponents } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
       selectedComponents: state?.selectedComponents,
-      hoveredComponent: state?.hoveredComponent,
     }),
     shallow
   );
@@ -401,10 +399,13 @@ export const Container = ({
   };
 
   function onDragStop(boxPositions) {
+    const startTime = performance.now();
     const updatedBoxes = boxPositions.reduce((boxesObj, { id, x, y, parent }) => {
+      console.log('timeRifference0', performance.now() - startTime);
       let _width = boxes[id]['layouts'][currentLayout].width;
       let _height = boxes[id]['layouts'][currentLayout].height;
       const containerWidth = parent ? subContainerWidths[parent] : gridWidth;
+      console.log('timeRifference1', performance.now() - startTime);
       if (parent !== boxes[id]['component']?.parent) {
         if (boxes[id]['component']?.parent) {
           _width = Math.round(
@@ -415,6 +416,7 @@ export const Container = ({
           _width = Math.round((boxes[id]['layouts'][currentLayout].width * gridWidth) / containerWidth);
         }
       }
+      console.log('timeRifference1', performance.now() - startTime);
       if (_width === 0) {
         _width = 1;
       }
@@ -431,10 +433,11 @@ export const Container = ({
           _width = noOfGrids;
         }
       }
-
+      console.log('timeRifference2', performance.now() - startTime);
       if (y < 0) {
         y = 0;
       }
+      console.log('timeRifference3', performance.now() - startTime);
 
       if (parent) {
         const parentElem = document.getElementById(`canvas-${parent}`);
@@ -447,6 +450,7 @@ export const Container = ({
         }
       }
 
+      console.log('timeRifference4', performance.now() - startTime);
       return {
         ...boxesObj,
         [id]: {
@@ -472,6 +476,7 @@ export const Container = ({
         },
       };
     }, {});
+    console.log('timeRifference5', performance.now() - startTime);
     let newBoxes = {
       ...boxes,
       ...updatedBoxes,
@@ -489,8 +494,11 @@ export const Container = ({
       //   parent: parent ? parent : boxes[id].parent,
       // },
     };
+    console.log('timeRifference6', performance.now() - startTime);
     setBoxes(newBoxes);
+    console.log('timeRifference7', performance.now() - startTime);
     updateCanvasHeight(newBoxes);
+    console.log('timeRifference8', performance.now() - startTime);
   }
 
   const paramUpdated = useCallback(
@@ -762,6 +770,8 @@ export const Container = ({
     return '';
   };
 
+  console.log('IrenderrrrC');
+
   return (
     <div
       {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -807,33 +817,8 @@ export const Container = ({
           {Object.entries(boxes)
             .filter(([, box]) => isEmpty(box?.component?.parent))
             .map(([id, box]) => {
-              const { component } = box;
-              let layoutData = box?.layouts?.[currentLayout];
-              if (isEmpty(layoutData)) {
-                layoutData = box?.layouts?.['desktop'];
-              }
-              // const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
-              const width = gridWidth * layoutData.width;
-
-              const styles = {
-                width: width + 'px',
-                height: layoutData.height + 'px',
-                transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
-              };
-
               return (
-                <div
-                  className={`target widget-target target1 ele-${id} moveable-box`}
-                  data-id={`${component.parent}`}
-                  key={id}
-                  id={id}
-                  widgetid={id}
-                  style={{
-                    transform: `translate(332px, -134px)`,
-                    ...styles,
-                    ...(hoveredComponent === id ? { zIndex: 2 } : {}),
-                  }}
-                >
+                <WidgetWrapper widget={box} key={id} id={id} gridWidth={gridWidth} currentLayout={currentLayout}>
                   <DraggableBox
                     className={showComments && 'pointer-events-none'}
                     canvasWidth={canvasWidth}
@@ -899,13 +884,11 @@ export const Container = ({
                     }}
                     isVersionReleased={isVersionReleased}
                   />
-                </div>
+                </WidgetWrapper>
               );
             })}
           <DragContainer
-            boxes={Object.keys(boxes).map((key) => ({ ...boxes[key], id: key }))}
-            renderWidget={renderWidget}
-            canvasWidth={canvasWidth}
+            widgets={boxes}
             onResizeStop={onResizeStop}
             onDrag={onDragStop}
             gridWidth={gridWidth}
@@ -914,74 +897,9 @@ export const Container = ({
             setIsResizing={setIsResizing}
             currentLayout={currentLayout}
             subContainerWidths={subContainerWidths}
-            // turnOffAutoLayout={turnOffAutoLayout}
             currentPageId={currentPageId}
-            autoComputeLayout={appDefinition.pages[currentPageId]?.autoComputeLayout}
-            setDraggedSubContainer={setDraggedSubContainer}
             draggedSubContainer={draggedSubContainer}
             mode={isVersionReleased ? 'view' : mode}
-            boxesAsObj={boxes}
-            //for DraggableBox
-            showComments={showComments}
-            onComponentClick={
-              config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
-            }
-            onEvent={onEvent}
-            // height={height}
-            onComponentOptionChanged={onComponentOptionChanged}
-            onComponentOptionsChanged={onComponentOptionsChanged}
-            // key={key}
-            paramUpdated={paramUpdated}
-            // id={key}
-            // {...boxes[key]}
-            // mode={mode}
-            resizingStatusChanged={(status) => setIsResizing(status)}
-            draggingStatusChanged={(status) => setIsDragging(status)}
-            inCanvas={true}
-            zoomLevel={zoomLevel}
-            setSelectedComponent={setSelectedComponent}
-            removeComponent={removeComponent}
-            deviceWindowWidth={deviceWindowWidth}
-            // isSelectedComponent={mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false}
-            darkMode={darkMode}
-            // onComponentHover={onComponentHover}
-            // hoveredComponent={hoveredComponent}
-            sideBarDebugger={sideBarDebugger}
-            isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
-            // childComponents={childComponents[key]}
-            containerProps={{
-              // turnOffAutoLayout,
-              mode,
-              snapToGrid,
-              onComponentClick,
-              onEvent,
-              appDefinition,
-              appDefinitionChanged,
-              currentState,
-              onComponentOptionChanged,
-              onComponentOptionsChanged,
-              appLoading,
-              zoomLevel,
-              setSelectedComponent,
-              removeComponent,
-              currentLayout,
-              deviceWindowWidth,
-              selectedComponents,
-              darkMode,
-              // onComponentHover,
-              // hoveredComponent,
-              sideBarDebugger,
-              // addDefaultChildren,
-              currentPageId,
-              childComponents,
-              // setIsChildDragged,
-              setSubContainerWidths: (id, width) => setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
-              parentGridWidth: gridWidth,
-              subContainerWidths,
-              draggedSubContainer,
-            }}
-            isVersionReleased={isVersionReleased}
-            childComponents={childComponents}
           />
         </div>
       </div>
@@ -1004,6 +922,48 @@ export const Container = ({
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout }) => {
+  const {
+    component: { parent },
+    layouts,
+  } = widget;
+  const { hoveredComponent } = useEditorStore(
+    (state) => ({
+      hoveredComponent: state?.hoveredComponent,
+    }),
+    shallow
+  );
+
+  let layoutData = layouts?.[currentLayout];
+  if (isEmpty(layoutData)) {
+    layoutData = layouts?.['desktop'];
+  }
+  // const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
+  const width = gridWidth * layoutData.width;
+
+  const styles = {
+    width: width + 'px',
+    height: layoutData.height + 'px',
+    transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
+  };
+
+  return (
+    <div
+      className={`target widget-target target1 ele-${id} moveable-box`}
+      data-id={`${parent}`}
+      id={id}
+      widgetid={id}
+      style={{
+        transform: `translate(332px, -134px)`,
+        ...styles,
+        ...(hoveredComponent === id ? { zIndex: 2 } : {}),
+      }}
+    >
+      {children}
     </div>
   );
 };

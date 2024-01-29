@@ -3,17 +3,14 @@ import Moveable, { makeAble } from 'react-moveable';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import './DragContainer.css';
-import DragContainerNested from './DragContainerNested';
 import _, { isEmpty, debounce } from 'lodash';
 import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
-import { useGridStoreActions, useDragTarget, useNoOfGrid, useGridStore } from '@/_stores/gridStore';
+import { useGridStore } from '@/_stores/gridStore';
 
 export default function DragContainer({
-  boxes,
+  widgets,
   mode,
-  renderWidget,
-  canvasWidth,
   onResizeStop,
   onDrag,
   gridWidth,
@@ -22,55 +19,26 @@ export default function DragContainer({
   setIsResizing,
   currentLayout,
   subContainerWidths,
-  currentPageId,
-  // turnOffAutoLayout,
-  autoComputeLayout,
-  setDraggedSubContainer,
   draggedSubContainer,
-  boxesAsObj,
-  //props for DraggableBox
-  showComments,
-  onComponentClick,
-  onEvent,
-  // height={height}
-  onComponentOptionChanged,
-  onComponentOptionsChanged,
-  // key={key}
-  paramUpdated,
-  // id={key}
-  // {...boxes[key]}
-  // mode={mode}
-  resizingStatusChanged,
-  draggingStatusChanged,
-  inCanvas,
-  zoomLevel,
-  setSelectedComponent,
-  removeComponent,
-  deviceWindowWidth,
-  isSelectedComponent,
-  darkMode,
-  // onComponentHover={onComponentHover}
-  // hoveredComponent={hoveredComponent}
-  sideBarDebugger,
-  isMultipleComponentsSelected,
-  // childComponents={childComponents[key]}
-  containerProps,
-  isVersionReleased,
-  childComponents,
 }) {
+  console.log('Irenderrrr');
   const lastDraggedEventsRef = useRef(null);
+  const boxes = Object.keys(widgets).map((key) => ({ ...widgets[key], id: key }));
+  console.log('boxes===>', boxes);
   const configHandleForMultiple = (id) => {
     return (
       <div
         className={'multiple-components-config-handle'}
         onMouseUpCapture={() => {
           if (lastDraggedEventsRef.current) {
+            const preant = boxes.find((box) => (box.id = lastDraggedEventsRef.current?.events?.[0]?.target?.id))
+              ?.component?.parent;
             onDrag(
               lastDraggedEventsRef.current.events.map((ev) => ({
                 id: ev.target.id,
                 x: ev.translate[0],
                 y: ev.translate[1],
-                parent: lastDraggedEventsRef.current.parent,
+                parent: preant,
               }))
             );
           }
@@ -125,6 +93,7 @@ export default function DragContainer({
     events: {},
     mouseEnter(e) {
       const controlBoxes = document.getElementsByClassName('moveable-control-box');
+      console.log('MouseCustomAble ENTER', e);
       for (const element of controlBoxes) {
         element.classList.remove('moveable-control-box-d-block');
       }
@@ -138,14 +107,14 @@ export default function DragContainer({
     },
   };
 
-  const [dragTarget, setDragTarget] = useDragTarget();
+  // const [dragTarget, useGridStore.getState().actions.setDragTarget] = useDragTarget();
   const [draggedTarget, setDraggedTarget] = useState();
   const moveableRef = useRef();
   const draggedOverElemRef = useRef(null);
   const childMoveableRefs = useRef({});
   const isDraggingRef = useRef(false);
   const [movableTargets, setMovableTargets] = useState({});
-  const [noOfGrids] = useNoOfGrid();
+  const noOfGrids = 43;
   const boxList = boxes
     .filter((box) =>
       ['{{true}}', true].includes(
@@ -162,17 +131,16 @@ export default function DragContainer({
     }));
   const [list, setList] = useState(boxList);
 
-  console.log('dragTarget => ', dragTarget);
+  // console.log('dragTarget => ', dragTarget);
   // const { setSelectedComponents } = useEditorActions();
 
   const hoveredComponent = useEditorStore((state) => state?.hoveredComponent, shallow);
-  const [count, setCount] = useState(0);
-  const { setActiveGrid, setResizingComponentId, setDraggingComponentId } = useGridStoreActions();
 
   useEffect(() => {
     if (!moveableRef.current) {
       return;
     }
+    console.log('Reloading....');
     moveableRef.current.updateRect();
     moveableRef.current.updateTarget();
     moveableRef.current.updateSelectors();
@@ -185,6 +153,7 @@ export default function DragContainer({
     }
     setTimeout(reloadGrid, 100);
   }, [JSON.stringify(selectedComponents), JSON.stringify(boxes)]);
+  // }, [JSON.stringify(selectedComponents), JSON.stringify(boxes), hoveredComponent]);
 
   useEffect(() => {
     setList(boxList);
@@ -192,7 +161,6 @@ export default function DragContainer({
   }, [currentLayout]);
 
   const reloadGrid = async () => {
-    setCount((c) => c + 1);
     if (moveableRef.current) {
       moveableRef.current.updateRect();
       moveableRef.current.updateTarget();
@@ -288,8 +256,8 @@ export default function DragContainer({
   console.log('selectedComponents =>', [...selectedComponents]);
 
   const groupedTargets = [
-    ...selectedComponents
-      .filter((component) => !component?.component?.parent)
+    ...findHighestLevelofSelection(selectedComponents)
+      // .filter((component) => !component?.component?.parent)
       .map((component) => '.ele-' + component.id),
   ];
 
@@ -305,8 +273,8 @@ export default function DragContainer({
 
   // Function to limit the resizing of element within the parent
   const setResizingLimit = (e, i) => {
-    const elemLayout = boxesAsObj[e.target.id]?.layouts[currentLayout];
-    const parentLayout = boxesAsObj[i.parent]?.layouts[currentLayout];
+    const elemLayout = widgets[e.target.id]?.layouts[currentLayout];
+    const parentLayout = widgets[i.parent]?.layouts[currentLayout];
     let maxWidth = null,
       maxHeight = null,
       parentgW = subContainerWidths[i.parent] || gridWidth,
@@ -348,7 +316,8 @@ export default function DragContainer({
 
   const debouncedOnDrag = debounce((events, parent = null) => updateNewPosition(events, parent), 100);
 
-  console.log('hoveredComponent->', hoveredComponent);
+  console.log('hoveredComponent->' + hoveredComponent + '    draggedTarget->' + draggedTarget);
+  console.log('onDrager----hoveredComponent', hoveredComponent);
 
   return mode === 'edit' ? (
     <>
@@ -358,6 +327,7 @@ export default function DragContainer({
           useGridStore.getState().isGroundHandleHoverd
             ? document.getElementById('multiple-components-config-handle')
             : undefined
+          // `.widget-${hoveredComponent}`
         }
         ref={moveableRef}
         ables={[MouseCustomAble, DimensionViewable]}
@@ -366,13 +336,8 @@ export default function DragContainer({
           dimensionViewable: selectedComponents.length > 1,
         }}
         flushSync={flushSync}
-        target={
-          draggedSubContainer || (groupedTargets.length < 2 && selectedComponents.length > 1)
-            ? '.empty-widget'
-            : groupedTargets.length > 1
-            ? [...groupedTargets]
-            : '.widget-target'
-        }
+        // target={groupedTargets?.[0] ? groupedTargets?.[0] : `.ele-${draggedTarget ? draggedTarget : hoveredComponent}`}
+        target={groupedTargets?.length > 1 ? groupedTargets : '.target'}
         origin={false}
         individualGroupable={selectedComponents.length <= 1}
         draggable={true}
@@ -391,28 +356,36 @@ export default function DragContainer({
         }}
         onResize={(e) => {
           console.log('onResize', e);
-          const width = Math.round(e.width / gridWidth) * gridWidth;
-          console.log('list---', list, e.target.id, boxList);
+          console.log('onResize---', list, e.target.id, boxList);
           const currentLayout = list.find(({ id }) => id === e.target.id);
-          const currentWidth = currentLayout.width * gridWidth;
+          const currentWidget = boxes.find(({ id }) => id === e.target.id);
+          console.log('onResize---currentLayout', currentLayout);
+          let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
+          const currentWidth = currentLayout.width * _gridWidth;
           const diffWidth = e.width - currentWidth;
           const diffHeight = e.height - currentLayout.height;
-          console.log('currentLayout width', currentWidth, e.width, diffWidth, e.direction);
+          console.log('onResize---currentLayout', currentWidth, e.width, diffWidth, e.direction);
           const isLeftChanged = e.direction[0] === -1;
           const isTopChanged = e.direction[1] === -1;
 
           console.log(
             'currentLayout transform',
-            `translate(${currentLayout.left * gridWidth}px, ${currentLayout.top}px)`,
-            `translate(${currentLayout.left * gridWidth - diffWidth}px, ${currentLayout.top}px)`
+            `translate(${currentLayout.left * _gridWidth}px, ${currentLayout.top}px)`,
+            `translate(${currentLayout.left * _gridWidth - diffWidth}px, ${currentLayout.top}px)`
           );
 
           e.target.style.width = `${e.width}px`;
           e.target.style.height = `${e.height}px`;
-          let transformX = currentLayout.left * gridWidth;
+          let transformX = currentLayout.left * _gridWidth;
           let transformY = currentLayout.top;
+          console.log(
+            'onResize---isLeftChanged',
+            isLeftChanged,
+            e.direction[0],
+            currentLayout.left * _gridWidth - diffWidth
+          );
           if (isLeftChanged) {
-            transformX = currentLayout.left * gridWidth - diffWidth;
+            transformX = currentLayout.left * _gridWidth - diffWidth;
           }
           if (isTopChanged) {
             transformY = currentLayout.top - diffHeight;
@@ -432,7 +405,7 @@ export default function DragContainer({
         }}
         onResizeEnd={(e) => {
           try {
-            setResizingComponentId(null);
+            useGridStore.getState().actions.setResizingComponentId(null);
             setIsResizing(false);
             console.log('onResizeEnd>>>>>>>>>>>>>>', e);
             // const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
@@ -448,12 +421,16 @@ export default function DragContainer({
             //     y: e.lastEvent.drag.translate[1],
             //   },
             // ]);
-
-            const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
+            const currentWidget = boxes.find(({ id }) => {
+              console.log('e.target.id', id, e, e.target.id);
+              return id === e.target.id;
+            });
+            let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
+            const width = Math.round(e.lastEvent.width / _gridWidth) * _gridWidth;
             const height = Math.round(e.lastEvent.height / 10) * 10;
 
             const currentLayout = list.find(({ id }) => id === e.target.id);
-            const currentWidth = currentLayout.width * gridWidth;
+            const currentWidth = currentLayout.width * _gridWidth;
             const diffWidth = e.lastEvent.width - currentWidth;
             const diffHeight = e.lastEvent.height - currentLayout.height;
             console.log('onResizeEnd data', currentWidth, e.width, diffWidth, e.direction, diffHeight);
@@ -462,14 +439,20 @@ export default function DragContainer({
 
             console.log(
               'onResizeEnd => currentLayout transform',
-              `translate(${currentLayout.left * gridWidth}px, ${currentLayout.top}px)`,
-              `translate(${currentLayout.left * gridWidth - diffWidth}px, ${currentLayout.top}px)`
+              `translate(${currentLayout.left * _gridWidth}px, ${currentLayout.top}px)`,
+              `translate(${currentLayout.left * _gridWidth - diffWidth}px, ${currentLayout.top}px)`
             );
 
-            let transformX = currentLayout.left * gridWidth;
+            console.log('onResizeEnd---', {
+              cleft: currentLayout.left,
+              newLeft: currentLayout.left * _gridWidth,
+              _gridWidth,
+              currTransform: e.target.style.transform,
+            });
+            let transformX = currentLayout.left * _gridWidth;
             let transformY = currentLayout.top;
             if (isLeftChanged) {
-              transformX = currentLayout.left * gridWidth - diffWidth;
+              transformX = currentLayout.left * _gridWidth - diffWidth;
             }
             if (isTopChanged) {
               transformY = currentLayout.top - diffHeight;
@@ -479,22 +462,26 @@ export default function DragContainer({
             e.target.style.width = `${width}px`;
             e.target.style.height = `${height}px`;
             e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
-            onResizeStop([
-              {
-                id: e.target.id,
-                height: height,
-                width: width,
-                x: transformX,
-                y: transformY,
-              },
-            ]);
+            console.log('onResizeEnd---Newtransform', `translate(${transformX}px, ${transformY}px)`);
+            const resizeData = {
+              id: e.target.id,
+              height: height,
+              width: width,
+              x: transformX,
+              y: transformY,
+            };
+            if (currentWidget.component?.parent) {
+              resizeData.gw = _gridWidth;
+            }
+            console.log('onResizeEnd---resizeData', resizeData);
+            onResizeStop([resizeData]);
           } catch (error) {
             console.error('ResizeEnd error ->', error);
           }
         }}
         onResizeStart={(e) => {
           console.log('heree--- onResizeStart');
-          setResizingComponentId(e.target.id);
+          useGridStore.getState().actions.setResizingComponentId(e.target.id);
           setIsResizing(true);
           e.setMin([gridWidth, 10]);
           // if (currentLayout === 'mobile' && autoComputeLayout) {
@@ -542,22 +529,32 @@ export default function DragContainer({
               return false;
             }
           }
+          if (hoveredComponent !== e.target.id) {
+            return false;
+          }
           setDraggedTarget(e.target.id);
         }}
         // linePadding={10}
         onDragEnd={(e) => {
+          const startTime = performance.now();
           try {
             if (isDraggingRef.current) {
-              setDraggingComponentId(null);
+              console.log('timeDifference0', performance.now() - startTime);
+              useGridStore.getState().actions.setDraggingComponentId(null);
+              console.log('timeDifference1.1', performance.now() - startTime);
               isDraggingRef.current = false;
               setIsDragging(false);
+              console.log('timeDifference1.2', performance.now() - startTime);
             }
+            console.log('timeDifference1', performance.now() - startTime);
+
             setDraggedTarget();
             if (draggedSubContainer) {
               return;
             }
 
             let draggedOverElemId;
+            console.log('timeDifference2', performance.now() - startTime);
             if (document.elementFromPoint(e.clientX, e.clientY)) {
               const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
               const draggedOverElem = targetElems.find((ele) => {
@@ -587,9 +584,13 @@ export default function DragContainer({
               });
               draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
             }
+            console.log('timeDifference3', performance.now() - startTime);
             // console.log("draggedOverElemId", draggedOverElemId);
 
+            console.log('draggedOverElemId->', draggedOverElemId);
+
             const parentElem = list.find(({ id }) => id === draggedOverElemId);
+            const currentParentId = boxes.find(({ id: widgetId }) => e.target.id === widgetId)?.component?.parent;
             let left = e.lastEvent.translate[0];
             let top = e.lastEvent.translate[1];
             const currentWidget = boxes.find(({ id }) => id === e.target.id)?.component?.component;
@@ -598,7 +599,7 @@ export default function DragContainer({
               : undefined;
             const restrictedWidgets = restrictedWidgetsObj?.[parentWidget] || [];
             const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
-            if (draggedOverElemId && isParentChangeAllowed) {
+            if (draggedOverElemId !== currentParentId && isParentChangeAllowed) {
               let { left: _left, top: _top } = getMouseDistanceFromParentDiv(e, draggedOverElemId);
               left = _left;
               top = _top;
@@ -607,7 +608,9 @@ export default function DragContainer({
                 Math.round(top / 10) * 10
               }px)`;
             }
+            console.log('timeDifference4', performance.now() - startTime);
 
+            console.log('draggedOverElemId->', draggedOverElemId, currentParentId);
             onDrag([
               {
                 id: e.target.id,
@@ -617,15 +620,18 @@ export default function DragContainer({
               },
             ]);
             const box = boxes.find((box) => box.id === e.target.id);
+            console.log('timeDifference5', performance.now() - startTime);
             useEditorStore.getState().actions.setSelectedComponents([{ ...box }]);
+            console.log('timeDifference6', performance.now() - startTime);
           } catch (error) {
-            console.log('error', error);
+            console.log('draggedOverElemId->error', error);
           }
-          setDragTarget(null);
+          useGridStore.getState().actions.setDragTarget(null);
         }}
         onDrag={(e) => {
+          console.log('onDrager----', e.target.id, hoveredComponent);
           if (!isDraggingRef.current) {
-            setDraggingComponentId(e.target.id);
+            useGridStore.getState().actions.setDraggingComponentId(e.target.id);
             isDraggingRef.current = true;
             setIsDragging(true);
           }
@@ -633,6 +639,7 @@ export default function DragContainer({
             return;
           }
           setDraggedTarget(e.target.id);
+          // setDraggedTarget(e.target.id);
           if (!draggedSubContainer) {
             e.target.style.transform = `translate(${e.translate[0]}px, ${e.translate[1]}px)`;
             e.target.setAttribute(
@@ -655,10 +662,10 @@ export default function DragContainer({
             // const draggedOverElem = targetElems.find(
             //   (ele) => ele.id !== e.target.id && ele.classList.contains('target')
             // );
-            if (dragTarget !== draggedOverElem?.id) {
-              setDragTarget(draggedOverElem?.id);
+            if (useGridStore.getState().dragTarget !== draggedOverElem?.id) {
+              useGridStore.getState().actions.setDragTarget(draggedOverElem?.id);
             }
-            console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
+            // console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
             draggedOverElemId = draggedOverElem?.id;
             if (
               draggedOverElemRef.current?.id !== draggedOverContainer?.id &&
@@ -685,11 +692,13 @@ export default function DragContainer({
         // }}
         onDragGroupEnd={(e) => {
           const { events } = e;
+          const parentId = boxes.find((box) => (box.id = events[0]?.target?.id))?.component?.parent;
           onDrag(
             events.map((ev) => ({
               id: ev.target.id,
               x: ev.lastEvent.translate[0],
               y: ev.lastEvent.translate[1],
+              parent: parentId,
             }))
           );
         }}
@@ -717,7 +726,7 @@ export default function DragContainer({
         // snapGridWidth={gridWidth}
         bounds={{ left: 0, top: 0, right: 0, bottom: 0, position: 'css' }}
       />
-      {removeDuplicates(list)
+      {/* {removeDuplicates(list)
         .filter((i) => !isEmpty(i.parent))
         .map((i) => {
           let groupedTargets1 = [
@@ -809,7 +818,7 @@ export default function DragContainer({
               }}
               onDrag={(e) => {
                 if (!isDraggingRef.current) {
-                  setDraggingComponentId(e.target.id);
+                  setDraggingComponentId.getState().actions.setDraggingComponentId(e.target.id);
                   isDraggingRef.current = true;
                   setDraggedSubContainer(draggedSubContainer ? draggedSubContainer : i.parent);
                 }
@@ -832,13 +841,13 @@ export default function DragContainer({
                   });
                   draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
                   if (dragTarget !== draggedOverElemId) {
-                    setDragTarget(draggedOverElemId ? draggedOverElemId : 'canvas');
+                    useGridStore.getState().actions.setDragTarget(draggedOverElemId ? draggedOverElemId : 'canvas');
                   }
                 }
               }}
               onDragEnd={(e) => {
                 if (isDraggingRef.current) {
-                  setDraggingComponentId(null);
+                  setDraggingComponentId.getState().actions.setDraggingComponentId(null);
                   isDraggingRef.current = false;
                 }
                 if (draggedSubContainer !== i.parent) {
@@ -926,7 +935,7 @@ export default function DragContainer({
                 ]);
                 const box = boxes.find((box) => box.id === e.target.id);
                 useEditorStore.getState().actions.setSelectedComponents([{ ...box }]);
-                setDragTarget(null);
+                useGridStore.getState().actions.setDragTarget(null);
               }}
               onDragGroup={({ events }) => {
                 events.forEach((ev) => {
@@ -936,7 +945,7 @@ export default function DragContainer({
                 debouncedOnDrag(events, i.parent);
               }}
               onResizeStart={(e) => {
-                setResizingComponentId(e.target.id);
+                setDraggingComponentId.getState().actions.setResizingComponentId(e.target.id);
                 setActiveGrid(i.parent);
                 setResizingLimit(e, i);
                 // if (currentLayout === 'mobile' && autoComputeLayout) {
@@ -968,7 +977,7 @@ export default function DragContainer({
                 e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
               }}
               onResizeEnd={(e) => {
-                setResizingComponentId(null);
+                setDraggingComponentId.getState().actions.setResizingComponentId(null);
                 setActiveGrid(null);
                 try {
                   const gridWidth = subContainerWidths[i.parent];
@@ -1066,7 +1075,7 @@ export default function DragContainer({
               snapGridWidth={subContainerWidths[i.parent]}
             />
           );
-        })}
+        })} */}
     </>
   ) : (
     ''
@@ -1100,4 +1109,24 @@ function removeDuplicates(arr) {
 
   // debugger;
   return unique;
+}
+
+function extractWidgetClassOnHover(element) {
+  var classes = element.className.split(' ');
+
+  // Filter out the classes that match the format 'widget-{id}'
+  var widgetClass = classes.find(function (c) {
+    return c.startsWith('widget-');
+  });
+
+  return widgetClass.replace('widget-', '');
+}
+
+function findHighestLevelofSelection(selectedComponents) {
+  const result = selectedComponents.filter(
+    (widget) =>
+      widget?.component?.parent !== undefined && !selectedComponents.some((e) => e.id === widget?.component?.parent)
+  );
+  console.log('groupedTargets-->result------', result, selectedComponents);
+  return result;
 }
