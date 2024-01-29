@@ -749,6 +749,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                       <div className="col-1 p-0">
                                         <label className={`form-switch`}>
                                           <input
+                                            autoComplete="off"
                                             id="edit-input-blur"
                                             className="form-check-input"
                                             //disabled={editPopover ? true : false}
@@ -771,6 +772,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                                     </div>
                                   ) : (
                                     <input
+                                      autoComplete="off"
                                       className="form-control"
                                       id="edit-input-blur"
                                       value={cellVal === null ? '' : cellVal}
