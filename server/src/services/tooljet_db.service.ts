@@ -85,34 +85,46 @@ export class TooljetDbService {
 
     return await this.tooljetDbManager.query(
       `
-        SELECT c.COLUMN_NAME, c.DATA_TYPE, 
-              CASE 
-                  WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' 
-                      THEN c.Column_default 
-                  WHEN c.Column_default LIKE '%::%' 
-                      THEN replace(substring(c.Column_default from '^''?(.*?)''?::'), '''', '')
-                  ELSE c.Column_default 
-              END AS Column_default, 
-              c.character_maximum_length, c.numeric_precision, c.is_nullable, 
-              pk.CONSTRAINT_TYPE,
-              CASE 
-                  WHEN pk.COLUMN_NAME IS NOT NULL THEN 'PRIMARY KEY' 
-                  ELSE '' 
-              END AS KeyType
-        FROM INFORMATION_SCHEMA.COLUMNS c
-        LEFT JOIN (
-                  SELECT ku.TABLE_CATALOG,ku.TABLE_SCHEMA,ku.TABLE_NAME,ku.COLUMN_NAME, tc.CONSTRAINT_TYPE
-                  FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
-                  INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku
-                      ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
-                ) pk
-        ON  c.TABLE_CATALOG = pk.TABLE_CATALOG
-                  AND c.TABLE_SCHEMA = pk.TABLE_SCHEMA
-                  AND c.TABLE_NAME = pk.TABLE_NAME
-                  AND c.COLUMN_NAME = pk.COLUMN_NAME
-        WHERE c.TABLE_NAME = '${internalTable.id}'
-        ORDER BY c.TABLE_SCHEMA,c.TABLE_NAME, c.ORDINAL_POSITION;
-      `
+    SELECT
+      c.COLUMN_NAME,
+      c.DATA_TYPE,
+      CASE
+          WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN c.Column_default
+          WHEN c.Column_default LIKE '%::%' THEN REPLACE(SUBSTRING(c.Column_default FROM '^''?(.*?)''?::'), '''', '')
+          ELSE c.Column_default
+      END AS Column_default,
+      c.character_maximum_length,
+      c.numeric_precision,
+      JSON_BUILD_OBJECT(
+          'is_not_null',
+          CASE WHEN c.is_nullable = 'NO' THEN true ELSE false END,
+          'is_primary_key',
+          CASE WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN true ELSE false END
+      ) AS constraints_type,
+      CASE WHEN pk.COLUMN_NAME IS NOT NULL THEN 'PRIMARY KEY' ELSE '' END AS KeyType
+   FROM
+      INFORMATION_SCHEMA.COLUMNS c
+  LEFT JOIN (
+      SELECT
+          ku.TABLE_CATALOG,
+          ku.TABLE_SCHEMA,
+          ku.TABLE_NAME,
+          ku.COLUMN_NAME,
+          tc.CONSTRAINT_TYPE
+      FROM
+          INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
+      INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
+  ) pk ON c.TABLE_CATALOG = pk.TABLE_CATALOG
+      AND c.TABLE_SCHEMA = pk.TABLE_SCHEMA
+      AND c.TABLE_NAME = pk.TABLE_NAME
+      AND c.COLUMN_NAME = pk.COLUMN_NAME
+  WHERE
+      c.TABLE_NAME = '${internalTable.id}'
+  ORDER BY
+      c.TABLE_SCHEMA,
+      c.TABLE_NAME,
+      c.ORDINAL_POSITION;
+  `
     );
   }
 
@@ -446,10 +458,13 @@ export class TooljetDbService {
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
     let query = '';
 
-    if (column?.column_default)
-      query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${
-        column.column_name
-      } SET DEFAULT ${this.addQuotesIfString(column['column_default'])};`;
+    if ('column_default' in column) {
+      column.column_default.length
+        ? (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${
+            column.column_name
+          } SET DEFAULT ${this.addQuotesIfString(column['column_default'])};`)
+        : (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${column.column_name} DROP DEFAULT;`);
+    }
 
     if ('is_not_null' in constraints_type) {
       constraints_type.is_not_null

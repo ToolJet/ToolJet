@@ -12,7 +12,14 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 
-function Layout({ children, switchDarkMode, darkMode }) {
+function Layout({
+  children,
+  switchDarkMode,
+  darkMode,
+  enableCollapsibleSidebar = false,
+  collapseSidebar = false,
+  toggleCollapsibleSidebar = () => {},
+}) {
   const router = useRouter();
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
@@ -113,7 +120,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     <ToolTip message="Marketplace (Beta)" placement="right">
                       <Link
                         to="/integrations"
-                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('integrations'), event)}
+                        onClick={(event) => checkForUnsavedChanges('/integrations', event)}
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === '/integrations' && `current-seleted-route`
                         }`}
@@ -172,7 +179,11 @@ function Layout({ children, switchDarkMode, darkMode }) {
         </aside>
       </div>
       <div style={{ paddingLeft: 48, paddingRight: 0 }} className="col">
-        <Header />
+        <Header
+          enableCollapsibleSidebar={enableCollapsibleSidebar}
+          collapseSidebar={collapseSidebar}
+          toggleCollapsibleSidebar={toggleCollapsibleSidebar}
+        />
         <div style={{ paddingTop: 64 }}>{children}</div>
       </div>
       <ConfirmDialog

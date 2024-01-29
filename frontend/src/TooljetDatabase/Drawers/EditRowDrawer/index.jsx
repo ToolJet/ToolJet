@@ -7,17 +7,28 @@ import { tooljetDatabaseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen, selectedRowIds, rows }) => {
-  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords, columns } =
-    useContext(TooljetDatabaseContext);
+  const {
+    organizationId,
+    selectedTable,
+    setSelectedTableData,
+    setTotalRecords,
+    columns,
+    // selectedTableData,
+    pageSize,
+    // totalRecords,
+    pageCount,
+  } = useContext(TooljetDatabaseContext);
   const [rowIdToBeEdited, setRowIdToBeEdited] = useState(null);
 
   React.useEffect(() => {
     const selectedRows = Object.keys(selectedRowIds).map((key) => rows[key]);
-    const primaryKey = columns.find((column) => column.isPrimaryKey);
-    const deletionKeys = selectedRows.map((row) => {
-      return row.values[primaryKey.accessor];
-    });
-    if (deletionKeys.length) setRowIdToBeEdited(deletionKeys[0]);
+    const primaryKey = columns.find((column) => column?.constraints_type?.is_primary_key);
+    if (primaryKey) {
+      const rowIdToEditList = selectedRows.map((row) => {
+        return row.values[primaryKey?.accessor];
+      });
+      if (rowIdToEditList.length) setRowIdToBeEdited(rowIdToEditList[0]);
+    }
 
     return () => {
       setRowIdToBeEdited(null);
@@ -58,8 +69,10 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen, select
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <EditRowForm
           onEdit={() => {
+            const limit = pageSize;
+            const pageRange = `${(pageCount - 1) * pageSize + 1}`;
             tooljetDatabaseService
-              .findOne(organizationId, selectedTable.id, 'order=id.desc')
+              .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}&offset=${pageRange - 1}`)
               .then(({ headers, data = [], error }) => {
                 if (error) {
                   toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);

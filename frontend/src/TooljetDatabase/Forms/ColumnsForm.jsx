@@ -150,6 +150,16 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   placeholder={
                     columns[index]?.constraints_type?.is_primary_key === true ? columns[0].data_type : 'Select...'
                   }
+                  onMenuOpen={() => {
+                    setColumnSelection((prevState) => ({
+                      ...prevState,
+                      index: index,
+                      value: columns[index]?.data_type,
+                    }));
+                  }}
+                  onMenuClose={() => {
+                    setColumnSelection({ index: 0, value: '' });
+                  }}
                 />
               </div>
               <div className="col-2 m-0 pe-0 ps-1" data-cy="column-default-input-field">

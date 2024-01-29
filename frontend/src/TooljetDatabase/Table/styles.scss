@@ -39,3 +39,42 @@
 .column-popover-parent {
   background-color: white !important;
 }
+
+.keyPress-actions {
+
+  gap: 1.5rem;
+
+  .navigate-keyActions,
+  .enter-keyActions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+
+    .leftNav-parent-container,
+    .rightNav-parent-container,
+    .editEnter-parent-container {
+      border-radius: 6px;
+      border: 1px solid var(--slate7);
+      width: 25px;
+      text-align: center;
+    }
+  }
+}
+
+.cell-text-null {
+  background-color: var(--slate3) !important;
+  color: var(--slate11) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  border-radius: 6px;
+  width: 50px;
+}
+
+.toojet-db-table-footer {
+  width: calc(100vw - 336px)!important;
+}
