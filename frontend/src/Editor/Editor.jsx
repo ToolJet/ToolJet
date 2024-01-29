@@ -260,7 +260,7 @@ const EditorComponent = (props) => {
       document.title = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
       socket && socket?.close();
       subscription.unsubscribe();
-      if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
+      if (window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true') props?.provider?.disconnect();
       useEditorStore.getState().actions.setIsEditorActive(false);
       prevAppDefinition.current = null;
     };
@@ -440,7 +440,7 @@ const EditorComponent = (props) => {
    */
   const initRealtimeSave = () => {
     // Check if multiplayer editing is enabled; if not, return early
-    if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
+    if (!window?.public_config?.ENABLE_MULTIPLAYER_EDITING) return null;
 
     // Observe changes in the 'appDef' property of the 'ymap' object
     props.ymap?.observeDeep(() => {
@@ -498,14 +498,14 @@ const EditorComponent = (props) => {
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
 
-    await fetchApp(props.params.pageHandle, true);
+    await fetchApp(props.params.pageHandle);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
     await fetchEnvironments();
 
     await fetchAndInjectCustomStyles();
     initComponentVersioning();
-    initRealtimeSave();
+    window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && initRealtimeSave();
     initEventListeners();
     updateEditorState({
       selectedComponents: [],
@@ -833,14 +833,9 @@ const EditorComponent = (props) => {
     }
   };
 
-  const fetchApp = async (startingPageHandle, onMount = false) => {
-    const _appId = props?.params?.id || props?.params?.slug;
-
-    if (!onMount) {
-      await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
-    } else {
-      callBack(app, startingPageHandle);
-    }
+  const fetchApp = async (startingPageHandle) => {
+    const _appId = props?.id;
+    await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
   };
 
   const setAppDefinitionFromVersion = (
@@ -1022,6 +1017,8 @@ const EditorComponent = (props) => {
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
     const editingVersion = useAppVersionStore.getState().editingVersion;
+    //skipAutoSave means the updates are coming from websocket and we don't need to save it again
+    if (appDiffOptions?.skipAutoSave) return;
     if (
       isEditorFreezed ||
       useAppVersionStore.getState().isAppVersionPromoted ||
@@ -1057,7 +1054,7 @@ const EditorComponent = (props) => {
           };
           useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
 
-          if (config.ENABLE_MULTIPLAYER_EDITING) {
+          if (window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true') {
             props.ymap?.set('appDef', {
               newDefinition: appDefinition,
               editingVersionId: editingVersion.id,
@@ -1948,7 +1945,7 @@ const EditorComponent = (props) => {
                       transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                     }}
                   >
-                    {config.ENABLE_MULTIPLAYER_EDITING && featureAccess?.multiPlayerEdit && (
+                    {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && (
                       <RealtimeCursors editingVersionId={editingVersionId} editingPageId={currentPageId} />
                     )}
                     {isLoading && (
