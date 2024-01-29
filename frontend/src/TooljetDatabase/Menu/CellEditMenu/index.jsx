@@ -30,6 +30,7 @@ export const CellEditMenu = ({
       setCellValue(previousCellValue);
     }
     setDefaultValue(defaultBooleanValue);
+    setNullValue(false);
   };
 
   const handleNullChange = (nullVal) => {
@@ -43,6 +44,7 @@ export const CellEditMenu = ({
       }
     }
     setNullValue(nullVal);
+    setDefaultValue(false);
   };
 
   const handleSelectedState = (value) => {
