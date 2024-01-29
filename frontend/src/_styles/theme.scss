@@ -7039,12 +7039,15 @@ tbody {
     max-width: 140px;
   }
 
-  .tjdb-table-row:hover{
-    background: var(--Slate-02, #F8F9FA);
+  .tjdb-table-row{
+    &:hover {
+      background: var(--Slate-02, #F8F9FA);
   
-    .tjdb-checkbox-cell {
-      display: block !important;
+      .tjdb-checkbox-cell {
+        display: block !important;
+      }
     }
+
   } 
 }
 

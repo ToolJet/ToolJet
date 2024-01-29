@@ -509,7 +509,11 @@ const Table = ({ collapseSidebar }) => {
                 prepareRow(row);
                 return (
                   <>
-                    <tr className={`tjdb-table-row ${`row-tj`}`} {...row.getRowProps()} key={rIndex}>
+                    <tr
+                      className={`tjdb-table-row ${`row-tj`} ${darkMode && 'dark-bg'}`}
+                      {...row.getRowProps()}
+                      key={rIndex}
+                    >
                       <td className="table-cell">
                         <div
                           className="d-flex align-items-center gap-2"
