@@ -1,8 +1,11 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import Select from '@/_ui/Select';
 import Pagination from '@/_ui/Pagination';
 import Skeleton from 'react-loading-skeleton';
 import { TooljetDatabaseContext } from '../index';
+import LeftNav from '../Icons/LeftNav.svg';
+import RightNav from '../Icons/RightNav.svg';
+import Enter from '../Icons/Enter.svg';
 
 const Footer = ({ darkMode, dataLoading, tableDataLength, collapseSidebar }) => {
   const selectOptions = [
@@ -82,7 +85,7 @@ const Footer = ({ darkMode, dataLoading, tableDataLength, collapseSidebar }) => 
           data-cy="table-footer-section"
         >
           <div className="keyPress-actions h-100 d-flex align-items-center">
-            {/* <div className="navigate-keyActions">
+            <div className="navigate-keyActions">
               <div className="leftNav-parent-container">
                 <LeftNav style={{ verticalAlign: 'baseline' }} width={10} height={10} />
               </div>
@@ -96,7 +99,7 @@ const Footer = ({ darkMode, dataLoading, tableDataLength, collapseSidebar }) => 
                 <Enter style={{ verticalAlign: 'baseline' }} width={10} height={10} />
               </div>
               <div className="navigate-title">Enter to edit</div>
-            </div> */}
+            </div>
           </div>
           <div>
             <Pagination

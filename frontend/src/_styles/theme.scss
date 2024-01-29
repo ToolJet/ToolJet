@@ -6908,46 +6908,67 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    border-width: 0px 1px 1px 1px;
+    cursor: pointer;
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+    }
   }
 
   .table-cell-hover-background {
     background-color: #F8F9FA;
+    border-width: 0px 1px 1px 1px;
   }
 
   .table-cell-hover-background-dark {
     background-color: #242f3c;
+    border-width: 0px 1px 1px 1px;
   }
 
-  .table-cell-click {
+  .table-editable-parent-cell {
+    border: 1.5px solid var(--indigo9);
+    background-color: var(--indigo2);
+    cursor: pointer;
+    padding: 0;
+
+    .form-control {
+      border: none;
+      padding: 0.5rem;
+    }
+  }
+
+  .table-columnHeader-click {
     // background-color: #fbfdff;
     background-color: #F8F9FA;
     border-left: 1.5px solid #3E63DD !important;
     border-right: 1.5px solid #3E63DD !important;
+    border-width: 0px 1px 1px 1px;
   }
 
-  .table-cell-click-dark {
+  .table-columnHeader-click-dark {
     background-color: #242f3c;
     border-left: 1.5px solid white !important;
     border-right: 1.5px solid white !important;
+    border-width: 0px 1px 1px 1px;
   }
 
   .row-tj:first-child {
-    .table-cell-click {
+    .table-columnHeader-click {
       border-top: 1.5px solid #3E63DD !important;
     }
 
-    .table-cell-click-dark {
+    .table-columnHeader-click-dark {
       border-top: 1.5px solid white !important;
     }
   }
 
   .row-tj:last-of-type {
-    .table-cell-click {
+    .table-columnHeader-click {
       border-bottom: 1.5px solid #3E63DD !important;
     }
 
-    .table-cell-click-dark {
+    .table-columnHeader-click-dark {
       border-bottom: 1.5px solid white !important;
     }
   }
@@ -7974,6 +7995,13 @@ tbody {
 .toojet-db-table-footer {
   height: 52px;
   background: var(--base) !important;
+  width: calc(100vw - 336px);
+}
+
+.toojet-db-table-footer-collapse {
+  height: 52px;
+  background: var(--base) !important;
+  width: calc(100vw - 48px);
 }
 
 .toojet-db-table-footer-collapse {
@@ -8802,8 +8830,8 @@ tbody {
   color: var(--slate12) !important;
 
   &:first-child {
-    display: flex !important;
-    align-items: center !important;
+    // display: flex !important;
+    // align-items: center !important;
     padding-left: 1rem !important;
   }
 
@@ -8813,16 +8841,12 @@ tbody {
   margin: 0;
   width: 300px;
 
-  th:first-child {
-    height: 29px;
-  }
 
   th:first-child>div {
     height: 16px;
     width: 16px;
     display: flex;
     align-items: center;
-    height: 29px;
 
     input {
       border-radius: 4px;
@@ -9891,7 +9915,8 @@ tbody {
   height: 110px;
 
   table {
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     width: max-content;
 
     .row-tj {
