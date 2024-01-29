@@ -88,7 +88,7 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
           if (show && isEmpty(filters)) setFilters({ 0: {} });
           setShow(show);
         }}
-        placement="bottom"
+        placement="bottom-start"
         overlay={popover}
       >
         <button

@@ -7871,8 +7871,6 @@ tbody {
 .home-page-footer {
   position: fixed;
   bottom: 0px;
-  right: 0;
-  left: 336px;
 }
 
 .home-page-footer {
@@ -7998,6 +7996,12 @@ tbody {
   height: 52px;
   background: var(--base) !important;
   width: calc(100vw - 336px);
+}
+
+.toojet-db-table-footer-collapse {
+  height: 52px;
+  background: var(--base) !important;
+  width: calc(100vw - 48px);
 }
 
 .toojet-db-table-footer-collapse {

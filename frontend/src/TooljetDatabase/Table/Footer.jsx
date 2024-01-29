@@ -1,5 +1,4 @@
-import React, { useState, useContext } from 'react';
-import { Button } from '@/_ui/LeftSidebar';
+import React, { useContext } from 'react';
 import Select from '@/_ui/Select';
 import Pagination from '@/_ui/Pagination';
 import Skeleton from 'react-loading-skeleton';
@@ -8,7 +7,7 @@ import LeftNav from '../Icons/LeftNav.svg';
 import RightNav from '../Icons/RightNav.svg';
 import Enter from '../Icons/Enter.svg';
 
-const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength, collapseSidebar }) => {
+const Footer = ({ darkMode, dataLoading, tableDataLength, collapseSidebar }) => {
   const selectOptions = [
     { label: '50 records', value: 50 },
     { label: '100 records', value: 100 },
