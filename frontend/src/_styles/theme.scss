@@ -6909,7 +6909,6 @@ tbody {
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
-    border-width: 0px 1px 1px 1px;
 
     input.form-control {
       border: none;
@@ -8827,8 +8826,8 @@ tbody {
   color: var(--slate12) !important;
 
   &:first-child {
-    display: flex !important;
-    align-items: center !important;
+    // display: flex !important;
+    // align-items: center !important;
     padding-left: 1rem !important;
   }
 
@@ -8838,16 +8837,12 @@ tbody {
   margin: 0;
   width: 300px;
 
-  th:first-child {
-    height: 29px;
-  }
 
   th:first-child>div {
     height: 16px;
     width: 16px;
     display: flex;
     align-items: center;
-    height: 29px;
 
     input {
       border-radius: 4px;
@@ -9916,7 +9911,8 @@ tbody {
   height: 110px;
 
   table {
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     width: max-content;
 
     .row-tj {

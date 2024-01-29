@@ -285,7 +285,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer, collapseSidebar })
     }));
   };
 
-  const onMenuClick = (index, e) => {
+  const onMenuClick = (index, _e) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
       clickedColumn: index,
@@ -400,11 +400,11 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer, collapseSidebar })
         style={{
           height: 'calc(100vh - 164px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
-        className={cx('table-responsive border-0 tj-db-table animation-fade')}
+        className={cx('table-responsive border-0 tj-db-table animation-fade tj-table')}
       >
         <table
           {...getTableProps()}
-          className="table card-table table-bordered table-vcenter text-nowrap datatable"
+          className={`table card-table table-vcenter text-nowrap datatable ${darkMode && 'dark-background'}`}
           style={{ position: 'relative' }}
         >
           <thead>
