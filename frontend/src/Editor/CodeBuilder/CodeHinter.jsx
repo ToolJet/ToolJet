@@ -464,7 +464,7 @@ export function CodeHinter({
               labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'label-hinter-margin' : 'mb-0'} ${
                 darkMode && 'color-whitish-darkmode'
               }`}
-              bold={!AllElements.hasOwnProperty(TypeMapping[type]) ? true : false}
+              // bold={!AllElements.hasOwnProperty(TypeMapping[type]) ? true : false}
             />
           </div>
         )}

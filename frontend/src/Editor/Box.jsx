@@ -284,12 +284,12 @@ export const Box = memo(
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
         delay={{ show: 500, hide: 0 }}
-        trigger={inCanvas && !validatedGeneralProperties.tooltip?.toString().trim() ? null : ['hover', 'focus']}
+        trigger={inCanvas && !validatedProperties.tooltip?.toString().trim() ? null : ['hover', 'focus']}
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${validatedGeneralProperties.tooltip}`
+              ? `${validatedProperties.tooltip}`
               : `${t(`widget.${component.name}.description`, component.description)}`,
           })
         }
