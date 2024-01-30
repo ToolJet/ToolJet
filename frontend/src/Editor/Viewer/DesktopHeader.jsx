@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import LogoIcon from '@assets/images/rocket.svg';
 import { Link } from 'react-router-dom';
@@ -12,7 +12,13 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import PreviewSettings from './PreviewSettings';
 
 const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDefinitionFromVersion }) => {
-  const isVersionReleased = useAppVersionStore((state) => state.isVersionReleased, shallow);
+  const { isVersionReleased, editingVersion } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      editingVersion: state?.editingVersion,
+    }),
+    shallow
+  );
   const _renderAppNameAndLogo = () => (
     <div
       className={classNames('d-flex', 'align-items-center')}
@@ -53,7 +59,7 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
       }}
     >
       {_renderAppNameAndLogo()}
-      {!isVersionReleased && (
+      {!isVersionReleased && !isEmpty(editingVersion) && (
         <PreviewSettings
           isMobileLayout={false}
           showHeader={showHeader}

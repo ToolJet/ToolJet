@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import LogoIcon from '@assets/images/rocket.svg';
 import { Link } from 'react-router-dom';
@@ -23,8 +23,13 @@ const MobileHeader = ({
   setAppDefinitionFromVersion,
   showViewerNavigation,
 }) => {
-  const isVersionReleased = useAppVersionStore((state) => state.isVersionReleased, shallow);
-
+  const { isVersionReleased, editingVersion } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      editingVersion: state?.editingVersion,
+    }),
+    shallow
+  );
   const _renderAppNameAndLogo = () => (
     <div
       className={classNames('d-flex', 'align-items-center')}
@@ -99,7 +104,7 @@ const MobileHeader = ({
           showNavbarClass={false}
         >
           {showViewerNavigation && _renderMobileNavigationMenu()}
-          {_renderPreviewSettings()}
+          {!isEmpty(editingVersion) && _renderPreviewSettings()}
           {!showViewerNavigation && _renderDarkModeBtn()}
         </Header>
       </>
@@ -119,7 +124,7 @@ const MobileHeader = ({
         <span style={{}}>{_renderAppNameAndLogo()}</span>
         {showViewerNavigation && _renderMobileNavigationMenu()}
       </div>
-      {!isVersionReleased && _renderPreviewSettings()}
+      {!isVersionReleased && !isEmpty(editingVersion) && _renderPreviewSettings()}
       {!showViewerNavigation && _renderDarkModeBtn({ styles: { top: '2px' } })}
     </Header>
   );
