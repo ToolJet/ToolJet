@@ -1,11 +1,10 @@
-import React, { useState, useContext, useEffect, useMemo } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 import Select from '@/_ui/Select';
-import _, { isEqual } from 'lodash';
-import { useMounted } from '@/_hooks/use-mount';
+import _ from 'lodash';
 import BigInt from '../Icons/Biginteger.svg';
 import Float from '../Icons/Float.svg';
 import Integer from '../Icons/Integer.svg';
@@ -13,14 +12,18 @@ import CharacterVar from '../Icons/Text.svg';
 import Boolean from '../Icons/Toggle.svg';
 import './styles.scss';
 
-const EditRowForm = ({ onEdit, onClose }) => {
+const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns, selectedTableData } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
-  const [selectedRow, setSelectedRow] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(rowIdToBeEdited);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
   const currentValue = selectedTableData.find((row) => row.id === selectedRow);
   const [inputValues, setInputValues] = useState([]);
+
+  useEffect(() => {
+    toast.dismiss();
+  }, []);
 
   useEffect(() => {
     if (currentValue) {
@@ -263,6 +266,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
             </div>
             <div className="edit-row-dropdown col-auto row-edit-select-container w-100" data-cy="select-row-dropdown">
               <Select
+                isDisabled={true}
                 useMenuPortal={false}
                 placeholder="Select a row to edit"
                 value={selectedRow}

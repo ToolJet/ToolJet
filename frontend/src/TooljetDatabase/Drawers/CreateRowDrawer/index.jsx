@@ -4,14 +4,15 @@ import { toast } from 'react-hot-toast';
 import CreateRowForm from '../../Forms/RowForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+// import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
-  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords, pageSize } =
+    useContext(TooljetDatabaseContext);
 
   return (
     <>
-      <button
+      {/* <button
         onClick={() => {
           setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen);
         }}
@@ -21,12 +22,13 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
         <span data-cy="add-new-row-button-text" className="tj-text-xsm font-weight-500" style={{ marginLeft: '6px' }}>
           Add new row
         </span>
-      </button>
+      </button> */}
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm
           onCreate={() => {
+            const limit = pageSize;
             tooljetDatabaseService
-              .findOne(organizationId, selectedTable.id, 'order=id.desc')
+              .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}`)
               .then(({ headers, data = [], error }) => {
                 if (error) {
                   toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);

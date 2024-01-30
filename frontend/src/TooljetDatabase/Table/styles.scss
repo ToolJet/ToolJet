@@ -40,6 +40,83 @@
   background-color: white !important;
 }
 
+.tj-table {
+  thead th {
+    position: sticky;
+    top: 0px;
+  }
+
+  td:nth-child(1) {
+    z-index: 1;
+    position: sticky;
+    left: 0;
+    background-color: white;
+  }
+
+  td:nth-child(2) {
+    z-index: 1;
+    position: sticky;
+    left: 66px;
+    border-right: 2px solid var(--light-slate-08, #C1C8CD);
+    background-color: white;
+  }
+
+  th {
+    border-top: 1px solid rgba(101, 109, 119, 0.16) !important;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+    border-color: inherit;
+  }
+
+  td {
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+    border-color: inherit;
+  }
+
+  th:nth-child(1) {
+    left: 0;
+    top: 0;
+    z-index: 2;
+  }
+
+  th:nth-child(2) {
+    z-index: 2;
+    left: 66px;
+    border-right: 2px solid var(--light-slate-08, #C1C8CD);
+  }
+
+  .dark-background {
+    td:nth-child(1),
+    td:nth-child(2) {
+      background-color: #2B394A;
+    }
+  }
+
+}
+
+.keyPress-actions {
+
+  gap: 1.5rem;
+
+  .navigate-keyActions,
+  .enter-keyActions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+
+    .leftNav-parent-container,
+    .rightNav-parent-container,
+    .editEnter-parent-container {
+      border-radius: 6px;
+      border: 1px solid var(--slate7);
+      width: 24px;
+      text-align: center;
+    }
+  }
+}
+
 .cell-text-null {
   background-color: var(--slate3) !important;
   color: var(--slate11) !important;
@@ -73,14 +150,39 @@
 }
 
 .tjdb-cell-save-progress {
-  position: absolute;
-  left: 0;
-  bottom: 0;
   height: 2px;
   background-color: var(--Indigo-09, #3E63DD) !important;
 
-
   .tjdb-cell-save-progress-bar {
     background-color: var(--Indigo-09, #3E63DD) !important;
+  }
+}
+
+.toojet-db-table-footer {
+  width: calc(100vw - 336px) !important;
+}
+
+.tj-db-table {
+  .table-cell {
+    &:hover {
+      background: var(--Slate-03, #F1F3F5) !important;
+    }
+  }
+
+  .dark-bg {
+    &:hover {
+      background: #22303C;
+
+      td:nth-child(1),
+      td:nth-child(2) {
+        background: #22303C;
+      }
+    }
+
+    .table-cell {
+      &:hover {
+        background: #1D252F !important;
+      }
+    }
   }
 }
