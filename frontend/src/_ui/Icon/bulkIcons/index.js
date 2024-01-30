@@ -14,6 +14,7 @@ import BookSearch from './BookSearch.jsx';
 import Branch from './Branch.jsx';
 import Bug from './Bug.jsx';
 import Calender from './Calender.jsx';
+import Users from './Users.jsx';
 import CheckRectangle from './CheckRectangle.jsx';
 import CheveronDown from './CheveronDown.jsx';
 import CheveronLeft from './CheveronLeft.jsx';
@@ -330,6 +331,8 @@ const Icon = (props) => {
       return <ZoomOutRectangle {...props} />;
     case 'unlock':
       return <Unlock {...props} />;
+    case 'users':
+      return <Users {...props} />;
     case 'telescope':
       return <Telescope {...props} />;
     case 'removeCircle':

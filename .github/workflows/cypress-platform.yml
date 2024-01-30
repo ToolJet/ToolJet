@@ -59,6 +59,7 @@ jobs:
           echo "TOOLJET_DB_HOST=localhost" >> .env
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
+          echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
@@ -169,6 +170,7 @@ jobs:
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=postgrest" >> .env
           echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
+          echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
