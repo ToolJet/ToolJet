@@ -191,6 +191,7 @@ const sidebars = {
         ]
       },
       'items': [
+        'how-to/setup-rsyslog',
         'how-to/use-inspector',
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',
