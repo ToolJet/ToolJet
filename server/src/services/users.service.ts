@@ -102,9 +102,9 @@ export class UsersService {
     return allUsers?.map((user) => {
       return {
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        name: `${user.firstName || ''}${user.lastName ? ` ${user.lastName}` : ''}`,
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        name: `${user.firstName ?? ''} ${user.lastName ?? ''}`,
         id: user.id,
         avatarId: user.avatarId,
         organizationUsers: user.organizationUsers,

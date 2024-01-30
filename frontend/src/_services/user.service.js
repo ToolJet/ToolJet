@@ -68,9 +68,13 @@ function updateCurrentUser(firstName, lastName) {
   return fetch(`${config.apiUrl}/users/update`, requestOptions).then(handleResponse);
 }
 
-function updateUserType(userId, userType) {
-  const body = { userType, userId };
-  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
+function updateUserType(userUpdateBody) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    body: JSON.stringify(userUpdateBody),
+    credentials: 'include',
+  };
   return fetch(`${config.apiUrl}/users/user-type`, requestOptions).then(handleResponse);
 }
 

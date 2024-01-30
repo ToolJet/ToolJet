@@ -9,6 +9,8 @@ import OrganizationsModal from './OrganizationsModal';
 import UserEditModal from './UserEditModal';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { LicenseBanner } from '@/LicenseBanner';
+import UserEditDrawer from './UserEditDrawer';
+import ModalBase from '@/_ui/Modal';
 
 class ManageAllUsersComponent extends React.Component {
   constructor(props) {
@@ -18,6 +20,7 @@ class ManageAllUsersComponent extends React.Component {
       currentUser: authenticationService.currentUserValue,
       isLoading: true,
       archivingFromAllOrgs: false,
+      unarchivingFromAllOrgs: false,
       newUser: {},
       archivingUser: null,
       unarchivingUser: null,
@@ -34,6 +37,8 @@ class ManageAllUsersComponent extends React.Component {
       updatingUser: null,
       userLimits: {},
       disabled: false,
+      showArchiveModal: false,
+      showWorkspaceUserArchiveModal: false,
     };
   }
   componentDidMount() {
@@ -96,13 +101,13 @@ class ManageAllUsersComponent extends React.Component {
         toast.success('The user has been archived', {
           position: 'top-center',
         });
-        this.setState({ archivingUser: null });
+        this.setState({ showWorkspaceUserArchiveModal: false, archivingUser: null });
         this.fetchUsers(this.state.currentPage, this.state.options);
         this.fetchAllUserLimits();
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
-        this.setState({ archivingUser: null });
+        this.setState({ showWorkspaceUserArchiveModal: false, archivingUser: null });
       });
   };
 
@@ -115,53 +120,125 @@ class ManageAllUsersComponent extends React.Component {
         toast.success('The user has been unarchived', {
           position: 'top-center',
         });
-        this.setState({ unarchivingUser: null });
+        this.setState({ showWorkspaceUserArchiveModal: false, unarchivingUser: null });
         this.fetchUsers(this.state.currentPage, this.state.options);
         this.fetchAllUserLimits();
       })
-      .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
-        this.setState({ unarchivingUser: null });
+      .catch(({ error, data }) => {
+        const { statusCode } = data;
+        if ([451].indexOf(statusCode) === -1) {
+          toast.error(error);
+        }
+        this.setState({ showWorkspaceUserArchiveModal: false, unarchivingUser: null });
       });
   };
 
-  archiveAll = () => {
+  archiveAll = (user) => {
     this.setState({ archivingFromAllOrgs: true });
     organizationUserService
-      .archiveAll(this.state.selectedUser.id)
+      .archiveAll(user.id)
       .then(() => {
-        toast.success('All users have been archived', {
+        toast.success('User has been archived from this instance successfully!', {
           position: 'top-center',
+          style: {
+            minWidth: '430px',
+          },
         });
         this.fetchUsers(this.state.currentPage, this.state.options);
         this.fetchAllUserLimits();
         this.setState({ archivingFromAllOrgs: false });
+        this.toggleArchiveModal();
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error('Could not archive user. Please try again!');
         this.setState({ archivingFromAllOrgs: false });
+        this.toggleArchiveModal();
       });
   };
 
-  updateUser = (options) => {
-    const { userType } = options;
-    this.setState({ isUpdatingUser: true });
-    userService
-      .updateUserType(this.state.updatingUser.id, userType)
+  unarchiveAll = (user) => {
+    this.setState({ unarchivingFromAllOrgs: true });
+    organizationUserService
+      .unarchiveAll(user.id)
       .then(() => {
-        toast.success('User has been updated', {
+        toast.success('User has been unarchived from this instance successfully!', {
           position: 'top-center',
+          style: {
+            maxWidth: 'unset',
+          },
         });
         this.fetchUsers(this.state.currentPage, this.state.options);
         this.fetchAllUserLimits();
-        this.setState({ isUpdatingUser: false, updatingUser: null });
-        this.hideEditModal();
+        this.setState({ unarchivingFromAllOrgs: false });
+        this.toggleArchiveModal();
       })
-      .catch(({ error, statusCode }) => {
-        this.hideEditModal();
-        statusCode !== 451 && toast.error(error, { position: 'top-center' });
-        this.setState({ isUpdatingUser: false });
+      .catch(({ error }) => {
+        toast.error('Could not unarchive user. Please try again!');
+        this.setState({ unarchivingFromAllOrgs: false });
+        this.toggleArchiveModal();
       });
+  };
+
+  handleValidation() {
+    let fields = this.state.fields;
+    let errors = {};
+    if (!fields['fullName']) {
+      errors['fullName'] = 'This field is required';
+    }
+
+    this.setState({ errors: errors });
+    return Object.keys(errors).length === 0;
+  }
+
+  handleNameSplit = (fullName) => {
+    const words = fullName.split(' ');
+    const firstName = words.length > 0 ? words.slice(0, -1).join(' ') : '';
+    const lastName = words.length > 0 ? words[words.length - 1] : '';
+    let fields = this.state.fields;
+    fields['firstName'] = firstName;
+    fields['lastName'] = lastName;
+    this.setState({
+      fields,
+    });
+  };
+
+  updateUser = () => {
+    if (this.handleValidation()) {
+      this.handleNameSplit(this.state.fields['fullName']);
+      let fields = {};
+      Object.keys(this.state.fields).map((key) => {
+        fields[key] = '';
+      });
+
+      this.setState({ isUpdatingUser: true });
+      const { userType, firstName, lastName } = this.state.fields;
+      userService
+        .updateUserType({
+          userId: this.state.updatingUser.id,
+          userType,
+          firstName,
+          lastName,
+        })
+        .then(() => {
+          toast.success('Changes updated successfully!', {
+            position: 'top-center',
+          });
+          this.fetchUsers(this.state.currentPage, this.state.options);
+          this.fetchAllUserLimits();
+          this.setState({ isUpdatingUser: false, updatingUser: null });
+          this.hideEditUserDrawer();
+        })
+        .catch(({ error, data }) => {
+          const { statusCode } = data;
+          if ([451].indexOf(statusCode) === -1) {
+            toast.error(error);
+          }
+          this.hideEditUserDrawer();
+          this.setState({ isUpdatingUser: false });
+        });
+    } else {
+      this.setState({ isUpdatingUser: false, isEditUserDrawerOpen: true });
+    }
   };
 
   pageChanged = (page) => this.fetchUsers(page, this.state.options);
@@ -170,36 +247,86 @@ class ManageAllUsersComponent extends React.Component {
 
   openOrganizationModal = (selectedUser) => this.setState({ showOrganizationsModal: true, selectedUser });
 
-  openEditModal = (updatingUser) => this.setState({ showEditModal: true, updatingUser });
+  openEditModal = (updatingUser) => this.setState({ isEditUserDrawerOpen: true, updatingUser });
 
-  hideModal = () => this.setState({ showOrganizationsModal: false, selectedUser: null });
+  hideModal = () => this.setState({ showOrganizationsModal: false });
 
-  hideEditModal = () => this.setState({ showEditModal: false, updatingUser: null });
+  hideEditUserDrawer = () => this.setState({ isEditUserDrawerOpen: false, updatingUser: null });
+
+  changeNewUserOption = (name, value) => {
+    this.setState({
+      fields: {
+        ...this.state.fields,
+        [name]: name === 'userType' ? (value ? 'instance' : 'workspace') : value,
+      },
+    });
+  };
+
+  setUserValues = (user) => {
+    this.setState({ fields: user });
+  };
+
+  toggleArchiveModal = (user) => this.setState({ showArchiveModal: !this.state.showArchiveModal, updatingUser: user });
+
+  toggleWorkspaceUserArchiveModal = (user) =>
+    this.setState({ showWorkspaceUserArchiveModal: !this.state.showWorkspaceUserArchiveModal, updatingUser: user });
+
+  generateInstanceArchiveConfirmModal = () => {
+    const { archivingFromAllOrgs, unarchivingFromAllOrgs, updatingUser, showArchiveModal } = this.state;
+    const isArchived = updatingUser?.status === 'archived';
+    const confirmButtonProps = {
+      title: !isArchived ? 'Archive' : 'Unarchive',
+      isLoading: archivingFromAllOrgs || unarchivingFromAllOrgs,
+      disabled: archivingFromAllOrgs || unarchivingFromAllOrgs,
+      variant: !isArchived ? 'dangerPrimary' : 'primary',
+      leftIcon: 'archive',
+    };
+    const body =
+      updatingUser?.status === 'active'
+        ? 'Archiving the user will restrict their access to all their workspaces and exclude them from the count of users covered by your plan. Are you sure you want to continue?'
+        : `Unarchiving the user will activate them in the instance and include them in the count of users covered by your plan. Are you sure you want to continue?`;
+
+    return (
+      <ModalBase
+        title={
+          <div className="my-3">
+            <span className="tj-text-md font-weight-500">{!isArchived ? 'Archive user' : 'Unarchive user'}</span>
+            <div className="tj-text-sm text-muted">{updatingUser?.email}</div>
+          </div>
+        }
+        show={showArchiveModal}
+        handleClose={this.toggleArchiveModal}
+        handleConfirm={() => (!isArchived ? this.archiveAll(updatingUser) : this.unarchiveAll(updatingUser))}
+        confirmBtnProps={confirmButtonProps}
+        body={<div className="tj-text-sm">{body}</div>}
+      />
+    );
+  };
 
   generateBanner() {
     const { usersCount, editorsCount, viewersCount } = this.state.userLimits;
 
     if (usersCount?.percentage >= 100) {
-      return <LicenseBanner classes="mb-3" limits={usersCount} type="users" />;
+      return <LicenseBanner classes="my-3" limits={usersCount} type="users" />;
     } else if (editorsCount?.percentage >= 100) {
-      return <LicenseBanner classes="mb-3" limits={editorsCount} type="builders" />;
+      return <LicenseBanner classes="my-3" limits={editorsCount} type="builders" />;
     } else if (viewersCount?.percentage >= 100) {
-      return <LicenseBanner classes="mb-3" limits={viewersCount} type="end users" />;
+      return <LicenseBanner classes="my-3" limits={viewersCount} type="end users" />;
     } else if (
       usersCount?.percentage >= 90 ||
       (usersCount?.total <= 10 && usersCount.current === usersCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mb-3" limits={usersCount} type="users" />;
+      return <LicenseBanner classes="my-3" limits={usersCount} type="users" />;
     } else if (
       editorsCount?.percentage >= 90 ||
       (editorsCount?.total <= 10 && editorsCount.current === editorsCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mb-3" limits={editorsCount} type="builders" />;
+      return <LicenseBanner classes="my-3" limits={editorsCount} type="builders" />;
     } else if (
       viewersCount?.percentage >= 90 ||
       (viewersCount?.total <= 10 && viewersCount.current === viewersCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mb-3" limits={viewersCount} type="end users" />;
+      return <LicenseBanner classes="my-3" limits={viewersCount} type="end users" />;
     }
   }
 
@@ -210,10 +337,13 @@ class ManageAllUsersComponent extends React.Component {
       archivingUser,
       unarchivingUser,
       meta,
-      showEditModal,
+      isEditUserDrawerOpen,
       updatingUser,
       isUpdatingUser,
       userLimits,
+      archivingFromAllOrgs,
+      unarchivingFromAllOrgs,
+      showArchiveModal,
     } = this.state;
 
     const { superadminsCount } = this.state.userLimits;
@@ -226,7 +356,7 @@ class ManageAllUsersComponent extends React.Component {
       <ErrorBoundary showFallback={true}>
         <div className="org-wrapper org-users-page animation-fade instance-all-users">
           <ReactTooltip type="dark" effect="solid" delayShow={250} />
-
+          {this.generateInstanceArchiveConfirmModal()}
           <OrganizationsModal
             showModal={this.state.showOrganizationsModal}
             darkMode={this.props.darkMode}
@@ -241,21 +371,28 @@ class ManageAllUsersComponent extends React.Component {
             archivingFromAllOrgs={this.state.archivingFromAllOrgs}
             openEditModal={this.openEditModal}
             disabled={this.state.disabled}
+            showWorkspaceUserArchiveModal={this.state.showWorkspaceUserArchiveModal}
+            toggleWorkspaceUserArchiveModal={this.toggleWorkspaceUserArchiveModal}
+            updatingUser={this.state.updatingUser}
           />
+          {isEditUserDrawerOpen && (
+            <UserEditDrawer
+              isEditUserDrawerOpen={isEditUserDrawerOpen}
+              onClose={this.hideEditUserDrawer}
+              changeOptions={this.changeNewUserOption}
+              fields={this.state.fields}
+              errors={this.state.errors}
+              disabled={this.state.disabled}
+              superadminsCount={superadminsCount}
+              updatingUser={updatingUser}
+              isUpdatingUser={isUpdatingUser}
+              t={this.props.t}
+              setUserValues={this.setUserValues}
+              updateUser={this.updateUser}
+            />
+          )}
 
-          <UserEditModal
-            showModal={showEditModal}
-            hideModal={this.hideEditModal}
-            updatingUser={updatingUser}
-            translator={this.props.t}
-            darkMode={this.props.darkMode}
-            isUpdatingUser={isUpdatingUser}
-            updateUser={this.updateUser}
-            disabled={this.state.disabled}
-            superadminsCount={superadminsCount}
-          />
-
-          <div className="page-wrapper mt-1">
+          <div className="page-wrapper header-table-flex mt-1">
             <div className="page-header workspace-page-header">
               <div className="align-items-center d-flex">
                 <div className="tj-text-sm font-weight-500" data-cy="title-users-page">
@@ -301,19 +438,19 @@ class ManageAllUsersComponent extends React.Component {
                   customStyles={usersTableCustomStyle}
                   isLoading={isLoading}
                   users={users}
-                  unarchivingUser={unarchivingUser}
-                  archivingUser={archivingUser}
+                  unarchivingUser={unarchivingFromAllOrgs}
+                  archivingUser={archivingFromAllOrgs}
                   meta={meta}
                   generateInvitationURL={this.generateInvitationURL}
                   invitationLinkCopyHandler={this.invitationLinkCopyHandler}
-                  unarchiveOrgUser={this.unarchiveOrgUser}
-                  archiveOrgUser={this.archiveOrgUser}
+                  unarchiveOrgUser={this.toggleArchiveModal}
+                  archiveOrgUser={this.toggleArchiveModal}
                   pageChanged={this.pageChanged}
                   darkMode={this.props.darkMode}
                   translator={this.props.t}
                   isLoadingAllUsers={true}
                   openOrganizationModal={this.openOrganizationModal}
-                  openEditModal={this.openEditModal}
+                  toggleEditUserDrawer={this.openEditModal}
                 />
               )}
             </div>

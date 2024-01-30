@@ -6,8 +6,9 @@ import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 import { FileDropzone } from './FileDropzone';
-import { userService } from '@/_services';
+import { authenticationService, userService } from '@/_services';
 import { LicenseBanner } from '@/LicenseBanner';
+import Multiselect from '@/_ui/Multiselect/Multiselect';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
 import { UserGroupsSelect } from './UserGroupsSelect';
 
@@ -35,6 +36,8 @@ function InviteUsersForm({
 
   const hiddenFileInput = useRef(null);
 
+  const { super_admin } = authenticationService.currentSessionValue;
+
   useEffect(() => {
     fetchUserLimits();
   }, [activeTab]);
@@ -61,6 +64,37 @@ function InviteUsersForm({
       onChangeHandler(preSelectedGroups);
     }
   }, [currentEditingUser, groups]);
+
+  useEffect(() => {
+    if (currentEditingUser && groups.length) {
+      const { first_name, last_name, email, groups: addedToGroups } = currentEditingUser;
+      setUserValues({
+        fullName: `${first_name}${last_name && ` ${last_name}`}`,
+        email: email,
+      });
+      const preSelectedGroups = groups
+        .filter((group) => addedToGroups.includes(group.value) || group.value === 'all_users')
+        .map((filteredGroup) => ({
+          ...filteredGroup,
+          label: filteredGroup.name,
+        }));
+      setExistingGroups(groups.filter((group) => addedToGroups.includes(group.value)).map((g) => g.value));
+      onChangeHandler(preSelectedGroups);
+    }
+  }, [currentEditingUser, groups]);
+
+  useEffect(() => {
+    const isEditing = userDrawerMode === USER_DRAWER_MODES.EDIT;
+    if (!isEditing) {
+      const preSelectedGroups = groups
+        .filter((group) => group.isFixed)
+        .map((filteredGroup) => ({
+          ...filteredGroup,
+          label: filteredGroup.name,
+        }));
+      onChangeHandler(preSelectedGroups);
+    }
+  }, [userDrawerMode, groups]);
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -185,7 +219,10 @@ function InviteUsersForm({
                       <div className="tj-app-input">
                         <input
                           type="text"
-                          className={cx('form-control', { disabled: isEditing })}
+                          className={cx(
+                            { disabled: isEditing, 'input-error-border': errors['fullName'] },
+                            'form-control'
+                          )}
                           placeholder={t('header.organization.menus.manageUsers.enterFullName', 'Enter full name')}
                           name="fullName"
                           onChange={changeNewUserOption.bind(this, 'fullName')}
@@ -212,7 +249,7 @@ function InviteUsersForm({
                       <div className="tj-app-input">
                         <input
                           type="text"
-                          className={cx('form-control', { disabled: isEditing })}
+                          className={cx('form-control', { disabled: isEditing, 'input-error-border': errors['email'] })}
                           aria-describedby="emailHelp"
                           placeholder={t('header.organization.menus.manageUsers.enterEmail', 'Enter Email')}
                           name="email"

@@ -32,7 +32,6 @@ import { ConfigService } from '@nestjs/config';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from './audit_logger.service';
 import {
-  getUserErrorMessages,
   getUserStatusAndSource,
   lifecycleEvents,
   USER_STATUS,
@@ -300,7 +299,10 @@ export class OrganizationsService {
         {
           organizationId,
         }
-      );
+      )
+      .where('organization_user.organization_id = :organizationId', {
+        organizationId,
+      });
 
     if (getSuperAdmin) {
       query.andWhere(
@@ -716,7 +718,7 @@ export class OrganizationsService {
       let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
 
       if (user?.status === USER_STATUS.ARCHIVED) {
-        throw new BadRequestException(getUserErrorMessages(user.status));
+        throw new BadRequestException('User is archived in the instance. Contact super admin to activate them.');
       }
       let defaultOrganization: Organization,
         shouldSendWelcomeMail = false;

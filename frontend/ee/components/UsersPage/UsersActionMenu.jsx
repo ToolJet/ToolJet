@@ -10,6 +10,7 @@ export default function UsersActionMenu({
   unarchivingUser,
   archiveOrgUser,
   unarchiveOrgUser,
+  onOpen,
   user,
 }) {
   const closeMenu = () => {
@@ -23,6 +24,9 @@ export default function UsersActionMenu({
       trigger="click"
       placement="bottom-end"
       rootClose
+      onToggle={(nextShow) => {
+        if (onOpen) [nextShow ? onOpen(user) : onOpen(null)];
+      }}
       overlay={
         <Popover id="popover-user-menu" className={darkMode && 'dark-theme'} style={{ transition: 'none' }}>
           <Popover.Body bsPrefix="popover-body">
@@ -48,7 +52,8 @@ export default function UsersActionMenu({
                 fill="#E54D2E"
                 iconWidth="12"
                 onClick={() => {
-                  user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
+                  user.status === 'archived' ? unarchiveOrgUser(user) : archiveOrgUser(user);
+                  closeMenu();
                 }}
                 data-cy="archive-button"
               >

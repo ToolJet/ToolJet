@@ -3,12 +3,13 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Avatar from '@/_ui/Avatar';
 import Skeleton from 'react-loading-skeleton';
 import cx from 'classnames';
-import { Pagination } from '@/_components';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { Pagination, ToolTip } from '@/_components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
 import UsersActionMenu from './UsersActionMenu';
 import { humanizeifDefaultGroupName } from '@/_helpers/utils';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 
 const UsersTable = ({
   isLoading,
@@ -117,7 +118,7 @@ const UsersTable = ({
                           className="mx-3 tj-text-sm"
                           data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
                         >
-                          {user.name}
+                          <OverflowTooltip>{user.name}</OverflowTooltip>
                         </span>
                       </td>
                       <td className="text-muted">
@@ -125,7 +126,7 @@ const UsersTable = ({
                           className="text-reset user-email tj-text-sm"
                           data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-email`}
                         >
-                          {user.email}
+                          <OverflowTooltip>{user.email}</OverflowTooltip>
                         </a>
                       </td>
                       {isLoadingAllUsers && (
@@ -194,33 +195,16 @@ const UsersTable = ({
                           </a>
                         </td>
                       )}
-                      {!isLoadingAllUsers ? (
-                        <td className="user-actions-button" data-cy="user-actions-button">
-                          <UsersActionMenu
-                            archivingUser={archivingUser}
-                            user={user}
-                            unarchivingUser={unarchivingUser}
-                            unarchiveOrgUser={unarchiveOrgUser}
-                            archiveOrgUser={archiveOrgUser}
-                            toggleEditUserDrawer={() => toggleEditUserDrawer(user)}
-                          />
-                        </td>
-                      ) : (
-                        <td>
-                          <ButtonSolid
-                            variant="dangerSecondary"
-                            style={{ minWidth: '100px' }}
-                            className="workspace-user-archive-btn tj-text-xsm"
-                            leftIcon="edit"
-                            fill="#E54D2E"
-                            iconWidth="12"
-                            onClick={() => openEditModal(user)}
-                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-edit-button`}
-                          >
-                            {translator('header.organization.menus.manageUsers.edit', 'Edit')}
-                          </ButtonSolid>
-                        </td>
-                      )}
+                      <td className="user-actions-button">
+                        <UsersActionMenu
+                          archivingUser={archivingUser}
+                          user={user}
+                          unarchivingUser={unarchivingUser}
+                          unarchiveOrgUser={unarchiveOrgUser}
+                          archiveOrgUser={archiveOrgUser}
+                          toggleEditUserDrawer={() => toggleEditUserDrawer(user)}
+                        />
+                      </td>
                     </tr>
                   ))}
               </tbody>
@@ -276,7 +260,7 @@ const GroupChipTD = ({ groups = [] }) => {
 
   const orderedArray = moveValuesToLast(groups, ['all_users', 'admin']);
 
-  const toggleAllGroupsList = () => {
+  const toggleAllGroupsList = (e) => {
     setShowAllGroups(!showAllGroups);
   };
 

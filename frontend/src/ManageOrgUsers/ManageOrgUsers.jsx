@@ -104,7 +104,7 @@ class ManageOrgUsersComponent extends React.Component {
     });
   };
 
-  archiveOrgUser = (id) => {
+  archiveOrgUser = ({ id }) => {
     this.setState({ archivingUser: id });
 
     organizationUserService
@@ -120,7 +120,7 @@ class ManageOrgUsersComponent extends React.Component {
       });
   };
 
-  unarchiveOrgUser = (id) => {
+  unarchiveOrgUser = ({ id }) => {
     this.setState({ unarchivingUser: id });
 
     organizationUserService
@@ -171,10 +171,12 @@ class ManageOrgUsersComponent extends React.Component {
   };
 
   handleNameSplit = (fullName) => {
-    const [first, last] = fullName.split(' ');
+    const words = fullName.split(' ');
+    const firstName = words.length > 0 ? words.slice(0, -1).join(' ') : '';
+    const lastName = words.length > 0 ? words[words.length - 1] : '';
     let fields = this.state.fields;
-    fields['firstName'] = first;
-    fields['lastName'] = last;
+    fields['firstName'] = firstName;
+    fields['lastName'] = lastName;
     this.setState({
       fields,
     });
@@ -182,6 +184,7 @@ class ManageOrgUsersComponent extends React.Component {
 
   manageUser = (currentOrgUserId, selectedGroups, groupsToAdd, groupsToRemove) => {
     const isEditing = this.state.userDrawerMode === USER_DRAWER_MODES.EDIT;
+    const { super_admin } = authenticationService.currentSessionValue;
     if (this.handleValidation()) {
       if (!this.state.fields.fullName?.trim()) {
         toast.error('Name should not be empty');
@@ -206,13 +209,17 @@ class ManageOrgUsersComponent extends React.Component {
       };
 
       const updateUserBody = {
+        ...(super_admin && {
+          firstName: this.state.fields.firstName,
+          lastName: this.state.fields.lastName ?? '',
+        }),
         addGroups: groupsToAdd,
         removeGroups: groupsToRemove,
       };
       service(currentOrgUserId, isEditing ? updateUserBody : createUserBody)
         .then(() => {
-          toast.success(`User has been ${isEditing ? 'updated' : 'created'}`);
           this.fetchUserLimits();
+          toast.success(`User has been ${isEditing ? 'updated' : 'created'}`);
           this.fetchUsers();
           this.setState({
             creatingUser: false,
@@ -223,7 +230,16 @@ class ManageOrgUsersComponent extends React.Component {
           });
         })
         .catch(({ error, statusCode }) => {
-          statusCode !== 451 && toast.error(error);
+          if (error.includes('User is archived')) {
+            this.setState({
+              errors: {
+                ...this.state.errors,
+                email: error,
+              },
+            });
+          } else {
+            statusCode !== 451 && toast.error(error);
+          }
           this.setState({ creatingUser: false });
         });
     } else {
@@ -313,7 +329,7 @@ class ManageOrgUsersComponent extends React.Component {
           )}
 
           <div className="page-wrapper">
-            <div>
+            <div className="header-table-flex">
               <div className="page-header workspace-page-header">
                 <div className="align-items-center d-flex">
                   <div className="tj-text-sm font-weight-500" data-cy="title-users-page">

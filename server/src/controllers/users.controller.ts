@@ -71,7 +71,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Patch('/user-type')
   async updateUserTypr(@Body() body) {
-    const { userType, userId } = body;
+    const { userType, userId, firstName, lastName } = body;
 
     if (!userType || !userId) {
       throw new BadRequestException();
@@ -82,7 +82,7 @@ export class UsersController {
         throw new Error('At least one super admin is required');
       }
     }
-    await this.usersService.updateUser(userId, { userType });
+    await this.usersService.updateUser(userId, { userType, firstName, lastName });
   }
 
   @UseGuards(JwtAuthGuard, UserCountGuard)

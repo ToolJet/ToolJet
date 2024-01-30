@@ -1,11 +1,10 @@
 import { getWorkspaceId } from '@/_helpers/utils';
+import urlJoin from 'url-join';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Select, { components } from 'react-select';
 
 export function UserGroupsSelect(props) {
-  const navigate = useNavigate();
   const workspaceId = getWorkspaceId();
 
   //Will be used when workspace routing settings have been merged
@@ -15,7 +14,9 @@ export function UserGroupsSelect(props) {
         {props.children}
         <div className="add-group-btn">
           <ButtonSolid
-            onClick={() => navigate(`/${workspaceId}/workspace-settings`)}
+            onClick={() =>
+              window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/${workspaceId}/workspace-settings/groups`))
+            }
             iconCustomClass="rectangle-add-icon"
             className="create-group"
             fill="var(--indigo9)"
@@ -151,7 +152,7 @@ export function UserGroupsSelect(props) {
       hasSearch={true}
       closeMenuOnSelect={false}
       hideSelectedOptions={false}
-      components={{ Option: InputOption, MultiValue, IndicatorSeparator: null }}
+      components={{ Option: InputOption, MultiValue, Menu, IndicatorSeparator: null }}
       {...props}
       styles={selectStyles}
       placeholder="Select groups to add for this user"

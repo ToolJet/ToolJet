@@ -2,6 +2,7 @@ import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import cx from 'classnames';
 import { LicenseBanner } from '@/LicenseBanner';
+import ModalBase from '@/_ui/Modal';
 
 const OrganizationsModal = ({
   showModal,
@@ -16,8 +17,45 @@ const OrganizationsModal = ({
   archiveAll,
   archivingFromAllOrgs,
   disabled = false,
+  showWorkspaceUserArchiveModal,
+  updatingUser,
+  toggleWorkspaceUserArchiveModal,
 }) => {
   const organization_users = selectedUser?.organization_users;
+  const isArchived = updatingUser?.status === 'archived';
+
+  const generateWorkspaceUserConfirmModal = () => {
+    const isArchived = selectedUser?.status === 'archived';
+    const confirmButtonProps = {
+      title: !isArchived ? 'Archive' : 'Unarchive',
+      isLoading: archivingUser || unarchivingUser,
+      disabled: archivingUser || unarchivingUser,
+      variant: 'primary',
+      leftIcon: 'archive',
+    };
+    const body = `Unarchiving the user in this workspace will activate them in the instance and include them in the count of users covered by your plan. Are you sure you want to continue?`;
+
+    return (
+      <ModalBase
+        title={
+          <div className="my-3">
+            <span className="tj-text-md font-weight-500">{!isArchived ? 'Archive user' : 'Unarchive user'}</span>
+            <div className="tj-text-sm text-muted">{selectedUser?.email}</div>
+          </div>
+        }
+        show={showWorkspaceUserArchiveModal}
+        handleClose={() => toggleWorkspaceUserArchiveModal(null)}
+        handleConfirm={() =>
+          !isArchived
+            ? archiveOrgUser(updatingUser?.id, updatingUser?.organization_id)
+            : unarchiveOrgUser(updatingUser?.id, updatingUser?.organization_id)
+        }
+        confirmBtnProps={confirmButtonProps}
+        body={<div className="tj-text-sm">{body}</div>}
+      />
+    );
+  };
+
   return (
     <>
       <Modal
@@ -65,19 +103,7 @@ const OrganizationsModal = ({
                   <th data-cy="status-column-header">
                     {translator('header.organization.menus.manageAllUsers.organizationsTable.status', 'Status')}
                   </th>
-                  <th className="w-1">
-                    <button
-                      className={cx('btn btn-sm btn-outline-danger', {
-                        'btn-loading': archivingFromAllOrgs,
-                      })}
-                      onClick={archiveAll}
-                      style={{ minWidth: '100px' }}
-                      disabled={disabled}
-                      data-cy="archive-all-button"
-                    >
-                      Archive All
-                    </button>
-                  </th>
+                  <th className="w-1"></th>
                 </tr>
               </thead>
               <tbody>
@@ -104,7 +130,7 @@ const OrganizationsModal = ({
                         data-cy="status-badge"
                       ></span>
                       <small className={darkMode ? 'dark-mode-status' : ''} data-cy="user-status">
-                        {organization_user.status}
+                        {organization_user.status.charAt(0).toUpperCase() + organization_user.status.slice(1)}
                       </small>
                     </td>
                     <td>
@@ -122,9 +148,12 @@ const OrganizationsModal = ({
                           unarchivingUser === organization_user.id || archivingUser === organization_user.id || disabled
                         }
                         onClick={() => {
-                          organization_user.status === 'archived'
-                            ? unarchiveOrgUser(organization_user.id, organization_user.organization_id)
-                            : archiveOrgUser(organization_user.id, organization_user.organization_id);
+                          selectedUser.status !== 'archived'
+                            ? organization_user.status === 'archived'
+                              ? unarchiveOrgUser(organization_user.id, organization_user.organization_id)
+                              : archiveOrgUser(organization_user.id, organization_user.organization_id)
+                            : toggleWorkspaceUserArchiveModal(organization_user);
+                          hideModal();
                         }}
                         data-cy="user-state-change-button"
                       >
@@ -147,6 +176,7 @@ const OrganizationsModal = ({
           </div>
         </Modal.Body>
       </Modal>
+      {generateWorkspaceUserConfirmModal()}
     </>
   );
 };

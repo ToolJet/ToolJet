@@ -9371,6 +9371,10 @@ tbody {
       text-overflow: ellipsis;
       max-width: 140px;
     }
+
+    tr>td>span {
+      max-width: 125px;
+    }
   }
 
   thead {
@@ -9522,6 +9526,12 @@ tbody {
       }
     }
   }
+}
+
+.header-table-flex {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .workspace-constant-header {
@@ -12314,7 +12324,10 @@ flex-direction: row;
 .instance-all-users{
   .users-table {
     tbody {
-      tr>td>span,
+      tr>td>span {
+        max-width: 85px;
+      }
+
       tr>td>a {
         max-width: 140px;
       }
@@ -12326,13 +12339,10 @@ flex-direction: row;
       }
   
       tr>th {
-        min-width: 140px;
+        min-width: 163px;
       }
     }
   
-    tr>td {
-      max-width: 140px;
-    }
 
   }
 }
@@ -13932,6 +13942,82 @@ flex-direction: row;
 
 .disabled-action-tooltip {
   opacity: 0.4;
+}
+
+.card-table {
+  overflow: visible;
+}
+
+.groups-name-cell {
+  transition: 0.3s all;
+  border-radius: 6px;
+  position: relative !important;
+  overflow: visible !important;
+
+  .groups-name-container {
+    display: flex;
+    column-gap: 8px;
+  }
+
+  .group-chip {
+    padding: 5px 8px;
+    border-radius: 6px;
+    background-color: var(--slate3);
+  }
+
+  .all-groups-list {
+    position: absolute;
+    width: 100%;
+    top: 41px;
+    display: flex;
+    flex-direction: column;
+    background: var(--slate1);
+    align-items: flex-start;
+    border-radius: 6px;
+    border: 1px solid var(--slate1);
+    box-shadow: 0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08);
+    padding: 9px 10px;
+    gap: 15px;
+    cursor: default;
+    max-height: 240px;
+    overflow: auto;
+    left: 0px;
+    z-index: 1;
+  }
+}
+
+.groups-name-cell[data-active="true"] {
+  background: var(--gray5) !important;
+  .groups-name-container {
+    padding-left: 6px;
+  }
+}
+
+.groups-hover {
+  &:hover {
+    background: var(--slate3);
+    cursor: pointer;
+  }
+}
+
+.user-actions-menu-container {
+  border: 1px solid var(--slate8);
+  border-radius: 6px;
+
+  &:hover {
+    background: var(--slate4);
+  }
+
+  .actions-menu-icon {
+    fill: var(--slate8);
+    width: 20px !important;
+    height: 20px !important;
+    cursor: pointer;
+
+    path {
+      fill: var(--slate12) !important;
+    }
+  }
 }
 
 #popover-user-menu {

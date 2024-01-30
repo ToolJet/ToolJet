@@ -84,8 +84,18 @@ export class OrganizationUsersService {
 
   async archiveFromAll(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(OrganizationUser, { userId }, { status: 'archived', invitationToken: null });
-      await this.usersService.updateUser(userId, { status: 'archived' }, manager);
+      await manager.update(
+        OrganizationUser,
+        { userId },
+        { status: WORKSPACE_USER_STATUS.ARCHIVED, invitationToken: null }
+      );
+      await this.usersService.updateUser(userId, { status: USER_STATUS.ARCHIVED }, manager);
+    });
+  }
+
+  async unarchiveUser(userId: string): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.usersService.updateUser(userId, { status: USER_STATUS.ACTIVE }, manager);
     });
   }
 

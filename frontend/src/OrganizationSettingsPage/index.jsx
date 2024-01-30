@@ -24,7 +24,7 @@ export function OrganizationSettings(props) {
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'users':
-        return 'Users & permissions';
+        return 'Users';
       case 'groups':
         return 'Groups';
       case 'sso':
@@ -72,7 +72,7 @@ export function OrganizationSettings(props) {
       await fetchFeatureAccess();
       const subscription = authenticationService.currentSession.subscribe((newOrd) => {
         setAdmin(newOrd?.admin);
-        admin ? updateSidebarNAV('Users & permissions') : updateSidebarNAV('Workspace variables');
+        admin ? updateSidebarNAV('Users') : updateSidebarNAV('Workspace variables');
       });
 
       () => subscription.unsubsciption();
@@ -80,7 +80,7 @@ export function OrganizationSettings(props) {
       if (featuresLoaded) {
         const selectedTabFromRoute = location.pathname.split('/').pop();
         if (selectedTabFromRoute === 'workspace-settings') {
-          setSelectedTab(admin ? 'Users & permissions' : 'Workspace variables');
+          setSelectedTab(admin ? 'Users' : 'Workspace variables');
           navigate(
             admin
               ? `/${workspaceId}/workspace-settings/users`
@@ -125,7 +125,7 @@ export function OrganizationSettings(props) {
                             className="workspace-settings-nav-items"
                             key={index}
                             onClick={() => {
-                              if (item == 'Users') updateSidebarNAV('Users & permissions');
+                              if (item == 'Users') updateSidebarNAV('Users');
                               else updateSidebarNAV(item);
                             }}
                             selectedItem={selectedTab == defaultOrgName(item)}
