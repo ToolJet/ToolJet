@@ -157,6 +157,7 @@ import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
 import InformationPrimary from './InformationPrimary.jsx';
+import Support from './Support.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -476,6 +477,8 @@ const Icon = (props) => {
       return <Save {...props} />;
     case 'cross':
       return <Cross {...props} />;
+    case 'support':
+      return <Support {...props} />;
     default:
       return <Apps {...props} />;
   }
