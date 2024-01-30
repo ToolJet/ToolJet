@@ -20,6 +20,7 @@ export const Modal = function Modal({
   height,
 }) {
   const [showModal, setShowModal] = useState(false);
+  const [hideModalFlag, setHideModalFlag] = useState(false);
 
   const {
     closeOnClickingOutside = false,
@@ -68,10 +69,24 @@ export const Modal = function Modal({
       return;
     }
     const canShowModal = exposedVariables.show ?? false;
-    setShowModal(exposedVariables.show ?? false);
-    fireEvent(canShowModal ? 'onOpen' : 'onClose');
+
+    if (!hideModalFlag) {
+      setShowModal(canShowModal);
+      fireEvent(canShowModal ? 'onOpen' : 'onClose');
+    } else {
+      // Reset the hideModalFlag for subsequent renders
+      setHideModalFlag(false);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
+
+  function hideModal() {
+    setHideModalFlag(true);
+    setShowModal(false);
+    setExposedVariable('show', false);
+    fireEvent('onClose');
+  }
 
   useEffect(() => {
     const handleModalOpen = () => {
@@ -130,11 +145,6 @@ export const Modal = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal, modalHeight]);
 
-  function hideModal() {
-    setShowModal(false);
-    setExposedVariable('show', false);
-    fireEvent('onClose');
-  }
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 
   const customStyles = {
