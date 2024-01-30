@@ -14,6 +14,7 @@ export const ProgramaticallyHandleProperties = ({
   // eslint-disable-next-line no-unused-vars
   paramType,
 }) => {
+  console.log('ashok ::', { props });
   const getValueBasedOnProperty = (property, props) => {
     switch (property) {
       case 'isEditable':
@@ -45,6 +46,17 @@ export const ProgramaticallyHandleProperties = ({
   const initialValue = getInitialValue(property, definition);
 
   const options = {};
+
+  const calcFxActiveState = (props, property) => {
+    const fxActiveFieldsPresent = props?.hasOwnProperty('fxActiveFields');
+    if (!fxActiveFieldsPresent) {
+      return props?.fxActive ?? false;
+    }
+    const fxActiveFields = props.fxActiveFields;
+    const propertyPresentInFxActiveFields = fxActiveFields.length >= 1 && fxActiveFields.includes(property);
+    return propertyPresentInFxActiveFields;
+  };
+
   return (
     <div className={`mb-2 field ${options.className}`} onClick={(e) => e.stopPropagation()}>
       <CodeHinter
@@ -60,9 +72,26 @@ export const ProgramaticallyHandleProperties = ({
         paramLabel={paramMeta.displayName}
         fieldMeta={paramMeta}
         onFxPress={(active) => {
-          callbackFunction(index, 'fxActive', active);
+          const fxActiveFieldsPropExists = props?.hasOwnProperty('fxActiveFields');
+          //to support backward compatibility, when fxActive is true for a particular column, we are passing all possible combinations which should render codehinter
+          const fxActive = props?.fxActive ? ['isEditable', 'columnVisibility', 'linkTarget'] : [];
+          const fxActiveFields = fxActiveFieldsPropExists ? props.fxActiveFields : fxActive;
+
+          const findIndexOfPropertyInFxActiveFields = (property, fxActiveFields) => {
+            const index = fxActiveFields.findIndex((prop) => prop === property);
+            return index;
+          };
+
+          const indexOfProp = findIndexOfPropertyInFxActiveFields(property, fxActiveFields);
+
+          if (active) {
+            indexOfProp === -1 && fxActiveFields.push(property);
+          } else {
+            indexOfProp !== -1 && fxActiveFields.splice(indexOfProp, 1);
+          }
+          callbackFunction(index, 'fxActiveFields', fxActiveFields);
         }}
-        fxActive={props?.fxActive ?? false}
+        fxActive={calcFxActiveState(props, property)}
         component={component.component}
         className={options.className}
       />

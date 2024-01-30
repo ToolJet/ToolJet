@@ -908,7 +908,7 @@ class TableComponent extends React.Component {
   addNewColumn = () => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4() });
+    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4(), fxActiveFields: [] });
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
   };
 
@@ -927,6 +927,7 @@ class TableComponent extends React.Component {
   };
 
   onColumnItemChange = (index, item, value) => {
+    console.log('manish ::', { index, item, value });
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
 
