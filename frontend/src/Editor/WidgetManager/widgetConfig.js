@@ -330,9 +330,9 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
-      allowRowSelectionOnClick: {
+      selectRowOnCellEdit: {
         type: 'toggle',
-        displayName: 'Allow row selection on click',
+        displayName: 'Select row on cell edit',
         validation: {
           schema: { type: 'boolean' },
         },

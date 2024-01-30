@@ -15,7 +15,7 @@ export default function GenerateEachCellValue({
   cellTextColor,
   cell,
   currentState,
-  allowRowSelectionOnClick,
+  selectRowOnCellEdit,
   allowSelection,
 }) {
   const mounted = useMounted();
@@ -94,7 +94,7 @@ export default function GenerateEachCellValue({
         if (
           isEditable &&
           resolveReferences(allowSelection, currentState) &&
-          !resolveReferences(allowRowSelectionOnClick, currentState)
+          !resolveReferences(selectRowOnCellEdit, currentState)
         ) {
           e.stopPropagation();
         }

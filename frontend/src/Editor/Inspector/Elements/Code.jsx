@@ -45,10 +45,10 @@ export const Code = ({
         return '{{true}}';
       }
     }
-    if (param === 'allowRowSelectionOnClick') {
-      const allowRowSelectionOnClick =
-        component?.component?.definition?.properties?.allowRowSelectionOnClick?.value ?? '{{true}}';
-      return allowRowSelectionOnClick;
+    if (param === 'selectRowOnCellEdit') {
+      const selectRowOnCellEdit =
+        component?.component?.definition?.properties?.selectRowOnCellEdit?.value ?? '{{true}}';
+      return selectRowOnCellEdit;
     }
     return '';
   };
