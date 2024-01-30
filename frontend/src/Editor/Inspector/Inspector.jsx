@@ -353,7 +353,7 @@ export const Inspector = ({
     <div className="inspector">
       <ConfirmDialog
         show={showWidgetDeleteConfirmation}
-        message={'Widget will be deleted, do you want to continue?'}
+        message={'Are you sure you want to delete this component?'}
         onConfirm={() => {
           setSelectedComponents(EMPTY_ARRAY);
           removeComponent(component.id);
@@ -363,8 +363,12 @@ export const Inspector = ({
       />
       <div>
         <div className="row inspector-component-title-input-holder">
-          <div className="d-flex align-items-center col-1" onClick={() => setSelectedComponents(EMPTY_ARRAY)}>
-            <span data-cy={`inspector-close-icon`} className="cursor-pointer" style={{ height: '28px', width: '28px' }}>
+          <div className="col-1" onClick={() => setSelectedComponents(EMPTY_ARRAY)}>
+            <span
+              data-cy={`inspector-close-icon`}
+              className="cursor-pointer d-flex align-items-center "
+              style={{ height: '28px', width: '28px' }}
+            >
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
           </div>
@@ -381,7 +385,7 @@ export const Inspector = ({
               />
             </div>
           </div>
-          <div className="col-2">
+          <div className="col-2" data-cy={'component-inspector-options'}>
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-end'}
@@ -392,6 +396,7 @@ export const Inspector = ({
                   <Popover.Body bsPrefix="list-item-popover-body">
                     {INSPECTOR_HEADER_OPTIONS.map((option) => (
                       <div
+                        data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
                         className="list-item-popover-option"
                         key={option?.value}
                         onClick={(e) => {

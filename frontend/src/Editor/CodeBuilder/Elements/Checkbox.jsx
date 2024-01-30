@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function Checkbox({ value, onChange }) {
   const [isChecked, setIsChecked] = useState(value); // Initial state of the checkbox
+
+  useEffect(() => {
+    setIsChecked(value);
+  }, [value]);
 
   return (
     <div className="d-flex align-items-center" style={{ width: '142px' }}>

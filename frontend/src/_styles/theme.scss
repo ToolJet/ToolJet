@@ -1148,7 +1148,7 @@ button {
 
 
       .modal-body {
-        height: 100%;
+        height: 80%;
         padding: 0 10px;
         background-color: var(--base) !important;
 
@@ -1281,7 +1281,21 @@ button {
     border-color: var(--slate5) !important;
   }
 
-  .modal-body,
+  .modal-body {
+    height: 80%;
+    padding: 0 10px;
+    background-color: var(--base) !important;
+
+    .container-fluid {
+      height: 100%;
+      padding: 0;
+
+      .row {
+        height: 100%;
+      }
+    }
+  }
+
   .modal-footer,
   .modal-header,
   .modal-content {
@@ -2433,8 +2447,6 @@ body {
 }
 
 .code-hinter {
-  height: 36px;
-
   .form-control {
     .CodeMirror {
       font-family: "Roboto", sans-serif;
@@ -2679,7 +2691,7 @@ hr {
 .CodeMirror-placeholder {
   color: #9e9e9e !important;
   font-size: 0.7rem !important;
-  margin-top: 2px !important;
+  // margin-top: 2px !important;
   font-size: 12px !important;
 }
 
@@ -9977,8 +9989,9 @@ tbody {
 .template-card {
   padding: 16px;
   gap: 16px;
-  width: 272px;
-  height: 184px;
+  min-width: 280px;
+  max-width: 100%;
+  height: 210px;
   background: var(--base);
   border: 1px solid var(--slate3);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
@@ -9991,8 +10004,8 @@ tbody {
 
 .template-card-img {
   padding: 0px;
-  width: 240px;
-  height: 112px;
+  width: 100%;
+  height: 77.5%;
   border-radius: 4px;
 }
 
@@ -11903,10 +11916,6 @@ tbody {
     border: 1px solid var(--tj-text-input-widget-error) !important; // For example, a red border for invalid input
   }
 
-  &:hover {
-    background-color: var(--tj-text-input-widget-hover) !important;
-  }
-
   &:focus {
     // box-shadow: 0px 0px 0px 4px #DFE3E6 !important;
     outline: none !important;
@@ -11915,7 +11924,7 @@ tbody {
   }
 
   &:active {
-    box-shadow: 0px 0px 0px 1px rgba(62, 99, 221, 0.30) !important;
+    box-shadow: 0px 0px 0px 1px rgba(62, 99, 221, 0.30);
     border: 1px solid var(--tj-text-input-widget-border-clicked) !important;
     outline: none !important;
   }
@@ -11947,4 +11956,19 @@ tbody {
 
 .accordion-header {
   height: 52px;
+}
+
+.code-hinter {
+  min-height: 32px !important;
+}
+
+.CodeMirror-sizer {
+  // height: 30px !important;
+  display: flex;
+  align-items: center;
+  min-height: 32px !important;
+}
+
+.CodeMirror-placeholder {
+  min-width: 265px !important;
 }
