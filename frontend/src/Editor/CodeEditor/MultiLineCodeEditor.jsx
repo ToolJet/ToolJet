@@ -199,6 +199,7 @@ const MultiLineCodeEditor = (props) => {
                 style={{
                   overflowY: 'auto',
                 }}
+                className={`codehinter-multi-line-input`}
               />
             </div>
           </ErrorBoundary>
