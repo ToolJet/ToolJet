@@ -19,7 +19,7 @@ function Checkbox({ value, onChange }) {
         value={isChecked}
         style={{ height: '16px', width: '16px' }}
       />
-      <span className="tj-text-xsm" style={{ marginLeft: '4px' }}>
+      <span className="tj-text-xsm" style={{ marginLeft: '8px' }}>
         Auto width
       </span>
     </div>
