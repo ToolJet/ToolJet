@@ -9884,6 +9884,8 @@ flex-direction: row;
       display: none;
     }
   }
+
+  
 }
 
 .groups-header-wrap {
@@ -11000,6 +11002,10 @@ flex-direction: row;
 
         .disable {
           color: var(--slate7);
+
+          &.dark-theme {
+          color:  var(--slate11) ;
+          }
         }
 
         &__danger {
@@ -13246,6 +13252,8 @@ flex-direction: row;
   }
 }
 
+
+
 .navbar-seperator {
   border: 1px solid var(--slate5, #2B2F31);
   background: var(--slate1, #151718);
@@ -13942,6 +13950,12 @@ flex-direction: row;
 
 .disabled-action-tooltip {
   opacity: 0.4;
+}
+
+.overflow-tooltip {
+  .tooltip-inner {
+    max-width: 100%;
+  }
 }
 
 .card-table {

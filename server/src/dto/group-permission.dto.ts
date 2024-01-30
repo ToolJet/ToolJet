@@ -106,5 +106,8 @@ export class DuplucateGroupDto {
   addApps;
 
   @IsBoolean()
+  addDataSource;
+
+  @IsBoolean()
   addUsers;
 }

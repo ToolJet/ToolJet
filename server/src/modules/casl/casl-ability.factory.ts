@@ -47,11 +47,11 @@ export class CaslAbilityFactory {
       can('updateUser', User);
       can('updateGroupUserPermission', User);
       can('updateGroupAppPermission', User);
+      can('deleteGroupPermission', User);
       can('updateUser', User);
 
       if (isLicenseValid) {
         can('createGroupPermission', User);
-        can('deleteGroupPermission', User);
         can('updateGroupPermission', User);
         can('updateGroupDataSourcePermission', User);
 

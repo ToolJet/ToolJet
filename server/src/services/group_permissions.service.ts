@@ -9,12 +9,12 @@ import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { UsersService } from './users.service';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import { dbTransactionWrap, getMaxCopyNumber } from 'src/helpers/utils.helper';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
-import { dbTransactionWrap, getMaxCopyNumber } from 'src/helpers/utils.helper';
 import { DuplucateGroupDto } from '@dto/group-permission.dto';
 
 @Injectable()
@@ -74,6 +74,7 @@ export class GroupPermissionsService {
           group: group,
         })
       );
+      await this.usersService.validateLicense(manager);
       await this.auditLoggerService.perform(
         {
           userId: user.id,
@@ -115,8 +116,6 @@ export class GroupPermissionsService {
         organizationId: user.organizationId,
         id: groupPermissionId,
       });
-
-      await this.usersService.validateLicense(manager);
 
       await this.auditLoggerService.perform(
         {
@@ -283,6 +282,7 @@ export class GroupPermissionsService {
         } else if (!groupToFind) {
           await manager.update(GroupPermission, groupPermissionId, { group: newName });
         }
+        return;
       }
 
       // update group permissions
@@ -313,6 +313,7 @@ export class GroupPermissionsService {
       };
       if (Object.keys(groupPermissionUpdateParams).length !== 0) {
         await manager.update(GroupPermission, groupPermissionId, groupPermissionUpdateParams);
+        await this.usersService.validateLicense(manager);
       }
 
       // update app group permissions
@@ -390,9 +391,8 @@ export class GroupPermissionsService {
           };
           await this.usersService.update(userId, params, manager, user.organizationId);
         }
+        await this.usersService.validateLicense(manager);
       }
-
-      await this.usersService.validateLicense(manager);
 
       await this.auditLoggerService.perform(
         {
@@ -429,7 +429,7 @@ export class GroupPermissionsService {
     const groupToDuplicate = await this.findOne(user, groupPermissionId);
     let newGroup: GroupPermission;
 
-    const { addPermission, addApps, addUsers } = body;
+    const { addPermission, addApps, addDataSource, addUsers } = body;
 
     if (!groupToDuplicate) throw new BadRequestException('Wrong group id');
 
@@ -453,6 +453,7 @@ export class GroupPermissionsService {
         group: newName,
       });
       await manager.save(GroupPermission, newGroup);
+      await this.usersService.validateLicense(manager);
       if (addPermission) {
         const {
           appCreate,
@@ -465,6 +466,8 @@ export class GroupPermissionsService {
           orgEnvironmentConstantDelete,
           folderDelete,
           folderUpdate,
+          dataSourceCreate,
+          dataSourceDelete,
         } = groupToDuplicate;
 
         const updateParam = {
@@ -478,6 +481,8 @@ export class GroupPermissionsService {
           orgEnvironmentConstantDelete,
           folderDelete,
           folderUpdate,
+          dataSourceCreate,
+          dataSourceDelete,
         };
 
         await manager.update(GroupPermission, { id: newGroup.id }, updateParam);
@@ -502,6 +507,29 @@ export class GroupPermissionsService {
                 update: appGrpPermission.update,
                 delete: appGrpPermission.delete,
                 hideFromDashboard: appGrpPermission.hideFromDashboard,
+              })
+            );
+        }
+      }
+
+      if (addDataSource) {
+        const dataSources = await groupToDuplicate.dataSources;
+        for (const dataSource of dataSources) {
+          const dataSrcPermission = await this.dataSourceGroupPermissionRepository.findOne({
+            where: {
+              groupPermissionId: groupToDuplicate.id,
+              dataSourceId: dataSource.id,
+            },
+          });
+          if (dataSrcPermission)
+            await manager.save(
+              DataSourceGroupPermission,
+              manager.create(DataSourceGroupPermission, {
+                dataSourceId: dataSource.id,
+                groupPermissionId: newGroup.id,
+                read: dataSrcPermission.read,
+                update: dataSrcPermission.update,
+                delete: dataSrcPermission.delete,
               })
             );
         }

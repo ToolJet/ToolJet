@@ -54,7 +54,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     }
 
     if (this.props.selectedGroup === 'Admin' && this.state.currentTab === 'datasources') {
-      this.setState({ currentTab: 'apps' });
+      this.setState({ currentTab: 'users' });
     }
   }
 
@@ -172,9 +172,17 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         toast.success('Group permissions updated');
         this.fetchGroupPermission(groupPermissionId);
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, data }) => {
+        this.toastError({ error, data });
       });
+  };
+
+  toastError = ({ error, data }, callback = () => {}) => {
+    const { statusCode } = data;
+    if ([451].indexOf(statusCode) === -1) {
+      toast.error(error);
+    }
+    callback();
   };
 
   updateAppGroupPermission = (app, groupPermissionId, action) => {
@@ -202,10 +210,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchEditorLimits();
       })
       .catch(({ error, data }) => {
-        const { statusCode } = data;
-        if ([451].indexOf(statusCode) === -1) {
-          toast.error(error);
-        }
+        this.toastError({ error, data });
       });
   };
 
@@ -246,8 +251,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
         this.fetchDataSourcesInGroup(groupPermissionId);
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, data }) => {
+        this.toastError({ error, data });
       });
   };
 
@@ -313,10 +318,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           selectedApps: [],
         });
       })
-      .catch(({ error }) => {
-        toast.error(error);
-        this.setState({
-          isAddingApps: false,
+      .catch(({ error, data }) => {
+        this.toastError({ error, data }, () => {
+          this.setState({
+            isAddingApps: false,
+          });
         });
       });
   };
@@ -340,10 +346,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .then(() => {
         toast.success('Datasources added to the group');
       })
-      .catch(({ error }) => {
-        toast.error(error);
-        this.setState({
-          isAddingDataSources: false,
+      .catch(({ error, data }) => {
+        this.toastError({ error, data }, () => {
+          this.setState({
+            isAddingDataSources: false,
+          });
         });
       });
   };
@@ -363,8 +370,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .then(() => {
         toast.success('App removed from the group');
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, data }) => {
+        this.toastError({ error, data });
       });
   };
 
@@ -383,8 +390,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .then(() => {
         toast.success('DataSource removed from the group');
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, data }) => {
+        this.toastError({ error, data });
       });
   };
 
@@ -406,9 +413,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .then(() => {
         toast.success('Users added to the group');
       })
-      .catch(() => {
-        this.setState({
-          isAddingUsers: false,
+      .catch(({ error, data }) => {
+        this.toastError({ error, data }, () => {
+          this.setState({
+            isAddingUsers: false,
+          });
         });
       });
   };
@@ -427,8 +436,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .then(() => {
         toast.success('User removed from the group');
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, data }) => {
+        this.toastError({ error, data });
       });
   };
 
@@ -552,19 +561,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
                   {this.props.t('header.organization.menus.manageGroups.permissionResources.users', 'Users')}
                 </a>
-                <a
-                  onClick={() => this.setState({ currentTab: 'apps' })}
-                  className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
-                  data-cy="apps-link"
-                >
-                  <SolidIcon
-                    className="manage-group-tab-icons"
-                    fill={currentTab === 'apps' ? '#3E63DD' : '#C1C8CD'}
-                    name="grid"
-                    width="16"
-                  ></SolidIcon>
-                  {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
-                </a>
+
                 <a
                   onClick={() => this.setState({ currentTab: 'permissions' })}
                   className={cx('nav-item nav-link', {
@@ -592,6 +589,19 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       'Permissions'
                     )}
                   </span>
+                </a>
+                <a
+                  onClick={() => this.setState({ currentTab: 'apps' })}
+                  className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
+                  data-cy="apps-link"
+                >
+                  <SolidIcon
+                    className="manage-group-tab-icons"
+                    fill={currentTab === 'apps' ? '#3E63DD' : '#C1C8CD'}
+                    name="grid"
+                    width="16"
+                  ></SolidIcon>
+                  {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
                 </a>
                 {groupPermission?.group !== 'admin' && (
                   <a

@@ -30,7 +30,7 @@ export class GroupPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can('createGroupPermission', UserEntity))
   @Post(':id/duplicate')
   async duplicate(@User() user, @Param('id') id: string, @Body() body: DuplucateGroupDto) {
     const duplicateGroup = await this.groupPermissionsService.duplicateGroup(user, id, body);

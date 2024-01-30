@@ -214,7 +214,6 @@ const Icon = (props) => {
       return <Layers {...props} />;
     case 'leftarrow':
       return <LeftArrow {...props} />;
-
     case 'listview':
       return <ListView {...props} />;
     case 'lock':
@@ -310,6 +309,8 @@ const Icon = (props) => {
       return <Trash {...props} />;
     case 'uparrow':
       return <UpArrow {...props} />;
+    case 'users':
+      return <Users {...props} />;
 
     case 'useradd':
       return <UserAdd {...props} />;
@@ -331,8 +332,6 @@ const Icon = (props) => {
       return <ZoomOutRectangle {...props} />;
     case 'unlock':
       return <Unlock {...props} />;
-    case 'users':
-      return <Users {...props} />;
     case 'telescope':
       return <Telescope {...props} />;
     case 'removeCircle':

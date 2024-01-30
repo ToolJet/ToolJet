@@ -3,7 +3,7 @@ import { groupPermissionService, licenseService } from '@/_services';
 import { Tooltip } from 'react-tooltip';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
-import { withTranslation } from 'react-i18next';
+import { withTranslation, useTranslation } from 'react-i18next';
 import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import Modal from '../HomePage/Modal';
@@ -37,7 +37,7 @@ class ManageGroupPermissionsComponent extends React.Component {
       selectedGroup: 'All users',
       featureAccess: null,
       isDuplicatingGroup: false,
-      groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
+      groupDuplicateOption: { addPermission: true, addApps: true, addDataSource: true, addUsers: true },
       showDuplicateGroupModal: false,
       groupToDuplicate: '',
     };
@@ -81,7 +81,7 @@ class ManageGroupPermissionsComponent extends React.Component {
             selectedGroup: data?.group,
             isDuplicatingGroup: false,
             showDuplicateGroupModal: false,
-            groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
+            groupDuplicateOption: { addPermission: true, addApps: true, addDataSource: true, addUsers: true },
           });
         });
 
@@ -90,7 +90,8 @@ class ManageGroupPermissionsComponent extends React.Component {
       .catch((err) => {
         this.setState({
           isDuplicatingGroup: false,
-          groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
+          groupDuplicateOption: { addPermission: true, addApps: true, addDataSource: true, addUsers: true },
+          showDuplicateGroupModal: false,
         });
         console.error('Error occured in duplicating: ', err);
         toast.error('Could not duplicate group.\nPlease try again!');
@@ -101,12 +102,12 @@ class ManageGroupPermissionsComponent extends React.Component {
     this.setState((prevState) => ({
       showDuplicateGroupModal: !prevState.showDuplicateGroupModal,
       groupToDuplicate: '',
-      groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
+      groupDuplicateOption: { addPermission: true, addApps: true, addDataSource: true, addUsers: true },
     }));
   };
 
   renderPopoverContent = (props, compoParam) => {
-    const { groupName, id } = compoParam;
+    const { groupName, id, isFeatureEnabled } = compoParam;
     const deleteGroup = () => {
       this.deleteGroup(id);
     };
@@ -133,13 +134,17 @@ class ManageGroupPermissionsComponent extends React.Component {
           <Popover.Body bsPrefix="popover-body">
             <div>
               <Field
+                customClass={this.props.darkMode ? 'dark-theme' : ''}
                 leftIcon="copy"
                 leftIconWidth="20"
                 leftViewBox="0  0 20 20"
                 text={'Duplicate group'}
-                onClick={duplicateGroup}
+                onClick={isFeatureEnabled && duplicateGroup}
+                buttonDisable={!isFeatureEnabled}
+                darkMode={this.props.darkMode}
               />
               <Field
+                customClass={this.props.darkMode ? 'dark-theme' : ''}
                 leftIcon="delete"
                 leftIconWidth="18"
                 leftIconHeight="18"
@@ -149,11 +154,12 @@ class ManageGroupPermissionsComponent extends React.Component {
                 tooltipContent="Cannot delete default group"
                 onClick={isDefaultGroup ? {} : deleteGroup}
                 buttonDisable={isDefaultGroup}
+                darkMode={this.props.darkMode}
               />
             </div>
           </Popover.Body>
         </Popover>
-        {(groupName == 'all_users' || groupName == 'admin') && (
+        {isDefaultGroup && (
           <Tooltip
             id="tooltip-for-delete"
             className="tooltip"
@@ -237,8 +243,11 @@ class ManageGroupPermissionsComponent extends React.Component {
         toast.success('Group has been created');
         this.fetchGroups('new');
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, data }) => {
+        const { statusCode } = data;
+        if ([451].indexOf(statusCode) === -1) {
+          toast.error(error);
+        }
         this.setState({
           creatingGroup: false,
           showNewGroupForm: true,
@@ -322,14 +331,14 @@ class ManageGroupPermissionsComponent extends React.Component {
       groups,
       isDeletingGroup,
       showGroupDeletionConfirmation,
+      featureAccess,
       showDuplicateGroupModal,
       isDuplicatingGroup,
       groupDuplicateOption,
-      featureAccess,
     } = this.state;
 
-    const { addPermission, addApps, addUsers } = groupDuplicateOption;
-    const allFalse = [addPermission, addApps, addUsers].every((value) => !value);
+    const { addPermission, addApps, addDataSource, addUsers } = groupDuplicateOption;
+    const allFalse = [addPermission, addApps, addDataSource, addUsers].every((value) => !value);
 
     const isFeatureEnabled =
       !featureAccess?.licenseStatus?.isExpired &&
@@ -356,6 +365,7 @@ class ManageGroupPermissionsComponent extends React.Component {
               confirmBtnProps={{ title: 'Duplicate', disabled: allFalse }}
               isLoading={isDuplicatingGroup}
               cancelDisabled={isDuplicatingGroup}
+              darkMode={this.props.darkMode}
             >
               <div className="tj-text">Duplicate the following parts of the group</div>
               <div className="group-duplcate-modal-body">
@@ -417,6 +427,26 @@ class ManageGroupPermissionsComponent extends React.Component {
                   </div>
                   <div className="col-11">
                     <div className="tj-text ">Apps</div>
+                  </div>
+                </div>
+                <div className="row check-row">
+                  <div className="col-1 ">
+                    <input
+                      class="form-check-input"
+                      checked={addDataSource}
+                      type="checkbox"
+                      onChange={() => {
+                        this.setState((prevState) => ({
+                          groupDuplicateOption: {
+                            ...prevState.groupDuplicateOption,
+                            addDataSource: !prevState.groupDuplicateOption.addDataSource,
+                          },
+                        }));
+                      }}
+                    />
+                  </div>
+                  <div className="col-11">
+                    <div className="tj-text ">Datasources</div>
                   </div>
                 </div>
               </div>
@@ -562,11 +592,13 @@ class ManageGroupPermissionsComponent extends React.Component {
                             overlayFunctionParam={{
                               id: permissionGroup.id,
                               groupName: permissionGroup.group,
+                              isFeatureEnabled: isFeatureEnabled,
                             }}
                             selectedItem={
                               this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.group)
                             }
                             onClick={() => {
+                              if (!permissionGroup?.enabled) return;
                               this.setState({
                                 selectedGroupPermissionId: permissionGroup.id,
                                 selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.group),
@@ -636,6 +668,7 @@ const Field = ({
   buttonDisable = false,
   tooltipContent = '',
   tooltipId = '',
+  darkMode = false,
 }) => {
   return (
     <div className={`field ${customClass ? ` ${customClass}` : ''}`}>
@@ -657,7 +690,7 @@ const Field = ({
             ></SolidIcon>
           )}
         </div>
-        <div className={`col ${buttonDisable ? 'disable' : ''}`}>{text}</div>
+        <div className={`col ${buttonDisable ? 'disable' : ''} ${darkMode ? 'dark-theme' : ''}`}>{text}</div>
       </span>
     </div>
   );
