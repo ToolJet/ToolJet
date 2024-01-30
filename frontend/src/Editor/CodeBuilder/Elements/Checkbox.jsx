@@ -8,7 +8,7 @@ function Checkbox({ value, onChange }) {
   }, [value]);
 
   return (
-    <div className="d-flex align-items-center" style={{ width: '142px' }}>
+    <div className="d-flex align-items-center" style={{ width: '142px', marginTop: '16px' }}>
       <input
         type="checkbox"
         checked={isChecked}
