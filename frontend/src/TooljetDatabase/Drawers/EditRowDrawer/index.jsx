@@ -14,9 +14,9 @@ const EditRowDrawer = ({ isEditRowDrawerOpen, setIsEditRowDrawerOpen, selectedRo
     setTotalRecords,
     columns,
     pageCount,
-    totalRecords,
+    // totalRecords,
     pageSize,
-    selectedTableData,
+    // selectedTableData,
   } = useContext(TooljetDatabaseContext);
   const [rowIdToBeEdited, setRowIdToBeEdited] = useState(null);
 
@@ -32,9 +32,10 @@ const EditRowDrawer = ({ isEditRowDrawerOpen, setIsEditRowDrawerOpen, selectedRo
 
     return () => {
       setRowIdToBeEdited(null);
+      setIsEditRowDrawerOpen(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedRowIds]);
 
   return (
     <>

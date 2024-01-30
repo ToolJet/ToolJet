@@ -87,21 +87,21 @@ const Footer = ({ darkMode, dataLoading, tableDataLength, collapseSidebar }) => 
           <div className="keyPress-actions h-100 d-flex align-items-center">
             <div className="navigate-keyActions">
               <div className="leftNav-parent-container">
-                <LeftNav style={{ verticalAlign: 'baseline' }} width={10} height={10} />
+                <LeftNav style={{ verticalAlign: 'baseline' }} width={8} height={8} />
               </div>
               <div className="rightNav-parent-container">
-                <RightNav style={{ verticalAlign: 'baseline' }} width={10} height={10} />
+                <RightNav style={{ verticalAlign: 'baseline' }} width={8} height={8} />
               </div>
-              <div className="navigate-title">Navigate</div>
+              <div className="navigate-title fs-10">Navigate</div>
             </div>
             <div className="enter-keyActions">
               <div className="editEnter-parent-container">
-                <Enter style={{ verticalAlign: 'baseline' }} width={10} height={10} />
+                <Enter style={{ verticalAlign: 'baseline' }} width={8} height={8} />
               </div>
-              <div className="navigate-title">Enter to edit</div>
+              <div className="navigate-title fs-10">Enter to edit</div>
             </div>
           </div>
-          <div>
+          <div className="fs-12">
             <Pagination
               darkMode={darkMode}
               gotoNextPage={gotoNextPage}
@@ -116,12 +116,12 @@ const Footer = ({ darkMode, dataLoading, tableDataLength, collapseSidebar }) => 
               {dataLoading ? (
                 <Skeleton count={1} height={3} className="mt-3" />
               ) : (
-                <span className="animation-fade" data-cy={`${pageRange}-of-${totalRecords}-records-text}`}>
+                <span className="animation-fade fs-12" data-cy={`${pageRange}-of-${totalRecords}-records-text}`}>
                   {pageRange} of {totalRecords} Records
                 </span>
               )}
             </div>
-            <div className="mx-2 records-dropdown-field" data-cy="records-dropdown-field">
+            <div className="mx-2 records-dropdown-field fs-12" data-cy="records-dropdown-field">
               <Select
                 isLoading={dataLoading}
                 options={selectOptions}

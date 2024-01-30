@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, { useEffect, useState, useContext, useRef, useMemo } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
 import { isBoolean, isEmpty } from 'lodash';
@@ -22,6 +22,7 @@ import Boolean from '../Icons/Toggle.svg';
 import Menu from '../Icons/Menu.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 import TjdbTableHeader from './Header';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 import './styles.scss';
 
@@ -52,6 +53,11 @@ const Table = ({ collapseSidebar }) => {
     deletePopupModal: false,
     columnEditPopover: false,
   });
+
+  // const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
+  // const [wholeScreenWidth, setWholeScreenWidth] = useState(window.innerWidth);
+  const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
+  const [selectedRowIds, setSelectedRowIds] = useState({});
   const [cellClick, setCellClick] = useState({
     rowIndex: null,
     cellIndex: null,
@@ -61,6 +67,35 @@ const Table = ({ collapseSidebar }) => {
 
   const prevSelectedTableRef = useRef({});
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const toggleSelectOrDeSelectAllRows = (totalRowsCount) => {
+    if (!totalRowsCount) return;
+    const isSelectAll =
+      Object.keys(selectedRowIds).length !== totalRowsCount && Object.keys(selectedRowIds).length < totalRowsCount;
+    if (!isSelectAll) {
+      setSelectedRowIds({});
+      return;
+    }
+    const newSelectedRowIds = {};
+    new Array(totalRowsCount).fill(true).forEach((value, index) => (newSelectedRowIds[index] = value));
+    setSelectedRowIds(newSelectedRowIds);
+    return;
+  };
+
+  const toggleRowSelection = (uniqueRowId) => {
+    if (!uniqueRowId) return;
+    const selectedRowIdsRef = { ...selectedRowIds };
+    selectedRowIdsRef[uniqueRowId] ? delete selectedRowIdsRef[uniqueRowId] : (selectedRowIdsRef[uniqueRowId] = true);
+    setSelectedRowIds(selectedRowIdsRef);
+    return;
+  };
+
+  const replaceToggleSelectedRow = (rowIdSelected) => {
+    const newSelectedIdRef = {};
+    if (rowIdSelected) newSelectedIdRef[`${rowIdSelected}`] = true;
+    setSelectedRowIds(newSelectedIdRef);
+    return;
+  };
 
   const fetchTableMetadata = () => {
     if (!isEmpty(selectedTable)) {
@@ -108,6 +143,7 @@ const Table = ({ collapseSidebar }) => {
     setSortFilters({});
     setQueryFilters({});
     fetchTableMetadata();
+    setSelectedRowIds({});
   };
 
   useEffect(() => {
@@ -152,43 +188,20 @@ const Table = ({ collapseSidebar }) => {
     }
   };
 
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-    state: { selectedRowIds },
-  } = useTable(
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
     {
       columns: tableColumns,
       data: tableData,
+      initialState: { selectedRowIds: {} },
     },
-    useRowSelect,
-    (hooks) => {
-      hooks.visibleColumns.push((columns) => [
-        // Let's make a column for selection
-        {
-          id: 'selection',
-          // The header can use the table's getToggleAllRowsSelectedProps method
-          // to render a checkbox
-          Header: ({ getToggleAllRowsSelectedProps }) => (
-            <div>
-              <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
-            </div>
-          ),
-          // The cell can use the individual row's getToggleRowSelectedProps method
-          // to the render a checkbox
-          Cell: ({ row }) => (
-            <div>
-              <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-            </div>
-          ),
-        },
-        ...columns,
-      ]);
-    }
+    useRowSelect
   );
+
+  useEffect(() => {
+    setSelectedRowIds({});
+  }, []);
+
+  const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
 
   const handleDeleteRow = async () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
@@ -211,6 +224,7 @@ const Table = ({ collapseSidebar }) => {
 
         toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable.table_name}"`);
         fetchTableData();
+        setSelectedRowIds({});
       } else {
         toast.error('Something went wrong - Record Id is incorrect');
       }
@@ -360,6 +374,8 @@ const Table = ({ collapseSidebar }) => {
         selectedRowIds={selectedRowIds}
         handleDeleteRow={handleDeleteRow}
         rows={rows}
+        isEditRowDrawerOpen={isEditRowDrawerOpen}
+        setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
       />
       <div
         style={{
@@ -375,10 +391,24 @@ const Table = ({ collapseSidebar }) => {
           <thead>
             {headerGroups.map((headerGroup, index) => (
               <tr className="tj-database-column-row" {...headerGroup.getHeaderGroupProps()} key={index}>
+                <th
+                  className={`${darkMode ? 'table-header-dark' : 'table-header'} tj-database-column-header tj-text-xsm`}
+                  style={{ width: '66px', height: index === 0 ? '32px' : '' }}
+                >
+                  <div>
+                    <IndeterminateCheckbox
+                      indeterminate={
+                        Object.keys(selectedRowIds).length > 0 && Object.keys(selectedRowIds).length < rows.length
+                      }
+                      checked={Object.keys(selectedRowIds).length === rows.length && rows.length}
+                      onChange={() => toggleSelectOrDeSelectAllRows(rows.length)}
+                    />
+                  </div>
+                </th>
                 {headerGroup.headers.map((column, index) => (
                   <th
                     key={column.Header}
-                    width={index === 0 ? 66 : 230}
+                    width={230}
                     style={{ height: index === 0 ? '32px' : '' }}
                     title={index === 1 ? '' : column?.Header}
                     className={
@@ -417,6 +447,7 @@ const Table = ({ collapseSidebar }) => {
                           disabled={index === 0 || column.isPrimaryKey}
                           show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
                           className="column-popover-parent"
+                          darkMode={darkMode}
                         >
                           <div className="tjdb-menu-icon-parent">
                             <Menu
@@ -439,7 +470,7 @@ const Table = ({ collapseSidebar }) => {
                             checkDataType(column?.dataType)
                           )}
                         </span>
-                        {column.render('Header')}
+                        {/* {column.render('Header')} */}
                       </>
                     )}
                   </th>
@@ -456,6 +487,7 @@ const Table = ({ collapseSidebar }) => {
           <tbody
             className={cx({
               'bg-white': rows.length > 0 && !darkMode,
+              'fs-12': true,
             })}
             {...getTableBodyProps()}
           >
@@ -479,15 +511,46 @@ const Table = ({ collapseSidebar }) => {
                 prepareRow(row);
                 return (
                   <>
-                    <tr className={`${`row-tj`}`} {...row.getRowProps()} key={rIndex}>
+                    <tr
+                      className={`tjdb-table-row ${`row-tj`} ${darkMode && 'dark-bg'}`}
+                      {...row.getRowProps()}
+                      key={rIndex}
+                    >
+                      <td className="table-cell">
+                        <div
+                          className="d-flex align-items-center gap-2"
+                          style={{
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <IndeterminateCheckbox
+                            checked={selectedRowIds[row.id] ?? false}
+                            onChange={() => toggleRowSelection(row.id)}
+                          />
+
+                          <div
+                            onClick={() => {
+                              replaceToggleSelectedRow(row.id);
+                              setTimeout(() => setIsEditRowDrawerOpen(true), 100);
+                            }}
+                            className="tjdb-checkbox-cell"
+                            style={{
+                              display: 'none',
+                            }}
+                          >
+                            <SolidIcon name="expand" width={14} viewBox="0 0 14 14" />
+                          </div>
+                        </div>
+                      </td>
+
                       {row.cells.map((cell, index) => {
                         const dataCy =
                           cell.column.id === 'selection'
                             ? `${cell.row.values?.id}-checkbox`
                             : `id-${cell.row.values?.id}-column-${cell.column.id}`;
-                        const cellValue = cell.value === null ? '' : cell.value;
                         return (
                           <td
+                            {...cell.getCellProps()}
                             key={`cell.value-${index}`}
                             title={cell.value || ''}
                             //tabIndex="0"

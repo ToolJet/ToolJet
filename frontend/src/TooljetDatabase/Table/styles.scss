@@ -60,7 +60,7 @@
   }
 
   th {
-    border-top: 1px solid;
+    border-top: 1px solid rgba(101, 109, 119, 0.16) !important;
     border-right: 1px solid;
     border-bottom: 1px solid;
     border-color: inherit;
@@ -92,6 +92,7 @@
   }
 
 }
+
 .keyPress-actions {
 
   gap: 1.5rem;
@@ -108,7 +109,7 @@
     .editEnter-parent-container {
       border-radius: 6px;
       border: 1px solid var(--slate7);
-      width: 25px;
+      width: 24px;
       text-align: center;
     }
   }
@@ -128,5 +129,30 @@
 }
 
 .toojet-db-table-footer {
-  width: calc(100vw - 336px)!important;
+  width: calc(100vw - 336px) !important;
+}
+
+.tj-db-table {
+  .table-cell {
+    &:hover {
+      background: var(--Slate-03, #F1F3F5) !important;
+    }
+  }
+
+  .dark-bg {
+    &:hover {
+      background: #22303C;
+
+      td:nth-child(1),
+      td:nth-child(2) {
+        background: #22303C;
+      }
+    }
+
+    .table-cell {
+      &:hover {
+        background: #1D252F !important;
+      }
+    }
+  }
 }
