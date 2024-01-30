@@ -487,6 +487,7 @@ const Table = ({ collapseSidebar }) => {
           <tbody
             className={cx({
               'bg-white': rows.length > 0 && !darkMode,
+              'fs-12': true,
             })}
             {...getTableBodyProps()}
           >

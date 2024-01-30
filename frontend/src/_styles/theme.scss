@@ -7041,6 +7041,11 @@ tbody {
   .tjdb-table-row{
     &:hover {
       background: var(--Slate-02, #F8F9FA);
+
+      td:nth-child(1),
+      td:nth-child(2) {
+        background: var(--Slate-02, #F8F9FA);
+      }
   
       .tjdb-checkbox-cell {
         display: block !important;

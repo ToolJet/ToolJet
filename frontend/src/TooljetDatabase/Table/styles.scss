@@ -92,6 +92,7 @@
   }
 
 }
+
 .keyPress-actions {
 
   gap: 1.5rem;
@@ -108,7 +109,7 @@
     .editEnter-parent-container {
       border-radius: 6px;
       border: 1px solid var(--slate7);
-      width: 25px;
+      width: 24px;
       text-align: center;
     }
   }
@@ -128,7 +129,7 @@
 }
 
 .toojet-db-table-footer {
-  width: calc(100vw - 336px)!important;
+  width: calc(100vw - 336px) !important;
 }
 
 .tj-db-table {
@@ -141,6 +142,11 @@
   .dark-bg {
     &:hover {
       background: #22303C;
+
+      td:nth-child(1),
+      td:nth-child(2) {
+        background: #22303C;
+      }
     }
 
     .table-cell {
