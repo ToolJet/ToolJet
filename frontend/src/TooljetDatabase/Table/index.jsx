@@ -381,19 +381,19 @@ const Table = ({ collapseSidebar }) => {
         style={{
           height: 'calc(100vh - 164px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
-        className={cx('table-responsive border-0 tj-db-table animation-fade')}
+        className={cx('table-responsive border-0 tj-db-table animation-fade tj-table')}
       >
         <table
           {...getTableProps()}
-          className="table card-table table-bordered table-vcenter text-nowrap datatable"
+          className={`table card-table table-vcenter text-nowrap datatable ${darkMode && 'dark-background'}`}
           style={{ position: 'relative' }}
         >
-          <thead style={{ position: 'sticky', top: 0 }}>
+          <thead>
             {headerGroups.map((headerGroup, index) => (
               <tr className="tj-database-column-row" {...headerGroup.getHeaderGroupProps()} key={index}>
                 <th
-                  className="table-header tj-database-column-header tj-text-xsm"
-                  style={{ width: '66px', border: 'none', height: index === 0 ? '32px' : '' }}
+                  className={`${darkMode ? 'table-header-dark' : 'table-header'} tj-database-column-header tj-text-xsm`}
+                  style={{ width: '66px', height: index === 0 ? '32px' : '' }}
                 >
                   <div>
                     <IndeterminateCheckbox
@@ -447,6 +447,7 @@ const Table = ({ collapseSidebar }) => {
                           disabled={index === 0 || column.isPrimaryKey}
                           show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
                           className="column-popover-parent"
+                          darkMode={darkMode}
                         >
                           <div className="tjdb-menu-icon-parent">
                             <Menu

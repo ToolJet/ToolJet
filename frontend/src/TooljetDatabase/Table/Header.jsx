@@ -213,8 +213,8 @@ const Header = ({
 
                       {Object.keys(selectedRowIds).length === 1 ? (
                         <EditRowDrawer
-                          isCreateRowDrawerOpen={isEditRowDrawerOpen}
-                          setIsCreateRowDrawerOpen={setIsEditRowDrawerOpen}
+                          isEditRowDrawerOpen={isEditRowDrawerOpen}
+                          setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
                           selectedRowIds={selectedRowIds}
                           rows={rows}
                         />
