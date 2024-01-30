@@ -38,6 +38,9 @@ export const NumberInput = function NumberInput({
 
   const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState) ?? false;
+  const minValue = resolveReferences(component?.definition?.validation?.minValue?.value, currentState) ?? null;
+  const maxValue = resolveReferences(component?.definition?.validation?.maxValue?.value, currentState) ?? null;
+
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(loadingState);
   const [showValidationError, setShowValidationError] = useState(false);
@@ -68,9 +71,7 @@ export const NumberInput = function NumberInput({
   }, [properties.value]);
 
   const handleBlur = (e) => {
-    if (!isNaN(parseFloat(properties.minValue)) && parseFloat(e.target.value) < parseFloat(properties.minValue)) {
-      setValue(Number(parseFloat(properties.minValue)));
-    } else setValue(Number(parseFloat(e.target.value ? e.target.value : 0).toFixed(properties.decimalPlaces)));
+    setValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
     setShowValidationError(true);
     e.stopPropagation();
     fireEvent('onBlur');
@@ -147,6 +148,11 @@ export const NumberInput = function NumberInput({
     alignment,
   ]);
 
+  useEffect(() => {
+    setExposedVariable('isValid', isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
+
   const computedStyles = {
     height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height - 4 : height,
     borderRadius: `${borderRadius}px`,
@@ -159,7 +165,8 @@ export const NumberInput = function NumberInput({
         : '#D7DBDF'
       : borderColor,
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    boxShadow: isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
+    boxShadow:
+      boxShadow !== '0px 0px 0px 0px #00000040' ? boxShadow : isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
         ? '3px 5px 3px 29px'
@@ -176,21 +183,14 @@ export const NumberInput = function NumberInput({
   // eslint-disable-next-line import/namespace
 
   const handleChange = (e) => {
-    if (
-      !isNaN(parseFloat(properties.minValue)) &&
-      !isNaN(parseFloat(properties.maxValue)) &&
-      parseFloat(properties.minValue) > parseFloat(properties.maxValue)
-    ) {
-      setValue(Number(parseFloat(properties.maxValue)));
-    } else if (
-      !isNaN(parseFloat(properties.maxValue)) &&
-      parseFloat(e.target.value) > parseFloat(properties.maxValue)
-    ) {
-      setValue(Number(parseFloat(properties.maxValue)));
-    } else {
-      setValue(Number(parseFloat(e.target.value)));
+    setValue(Number(parseFloat(e.target.value)));
+    if (e.target.value == '') {
+      setValue(null);
+      setExposedVariable('value', null).then(fireEvent('onChange'));
     }
-    fireEvent('onChange');
+    if (!isNaN(Number(parseFloat(e.target.value)))) {
+      setExposedVariable('value', Number(parseFloat(e.target.value))).then(fireEvent('onChange'));
+    }
   };
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
@@ -209,30 +209,18 @@ export const NumberInput = function NumberInput({
     e.preventDefault(); // Prevent the default button behavior (form submission, page reload)
 
     const newValue = (value || 0) + 1;
-
-    if (!isNaN(parseFloat(properties.maxValue)) && newValue > parseFloat(properties.maxValue)) {
-      setValue(Number(parseFloat(properties.maxValue)));
-    } else if (!isNaN(parseFloat(properties.minValue)) && newValue < parseFloat(properties.minValue)) {
-      setValue(Number(parseFloat(properties.minValue)));
-    } else {
-      setValue(newValue);
+    setValue(newValue);
+    if (!isNaN(newValue)) {
+      setExposedVariable('value', newValue).then(fireEvent('onChange'));
     }
-
-    fireEvent('onChange');
   };
   const handleDecrement = (e) => {
     e.preventDefault();
     const newValue = (value || 0) - 1;
-
-    if (!isNaN(parseFloat(properties.minValue)) && newValue < parseFloat(properties.minValue)) {
-      setValue(Number(parseFloat(properties.minValue)));
-    } else if (!isNaN(parseFloat(properties.maxValue)) && newValue > parseFloat(properties.maxValue)) {
-      setValue(Number(parseFloat(properties.maxValue)));
-    } else {
-      setValue(newValue);
+    setValue(newValue);
+    if (!isNaN(newValue)) {
+      setExposedVariable('value', newValue).then(fireEvent('onChange'));
     }
-
-    fireEvent('onChange');
   };
   useEffect(() => {
     setExposedVariable('setFocus', async function () {
@@ -244,13 +232,7 @@ export const NumberInput = function NumberInput({
     setExposedVariable('setText', async function (text) {
       if (text) {
         const newValue = Number(parseFloat(text));
-        if (!isNaN(parseFloat(properties.minValue)) && newValue < parseFloat(properties.minValue)) {
-          setValue(Number(parseFloat(properties.minValue)));
-        } else if (!isNaN(parseFloat(properties.maxValue)) && newValue > parseFloat(properties.maxValue)) {
-          setValue(Number(parseFloat(properties.maxValue)));
-        } else {
-          setValue(newValue);
-        }
+        setValue(newValue);
         setExposedVariable('value', text).then(fireEvent('onChange'));
       }
     });
@@ -274,9 +256,9 @@ export const NumberInput = function NumberInput({
       <>
         <div
           data-disabled={disable || loading}
-          className={`text-input overflow-hidden d-flex ${
-            defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '
-          }  ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+          className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
+            direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
+          }
          ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
          ${visibility || 'invisible'}`}
           style={{
@@ -284,6 +266,7 @@ export const NumberInput = function NumberInput({
             position: 'relative',
             width: '100%',
             display: !visibility ? 'none' : 'flex',
+            whiteSpace: 'nowrap',
           }}
         >
           {label && width > 0 && (
@@ -295,14 +278,21 @@ export const NumberInput = function NumberInput({
                 maxWidth: auto && defaultAlignment === 'side' ? '70%' : '100%',
                 marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '9px' : '',
                 marginLeft: label?.length > 0 && direction === 'right' && defaultAlignment === 'side' ? '9px' : '',
-                display: 'block',
-                overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
-                textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+                display: 'flex',
                 fontWeight: 500,
-                textAlign: direction == 'right' ? 'right' : 'left',
+                justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
               }}
             >
-              {label}
+              <span
+                style={{
+                  overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
+                  textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+                  whiteSpace: 'nowrap',
+                  display: 'block',
+                }}
+              >
+                {label}
+              </span>
               <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
             </label>
           )}
@@ -338,13 +328,13 @@ export const NumberInput = function NumberInput({
             onChange={handleChange}
             onBlur={handleBlur}
             type="number"
-            className={`${!isValid && showValidationError ? 'is-invalid' : ''} input-number tj-text-input-widget`}
+            className={`${!isValid && showValidationError ? 'is-invalid' : ''} input-number  tj-text-input-widget`}
             placeholder={placeholder}
             style={computedStyles}
             value={value}
             data-cy={dataCy}
-            min={properties.minValue}
-            max={properties.maxValue}
+            min={minValue}
+            max={maxValue}
             onKeyUp={(e) => {
               if (e.key === 'Enter') {
                 setValue(e.target.value);
@@ -355,7 +345,9 @@ export const NumberInput = function NumberInput({
             onFocus={(e) => {
               setIsFocused(true);
               e.stopPropagation();
-              fireEvent('onFocus');
+              setTimeout(() => {
+                fireEvent('onFocus');
+              }, 0);
             }}
           />
           {!isResizing && (
@@ -363,6 +355,9 @@ export const NumberInput = function NumberInput({
               <div onClick={(e) => handleIncrement(e)}>
                 <SolidIcon
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  height={`${
+                    height == 40 ? (padding == 'default' ? 18 : 20) : padding == 'default' ? height / 2 - 3 : height / 2
+                  }px`}
                   style={{
                     top:
                       defaultAlignment === 'top' && label?.length > 0 && width > 0
@@ -375,7 +370,7 @@ export const NumberInput = function NumberInput({
                     right:
                       labelWidth == 0
                         ? padding == 'default'
-                          ? '2px'
+                          ? '3px'
                           : '0px'
                         : alignment == 'side' && direction === 'right'
                         ? `${labelWidth + 5}px`
@@ -398,7 +393,7 @@ export const NumberInput = function NumberInput({
                     right:
                       labelWidth == 0
                         ? padding == 'default'
-                          ? '2px'
+                          ? '3px'
                           : '0px'
                         : alignment == 'side' && direction === 'right'
                         ? `${labelWidth + 5}px`
@@ -412,6 +407,9 @@ export const NumberInput = function NumberInput({
                     backgroundColor: !darkMode ? 'white' : 'black',
                   }}
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  height={`${
+                    height == 40 ? (padding == 'default' ? 18 : 20) : padding == 'default' ? height / 2 - 3 : height / 2
+                  }px`}
                   className="numberinput-down-arrow arrow"
                   name="cheverondown"
                 ></SolidIcon>

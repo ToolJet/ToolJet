@@ -64,7 +64,8 @@ export const PasswordInput = function PasswordInput({
         : '#D7DBDF'
       : borderColor,
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    boxShadow: isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
+    boxShadow:
+      boxShadow !== '0px 0px 0px 0px #00000040' ? boxShadow : isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
         ? '3px 24px 3px 29px'
@@ -216,9 +217,9 @@ export const PasswordInput = function PasswordInput({
     <>
       <div
         data-disabled={disable || loading}
-        className={`text-input d-flex overflow-hidden ${
-          defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '
-        }  ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+        className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
+          direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
+        }
       ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
       ${visibility || 'invisible'}`}
         style={{
@@ -235,14 +236,21 @@ export const PasswordInput = function PasswordInput({
               maxWidth: auto && defaultAlignment === 'side' ? '70%' : '100%',
               marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '9px' : '',
               marginLeft: label?.length > 0 && direction === 'right' && defaultAlignment === 'side' ? '9px' : '',
-              display: 'block',
-              overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
-              textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+              display: 'flex',
               fontWeight: 500,
-              textAlign: direction == 'right' ? 'right' : 'left',
+              justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
             }}
           >
-            {label}
+            <span
+              style={{
+                overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
+                textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+                whiteSpace: 'nowrap',
+                display: 'block',
+              }}
+            >
+              {label}
+            </span>{' '}
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         )}
@@ -324,9 +332,10 @@ export const PasswordInput = function PasswordInput({
           }}
           onFocus={(e) => {
             setIsFocused(true);
-
             e.stopPropagation();
-            fireEvent('onFocus');
+            setTimeout(() => {
+              fireEvent('onFocus');
+            }, 0);
           }}
           type={!iconVisibility ? 'password' : 'text'}
           placeholder={placeholder}

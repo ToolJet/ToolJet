@@ -1,10 +1,10 @@
 import React from 'react';
 
-const CheveronUp = ({ fill = '#C1C8CD', width = '24', className = '', viewBox = '0 0 24 24', style }) => (
+const CheveronUp = ({ fill = '#C1C8CD', width = '24', className = '', viewBox = '0 0 24 24', style, height }) => (
   <svg
     className={className}
     width={width}
-    height={width}
+    height={height}
     viewBox={viewBox}
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
