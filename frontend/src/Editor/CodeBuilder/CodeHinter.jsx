@@ -402,7 +402,7 @@ export function CodeHinter({
             className="d-flex align-items-center"
           >
             <div className="col-auto pt-0 fx-common">
-              {paramLabel !== 'Type' && (
+              {!['Type', 'selectRowOnCellEdit', 'Select row on cell edit'].includes(paramLabel) && (
                 <FxButton
                   active={codeShow}
                   onPress={() => {
