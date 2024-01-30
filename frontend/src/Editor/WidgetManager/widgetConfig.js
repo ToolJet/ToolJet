@@ -2260,11 +2260,11 @@ export const widgets = [
         section: 'additionalActions',
       },
       tooltip: {
-        type: 'input',
+        type: 'code',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
-        staticText: '',
+        placeholder: 'Enter tooltip text',
       },
     },
     validation: {
