@@ -2115,10 +2115,10 @@ export const widgets = [
     validation: {
       mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
       customRule: { type: 'code', displayName: 'Custom validation' },
-      minDate: { type: 'code', displayName: 'Minimum date' },
-      maxDate: { type: 'code', displayName: 'Maximum date' },
-      minTime: { type: 'code', displayName: 'Minimum time' },
-      maxTime: { type: 'code', displayName: 'Maximum time' },
+      minDate: { type: 'datepicker', displayName: 'Minimum date' },
+      maxDate: { type: 'datepicker', displayName: 'Maximum date' },
+      minTime: { type: 'datepicker', displayName: 'Minimum time' },
+      maxTime: { type: 'datepicker', displayName: 'Maximum time' },
       disabledDates: {
         type: 'code',
         displayName: 'Disabled dates',

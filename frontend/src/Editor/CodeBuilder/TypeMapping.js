@@ -17,4 +17,5 @@ export const TypeMapping = {
   icon: 'Icon',
   visibility: 'Visibility',
   toggleDropdown: 'ToggleDropdown',
+  datepicker: 'DatePicker',
 };

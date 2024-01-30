@@ -44,6 +44,7 @@ import { Input } from './Elements/Input';
 import { Icon } from './Elements/Icon';
 import { Visibility } from './Elements/Visibility';
 import { validateProperty } from '../component-properties-validation';
+import { DatePicker } from './Elements/DatePicker';
 
 const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
@@ -63,6 +64,7 @@ const AllElements = {
   Icon,
   Visibility,
   ToggleDropdown,
+  DatePicker,
 };
 
 export function CodeHinter({
