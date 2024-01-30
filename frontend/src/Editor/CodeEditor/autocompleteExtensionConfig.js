@@ -66,9 +66,17 @@ export const generateHints = (hints) => {
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
+    let displayedHint = type === 'js_method' ? `${hint}()` : hint;
+
+    // need to check if the hint is `queries.queryName` and not `queries.queryName.data`
+    // add the `.data` to the hint
+    if (displayedHint.includes('queries') && displayedHint.split('.').length === 2) {
+      displayedHint = `${displayedHint}.data`;
+    }
+
     return {
       displayLabel: hint,
-      label: type === 'js_method' ? `${hint}()` : hint,
+      label: displayedHint,
       type: type === 'js_method' ? 'js_methods' : type?.toLowerCase(),
       section: type === 'js_method' ? { name: 'JS methods', rank: 2 } : { name: 'Suggestions', rank: 1 },
       detail: type === 'js_method' ? 'method' : type?.toLowerCase() || '',
