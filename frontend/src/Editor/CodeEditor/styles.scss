@@ -23,8 +23,8 @@
     }
 }
 
-.code-editor-basic-wrapper {
-    height: inherit !important;
+.code-editor-basic-wrapper, .cm-codehinter {
+    height: 32px !important;
 }
 
 
@@ -154,10 +154,9 @@
 
 .codehinter-input {
     font-family: IBM Plex Sans;
-    font-size: 12px;
+    font-size: 13px !important;
     display: block;
     width: 100%;
-    font-size: 0.875rem;
     font-weight: 400;
     color: var(--slate9);
     background-clip: padding-box;
@@ -236,6 +235,7 @@
 .cm-scroller {
     overflow-y: auto !important;
     overflow-x: hidden !important;
+    padding: 2px !important;
 }
 
 .cm-focused {
@@ -247,7 +247,7 @@
     border-radius: 4px;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     height: inherit !important;
-    padding: 2px;
+    // padding: 2px;
 }
 
 .border-danger {
