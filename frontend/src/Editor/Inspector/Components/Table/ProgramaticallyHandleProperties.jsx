@@ -14,7 +14,6 @@ export const ProgramaticallyHandleProperties = ({
   // eslint-disable-next-line no-unused-vars
   paramType,
 }) => {
-  console.log('ashok ::', { props });
   const getValueBasedOnProperty = (property, props) => {
     switch (property) {
       case 'isEditable':

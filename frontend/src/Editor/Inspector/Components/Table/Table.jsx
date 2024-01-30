@@ -927,7 +927,6 @@ class TableComponent extends React.Component {
   };
 
   onColumnItemChange = (index, item, value) => {
-    console.log('manish ::', { index, item, value });
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
 
