@@ -1,15 +1,15 @@
+import { faker } from "@faker-js/faker";
 import { commonWidgetSelector } from "Selectors/common";
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
 import { buttonText } from "Texts/button";
 import { commonWidgetText } from "Texts/common";
-import { faker } from "@faker-js/faker";
 
 export const verifyControlComponentAction = (widgetName, value) => {
   cy.forceClickOnCanvas();
   cy.dragAndDropWidget("button", 340, 90);
 
   openEditorSidebar(widgetName);
-  openAccordion(commonWidgetText.accordionEvents, ["Validation", "Layout"]);
+  openAccordion(commonWidgetText.accordionEvents, ["Validation", "Devices"]);
 
   cy.get(commonWidgetSelector.addMoreEventHandlerLink).click();
   cy.get(commonWidgetSelector.eventHandlerCard).eq(1).click();
