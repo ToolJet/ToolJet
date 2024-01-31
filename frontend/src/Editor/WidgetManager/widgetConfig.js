@@ -5905,32 +5905,4 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
   },
-  {
-    name: 'Module',
-    displayName: 'Module',
-    description: 'Module',
-    component: 'Module',
-    defaultSize: {
-      width: 5,
-      height: 150,
-    },
-    others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
-    },
-    properties: {},
-    events: {},
-    styles: {},
-    exposedVariables: {},
-    actions: [],
-    definition: {
-      others: {
-        showOnDesktop: { value: '{{true}}' },
-        showOnMobile: { value: '{{false}}' },
-      },
-      properties: {},
-      events: [],
-      styles: {},
-    },
-  },
 ];
