@@ -469,6 +469,10 @@ export const widgets = [
           },
         ],
       },
+      {
+        handle: 'selectRowsInBulk',
+        displayName: 'Select rows in bulk',
+      },
     ],
     definition: {
       others: {

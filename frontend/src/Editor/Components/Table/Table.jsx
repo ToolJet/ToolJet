@@ -883,6 +883,15 @@ export function Table({
     //hack : in the initial render, data is undefined since, upon feeding data to the table from some query, query inside current state is {}. Hence we added data in the dependency array, now question is should we add data or rows?
   }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
 
+  useEffect(() => {
+    // csa for select rows in bulk
+    setExposedVariable('selectRowsInBulk', async function () {
+      if (showBulkSelector) {
+        toggleAllRowsSelected(true);
+      }
+    });
+  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRowsDetails)]);
+
   function downlaodPopover() {
     const options = [
       { dataCy: 'option-download-CSV', text: 'Download as CSV', value: 'csv' },
