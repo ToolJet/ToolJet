@@ -780,7 +780,7 @@ const EditorComponent = (props) => {
       !environmentSwitch && !versionSwitched ? currentAppVersionEnvId : selectedEnvironmentId;
     await fetchOrgEnvironmentConstants(currentEnvironmentId);
 
-    let envDetails = useEditorStore.getState().currentAppEnvironment;
+    let envDetails = useSuperStore.getState().modules[moduleName].useEditorStore.getState().currentAppEnvironment;
     if (!environmentSwitch) {
       setCurrentAppEnvironmentId(currentEnvironmentId);
 
@@ -827,7 +827,7 @@ const EditorComponent = (props) => {
       .actions.setCurrentState({
         page: currentpageData,
         globals: {
-          ...useCurrentStateStore.getState().globals,
+          ...useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().globals,
           environment: {
             id: envDetails?.id,
             name: envDetails?.name,
@@ -910,7 +910,7 @@ const EditorComponent = (props) => {
   };
 
   const appDefinitionChanged = async (newDefinition, opts = {}) => {
-    if (useAppVersionStore.getState().isAppVersionPromoted) return;
+    if (useSuperStore.getState().modules[moduleName].useAppVersionStore.getState().isAppVersionPromoted) return;
 
     if (opts?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
@@ -1866,7 +1866,7 @@ const EditorComponent = (props) => {
   }
 
   const formCustomPageSelectorClass = () => {
-    const pageHandle = getCurrentState().page.handle;
+    const pageHandle = getCurrentState(moduleName).page.handle;
     return `_tooljet-page-${pageHandle}`;
   };
 
@@ -1881,6 +1881,7 @@ const EditorComponent = (props) => {
         featureAccess={featureAccess}
         setAppDefinitionFromVersion={setAppDefinitionFromVersion}
         creationMode={creationMode}
+        moduleName={moduleName}
       />
       <Confirm
         show={queryConfirmationList?.length > 0}

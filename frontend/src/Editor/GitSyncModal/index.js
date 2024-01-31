@@ -9,7 +9,7 @@ import { authenticationService, gitSyncService, appVersionService } from '@/_ser
 import toast from 'react-hot-toast';
 import { getSubpath } from '@/_helpers/routes';
 import ModalBase from '@/_ui/Modal';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useSuperStore } from '@/_stores/superStore';
 
 const MODAL_TYPE = {
   CONFIG: 'CONFIG',
@@ -32,9 +32,10 @@ export default function GitSyncModal({
   featureAccess,
   setAppDefinitionFromVersion,
   creationMode,
+  moduleName,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const editingVersion = useAppVersionStore.getState().editingVersion;
+  const editingVersion = useSuperStore.getState().modules[moduleName].useAppVersionStore.getState().editingVersion;
   const { state, pathname } = useLocation();
   const { commitEnabled, type } = state ?? {};
   const navigate = useNavigate();

@@ -8,10 +8,13 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import '@/_styles/versions.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { useModuleName } from '../_contexts/ModuleContext';
+import { useSuperStore } from '../_stores/superStore';
 
 export const ReleaseVersionButton = function DeployVersionButton({ appId, appName, fetchApp, onVersionRelease }) {
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const moduleName = useModuleName();
   const { isVersionReleased, editingVersion, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -45,7 +48,10 @@ export const ReleaseVersionButton = function DeployVersionButton({ appId, appNam
         setIsReleasing(false);
       })
       .finally(() => {
-        useAppVersionStore.getState().actions.updateReleasedVersionId(editingVersion.id);
+        useSuperStore
+          .getState()
+          .modules[moduleName].useAppVersionStore.getState()
+          .actions.updateReleasedVersionId(editingVersion.id);
       });
   };
 

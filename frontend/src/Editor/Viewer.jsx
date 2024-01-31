@@ -377,11 +377,9 @@ class ViewerComponent extends React.Component {
       const versionId = this.props.versionId;
       const environmentId = this.props.environmentId;
 
-      console.log({ slug, appId, versionId });
-
       if (currentSession?.load_app && slug) {
         if (currentSession?.group_permissions) {
-          this.setState({ environmentId });          
+          this.setState({ environmentId });
           useSuperStore.getState().modules[this.context].useAppDataStore.getState().actions.setAppId(appId);
 
           const currentUser = currentSession.current_user;
@@ -668,6 +666,7 @@ class ViewerComponent extends React.Component {
 
         //checking if page exists
         if (
+          !this.props.moduleMode &&
           !pageArray.find((page) => page.handle === this.props.params.pageHandle) &&
           this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
         ) {

@@ -25,17 +25,17 @@ export function createDataSourcesStore(moduleName) {
       (set, get) => ({
         ...initialState,
         actions: {
-          fetchDataSources: (appId) => {
+          fetchDataSources: (appId, environmentId) => {
             set({ loadingDataSources: true });
-            datasourceService.getAll(appId).then((data) => {
+            datasourceService.getAll(appId, environmentId).then((data) => {
               set({
                 dataSources: data.data_sources,
                 loadingDataSources: false,
               });
             });
           },
-          fetchGlobalDataSources: (organizationId) => {
-            globalDatasourceService.getAll(organizationId).then((data) => {
+          fetchGlobalDataSources: (organizationId, environmentId) => {
+            globalDatasourceService.getAll(organizationId, environmentId).then((data) => {
               set({
                 globalDataSources: data.data_sources,
               });

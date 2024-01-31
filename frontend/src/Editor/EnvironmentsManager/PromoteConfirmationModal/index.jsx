@@ -9,9 +9,12 @@ import ArrowRightIcon from '@assets/images/icons/arrow-right.svg';
 import '@/_styles/versions.scss';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useModuleName } from '../../../_contexts/ModuleContext';
+import { useSuperStore } from '../../../_stores/superStore';
 
 export default function EnvironmontConfirmationModal(props) {
   const { data, editingVersion, onEnvChange, onClose, fetchEnvironments } = props;
+  const moduleName = useModuleName();
 
   //TODO: Bug when creating a new version, the app_id is not set in the version object instead it is set as appId.
 
@@ -39,7 +42,10 @@ export default function EnvironmontConfirmationModal(props) {
         toast.success(`${editingVersion.name} has been promoted to ${data.target.name}!`);
         fetchEnvironments();
         onEnvChange(data.target);
-        useAppVersionStore.getState().actions.setAppVersionCurrentEnvironment(data.target);
+        useSuperStore
+          .getState()
+          .modules[moduleName].useAppVersionStore.getState()
+          .actions.setAppVersionCurrentEnvironment(data.target);
         setPromtingEnvirontment(false);
         onClose();
       })

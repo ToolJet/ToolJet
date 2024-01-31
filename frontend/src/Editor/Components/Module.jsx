@@ -30,9 +30,10 @@ export const Module = function Module({ component, width, id, parentId, removeCo
         <ModuleContext.Provider value={moduleId}>
           <Viewer
             moduleMode={true}
-            id={'e87652b4-478f-4622-a893-733bfd433799'}
-            slug={'e87652b4-478f-4622-a893-733bfd433799'}
-            versionId={'98a4044a-6667-43d3-bdb3-1cdbac6e1998'}
+            id={'f596caec-7f00-4c37-9d98-846813d61691'}
+            slug={'f596caec-7f00-4c37-9d98-846813d61691'}
+            versionId={'f68508aa-fdf5-4be2-b13e-4bf2e12f9413'}
+            environmentId={'fcc709b7-e91b-47cd-ba68-e5af4f0331ab'}
           />
         </ModuleContext.Provider>
       )}

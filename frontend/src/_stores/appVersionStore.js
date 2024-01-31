@@ -29,6 +29,7 @@ export function createAppVersionStore(moduleName) {
               releasedVersionId: versionId,
               isVersionReleased: get().editingVersion?.id ? get().editingVersion?.id === versionId : false,
             }),
+          onEditorFreeze: (value = false) => set({ isEditorFreezed: value }),
           setAppVersions: (versions) => set({ appVersions: versions }),
           setAppVersionCurrentEnvironment: (environment) => set({ currentAppVersionEnvironment: environment }),
           setAppVersionPromoted: (value) => set({ isAppVersionPromoted: value }),
