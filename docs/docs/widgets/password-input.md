@@ -6,67 +6,121 @@ title: Password Input
 
 The Password Input component allows users to enter passwords securely. In this component, passwords are concealed, displaying each character as an asterisk to ensure privacy. In this document, we'll go through all the configuration options for the **Password Input** component. 
 
-
-## How To Use Password Input Component
-
-<iframe height="500" src="https://www.youtube.com/embed/E9mfJ9cCJ0o" title="Password Input Component" frameborder="0" allowfullscreen width="100%"></iframe>
-
 ## Properties
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
+|:---------------|:-------------------------------------------------|:-----------------------------|
+| Label         | Text to display as the label for the field.           | String (e.g., "Enter Your Password").         |
+| Placeholder   | A hint displayed to guide the user on what to enter.  | String (e.g., "SecurePassword123").          |
+| Default Value | The default value that the component will hold when the app is loaded. | String (e.g., "Default Text"). |
 
-| Property          | Description       | Expected Value    |
-|:------------------|:------------------|:----------------------------------------------------|
-| Placeholder       | Provides a hint for the expected value. It disappears once the user interacts with the component.| Enter some instructional text as the value (example: "Type name here")  |
-| Regex             | Use this field to enter a Regular Expression that will validate the password constraints.| Regular Expression    |
-| Min length        | Enter the number for a minimum length of password allowed.| Numeric value  |
-| Max length        | Enter the number for the maximum length of password allowed.| Numeric value |
-| Custom validation | If the condition is true, the validation passes, otherwise return a string that should be displayed as the error message.  | A validation condition (example: `{{components.passwordInput1.value === 'something' ? true : 'value should be something'}}` )|
 
-## General
-### Tooltip
+## Events
 
-A **Tooltip** is commonly used to provide additional information about an element. This information becomes visible when the user hovers the mouse pointer over the respective component.
+**On change** <br/>
+Triggers whenever the user types something in the input field.
 
-In the input field under **Tooltip**, you can enter some text and the component will show the specified text as a tooltip when it is hovered over. 
+**On enter pressed** <br/>
+Triggers whenever the user presses the enter button on keyboard after entering some text in the input field.
 
-<div style={{textAlign: 'center'}}>
+**On focus** <br/>
+Triggers whenever the user clicks inside the input field.
 
-<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Component Reference - Password input" />
+**On blur** <br/>
+Triggers whenever the user clicks outside the input field.
 
-</div>
+:::info
+Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
+:::
 
-## Layout
+## Validation
 
-<font size="4"><b>Show on desktop</b></font>
+| <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
+|:---------------|:-------------------------------------------------|:-----------------------------|
+| Regex              | Regular Expression to validate the input.             | Regular Expression Pattern (e.g., `^\d{3}-\d{2}-\d{4}$`). |
+| Min Length         | Sets the minimum number of characters allowed.                | Integer (e.g., `6` for a minimum of 6 characters). |
+| Max Length         | Sets the maximum number of characters allowed.                | Integer (e.g., `12` for a maximum of 12 characters).|
+| Custom Validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.passwordinput1.value<5&&"Value needs to be more than 5"}}`).           |
+| Mandatory Field    | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 
-Use this toggle to show or hide the component in the desktop view. You can dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to `{{true}}` or `{{false}}`.
 
-<font size="4"><b>Show on mobile</b></font>
+## Additional Actions
 
-Use this toggle to show or hide the component in the mobile view. You can dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to `{{true}}` or `{{false}}`. 
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:------------------|:------------|:------------------------------|
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter your name here.` ).                       |
+
+## Devices
+
+**Show on desktop**
+
+Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
+
+**Show on mobile**
+
+Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
 
 ---
 
-## Styles
+# Styles 
 
-| Style| Description  | Expected Value |
-|:-------------------|:-------------------------------|:-------------------------------|
-| Visibility | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible after the app is deployed.| Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`.|
-| Disable | Makes the component non-functional when set to true. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`.|
-| Border radius | Adjusts the roundness of the component's corners.  | Numeric value|
-| Background color    | Changes the background color of the component. | Hex color code/choose a color using the color picker |
+## Label
 
-## General
+| <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Text color     | Sets the color of the component's label. | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on `fx` to input code that programmatically returns an alignment value - `side` or `top`. |
+| Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in fx for a numeric value return. |
 
-<font size="4"><b>Box Shadow</b></font>
+## Field
 
-The **Box Shadow** property is used to add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow.
+| <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background        | Sets the background color of the component.                                                   | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Border color    | Sets the border color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Text color      | Sets the text color of the text entered in the component.                                     | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Error text color| Sets the text color of validation message that displays.                                      | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility and select which icon you want to display                                     |
+| Icon color      | Sets the icon color of the component.                                                         | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value.           |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties.                                            |
+
+
+## Container
+
+**Padding** <br/>
+Allows you to pick between `Default` or none as the padding setting for the component.
+
+:::info
+Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
+:::
+
 
 ## Exposed Variables
 
-| Variables    | Description |
-| :----------- |:----------- |
-| value | This variable holds the value entered by the user onto the password input component. You can access the value dynamically using JS: `{{components.passwordinput1.value}}`|
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+|: ---------- | :---------- | :------------ |
+| value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.value}}`). |
+| isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.isValid}}`). |
+| isMandatory | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.isMandatory}}`). |
+| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.isLoading}}`). |
+| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.isVisible}}`). |
+| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.isDisabled}}`). |
 
-## Component Specific Actions (CSA)
 
-There are currently no Component-Specific Actions (CSA) implemented to regulate or control the component.
+## Component specific actions (CSA)
+
+Following actions of component can be controlled using the component specific actions(CSA):
+
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"160px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.passwordinput1.setText('this is input text')`). |
+| clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.passwordinput1.clear()`). |
+| setFocus()     | Sets the focus of the cursor on the input field.   | Employ a RunJS query (for e.g.,  <br/> `await components.passwordinput1.setFocus()`). |
+| setBlur()      | Removes the focus of the cursor from the input field. | Employ a RunJS query (for e.g.,  <br/> `await components.passwordinput1.setBlur()`). |
+| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.passwordinput1.setVisibility(false)`). |
+| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.passwordinput1.setLoading(true)`). |
+| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.passwordinput1.setDisable(true)`). |

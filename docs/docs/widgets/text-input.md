@@ -4,45 +4,29 @@ title: Text Input
 ---
 # Text Input
 
-Text Input widget lets users enter and edit text.
-
-:::tip
-The Text Input should be preferred when user input is a single line of text.
-:::
-
-## How To Use Text Input Widget
-
-<iframe height="500" src="https://www.youtube.com/embed/ke5DTJje260" title="Text Input Widget" frameborder="0" allowfullscreen width="100%"></iframe>
+The Text Input component allows users to enter a single line of text. It can be used as a standalone component or in Form fields. In this document, we'll go through all the configuration options for the **Text Input** component. 
 
 ## Properties
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
+|:---------------|:-------------------------------------------------|:-----------------------------|
+| Label         | Text to display as the label for the field.           | String (e.g., "Enter Your Name").         |
+| Placeholder   | A hint displayed to guide the user on what to enter.  | String (e.g., "John Doe").          |
+| Default Value | The default value that the component will hold when the app is loaded. | String (e.g., "Default Text"). |
 
-### Default value
-
-The default value that the widget will hold when the app is loaded.
-
-### Placeholder
-
-It specifies a hint that describes the expected value.
 
 ## Events
 
-<div style={{textAlign: 'center'}}>
+**On change** <br/>
+Triggers whenever the user types something on the text input.
 
-<img className="screenshot-full" src="/img/widgets/text-input/events.png" alt="ToolJet - Widget Reference - Text input" />
+**On enter pressed** <br/>
+Triggers whenever the user presses the enter button on keyboard after entering some text on text input component.
 
-</div>
+**On focus** <br/>
+Triggers whenever the user clicks inside the text input field.
 
-### On change
-This event fires whenever the user types something on the text input.
-
-### On Enter Pressed
-This event fires whenever the user presses the enter button on keyboard after entering some text on text input component.
-
-### On focus
-This event fires whenever the user clicks inside the text input component.
-
-### On blur
-This event fires whenever the user clicks outside the text input component.
+**On blur** <br/>
+Triggers whenever the user clicks outside the text input field.
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
@@ -50,61 +34,64 @@ Check [Action Reference](/docs/category/actions-reference) docs to get detailed 
 
 ## Validation
 
-### Regex
+| <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
+|:---------------|:-------------------------------------------------|:-----------------------------|
+| Regex              | Regular Expression to validate the input.             | Regular Expression Pattern (e.g., `^\d{3}-\d{2}-\d{4}$`). |
+| Min Length         | Sets the minimum number of characters allowed.                | Integer (e.g., `6` for a minimum of 6 characters). |
+| Max Length         | Sets the maximum number of characters allowed.                | Integer (e.g., `12` for a maximum of 12 characters).|
+| Custom Validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.textinput1.value<5&&"Value needs to be more than 5"}}`).           |
+| Mandatory Field    | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 
-Use this field to enter a Regular Expression that will validate the password constraints.
 
-### Min length
+## Additional Actions
 
-Enter the number for a minimum length of password allowed.
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:------------------|:------------|:------------------------------|
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter your name here.` ).                       |
 
-### Max length
+## Devices
 
-Enter the number for the maximum length of password allowed.
+**Show on desktop**
 
-### Custom validation
+Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
 
-If the condition is true, the validation passes, otherwise returns a string that should be displayed as the error message. For example: `{{components.passwordInput1.value === 'something' ? true: 'value should be something'}}`.
+**Show on mobile**
 
-## General
-### Tooltip
+Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+---
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+# Styles 
 
-<div style={{textAlign: 'center'}}>
+## Label
 
-<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Text input" />
+| <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Text color     | Sets the color of the component's label. | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on `fx` to input code that programmatically returns an alignment value - `side` or `top`. |
+| Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in fx for a numeric value return. |
 
-</div>
+## Field
 
-## Layout
+| <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background        | Sets the background color of the component.                                                   | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Border color    | Sets the border color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Text color      | Sets the text color of the text entered in the component.                                     | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Error text color| Sets the text color of validation message that displays.                                      | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility and select which icon you want to display                                     |
+| Icon color      | Sets the icon color of the component.                                                         | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value.           |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties.                                            |
 
-### Show on desktop
 
-Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
-### Show on mobile
+## Container
 
-Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
-
-## Styles
-
-### Text Color
-Use this property to set the color of the text inside the text input component. You can select the color from the color picker or set the value using Hex color code.
-
-### Border color
- 
-Add a color to the border of the text-input component using this property. You can select the color from the color picker or set the value using Hex color code.
-
-### Border Radius
-Use this property to modify the border radius of the widget. The field expects only numerical values from `1` to `100`, and default is `0`. 
-
-### Visibility
-It is to control the visibility of the widget. If `{{false}}` the widget will not be visible after the app gets deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`.
-
-### Disable
-This property only accepts boolean values. If set to `{{true}}`, the widget will lock and become non-functional. By default, its value is set to `{{false}}`.
+**Padding** <br/>
+Allows you to pick between `Default` or none as the padding setting for the component.
 
 :::info
 Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
@@ -113,19 +100,27 @@ Check the **component specific actions** available for this component **[here](/
 
 ## Exposed Variables
 
-| Variables    | Description |
-| ----------- | ----------- |
-| value | This variable holds the value whenever user a user inputs a value in the component. You can access the value dynamically using JS: `{{components.textinput1.value}}`|
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+|: ---------- | :---------- | :------------ |
+| value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.textinput1.value}}`). |
+| isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isValid}}`). |
+| isMandatory | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isMandatory}}`). |
+| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isLoading}}`). |
+| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isVisible}}`). |
+| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isDisabled}}`). |
+
 
 ## Component specific actions (CSA)
 
-Following actions of text input component can be controlled using the component specific actions(CSA):
+Following actions of component can be controlled using the component specific actions(CSA):
 
-| Actions     | Description |
-| ----------- | ----------- |
-| setFocus | Set the focus of the cursor on the text input via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textinput1.setFocus()` |
-| setBlur | Removes the focus of the cursor on the text input via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textinput1.setBlur()` |
-| disable | disable the component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textinput1.disable(true)` |
-| visibility | Set a visibility of the text input via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textinput1.visibility(false)` |
-| setText | Set a text value on the text input component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textinput1.setText('this is input text')` |
-| clear | Clear the entered text from the text input via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textinput1.clear()` |
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"160px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setText('this is input text')`). |
+| clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.clear()`). |
+| setFocus()     | Sets the focus of the cursor on the input field.   | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setFocus()`). |
+| setBlur()      | Removes the focus of the cursor from the input field. | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setBlur()`). |
+| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setVisibility(false)`). |
+| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setLoading(true)`). |
+| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.textinput1.setDisable(true)`). |

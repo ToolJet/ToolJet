@@ -6,155 +6,119 @@ title: Dropdown
 
 The Dropdown component can be used to collect user input from a list of options.
 
-<div style={{textAlign: 'center'}}>
+## Data
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
+|:---------------|:-------------------------------------------------|:-----------------------------|
+| Label         | Text to display as the label for the field.           | String (e.g., "Country").         |
+| Placeholder   | A hint displayed to guide the user on what to enter.  | String (e.g., "Choose an option").          |
 
-<img className="screenshot-full" src="/img/widgets/dropdown/drop2.gif" alt="ToolJet - Widget Reference - Dropdown" />
-
-</div>
+## Options
+Allows you to add options to the dropdown field. You can click on `Add new option` and add options manually or enable `Dynamic options` and enter the options using code. 
 
 ## Events
 
-<div style={{textAlign: 'center'}}>
+**On select** <br/>
+Triggers when an option is selected.
 
-<img className="screenshot-full" src="/img/widgets/dropdown/event.png" alt="ToolJet - Widget Reference - Dropdown" />
+**On focus** <br/>
+Triggers whenever the user clicks inside the text input component.
 
-</div>
+**On blur** <br/>
+Triggers whenever the user clicks outside the text input component.
 
-### Event: On select
+**On search text changed** <br/>
+Triggers when search text changes.
 
-On select event is triggered when an option is selected.
-
-### Event: On search text changed
-
-This event is triggered whenever the user searches through the options by typing on the dropdown's input box. The corresponding search text will be exposed as `searchText`.
-
-## Properties
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/dropdown/prop.png" alt="ToolJet - Widget Reference - Dropdown" />
-
-</div>
-
-### Label
-
-Set the value of the label in the dropdown. The value can also be set dynamically using JavaScript. For example, set the Label value to `Select the {{components.text1.text}}`
-
-### Default value
-
-Specify the default selected option in the dropdown.
-
-### Option value
-
-The option values correspond to the different options available in the dropdown. Dynamically set the option values based on your query, for example: `{{queries.datasource.data.map(item => item.value)}}`.
-
-### Option labels
-
-The option labels represent the displayed labels for each value in the dropdown list. Dynamically set the option labels based on your query, for example: `{{queries.datasource.data.map(item => item.value)}}`.
-
-### Advanced
-
-Configure the dropdown options and manage them by providing an array of objects as data. You can dynamically generate this data using JavaScript. 
-
-For example:
-```json
-{{[	{label: 'One',value: 1,disable: false,visible: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}	]}}
-```
-Each object in the array should include the following key-value pairs:
-
-| Key | Value |
-| --- | ----- |
-| label | Option label |
-| value | Option value |
-| disable | Set to true to disable the option for selection, and false to keep it enabled |
-| visible | Set to true to display the option in the dropdown list, and false to hide it |
-
-### Options loading state
-
-Enable this property to display a loading state in the widget. By default, it is turned off. You can programmatically toggle it by setting the values to `{{true}}` or `{{false}}` using the `Fx` button.
-
-### Default placeholder
-
-Set a placeholder value that appears in the dropdown when no default option is selected or set.
+:::info
+Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
+:::
 
 ## Validation
 
-### Custom validation
+| <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
+|:---------------|:-------------------------------------------------|:-----------------------------|
+| Custom Validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.dropdown.value<5&&"Value needs to be more than 5"}}`).           |
+| Mandatory Field    | Displays a 'Field cannot be empty' message if no option is selected. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 
-Add a validation for the options in dropdown widget using the ternary operator.
 
-## General
-### Tooltip
+## Additional Actions
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:------------------|:------------|:------------------------------|
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter your name here.` ).                       |
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+## Devices
 
-<div style={{textAlign: 'center'}}>
+**Show on desktop**
 
-<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Dropdown" />
+Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
 
-</div>
+**Show on mobile**
 
-## Layout
+Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
 
-### Show on desktop
+---
 
-Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
-### Show on mobile
+# Styles 
 
-Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+## Label
 
-## Styles
+| <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Text color     | Sets the color of the component's label. | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on `fx` to input code that programmatically returns an alignment value - `side` or `top`. |
+| Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in fx for a numeric value return. |
 
-<div style={{textAlign: 'center'}}>
+## Field
 
-<img className="screenshot-full" src="/img/widgets/dropdown/style.png" alt="ToolJet - Widget Reference - Dropdown" />
+| <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background        | Sets the background color of the component.                                                   | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Border color    | Sets the border color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Text color      | Sets the text color of the text entered in the component.                                     | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Error text color| Sets the text color of validation message that displays.                                      | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility and select which icon you want to display                                     |
+| Icon color      | Sets the icon color of the component.                                                         | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value.           |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties.                                            |
 
-</div>
 
-### Border Radius
+## Container
 
-Use this property to modify the border radius of the dropdown. The field expects only numerical value from `1` to `100`, default is `0`.
-
-### Visibility
-
-This is to control the visibility of the widget. If `{{false}}` the widget will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`.
-
-### Selected text color
-
-Change the text color of the selected option in the widget by providing the `HEX color code` or choosing the color from color picker.
-
-### Disable
-
-This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`.
-
-### Align text
-
-You can align the text inside the widget in following ways: left, right, center, justified 
+**Padding** <br/>
+Allows you to pick between `Default` or none as the padding setting for the component.
 
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
 :::
 
-## Exposed variables
 
-<div style={{textAlign: 'center'}}>
+## Exposed Variables
 
-<img className="screenshot-full" src="/img/widgets/dropdown/variables.png" alt="ToolJet - Widget Reference - Dropdown widget" />
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+|: ---------- | :---------- | :------------ |
+| value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.textinput1.value}}`). |
+| isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isValid}}`). |
+| isMandatory | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isMandatory}}`). |
+| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isLoading}}`). |
+| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isVisible}}`). |
+| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isDisabled}}`). |
 
-</div>
-
-| Variable | Description |
-| -------- | ----------- |
-| Value | This variable holds the value of the currently selected item on the dropdown. Value can be accesed using `{{components.dropdown1.value}}` |
-| searchText | This variable is initially empty and will hold the value whenever the user searches on the dropdown. searchText's value can be accesed using`{{components.dropdown1.searchText}}` |
-| label | The variable label holds the label name of the dropdown. label's value can be accesed using`{{components.dropdown1.searchText}}` |
-| optionLabels | The optionLabels holds the option labels for the values of the dropdown. optionLabels can be accesed using`{{components.dropdown1.optionLabels}}` for all the option labels in the array form or `{{components.dropdown1.optionLabels[0]}}` for particular option label |
-| selectedOptionLabel | The variable holds the label of the selected option in the dropdown components. The selected option label can be accessed dynamically using `{{components.dropdown1.selectedOptionLabel}}` |
 
 ## Component specific actions (CSA)
 
-| Actions | Description |
-| -------- | ----------- |
-| selectOption | You can set an option on the dropdown component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.dropdown1.setOption(1)` |
+Following actions of component can be controlled using the component specific actions(CSA):
+
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"160px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setText('this is input text')`). |
+| clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.clear()`). |
+| setFocus()     | Sets the focus of the cursor on the input field.   | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setFocus()`). |
+| setBlur()      | Removes the focus of the cursor from the input field. | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setBlur()`). |
+| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setVisibility(false)`). |
+| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setLoading(true)`). |
+| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.textinput1.setDisable(true)`). |

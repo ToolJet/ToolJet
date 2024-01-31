@@ -6,71 +6,122 @@ title: Number Input
 
 The Number Input component allows users to enter numbers. It can be used as a standalone component or in form fields. In this document, we'll go through all the configuration options for the **Number Input** component. 
 
-
 ## Properties
 
-| Property       | Description                         | Expected Value |
-|:----------------|:-----------------------------------| :--------------|
-| Default Value  | Default Value is the initial value in the Number Input field when the application is loaded. It is a pre-established value that will be retrieved from the number input component if no modifications are made to it. | Any numeric value|
-| Minimum value  | Sets the minimum value that can be entered in the input field.| Any numerical value|
-| Maximum value  | Sets the maximum value that can be entered in the input field.| Any numerical value|
-| Placeholder    | The placeholder value is displayed when no user input has been made yet. It disappears once the user interacts with the control, such as typing a number or using the arrow keys on the right side of the component. |Enter some instructional text as the value (example: "Type number here")| 
-| Loading state  | The loading state can be enabled to show a spinner as the content of the number input. This is commonly used with the `isLoading` property of queries to indicate a loading status while a query is being executed. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`|
-| Decimal places | This controls decimal places in the number input. You pick how many decimals you want. If you choose `{{2}}`, any decimals will be rounded to two places. Use `{{0}}` for whole numbers or increase for more precision.| Any numeric value|
-
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
+|:---------------|:-------------------------------------------------|:-----------------------------|
+| Label         | Text to display as the label for the field.           | String (e.g., "Age").         |
+| Placeholder   | A hint displayed to guide the user on what to enter.  | String (e.g., "John Doe").          |
+| Default Value | The default value that the component will hold when the app is loaded. | String (e.g., "Default Text"). |
+| Decimal places  | Specifies the number of decimal places for numerical values. | Integer         |
 
 ## Events
-To add an event to the Number Input component, go to the **Events** section and click on **Add handler**.
 
-| Event     | Description                                                                 |
-|-----------|-----------------------------------------------------------------------------|
-| On change | This event fires whenever the value of the number input component is changed. |
+**On change** <br/>
+Triggers whenever the user types something in the input field.
+
+**On enter pressed** <br/>
+Triggers whenever the user presses the enter button on keyboard after entering some text on input component.
+
+**On focus** <br/>
+Triggers whenever the user clicks inside the input field.
+
+**On blur** <br/>
+Triggers whenever the user clicks outside the input field.
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
 :::
 
-## General
+## Validation
 
-<font size="4"><b>Tooltip</b></font>
+| <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
+|:---------------|:-------------------------------------------------|:-----------------------------|
+| Regex              | Regular Expression to validate the input.             | Regular Expression Pattern (e.g., `^\d{10}$`). |
+| Min Length         | Sets the minimum number of characters allowed.                | Integer (e.g., `6` for a minimum of 6 characters). |
+| Max Length         | Sets the maximum number of characters allowed.                | Integer (e.g., `12` for a maximum of 12 characters).|
+| Custom Validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.numberinput1.value<5&&"Value needs to be more than 5"}}`).           |
+| Mandatory Field    | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 
-A **Tooltip** is commonly used to provide additional information about an element. This information becomes visible when the user hovers the mouse pointer over the respective component.
 
-In the input field under **Tooltip**, you can enter some text and the component will show the specified text as a tooltip when it is hovered over.
+## Additional Actions
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/widgets/number-input/tooltip.png" alt="Tooltip Example" />
-</div>
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:------------------|:------------|:------------------------------|
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter your age here.` ).                       |
 
-## Layout
-<font size="4"><b>Show on desktop</b></font>
+## Devices
 
-Use this toggle to show or hide the component in the desktop view. You can dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to `{{true}}` or `{{false}}`.
+**Show on desktop**
 
-<font size="4"><b>Show on mobile</b></font>
+Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
 
-Use this toggle to show or hide the component in the mobile view. You can dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to `{{true}}` or `{{false}}`. 
+**Show on mobile**
 
---- 
+Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
 
-## Styles
+---
 
-| Style | Description | Expected Value|
-|:-------------|:--------------------|:---------------------|
-| Visibility | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible after the app is deployed.| Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`.|
-| Disable | Makes the component non-functional when set to true. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`.|
-| Border radius | Adjusts the roundness of the component's corners.  | Numeric value|
-| Background color    | Changes the background color of the number-input component. | Hex color code/choose a color using the color picker |
-| Border color |  Changes the border color of the component.| Hex color code/choose a color using the color picker|
-| Text Color |  Sets the color of the input value. |Hex color code/choose a color using the color picker |
+# Styles 
+
+## Label
+
+| <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Text color     | Sets the color of the component's label. | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on `fx` to input code that programmatically returns an alignment value - `side` or `top`. |
+| Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in fx for a numeric value return. |
+
+## Field
+
+| <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background        | Sets the background color of the component.                                                   | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Border color    | Sets the border color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Text color      | Sets the text color of the text entered in the component.                                     | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Error text color| Sets the text color of validation message that displays.                                      | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility and select which icon you want to display                                     |
+| Icon color      | Sets the icon color of the component.                                                         | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value.           |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties.                                            |
+
+
+## Container
+
+**Padding** <br/>
+Allows you to pick between `Default` or none as the padding setting for the component.
+
+:::info
+Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
+:::
 
 
 ## Exposed Variables
 
-| Variables    | Description |
-| ----------- | ----------- |
-| value | This variable updates whenever a user selects a number on the number input. You can access the value dynamically using JS: `{{components.numberinput1.value}}`|
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+|: ---------- | :---------- | :------------ |
+| value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.value}}`). |
+| isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isValid}}`). |
+| isMandatory | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isMandatory}}`). |
+| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isLoading}}`). |
+| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isVisible}}`). |
+| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isDisabled}}`). |
 
-## Component Specific Actions (CSA)
 
-There are currently no Component-Specific Actions (CSA) implemented to regulate or control the component.
+## Component specific actions (CSA)
+
+Following actions of component can be controlled using the component specific actions(CSA):
+
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"160px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setText('this is input text')`). |
+| clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.clear()`). |
+| setFocus()     | Sets the focus of the cursor on the input field.   | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setFocus()`). |
+| setBlur()      | Removes the focus of the cursor from the input field. | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setBlur()`). |
+| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setVisibility(false)`). |
+| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setLoading(true)`). |
+| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.numberinput1.setDisable(true)`). |
