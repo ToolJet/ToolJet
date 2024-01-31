@@ -252,7 +252,7 @@ export const widgets = [
       },
       actionButtonBackgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -577,7 +577,7 @@ export const widgets = [
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
           defaultValue: false,
@@ -1067,12 +1067,47 @@ export const widgets = [
           width: 17,
         },
         properties: ['text'],
-        styles: ['fontWeight', 'textSize', 'textColor'],
+        styles: [
+          'textSize',
+          'fontWeight',
+          'fontStyle',
+          'textColor',
+          'isScrollRequired',
+          'lineHeight',
+          'textIndent',
+          'textAlign',
+          'verticalAlignment',
+          'decoration',
+          'transformation',
+          'letterSpacing',
+          'wordSpacing',
+          'fontVariant',
+          'backgroundColor',
+          'borderColor',
+          'borderRadius',
+          'boxShadow',
+          'padding',
+        ],
         defaultValue: {
           text: 'User Details',
           fontWeight: 'bold',
-          textSize: 20,
+          textSize: 18,
           textColor: '#000',
+          backgroundColor: '#fff00000',
+          textAlign: 'left',
+          decoration: 'none',
+          transformation: 'none',
+          fontStyle: 'normal',
+          lineHeight: 1.5,
+          textIndent: '0',
+          letterSpacing: '0',
+          wordSpacing: '0',
+          fontVariant: 'normal',
+          verticalAlignment: 'top',
+          padding: 'default',
+          boxShadow: '0px 0px 0px 0px #00000090',
+          borderRadius: '0',
+          isScrollRequired: 'enabled',
         },
       },
       {
@@ -1083,8 +1118,47 @@ export const widgets = [
           height: 30,
         },
         properties: ['text'],
+        styles: [
+          'textSize',
+          'fontWeight',
+          'fontStyle',
+          'textColor',
+          'isScrollRequired',
+          'lineHeight',
+          'textIndent',
+          'textAlign',
+          'verticalAlignment',
+          'decoration',
+          'transformation',
+          'letterSpacing',
+          'wordSpacing',
+          'fontVariant',
+          'backgroundColor',
+          'borderColor',
+          'borderRadius',
+          'boxShadow',
+          'padding',
+        ],
         defaultValue: {
           text: 'Name',
+          fontWeight: 'normal',
+          textSize: 14,
+          textColor: '#000',
+          backgroundColor: '#fff00000',
+          textAlign: 'left',
+          decoration: 'none',
+          transformation: 'none',
+          fontStyle: 'normal',
+          lineHeight: 1.5,
+          textIndent: '0',
+          letterSpacing: '0',
+          wordSpacing: '0',
+          fontVariant: 'normal',
+          verticalAlignment: 'top',
+          padding: 'default',
+          boxShadow: '0px 0px 0px 0px #00000090',
+          borderRadius: '0',
+          isScrollRequired: 'enabled',
         },
       },
       {
@@ -1095,8 +1169,47 @@ export const widgets = [
           height: 30,
         },
         properties: ['text'],
+        styles: [
+          'textSize',
+          'fontWeight',
+          'fontStyle',
+          'textColor',
+          'isScrollRequired',
+          'lineHeight',
+          'textIndent',
+          'textAlign',
+          'verticalAlignment',
+          'decoration',
+          'transformation',
+          'letterSpacing',
+          'wordSpacing',
+          'fontVariant',
+          'backgroundColor',
+          'borderColor',
+          'borderRadius',
+          'boxShadow',
+          'padding',
+        ],
         defaultValue: {
           text: 'Age',
+          fontWeight: 'normal',
+          textSize: 14,
+          textColor: '#000',
+          backgroundColor: '#fff00000',
+          textAlign: 'left',
+          decoration: 'none',
+          transformation: 'none',
+          fontStyle: 'normal',
+          lineHeight: 1.5,
+          textIndent: '0',
+          letterSpacing: '0',
+          wordSpacing: '0',
+          fontVariant: 'normal',
+          verticalAlignment: 'top',
+          padding: 'default',
+          boxShadow: '0px 0px 0px 0px #00000090',
+          borderRadius: '0',
+          isScrollRequired: 'enabled',
         },
       },
       {
@@ -1186,7 +1299,7 @@ export const widgets = [
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1341,7 +1454,7 @@ export const widgets = [
     styles: {
       color: {
         type: 'color',
-        displayName: 'Color',
+        displayName: 'Text',
         validation: { schema: { type: 'string' } },
         accordian: 'label',
       },
@@ -1370,7 +1483,7 @@ export const widgets = [
       width: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        validation: { schema: { type: 'number' } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
@@ -1391,26 +1504,26 @@ export const widgets = [
 
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
 
       borderColor: {
         type: 'color',
-        displayName: 'Border color',
+        displayName: 'Border',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       errTextColor: {
         type: 'color',
-        displayName: 'Error text color',
+        displayName: 'Error text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -1427,6 +1540,7 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
         visibility: false,
+        showLabel: false,
       },
       borderRadius: {
         type: 'input',
@@ -1504,7 +1618,7 @@ export const widgets = [
     ],
     definition: {
       validation: {
-        mandatory: { value: false },
+        mandatory: { value: '{{false}}' },
         regex: { value: '' },
         minLength: { value: null },
         maxLength: { value: null },
@@ -1533,10 +1647,10 @@ export const widgets = [
         backgroundColor: { value: '#fff' },
         iconColor: { value: '#C1C8CD' },
         direction: { value: 'left' },
-        width: { value: '33' },
+        width: { value: '{{33}}' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
-        auto: { value: true },
+        auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
         icon: { value: 'IconHome2' },
@@ -1619,7 +1733,7 @@ export const widgets = [
     styles: {
       color: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text',
         validation: { schema: { type: 'string' } },
         accordian: 'label',
       },
@@ -1648,7 +1762,7 @@ export const widgets = [
       width: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        validation: { schema: { type: 'number' } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
@@ -1669,26 +1783,26 @@ export const widgets = [
 
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
 
       borderColor: {
         type: 'color',
-        displayName: 'Border color',
+        displayName: 'Border',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       errTextColor: {
         type: 'color',
-        displayName: 'Error text color',
+        displayName: 'Error text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -1705,6 +1819,7 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
         visibility: false,
+        showLabel: false,
       },
       borderRadius: {
         type: 'input',
@@ -1787,7 +1902,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       validation: {
-        mandatory: { value: false },
+        mandatory: { value: '{{false}}' },
         regex: { value: '' },
         minValue: { value: '' },
         maxValue: { value: '' },
@@ -1814,10 +1929,10 @@ export const widgets = [
         textColor: { value: '#232e3c' },
         iconColor: { value: '#C1C8CD' },
         direction: { value: 'left' },
-        width: { value: '33' },
+        width: { value: '{{33}}' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
-        auto: { value: true },
+        auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
         icon: { value: 'IconHome2' },
@@ -1910,7 +2025,7 @@ export const widgets = [
     styles: {
       color: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text',
         validation: { schema: { type: 'string' } },
         accordian: 'label',
       },
@@ -1939,7 +2054,7 @@ export const widgets = [
       width: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        validation: { schema: { type: 'number' } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
@@ -1960,26 +2075,26 @@ export const widgets = [
 
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
 
       borderColor: {
         type: 'color',
-        displayName: 'Border color',
+        displayName: 'Border',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       errTextColor: {
         type: 'color',
-        displayName: 'Error text color',
+        displayName: 'Error text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -1996,6 +2111,7 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
         visibility: false,
+        showLabel: false,
       },
       borderRadius: {
         type: 'input',
@@ -2023,7 +2139,7 @@ export const widgets = [
     },
     exposedVariables: {
       value: '',
-      isMandatory: false,
+      mandatory: { value: '{{false}}' },
       isVisible: true,
       isDisabled: false,
       isLoading: false,
@@ -2068,7 +2184,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        placeholder: { value: 'password' },
+        placeholder: { value: 'Password' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         loadingState: { value: '{{false}}' },
@@ -2092,10 +2208,10 @@ export const widgets = [
         textColor: { value: '#11181C' },
         iconColor: { value: '#C1C8CD' },
         direction: { value: 'left' },
-        width: { value: '33' },
+        width: { value: '{{33}}' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
-        auto: { value: true },
+        auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
         icon: { value: 'IconLock' },
@@ -2910,9 +3026,23 @@ export const widgets = [
         params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
       },
       {
-        handle: 'visibility',
+        handle: 'setVisibility',
         displayName: 'Set Visibility',
-        params: [{ handle: 'visibility', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+        params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+      },
+      {
+        handle: 'clear',
+        displayName: 'Clear',
+      },
+      {
+        handle: 'setLoadingState',
+        displayName: 'Set loading state',
+        params: [{ handle: 'setLoadingState', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      },
+      {
+        handle: 'setDisabled',
+        displayName: 'Set disabled',
+        params: [{ handle: 'setDisabled', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
     ],
     definition: {
@@ -2929,7 +3059,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '#edeff5' },
+        backgroundColor: { value: '#fff00000' },
         textColor: { value: '#000000' },
         textSize: { value: 14 },
         textAlign: { value: 'left' },
@@ -3020,7 +3150,7 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3111,7 +3241,7 @@ export const widgets = [
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -4846,7 +4976,7 @@ export const widgets = [
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -5743,7 +5873,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },

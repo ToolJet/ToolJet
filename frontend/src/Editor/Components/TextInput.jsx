@@ -61,7 +61,7 @@ export const TextInput = function TextInput({
         ? '#4C5155'
         : '#D7DBDF'
       : borderColor,
-    backgroundColor: isFocused ? 'red' : darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
+    backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
     boxShadow:
       boxShadow !== '0px 0px 0px 0px #00000040' ? boxShadow : isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
     padding: styles.iconVisibility

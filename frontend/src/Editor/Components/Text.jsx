@@ -8,12 +8,6 @@ const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   bottom: 'flex-end',
 };
 
-const HORIZONTAL_ALIGNMENT_VS_CSS_VALUE = {
-  center: 'center',
-  left: 'fles-start',
-  right: 'flex-end',
-};
-
 export const Text = function Text({ height, properties, fireEvent, styles, darkMode, setExposedVariable, dataCy }) {
   let {
     textSize,
@@ -102,14 +96,11 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
   const handleClick = () => {
     fireEvent('onClick');
   };
-
   const computedStyles = {
     height: `${height}px`,
     backgroundColor: darkMode && ['#edeff5'].includes(backgroundColor) ? '#2f3c4c' : backgroundColor,
     color,
     display: visibility ? 'flex' : 'none',
-    alignItems: VERTICAL_ALIGNMENT_VS_CSS_VALUE[verticalAlignment],
-    justifyContent: HORIZONTAL_ALIGNMENT_VS_CSS_VALUE[textAlign],
     fontWeight: fontWeight ? fontWeight : fontWeight === '0' ? 0 : 'normal',
     lineHeight: lineHeight ?? 1.5,
     textDecoration: decoration ?? 'none',
@@ -121,10 +112,11 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     wordSpacing: `${wordSpacing}px` ?? '0px',
     boxShadow,
     border: '1px solid',
-    borderColor: darkMode && ['#f2f2f5'].includes(borderColor) ? '#2f3c4c' : borderColor,
+    borderColor: darkMode && ['#f2f2f5'].includes(borderColor) ? '#2f3c4c' : borderColor ? borderColor : 'transparent',
     borderRadius: borderRadius ? `${borderRadius}px` : '0px',
     fontSize: `${textSize}px`,
   };
+
   return (
     <div
       data-disabled={isDisabled}
@@ -145,9 +137,14 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
               width: '100%',
               height: '100%',
               overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: VERTICAL_ALIGNMENT_VS_CSS_VALUE[verticalAlignment],
+              textAlign,
             }}
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
-          />
+          >
+            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }} />
+          </div>
         ))}
       {isLoading && (
         <div style={{ width: '100%', height: '100%' }} className="d-flex align-items-center justify-content-center">
