@@ -14,19 +14,19 @@ export default function LogoNavDropdown({ darkMode, type = 'apps' }) {
       <div className={`logo-nav-card settings-card card ${darkMode && 'dark-theme'}`}>
         <Link
           to={getPrivateRoute(isWorkflows ? 'workflows' : 'dashboard')}
-          className="dropdown-item tj-text-xsm"
+          className="dropdown-item tj-text tj-text-xsm"
           data-cy="back-to-app-option"
         >
-          <SolidIcon name="arrowbackdown" width="20" viewBox="0 0 20 20" />
+          <SolidIcon name="arrowbackdown" width="20" viewBox="0 0 20 20" fill="#C1C8CD" />
           <span>Back to {isWorkflows ? 'workflows' : 'apps'}</span>
         </Link>
         <div className="divider"></div>
         <Link
           target="_blank"
           to={getPrivateRoute(!isWorkflows ? 'workflows' : 'dashboard')}
-          className="dropdown-item tj-text-xsm"
+          className="dropdown-item tj-text tj-text-xsm"
         >
-          <SolidIcon name={isWorkflows ? 'apps' : 'workflows'} width="20" fill="var(--slate8)" />
+          <SolidIcon name={isWorkflows ? 'apps' : 'workflows'} width="20" fill="#C1C8CD" />
           <span>{isWorkflows ? 'Apps' : 'Workflows'}</span>
         </Link>
 
@@ -34,7 +34,7 @@ export default function LogoNavDropdown({ darkMode, type = 'apps' }) {
           <Link
             target="_blank"
             to={getPrivateRoute('database')}
-            className="dropdown-item tj-text-xsm"
+            className="dropdown-item tj-text tj-text-xsm"
             data-cy="database-option"
           >
             <SolidIcon name="table" width="20" />
@@ -43,7 +43,7 @@ export default function LogoNavDropdown({ darkMode, type = 'apps' }) {
         )}
         <Link
           to={getPrivateRoute('data_sources')}
-          className="dropdown-item tj-text-xsm"
+          className="dropdown-item tj-text tj-text-xsm"
           target="_blank"
           data-cy="data-source-option"
         >
@@ -53,7 +53,7 @@ export default function LogoNavDropdown({ darkMode, type = 'apps' }) {
 
         <Link
           to={getPrivateRoute('workspace_constants')}
-          className="dropdown-item tj-text-xsm"
+          className="dropdown-item tj-text tj-text-xsm"
           target="_blank"
           data-cy="workspace-constants-option"
         >

@@ -299,6 +299,7 @@ class ManageAllUsersComponent extends React.Component {
         handleConfirm={() => (!isArchived ? this.archiveAll(updatingUser) : this.unarchiveAll(updatingUser))}
         confirmBtnProps={confirmButtonProps}
         body={<div className="tj-text-sm">{body}</div>}
+        darkMode={this.props.darkMode}
       />
     );
   };

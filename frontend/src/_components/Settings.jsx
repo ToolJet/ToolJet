@@ -39,27 +39,6 @@ export default function Settings({ darkMode, checkForUnsavedChanges, featureAcce
           </Link>
         )}
         {admin && (
-          <>
-            <Link
-              onClick={(event) => checkForUnsavedChanges(getPrivateRoute('audit_logs'), event)}
-              to={getPrivateRoute('audit_logs')}
-              className="dropdown-item tj-text-xsm"
-              data-cy="marketplace-option"
-            >
-              <span>Audit logs</span>
-            </Link>
-          </>
-        )}
-        {superAdmin && (
-          <Link
-            onClick={(event) => checkForUnsavedChanges('/instance-settings', event)}
-            to={'/instance-settings'}
-            className="dropdown-item tj-text-xsm"
-          >
-            <span>Settings</span>
-          </Link>
-        )}
-        {admin && (
           <LicenseTooltip
             limits={featureAccess}
             feature={'Audit logs'}
@@ -90,13 +69,15 @@ export default function Settings({ darkMode, checkForUnsavedChanges, featureAcce
             <span>Settings</span>
           </Link>
         )}
-        <Link
-          onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
-          to={getPrivateRoute('workspace_settings')}
-          className="dropdown-item tj-text-xsm"
-        >
-          <span>Workspace settings</span>
-        </Link>
+        {admin && (
+          <Link
+            onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
+            to={getPrivateRoute('workspace_settings')}
+            className="dropdown-item tj-text-xsm"
+          >
+            <span>Workspace settings</span>
+          </Link>
+        )}
 
         <Link
           onClick={(event) => checkForUnsavedChanges(getPrivateRoute('settings'), event)}

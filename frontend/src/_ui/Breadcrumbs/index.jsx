@@ -46,6 +46,6 @@ const routes = [
   { path: '/instance-settings/manage-instance-settings', breadcrumb: 'Settings' },
   { path: '/instance-settings/white-labelling', breadcrumb: 'Settings' },
   { path: '/instance-settings/license', breadcrumb: 'Settings' },
-  { path: '/audit-logs', breadcrumb: 'Audit logs' },
+  { path: '/:worspace_id/audit-logs', breadcrumb: ' ' },
   { path: '/:worspace_id/workflows', breadcrumb: 'Workflows', props: { beta: true } },
 ];
