@@ -469,6 +469,15 @@ export const widgets = [
           },
         ],
       },
+      {
+        handle: 'setFilters',
+        displayName: 'Set filters',
+        params: [{ handle: 'parameters', displayName: 'Parameters' }],
+      },
+      {
+        handle: 'clearFilters',
+        displayName: 'Clear filters',
+      },
     ],
     definition: {
       others: {
