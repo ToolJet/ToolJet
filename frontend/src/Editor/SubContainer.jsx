@@ -5,7 +5,7 @@ import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 const produce = require('immer').default;
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
@@ -21,6 +21,7 @@ import { diff } from 'deep-object-diff';
 import DragContainerNested from './DragContainerNested';
 import { useGridStore, useDragTarget } from '@/_stores/gridStore';
 import { SUBCONTAINER_WITH_SCROLL } from './constants';
+import { widgets } from './WidgetManager/widgetConfig';
 
 // const NO_OF_GRIDS = 43;
 
@@ -72,7 +73,6 @@ export const SubContainer = ({
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
   const currentState = useCurrentState();
-  const [dragTarget] = useDragTarget();
   const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
     (state) => ({
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
@@ -713,15 +713,24 @@ export const SubContainer = ({
   };
 
   return (
-    <div
-      ref={drop}
-      style={styles}
-      id={`canvas-${parent}`}
-      className={`real-canvas ${
-        (isDragging || isResizing || dragTarget === parent || isGridActive) && !readOnly ? 'show-grid' : 'hide-grid'
-      }`}
+    // <div
+    //   ref={drop}
+    //   style={styles}
+    //   id={`canvas-${parent}`}
+    //   className={`sub-canvas real-canvas ${
+    //     (isDragging || isResizing || dragTarget === parent || isGridActive) && !readOnly ? 'show-grid' : 'hide-grid'
+    //   }`}
+    // >
+    <SubContianerWrapper
+      drop={drop}
+      styles={styles}
+      parent={parent}
+      isDragging={isDragging}
+      isResizing={isResizing}
+      isGridActive={isGridActive}
+      readOnly={readOnly}
     >
-      <DragContainerNested
+      {/* <DragContainerNested
         boxes={Object.keys(childWidgets).map((key) => ({ ...boxes[key], id: key }))}
         renderWidget={renderWidget}
         canvasWidth={_containerCanvasWidth}
@@ -729,99 +738,197 @@ export const SubContainer = ({
         parent={parent}
         currentLayout={currentLayout}
         readOnly={readOnly}
-      />
-      {/* {checkParentVisibility() &&
-        Object.keys(childWidgets).map((key) => {
-          const addDefaultChildren = childWidgets[key]['withDefaultChildren'] || false;
-          const box = childWidgets[key];
+      ></DragContainerNested> */}
+      <div className="root h-100">
+        <div className={`container-fluid p-0 h-100 drag-container-parent`} component-id={parent}>
+          {checkParentVisibility() &&
+            Object.keys(childWidgets).map((key) => {
+              const addDefaultChildren = childWidgets[key]['withDefaultChildren'] || false;
+              const box = childWidgets[key];
 
-          const canShowInCurrentLayout =
-            box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+              const canShowInCurrentLayout =
+                box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
 
-          if (box.component.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
-            return (
-              <DraggableBox
-                onComponentClick={onComponentClick}
-                onEvent={onEvent}
-                onComponentOptionChanged={
-                  checkParent(box)
-                    ? onComponentOptionChangedForSubcontainer
-                    : (component, optionName, value, componentId = '') => {
-                        if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
-                          return Promise.resolve();
-                        }
-                        onOptionChange && onOptionChange({ component, optionName, value, componentId });
+              if (box.component.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
+                return (
+                  <SubWidgetWrapper
+                    key={key}
+                    id={key}
+                    parent={parent}
+                    widget={box}
+                    readOnly={readOnly}
+                    currentLayout={currentLayout}
+                    canvasWidth={_containerCanvasWidth}
+                    gridWidth={gridWidth}
+                  >
+                    <DraggableBox
+                      onComponentClick={onComponentClick}
+                      onEvent={onEvent}
+                      height={height}
+                      onComponentOptionChanged={
+                        checkParent(box)
+                          ? onComponentOptionChangedForSubcontainer
+                          : (component, optionName, value, componentId = '') => {
+                              if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
+                                return Promise.resolve();
+                              }
+                              onOptionChange && onOptionChange({ component, optionName, value, componentId });
+                            }
                       }
-                }
-                onComponentOptionsChanged={(component, variableSet, id) => {
-                  checkParent(box)
-                    ? onComponentOptionsChanged(component, variableSet)
-                    : variableSet.map((item) => {
-                        onOptionChange &&
-                          onOptionChange({
-                            component,
-                            optionName: item[0],
-                            value: item[1],
-                            componentId: id,
-                          });
-                      });
-                }}
-                key={key}
-                onResizeStop={onResizeStop}
-                onDragStop={onDragStop}
-                paramUpdated={paramUpdated}
-                id={key}
-                allComponents={allComponents}
-                {...childWidgets[key]}
-                mode={mode}
-                resizingStatusChanged={(status) => setIsResizing(status)}
-                draggingStatusChanged={(status) => setIsDragging(status)}
-                inCanvas={true}
-                zoomLevel={zoomLevel}
-                setSelectedComponent={setSelectedComponent}
-                selectedComponent={selectedComponent}
-                deviceWindowWidth={deviceWindowWidth}
-                removeComponent={customRemoveComponent}
-                canvasWidth={_containerCanvasWidth}
-                readOnly={readOnly}
-                darkMode={darkMode}
-                customResolvables={customResolvables}
-                onComponentHover={onComponentHover}
-                hoveredComponent={hoveredComponent}
-                parentId={parentComponent?.name}
-                parent={parent}
-                sideBarDebugger={sideBarDebugger}
-                exposedVariables={exposedVariables ?? {}}
-                childComponents={childComponents[key]}
-                containerProps={{
-                  mode,
-                  snapToGrid,
-                  onComponentClick,
-                  onEvent,
-                  appDefinition,
-                  appDefinitionChanged,
-                  currentState,
-                  onComponentOptionChanged,
-                  onComponentOptionsChanged,
-                  appLoading,
-                  zoomLevel,
-                  setSelectedComponent,
-                  removeComponent,
-                  currentLayout,
-                  deviceWindowWidth,
-                  darkMode,
-                  readOnly,
-                  onComponentHover,
-                  hoveredComponent,
-                  sideBarDebugger,
-                  addDefaultChildren,
-                  currentPageId,
-                  childComponents,
-                }}
-              />
-            );
-          }
-        })} */}
+                      onComponentOptionsChanged={(component, variableSet, id) => {
+                        checkParent(box)
+                          ? onComponentOptionsChanged(component, variableSet)
+                          : variableSet.map((item) => {
+                              onOptionChange &&
+                                onOptionChange({
+                                  component,
+                                  optionName: item[0],
+                                  value: item[1],
+                                  componentId: id,
+                                });
+                            });
+                      }}
+                      // key={key}
+                      paramUpdated={paramUpdated}
+                      id={key}
+                      allComponents={allComponents}
+                      {...childWidgets[key]}
+                      mode={mode}
+                      resizingStatusChanged={(status) => setIsResizing(status)}
+                      draggingStatusChanged={(status) => setIsDragging(status)}
+                      inCanvas={true}
+                      zoomLevel={zoomLevel}
+                      setSelectedComponent={setSelectedComponent}
+                      selectedComponent={selectedComponent}
+                      deviceWindowWidth={deviceWindowWidth}
+                      isSelectedComponent={
+                        mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false
+                      }
+                      removeComponent={customRemoveComponent}
+                      canvasWidth={_containerCanvasWidth}
+                      readOnly={readOnly}
+                      darkMode={darkMode}
+                      customResolvables={customResolvables}
+                      onComponentHover={onComponentHover}
+                      hoveredComponent={hoveredComponent}
+                      parentId={parent}
+                      sideBarDebugger={sideBarDebugger}
+                      isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+                      exposedVariables={exposedVariables ?? {}}
+                      childComponents={childComponents[key]}
+                      containerProps={{
+                        mode,
+                        snapToGrid,
+                        onComponentClick,
+                        onEvent,
+                        appDefinition,
+                        appDefinitionChanged,
+                        currentState,
+                        onComponentOptionChanged,
+                        onComponentOptionsChanged,
+                        appLoading,
+                        zoomLevel,
+                        setSelectedComponent,
+                        removeComponent,
+                        currentLayout,
+                        deviceWindowWidth,
+                        selectedComponents,
+                        darkMode,
+                        readOnly,
+                        onComponentHover,
+                        hoveredComponent,
+                        sideBarDebugger,
+                        addDefaultChildren,
+                        currentPageId,
+                        childComponents,
+                        setSubContainerWidths,
+                      }}
+                    />
+                  </SubWidgetWrapper>
+                  // <DraggableBox
+                  //   onComponentClick={onComponentClick}
+                  //   onEvent={onEvent}
+                  //   onComponentOptionChanged={
+                  //     checkParent(box)
+                  //       ? onComponentOptionChangedForSubcontainer
+                  //       : (component, optionName, value, componentId = '') => {
+                  //           if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
+                  //             return Promise.resolve();
+                  //           }
+                  //           onOptionChange && onOptionChange({ component, optionName, value, componentId });
+                  //         }
+                  //   }
+                  //   onComponentOptionsChanged={(component, variableSet, id) => {
+                  //     checkParent(box)
+                  //       ? onComponentOptionsChanged(component, variableSet)
+                  //       : variableSet.map((item) => {
+                  //           onOptionChange &&
+                  //             onOptionChange({
+                  //               component,
+                  //               optionName: item[0],
+                  //               value: item[1],
+                  //               componentId: id,
+                  //             });
+                  //         });
+                  //   }}
+                  //   key={key}
+                  //   onResizeStop={onResizeStop}
+                  //   onDragStop={onDragStop}
+                  //   paramUpdated={paramUpdated}
+                  //   id={key}
+                  //   allComponents={allComponents}
+                  //   {...childWidgets[key]}
+                  //   mode={mode}
+                  //   resizingStatusChanged={(status) => setIsResizing(status)}
+                  //   draggingStatusChanged={(status) => setIsDragging(status)}
+                  //   inCanvas={true}
+                  //   zoomLevel={zoomLevel}
+                  //   setSelectedComponent={setSelectedComponent}
+                  //   selectedComponent={selectedComponent}
+                  //   deviceWindowWidth={deviceWindowWidth}
+                  //   removeComponent={customRemoveComponent}
+                  //   canvasWidth={_containerCanvasWidth}
+                  //   readOnly={readOnly}
+                  //   darkMode={darkMode}
+                  //   customResolvables={customResolvables}
+                  //   onComponentHover={onComponentHover}
+                  //   hoveredComponent={hoveredComponent}
+                  //   parentId={parentComponent?.name}
+                  //   parent={parent}
+                  //   sideBarDebugger={sideBarDebugger}
+                  //   exposedVariables={exposedVariables ?? {}}
+                  //   childComponents={childComponents[key]}
+                  //   containerProps={{
+                  //     mode,
+                  //     snapToGrid,
+                  //     onComponentClick,
+                  //     onEvent,
+                  //     appDefinition,
+                  //     appDefinitionChanged,
+                  //     currentState,
+                  //     onComponentOptionChanged,
+                  //     onComponentOptionsChanged,
+                  //     appLoading,
+                  //     zoomLevel,
+                  //     setSelectedComponent,
+                  //     removeComponent,
+                  //     currentLayout,
+                  //     deviceWindowWidth,
+                  //     darkMode,
+                  //     readOnly,
+                  //     onComponentHover,
+                  //     hoveredComponent,
+                  //     sideBarDebugger,
+                  //     addDefaultChildren,
+                  //     currentPageId,
+                  //     childComponents,
+                  //   }}
+                  // />
+                );
+              }
+            })}
+        </div>
+      </div>
       {appLoading && (
         <div className="mx-auto mt-5 w-50 p-5">
           <center>
@@ -831,6 +938,54 @@ export const SubContainer = ({
           </center>
         </div>
       )}
+    </SubContianerWrapper>
+  );
+};
+
+const SubWidgetWrapper = ({ parent, readOnly, id, widget, currentLayout, canvasWidth, gridWidth, children }) => {
+  const { layouts } = widget;
+  const layoutData = layouts?.[currentLayout] || layouts?.['desktop'];
+  if (isEmpty(layoutData)) {
+    return {};
+  }
+  const width = (canvasWidth * layoutData.width) / 43;
+  const styles = {
+    width: width + 'px',
+    height: layoutData.height + 'px',
+    transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
+  };
+
+  return (
+    <div
+      className={
+        readOnly
+          ? `ele-${id} nested-target moveable-box`
+          : `target-${parent} target1-${parent} ele-${id} nested-target moveable-box target`
+      }
+      key={id}
+      id={id}
+      style={{ transform: `translate(332px, -134px)`, ...styles }}
+      widget-id={id}
+      widgetid={id}
+    >
+      {children}
+    </div>
+  );
+};
+
+const SubContianerWrapper = ({ children, isDragging, isResizing, isGridActive, readOnly, drop, styles, parent }) => {
+  // const [dragTarget] = useDragTarget();
+  return (
+    <div
+      ref={drop}
+      style={styles}
+      id={`canvas-${parent}`}
+      className={`sub-canvas real-canvas ${
+        // (isDragging || isResizing || dragTarget === parent || isGridActive) && !readOnly ? 'show-grid' : 'hide-grid'
+        (isDragging || isResizing || isGridActive) && !readOnly ? 'show-grid' : 'hide-grid'
+      }`}
+    >
+      {children}
     </div>
   );
 };

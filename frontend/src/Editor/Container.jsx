@@ -59,7 +59,7 @@ export const Container = ({
   const noOfGrids = 43;
   const [subContainerWidths, setSubContainerWidths] = useState({});
   const [draggedSubContainer, setDraggedSubContainer] = useDraggedSubContainer(false);
-  const [dragTarget] = useDragTarget();
+  // const [dragTarget] = useDragTarget();
 
   const { showComments, currentLayout, selectedComponents } = useEditorStore(
     (state) => ({
@@ -798,19 +798,31 @@ export const Container = ({
   console.log('IrenderrrrC');
 
   return (
-    <div
-      {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
-      ref={(el) => {
+    // <div
+    //   {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
+    //   ref={(el) => {
+    //     canvasRef.current = el;
+    //     drop(el);
+    //   }}
+    //   style={{ ...styles, height: canvasHeight }}
+    //   className={cx('real-canvas', {
+    //     'show-grid': isDragging || isResizing || dragTarget === 'canvas',
+    //   })}
+    //   id="real-canvas"
+    //   data-cy="real-canvas"
+    //   canvas-height={canvasHeight}
+    // >
+    <ContainerWrapper
+      showComments={showComments}
+      handleAddThread={handleAddThread}
+      containerRef={(el) => {
         canvasRef.current = el;
         drop(el);
       }}
-      style={{ ...styles, height: canvasHeight }}
-      className={cx('real-canvas', {
-        'show-grid': isDragging || isResizing || dragTarget === 'canvas',
-      })}
-      id="real-canvas"
-      data-cy="real-canvas"
-      canvas-height={canvasHeight}
+      styles={styles}
+      isDragging={isDragging}
+      isResizing={isResizing}
+      canvasHeight={canvasHeight}
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
@@ -947,7 +959,7 @@ export const Container = ({
           </div>
         </div>
       )}
-    </div>
+    </ContainerWrapper>
   );
 };
 
@@ -985,10 +997,39 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout }) => {
       style={{
         transform: `translate(332px, -134px)`,
         ...styles,
-        ...(hoveredComponent === id ? { zIndex: 2 } : {}),
+        ...(hoveredComponent === id ? { zIndex: 3 } : {}),
       }}
     >
       {children}
     </div>
   );
 };
+
+function ContainerWrapper({
+  children,
+  canvasHeight,
+  isDragging,
+  isResizing,
+  showComments,
+  handleAddThread,
+  containerRef,
+  styles,
+}) {
+  // const [dragTarget] = useDragTarget();
+  return (
+    <div
+      {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
+      ref={containerRef}
+      style={{ ...styles, height: canvasHeight }}
+      className={cx('real-canvas', {
+        // 'show-grid': isDragging || isResizing || dragTarget === 'canvas',
+        'show-grid': isDragging || isResizing,
+      })}
+      id="real-canvas"
+      data-cy="real-canvas"
+      canvas-height={canvasHeight}
+    >
+      {children}
+    </div>
+  );
+}

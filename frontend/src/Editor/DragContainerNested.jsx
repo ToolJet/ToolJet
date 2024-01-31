@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Children } from 'react';
 import './DragContainer.css';
 import { isEmpty } from 'lodash';
 const NO_OF_GRIDS = 43;
@@ -11,6 +11,7 @@ export default function DragContainerNested({
   parent,
   currentLayout,
   readOnly,
+  children,
 }) {
   const boxList = boxes.map((box) => ({
     id: box.id,
@@ -57,7 +58,8 @@ export default function DragContainerNested({
             widgetid={i.id}
           >
             {/* Target {i.id} */}
-            {renderWidget(i.id)}
+            {/* {renderWidget(i.id)} */}
+            {children}
           </div>
         ))}
       </div>
