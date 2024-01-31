@@ -6,17 +6,39 @@ import { createCurrentStateStore } from './currentStateStore';
 import { create } from './utils';
 import { createAppVersionStore } from './appVersionStore';
 import { createAppDataStore } from './appDataStore';
+import { omit } from 'lodash';
+
+const generateModule = (moduleName) => ({
+  useEditorStore: createEditorStore(moduleName),
+  useQueryPanelStore: createQueryPanelStore(moduleName),
+  useDataQueriesStore: createDataQueriesStore(moduleName),
+  useDataSourcesStore: createDataSourcesStore(moduleName),
+  useCurrentStateStore: createCurrentStateStore(moduleName),
+  useAppVersionStore: createAppVersionStore(moduleName),
+  useAppDataStore: createAppDataStore(moduleName),
+});
+
+const mainModule = generateModule('#main');
 
 export const useSuperStore = create((set, get) => ({
   modules: {
-    '#main': {
-      useEditorStore: createEditorStore('#main'),
-      useQueryPanelStore: createQueryPanelStore('#main'),
-      useDataQueriesStore: createDataQueriesStore('#main'),
-      useDataSourcesStore: createDataSourcesStore('#main'),
-      useCurrentStateStore: createCurrentStateStore('#main'),
-      useAppVersionStore: createAppVersionStore('#main'),
-      useAppDataStore: createAppDataStore('#main'),
-    },
+    '#main': mainModule,
+  },
+
+  createModule: (moduleName) => {
+    const modules = get().modules;
+    const newModules = {
+      ...modules,
+      [moduleName]: generateModule(moduleName),
+    };
+
+    set(() => ({ modules: newModules }));
+    return true;
+  },
+
+  destroyModule: (moduleName) => {
+    const modules = get().modules;
+    const newModules = omit(modules, moduleName);
+    set(() => ({ modules: newModules }));
   },
 }));
