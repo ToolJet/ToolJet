@@ -21,7 +21,6 @@ export default function DragContainer({
   subContainerWidths,
   draggedSubContainer,
 }) {
-  console.log('Irenderrrr');
   const lastDraggedEventsRef = useRef(null);
   const boxes = Object.keys(widgets).map((key) => ({ ...widgets[key], id: key }));
   console.log('boxes===>', boxes);
@@ -219,23 +218,19 @@ export default function DragContainer({
     setList(boxList);
   }, [JSON.stringify(boxes)]);
 
-  useEffect(() => {
-    const groupedTargets = [...selectedComponents.map((component) => '.ele-' + component.id)];
-    const newMovableTargets = groupedTargets.length ? [...groupedTargets] : [];
-    if (hoveredComponent && groupedTargets?.length <= 1 && !groupedTargets.includes('.ele-' + hoveredComponent)) {
-      newMovableTargets.push('.ele-' + hoveredComponent);
-    }
+  // useEffect(() => {
+  //   const groupedTargets = [...selectedComponents.map((component) => '.ele-' + component.id)];
+  //   const newMovableTargets = groupedTargets.length ? [...groupedTargets] : [];
+  //   if (hoveredComponent && groupedTargets?.length <= 1 && !groupedTargets.includes('.ele-' + hoveredComponent)) {
+  //     newMovableTargets.push('.ele-' + hoveredComponent);
+  //   }
 
-    if (draggedTarget && !newMovableTargets.includes(`.ele-${draggedTarget}`)) {
-      newMovableTargets.push('.ele-' + draggedTarget);
-    }
+  //   if (draggedTarget && !newMovableTargets.includes(`.ele-${draggedTarget}`)) {
+  //     newMovableTargets.push('.ele-' + draggedTarget);
+  //   }
 
-    setMovableTargets(draggedSubContainer ? [] : draggedTarget ? ['.ele-' + draggedTarget] : newMovableTargets);
-  }, [selectedComponents, hoveredComponent, draggedTarget, draggedSubContainer]);
-
-  useEffect(() => {
-    reloadGrid();
-  }, [movableTargets]);
+  //   setMovableTargets(draggedSubContainer ? [] : draggedTarget ? ['.ele-' + draggedTarget] : newMovableTargets);
+  // }, [selectedComponents, draggedTarget, draggedSubContainer]);
 
   const getDimensions = (id) => {
     const box = boxes.find((b) => b.id === id);
@@ -260,6 +255,10 @@ export default function DragContainer({
       // .filter((component) => !component?.component?.parent)
       .map((component) => '.ele-' + component.id),
   ];
+
+  useEffect(() => {
+    reloadGrid();
+  }, [selectedComponents]);
 
   console.log('groupedTargets-->', selectedComponents, groupedTargets);
   console.log(
@@ -346,7 +345,7 @@ export default function DragContainer({
           renderDirections: ['e', 'w', 'n', 's'],
         }}
         keepRatio={false}
-        key={list.length}
+        // key={list.length}
         individualGroupableProps={(element) => {
           if (element?.classList.contains('target2')) {
             return {
@@ -630,7 +629,13 @@ export default function DragContainer({
           } catch (error) {
             console.log('draggedOverElemId->error', error);
           }
-          runAsync(() => useGridStore.getState().actions.setDragTarget(null));
+          // runAsync(() => useGridStore.getState().actions.setDragTarget(null));
+          var canvasElms = document.getElementsByClassName('sub-canvas');
+          var elementsArray = Array.from(canvasElms);
+          elementsArray.forEach(function (element) {
+            element.classList.remove('show-grid');
+            element.classList.add('hide-grid');
+          });
         }}
         onDrag={(e) => {
           console.log('onDrager----', e.target.id, hoveredComponent);
@@ -642,7 +647,9 @@ export default function DragContainer({
           if (draggedSubContainer) {
             return;
           }
-          runAsync(() => setDraggedTarget(e.target.id));
+          if (e.target.id !== draggedTarget) {
+            runAsync(() => setDraggedTarget(e.target.id));
+          }
           // setDraggedTarget(e.target.id);
           if (!draggedSubContainer) {
             e.target.style.transform = `translate(${e.translate[0]}px, ${e.translate[1]}px)`;
@@ -663,13 +670,18 @@ export default function DragContainer({
             );
             const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
             const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
-            // const draggedOverElem = targetElems.find(
-            //   (ele) => ele.id !== e.target.id && ele.classList.contains('target')
-            // );
-            if (useGridStore.getState().dragTarget !== draggedOverElem?.id) {
-              runAsync(() => useGridStore.getState().actions.setDragTarget(draggedOverElem?.id));
-            }
-            // console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
+
+            // if (useGridStore.getState().dragTarget !== draggedOverElem?.id) {
+            //   runAsync(() => useGridStore.getState().actions.setDragTarget(draggedOverElem?.id));
+            // }
+            var canvasElms = document.getElementsByClassName('sub-canvas');
+            var elementsArray = Array.from(canvasElms);
+            elementsArray.forEach(function (element) {
+              element.classList.remove('show-grid');
+              element.classList.add('hide-grid');
+            });
+            document.getElementById('canvas-' + draggedOverElem?.id)?.classList.add('show-grid');
+
             draggedOverElemId = draggedOverElem?.id;
             if (
               draggedOverElemRef.current?.id !== draggedOverContainer?.id &&
@@ -1151,6 +1163,7 @@ function findHighestLevelofSelection(selectedComponents) {
 }
 
 async function runAsync(fn) {
+  console.log('Executing_ssetState==>' + fn);
   setImmediate(() => {
     fn();
   });
