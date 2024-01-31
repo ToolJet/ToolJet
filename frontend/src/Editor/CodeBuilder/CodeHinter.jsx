@@ -510,6 +510,7 @@ export function CodeHinter({
                   maxHeight: '320px',
                   overflow: 'auto',
                   fontSize: ' .875rem',
+                  maxWidth: paramLabel == 'Tooltip' && '190px',
                 }}
                 data-cy={`${cyLabel}-input-field`}
               >
