@@ -109,7 +109,12 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
               className={`d-flex align-items-center justify-content-center`}
               style={{ border: '1px solid var(--slate7)', width: 'calc(100% - 20px)' }}
             >
-              <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} showText={true} />
+              <DarkModeToggle
+                switchDarkMode={changeDarkMode}
+                darkMode={darkMode}
+                showText={true}
+                tooltipPlacement={'top'}
+              />
             </div>
           </div>
         </div>
