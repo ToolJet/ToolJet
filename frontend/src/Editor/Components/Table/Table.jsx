@@ -890,7 +890,8 @@ export function Table({
         toggleAllRowsSelected(true);
       }
     });
-  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRowsDetails)]);
+    //adding empty dependency array here, can add in the future if required
+  }, []);
 
   function downlaodPopover() {
     const options = [
