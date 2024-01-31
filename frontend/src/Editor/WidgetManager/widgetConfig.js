@@ -470,8 +470,12 @@ export const widgets = [
         ],
       },
       {
-        handle: 'selectRowsInBulk',
-        displayName: 'Select rows in bulk',
+        handle: 'selectAllRows',
+        displayName: 'Select all rows',
+      },
+      {
+        handle: 'deselectAllRows',
+        displayName: 'Deselect all rows',
       },
     ],
     definition: {

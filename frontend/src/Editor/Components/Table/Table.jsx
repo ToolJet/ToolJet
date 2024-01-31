@@ -884,10 +884,20 @@ export function Table({
   }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
 
   useEffect(() => {
-    // csa for select rows in bulk
-    setExposedVariable('selectRowsInBulk', async function () {
+    // csa for select all rows in table
+    setExposedVariable('selectAllRows', async function () {
       if (showBulkSelector) {
         toggleAllRowsSelected(true);
+      }
+    });
+    //adding empty dependency array here, can add in the future if required
+  }, []);
+
+  useEffect(() => {
+    // csa for deselecting all  rows in table
+    setExposedVariable('deselectAllRows', async function () {
+      if (showBulkSelector) {
+        toggleAllRowsSelected(false);
       }
     });
     //adding empty dependency array here, can add in the future if required
