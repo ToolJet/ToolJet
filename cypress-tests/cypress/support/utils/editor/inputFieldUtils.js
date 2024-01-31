@@ -6,8 +6,10 @@ import {
   selectColourFromColourPicker,
   verifyAndModifyParameter,
   verifyAndModifyToggleFx,
+  verifyWidgetColorCss,
 } from "Support/utils/commonWidget";
 import { commonWidgetText, customValidation } from "Texts/common";
+import { textInputText } from "Texts/textInput";
 
 export const addValidations = (
   widgetName,
@@ -92,8 +94,29 @@ export const addAllInputFieldColors = (data) => {
   selectColourFromColourPicker("Icon color", data.iconColor);
 };
 
-export const addColor = (type, color) => {
-  // cy.get(commonWidgetSelector.parameterFxButton(type)).click();
+export const verifyInputFieldColors = (selectorInput, data) => {
+  verifyWidgetColorCss(selectorInput, "color", data.textColor);
+  verifyWidgetColorCss(selectorInput, "border-color", data.borderColor);
+  verifyWidgetColorCss(selectorInput, "background-color", data.bgColor);
+  openEditorSidebar(textInputText.defaultWidgetName);
+  cy.get('[data-cy="make-this-field-mandatory-toggle-button"]').click();
+  cy.get(commonWidgetSelector.draggableWidget("textinput1")).clear();
+  cy.forceClickOnCanvas();
+  cy.verifyCssProperty(
+    '[data-cy="textinput1-invalid-feedback"]',
+    "color",
+    `rgba(${data.errorTextColor[0]}, ${data.errorTextColor[1]}, ${
+      data.errorTextColor[2]
+    }, ${data.errorTextColor[3] / 100})`
+  );
 
-  selectColourFromColourPicker(type, color);
+  cy.get(commonWidgetSelector.draggableWidget("textinput1"))
+    .siblings("svg")
+    .should(
+      "have.css",
+      "stroke",
+      `rgba(${data.iconColor[0]}, ${data.iconColor[1]}, ${data.iconColor[2]}, ${
+        data.iconColor[3] / 100
+      })`
+    );
 };
