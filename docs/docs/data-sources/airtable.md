@@ -5,9 +5,13 @@ title: Airtable
 
 # Airtable
 
-ToolJet can connect to your Airtable account to read and write data.Airtable Personal Access Token is required to connect to the Airtable data source on ToolJet. You can generate the PAT by visiting [Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions).
+ToolJet can connect to your Airtable account to read and write data. **Personal Access Token** is required to connect to the Airtable data source on ToolJet. You can generate the Personal Access Token by visiting [Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions).
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/add_creds.gif" alt="irtable record"/>
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/airtable/airtableconnect.gif" alt="Airtable Data Source Connection" />
+</div>
+
+<br/>
 
 :::info
 Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here **[Airtable API](https://airtable.com/api)**.
@@ -15,27 +19,27 @@ Airtable API has a rate limit, and at the time of writing this documentation, th
 
 ## Supported Operations
 
-- **[Listing records](#listing-records)**
-- **[Retrieving a record](#retrieving-a-record)**
-- **[Creating a record](#creating-a-record)**
-- **[Updating a record](#updating-a-record)**
-- **[Deleting a record](#deleting-a-record)**
+- **[List records](#list-records)**
+- **[Retrieve record](#retrieve-record)**
+- **[Create record](#create-record)**
+- **[Update record](#update-record)**
+- **[Delete record](#delete-record)**
 
-### Listing records
+### List records
 
-This query lists all the records in a table. The results are paginated and each page can have up to 100 records.
+This operation returns a list of records from the specified table.
 
 #### Required parameters:
 
-- **Base ID:** To find the Base ID, first visit **airtable.com/api**. Select from the list of bases the base whose ID you'd like to find out. Example Base ID: `appDT3UCPffPiSmFd`
-- **Table name:** Enter the table name whose data you want to fetch.
+- **Base ID:** To find the Base ID, first visit **airtable.com/api**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
+
+- **Table name:** The name of the table from which you want to fetch the records.
 
 #### Optional parameters:
 
-- **Page size:** The number of records returned in each request. Must be less than or equal to 100. Default is 100.
-- **offset:** If there are more records, the response will contain an offset. To fetch the next page of records, include offset in the next request's parameters.
+- **Page size:** The number of records returned in each request. Default is 100 records.  
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/listv2.png"  alt="List airtable record" />
+- **offset:** The offset value is used to fetch the next set of records. The offset value is returned in the response of the previous request.
 
 Example response from Airtable:
 
@@ -71,15 +75,16 @@ Example response from Airtable:
 }
 ```
 
-### Retrieving a record
+### Retrieve record
 
 #### Required parameters:
 
-- **Base ID**
-- **Table name**
-- **Record ID**
+- **Base ID**: To find the Base ID, first visit **airtable.com/api**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/retv2.png"  alt="Retrieve airtable record" />
+- **Table name**: The name of the table from which you want to fetch the records.
+
+- **Record ID**: The ID of the record you want to retrieve.
+
 
 Example response from Airtable:
 
@@ -94,42 +99,36 @@ Example response from Airtable:
 }
 ```
 
-### Creating a record
+### Create record
 
 #### Required parameters:
 
-- **Base ID**
-- **Table name**
-- **Records**
+- **Base ID**: To find the Base ID, first visit **airtable.com/api**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/createv2.png" alt="Create airtable record" />
+- **Table name**: The name of the table from which you want to fetch the records.
 
-#### Example Records:
+- **Records**: The records you want to create. The records should be in the form of an array of objects. Each object should have a `fields` key, which contains the fields of the record. The field names should be the same as the field names in the Airtable table.
 
-```json
-[
-  {
-    "fields": {
-      "Notes": "sdfdsf",
-      "Name": "dsfdsf"
+  **Example creating two records:**
+  
+  ```json title="Records"
+  [
+    {
+      "fields": {
+        "Notes": "sdfdsf",
+        "Name": "dsfdsf"
+      }
+    },
+    {
+      "fields": {
+        "Notes": "note1",
+        "Name": "dsfdsf"
+      }
     }
-  },
-  {
-    "fields": {
-      "Notes": "note1",
-      "Name": "dsfdsf"
-    }
-  }
-]
-```
+  ]
+  ```
 
-Click on the `run` button to run the query.
-
-:::info
-NOTE: Query must be saved before running.
-:::
-
-Example response from Airtable:
+Query returns the following response when the records are created successfully:
 
 ```json
 {
@@ -154,31 +153,28 @@ Example response from Airtable:
 }
 ```
 
-### Updating a record
+### Update record
 
 #### Required parameters:
 
-- **Base ID**
-- **Table name**
-- **Record ID**
+- **Base ID**: To find the Base ID, first visit **airtable.com/api**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/updv2.png" alt="Update airtable record"/>
+- **Table name**: The name of the table from which you want to fetch the records.
 
-#### Example body:
+- **Record ID**: The ID of the record you want to update.
 
-<div style={{textAlign: 'center'}}>
+- **Body**: The fields you want to update. The fields should be in the form of an object. The field names should be the same as the field names in the Airtable table.
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable-update-example-body.png" alt="Airtable update body" />
+  **Example updating a record:**
+  
+  ```json title="Body"
+  {
+    "Notes": "Example Notes",
+    "Name": "change"
+  }
+  ```
 
-</div>
-
-Click on the `run` button to run the query.
-
-:::info
-NOTE: Query must be saved before running.
-:::
-
-Example response from Airtable:
+Query returns the following response when the record is updated successfully:
 
 ```json
 {
@@ -191,7 +187,7 @@ Example response from Airtable:
 }
 ```
 
-### Deleting a record
+### Delete record
 
 #### Required parameters:
 
@@ -199,15 +195,7 @@ Example response from Airtable:
 - **Table name**
 - **Record ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/delv2.png" alt="Delete airtable record" />
-
-Click on the `run` button to run the query.
-
-:::info
-NOTE: Query must be saved before running.
-:::
-
-Example response from Airtable:
+Query returns the following response when the record is deleted successfully:
 
 ```json
 {
