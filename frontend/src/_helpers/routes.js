@@ -15,6 +15,8 @@ export const getPrivateRoute = (page, params = {}) => {
     database: '/database',
     integrations: '/integrations',
     data_sources: '/data-sources',
+    audit_logs: '/audit-logs',
+    workflows: '/workflows',
   };
 
   let url = routes[page];
@@ -63,12 +65,14 @@ export const getPathname = (path, excludeSlug = false) => {
 
 export const getHostURL = () => `${window.public_config?.TOOLJET_HOST}${getSubpath() ?? ''}`;
 
-export const redirectToDashboard = (data) => {
+export const redirectToDashboard = (data, relativePath = null) => {
   const { current_organization_slug, current_organization_id } = authenticationService.currentSessionValue;
   const id_slug = data
     ? data?.current_organization_slug || data?.current_organization_id
     : current_organization_slug || current_organization_id || '';
-  window.location = getSubpath() ? `${getSubpath()}/${id_slug}` : `/${id_slug}`;
+  window.location = getSubpath()
+    ? `${getSubpath()}/${id_slug}${relativePath ? relativePath : ''}`
+    : `/${id_slug}${relativePath ? relativePath : ''}`;
 };
 
 export const appendWorkspaceId = (slug, path, replaceId = false) => {
@@ -76,7 +80,7 @@ export const appendWorkspaceId = (slug, path, replaceId = false) => {
   path = getPathname(path);
 
   let newPath = path;
-  if (path === '/:workspaceId' || path.split('/').length === 2) {
+  if (path === '/:workspaceId' || path.split('/').length === 2 || path.includes('instance-settings')) {
     newPath = `/${slug}`;
   } else {
     const paths = path.split('/').filter((path) => path !== '');
@@ -108,11 +112,13 @@ export const getWorkspaceIdOrSlugFromURL = () => {
     'oauth2',
     'applications',
     'integrations',
+    'instance-settings',
+    'licence',
     'error',
   ];
 
   const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
-  if (workspaceId === 'login') {
+  if (['login', 'ldap'].includes(workspaceId)) {
     return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];
   }
 
@@ -122,7 +128,11 @@ export const getWorkspaceIdOrSlugFromURL = () => {
 export const excludeWorkspaceIdFromURL = (pathname) => {
   const subPath = getSubpath();
   const tempPathname = subPath ? pathname.replace(subPath, '') : pathname;
-  if (!['/integrations', '/applications/', '/switch-workspace'].find((path) => tempPathname.startsWith(path))) {
+  if (
+    !['/instance-settings', '/integrations', '/applications/', '/switch-workspace'].find((path) =>
+      tempPathname.startsWith(path)
+    )
+  ) {
     pathname = tempPathname;
     const paths = pathname?.split('/').filter((path) => path !== '');
     paths.shift();
@@ -137,7 +147,9 @@ export const getSubpath = () =>
 
 export const returnWorkspaceIdIfNeed = (path) => {
   if (path) {
-    return !path.startsWith('/applications/') && !path.startsWith('/integrations') ? `/${getWorkspaceId()}` : '';
+    return !['/applications/', '/integrations', '/instance-settings'].find((subpath) => path.includes(subpath))
+      ? `/${getWorkspaceId()}`
+      : '';
   }
   return `/${getWorkspaceId()}`;
 };
@@ -169,6 +181,7 @@ export const getPreviewQueryParams = () => {
   const queryParams = getQueryParams();
   return {
     ...(queryParams['version'] && { version: queryParams.version }),
+    ...(queryParams['env'] && { env: queryParams.env }),
   };
 };
 

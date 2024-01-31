@@ -21,10 +21,14 @@ const UsersTable = ({
   pageChanged,
   darkMode,
   translator,
+  isLoadingAllUsers,
+  openOrganizationModal,
+  openEditModal,
+  customStyles,
 }) => {
   return (
     <div className="workspace-settings-table-wrap mb-4">
-      <div className="tj-user-table-wrapper">
+      <div style={customStyles} className="tj-user-table-wrapper">
         <div className="card-table fixedHeader table-responsive  ">
           <table data-testid="usersTable" className="users-table table table-vcenter h-100">
             <thead>
@@ -35,12 +39,22 @@ const UsersTable = ({
                 <th data-cy="users-table-email-column-header">
                   {translator('header.organization.menus.manageUsers.email', 'Email')}
                 </th>
+                {isLoadingAllUsers && (
+                  <th data-cy="users-table-type-column-header">
+                    {translator('header.organization.menus.manageUsers.userType', 'Type')}
+                  </th>
+                )}
                 {users && users[0]?.status ? (
                   <th data-cy="users-table-status-column-header">
                     {translator('header.organization.menus.manageUsers.status', 'Status')}
                   </th>
                 ) : (
                   <th className="w-1"></th>
+                )}
+                {isLoadingAllUsers && (
+                  <th data-cy="users-table-workspaces-column-header">
+                    {translator('header.organization.menus.manageUsers.workspaces', 'Workspaces')}
+                  </th>
                 )}
                 <th className="w-1"></th>
                 <th className="w-1"></th>
@@ -60,14 +74,22 @@ const UsersTable = ({
                     <td className="col-4 p-3">
                       <Skeleton />
                     </td>
-                    {users && users[0]?.status && (
+                    {users && users[0]?.status ? (
                       <td className="col-2 p-3">
                         <Skeleton />
                       </td>
+                    ) : (
+                      <td className="text-muted col-auto col-1 pt-3">
+                        <Skeleton />
+                      </td>
                     )}
-                    <td className="text-muted col-auto col-1 pt-3">
-                      <Skeleton />
-                    </td>
+
+                    {isLoadingAllUsers && (
+                      <td className="text-muted col-auto col-1 pt-3">
+                        <Skeleton />
+                      </td>
+                    )}
+
                     <td className="text-muted col-auto col-1 pt-3">
                       <Skeleton />
                     </td>
@@ -102,6 +124,16 @@ const UsersTable = ({
                           {user.email}
                         </a>
                       </td>
+                      {isLoadingAllUsers && (
+                        <td className="text-muted">
+                          <span
+                            className="text-muted user-type"
+                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-type`}
+                          >
+                            {user.user_type}
+                          </span>
+                        </td>
+                      )}
                       {user.status && (
                         <td className="text-muted">
                           <span
@@ -146,32 +178,60 @@ const UsersTable = ({
                           )}
                         </td>
                       )}
-                      <td>
-                        <ButtonSolid
-                          variant="dangerSecondary"
-                          style={{ minWidth: '100px' }}
-                          className="workspace-user-archive-btn tj-text-xsm"
-                          disabled={unarchivingUser === user.id || archivingUser === user.id}
-                          leftIcon="archive"
-                          fill="#E54D2E"
-                          iconWidth="12"
-                          onClick={() => {
-                            user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
-                          }}
-                          data-cy="button-user-status-change"
-                        >
-                          {user.status === 'archived'
-                            ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')
-                            : translator('header.organization.menus.manageUsers.archive', 'Archive')}
-                        </ButtonSolid>
-                      </td>
+                      {isLoadingAllUsers && (
+                        <td className="text-muted">
+                          <a
+                            className="px-2 text-muted workspaces"
+                            onClick={() => openOrganizationModal(user)}
+                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-view-button`}
+                          >
+                            View ({user.total_organizations})
+                          </a>
+                        </td>
+                      )}
+                      {!isLoadingAllUsers ? (
+                        <td>
+                          <ButtonSolid
+                            variant="dangerSecondary"
+                            style={{ minWidth: '100px' }}
+                            className="workspace-user-archive-btn tj-text-xsm"
+                            disabled={unarchivingUser === user.id || archivingUser === user.id}
+                            leftIcon="archive"
+                            fill="#E54D2E"
+                            iconWidth="12"
+                            onClick={() => {
+                              user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
+                            }}
+                            data-cy="button-user-status-change"
+                          >
+                            {user.status === 'archived'
+                              ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')
+                              : translator('header.organization.menus.manageUsers.archive', 'Archive')}
+                          </ButtonSolid>
+                        </td>
+                      ) : (
+                        <td>
+                          <ButtonSolid
+                            variant="dangerSecondary"
+                            style={{ minWidth: '100px' }}
+                            className="workspace-user-archive-btn tj-text-xsm"
+                            leftIcon="edit"
+                            fill="#E54D2E"
+                            iconWidth="12"
+                            onClick={() => openEditModal(user)}
+                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-edit-button`}
+                          >
+                            {translator('header.organization.menus.manageUsers.edit', 'Edit')}
+                          </ButtonSolid>
+                        </td>
+                      )}
                     </tr>
                   ))}
               </tbody>
             )}
           </table>
         </div>
-        {meta.total_count > 10 && (
+        {meta?.total_count > 10 && (
           <Pagination
             currentPage={meta.current_page}
             count={meta.total_count}

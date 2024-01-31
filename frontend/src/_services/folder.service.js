@@ -10,14 +10,15 @@ export const folderService = {
   updateFolder,
 };
 
-function getAll(searchKey = '') {
+function getAll(searchKey = '', type = 'front-end') {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/folders?searchKey=${searchKey}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/folders?searchKey=${searchKey}&type=${type}`, requestOptions).then(handleResponse);
 }
 
-function create(name) {
+function create(name, type) {
   const body = {
     name,
+    type,
   };
 
   const requestOptions = {

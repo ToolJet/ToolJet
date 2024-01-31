@@ -21,6 +21,8 @@ import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
 import { useModuleName } from '@/_contexts/ModuleContext';
+import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
+import { defaultSources } from '../constants';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, ref) => {
   const moduleName = useModuleName();
@@ -30,10 +32,10 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
   const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
   const queryName = selectedQuery?.name ?? '';
   const { queries } = useCurrentState((state) => ({ queries: state.queries }), shallow);
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
-      editingVersionId: state.editingVersion?.id,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -133,7 +135,12 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
     if (selectedQuery === null || showCreateQuery) return;
     return (
       <>
-        <PreviewButton onClick={previewButtonOnClick} buttonLoadingState={buttonLoadingState} />
+        <PreviewButton
+          selectedQuery={selectedQuery}
+          onClick={previewButtonOnClick}
+          buttonLoadingState={buttonLoadingState}
+          disabled={isVersionReleased || isEditorFreezed}
+        />
         {renderRunButton()}
       </>
     );
@@ -145,9 +152,10 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
         {selectedQuery && (
           <NameInput
             onInput={executeQueryNameUpdation}
+            selectedQuery={selectedQuery}
             value={queryName}
             darkMode={darkMode}
-            isDiabled={isVersionReleased}
+            isDiabled={isVersionReleased || isEditorFreezed}
           />
         )}
       </div>
@@ -156,14 +164,24 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
   );
 });
 
-const PreviewButton = ({ buttonLoadingState, onClick }) => {
+const PreviewButton = ({ buttonLoadingState, onClick, selectedQuery }) => {
   const previewLoading = usePreviewLoading();
+  const selectedDataSource = useSelectedDataSource();
+  const hasPermissions =
+    selectedDataSource?.scope === 'global'
+      ? canUpdateDataSource(selectedQuery?.data_source_id) ||
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
+      : true;
   const { t } = useTranslation();
 
   return (
     <button
+      disabled={!hasPermissions}
       onClick={onClick}
-      className={`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`}
+      className={cx(`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`, {
+        disabled: !hasPermissions,
+      })}
       data-cy={'query-preview-button'}
     >
       <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
@@ -174,10 +192,23 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   );
 };
 
-const NameInput = ({ onInput, value, darkMode, isDiabled }) => {
+const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
   const [isFocussed, setIsFocussed] = useNameInputFocussed(false);
   const [name, setName] = useState(value);
-  const isVersionReleased = useAppVersionStore((state) => state.isVersionReleased);
+  const selectedDataSource = useSelectedDataSource();
+  const hasPermissions =
+    selectedDataSource?.scope === 'global'
+      ? canUpdateDataSource(selectedQuery?.data_source_id) ||
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
+      : true;
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
   const inputRef = useRef();
 
   useEffect(() => {
@@ -238,14 +269,19 @@ const NameInput = ({ onInput, value, darkMode, isDiabled }) => {
             size="sm"
             onClick={isDiabled ? null : () => setIsFocussed(true)}
             disabled={isDiabled}
-            className={'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500'}
+            className={cx(
+              'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500',
+              {
+                disabled: isVersionReleased || isEditorFreezed || !hasPermissions,
+              }
+            )}
           >
             <span className="text-truncate">{name} </span>
             <span
               className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}
               style={{ minWidth: 14 }}
             >
-              {!isDiabled && <RenameIcon />}
+              {(!isDiabled || !hasPermissions) && <RenameIcon />}
             </span>
           </Button>
         )}

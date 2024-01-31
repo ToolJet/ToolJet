@@ -1,21 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createQueryBuilder, EntityManager, getManager, In, Repository } from 'typeorm';
+import { EntityManager, getManager, Repository } from 'typeorm';
 import { Metadata } from 'src/entities/metadata.entity';
 import { gt } from 'semver';
 import got from 'got';
 import { User } from 'src/entities/user.entity';
+import { UsersService } from '@services/users.service';
 import { ConfigService } from '@nestjs/config';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { App } from 'src/entities/app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import License from '@ee/licensing/configs/License';
+import { TelemetryDataDto } from '@dto/user.dto';
 
 @Injectable()
 export class MetadataService {
   constructor(
     @InjectRepository(Metadata)
     private metadataRepository: Repository<Metadata>,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private usersService: UsersService,
+    private licenseService: LicenseService
   ) {}
 
   async getMetaData() {
@@ -42,10 +49,10 @@ export class MetadataService {
     });
   }
 
-  async finishOnboarding(name, email, companyName, companySize, role) {
+  async finishOnboarding(telemetryData: TelemetryDataDto) {
     if (process.env.NODE_ENV == 'production') {
       const metadata = await this.getMetaData();
-      void this.finishInstallation(name, email, companyName, companySize, role, metadata);
+      void this.finishInstallation(telemetryData, metadata);
 
       await this.updateMetaData({
         onboarded: true,
@@ -53,14 +60,9 @@ export class MetadataService {
     }
   }
 
-  async finishInstallation(
-    name: string,
-    email: string,
-    org: string,
-    companySize: string,
-    role: string,
-    metadata: Metadata
-  ) {
+  private async finishInstallation(telemetryData: TelemetryDataDto, metadata: Metadata) {
+    const { companyName, companySize, name, role, email, phoneNumber, requestedTrial } = telemetryData;
+
     try {
       return await got('https://hub.tooljet.io/subscribe', {
         method: 'post',
@@ -69,9 +71,12 @@ export class MetadataService {
           installed_version: globalThis.TOOLJET_VERSION,
           name,
           email,
-          org,
-          companySize,
+          org: companyName,
+          company_size: companySize,
+          phone_number: phoneNumber,
           role,
+          trial_opted: !!requestedTrial,
+          trial_expiry: requestedTrial && (await this.licenseService.getLicenseTerms(LICENSE_FIELD.STATUS))?.expiryDate,
         },
       });
     } catch (error) {
@@ -82,10 +87,11 @@ export class MetadataService {
   async sendTelemetryData(metadata: Metadata) {
     const manager = getManager();
     const totalUserCount = await manager.count(User);
+    const { editor: totalEditorCount, viewer: totalViewerCount } = await this.usersService.fetchTotalViewerEditorCount(
+      manager
+    );
     const totalAppCount = await manager.count(App);
     const totalInternalTableCount = await manager.count(InternalTable);
-    const totalEditorCount = await this.fetchTotalEditorCount(manager);
-    const totalViewerCount = await this.fetchTotalViewerCount(manager);
     const totalDatasourcesByKindCount = await this.fetchDatasourcesByKindCount(manager);
 
     try {
@@ -101,6 +107,7 @@ export class MetadataService {
           tooljet_version: globalThis.TOOLJET_VERSION,
           data_sources_count: totalDatasourcesByKindCount,
           deployment_platform: this.configService.get<string>('DEPLOYMENT_PLATFORM'),
+          license_info: License.Instance()?.terms,
         },
       });
     } catch (error) {
@@ -134,41 +141,6 @@ export class MetadataService {
     }
     return { latestVersion: latestVersion || installedVersion };
   }
-
-  async fetchTotalEditorCount(manager: EntityManager) {
-    const userIdsWithEditPermissions = (
-      await manager
-        .createQueryBuilder(User, 'users')
-        .innerJoin('users.groupPermissions', 'group_permissions')
-        .innerJoin('group_permissions.appGroupPermission', 'app_group_permissions')
-        .where('app_group_permissions.read = true AND app_group_permissions.update = true')
-        .select('users.id')
-        .distinct()
-        .getMany()
-    ).map((record) => record.id);
-
-    const userIdsOfAppOwners = (
-      await createQueryBuilder(User, 'users').innerJoin('users.apps', 'apps').select('users.id').distinct().getMany()
-    ).map((record) => record.id);
-
-    const totalEditorCount = await manager.count(User, {
-      where: { id: In([...userIdsWithEditPermissions, ...userIdsOfAppOwners]) },
-    });
-
-    return totalEditorCount;
-  }
-
-  async fetchTotalViewerCount(manager: EntityManager) {
-    return await manager
-      .createQueryBuilder(User, 'users')
-      .innerJoin('users.groupPermissions', 'group_permissions')
-      .innerJoin('group_permissions.appGroupPermission', 'app_group_permissions')
-      .where('app_group_permissions.read = true AND app_group_permissions.update = false')
-      .select('users.id')
-      .distinct()
-      .getCount();
-  }
-
   async fetchDatasourcesByKindCount(manager: EntityManager) {
     const dsGroupedByKind = await manager
       .createQueryBuilder(DataSource, 'data_sources')

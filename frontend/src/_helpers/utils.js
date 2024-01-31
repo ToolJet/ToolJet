@@ -7,8 +7,10 @@ import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { useSuperStore } from '../_stores/superStore';
+import { workflowExecutionsService } from '@/_services';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
@@ -408,6 +410,17 @@ export function validateEmail(email) {
   return emailRegex.test(email);
 }
 
+export function constructSearchParams(params = {}) {
+  const searchParams = new URLSearchParams('');
+  if (!_.isEmpty(params)) {
+    Object.keys(params).map((key) => {
+      const value = params[key];
+      value && searchParams.append(key, value);
+    });
+  }
+  return searchParams;
+}
+
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(
   _ref,
@@ -573,6 +586,11 @@ export function hasCircularDependency(obj) {
 export const hightlightMentionedUserInComment = (comment) => {
   var regex = /(\()([^)]+)(\))/g;
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
+};
+
+export const retrieveWhiteLabelText = () => {
+  const custom_label = window.public_config?.WHITE_LABEL_TEXT;
+  return custom_label ? custom_label : 'ToolJet';
 };
 
 export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
@@ -870,6 +888,25 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
+export function getDateDifferenceInDays(date1, date2) {
+  const oneDay = 24 * 60 * 60 * 1000;
+  const utcDate1 = Date.UTC(date1.getUTCFullYear(), date1.getUTCMonth(), date1.getUTCDate());
+  const utcDate2 = Date.UTC(date2.getUTCFullYear(), date2.getUTCMonth(), date2.getUTCDate());
+  const timeDiff = Math.abs(utcDate2 - utcDate1);
+  const daysDiff = Math.round(timeDiff / oneDay);
+  return daysDiff;
+}
+
+export function convertDateFormat(dateString) {
+  const date = new Date(dateString);
+  const options = { day: '2-digit', month: 'short', year: 'numeric' };
+  options.timeZone = 'UTC';
+  const formattedDate = date.toLocaleDateString('en-IN', options).replace(/-/g, ' ');
+  return formattedDate;
+}
+
+export const returnDevelopmentEnv = (environments) => environments.find((env) => env.priority === 1);
+
 export const validateName = (
   name,
   nameType,
@@ -996,8 +1033,6 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
   }
 };
 
-export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
-
 export const deepEqual = (obj1, obj2, excludedKeys = []) => {
   if (obj1 === obj2) {
     return true;
@@ -1036,6 +1071,20 @@ export function eraseRedirectUrl() {
   redirectPath && eraseCookie('redirectPath');
   return redirectPath;
 }
+
+export const defaultAppEnvironments = [
+  { name: 'development', isDefault: false, priority: 1 },
+  { name: 'staging', isDefault: false, priority: 2 },
+  { name: 'production', isDefault: true, priority: 3 },
+];
+
+export const executeWorkflow = async (self, workflowId, _blocking = false, params = {}, appEnvId) => {
+  const { appId } = useAppDataStore.getState();
+  const currentState = getCurrentState();
+  const resolvedParams = resolveReferences(params, currentState, {}, {});
+  const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
+  return { data: executionResponse.result };
+};
 
 export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();

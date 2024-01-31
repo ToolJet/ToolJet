@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { authenticationService, orgEnvironmentConstantService, appEnvironmentService } from '@/_services';
+import {
+  authenticationService,
+  orgEnvironmentConstantService,
+  appEnvironmentService,
+  licenseService,
+} from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { capitalize } from 'lodash';
@@ -12,6 +17,7 @@ import Drawer from '@/_ui/Drawer';
 import ConstantForm from './ConstantForm';
 import EmptyState from './EmptyState';
 import FolderList from '@/_ui/FolderList/FolderList';
+import { LicenseTooltip } from '@/LicenseTooltip';
 
 const MODES = Object.freeze({
   CREATE: 'create',
@@ -37,6 +43,18 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [errors, setErrors] = useState([]);
   const [showConstantDeleteConfirmation, setShowConstantDeleteConfirmation] = useState(false);
   const [selectedConstant, setSelectedConstant] = useState(null);
+
+  const { group_permissions, super_admin, admin } = authenticationService.currentSessionValue;
+  const [licenseValid, setLicenseValid] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const featureAccess = await licenseService.getFeatureAccess();
+      setLicenseValid(!featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid);
+    };
+
+    fetchData();
+  }, []);
 
   const onCancelBtnClicked = () => {
     setSelectedConstant(null);
@@ -124,24 +142,15 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   };
 
   const canCreateVariable = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_constant_create',
-      authenticationService.currentSessionValue.group_permissions
-    );
+    return canAnyGroupPerformAction('org_environment_constant_create', group_permissions) || super_admin || admin;
   };
 
   const canUpdateVariable = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_constant_create',
-      authenticationService.currentSessionValue.group_permissions
-    );
+    return canAnyGroupPerformAction('org_environment_constant_create', group_permissions) || super_admin || admin;
   };
 
   const canDeleteVariable = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_constant_delete',
-      authenticationService.currentSessionValue.group_permissions
-    );
+    return canAnyGroupPerformAction('org_environment_constant_delete', group_permissions) || super_admin || admin;
   };
 
   const fetchEnvironments = () => {
@@ -182,7 +191,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
     let orgEnvironments = await fetchEnvironments();
     setEnvironments(orgEnvironments?.environments);
-    const currentEnvironment = orgEnvironments?.environments?.find((env) => env?.is_default === true);
+    const currentEnvironment = orgEnvironments?.environments?.find((env) => env?.priority === 1);
     updateActiveEnvironmentTab(currentEnvironment, orgConstants?.constants);
 
     setIsLoading(false);
@@ -314,7 +323,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           <div>
             <div className="page-header workspace-constant-header">
               <div className="tj-text-sm font-weight-500" data-cy="constants-count-title">
-                {constants.length} constants
+                {currentTableData.length} constants
               </div>
               <div className="mt-3">
                 <Alert svg="tj-info">
@@ -361,13 +370,14 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           <div className="container-xl">
             <div className="workspace-constant-table-card">
               <div className="manage-sso-container h-100">
-                <div className="d-flex manage-sso-wrapper-card h-100">
+                <div className="d-flex manage-constant-wrapper-card">
                   <ManageOrgConstantsComponent.EnvironmentsTabs
                     allEnvironments={environments}
                     currentEnvironment={activeTabEnvironment}
                     setActiveTabEnvironment={setActiveTabEnvironment}
                     isLoading={isLoading}
                     allConstants={constants}
+                    licenseValid={licenseValid}
                   />
                   {constants.length > 0 ? (
                     <div className="w-100 workspace-constant-card-body">
@@ -433,6 +443,7 @@ const RenderEnvironmentsTab = ({
   setActiveTabEnvironment,
   isLoading,
   allConstants,
+  licenseValid,
 }) => {
   if (!currentEnvironment || allEnvironments.length <= 1) return null;
 
@@ -455,23 +466,47 @@ const RenderEnvironmentsTab = ({
 
   const menuItems = allEnvironments.map((env) => ({
     id: env.id,
-    label: `${capitalize(env.name)} (${constantCount(allConstants, env?.id)})`,
+    label: `${capitalize(env.name)} ${env.enabled ? `(${constantCount(allConstants, env?.id)})` : ''}`,
+    priority: env?.priority,
+    enabled: env?.enabled,
   }));
 
   return (
     <div className="left-menu">
       <ul data-cy="left-menu-items tj-text-xsm">
         {menuItems.map((item, index) => {
+          const Wrapper = ({ children }) =>
+            !item.enabled ? (
+              <LicenseTooltip
+                placement="bottom"
+                feature={'Multi-environments'}
+                isAvailable={item?.enabled}
+                noTooltipIfValid={true}
+                customMessage={
+                  !licenseValid
+                    ? 'Multi-environments are available only in paid plans'
+                    : 'Multi-environments are not included in your current plan'
+                }
+              >
+                {children}
+              </LicenseTooltip>
+            ) : (
+              <>{children}</>
+            );
           return (
-            <FolderList
-              onClick={() => updateCurrentEnvironment(item)}
-              key={index}
-              selectedItem={currentEnvironment.id === item.id}
-              items={menuItems}
-              isLoading={isLoading}
-            >
-              {item.label}
-            </FolderList>
+            <Wrapper key={index}>
+              <FolderList
+                onClick={() => {
+                  item?.enabled && updateCurrentEnvironment(item);
+                }}
+                key={index}
+                selectedItem={currentEnvironment.id === item.id}
+                items={menuItems}
+                isLoading={isLoading}
+              >
+                {item.label}
+              </FolderList>
+            </Wrapper>
           );
         })}
       </ul>

@@ -209,20 +209,22 @@ const EmptyDataSource = () => (
 const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
   const selectRef = useRef();
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
       editingVersionId: state.editingVersion?.id,
     }),
     shallow
   );
-  const disabled = isVersionReleased || _disabled;
 
   useEffect(() => {
     if (showMenu) {
       selectRef.current.focus();
     }
   }, [showMenu]);
+
+  const disabled = _disabled || isVersionReleased || isEditorFreezed;
 
   return (
     <OverlayTrigger

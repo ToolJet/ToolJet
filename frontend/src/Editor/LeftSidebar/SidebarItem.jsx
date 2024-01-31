@@ -6,7 +6,19 @@ import { useTranslation } from 'react-i18next';
 
 export const LeftSidebarItem = forwardRef(
   (
-    { tip = '', selectedSidebarItem, className, icon, commentBadge, text, onClick, badge = false, count, ...rest },
+    {
+      tip = '',
+      selectedSidebarItem,
+      className,
+      icon,
+      iconFill = 'var(--slate8)',
+      commentBadge,
+      text,
+      onClick,
+      badge = false,
+      count,
+      ...rest
+    },
     ref
   ) => {
     const { t } = useTranslation();
@@ -24,7 +36,7 @@ export const LeftSidebarItem = forwardRef(
             <SolidIcon
               name={displayIcon}
               width={icon == 'settings' ? 22.4 : 20}
-              fill={selectedSidebarItem === icon ? '#3E63DD' : 'var(--slate8)'}
+              fill={selectedSidebarItem === icon ? '#3E63DD' : iconFill}
             />
             {commentBadge && <LeftSidebarItem.CommentBadge />}
           </div>

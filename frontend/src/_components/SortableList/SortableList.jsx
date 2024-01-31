@@ -12,10 +12,11 @@ export function SortableList({ items, onChange, renderItem }) {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
-  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+  const { enableReleasedVersionPopupState, isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -23,7 +24,7 @@ export function SortableList({ items, onChange, renderItem }) {
     <DndContext
       sensors={sensors}
       onDragEnd={({ active, over }) => {
-        if (isVersionReleased) {
+        if (isVersionReleased || isEditorFreezed) {
           enableReleasedVersionPopupState();
           return;
         }

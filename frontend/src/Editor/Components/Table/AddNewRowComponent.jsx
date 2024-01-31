@@ -52,9 +52,8 @@ export function AddNewRowComponent({
         accumulator[index] = nestedData;
         return accumulator;
       }, {});
-      setExposedVariable('newRows', newRowsState)?.then(() => {
-        mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
-      });
+      setExposedVariable('newRows', newRowsState);
+      mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -145,10 +144,9 @@ export function AddNewRowComponent({
               accumulator.push(newRowDataUpdates[row]);
               return accumulator;
             }, []);
-            setExposedVariable('newRows', newRowAddedExposedVar)?.then(() => {
-              mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
-              setNewRowsState(rowData);
-            });
+            setExposedVariable('newRows', newRowAddedExposedVar);
+            mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
+            setNewRowsState(rowData);
           }}
           data-tooltip-id="tooltip-for-add-new-row"
           data-tooltip-content="Add another row"
@@ -175,10 +173,9 @@ export function AddNewRowComponent({
           variant="tertiary"
           className={`tj-text-xsm`}
           onClick={() => {
-            setExposedVariable('newRows', [])?.then(() => {
-              mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
-              setNewRowsState([]);
-            });
+            setExposedVariable('newRows', []);
+            mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
+            setNewRowsState([]);
           }}
           size="sm"
           customStyles={{ padding: '10px 20px' }}

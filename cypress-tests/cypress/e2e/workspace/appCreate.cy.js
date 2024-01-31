@@ -269,7 +269,7 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.value",
-            "Customer dashboard"
+            "Applicant tracking system"
         );
         cy.get(commonSelectors.appNameInfoLabel).verifyVisibleElement(
             "have.text",

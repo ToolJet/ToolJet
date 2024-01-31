@@ -7,6 +7,8 @@ import { AppEnvironmentService } from './app_environments.service';
 
 import { DeleteResult, EntityManager, Repository } from 'typeorm';
 import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@dto/organization-constant.dto';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 
 @Injectable()
 export class OrganizationConstantsService {
@@ -14,7 +16,8 @@ export class OrganizationConstantsService {
     @InjectRepository(OrganizationConstant)
     private organizationConstantsRepository: Repository<OrganizationConstant>,
     private encryptionService: EncryptionService,
-    private appEnvironmentService: AppEnvironmentService
+    private appEnvironmentService: AppEnvironmentService,
+    private licenseService: LicenseService
   ) {}
 
   async allEnvironmentConstants(organizationId: string): Promise<OrganizationConstant[]> {
@@ -80,6 +83,7 @@ export class OrganizationConstantsService {
     organizationId: string
   ): Promise<OrganizationConstant | []> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const isMultiEnvEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
       const newOrganizationConstant = manager.create(OrganizationConstant, {
         constantName: organizationConstant.constant_name,
         organizationId,
@@ -94,14 +98,22 @@ export class OrganizationConstantsService {
         manager
       );
 
-      const environmentsIds = organizationConstant.environments;
-
-      const environmentToUpdate = environmentsIds.map(async (environmentId) => {
-        return await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
-      });
+      let environmentsToUpdate = [];
+      if (isMultiEnvEnabled) {
+        const environmentsIds = organizationConstant.environments;
+        environmentsToUpdate = environmentsIds.map(async (environmentId) => {
+          return await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
+        });
+      } else {
+        /* 
+          Basic plan customer. lets update all environment constant values. 
+          this will help us to run the apps successfully when the user buys enterprise plan 
+        */
+        environmentsToUpdate = await this.appEnvironmentService.getAll(organizationId, manager);
+      }
 
       await Promise.all(
-        environmentToUpdate.map(async (environment) => {
+        environmentsToUpdate.map(async (environment) => {
           await this.appEnvironmentService.updateOrgEnvironmentConstant(
             organizationConstant.value,
             (

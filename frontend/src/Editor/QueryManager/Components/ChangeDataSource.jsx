@@ -1,7 +1,7 @@
 import React from 'react';
 import Select from '@/_ui/Select';
 
-export const ChangeDataSource = ({ dataSources, onChange, value }) => {
+export const ChangeDataSource = ({ dataSources, onChange, value, isVersionReleased }) => {
   return (
     <Select
       className="w-100"
@@ -12,6 +12,7 @@ export const ChangeDataSource = ({ dataSources, onChange, value }) => {
         onChange(dataSource);
       }}
       useMenuPortal={true}
+      isDisabled={isVersionReleased}
     />
   );
 };

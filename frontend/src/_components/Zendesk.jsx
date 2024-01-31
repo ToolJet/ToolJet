@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { retrieveWhiteLabelText } from '../_helpers/utils';
 import Input from '@/_ui/Input';
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
@@ -11,10 +13,13 @@ const Zendesk = ({
   options,
   isSaving,
   selectedDataSource,
+  currentAppEnvironmentId,
   workspaceConstants,
+  isDisabled,
   optionsChanged,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
+  const { t } = useTranslation();
 
   function authZendesk() {
     const provider = 'zendesk';
@@ -25,6 +30,7 @@ const Zendesk = ({
     try {
       const authUrl = `https://${options?.subdomain?.value}.zendesk.com/oauth/authorizations/new?response_type=code&client_id=${options?.client_id?.value}&redirect_uri=${window.location.origin}/oauth2/authorize&scope=${scope}`;
       localStorage.setItem('sourceWaitingForOAuth', 'newSource');
+      localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
       optionchanged('provider', provider).then(() => {
         optionchanged('oauth2', true);
       });
@@ -54,6 +60,7 @@ const Zendesk = ({
             value={options?.subdomain?.value ?? ''}
             placeholder="e.g. tooljet"
             workspaceConstants={workspaceConstants}
+            disabled={isDisabled}
           />
         </div>
 
@@ -66,6 +73,7 @@ const Zendesk = ({
             value={options?.client_id?.value}
             placeholder="e.g. tj-zendesk"
             workspaceConstants={workspaceConstants}
+            disabled={isDisabled}
           />
         </div>
         <div className="col-md-12 mb-2">
@@ -83,6 +91,7 @@ const Zendesk = ({
               onChange={(e) => optionchanged('client_secret', e.target.value)}
               value={options?.client_secret?.value}
               workspaceConstants={workspaceConstants}
+              disabled={isDisabled}
             />
           </EncryptedFieldWrapper>
         </div>
@@ -91,22 +100,34 @@ const Zendesk = ({
           <div className="mb-3">
             <div className="form-label">Scope(s)</div>
             <p>
-              If you want your ToolJet apps to modify your Zendesk resources, make sure to select read and write access
+              {t(
+                'zendesk.enableReadAndWrite',
+                `If you want your ${retrieveWhiteLabelText()} apps to modify your Zendesk resources, make sure to select read and write access`,
+                { whiteLabelText: retrieveWhiteLabelText() }
+              )}
             </p>
             <div>
               <Radio
                 checked={options?.access_type?.value === 'read'}
-                disabled={authStatus === 'waiting_for_token'}
+                disabled={authStatus === 'waiting_for_token' || isDisabled}
                 onClick={() => optionchanged('access_type', 'read')}
                 text="Read only"
-                helpText="Your ToolJet apps can only read data from resources"
+                helpText={t(
+                  'zendesk.readDataFromResources',
+                  `Your ${retrieveWhiteLabelText()} apps can only read data from resources`,
+                  { whiteLabelText: retrieveWhiteLabelText() }
+                )}
               />
               <Radio
                 checked={options?.access_type?.value === 'write'}
-                disabled={authStatus === 'waiting_for_token'}
+                disabled={authStatus === 'waiting_for_token' || isDisabled}
                 onClick={() => optionchanged('access_type', 'write')}
                 text="Read and write"
-                helpText="Your ToolJet apps can read data from resources, modify resources, and more."
+                helpText={t(
+                  'zendesk.readModifyResources',
+                  `Your ${retrieveWhiteLabelText()} apps can read data from resources, modify resources, and more.`,
+                  { whiteLabelText: retrieveWhiteLabelText() }
+                )}
               />
             </div>
           </div>
@@ -118,7 +139,7 @@ const Zendesk = ({
             <div>
               <Button
                 className={`m2 ${isSaving ? ' loading' : ''}`}
-                disabled={isSaving}
+                disabled={isSaving || isDisabled}
                 onClick={() => saveDataSource()}
               >
                 {isSaving ? 'Saving...' : 'Save data source'}
@@ -129,7 +150,7 @@ const Zendesk = ({
           {(!authStatus || authStatus === 'waiting_for_url') && (
             <Button
               className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
-              disabled={isSaving}
+              disabled={isSaving || isDisabled}
               onClick={() => authZendesk()}
             >
               {selectedDataSource?.id ? 'Reconnect' : 'Connect'} to Zendesk

@@ -2,9 +2,10 @@ import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
-import { validateEmail } from '../_helpers/utils';
+import { retrieveWhiteLabelText, validateEmail } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import { SignupInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
@@ -96,6 +97,7 @@ class SignupPageComponent extends React.Component {
 
   render() {
     const { isLoading, signupSuccess } = this.state;
+
     return (
       <div className="page common-auth-section-whole-wrapper">
         <div className="common-auth-section-left-wrapper">
@@ -114,7 +116,9 @@ class SignupPageComponent extends React.Component {
                       className="common-auth-section-header common-auth-signup-section-header"
                       data-cy="signup-section-header"
                     >
-                      {this.props.t('loginSignupPage.joinTooljet', `Join ToolJet`)}
+                      {this.props.t('loginSignupPage.joinTooljet', `Join ${retrieveWhiteLabelText()}`, {
+                        whiteLabelText: retrieveWhiteLabelText(),
+                      })}
                     </h2>
                     <div className="signup-page-signin-redirect" data-cy="signin-redirect-text">
                       {this.props.t('loginSignupPage.alreadyHaveAnAccount', `Already have an account? `)} &nbsp;
@@ -126,7 +130,8 @@ class SignupPageComponent extends React.Component {
                       (!this.state.configs?.form?.enable_sign_up &&
                         this.state.configs?.enable_sign_up &&
                         !this.state.configs?.git?.enabled &&
-                        !this.state.configs?.google?.enabled)) && (
+                        !this.state.configs?.google?.enabled &&
+                        !this.state.configs?.openid?.enabled)) && (
                       <SignupStatusCard text={'Signup has been disabled by your workspace admin.'} />
                     )}
 
@@ -149,7 +154,17 @@ class SignupPageComponent extends React.Component {
                             />
                           </div>
                         )}
-                        {(this.state.configs?.git?.enabled || this.state.configs?.google?.enabled) &&
+                        {this.state.configs?.openid?.enabled && (
+                          <div className="login-sso-wrapper">
+                            <OidcSSOLoginButton
+                              configs={this.state.configs?.openid?.configs}
+                              text={this.props.t('confirmationPage.signupWithOpenid', `Sign up with`)}
+                            />
+                          </div>
+                        )}
+                        {(this.state.configs?.git?.enabled ||
+                          this.state.configs?.google?.enabled ||
+                          this.state.configs?.openid?.enabled) &&
                           this.isFormSignUpEnabled() && (
                             <div className="separator-signup">
                               <div className="mt-2 separator" data-cy="onboarding-separator">

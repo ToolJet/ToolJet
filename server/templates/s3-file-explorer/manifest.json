@@ -1,8 +1,0 @@
-{
-  "name": "S3 File Explorer",
-  "description": "Display the list of all the buckets in your aws s3 and user can perform operations like reading, downloading, and uploading files to the selected bucket.",
-  "widgets": ["Table", "File Picker"],
-  "sources": [{"name": "AWS S3", "id": "s3"}],
-  "id": "s3-file-explorer",
-  "category": "product-management"
-}

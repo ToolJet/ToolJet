@@ -8,6 +8,7 @@ import {
   computeComponentName,
   generateAppActions,
   loadPyodide,
+  executeWorkflow,
   isQueryRunnable,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
@@ -32,6 +33,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import SolidIcon from '../_ui/Icon/SolidIcons';
 import { camelizeKeys } from 'humps';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useEditorStore } from '@/_stores/editorStore';
@@ -336,7 +338,8 @@ export async function runTransformation(
 }
 
 export async function executeActionsForEventId(_ref, eventId, events = [], mode, customVariables) {
-  const filteredEvents = events.filter((event) => event?.event.eventId === eventId);
+  if (!events || events.length === 0) return;
+  const filteredEvents = events?.filter((event) => event?.event.eventId === eventId)?.sort((a, b) => a.index - b.index);
 
   for (const event of filteredEvents) {
     await executeAction(_ref, event.event, mode, customVariables); // skipcq: JS-0032
@@ -839,7 +842,7 @@ export function getQueryVariables(options, state) {
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');
-      if (options.match(/\{\{(.*?)\}\}/g)?.length > 1 && options.includes('{{constants.')) {
+      if (options.match(/\{\{(.*?)\}\}/g)?.length >= 1 && options.includes('{{constants.')) {
         const constantVariables = options.match(/\{\{(constants.*?)\}\}/g);
 
         constantVariables.forEach((constant) => {
@@ -886,6 +889,9 @@ export function getQueryVariables(options, state) {
 export function previewQuery(_ref, query, calledFromQuery = false, parameters = {}, hasParamSupport = false) {
   const options = getQueryVariables(query.options, getCurrentState(_ref.moduleName));
 
+  // passing current env through props only for querymanager
+  const currentAppEnvironmentId = _ref?.currentAppEnvironmentId;
+
   const queryPanelState = useSuperStore.getState().modules[_ref.moduleName].useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
   const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
@@ -921,11 +927,20 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
       queryExecutionPromise = tooljetDbOperations.perform(query, getCurrentState(_ref.moduleName));
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
+    } else if (query.kind === 'workflows') {
+      queryExecutionPromise = executeWorkflow(
+        _ref,
+        query.options.workflowId,
+        query.options.blocking,
+        query.options?.params,
+        _ref?.currentAppEnvironmentId
+      );
     } else {
       queryExecutionPromise = dataqueryService.preview(
         query,
         options,
-        useSuperStore.getState().modules[_ref.moduleName].useAppVersionStore.getState().editingVersion?.id
+        useSuperStore.getState().modules[_ref.moduleName].useAppVersionStore.getState().editingVersion?.id,
+        currentAppEnvironmentId
       );
     }
 
@@ -973,6 +988,12 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
           }
           case queryStatus === 'needs_oauth': {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
+            const kind = data.data?.kind;
+            localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
+            if (['slack', 'googlesheets', 'zendesk'].includes(kind)) {
+              fetchOauthTokenForSlackAndGSheet(query.data_source_id, data.data);
+              break;
+            }
             fetchOAuthToken(url, query.data_source_id);
             break;
           }
@@ -1002,8 +1023,9 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
 export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', parameters = {}) {
   const query = useSuperStore
     .getState()
-    .modules[_ref.moduleName].useDataQueriesStore.getState()
+    .modules[_ref.moduleName].useQueriesDataStore.getState()
     .dataQueries.find((query) => query.id === queryId);
+
   const queryEvents = useSuperStore
     .getState()
     .modules[_ref.moduleName].useAppDataStore.getState()
@@ -1012,6 +1034,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   let dataQuery = {};
 
   // const { setPreviewLoading, setPreviewData } = useSuperStore.getState().modules[_ref.moduleName].useQueryPanelStore.getState().actions;
+  const { currentAppEnvironmentId, environmentId } = _ref;
   const queryPanelState = useSuperStore.getState().modules[_ref.moduleName].useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
   const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
@@ -1076,15 +1099,34 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode);
     } else if (query.kind === 'tooljetdb') {
       queryExecutionPromise = tooljetDbOperations.perform(query, getCurrentState(_ref.moduleName));
+    } else if (query.kind === 'workflows') {
+      queryExecutionPromise = executeWorkflow(
+        _self,
+        query.options.workflowId,
+        query.options.blocking,
+        query.options?.params,
+        _ref?.currentAppEnvironmentId
+      );
     } else {
-      queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
+      queryExecutionPromise = dataqueryService.run(
+        queryId,
+        options,
+        query?.options,
+        currentAppEnvironmentId ?? environmentId
+      );
     }
 
     queryExecutionPromise
       .then(async (data) => {
         if (data.status === 'needs_oauth') {
           const url = data.data.auth_url; // Backend generates and return sthe auth url
-          fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
+          const kind = data.data?.kind;
+          localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId ?? environmentId);
+          if (['slack', 'googlesheets', 'zendesk'].includes(kind)) {
+            fetchOauthTokenForSlackAndGSheet(query.data_source_id, data.data);
+          } else {
+            fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
+          }
         }
 
         let queryStatusCode = data?.status ?? null;
@@ -1373,6 +1415,7 @@ export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, s
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   if (key === 'tooljetdb') return <RunTooljetDbIcon style={{ height, width }} />;
   if (key === 'runpy') return <RunPyIcon style={{ height, width }} />;
+  if (key === 'workflows') return <SolidIcon name="workflows" fill="#3D63DC" />;
   const Icon = allSvgs[key];
 
   if (!Icon) return <></>;
@@ -1891,6 +1934,40 @@ const getSelectedText = () => {
   }
 };
 
+export function fetchOauthTokenForSlackAndGSheet(dataSourceId, data) {
+  const provider = data?.kind;
+  let scope = '';
+  let authUrl = data.auth_url;
+
+  switch (provider) {
+    case 'slack': {
+      scope =
+        data?.options?.access_type === 'chat:write'
+          ? 'chat:write,users:read,chat:write:bot,chat:write:user'
+          : 'chat:write,users:read';
+      authUrl = `${authUrl}&scope=${scope}&access_type=offline&prompt=select_account`;
+      break;
+    }
+    case 'googlesheets': {
+      scope =
+        data?.options?.access_type === 'read'
+          ? 'https://www.googleapis.com/auth/spreadsheets.readonly'
+          : 'https://www.googleapis.com/auth/spreadsheets';
+      authUrl = `${authUrl}&scope=${scope}&access_type=offline&prompt=consent`;
+      break;
+    }
+    case 'zendesk': {
+      scope = data?.options?.access_type === 'read' ? 'read' : 'read%20write';
+      authUrl = `${authUrl}&scope=${scope}`;
+      break;
+    }
+    default:
+      break;
+  }
+
+  localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
+  window.open(authUrl);
+}
 function convertMapSet(obj) {
   if (obj instanceof Map) {
     return Object.fromEntries(Array.from(obj, ([key, value]) => [key, convertMapSet(value)]));
@@ -2013,8 +2090,18 @@ export const buildAppDefinition = (data) => {
     return acc;
   }, {});
 
+  const defaultGlobalSettings = {
+    hideHeader: false,
+    appInMaintenance: false,
+    canvasMaxWidth: 100,
+    canvasMaxWidthType: '%',
+    canvasMaxHeight: 2400,
+    canvasBackgroundColor: '#edeff5',
+    backgroundFxQuery: '',
+  };
+
   const appJSON = {
-    globalSettings: editingVersion.globalSettings,
+    globalSettings: editingVersion.globalSettings ?? defaultGlobalSettings,
     homePageId: editingVersion.homePageId,
     showViewerNavigation: editingVersion.showViewerNavigation ?? true,
     pages: pages,

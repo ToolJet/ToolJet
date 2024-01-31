@@ -5,17 +5,15 @@ import OnBoardingInput from './OnBoardingInput';
 import OnBoardingRadioInput from './OnBoardingRadioInput';
 import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
-import { getuserName } from '@/_helpers/utils';
+import AppLogo from '../_components/AppLogo';
+import { getuserName, retrieveWhiteLabelText } from '@/_helpers/utils';
 import { redirectToDashboard } from '@/_helpers/routes';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
-import LogoLightMode from '@assets/images/Logomark.svg';
-import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
 import startsWith from 'lodash.startswith';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
-function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
-  const Logo = darkMode ? LogoDarkMode : LogoLightMode;
+function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode, source = null }) {
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +42,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           companySize: formData.companySize,
           role: formData.role,
           token: token,
+          source,
           organizationToken: organizationToken,
           ...(password?.length > 0 && { password }),
           phoneNumber: formData?.phoneNumber,
@@ -73,13 +72,13 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     'Enter your phone number',
     'Enter your phone number', //dummy for styling
   ];
-  const FormSubTitles = ['This information will help us improve ToolJet.'];
+  const FormSubTitles = [`This information will help us improve ${retrieveWhiteLabelText()}.`];
 
   return (
     <div className="flex">
       <div className="onboarding-navbar onboarding-navbar-layout">
         <div className="tooljet-nav-logo">
-          <Logo height="23" width="92" alt="tooljet logo" data-cy="page-logo" />
+          <AppLogo darkMode={darkMode} isLoadingFromHeader={true} className="onboard-tooljet-logo" />
         </div>
         <div></div>
         {/*Do not remove used for styling*/}

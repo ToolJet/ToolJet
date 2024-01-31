@@ -11,8 +11,12 @@ import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { App } from 'src/entities/app.entity';
+import { AuditLog } from 'src/entities/audit_log.entity';
+import { AuditLoggerService } from '@services/audit_logger.service';
 import { File } from 'src/entities/file.entity';
 import { FilesService } from '@services/files.service';
+import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
+import { DataSource } from 'src/entities/data_source.entity';
 
 @Module({
   controllers: [GroupPermissionsController],
@@ -21,14 +25,17 @@ import { FilesService } from '@services/files.service';
       GroupPermission,
       UserGroupPermission,
       AppGroupPermission,
+      DataSourceGroupPermission,
       User,
       OrganizationUser,
       Organization,
       App,
       File,
+      AuditLog,
+      DataSource,
     ]),
     CaslModule,
   ],
-  providers: [GroupPermissionsService, FilesService, UsersService],
+  providers: [GroupPermissionsService, UsersService, FilesService, AuditLoggerService],
 })
 export class GroupPermissionsModule {}

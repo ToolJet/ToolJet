@@ -18,18 +18,18 @@ export const CustomToggleSwitch = ({
     >
       <label className="switch">
         <input
+          disabled={disabled}
           type="checkbox"
           id={action}
           checked={isChecked}
           onClick={() => {
-            if (action === 'bodyToggle') {
+            if (action === 'bodyToggle' || action === 'endPointTrigger') {
               toggleSwitchFunction(!isChecked);
             } else {
               toggleSwitchFunction(action);
             }
           }}
           data-cy={`${dataCy}-toggle-switch`}
-          disabled={disabled}
         />
         <label htmlFor={action} className="slider round"></label>
       </label>

@@ -21,6 +21,8 @@ import CheveronRight from './CheveronRight.jsx';
 import CheveronUp from './CheveronUp.jsx';
 import ClearRectangle from './ClearRectangle.jsx';
 import Clock from './Clock.jsx';
+import LockGradient from './LockGradient.jsx';
+import DatasourceGradient from './DatasourceGradient.jsx';
 import Column from './Column.jsx';
 import Columns from './Columns.jsx';
 import Compass from './Compass.jsx';
@@ -28,9 +30,11 @@ import Computer from './Computer.jsx';
 import Copy from './Copy.jsx';
 import DarkMode from './DarkMode.jsx';
 import Datasource from './Datasource.jsx';
+import Delete from './Delete.jsx';
 import Diamond from './Diamond.jsx';
 import DownArrow from './DownArrow.jsx';
 import EditRectangle from './EditRectangle.jsx';
+import Enterprise from './Enterprise.jsx';
 import Eye from './Eye.jsx';
 import Eye1 from './Eye1.jsx';
 import EyeDisable from './EyeDisable.jsx';
@@ -42,12 +46,14 @@ import FloppyDisk from './FloppyDisk.jsx';
 import Folder from './Folder.jsx';
 import FolderDownload from './FolderDownload.jsx';
 import FolderUpload from './FolderUpload.jsx';
+import GitSync from './GitSync.jsx';
 import FullOuterJoin from './FullOuterJoin.jsx';
 import Globe from './Globe.jsx';
 import Grid from './Grid.jsx';
 import HelpPolygon from './HelpPolygon.jsx';
 import Home from './Home.jsx';
 import Information from './Information.jsx';
+import InformationCircle from './InformationCircle.jsx';
 import InnerJoinIcon from './InnerJoinIcon.jsx';
 import InRectangle from './InRectangle.jsx';
 import Interactive from './Interactive.jsx';
@@ -69,6 +75,7 @@ import NotificationRinging from './NotificationRinging.jsx';
 import NotificationSide from './NotificationSide.jsx';
 import NotificationSilent from './NotificationSilent.jsx';
 import NotificationUnread from './NotificationUnread.jsx';
+import Open from './Open.jsx';
 import Page from './Page.jsx';
 import PageAdd from './PageAdd.jsx';
 import Pin from './Pin.jsx';
@@ -78,6 +85,7 @@ import Play from './Play.jsx';
 import Plus from './Plus.jsx';
 import Plus01 from './Plus01.jsx';
 import Reload from './Reload.jsx';
+import Read from './Read.jsx';
 import ReloadError from './ReloadError.jsx';
 import Remove from './Remove.jsx';
 import Remove01 from './Remove01.jsx';
@@ -102,6 +110,7 @@ import SortArrowDown from './SortArrowDown.jsx';
 import SortArrowUp from './SortArrowUp.jsx';
 import Subtract from './Subtract.jsx';
 import Sun from './Sun.jsx';
+import Sync from './SyncIcon.jsx';
 import Table from './Table.jsx';
 import Tick from './Tick.jsx';
 import Trash from './Trash.jsx';
@@ -112,6 +121,7 @@ import UserGroup from './UserGroup.jsx';
 import UserRemove from './UserRemove.jsx';
 import UTurn from './UTurn.jsx';
 import Variable from './Variable.jsx';
+import Workflows from './Workflows.jsx';
 import Warning from './Warning.jsx';
 import ZoomIn from './ZoomIn.jsx';
 import ZoomOut from './ZoomOut.jsx';
@@ -121,6 +131,13 @@ import Lock from './Lock.jsx';
 import Mail from './Mail.jsx';
 import Logs from './Logs.jsx';
 import Marketplace from './Marketplace.jsx';
+import AuditLogs from './AuditLog.jsx';
+import InstanceSettings from './InstanceSettings.jsx';
+import EnterpriseGradient from './EnterpriseGradient.jsx';
+import Workspace from './Workspace.jsx';
+import CircularToggleDisabled from './CircularToggleDisabled.jsx';
+import CircularToggleEnabled from './CircularToggleEnabled.jsx';
+import Idea from './Idea.jsx';
 import Minimize from './Minimize.jsx';
 import Maximize from './Maximize.jsx';
 import PlusRectangle from './PlusRectangle.jsx';
@@ -168,6 +185,8 @@ const Icon = (props) => {
       return <ArrowTransfer {...props} />;
     case 'arrowup':
       return <ArrowUp {...props} />;
+    case 'auditlogs':
+      return <AuditLogs {...props} />;
     case 'booksearch':
       return <BookSearch {...props} />;
     case 'branch':
@@ -190,6 +209,10 @@ const Icon = (props) => {
       return <CheveronRightDouble {...props} />;
     case 'cheveronup':
       return <CheveronUp {...props} />;
+    case 'circularToggleDisabled':
+      return <CircularToggleDisabled {...props} />;
+    case 'circularToggleEnabled':
+      return <CircularToggleEnabled {...props} />;
     case 'clearrectangle':
       return <ClearRectangle {...props} />;
     case 'clock':
@@ -208,12 +231,22 @@ const Icon = (props) => {
       return <DarkMode {...props} />;
     case 'datasource':
       return <Datasource {...props} />;
+    case 'delete':
+      return <Delete {...props} />;
     case 'diamond':
       return <Diamond {...props} />;
     case 'downarrow':
       return <DownArrow {...props} />;
     case 'editrectangle':
       return <EditRectangle {...props} />;
+    case 'enterprise':
+      return <Enterprise {...props} />;
+    case 'enterpriseGradient':
+      return <EnterpriseGradient {...props} />;
+    case 'lockGradient':
+      return <LockGradient {...props} />;
+    case 'datasourceGradient':
+      return <DatasourceGradient {...props} />;
     case 'eye':
       return <Eye {...props} />;
     case 'eye1':
@@ -236,6 +269,8 @@ const Icon = (props) => {
       return <FolderDownload {...props} />;
     case 'folderupload':
       return <FolderUpload {...props} />;
+    case 'gitsync':
+      return <GitSync {...props} />;
     case 'fullouterjoin':
       return <FullOuterJoin {...props} />;
     case 'globe':
@@ -252,8 +287,12 @@ const Icon = (props) => {
       return <InnerJoinIcon {...props} />;
     case 'inrectangle':
       return <InRectangle {...props} />;
+    case 'instancesettings':
+      return <InstanceSettings {...props} />;
     case 'interactive':
       return <Interactive {...props} />;
+    case 'idea':
+      return <Idea {...props} />;
     case 'layers':
       return <Layers {...props} />;
     case 'leftarrow':
@@ -280,6 +319,8 @@ const Icon = (props) => {
       return <Minus01 {...props} />;
     case 'mobile':
       return <Mobile {...props} />;
+    case 'informationcircle':
+      return <InformationCircle {...props} />;
     case 'morehorizontal':
       return <MoreHorizontal {...props} />;
     case 'morevertical':
@@ -294,6 +335,8 @@ const Icon = (props) => {
       return <NotificationSilent {...props} />;
     case 'notificationunread':
       return <NotificationUnread {...props} />;
+    case 'open':
+      return <Open {...props} />;
     case 'page':
       return <Page {...props} />;
     case 'pageAdd':
@@ -312,6 +355,8 @@ const Icon = (props) => {
       return <PlusRectangle {...props} />;
     case 'reload':
       return <Reload {...props} />;
+    case 'read':
+      return <Read {...props} />;
     case 'reloaderror':
       return <ReloadError {...props} />;
     case 'remove':
@@ -362,6 +407,8 @@ const Icon = (props) => {
       return <Subtract {...props} />;
     case 'sun':
       return <Sun {...props} />;
+    case 'sync':
+      return <Sync {...props} />;
     case 'table':
       return <Table {...props} />;
     case 'tick':
@@ -394,6 +441,10 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'workspace':
+      return <Workspace {...props} />;
+    case 'workflows':
+      return <Workflows {...props} />;
     case 'eyeopen':
       return <EyeOpen {...props} />;
     case 'layersversion':

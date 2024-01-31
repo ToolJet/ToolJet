@@ -1,7 +1,8 @@
 import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { authorizeWorkspace } from '@/_helpers/authorizeWorkspace';
+import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute } from '@/_components';
@@ -14,20 +15,34 @@ import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
 import { OrganizationSettings } from '@/OrganizationSettingsPage';
+import { AuditLogsPage } from '@/AuditLogs';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { GlobalDatasources } from '@/GlobalDatasources';
+import { GitSyncConfig } from '@/GitSyncComponent/GitSyncConfig';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
+import { InstanceSettings } from '@/InstanceSettingsPage';
+import { ManageAllUsers } from '@/ManageAllUsers';
+import { ManageInstanceSettings, ManageWhiteLabelling } from '@/ManageInstanceSettings';
+import { ManageLicenseKey } from '@/ManageLicenseKey';
+import { ManageOrgUsers } from '@/ManageOrgUsers';
+import { ManageGroupPermissions } from '@/ManageGroupPermissions';
+import { ManageSSO } from '@/ManageSSO';
+import { ManageOrgVars } from '@/ManageOrgVars';
+import { CopilotSetting } from '@/CopilotSettings';
+import { CustomStylesEditor } from '@/CustomStylesEditor';
+import { ManageOrgConstants } from '@/ManageOrgConstants';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
+import LdapLoginPage from '../LdapLogin';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 
@@ -56,6 +71,9 @@ class AppComponent extends React.Component {
   };
   fetchMetadata = () => {
     tooljetService.fetchMetaData().then((data) => {
+      updateCurrentSession({
+        instance_id: data?.instance_id,
+      });
       localStorage.setItem('currentVersion', data.installed_version);
       if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
         this.setState({ updateAvailable: true });
@@ -63,7 +81,22 @@ class AppComponent extends React.Component {
     });
   };
 
+  setFaviconAndTitle() {
+    const favicon_url = window.public_config?.WHITE_LABEL_FAVICON;
+    let links = document.querySelectorAll("link[rel='icon']");
+    links.forEach((link) => {
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = favicon_url ? favicon_url : 'assets/images/logo.svg';
+    });
+    document.title = `${retrieveWhiteLabelText()} - Dashboard`;
+  }
+
   componentDidMount() {
+    this.setFaviconAndTitle();
     authorizeWorkspace();
     this.fetchMetadata();
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
@@ -152,6 +185,7 @@ class AppComponent extends React.Component {
               <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
               <Route path="/sso/:origin" exact element={<Oauth />} />
               <Route path="/signup" element={<SignupPage />} />
+              <Route path="/ldap/:organizationId" element={<LdapLoginPage {...this.props} darkMode={darkMode} />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
@@ -189,7 +223,7 @@ class AppComponent extends React.Component {
               />
               <Route
                 exact
-                path="/applications/:slug/versions/:versionId/:pageHandle?"
+                path="/applications/:slug/versions/:versionId/environments/:environmentId/:pageHandle?"
                 element={
                   <PrivateRoute>
                     <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
@@ -213,6 +247,96 @@ class AppComponent extends React.Component {
                     <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </PrivateRoute>
                 }
+              >
+                <Route
+                  path="users"
+                  element={
+                    <AdminRoute>
+                      <ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="groups"
+                  element={
+                    <AdminRoute>
+                      <ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="sso"
+                  element={
+                    <AdminRoute>
+                      <ManageSSO switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="workspace-variables"
+                  element={<ManageOrgVars switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="configure-git"
+                  element={
+                    <AdminRoute>
+                      <GitSyncConfig switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="workspace-constants"
+                  element={<ManageOrgConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="copilot"
+                  element={<CopilotSetting />}
+                  switchDarkMode={this.switchDarkMode}
+                  darkMode={darkMode}
+                />
+                <Route
+                  path="custom-styles"
+                  element={
+                    <AdminRoute>
+                      <CustomStylesEditor switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+              </Route>
+              <Route
+                exact
+                path="/instance-settings"
+                element={
+                  <PrivateRoute>
+                    <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              >
+                <Route
+                  path="all-users"
+                  element={<ManageAllUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="manage-instance-settings"
+                  element={<ManageInstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="white-labelling"
+                  element={<ManageWhiteLabelling switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="license"
+                  element={<ManageLicenseKey switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+              </Route>
+              <Route
+                exact
+                path="/:workspaceId/audit-logs"
+                element={
+                  <PrivateRoute>
+                    <AuditLogsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
               />
               <Route
                 exact
@@ -229,6 +353,24 @@ class AppComponent extends React.Component {
                 element={
                   <PrivateRoute>
                     <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/applications/:id/versions/:versionId/:pageHandle?"
+                element={
+                  <PrivateRoute>
+                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/applications/:slug/:pageHandle?"
+                element={
+                  <PrivateRoute>
+                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </PrivateRoute>
                 }
               />
@@ -275,10 +417,21 @@ class AppComponent extends React.Component {
                 path="/:workspaceId"
                 element={
                   <PrivateRoute>
-                    <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />
                   </PrivateRoute>
                 }
               />
+              {window.public_config?.ENABLE_WORKFLOWS_FEATURE === 'true' && (
+                <Route
+                  exact
+                  path="/:workspaceId/workflows"
+                  element={
+                    <AdminRoute>
+                      <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'workflow'} />
+                    </AdminRoute>
+                  }
+                />
+              )}
               <Route
                 path="*"
                 render={() => {
@@ -290,6 +443,7 @@ class AppComponent extends React.Component {
               />
             </Routes>
           </BreadCrumbContext.Provider>
+          <div id="modal-div"></div>
         </div>
 
         <Toast toastOptions={toastOptions} />

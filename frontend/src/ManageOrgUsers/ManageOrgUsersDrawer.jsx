@@ -38,7 +38,7 @@ const ManageOrgUsersDrawer = ({
       .getGroups()
       .then(({ group_permissions }) => {
         const orgGroups = group_permissions
-          .filter((group) => group.organization_id === current_organization_id)
+          .filter((group) => group.organization_id === current_organization_id && group.enabled)
           .map(({ group }) => ({
             name: humanizeifDefaultGroupName(group),
             value: group,

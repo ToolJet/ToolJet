@@ -13,6 +13,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
     environments,
     setCurrentEnvironment,
     setActiveDatasourceList,
+    canDeleteDataSource,
   } = useContext(GlobalDataSourcesContext);
   const { handleActions } = useGlobalDatasourceUnsavedChanges();
 
@@ -32,7 +33,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
 
   const focusModal = () => {
     const element = document.getElementsByClassName('form-control-plaintext form-control-plaintext-sm')[0];
-    element.focus();
+    element?.focus();
   };
 
   const selectDataSource = () => {
@@ -63,17 +64,19 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
           {dataSource.name}
         </div>
       </div>
-      <div className="col-auto">
-        <button
-          className="ds-delete-btn"
-          onClick={() => onDelete(dataSource)}
-          data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
-        >
-          <div>
-            <DeleteIcon width="14" height="14" />
-          </div>
-        </button>
-      </div>
+      {canDeleteDataSource() && (
+        <div className="col-auto">
+          <button
+            className="ds-delete-btn"
+            onClick={() => onDelete(dataSource)}
+            data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
+          >
+            <div>
+              <DeleteIcon width="14" height="14" />
+            </div>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -7,10 +7,13 @@ import { TooljetDbService } from '@services/tooljet_db.service';
 import { CredentialsService } from '@services/credentials.service';
 import { EncryptionService } from '@services/encryption.service';
 import { PostgrestProxyService } from '@services/postgrest_proxy.service';
+import { InternalTable } from 'src/entities/internal_table.entity';
+import { AppUser } from 'src/entities/app_user.entity';
+import { TableCountGuard } from '@ee/licensing/guards/table.guard';
 import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Credential]), CaslModule],
+  imports: [TypeOrmModule.forFeature([Credential, InternalTable, AppUser]), CaslModule],
   controllers: [TooljetDbController],
   providers: [
     TooljetDbService,
@@ -18,6 +21,7 @@ import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.ser
     PostgrestProxyService,
     EncryptionService,
     CredentialsService,
+    TableCountGuard,
   ],
 })
 export class TooljetDbModule {}

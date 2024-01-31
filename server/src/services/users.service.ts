@@ -1,35 +1,153 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
 import { App } from 'src/entities/app.entity';
-import { createQueryBuilder, EntityManager, getRepository, In, Repository } from 'typeorm';
+import { Brackets, createQueryBuilder, EntityManager, getManager, getRepository, In, Repository } from 'typeorm';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap, generatePayloadForLimits, isSuperAdmin } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
-import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { LIMIT_TYPE, USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { Organization } from 'src/entities/organization.entity';
+import { ConfigService } from '@nestjs/config';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
+import { UserDetails } from 'src/entities/user_details.entity';
+import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
+
+type FetchInstanceUsersResponse = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  id: string;
+  avatarId: string;
+  organizationUsers: OrganizationUser[];
+  totalOrganizations: number;
+};
+type UserFilterOptions = { searchText?: string; status?: string };
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly filesService: FilesService,
+    private readonly licenseService: LicenseService,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(App)
-    private appsRepository: Repository<App>
+    private appsRepository: Repository<App>,
+    @InjectRepository(Organization)
+    private organizationRepository: Repository<Organization>,
+    private configService: ConfigService
   ) {}
 
-  async getCount(): Promise<number> {
-    return this.usersRepository.count();
+  usersQuery(options: UserFilterOptions, condition?: 'and' | 'or') {
+    const defaultConditions = () => {
+      return new Brackets((qb) => {
+        if (options?.searchText) {
+          qb.orWhere('lower(user.email) like :email', {
+            email: `%${options?.searchText.toLowerCase()}%`,
+          })
+            .orWhere('lower(user.firstName) like :firstName', {
+              firstName: `%${options?.searchText.toLowerCase()}%`,
+            })
+            .orWhere('lower(user.lastName) like :lastName', {
+              lastName: `%${options?.searchText.toLowerCase()}%`,
+            });
+        }
+      });
+    };
+
+    const getOrConditions = () => {
+      return new Brackets((qb) => {
+        if (options?.status)
+          qb.orWhere('user.status = :status', {
+            status: `${options?.status}`,
+          });
+      });
+    };
+    const getAndConditions = () => {
+      return new Brackets((qb) => {
+        if (options?.status)
+          qb.andWhere('user.status = :status', {
+            status: `${options?.status}`,
+          });
+      });
+    };
+
+    const query = this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect(['user.id, user.email, user.firstName, user.lastName, user.avatarId', 'user.status', 'user.userType'])
+      .leftJoin('user.organizationUsers', 'organizationUsers')
+      .addSelect(['organizationUsers.id', 'organizationUsers.status', 'organizationUsers.organizationId'])
+      .leftJoin('organizationUsers.organization', 'organization')
+      .addSelect(['organization.name']);
+    query.andWhere(defaultConditions()).andWhere(condition === 'and' ? getAndConditions() : getOrConditions());
+    return query;
+  }
+
+  async findInstanceUsers(page = 1, options: any): Promise<FetchInstanceUsersResponse[]> {
+    const allUsers = await this.usersQuery(options)
+      .orderBy('user.createdAt', 'ASC')
+      .take(10)
+      .skip(10 * (page - 1))
+      .getMany();
+
+    return allUsers?.map((user) => {
+      return {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        name: `${user.firstName || ''}${user.lastName ? ` ${user.lastName}` : ''}`,
+        id: user.id,
+        avatarId: user.avatarId,
+        organizationUsers: user.organizationUsers,
+        totalOrganizations: user.organizationUsers.length,
+        userType: user.userType,
+        status: user.status,
+      };
+    });
+  }
+
+  async instanceUsersCount(options: any): Promise<number> {
+    const condition = options?.searchText ? 'and' : 'or';
+    return await this.usersQuery(options, condition).getCount();
+  }
+
+  async findSuperAdmins(): Promise<User[]> {
+    return await this.usersRepository.find({ userType: USER_TYPE.INSTANCE });
+  }
+
+  async getCount(isOnlyActive?: boolean, manager?: EntityManager): Promise<number> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
+      !isOnlyActive && statusList.push(USER_STATUS.ARCHIVED);
+      return await manager
+        .createQueryBuilder(User, 'users')
+        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+          statusList,
+        })
+        .select('users.id')
+        .distinct()
+        .getCount();
+    }, manager);
   }
 
   async findOne(id: string): Promise<User> {
     return this.usersRepository.findOne({ where: { id } });
+  }
+
+  async findSelfhostOnboardingDetails(): Promise<User> {
+    return await this.usersRepository.findOne({
+      where: { userType: USER_TYPE.INSTANCE },
+      order: { createdAt: 'ASC' },
+    });
   }
 
   async findByEmail(
@@ -39,8 +157,9 @@ export class UsersService {
     manager?: EntityManager
   ): Promise<User> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      let user: User;
       if (!organizationId) {
-        return manager.findOne(User, {
+        user = await manager.findOne(User, {
           where: { email },
           relations: ['organization'],
         });
@@ -50,7 +169,7 @@ export class UsersService {
             ? status
             : [status]
           : [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ARCHIVED];
-        return await manager
+        user = await manager
           .createQueryBuilder(User, 'users')
           .innerJoinAndSelect(
             'users.organizationUsers',
@@ -58,13 +177,53 @@ export class UsersService {
             'organization_users.organizationId = :organizationId',
             { organizationId }
           )
+          .leftJoinAndSelect('users.userDetails', 'user_details')
           .where('organization_users.status IN(:...statusList)', {
             statusList,
           })
           .andWhere('users.email = :email', { email })
           .getOne();
+
+        if (!user) {
+          user = await this.usersRepository.findOne({
+            where: { email },
+          });
+
+          if (isSuperAdmin(user)) {
+            await this.setupSuperAdmin(user, organizationId);
+          } else {
+            return;
+          }
+        }
       }
+      return user;
     }, manager);
+  }
+
+  async setupSuperAdmin(user: User, organizationId?: string): Promise<void> {
+    const organizations: Organization[] = await this.organizationRepository.find(
+      organizationId ? { where: { id: organizationId } } : {}
+    );
+    user.organizationUsers = organizations?.map((organization): OrganizationUser => {
+      return {
+        id: uuid.v4(),
+        userId: user.id,
+        organizationId: organization.id,
+        organization: organization,
+        status: 'active',
+        role: null,
+        invitationToken: null,
+        createdAt: null,
+        updatedAt: null,
+        user,
+        hasId: null,
+        save: null,
+        remove: null,
+        softRemove: null,
+        recover: null,
+        reload: null,
+      };
+    });
   }
 
   async findByPasswordResetToken(token: string): Promise<User> {
@@ -86,6 +245,8 @@ export class UsersService {
     let user: User;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const userType = (await manager.count(User)) === 0 ? USER_TYPE.INSTANCE : USER_TYPE.WORKSPACE;
+
       if (!existingUser) {
         user = manager.create(User, {
           email,
@@ -95,6 +256,7 @@ export class UsersService {
           phoneNumber,
           source,
           status,
+          userType,
           invitationToken: isInvite ? uuid.v4() : null,
           defaultOrganizationId: defaultOrganizationId || organizationId,
           createdAt: new Date(),
@@ -104,21 +266,34 @@ export class UsersService {
       } else {
         user = existingUser;
       }
-      await this.attachUserGroup(groups, organizationId, user.id, manager);
+      const isValidatingExistingGroups = ['ldap', 'saml'].includes(source);
+      await this.attachUserGroup(groups, organizationId, user.id, isValidatingExistingGroups, manager);
     }, manager);
 
     return user;
   }
 
-  async attachUserGroup(groups, organizationId, userId, manager?: EntityManager) {
+  async attachUserGroup(
+    groups: string[],
+    organizationId: string,
+    userId: string,
+    isValidateExistingGroups = false,
+    manager?: EntityManager
+  ) {
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const organizationGroups = await manager.find(GroupPermission, {
+        where: {
+          organizationId,
+        },
+      });
+
+      if (isValidateExistingGroups) {
+        const existedGroups = organizationGroups.map((organizationGroup) => organizationGroup.group);
+        groups = groups.filter((group) => existedGroups.includes(group));
+      }
+
       for (const group of groups) {
-        const orgGroupPermission = await manager.findOne(GroupPermission, {
-          where: {
-            organizationId: organizationId,
-            group: group,
-          },
-        });
+        const orgGroupPermission = organizationGroups.find((organizationGroup) => organizationGroup.group === group);
 
         if (!orgGroupPermission) {
           throw new BadRequestException(`${group} group does not exist for current organization`);
@@ -163,6 +338,9 @@ export class UsersService {
     }
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(User, userId, updatableParams);
+      if (updatableParams.userType === USER_TYPE.INSTANCE) {
+        await this.validateLicense(manager);
+      }
     }, manager);
   }
 
@@ -235,6 +413,9 @@ export class UsersService {
   }
 
   async hasGroup(user: User, group: string, organizationId?: string, manager?: EntityManager): Promise<boolean> {
+    if (isSuperAdmin(user)) {
+      return true;
+    }
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await manager
         .createQueryBuilder(GroupPermission, 'group_permissions')
@@ -251,13 +432,19 @@ export class UsersService {
   }
 
   async userCan(user: User, action: string, entityName: string, resourceId?: string): Promise<boolean> {
+    if (isSuperAdmin(user)) {
+      return true;
+    }
     switch (entityName) {
       case 'App':
         return await this.canUserPerformActionOnApp(user, action, resourceId);
 
       case 'User':
       case 'Plugin':
-      case 'GlobalDataSource':
+      case 'CustomStyle':
+        return await this.hasGroup(user, 'admin');
+
+      case 'ConfigureGitSync':
         return await this.hasGroup(user, 'admin');
 
       case 'Thread':
@@ -269,6 +456,9 @@ export class UsersService {
 
       case 'OrgEnvironmentVariable':
         return await this.canUserPerformActionOnEnvironmentVariable(user, action);
+
+      case 'GlobalDataSource':
+        return await this.canUserPerformActionOnDataSources(user, action, resourceId);
 
       case 'OrganizationConstant':
         return await this.canUserPerformActionOnOrgEnvironmentConstants(user, action);
@@ -296,6 +486,33 @@ export class UsersService {
           this.canAnyGroupPerformAction('delete', await this.appGroupPermissions(user, appId)) ||
           this.canAnyGroupPerformAction('appDelete', await this.groupPermissions(user)) ||
           (await this.isUserOwnerOfApp(user, appId));
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async canUserPerformActionOnDataSources(user: User, action: string, dataSourceId?: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction('dataSourceCreate', await this.groupPermissions(user));
+        break;
+      case 'read':
+      case 'update':
+        permissionGrant = this.canAnyGroupPerformAction(
+          action,
+          await this.dataSourceGroupPermissions(user, dataSourceId)
+        );
+        break;
+      case 'delete':
+        permissionGrant =
+          this.canAnyGroupPerformAction('delete', await this.dataSourceGroupPermissions(user)) ||
+          this.canAnyGroupPerformAction('dataSourceDelete', await this.groupPermissions(user));
         break;
       default:
         permissionGrant = false;
@@ -392,7 +609,9 @@ export class UsersService {
     return !!app && app.organizationId === user.organizationId;
   }
 
-  async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean }> {
+  async retrieveAppDataUsingSlug(
+    slug: string
+  ): Promise<{ organizationId: string; isPublic: boolean; isReleased: boolean }> {
     let app: App;
     try {
       app = await this.appsRepository.findOneOrFail(slug);
@@ -402,10 +621,14 @@ export class UsersService {
       });
     }
 
-    return { organizationId: app?.organizationId, isPublic: app?.isPublic };
+    return {
+      organizationId: app?.organizationId,
+      isPublic: app?.isPublic,
+      isReleased: app?.currentVersionId ? true : false,
+    };
   }
 
-  async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
+  async addAvatar(userId: string, imageBuffer: Buffer, filename: string, manager?: EntityManager) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const user = await manager.findOne(User, userId);
       const currentAvatarId = user.avatarId;
@@ -422,19 +645,39 @@ export class UsersService {
         await this.filesService.remove(currentAvatarId, manager);
       }
       return avatar;
-    });
+    }, manager);
   }
 
-  canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[] | GroupPermission[]): boolean {
+  canAnyGroupPerformAction(
+    action: string,
+    permissions: AppGroupPermission[] | GroupPermission[] | DataSourceGroupPermission[]
+  ): boolean {
     return permissions.some((p) => p[action]);
   }
 
   async groupPermissions(user: User, manager?: EntityManager): Promise<GroupPermission[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      let groupPermissions: GroupPermission[] = [];
+      const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
       const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
       const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
 
-      return await manager.findByIds(GroupPermission, groupIds);
+      const result = await manager.findByIds(GroupPermission, groupIds);
+      if (!isLicenseValid) {
+        for (const groupPermission of result) {
+          const updatedGroupPermission: GroupPermission = groupPermission;
+          Object.keys(groupPermission).forEach((key) => {
+            if (typeof groupPermission[key] == 'boolean' && !['admin'].includes(groupPermission.group)) {
+              updatedGroupPermission[key] = false;
+            }
+          });
+          groupPermissions.push(updatedGroupPermission);
+        }
+      } else {
+        groupPermissions = result;
+      }
+
+      return groupPermissions;
     }, manager);
   }
 
@@ -447,6 +690,7 @@ export class UsersService {
   async appGroupPermissions(user: User, appId?: string, manager?: EntityManager): Promise<AppGroupPermission[]> {
     const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
 
     if (!groupIds || groupIds.length === 0) {
       return [];
@@ -462,10 +706,48 @@ export class UsersService {
             organizationId: user.organizationId,
           }
         )
+        .innerJoinAndSelect('app_group_permissions.groupPermission', 'groupPermission')
         .where('app_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
-
+      if (!isLicenseValid) {
+        query.andWhere('groupPermission.group IN (:...groups)', { groups: ['admin', 'all_users'] });
+      }
       if (appId) {
         query.andWhere('app_group_permissions.appId = :appId', { appId });
+      }
+      return await query.getMany();
+    }, manager);
+  }
+
+  async dataSourceGroupPermissions(
+    user: User,
+    dataSourceId?: string,
+    manager?: EntityManager
+  ): Promise<DataSourceGroupPermission[]> {
+    const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
+    const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
+
+    if (!groupIds || groupIds.length === 0) {
+      return [];
+    }
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const query = manager
+        .createQueryBuilder(DataSourceGroupPermission, 'data_source_group_permissions')
+        .innerJoin(
+          'data_source_group_permissions.groupPermission',
+          'group_permissions',
+          'group_permissions.organization_id = :organizationId',
+          {
+            organizationId: user.organizationId,
+          }
+        )
+        .innerJoinAndSelect('data_source_group_permissions.groupPermission', 'groupPermission')
+        .where('data_source_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
+      if (!isLicenseValid) {
+        query.andWhere('groupPermission.group = :group', { group: 'admin' });
+      }
+      if (dataSourceId) {
+        query.andWhere('data_source_group_permissions.dataSourceId = :dataSourceId', { dataSourceId });
       }
       return await query.getMany();
     }, manager);
@@ -486,5 +768,217 @@ export class UsersService {
         .andWhere('user_group_permissions.user_id = :userId', { userId: user.id })
         .getMany();
     }, manager);
+  }
+
+  private async getUserIdWithEditPermission(manager: EntityManager) {
+    const statusList = ['invited', 'active'];
+    const userIdsWithEditPermissions = (
+      await manager
+        .createQueryBuilder(User, 'users')
+        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+          statusList,
+        })
+        .innerJoin(
+          'users.groupPermissions',
+          'group_permissions',
+          'organization_users.organizationId = group_permissions.organizationId'
+        )
+        .innerJoin('group_permissions.organization', 'organization')
+        .leftJoin('group_permissions.appGroupPermission', 'app_group_permissions')
+        .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where('app_group_permissions.read = true AND app_group_permissions.update = true').orWhere(
+              'group_permissions.appCreate = true'
+            );
+          })
+        )
+        .select('users.id')
+        .distinct()
+        .getMany()
+    ).map((record) => record.id);
+
+    const userIdsOfAppOwners = (
+      await manager
+        .createQueryBuilder(User, 'users')
+        .innerJoin('users.apps', 'apps')
+        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+          statusList,
+        })
+        .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
+        .select('users.id')
+        .distinct()
+        .getMany()
+    ).map((record) => record.id);
+
+    const userIdsOfSuperAdmins = (
+      await manager
+        .createQueryBuilder(User, 'users')
+        .select('users.id')
+        .where('users.userType = :userType', { userType: USER_TYPE.INSTANCE })
+        .andWhere('users.status = :status', { status: USER_STATUS.ACTIVE })
+        .getMany()
+    ).map((record) => record.id);
+
+    return [...new Set([...userIdsWithEditPermissions, ...userIdsOfAppOwners, ...userIdsOfSuperAdmins])];
+  }
+
+  async fetchTotalEditorCount(manager: EntityManager): Promise<number> {
+    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager);
+    return userIdsWithEditPermissions?.length || 0;
+  }
+
+  async fetchTotalViewerEditorCount(manager: EntityManager): Promise<{ editor: number; viewer: number }> {
+    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager);
+
+    if (!userIdsWithEditPermissions?.length) {
+      // No editors -> No viewers
+      return { editor: 0, viewer: 0 };
+    }
+
+    const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
+    const viewer = await manager
+      .createQueryBuilder(User, 'users')
+      .innerJoin('users.groupPermissions', 'group_permissions')
+      .leftJoin(
+        'group_permissions.appGroupPermission',
+        'app_group_permissions',
+        'app_group_permissions.read = true AND app_group_permissions.update = false'
+      )
+      .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+        statusList,
+      })
+      .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
+      .andWhere('users.id NOT IN(:...userIdsWithEditPermissions)', { userIdsWithEditPermissions })
+      .select('users.id')
+      .distinct()
+      .getCount();
+
+    return { editor: userIdsWithEditPermissions?.length || 0, viewer };
+  }
+
+  async fetchTotalSuperadminCount(manager: EntityManager): Promise<number> {
+    return await manager
+      .createQueryBuilder(User, 'users')
+      .where('users.userType = :userType', { userType: USER_TYPE.INSTANCE })
+      .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
+      .getCount();
+  }
+
+  async validateLicense(manager: EntityManager): Promise<void> {
+    let editor = -1,
+      viewer = -1;
+    const {
+      allUsers: { total: users, editors: editorUsers, viewers: viewerUsers, superadmins: superadminUsers },
+    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER]);
+
+    if (superadminUsers !== LICENSE_LIMIT.UNLIMITED) {
+      const superadmin = await this.fetchTotalSuperadminCount(manager);
+      if (superadmin > superadminUsers) {
+        throw new HttpException('You have reached your limit for number of super admins.', 451);
+      }
+    }
+
+    if (users !== LICENSE_LIMIT.UNLIMITED && (await this.getCount(true, manager)) > users) {
+      throw new HttpException('You have reached your limit for number of users.', 451);
+    }
+
+    if (editorUsers !== LICENSE_LIMIT.UNLIMITED && viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
+      ({ editor, viewer } = await this.fetchTotalViewerEditorCount(manager));
+    }
+    if (editorUsers !== LICENSE_LIMIT.UNLIMITED) {
+      if (editor === -1) {
+        editor = await this.fetchTotalEditorCount(manager);
+      }
+      if (editor > editorUsers) {
+        throw new HttpException('You have reached your limit for number of builders.', 451);
+      }
+    }
+
+    if (viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
+      if (viewer === -1) {
+        ({ viewer } = await this.fetchTotalViewerEditorCount(manager));
+      }
+      const addedUsers = await this.getCount(true, manager);
+      const addableUsers = users - addedUsers;
+
+      if (viewer > viewerUsers && addableUsers < 0) {
+        throw new HttpException('You have reached your limit for number of end users.', 451);
+      }
+    }
+  }
+
+  async getUserLimitsByType(type: LIMIT_TYPE) {
+    const {
+      allUsers: { total: users, editors: editorUsers, viewers: viewerUsers, superadmins: superadminUsers },
+      status: licenseStatus,
+    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER, LICENSE_FIELD.STATUS]);
+
+    const manager = getManager();
+
+    switch (type) {
+      case LIMIT_TYPE.TOTAL: {
+        if (users === LICENSE_LIMIT.UNLIMITED) {
+          return;
+        }
+        const currentUsersCount = await this.getCount(true, manager);
+        return generatePayloadForLimits(currentUsersCount, users, licenseStatus);
+      }
+      case LIMIT_TYPE.EDITOR: {
+        if (editorUsers === LICENSE_LIMIT.UNLIMITED) {
+          return;
+        }
+        const currentEditorsCount = await this.fetchTotalEditorCount(manager);
+        return generatePayloadForLimits(currentEditorsCount, editorUsers, licenseStatus);
+      }
+      case LIMIT_TYPE.VIEWER: {
+        if (viewerUsers === LICENSE_LIMIT.UNLIMITED) {
+          return;
+        }
+        const { viewer: currentViewersCount } = await this.fetchTotalViewerEditorCount(manager);
+        return generatePayloadForLimits(currentViewersCount, viewerUsers, licenseStatus);
+      }
+      case LIMIT_TYPE.ALL: {
+        const currentUsersCount = await this.getCount(true, manager);
+        const currentSuperadminsCount = await this.fetchTotalSuperadminCount(manager);
+        const { viewer: currentViewersCount, editor: currentEditorsCount } = await this.fetchTotalViewerEditorCount(
+          manager
+        );
+
+        return {
+          usersCount: generatePayloadForLimits(currentUsersCount, users, licenseStatus, LICENSE_LIMITS_LABEL.USERS),
+          editorsCount: generatePayloadForLimits(
+            currentEditorsCount,
+            editorUsers,
+            licenseStatus,
+            LICENSE_LIMITS_LABEL.EDIT_USERS
+          ),
+          viewersCount: generatePayloadForLimits(
+            currentViewersCount,
+            viewerUsers,
+            licenseStatus,
+            LICENSE_LIMITS_LABEL.END_USERS
+          ),
+          superadminsCount: generatePayloadForLimits(
+            currentSuperadminsCount,
+            superadminUsers,
+            licenseStatus,
+            LICENSE_LIMITS_LABEL.SUPERADMIN_USERS
+          ),
+        };
+      }
+    }
+  }
+
+  async updateSSOUserInfo(manager: EntityManager, userId: string, ssoUserInfo: any): Promise<void> {
+    await manager.upsert(
+      UserDetails,
+      {
+        userId,
+        ssoUserInfo,
+        updatedAt: new Date(),
+      },
+      ['userId']
+    );
   }
 }

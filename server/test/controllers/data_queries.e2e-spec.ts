@@ -8,9 +8,11 @@ import {
   createAppGroupPermission,
   generateAppDefaults,
   authenticateUser,
+  createDatasourceGroupPermission,
 } from '../test.helper';
 import { getManager, getRepository } from 'typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+import { AuditLog } from 'src/entities/audit_log.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 
 describe('data queries controller', () => {
@@ -24,7 +26,7 @@ describe('data queries controller', () => {
     app = await createNestAppInstance();
   });
 
-  it('should be able to update queries of an app only if group is admin or group has app update permission', async () => {
+  it('should be able to update queries of an app only if group is admin or group has app update permission or the user is a super admin', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
@@ -52,7 +54,7 @@ describe('data queries controller', () => {
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-    const { application, dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
+    const { application, dataQuery, dataSource } = await generateAppDefaults(app, adminUserData.user, {});
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -61,6 +63,12 @@ describe('data queries controller', () => {
       },
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
+      read: true,
+      update: true,
+      delete: false,
+    });
+
+    await createDatasourceGroupPermission(app, dataSource.id, developerUserGroup.id, {
       read: true,
       update: true,
       delete: false,
@@ -110,10 +118,15 @@ describe('data queries controller', () => {
     }
   });
 
-  it('should be able to delete queries of an app only if admin/developer of same organization', async () => {
+  it('should be able to delete queries of an app only if admin/developer of same organization or super admin', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
     let loggedUser = await authenticateUser(app, adminUserData.user.email);
     adminUserData['tokenCookie'] = loggedUser.tokenCookie;
@@ -141,6 +154,8 @@ describe('data queries controller', () => {
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -151,10 +166,16 @@ describe('data queries controller', () => {
     await createAppGroupPermission(app, application, developerUserGroup.id, {
       read: true,
       update: true,
-      delete: false,
+      delete: true,
     });
 
-    for (const userData of [adminUserData, developerUserData]) {
+    await createDatasourceGroupPermission(app, dataSource.id, developerUserGroup.id, {
+      read: true,
+      update: true,
+      delete: true,
+    });
+
+    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const dataQuery = await createDataQuery(app, {
         dataSource,
         appVersion,
@@ -170,7 +191,7 @@ describe('data queries controller', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data_queries/${dataQuery.id}`)
-        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({
           options: newOptions,
@@ -208,10 +229,16 @@ describe('data queries controller', () => {
     }
   });
 
-  it('should be able to get queries only if the user has app read permission and belongs to the same organization', async () => {
+  it('should be able to get queries only if the user has app read permission and belongs to the same organization or user is a super admin', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
+      organization: adminUserData.organization,
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -233,6 +260,8 @@ describe('data queries controller', () => {
     developerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, viewerUserData.user.email);
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
@@ -269,10 +298,10 @@ describe('data queries controller', () => {
       options: { method: 'get' },
     });
 
-    for (const userData of [adminUserData, developerUserData]) {
+    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .get(`/api/data_queries?app_version_id=${appVersion.id}`)
-        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie']);
 
       expect(response.statusCode).toBe(200);
@@ -330,10 +359,15 @@ describe('data queries controller', () => {
     expect(response.statusCode).toBe(500);
   });
 
-  it('should be able to create queries for an app only if the user has admin group or update permission', async () => {
+  it('should be able to create queries for an app only if the user has relevant permissions(admin or update permission) or instance user type', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -365,6 +399,8 @@ describe('data queries controller', () => {
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -386,10 +422,10 @@ describe('data queries controller', () => {
       app_version_id: applicationVersion.id,
     };
 
-    for (const userData of [adminUserData, developerUserData]) {
+    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries`)
-        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send(requestBody);
 
@@ -480,10 +516,15 @@ describe('data queries controller', () => {
     }
   });
 
-  it('should be able to run queries of an app if the user belongs to the same organization', async () => {
+  it('should be able to run queries of an app if the user belongs to the same organization or has instance user type', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -504,6 +545,8 @@ describe('data queries controller', () => {
     developerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, viewerUserData.user.email);
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -529,14 +572,41 @@ describe('data queries controller', () => {
       delete: false,
     });
 
-    for (const userData of [adminUserData, developerUserData, viewerUserData]) {
+    for (const userData of [adminUserData, developerUserData, viewerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries/${dataQuery.id}/run`)
-        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie']);
 
       expect(response.statusCode).toBe(201);
       expect(response.body.data.length).toBe(30);
+
+      // should create audit log
+      const auditLog = await AuditLog.findOne({
+        where: {
+          userId: userData.user.id,
+          resourceType: 'DATA_QUERY',
+        },
+      });
+
+      const organizationId =
+        userData.user.userType === 'instance' ? adminUserData.user.organizationId : userData.user.organizationId;
+
+      expect(auditLog.organizationId).toEqual(organizationId);
+      expect(auditLog.resourceId).toEqual(dataQuery.id);
+      expect(auditLog.resourceType).toEqual('DATA_QUERY');
+      expect(auditLog.resourceName).toEqual(dataQuery.name);
+      expect(auditLog.actionType).toEqual('DATA_QUERY_RUN');
+      expect(auditLog.metadata).toEqual({
+        parsedQueryOptions: {
+          body: [],
+          headers: [],
+          method: 'get',
+          url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
+          url_params: [],
+        },
+      });
+      expect(auditLog.createdAt).toBeDefined();
     }
   });
 

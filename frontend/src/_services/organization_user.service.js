@@ -2,6 +2,7 @@ import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 
 export const organizationUserService = {
+  archiveAll,
   archive,
   unarchive,
   create,
@@ -36,12 +37,27 @@ function changeRole(id, role) {
   return fetch(`${config.apiUrl}/organization_users/${id}/change_role`, requestOptions).then(handleResponse);
 }
 
-function archive(id) {
+function archiveAll(userId) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization_users/${userId}/archive-all`, requestOptions).then(handleResponse);
+}
+
+function archive(id, organizationId) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ ...(organizationId && { organizationId }) }),
+  };
   return fetch(`${config.apiUrl}/organization_users/${id}/archive`, requestOptions).then(handleResponse);
 }
 
-function unarchive(id) {
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
+function unarchive(id, organizationId) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ ...(organizationId && { organizationId }) }),
+  };
   return fetch(`${config.apiUrl}/organization_users/${id}/unarchive`, requestOptions).then(handleResponse);
 }

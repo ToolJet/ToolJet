@@ -1,16 +1,24 @@
 import allPlugins from '@tooljet/plugins/dist/server';
 import { Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, getManager, Repository } from 'typeorm';
+import { Brackets, EntityManager, getManager, Repository } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { PluginsHelper } from '../helpers/plugins.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { App } from 'src/entities/app.entity';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
+import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { User } from 'src/entities/user.entity';
+import { UsersService } from './users.service';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { EncryptionService } from './encryption.service';
 import { OrgEnvironmentVariable } from '../entities/org_envirnoment_variable.entity';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import { decode } from 'js-base64';
 
 @Injectable()
 export class DataSourcesService {
@@ -19,18 +27,20 @@ export class DataSourcesService {
     private credentialsService: CredentialsService,
     private encryptionService: EncryptionService,
     private appEnvironmentService: AppEnvironmentService,
-
+    private usersService: UsersService,
+    private licenseService: LicenseService,
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
   ) {}
 
-  async all(
-    query: object,
-    organizationId: string,
-    scope: DataSourceScopes = DataSourceScopes.LOCAL
-  ): Promise<DataSource[]> {
-    const { app_version_id: appVersionId, environmentId }: any = query;
+  async all(query: object, user: User, scope: DataSourceScopes = DataSourceScopes.LOCAL): Promise<DataSource[]> {
+    const { app_version_id: appVersionId, environment_id: environmentId, includeStaticSources }: any = query;
     let selectedEnvironmentId = environmentId;
+    const { organizationId, id } = user;
+    const isAdmin = await this.usersService.hasGroup(user, 'admin', organizationId);
+    const groupPermissions = await this.usersService.groupPermissions(user);
+    const canPerformCreateOrDelete = groupPermissions?.some((gp) => gp['dataSourceCreate'] || gp['dataSourceDelete']);
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
@@ -43,9 +53,33 @@ export class DataSourcesService {
         .leftJoinAndSelect('data_source.plugin', 'plugin')
         .leftJoinAndSelect('plugin.iconFile', 'iconFile')
         .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
-        .leftJoinAndSelect('plugin.operationsFile', 'operationsFile')
-        .where('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
-        .andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
+        .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
+
+      if ((!isSuperAdmin(user) || !isAdmin) && scope === DataSourceScopes.GLOBAL) {
+        if (!canPerformCreateOrDelete) {
+          query
+            .innerJoin('data_source.groupPermissions', 'group_permissions')
+            .innerJoin(
+              UserGroupPermission,
+              'user_group_permissions',
+              'data_source_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+            )
+            .leftJoin('data_source.dataQueries', 'data_queries');
+          if (!isLicenseValid) {
+            query.andWhere('group_permissions.group  = :group', { group: 'admin' });
+          }
+          query.andWhere(
+            new Brackets((qb) => {
+              qb.where('user_group_permissions.user_id = :userId', {
+                userId: id,
+              }).andWhere('data_source_group_permissions.read = :value', { value: true });
+              if (appVersionId) {
+                qb.orWhere('data_queries.app_version_id = :appVersionId', { appVersionId });
+              }
+            })
+          );
+        }
+      }
 
       if (scope === DataSourceScopes.GLOBAL) {
         query
@@ -57,7 +91,13 @@ export class DataSourcesService {
           .andWhere('data_source.scope = :scope', { scope: DataSourceScopes.LOCAL });
       }
 
-      const result = await query.getMany();
+      if (includeStaticSources === 'false') {
+        query.andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
+      }
+
+      const result = await query
+        .andWhere('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
+        .getMany();
 
       //remove tokenData from restapi datasources
       const dataSources = result?.map((ds) => {
@@ -92,7 +132,16 @@ export class DataSourcesService {
   async findOneByEnvironment(dataSourceId: string, environmentId?: string): Promise<DataSource> {
     const dataSource = await this.dataSourcesRepository.findOneOrFail({
       where: { id: dataSourceId },
-      relations: ['plugin', 'apps', 'dataSourceOptions', 'appVersion', 'appVersion.app'],
+      relations: [
+        'apps',
+        'dataSourceOptions',
+        'appVersion',
+        'appVersion.app',
+        'plugin',
+        'plugin.iconFile',
+        'plugin.manifestFile',
+        'plugin.operationsFile',
+      ],
     });
 
     const dsOrganizationId = dataSource.organizationId || dataSource.appVersion.app.organizationId;
@@ -105,6 +154,14 @@ export class DataSourcesService {
       } else {
         throw new NotAcceptableException('Environment id should not be empty');
       }
+    }
+
+    if (dataSource.pluginId) {
+      dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
+      dataSource.plugin.manifestFile.data = JSON.parse(decode(dataSource.plugin.manifestFile.data.toString('utf8')));
+      dataSource.plugin.operationsFile.data = JSON.parse(
+        decode(dataSource.plugin.operationsFile.data.toString('utf8'))
+      );
     }
 
     if (environmentId) {
@@ -225,8 +282,45 @@ export class DataSourcesService {
           })
         );
       }
+      await this.createDataSourceGroupPermissionsForAdmin(dataSource, manager);
       return dataSource;
     });
+  }
+
+  async createDataSourceGroupPermissionsForAdmin(dataSource: DataSource, manager: EntityManager): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const orgDefaultGroupPermissions = await manager.find(GroupPermission, {
+        where: {
+          organizationId: dataSource.organizationId,
+          group: 'admin',
+        },
+      });
+
+      for (const groupPermission of orgDefaultGroupPermissions) {
+        const dataSourceGroupPermission = manager.create(DataSourceGroupPermission, {
+          groupPermissionId: groupPermission.id,
+          dataSourceId: dataSource.id,
+          ...this.fetchDefaultDataSourceGroupPermissions(groupPermission.group),
+        });
+
+        await manager.save(dataSourceGroupPermission);
+      }
+    }, manager);
+  }
+
+  fetchDefaultDataSourceGroupPermissions(group: string): {
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  } {
+    switch (group) {
+      case 'all_users':
+        return { read: true, update: false, delete: false };
+      case 'admin':
+        return { read: true, update: true, delete: true };
+      default:
+        throw `${group} is not a default group`;
+    }
   }
 
   async update(
@@ -239,6 +333,7 @@ export class DataSourcesService {
     const dataSource = await this.findOne(dataSourceId);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const isMultiEnvEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
       const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
 
       // if datasource is restapi then reset the token data
@@ -253,12 +348,21 @@ export class DataSourcesService {
         await this.appEnvironmentService.getOptions(dataSourceId, organizationId, envToUpdate.id)
       ).options;
 
-      await this.appEnvironmentService.updateOptions(
-        await this.parseOptionsForUpdate(dataSource, options),
-        envToUpdate.id,
-        dataSource.id,
-        manager
-      );
+      const newOptions = await this.parseOptionsForUpdate(dataSource, options);
+      if (isMultiEnvEnabled) {
+        await this.appEnvironmentService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
+      } else {
+        const allEnvs = await this.appEnvironmentService.getAll(organizationId);
+        /* 
+          Basic plan customer. lets update all environment options. 
+          this will help us to run the queries successfully when the user buys enterprise plan 
+        */
+        await Promise.all(
+          allEnvs.map(async (envToUpdate) => {
+            await this.appEnvironmentService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
+          })
+        );
+      }
       const updatableParams = {
         id: dataSourceId,
         name,
@@ -284,13 +388,23 @@ export class DataSourcesService {
     environmentId?: string
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const dataSource = await manager.findOneOrFail(DataSource, dataSourceId, { relations: ['dataSourceOptions'] });
+      const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId);
       const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
       const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
-      const oldOptions = dataSource.dataSourceOptions?.[0]?.options || {};
+      const oldOptions = dataSource.options || {};
       const updatedOptions = { ...oldOptions, ...parsedOptions };
+      const isMultiEnvEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
 
-      await this.appEnvironmentService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
+      if (isMultiEnvEnabled) {
+        await this.appEnvironmentService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
+      } else {
+        const allEnvs = await this.appEnvironmentService.getAll(organizationId);
+        await Promise.all(
+          allEnvs.map(async (envToUpdate) => {
+            await this.appEnvironmentService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
+          })
+        );
+      }
     });
   }
 
@@ -358,7 +472,7 @@ export class DataSourcesService {
     return result;
   }
 
-  async parseOptionsForOauthDataSource(options: Array<object>) {
+  async parseOptionsForOauthDataSource(options: Array<object>, resetSecureData = false) {
     const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
 
     if (findOption(options, 'oauth2') && findOption(options, 'code')) {
@@ -366,7 +480,7 @@ export class DataSourcesService {
       const authCode = findOption(options, 'code')['value'];
 
       const queryService = new allPlugins[provider]();
-      const accessDetails = await queryService.accessDetailsFrom(authCode, options);
+      const accessDetails = await queryService.accessDetailsFrom(authCode, options, resetSecureData);
 
       for (const row of accessDetails) {
         const option = {};
@@ -386,7 +500,7 @@ export class DataSourcesService {
   async parseOptionsForCreate(options: Array<object>, resetSecureData = false, entityManager = getManager()) {
     if (!options) return {};
 
-    const optionsWithOauth = await this.parseOptionsForOauthDataSource(options);
+    const optionsWithOauth = await this.parseOptionsForOauthDataSource(options, resetSecureData);
     const parsedOptions = {};
 
     for (const option of optionsWithOauth) {
@@ -508,13 +622,15 @@ export class DataSourcesService {
 
   async convertToGlobalSource(datasourceId: string, organizationId: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.save(DataSource, {
+      await manager.save(DataSource, {
         id: datasourceId,
         updatedAt: new Date(),
         appVersionId: null,
         organizationId,
         scope: DataSourceScopes.GLOBAL,
       });
+      const dataSource = await this.findOne(datasourceId, manager);
+      return await this.createDataSourceGroupPermissionsForAdmin(dataSource, manager);
     });
   }
 

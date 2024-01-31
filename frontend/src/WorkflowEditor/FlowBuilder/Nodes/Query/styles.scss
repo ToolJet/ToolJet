@@ -1,0 +1,85 @@
+.query-node {
+  display: flex;
+  flex-direction: column;
+  width: 600px;
+  // padding: 24px;
+
+  .left-handle, .right-handle {
+    width: 20px;
+  }
+
+  .code-hinter-wrapper {
+    // to disable the dark mode for sometime.
+    background-color: #ffffff !important;
+  }
+
+  .body {
+    width: auto;
+    height: auto;
+    min-height: 200px;
+    border: none;
+    border-radius: 10px;
+    padding: 24px;
+    background-color: white;
+
+    .rest-api-methods-select-element-container {
+      display: flex;
+
+      .CodeMirror {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+    }
+
+    .result-section {
+      width: 98%;
+      margin: auto;
+      margin-top: 24px;
+      background: #F8F9FA;
+      border-radius: 8px 8px 0px 0px;
+      padding: 0px;
+      overflow: hidden;
+
+      .result-label {
+        height: 44px;
+        padding: 8px 16px;
+        background: #F8F9FA;
+        font-family: 'IBM Plex Sans';
+        font-style: normal;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 20px;
+        display: flex;
+        align-items: center;
+        color: #889096;
+        border-bottom: 1px solid #ECEEF0;
+      }
+    }
+
+    .grid {
+      width: 100%;
+
+      .content-section {
+        margin-top: 8px;
+        margin-bottom: 5px;
+
+        .query-hinter {
+          height: 250px !important;
+        }
+      }
+    }
+
+    .datasource-selector {
+      z-index: 10000000;
+    }
+
+    .input-icon {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      width: 95%;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+  }
+}

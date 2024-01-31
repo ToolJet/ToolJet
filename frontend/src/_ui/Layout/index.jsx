@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useRouter from '@/_hooks/use-router';
 import { ToolTip } from '@/_components/ToolTip';
@@ -6,17 +6,75 @@ import { Profile } from '@/_components/Profile';
 import { NotificationCenter } from '@/_components/NotificationCenter';
 import Logo from '@assets/images/rocket.svg';
 import Header from '../Header';
-import { authenticationService } from '@/_services';
+import { authenticationService, licenseService } from '@/_services';
 import SolidIcon from '../Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
+import { LicenseTooltip } from '@/LicenseTooltip';
 import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
+import Beta from '../Beta';
+import './styles.scss';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
+  const [featureAccess, setFeatureAccess] = useState({});
+  let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+
+  const canAnyGroupPerformAction = (action, permissions) => {
+    if (!permissions) {
+      return false;
+    }
+
+    return permissions.some((p) => p[action]);
+  };
+
+  const fetchFeatureAccess = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      setFeatureAccess({ ...data });
+    });
+    licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  };
+
+  const canCreateDataSource = () => {
+    return (
+      canAnyGroupPerformAction('data_source_create', currentUserValue.group_permissions) || currentUserValue.super_admin
+    );
+  };
+
+  const canUpdateDataSource = () => {
+    return (
+      canAnyGroupPerformAction('update', currentUserValue.data_source_group_permissions) || currentUserValue.super_admin
+    );
+  };
+
+  const canReadDataSource = () => {
+    return (
+      canAnyGroupPerformAction('read', currentUserValue.data_source_group_permissions) || currentUserValue.super_admin
+    );
+  };
+
+  const canDeleteDataSource = () => {
+    return (
+      canAnyGroupPerformAction('data_source_delete', currentUserValue.group_permissions) || currentUserValue.super_admin
+    );
+  };
+
+  useEffect(() => {
+    fetchFeatureAccess();
+  }, []);
+
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
+  const super_admin = currentUserValue?.super_admin;
   const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
+  const hasCommonPermissions =
+    canReadDataSource() ||
+    canUpdateDataSource() ||
+    canCreateDataSource() ||
+    canDeleteDataSource() ||
+    admin ||
+    super_admin;
+  const isAuthorizedForGDS = (hasCommonPermissions && licenseValid) || (!licenseValid && (admin || super_admin));
 
   const {
     checkForUnsavedChanges,
@@ -26,6 +84,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
     unSavedModalVisible,
     nextRoute,
   } = useGlobalDatasourceUnsavedChanges();
+  const workflowsEnabled = admin && window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
 
   return (
     <div className="row m-auto">
@@ -37,7 +96,11 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 to={getPrivateRoute('dashboard')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               >
-                <Logo />
+                {window.public_config?.WHITE_LABEL_LOGO ? (
+                  <img src={window.public_config?.WHITE_LABEL_LOGO} height={26} />
+                ) : (
+                  <Logo />
+                )}
               </Link>
             </div>
             <div>
@@ -45,7 +108,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 <li className="text-center cursor-pointer">
                   <ToolTip message="Dashboard" placement="right">
                     <Link
-                      to="/"
+                      to={getPrivateRoute('dashboard')}
                       onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
                       className={`tj-leftsidebar-icon-items  ${
                         (router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')) &&
@@ -64,6 +127,39 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     </Link>
                   </ToolTip>
                 </li>
+                {workflowsEnabled && (
+                  <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
+                    <ToolTip message="Workflows" placement="right">
+                      <Link
+                        to={getPrivateRoute('workflows')}
+                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workflows'), event)}
+                        className={`tj-leftsidebar-icon-items  ${
+                          router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
+                        }`}
+                        data-cy="icon-workflows"
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          height: 'fit-content',
+                          gap: '4px',
+                          padding: '8px',
+                        }}
+                      >
+                        <SolidIcon
+                          name="workflows"
+                          fill={
+                            router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
+                              ? '#3E63DD'
+                              : darkMode
+                              ? '#4C5155'
+                              : '#C1C8CD'
+                          }
+                        />
+                        <Beta className="workflows-beta-tag" />
+                      </Link>
+                    </ToolTip>
+                  </li>
+                )}
                 {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
                   <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
                     <ToolTip message="Database" placement="right">
@@ -89,7 +185,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 )}
 
                 {/* DATASOURCES */}
-                {admin && (
+                {isAuthorizedForGDS && (
                   <li className="text-center cursor-pointer">
                     <ToolTip message="Data sources" placement="right">
                       <Link
@@ -133,20 +229,74 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       to={getPrivateRoute('workspace_settings')}
                       onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
                       className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === getPrivateRoute('workspace_settings') && `current-seleted-route`
+                        router.pathname.startsWith(getPrivateRoute('workspace_settings')) && `current-seleted-route`
                       }`}
                       data-cy="icon-workspace-settings"
                     >
                       <SolidIcon
                         name="settings"
-                        fill={router.pathname === getPrivateRoute('workspace_settings') ? '#3E63DD' : 'var(--slate8)'}
+                        fill={
+                          router.pathname.startsWith(getPrivateRoute('workspace_settings'))
+                            ? '#3E63DD'
+                            : 'var(--slate8)'
+                        }
                         width={28}
                       />
                     </Link>
                   </ToolTip>
                 </li>
-
+                {super_admin && (
+                  <li className="text-center cursor-pointer">
+                    <ToolTip message="Settings" placement="right">
+                      <Link
+                        to="/instance-settings"
+                        onClick={(event) => checkForUnsavedChanges('/instance-settings', event)}
+                        className={`tj-leftsidebar-icon-items  ${
+                          router.pathname.startsWith('/instance-settings') && `current-seleted-route`
+                        }`}
+                        data-cy="icon-instance-settings"
+                      >
+                        <SolidIcon
+                          name="instancesettings"
+                          fill={router.pathname.startsWith('/instance-settings') ? '#3E63DD' : 'var(--slate8)'}
+                        />
+                      </Link>
+                    </ToolTip>
+                  </li>
+                )}
                 <li className="tj-leftsidebar-icon-items-bottom text-center">
+                  {admin && (
+                    <LicenseTooltip
+                      limits={featureAccess}
+                      feature={'Audit logs'}
+                      isAvailable={featureAccess?.auditLogs}
+                      customMessage={
+                        licenseValid
+                          ? 'Audit logs are not included in your current plan'
+                          : 'Audit logs are available only in paid plans'
+                      }
+                    >
+                      <Link
+                        to={featureAccess?.auditLogs && getPrivateRoute('audit_logs')}
+                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('audit_logs'), event)}
+                        className={`tj-leftsidebar-icon-items ${
+                          router.pathname === getPrivateRoute('audit_logs') && `current-seleted-route`
+                        }`}
+                        data-cy="icon-audit-logs"
+                      >
+                        <SolidIcon
+                          name="auditlogs"
+                          fill={
+                            router.pathname === getPrivateRoute('audit_logs')
+                              ? '#3E63DD'
+                              : darkMode
+                              ? '#4C5155'
+                              : '#C1C8CD'
+                          }
+                        />
+                      </Link>
+                    </LicenseTooltip>
+                  )}
                   <NotificationCenter darkMode={darkMode} />
                   <ToolTip message="Mode" placement="right">
                     <div

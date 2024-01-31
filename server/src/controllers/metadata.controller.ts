@@ -24,6 +24,7 @@ export class MetadataController {
     const data = metadata.data;
     let latestVersion = data['latest_version'];
     let versionIgnored = data['version_ignored'] || false;
+    const instanceId = metadata['id'];
     const onboarded = data['onboarded'];
 
     if (process.env.NODE_ENV == 'production') {
@@ -43,6 +44,7 @@ export class MetadataController {
     }
 
     return {
+      instance_id: instanceId,
       installed_version: globalThis.TOOLJET_VERSION,
       latest_version: latestVersion,
       onboarded: onboarded,

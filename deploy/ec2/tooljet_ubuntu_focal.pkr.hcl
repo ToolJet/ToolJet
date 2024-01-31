@@ -12,7 +12,8 @@ source "amazon-ebs" "ubuntu" {
   instance_type = "${var.instance_type}"
   region        = "${var.ami_region}"
   ami_regions   = "${var.ami_regions}"
-  ami_groups    = "${var.ami_groups}"
+  ami_groups    = "${var.ami_groups}"  
+  
   source_ami_filter {
     filters = {
       name                = "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"
@@ -25,7 +26,6 @@ source "amazon-ebs" "ubuntu" {
   ssh_username = "ubuntu"
   ssh_clear_authorized_keys = "true"
 }
-
 
 build {
   sources = [
@@ -57,7 +57,13 @@ build {
     destination = "/tmp/postgrest.service"
   }
 
+  provisioner "file" {
+    source      = "redis-server.service"
+    destination = "/tmp/redis-server.service"
+  }  
+
   provisioner "shell" {
     script = "setup_machine.sh"
+    environment_vars = ["SSH_PRIVATE_KEY=${var.ssh_private_key}"]
   }
 }

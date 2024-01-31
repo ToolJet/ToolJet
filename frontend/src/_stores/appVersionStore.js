@@ -10,6 +10,8 @@ export function createAppVersionStore(moduleName) {
     releasedVersionId: null,
     isVersionReleased: false,
     appVersions: [],
+    isAppVersionPromoted: false,
+    currentAppVersionEnvironment: null,
     moduleName,
   };
 
@@ -28,6 +30,8 @@ export function createAppVersionStore(moduleName) {
               isVersionReleased: get().editingVersion?.id ? get().editingVersion?.id === versionId : false,
             }),
           setAppVersions: (versions) => set({ appVersions: versions }),
+          setAppVersionCurrentEnvironment: (environment) => set({ currentAppVersionEnvironment: environment }),
+          setAppVersionPromoted: (value) => set({ isAppVersionPromoted: value }),
         },
       }),
       { name: 'App Version Manager Store' }

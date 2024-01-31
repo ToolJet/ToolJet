@@ -43,9 +43,10 @@ export const PageHandler = ({
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -173,7 +174,7 @@ export const PageHandler = ({
             )}
           </div>
           <div className="col-auto" data-cy="page-menu-option-icon">
-            {(isHovered || isSelected) && !isVersionReleased && (
+            {(isHovered || isSelected) && !(isVersionReleased || isEditorFreezed) && (
               <PagehandlerMenu
                 page={page}
                 darkMode={darkMode}
@@ -219,9 +220,11 @@ export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode
       toast('Page name should have at least 1 character', {
         icon: '⚠️',
       });
-    }
-
-    if (pageName && pageName.trim().length > 0) {
+    } else if (pageName.trim().length > 50) {
+      toast('Page name cannot exceed 50 characters', {
+        icon: '⚠️',
+      });
+    } else {
       addNewPage({ name: pageName, handle: _.kebabCase(pageName.toLowerCase()) });
     }
     setNewPageBeingCreated(false);

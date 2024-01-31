@@ -1,4 +1,5 @@
 import got from 'got';
+import * as requestIp from 'request-ip';
 import { QueryError } from '@tooljet/plugins/dist/server';
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,6 +9,8 @@ import { DataQuery } from '../../src/entities/data_query.entity';
 import { CredentialsService } from './credentials.service';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
+import { AuditLoggerService } from './audit_logger.service';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { PluginsHelper } from '../helpers/plugins.helper';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { EncryptionService } from './encryption.service';
@@ -17,6 +20,7 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import allPlugins from '@tooljet/plugins/dist/server';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { RequestContext } from 'src/models/request-context.model';
 
 @Injectable()
 export class DataQueriesService {
@@ -28,6 +32,7 @@ export class DataQueriesService {
     private appEnvironmentService: AppEnvironmentService,
     @InjectRepository(DataQuery)
     private dataQueriesRepository: Repository<DataQuery>,
+    private auditLoggerService: AuditLoggerService,
     @InjectRepository(OrgEnvironmentVariable)
     private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>
   ) {}
@@ -91,12 +96,13 @@ export class DataQueriesService {
     });
   }
 
-  async update(dataQueryId: string, name: string, options: object): Promise<DataQuery> {
-    const dataQuery = this.dataQueriesRepository.save({
+  async update(dataQueryId: string, name: string, options: object, dataSourceId: string): Promise<DataQuery> {
+    const dataQuery = await this.dataQueriesRepository.save({
       id: dataQueryId,
       name,
       options,
       updatedAt: new Date(),
+      dataSourceId,
     });
 
     return dataQuery;
@@ -149,6 +155,7 @@ export class DataQueriesService {
       organizationId,
       environmentId
     );
+    let result;
 
     try {
       // multi-auth will not work with public apps
@@ -159,7 +166,17 @@ export class DataQueriesService {
           {}
         );
       }
-      return await service.run(
+
+      if (dataSource.kind === 'restapi') {
+        const customXFFHeader = ['tj-x-forwarded-for', requestIp.getClientIp(RequestContext?.currentContext?.req)];
+        if (!sourceOptions['headers']) {
+          sourceOptions['headers'] = [customXFFHeader];
+        } else {
+          sourceOptions['headers'].push(customXFFHeader);
+        }
+      }
+
+      result = await service.run(
         sourceOptions,
         parsedQueryOptions,
         `${dataSource.id}-${dataSourceOptions.environmentId}`,
@@ -236,8 +253,7 @@ export class DataQueriesService {
             organizationId,
             environmentId
           ));
-
-          return await service.run(
+          result = await service.run(
             sourceOptions,
             parsedQueryOptions,
             `${dataSource.id}-${dataSourceOptions.environmentId}`,
@@ -247,10 +263,21 @@ export class DataQueriesService {
               app: { id: app?.id, isPublic: app?.isPublic },
             }
           );
-        } else if (dataSource.kind === 'restapi' || dataSource.kind === 'openapi' || dataSource.kind === 'graphql') {
+        } else if (
+          dataSource.kind === 'restapi' ||
+          dataSource.kind === 'openapi' ||
+          dataSource.kind === 'graphql' ||
+          dataSource.kind === 'googlesheets' ||
+          dataSource.kind === 'slack' ||
+          dataSource.kind === 'zendesk'
+        ) {
           return {
             status: 'needs_oauth',
             data: {
+              kind: dataSource.kind,
+              options: {
+                access_type: sourceOptions['access_type'],
+              },
               auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
             },
           };
@@ -261,6 +288,19 @@ export class DataQueriesService {
         throw api_error;
       }
     }
+
+    if (user) {
+      await this.auditLoggerService.perform({
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: dataQuery?.id,
+        resourceName: dataQuery?.name,
+        resourceType: ResourceTypes.DATA_QUERY,
+        actionType: ActionTypes.DATA_QUERY_RUN,
+        metadata: { parsedQueryOptions },
+      });
+    }
+    return result;
   }
 
   checkIfContentTypeIsURLenc(headers: [] = []) {
@@ -398,7 +438,6 @@ export class DataQueriesService {
         },
       ];
     }
-
     await this.dataSourcesService.updateOptions(dataSource.id, tokenOptions, organizationId, environmentId);
     return;
   }
@@ -515,7 +554,7 @@ export class DataQueriesService {
   ): Promise<object> {
     if (typeof object === 'object' && object !== null) {
       for (const key of Object.keys(object)) {
-        object[key] = await this.parseQueryOptions(object[key], options, organization_id);
+        object[key] = await this.parseQueryOptions(object[key], options, organization_id, environmentId);
       }
       return object;
     } else if (typeof object === 'string') {
@@ -552,8 +591,7 @@ export class DataQueriesService {
         return resolvedvar;
       }
 
-      // check if more than two types of variables are present in a single line
-      if (object.match(/\{\{(.*?)\}\}/g)?.length > 1 && object.includes('{{constants.')) {
+      if (object.match(/\{\{(.*?)\}\}/g)?.length && object.includes('{{constants.')) {
         // find the constant variable from the string, {{constants.}} keyword
         const constantVariables = object.match(/\{\{(constants.*?)\}\}/g);
 
@@ -564,11 +602,6 @@ export class DataQueriesService {
             object = object.replace(variable, resolvedVariable);
           }
         }
-      }
-      if (object.includes('{{constants.')) {
-        const resolvingConstant = await this.resolveConstants(object, organization_id, environmentId);
-
-        options[object] = resolvingConstant;
       }
 
       if (object.startsWith('{{') && object.endsWith('}}') && (object.match(/{{/g) || []).length === 1) {
@@ -611,7 +644,7 @@ export class DataQueriesService {
       object.forEach((element) => {});
 
       for (const [index, element] of object) {
-        object[index] = await this.parseQueryOptions(element, options, organization_id);
+        object[index] = await this.parseQueryOptions(element, options, organization_id, environmentId);
       }
       return object;
     }

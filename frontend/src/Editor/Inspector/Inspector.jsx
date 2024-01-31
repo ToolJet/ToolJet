@@ -83,15 +83,16 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
   const { t } = useTranslation();
   useHotkeys('backspace', () => {
-    if (isVersionReleased) return;
+    if (isVersionReleased || isEditorFreezed) return;
     setWidgetDeleteConfirmation(true);
   });
   useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY));
@@ -342,7 +343,7 @@ export const Inspector = ({
     <div className="inspector">
       <ConfirmDialog
         show={showWidgetDeleteConfirmation}
-        message={'Widget will be deleted, do you want to continue?'}
+        message={'Are you sure you want to delete this component?'}
         onConfirm={() => {
           setSelectedComponents(EMPTY_ARRAY);
           removeComponent(component.id);
@@ -351,7 +352,11 @@ export const Inspector = ({
         darkMode={darkMode}
       />
       <div>
-        <div className="row inspector-component-title-input-holder">
+        <div
+          className={`row inspector-component-title-input-holder ${
+            (isVersionReleased || isEditorFreezed) && 'disabled'
+          }`}
+        >
           <div className="col-1" onClick={() => setSelectedComponents(EMPTY_ARRAY)}>
             <span data-cy={`inspector-close-icon`} className="cursor-pointer">
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
@@ -409,7 +414,7 @@ export const Inspector = ({
             </OverlayTrigger>
           </div>
         </div>
-        <div>
+        <div className={`${(isVersionReleased || isEditorFreezed) && 'disabled'}`}>
           <Tabs defaultActiveKey={'properties'} id="inspector">
             <Tab eventKey="properties" title="Properties">
               {propertiesTab}

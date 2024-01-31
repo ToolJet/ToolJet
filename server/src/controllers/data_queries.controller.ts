@@ -27,7 +27,10 @@ import { EntityManager } from 'typeorm';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { App } from 'src/entities/app.entity';
+import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/global-datasource-ability.factory';
 import { isEmpty } from 'class-validator';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -35,7 +38,8 @@ export class DataQueriesController {
     private appsService: AppsService,
     private dataQueriesService: DataQueriesService,
     private dataSourcesService: DataSourcesService,
-    private appsAbilityFactory: AppsAbilityFactory
+    private appsAbilityFactory: AppsAbilityFactory,
+    private globalDataSourcesAbilityFactory: GlobalDataSourceAbilityFactory
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -92,12 +96,27 @@ export class DataQueriesController {
     let dataSource: DataSource;
     let app: App;
 
-    if (!dataSourceId && !(kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy')) {
+    /* Check for promoted versions */
+    if (appVersionId) {
+      await this.validateQueryActionsAgainstEnvironment(
+        user.defaultOrganizationId,
+        appVersionId,
+        'You cannot create queries in the promoted version.'
+      );
+    }
+
+    if (
+      !dataSourceId &&
+      !(kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy' || kind === 'workflows')
+    ) {
       throw new BadRequestException();
     }
 
     return dbTransactionWrap(async (manager: EntityManager) => {
-      if (!dataSourceId && (kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy')) {
+      if (
+        !dataSourceId &&
+        (kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy' || kind === 'workflows')
+      ) {
         dataSource = await this.dataSourcesService.findDefaultDataSource(
           kind,
           appVersionId,
@@ -110,6 +129,20 @@ export class DataQueriesController {
 
       if (dataSource.scope === DataSourceScopes.GLOBAL) {
         app = await this.appsService.findAppFromVersion(appVersionId);
+        const globalDataSourceAbility = await this.globalDataSourcesAbilityFactory.globalDataSourceActions(
+          user,
+          dataSource.id
+        );
+
+        if (
+          !(
+            globalDataSourceAbility.can('createGlobalDataSource', dataSource) ||
+            globalDataSourceAbility.can('readGlobalDataSource', dataSource) ||
+            globalDataSourceAbility.can('deleteGlobalDataSource', dataSource)
+          )
+        ) {
+          throw new ForbiddenException('You do not have permissions to perform this action');
+        }
       } else {
         app = await this.dataSourcesService.findApp(dataSource?.id || dataSourceId, manager);
       }
@@ -140,16 +173,41 @@ export class DataQueriesController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(@User() user, @Param('id') dataQueryId, @Body() updateDataQueryDto: UpdateDataQueryDto) {
-    const { name, options } = updateDataQueryDto;
+    const { name, options, data_source_id } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
     const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.app.id);
+    const globalDataSourceAbility = await this.globalDataSourcesAbilityFactory.globalDataSourceActions(
+      user,
+      dataQuery.dataSourceId
+    );
 
     if (!ability.can('updateQuery', dataQuery.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const result = await this.dataQueriesService.update(dataQueryId, name, options);
+    if (
+      dataQuery.dataSource.scope === DataSourceScopes.GLOBAL &&
+      !(
+        globalDataSourceAbility.can('createGlobalDataSource', dataQuery.dataSource) ||
+        globalDataSourceAbility.can('updateGlobalDataSource', dataQuery.dataSource) ||
+        globalDataSourceAbility.can('readGlobalDataSource', dataQuery.dataSource) ||
+        globalDataSourceAbility.can('deleteGlobalDataSource', dataQuery.dataSource)
+      )
+    ) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    const appVersionId = dataQuery.appVersionId;
+    if (appVersionId) {
+      await this.validateQueryActionsAgainstEnvironment(
+        user.defaultOrganizationId,
+        appVersionId,
+        'You cannot update queries in the promoted version.'
+      );
+    }
+
+    const result = await this.dataQueriesService.update(dataQueryId, name, options, data_source_id);
     const decamelizedQuery = decamelizeKeys({ ...dataQuery, ...result });
     decamelizedQuery['options'] = result.options;
     return decamelizedQuery;
@@ -160,9 +218,25 @@ export class DataQueriesController {
   async delete(@User() user, @Param('id') dataQueryId) {
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
     const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.app.id);
+    const globalDataSourceAbility = await this.globalDataSourcesAbilityFactory.globalDataSourceActions(
+      user,
+      dataQuery.dataSourceId
+    );
 
     if (!ability.can('deleteQuery', dataQuery.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
+    }
+
+    if (
+      dataQuery.dataSource.scope === DataSourceScopes.GLOBAL &&
+      !(
+        globalDataSourceAbility.can('createGlobalDataSource', dataQuery.dataSource) ||
+        globalDataSourceAbility.can('readGlobalDataSource', dataQuery.dataSource) ||
+        globalDataSourceAbility.can('deleteGlobalDataSource', dataQuery.dataSource) ||
+        globalDataSourceAbility.can('updateGlobalDataSource', dataQuery.dataSource)
+      )
+    ) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     const result = await this.dataQueriesService.delete(dataQueryId);
@@ -177,7 +251,7 @@ export class DataQueriesController {
     @Param('environmentId') environmentId,
     @Body() updateDataQueryDto: UpdateDataQueryDto
   ) {
-    const { options, resolvedOptions } = updateDataQueryDto;
+    const { options, resolvedOptions, data_source_id } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
 
@@ -189,7 +263,7 @@ export class DataQueriesController {
       }
 
       if (ability.can('updateQuery', dataQuery.app) && !isEmpty(options)) {
-        await this.dataQueriesService.update(dataQueryId, dataQuery.name, options);
+        await this.dataQueriesService.update(dataQueryId, dataQuery.name, options, data_source_id);
         dataQuery['options'] = options;
       }
     }
@@ -282,12 +356,47 @@ export class DataQueriesController {
     const { data_source_id: dataSourceId } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(queryId);
+    const dataSource = await this.dataSourcesService.findOne(dataSourceId);
+
     const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.app.id);
+    const globalDataSourceAbility = await this.globalDataSourcesAbilityFactory.globalDataSourceActions(
+      user,
+      dataSource.id
+    );
 
     if (!ability.can('updateQuery', dataQuery.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
+
+    if (
+      dataSource.scope === DataSourceScopes.GLOBAL &&
+      !(
+        globalDataSourceAbility.can('createGlobalDataSource', dataSource) ||
+        globalDataSourceAbility.can('updateGlobalDataSource', dataSource) ||
+        globalDataSourceAbility.can('readGlobalDataSource', dataSource) ||
+        globalDataSourceAbility.can('deleteGlobalDataSource', dataSource)
+      )
+    ) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
     await this.dataQueriesService.changeQueryDataSource(queryId, dataSourceId);
     return;
+  }
+
+  async validateQueryActionsAgainstEnvironment(organizationId: string, appVersionId: string, errorMessage: string) {
+    if (appVersionId) {
+      const environments: AppEnvironment[] = await AppEnvironment.find({
+        where: {
+          organizationId,
+        },
+      });
+      const appVersion: AppVersion = await this.appsService.findVersion(appVersionId);
+      const currentEnvironment: AppEnvironment = environments.find(
+        (environment) => environment.id === appVersion.currentEnvironmentId
+      );
+      if (environments?.length > 1 && currentEnvironment.priority !== 1) {
+        throw new BadRequestException(errorMessage);
+      }
+    }
   }
 }

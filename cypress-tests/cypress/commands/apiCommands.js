@@ -81,6 +81,7 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
         organization_id: "",
         updated_at: "",
         user_id: "",
+        type: "front-end",
       },
     }).then((response) => {
       {

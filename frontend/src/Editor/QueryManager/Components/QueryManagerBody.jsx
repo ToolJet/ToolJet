@@ -11,7 +11,7 @@ import Preview from './Preview';
 import { ChangeDataSource } from './ChangeDataSource';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { EventManager } from '@/Editor/Inspector/EventManager';
-import { staticDataSources, customToggles, mockDataQueryAsComponent } from '../constants';
+import { staticDataSources, customToggles, mockDataQueryAsComponent, defaultSources } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
@@ -19,22 +19,18 @@ import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelSto
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
+import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
-export const QueryManagerBody = ({
-  darkMode,
-  options,
-  currentState,
-  allComponents,
-  apps,
-  appDefinition,
-  setOptions,
-}) => {
+export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDefinition, setOptions }) => {
   const { t } = useTranslation();
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
   const { changeDataQuery, updateDataQuery } = useDataQueriesActions();
+
+  const currentState = useCurrentStateStore();
 
   const [dataSourceMeta, setDataSourceMeta] = useState(null);
   /* - Added the below line to cause re-rendering when the query is switched
@@ -51,9 +47,10 @@ export const QueryManagerBody = ({
 
   const defaultOptions = useRef({});
 
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -106,7 +103,7 @@ export const QueryManagerBody = ({
     return (
       <div
         className={cx(`datasource-picker p-0`, {
-          'disabled ': isVersionReleased,
+          'disabled ': isVersionReleased || isEditorFreezed,
         })}
       >
         <DataSourcePicker
@@ -147,7 +144,7 @@ export const QueryManagerBody = ({
         <div>
           <div
             className={cx({
-              'disabled ': isVersionReleased,
+              'disabled ': isVersionReleased || isEditorFreezed,
             })}
           >
             <ElementToRender
@@ -173,7 +170,11 @@ export const QueryManagerBody = ({
   const renderEventManager = () => {
     const queryComponent = mockDataQueryAsComponent(options?.events || []);
     return (
-      <div className="d-flex">
+      <div
+        className={cx('d-flex', {
+          'disabled ': isVersionReleased || isEditorFreezed,
+        })}
+      >
         <div className={`form-label`}>{t('editor.queryManager.eventsHandler', 'Events')}</div>
         <div className="query-manager-events pb-4 flex-grow-1">
           <EventManager
@@ -204,7 +205,7 @@ export const QueryManagerBody = ({
       <div style={{ padding: '0 32px' }}>
         <div
           className={cx(`d-flex pb-1`, {
-            'disabled ': isVersionReleased,
+            'disabled ': isVersionReleased || isEditorFreezed,
           })}
         >
           <div className="form-label">{t('editor.queryManager.settings', 'Settings')}</div>
@@ -254,6 +255,7 @@ export const QueryManagerBody = ({
             onChange={(newDataSource) => {
               changeDataQuery(newDataSource);
             }}
+            isVersionReleased={isVersionReleased || isEditorFreezed}
           />
         </div>
       </div>
@@ -261,12 +263,18 @@ export const QueryManagerBody = ({
   };
 
   if (selectedQueryId !== selectedQuery?.id) return;
+  const hasPermissions =
+    selectedDataSource?.scope === 'global'
+      ? canUpdateDataSource(selectedQuery?.data_source_id) ||
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
+      : true;
 
   return (
     <div
       className={`row row-deck px-2 mt-0 query-details ${
         selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''
-      }`}
+      } ${!hasPermissions ? 'disabled' : ''}`}
     >
       {selectedQuery?.data_source_id && selectedDataSource !== null ? renderChangeDataSource() : null}
 

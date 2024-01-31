@@ -10,6 +10,8 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { LinkExpiredInfoScreen } from '../SuccessInfoScreen/LinkExpiredInfoScreen';
+import { retrieveWhiteLabelText } from '@/_helpers/utils';
+
 import { withRouter } from '@/_hoc/withRouter';
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
@@ -25,7 +27,6 @@ class OrganizationInvitationPageComponent extends React.Component {
       fallBack: false,
     };
     this.formRef = React.createRef(null);
-    this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
     this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
     this.source = new URLSearchParams(props?.location?.search).get('source');
   }
@@ -133,14 +134,14 @@ class OrganizationInvitationPageComponent extends React.Component {
                           className="common-auth-section-header org-invite-header"
                           data-cy="workspace-invite-page-header"
                         >
-                          Join {this.state?.configs?.name ? this.state?.configs?.name : 'ToolJet'}
+                          Join {this.state?.configs?.name ? this.state?.configs?.name : retrieveWhiteLabelText()}
                         </h2>
 
                         <div className="invite-sub-header" data-cy="workspace-invite-page-sub-header">
                           {`You are invited to ${
                             this.state?.configs?.name
                               ? `a workspace ${this.state?.configs?.name}. Accept the invite to join the workspace.`
-                              : 'ToolJet.'
+                              : retrieveWhiteLabelText()
                           }`}
                         </div>
 

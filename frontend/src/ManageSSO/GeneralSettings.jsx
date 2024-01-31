@@ -101,7 +101,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
               </div>
             </div>
           </div>
-          {(instanceSettings.google.enabled || instanceSettings.git.enabled) && (
+          {(instanceSettings.google.enabled || instanceSettings.git.enabled || instanceSettings.openid.enabled) && (
             <div className="form-group mb-3">
               <label className="form-check form-switch">
                 <input
@@ -133,6 +133,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
                 <div className="d-flex sso-main-box">
                   {instanceSettings.google.enabled && ssoButtons('google')}
                   {instanceSettings.git.enabled && ssoButtons('git')}
+                  {instanceSettings.openid.enabled && ssoButtons('openid')}
                 </div>
               </div>
             </div>

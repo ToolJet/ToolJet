@@ -4,7 +4,10 @@ import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import { validateEmail } from '@/_helpers/utils';
+import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
+import LdapSSOLoginButton from '@ee/components/LoginPage/LdapSSOLoginButton';
+import { validateEmail, retrieveWhiteLabelText, eraseRedirectUrl, redirectToWorkspace } from '@/_helpers/utils';
+import SAMLSSOLoginButton from '@ee/components/LoginPage/SAMLSSOLoginButton';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -14,8 +17,8 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { withRouter } from '@/_hoc/withRouter';
-import { pathnameToArray, getSubpath, getRedirectURL, redirectToDashboard, getRedirectTo } from '@/_helpers/routes';
-import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
+import { pathnameToArray, redirectToDashboard, getRedirectTo } from '@/_helpers/routes';
+import { setCookie } from '@/_helpers/cookie';
 
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -36,6 +39,11 @@ class LoginPageComponent extends React.Component {
     /* remove login oranization's id and slug from the cookie */
     authenticationService.deleteLoginOrganizationId();
     authenticationService.deleteLoginOrganizationSlug();
+    /* 
+      If the user is already authenticated and try to reload the login page with a redirect path. 
+      this func will help to set the redirect cookie.
+    */
+    this.setRedirectUrlToCookie();
 
     this.organizationSlug = this.organizationId;
     this.currentSessionObservable = authenticationService.currentSession.subscribe((newSession) => {
@@ -48,17 +56,7 @@ class LoginPageComponent extends React.Component {
             this.organizationId &&
             newSession?.current_organization_id === this.organizationId)
         ) {
-          // redirect to home if already logged in
-          // set redirect path for sso/form login
-          let redirectPath = '';
-          if (this.state.formLogin) {
-            const path = getRedirectURL();
-            redirectPath = path === '/confirm' ? '/' : path;
-          } else {
-            const path = this.eraseRedirectUrl();
-            redirectPath = getRedirectURL(path);
-          }
-          window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+          return redirectToWorkspace();
         }
       }
     });
@@ -122,12 +120,6 @@ class LoginPageComponent extends React.Component {
     this.currentSessionObservable && this.currentSessionObservable.unsubscribe();
   }
 
-  eraseRedirectUrl() {
-    const redirectPath = getCookie('redirectPath');
-    redirectPath && eraseCookie('redirectPath');
-    return redirectPath;
-  }
-
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value, emailError: '' });
   };
@@ -162,8 +154,9 @@ class LoginPageComponent extends React.Component {
 
   authUser = (e) => {
     e.preventDefault();
+    this.setRedirectUrlToCookie();
 
-    this.setState({ isLoading: true, formLogin: true });
+    this.setState({ isLoading: true });
 
     const { email, password } = this.state;
 
@@ -189,13 +182,16 @@ class LoginPageComponent extends React.Component {
   //TODO: remove this code if we don't need
   authSuccessHandler = () => {
     this.setState({ isLoading: false });
-    this.eraseRedirectUrl();
+    eraseRedirectUrl();
   };
 
   authFailureHandler = (res) => {
     toast.error(res.error || 'Invalid email or password', {
       id: 'toast-login-auth-error',
       position: 'top-center',
+      style: {
+        maxWidth: '700px',
+      },
     });
     this.setState({ isLoading: false });
   };
@@ -230,20 +226,28 @@ class LoginPageComponent extends React.Component {
                   </div>
                 ) : (
                   <div className="common-auth-container-wrapper ">
-                    {!configs?.form && !configs?.git && !configs?.google && (
-                      <div className="text-center-onboard">
-                        <h2 data-cy="no-login-methods-warning">
-                          {this.props.t(
-                            'loginSignupPage.noLoginMethodsEnabled',
-                            'No login methods enabled for this workspace'
-                          )}
-                        </h2>
-                      </div>
-                    )}
+                    {!configs?.form &&
+                      !configs?.git &&
+                      !configs?.google &&
+                      !configs?.openid &&
+                      !configs?.ldap &&
+                      !configs?.saml && (
+                        <div className="text-center-onboard">
+                          <h2 data-cy="no-login-methods-warning">
+                            {this.props.t(
+                              'loginSignupPage.noLoginMethodsEnabled',
+                              'No login methods enabled for this workspace'
+                            )}
+                          </h2>
+                        </div>
+                      )}
                     <div>
                       {(this.state?.configs?.google?.enabled ||
                         this.state?.configs?.git?.enabled ||
-                        configs?.form?.enabled) && (
+                        configs?.form?.enabled ||
+                        configs?.ldap?.enabled ||
+                        configs?.saml?.enabled ||
+                        this.state?.configs?.openid?.enabled) && (
                         <>
                           <h2 className="common-auth-section-header sign-in-header" data-cy="sign-in-header">
                             {this.props.t('loginSignupPage.signIn', `Sign in`)}
@@ -259,7 +263,9 @@ class LoginPageComponent extends React.Component {
                           <div className="tj-text-input-label">
                             {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
                               <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
-                                {this.props.t('newToTooljet', 'New to ToolJet?')}
+                                {this.props.t('newToTooljet', ` New to ${retrieveWhiteLabelText()}?`, {
+                                  whiteLabelText: retrieveWhiteLabelText(),
+                                })}
                                 <Link
                                   to={'/signup'}
                                   tabIndex="-1"
@@ -294,7 +300,42 @@ class LoginPageComponent extends React.Component {
                           />
                         </div>
                       )}
-                      {(this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) &&
+                      {this.state?.configs?.ldap?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <LdapSSOLoginButton
+                            configs={this.state?.configs?.ldap?.configs}
+                            organizationSlug={this.organizationSlug}
+                          />
+                        </div>
+                      )}
+                      {this.state?.configs?.openid?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <OidcSSOLoginButton
+                            configId={this.state.configs?.openid?.config_id}
+                            configs={this.state.configs?.openid?.configs}
+                            text="Sign in with"
+                            setRedirectUrlToCookie={() => {
+                              this.setRedirectUrlToCookie();
+                            }}
+                          />
+                        </div>
+                      )}
+                      {this.state?.configs?.saml?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <SAMLSSOLoginButton
+                            configs={this.state?.configs?.saml?.configs}
+                            configId={this.state?.configs?.saml?.config_id}
+                            setRedirectUrlToCookie={() => {
+                              this.setRedirectUrlToCookie();
+                            }}
+                          />
+                        </div>
+                      )}
+                      {(this.state?.configs?.google?.enabled ||
+                        this.state?.configs?.git?.enabled ||
+                        configs?.saml?.enabled ||
+                        configs?.ldap?.enabled ||
+                        this.state?.configs?.openid?.enabled) &&
                         configs?.form?.enabled && (
                           <div className="separator-onboarding ">
                             <div className="mt-2 separator" data-cy="onboarding-separator">

@@ -13,6 +13,8 @@ import { EmailService } from '@services/email.service';
 import { FilesService } from '@services/files.service';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
+import { AuditLoggerService } from '@services/audit_logger.service';
+import { AuditLog } from 'src/entities/audit_log.entity';
 import { File } from 'src/entities/file.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { AuthService } from '@services/auth.service';
@@ -23,6 +25,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
 import { AppConfigService } from '@services/app_config.service';
+import { InstanceSettingsModule } from '../instance_settings/instance_settings.module';
 import { Plugin } from 'src/entities/plugin.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { Credential } from 'src/entities/credential.entity';
@@ -31,9 +34,12 @@ import { CredentialsService } from '@services/credentials.service';
 import { PluginsService } from '@services/plugins.service';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
-import { MetaModule } from '../meta/meta.module';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { AppEnvironmentsModule } from '../app_environments/app_environments.module';
+import { AppVersion } from 'src/entities/app_version.entity';
 import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
+import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { SessionService } from '@services/session.service';
 
 @Module({
@@ -48,13 +54,18 @@ import { SessionService } from '@services/session.service';
       SSOConfigs,
       AppGroupPermission,
       UserGroupPermission,
+      DataSourceGroupPermission,
+      AuditLog,
       DataSource,
       Credential,
       Plugin,
+      AppEnvironment,
+      AppVersion,
       Metadata,
     ]),
+    InstanceSettingsModule,
+    AppEnvironmentsModule,
     CaslModule,
-    MetaModule,
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
         return {
@@ -74,6 +85,7 @@ import { SessionService } from '@services/session.service';
     AuthService,
     GroupPermissionsService,
     EncryptionService,
+    AuditLoggerService,
     DataSourcesService,
     CredentialsService,
     PluginsService,

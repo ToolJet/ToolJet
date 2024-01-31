@@ -3,10 +3,8 @@
   "description": "The Customer Support Admin template streamlines support with a Main Dashboard for ticket management and All Contacts for maintaining customer data.",
   "widgets": ["Table", "Chart"],
   "sources": [
-    {
-      "name": "Tooljet Database",
-      "id": "tooljetdb"
-    }
+    { "name": "ToolJet Database", "id": "tooljetdb" },
+    { "name": "SMTP", "id": "smtp" }
   ],
   "id": "customer-support-admin",
   "category": "operations"

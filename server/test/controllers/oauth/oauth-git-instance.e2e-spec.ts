@@ -19,6 +19,14 @@ describe('oauth controller', () => {
     'first_name',
     'last_name',
     'current_organization_id',
+    'admin',
+    'app_group_permissions',
+    'avatar_id',
+    'data_source_group_permissions',
+    'group_permissions',
+    'organization',
+    'organization_id',
+    'super_admin',
     'current_organization_slug',
   ].sort();
 
@@ -95,6 +103,45 @@ describe('oauth controller', () => {
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id })
             .expect(401);
+        });
+
+        it('Workspace Login - should return 401 when the user status is archived', async () => {
+          await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'archivedUser',
+            email: 'archiveduser@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+            status: 'active',
+            userStatus: 'archived',
+          });
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO UserGit',
+                  email: 'archiveduser@tooljet.io',
+                };
+              },
+            };
+          });
+
+          (mockedGot as unknown as jest.Mock)(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock)(gitGetUserResponse);
+          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(406);
         });
 
         it('Workspace Login - should return 401 when inherit SSO is disabled', async () => {

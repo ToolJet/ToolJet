@@ -3,8 +3,8 @@ import useRouter from '@/_hooks/use-router';
 import { authenticationService } from '@/_services';
 import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
-import { RedirectLoader } from '../_components';
 import { getCookie } from '@/_helpers';
+import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { redirectToWorkspace } from '@/_helpers/utils';
 
 export function Authorize() {
@@ -43,6 +43,11 @@ export function Authorize() {
       authParams.state = router.query[configs.params.state];
     }
 
+    /* If the params has SAMLResponse the SAML auth is success */
+    if (router.query.saml_response_id) {
+      authParams.samlResponseId = router.query.saml_response_id;
+    }
+
     let subsciption;
     if (organizationId) {
       subsciption = authenticationService.currentSession.subscribe((session) => {
@@ -78,7 +83,7 @@ export function Authorize() {
 
   return (
     <div>
-      <RedirectLoader origin={Configs[router.query.origin] ? router.query.origin : 'unknown'} />
+      <TJLoader />
       {error && (
         <Navigate
           replace

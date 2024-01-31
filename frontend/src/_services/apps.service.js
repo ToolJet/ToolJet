@@ -25,7 +25,20 @@ export const appsService = {
   getAppUsers,
   getVersions,
   getTables,
+  getWorkflows,
+  getAppsLimit,
+  getWorkflowLimit,
 };
+
+function getWorkflows(id) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${id}/workflows`, requestOptions).then(handleResponse);
+}
+
+function getAppsLimit() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/limits`, requestOptions).then(handleResponse);
+}
 
 function validateReleasedApp(slug) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
@@ -42,12 +55,13 @@ function validatePrivateApp(slug, queryParams) {
   ).then(handleResponse);
 }
 
-function getAll(page, folder, searchKey) {
+//use default value for type of apps i.e.'front-end'
+function getAll(page, folder, searchKey, type = 'front-end') {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  if (page === 0) return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
+  if (page === 0) return fetch(`${config.apiUrl}/apps?type=${type}`, requestOptions).then(handleResponse);
   else
     return fetch(
-      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}`,
+      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}`,
       requestOptions
     ).then(handleResponse);
 }
@@ -203,4 +217,9 @@ function cloneResource(body) {
 function getTables(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/apps/${id}/tables`, requestOptions).then(handleResponse);
+}
+
+function getWorkflowLimit(type) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/workflowlimit/${type}`, requestOptions).then(handleResponse);
 }

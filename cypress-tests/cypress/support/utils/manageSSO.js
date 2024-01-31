@@ -32,6 +32,10 @@ export const generalSettings = () => {
     cy.clearAndType(ssoSelector.allowedDomainInput, ssoText.allowedDomain);
     cy.get(ssoSelector.saveButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast);
+    cy.wait(500);
+    cy.get(ssoSelector.allowedDomainInput).clear();
+    cy.get(ssoSelector.saveButton).click();
+    cy.wait(500);
   });
 };
 
@@ -45,7 +49,7 @@ export const googleSSOPageElements = () => {
       cy.get(ssoSelector.googleEnableToggle).uncheck();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.googleDisableToast
+        ssoText.toggleUpdateToast("Google")
       );
       cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -54,7 +58,7 @@ export const googleSSOPageElements = () => {
       cy.get(ssoSelector.googleEnableToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.googleEnabledToast
+        ssoText.toggleUpdateToast("Google")
       );
       cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -64,7 +68,7 @@ export const googleSSOPageElements = () => {
       cy.get(ssoSelector.googleEnableToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.googleEnabledToast
+        ssoText.toggleUpdateToast("Google")
       );
       cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -74,7 +78,7 @@ export const googleSSOPageElements = () => {
       cy.get(ssoSelector.googleEnableToggle).uncheck();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.googleDisableToast
+        ssoText.toggleUpdateToast("Google")
       );
       cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -90,7 +94,7 @@ export const googleSSOPageElements = () => {
     cy.get(ssoSelector.cancelButton).click();
     cy.clearAndType(ssoSelector.clientIdInput, ssoText.clientId);
     cy.get(ssoSelector.saveButton).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast2);
+    cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.toggleUpdateToast("Google"));
     cy.get(ssoSelector.clientIdInput).should("have.value", ssoText.clientId);
   });
 };
@@ -105,7 +109,7 @@ export const gitSSOPageElements = () => {
       cy.get(ssoSelector.gitEnableToggle).uncheck();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.gitDisabledToast
+        ssoText.toggleUpdateToast("GitHub")
       );
       cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -114,7 +118,7 @@ export const gitSSOPageElements = () => {
       cy.get(ssoSelector.gitEnableToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.gitEnabledToast
+        ssoText.toggleUpdateToast("GitHub")
       );
       cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -128,7 +132,7 @@ export const gitSSOPageElements = () => {
       cy.get(ssoSelector.gitEnableToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.gitEnabledToast
+        ssoText.toggleUpdateToast("GitHub")
       );
       cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -137,7 +141,7 @@ export const gitSSOPageElements = () => {
       cy.get(ssoSelector.gitEnableToggle).uncheck();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.gitDisabledToast
+        ssoText.toggleUpdateToast("GitHub")
       );
       cy.get(ssoSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -153,7 +157,7 @@ export const gitSSOPageElements = () => {
     cy.clearAndType(ssoSelector.clientIdInput, ssoText.clientId);
     cy.clearAndType(ssoSelector.clientSecretInput, ssoText.testClientId);
     cy.get(ssoSelector.saveButton).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast2);
+    cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.toggleUpdateToast("GitHub"));
     cy.get(ssoSelector.hostNameInput).should("have.value", ssoText.hostName);
     cy.get(ssoSelector.clientIdInput).should("have.value", ssoText.clientId);
     cy.get(ssoSelector.clientSecretInput).should(

@@ -13,6 +13,8 @@ export const AppMenu = function AppMenu({
   openAppActionModal,
   darkMode,
   currentFolder,
+  appType,
+  appCreationMode,
 }) {
   const { t } = useTranslation();
   const Field = ({ text, onClick, customClass }) => {
@@ -48,8 +50,9 @@ export const AppMenu = function AppMenu({
               <div data-cy="card-options">
                 {canUpdateApp && (
                   <Field
+                    customClass={appCreationMode === 'GIT' && 'disabled-action-tooltip'}
                     text={t('homePage.appCard.renameApp', 'Rename app')}
-                    onClick={() => openAppActionModal('rename-app')}
+                    onClick={() => appCreationMode !== 'GIT' && openAppActionModal('rename-app')}
                   />
                 )}
                 {canUpdateApp && (
@@ -71,16 +74,24 @@ export const AppMenu = function AppMenu({
                         onClick={() => openAppActionModal('remove-app-from-folder')}
                       />
                     )}
-                    <Field
-                      text={t('homePage.appCard.cloneApp', 'Clone app')}
-                      onClick={() => openAppActionModal('clone-app')}
-                    />
-                    <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
+                    {appType !== 'workflow' && (
+                      <Field
+                        text={t('homePage.appCard.cloneApp', 'Clone app')}
+                        onClick={() => openAppActionModal('clone-app')}
+                      />
+                    )}
+                    {appType !== 'workflow' && (
+                      <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
+                    )}
                   </>
                 )}
                 {canDeleteApp && (
                   <Field
-                    text={t('homePage.appCard.deleteApp', 'Delete app')}
+                    text={
+                      appType === 'workflow'
+                        ? t('homePage.appCard.deleteWorkflow', 'Delete workflow')
+                        : t('homePage.appCard.deleteApp', 'Delete app')
+                    }
                     customClass="field__danger"
                     onClick={deleteApp}
                   />

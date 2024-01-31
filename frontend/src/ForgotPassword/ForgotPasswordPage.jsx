@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { validateEmail } from '../_helpers/utils';
+import { validateEmail, retrieveWhiteLabelText } from '@/_helpers/utils';
 import { authenticationService } from '@/_services';
 import { ForgotPasswordInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -9,6 +9,7 @@ import { ButtonSolid } from '@/_components/AppButton';
 import { withTranslation } from 'react-i18next';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
+
 class ForgotPasswordComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -68,7 +69,7 @@ class ForgotPasswordComponent extends React.Component {
                       Forgot Password
                     </h2>
                     <p className="common-auth-sub-header" data-cy="forgot-password-sub-header">
-                      New to ToolJet? &nbsp;
+                      New to {retrieveWhiteLabelText()}? &nbsp;
                       <Link
                         to={'/signup'}
                         tabIndex="-1"

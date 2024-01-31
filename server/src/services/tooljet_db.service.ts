@@ -2,6 +2,9 @@ import { BadRequestException, HttpException, Injectable, NotFoundException, Opti
 import { EntityManager, In, ObjectLiteral, QueryFailedError, SelectQueryBuilder, TypeORMError } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
+import { generatePayloadForLimits } from 'src/helpers/utils.helper';
 import { isString, isEmpty, camelCase } from 'lodash';
 
 export type TableColumnSchema = {
@@ -42,7 +45,8 @@ export class TooljetDbService {
     private readonly manager: EntityManager,
     @Optional()
     @InjectEntityManager('tooljetDb')
-    private readonly tooljetDbManager: EntityManager
+    private readonly tooljetDbManager: EntityManager,
+    private licenseService: LicenseService
   ) {}
 
   async perform(organizationId: string, action: string, params = {}) {
@@ -265,6 +269,20 @@ export class TooljetDbService {
     const result = await this.tooljetDbManager.query(query);
     await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
     return result;
+  }
+
+  async getTablesLimit() {
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.TABLE_COUNT, LICENSE_FIELD.STATUS]);
+    return {
+      tablesCount: generatePayloadForLimits(
+        licenseTerms[LICENSE_FIELD.TABLE_COUNT] !== LICENSE_LIMIT.UNLIMITED
+          ? await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount()
+          : 0,
+        licenseTerms[LICENSE_FIELD.TABLE_COUNT],
+        licenseTerms[LICENSE_FIELD.STATUS],
+        LICENSE_LIMITS_LABEL.TABLES
+      ),
+    };
   }
 
   private async joinTable(organizationId: string, params) {

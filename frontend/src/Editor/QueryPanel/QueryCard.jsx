@@ -4,25 +4,35 @@ import { checkExistingQueryName } from '@/_helpers/appUtils';
 import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useQueryPanelActions, useSelectedQuery } from '@/_stores/queryPanelStore';
+import { useQueryPanelActions, useSelectedDataSource, useSelectedQuery } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { useModuleName } from '@/_contexts/ModuleContext';
+import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
+import { defaultSources } from '../QueryManager/constants';
 
 export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => {
   const moduleName = useModuleName();
   const selectedQuery = useSelectedQuery();
+  const selectedDataSource = useSelectedDataSource();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
   const { deleteDataQueries, renameQuery, duplicateQuery } = useDataQueriesActions();
   const { setSelectedQuery, setPreviewData } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const hasPermissions =
+    selectedDataSource?.scope === 'global'
+      ? canUpdateDataSource(selectedQuery?.data_source_id) ||
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
+      : true;
 
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -109,11 +119,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
             </div>
           )}
         </div>
-
-        {!isVersionReleased && (
+        {!(isVersionReleased || isEditorFreezed) && selectedQuery?.id === dataQuery.id && (
           <div className="col-auto query-rename-delete-btn">
             <div
-              className={`col-auto ${renamingQuery && 'display-none'} rename-query`}
+              className={`col-auto ${(renamingQuery || !hasPermissions) && 'd-none'} rename-query`}
               onClick={() => setRenamingQuery(true)}
             >
               <span className="d-flex" data-tooltip-id="query-card-btn-tooltip" data-tooltip-content="Rename query">
@@ -134,7 +143,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
                 </svg>
               </span>
             </div>
-            <div className={`col-auto rename-query`} onClick={() => duplicateQuery(dataQuery?.id, appId)}>
+            <div
+              className={`col-auto rename-query ${!hasPermissions && 'd-none'}`}
+              onClick={() => duplicateQuery(dataQuery?.id, appId)}
+            >
               <span className="d-flex" data-tooltip-id="query-card-btn-tooltip" data-tooltip-content="Duplicate query">
                 <Copy height={16} width={16} viewBox="0 5 20 20" />
               </span>
@@ -146,7 +158,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
                 </div>
               ) : (
                 <span
-                  className="delete-query"
+                  className={`delete-query ${!hasPermissions && 'd-none'}`}
                   onClick={deleteDataQuery}
                   data-tooltip-id="query-card-btn-tooltip"
                   data-tooltip-content="Delete query"

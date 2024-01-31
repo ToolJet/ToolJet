@@ -1,8 +1,0 @@
-{
-  "name": "WhatsApp and SMS CRM",
-  "description": "Get a 360 view of your customer data and send them personalised messages via SMS and WhatsApp",
-  "widgets": ["Table"],
-  "sources": [{"name": "Google Sheets", "id": "googlesheets"}, {"name": "Twilio", "id": "twilio"}],
-  "id": "whatsapp-and-sms-crm",
-  "category": "sales"
-}

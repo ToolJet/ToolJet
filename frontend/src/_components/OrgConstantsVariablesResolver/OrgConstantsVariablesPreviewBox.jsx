@@ -98,9 +98,13 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
           ref={heightRef}
           className={`dynamic-variable-preview px-1 py-1 ${isValidError ? 'bg-red-lt' : 'bg-green-lt'}`}
         >
-          <div className="alert-banner-type-text">
+          <div className="alert-banner-type-text" data-cy="variable-preview">
             <div className="d-flex my-1">
-              <div className="flex-grow-1" style={{ fontWeight: 800, textTransform: 'capitalize' }}>
+              <div
+                className="flex-grow-1"
+                style={{ fontWeight: 800, textTransform: 'capitalize' }}
+                data-cy="alert-banner-type-text"
+              >
                 {isValidError ? 'Error' : ` ${type} - ${previewType}`}
               </div>
             </div>

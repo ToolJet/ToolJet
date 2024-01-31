@@ -1,12 +1,13 @@
 import React, { useEffect, useLayoutEffect, useRef, useState, useContext } from 'react';
 import {
   appService,
+  appsService,
   authenticationService,
   appVersionService,
   orgEnvironmentVariableService,
   appEnvironmentService,
+  customStylesService,
   orgEnvironmentConstantService,
-  appsService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -48,7 +49,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { retrieveWhiteLabelText, getWorkspaceId } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -58,14 +59,15 @@ import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/
 import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
 import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
-import { EMPTY_ARRAY, useEditorActions, useEditorStore } from '@/_stores/editorStore';
-import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
+import GitSyncModal from './GitSyncModal';
+import { EMPTY_ARRAY, useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
+import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
 import { useSocketOpen } from '@/_hooks/use-socket-open';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-
+import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import { getQueryParams } from '@/_helpers/routes';
 import RightSidebarTabManager from './RightSidebarTabManager';
@@ -77,7 +79,7 @@ setAutoFreeze(false);
 enablePatches();
 
 function setWindowTitle(name) {
-  document.title = name ? `${name} - Tooljet` : `My App - Tooljet`;
+  return (document.title = name ? `${name} - ${retrieveWhiteLabelText()}` : `My App - ${retrieveWhiteLabelText()}`);
 }
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
@@ -95,20 +97,28 @@ const EditorComponent = (props) => {
     setIsSaving,
     createAppVersionEventHandlers,
     autoUpdateEventStore,
+    setEnvironments,
   } = useAppDataActions();
+  const {
+    updateEditorState,
+    updateQueryConfirmationList,
+    setSelectedComponents,
+    setCurrentPageId,
+    setCurrentAppEnvironmentId,
+    setCurrentAppEnvironmentDetails,
+  } = useEditorActions();
 
-  const { updateEditorState, updateQueryConfirmationList, setSelectedComponents, setCurrentPageId } =
-    useEditorActions();
-
-  const { setAppVersions } = useAppVersionActions();
-  const { isVersionReleased, editingVersionId, releasedVersionId } = useAppVersionStore(
+  const { setAppVersionCurrentEnvironment, setAppVersionPromoted, onEditorFreeze } = useAppVersionActions();
+  const { isVersionReleased, editingVersionId, releasedVersionId, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state?.isVersionReleased,
       editingVersionId: state?.editingVersion?.id,
       releasedVersionId: state?.releasedVersionId,
+      isEditorFreezed: state?.isEditorFreezed,
     }),
     shallow
   );
+
   const {
     appDefinition,
     currentLayout,
@@ -121,6 +131,9 @@ const EditorComponent = (props) => {
     queryConfirmationList,
     currentPageId,
     currentSessionId,
+    currentAppEnvironment,
+    currentAppEnvironmentId,
+    featureAccess,
   } = useEditorStore(
     (state) => ({
       appDefinition: state.appDefinition,
@@ -134,6 +147,9 @@ const EditorComponent = (props) => {
       queryConfirmationList: state.queryConfirmationList,
       currentPageId: state.currentPageId,
       currentSessionId: state.currentSessionId,
+      currentAppEnvironment: state.currentAppEnvironment,
+      currentAppEnvironmentId: state.currentAppEnvironmentId,
+      featureAccess: state.featureAccess,
     }),
     shallow
   );
@@ -151,6 +167,8 @@ const EditorComponent = (props) => {
     appDiffOptions,
     events,
     areOthersOnSameVersionAndPage,
+    environments,
+    creationMode,
   } = useAppDataStore(
     (state) => ({
       isMaintenanceOn: state.isMaintenanceOn,
@@ -164,6 +182,8 @@ const EditorComponent = (props) => {
       appDiffOptions: state.appDiffOptions,
       events: state.events,
       areOthersOnSameVersionAndPage: state.areOthersOnSameVersionAndPage,
+      environments: state.environments,
+      creationMode: state.creationMode,
     }),
     shallow
   );
@@ -179,6 +199,7 @@ const EditorComponent = (props) => {
 
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
   const [isDeletingPage, setIsDeletingPage] = useState(false);
+  const [showGitSyncModal, setShowGitSyncModal] = useState(false);
 
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -191,19 +212,17 @@ const EditorComponent = (props) => {
   const dataSourceModalRef = useRef(null);
   const selectionDragRef = useRef(null);
   const selectionRef = useRef(null);
-
   const prevAppDefinition = useRef(appDefinition);
   const prevEventsStoreRef = useRef(events);
 
-  useLayoutEffect(() => {
-    resetAllStores();
-  }, []);
-
   useEffect(() => {
     updateState({ isLoading: true });
-
+    (app.creation_mode === 'GIT' || app.creationMode === 'GIT') && onEditorFreeze(true);
     const currentSession = authenticationService.currentSessionValue;
-    const currentUser = currentSession?.current_user;
+    const currentUser = {
+      ...currentSession?.current_user,
+      current_organization_id: currentSession?.current_organization_id,
+    };
 
     // Subscribe to changes in the current session using RxJS observable pattern
     const subscription = authenticationService.currentSession.subscribe((currentSession) => {
@@ -213,15 +232,11 @@ const EditorComponent = (props) => {
           firstName: currentUser.first_name,
           lastName: currentUser.last_name,
           groups: currentSession.group_permissions?.map((group) => group.group),
-        };
-
-        const appUserDetails = {
-          ...currentUser,
-          current_organization_id: currentSession.current_organization_id,
+          ssoUserInfo: currentUser.sso_user_info,
         };
 
         updateState({
-          currentUser: appUserDetails,
+          currentUser: currentUser,
         });
         useSuperStore
           .getState()
@@ -269,6 +284,7 @@ const EditorComponent = (props) => {
 
       computeComponentState(components, moduleName);
 
+      if (appDiffOptions?.skipAutoSave === true) return;
       if (useSuperStore.getState().modules[moduleName].useEditorStore.getState().isUpdatingEditorStateInProcess) {
         autoSave();
       }
@@ -282,7 +298,7 @@ const EditorComponent = (props) => {
       computeComponentState(components, moduleName);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentPageId]
+    [currentPageId, currentAppEnvironmentId]
   );
 
   useEffect(() => {
@@ -311,18 +327,20 @@ const EditorComponent = (props) => {
     }
   }, [currentLayout, mounted]);
 
-  useEffect(() => {
-    if (mounted && JSON.stringify(prevEventsStoreRef.current) !== JSON.stringify(events)) {
-      props.ymap?.set('eventHandlersUpdated', {
-        updated: true,
-        currentVersionId: currentVersionId,
-        currentSessionId: currentSessionId,
-      });
-    }
+  const handleYmapEventUpdates = () => {
+    props.ymap?.set('eventHandlersUpdated', {
+      currentVersionId: currentVersionId,
+      currentSessionId: currentSessionId,
+      update: true,
+    });
+  };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ events })]);
-
+  /**
+   * ThandleMessage event listener in the login component for iframe communication.
+   * It now checks if the received message has a type of 'redirectTo' and extracts the redirectPath value from the payload.
+   * If the value is present, it sets a cookie named 'redirectPath' with the received value and a one-day expiration.
+   * This allows for redirection to a specific path after the login process is completed.
+   */
   const handleMessage = (event) => {
     const { data } = event;
 
@@ -331,7 +349,6 @@ const EditorComponent = (props) => {
       setCookie('redirectPath', redirectCookie, 1);
     }
   };
-
   const getEditorRef = () => {
     const editorRef = {
       appDefinition: useSuperStore.getState().modules[moduleName].useEditorStore.getState().appDefinition,
@@ -342,18 +359,23 @@ const EditorComponent = (props) => {
       switchPage: switchPage,
       currentPageId: useSuperStore.getState().modules[moduleName].useEditorStore.getState().currentPageId,
       moduleName,
+      currentAppEnvironmentId: useSuperStore.getState().modules[moduleName].useEditorStore.getState()
+        .currentAppEnvironmentId,
+      environmentId: useSuperStore.getState().modules[moduleName].useAppVersionStore.getState()
+        .currentAppVersionEnvironment?.id,
     };
     return editorRef;
   };
 
   const fetchApps = async (page) => {
-    const { apps } = await appService.getAll(page);
+    const { apps } = await appsService.getAll(page, '', '', 'front-end');
 
     updateState({
       apps: apps.map((app) => ({
         id: app.id,
         name: app.name,
         slug: app.slug,
+        creationMode: app?.creationMode || app?.creation_mode,
         current_version_id: app.current_version_id,
       })),
     });
@@ -378,19 +400,36 @@ const EditorComponent = (props) => {
     });
   };
 
-  const fetchOrgEnvironmentConstants = () => {
-    //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
-    orgEnvironmentConstantService.getAll().then(({ constants }) => {
+  const fetchOrgEnvironmentConstants = (environmentId) => {
+    orgEnvironmentConstantService.getConstantsFromEnvironment(environmentId).then(({ constants }) => {
       const orgConstants = {};
+
       constants.map((constant) => {
-        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
-        orgConstants[constant.name] = constantValue;
+        orgConstants[constant.name] = constant.value;
       });
 
       useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
         constants: orgConstants,
       });
     });
+  };
+
+  const fetchAndInjectCustomStyles = async () => {
+    try {
+      const head = document.head || document.getElementsByTagName('head')[0];
+      let styleTag = document.getElementById('workspace-custom-css');
+      if (!styleTag) {
+        // If it doesn't exist, create a new style tag and append it to the head
+        styleTag = document.createElement('style');
+        styleTag.type = 'text/css';
+        styleTag.id = 'workspace-custom-css';
+        head.appendChild(styleTag);
+      }
+      const data = await customStylesService.getForAppViewerEditor(false);
+      styleTag.innerHTML = data?.css || null;
+    } catch (error) {
+      console.log('Failed to fetch custom styles:', error);
+    }
   };
 
   const initComponentVersioning = () => {
@@ -426,8 +465,6 @@ const EditorComponent = (props) => {
 
         // Trigger real-time save with specific options
 
-        const ymapOpts = ymapUpdates?.opts;
-
         realtimeSave(props.ymap?.get('appDef').newDefinition, {
           skipAutoSave: true,
           skipYmapUpdate: true,
@@ -437,7 +474,7 @@ const EditorComponent = (props) => {
         });
       }
 
-      if (ymapEventHandlersUpdated) {
+      if (ymapEventHandlersUpdated?.update === true) {
         if (
           !ymapEventHandlersUpdated.currentSessionId ||
           ymapEventHandlersUpdated.currentSessionId === currentSessionId
@@ -470,7 +507,9 @@ const EditorComponent = (props) => {
     await fetchApp(props.params.pageHandle, true);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
-    await fetchOrgEnvironmentConstants();
+    await fetchEnvironments();
+
+    await fetchAndInjectCustomStyles();
     initComponentVersioning();
     initRealtimeSave();
     initEventListeners();
@@ -494,16 +533,19 @@ const EditorComponent = (props) => {
       .actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, getEditorRef(), moduleName);
   };
 
-  const fetchDataSources = (id) => {
-    useSuperStore.getState().modules[moduleName].useDataSourcesStore.getState().actions.fetchDataSources(id);
+  const fetchDataSources = (id, environmentId) => {
+    useSuperStore
+      .getState()
+      .modules[moduleName].useDataSourcesStore.getState()
+      .actions.fetchDataSources(id, environmentId);
   };
 
-  const fetchGlobalDataSources = () => {
+  const fetchGlobalDataSources = (appVersionId, environmentId) => {
     const { current_organization_id: organizationId } = currentUser;
     useSuperStore
       .getState()
       .modules[moduleName].useDataSourcesStore.getState()
-      .actions.fetchGlobalDataSources(organizationId);
+      .actions.fetchGlobalDataSources(organizationId, appVersionId, environmentId);
   };
 
   const onVersionDelete = () => {
@@ -695,25 +737,61 @@ const EditorComponent = (props) => {
     });
   };
 
-  const callBack = async (data, startingPageHandle, versionSwitched = false) => {
+  const getEnvironmentDetails = (environmentId) => {
+    const queryParams = { slug: props.params.slug };
+    return appEnvironmentService.getEnvironment(environmentId, queryParams);
+  };
+
+  const fetchEnvironments = () => {
+    appEnvironmentService.getAllEnvironments(appId).then((data) => {
+      const envArray = data?.environments;
+
+      setEnvironments(envArray);
+    });
+  };
+
+  const callBack = async (
+    data,
+    startingPageHandle,
+    versionSwitched = false,
+    environmentSwitch = false,
+    selectedEnvironmentId = null
+  ) => {
     setWindowTitle(data.name);
     useSuperStore
       .getState()
       .modules[moduleName].useAppVersionStore.getState()
       .actions.updateEditingVersion(data.editing_version);
-    if (!releasedVersionId || !versionSwitched) {
-      useSuperStore
-        .getState()
-        .modules[moduleName].useAppVersionStore.getState()
-        .actions.updateReleasedVersionId(data.current_version_id);
+    if (!environmentSwitch && (!releasedVersionId || !versionSwitched)) {
+      const releasedId = data.current_version_id || data.currentVersionId;
+      releasedId &&
+        useSuperStore
+          .getState()
+          .modules[moduleName].useAppVersionStore.getState()
+          .actions.updateReleasedVersionId(releasedId);
     }
 
-    const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
-    setAppVersions(appVersions.appVersions);
+    const currentAppVersionEnvId =
+      data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
+
     const currentOrgId = data?.organization_id || data?.organizationId;
 
+    const currentEnvironmentId =
+      !environmentSwitch && !versionSwitched ? currentAppVersionEnvId : selectedEnvironmentId;
+    await fetchOrgEnvironmentConstants(currentEnvironmentId);
+
+    let envDetails = useEditorStore.getState().currentAppEnvironment;
+    if (!environmentSwitch) {
+      setCurrentAppEnvironmentId(currentEnvironmentId);
+
+      const { environment } = await getEnvironmentDetails(currentEnvironmentId);
+      envDetails = environment;
+
+      setCurrentAppEnvironmentDetails(environment);
+      setAppVersionCurrentEnvironment(environment);
+    }
     updateState({
-      slug: data.slug,
+      slug: environmentSwitch ? slug : data.slug,
       isMaintenanceOn: data?.is_maintenance_on,
       organizationId: currentOrgId,
       isPublic: data?.is_public || data?.isPublic,
@@ -722,6 +800,7 @@ const EditorComponent = (props) => {
       appId: data?.id,
       events: data.events,
       currentVersionId: data?.editing_version?.id,
+      creationMode: data?.creationMode || data?.creation_mode,
       app: data,
     });
 
@@ -742,16 +821,28 @@ const EditorComponent = (props) => {
 
     setCurrentPageId(homePageId);
 
-    useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
-      page: currentpageData,
-    });
+    useSuperStore
+      .getState()
+      .modules[moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({
+        page: currentpageData,
+        globals: {
+          ...useCurrentStateStore.getState().globals,
+          environment: {
+            id: envDetails?.id,
+            name: envDetails?.name,
+          },
+        },
+      });
 
+    if (data.creationMode === 'GIT') {
+      onEditorFreeze(true);
+    }
     updateEditorState({
       isLoading: false,
       appDefinition: appJson,
       isUpdatingEditorStateInProcess: false,
     });
-
     if (versionSwitched) {
       props?.navigate(`/${getWorkspaceId()}/apps/${data.slug ?? appId}/${appJson.pages[homePageId]?.handle}`, {
         state: {
@@ -763,12 +854,18 @@ const EditorComponent = (props) => {
     await useSuperStore
       .getState()
       .modules[moduleName].useDataSourcesStore.getState()
-      .actions.fetchGlobalDataSources(data?.organization_id);
-    await fetchDataSources(data.editing_version?.id);
+      .actions.fetchGlobalDataSources(data?.organization_id, data.editing_version?.id, currentEnvironmentId);
+    await fetchDataSources(data.editing_version?.id, currentEnvironmentId);
     await fetchDataQueries(data.editing_version?.id, true, true);
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
 
     await handleEvent('onPageLoad', currentPageEvents, {}, true);
+
+    const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
+    if (currentEnvironmentObj[appId] !== envDetails?.id) {
+      currentEnvironmentObj[appId] = currentEnvironmentId;
+      localStorage.setItem('currentEnvironmentIds', JSON.stringify(currentEnvironmentObj));
+    }
   };
 
   const fetchApp = async (startingPageHandle, onMount = false) => {
@@ -781,7 +878,12 @@ const EditorComponent = (props) => {
     }
   };
 
-  const setAppDefinitionFromVersion = (appData) => {
+  const setAppDefinitionFromVersion = (
+    appData,
+    versionSwitched = false,
+    isEnvironmentSwitched = false,
+    selectedEnvironmentId = null
+  ) => {
     const version = appData?.editing_version?.id;
     if (version?.id !== editingVersionId) {
       if (version?.id === currentVersionId) {
@@ -790,12 +892,12 @@ const EditorComponent = (props) => {
           canRedo: false,
         });
       }
-
       updateEditorState({
         isLoading: true,
       });
-
-      callBack(appData, null, true);
+      onEditorFreeze(false);
+      setAppVersionPromoted(false);
+      callBack(appData, null, versionSwitched, isEnvironmentSwitched, selectedEnvironmentId);
       initComponentVersioning();
     }
   };
@@ -808,6 +910,8 @@ const EditorComponent = (props) => {
   };
 
   const appDefinitionChanged = async (newDefinition, opts = {}) => {
+    if (useAppVersionStore.getState().isAppVersionPromoted) return;
+
     if (opts?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
       return new Promise((resolve) => {
@@ -843,15 +947,6 @@ const EditorComponent = (props) => {
         const finalComponents = _.merge(draft?.pages[_currentPageId]?.components, currentPageComponents);
 
         draft.pages[_currentPageId].components = finalComponents;
-        // else if (opts?.componentAdding) {
-        //   const currentPageComponents = newDefinition.pages[_currentPageId]?.components;
-
-        //   const finalComponents = _.merge(draft?.pages[_currentPageId]?.components, currentPageComponents);
-
-        //   draft.pages[_currentPageId].components = finalComponents;
-        // } else {
-        //   Object.assign(draft, newDefinition);
-        // }
       });
     } else {
       updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
@@ -964,7 +1059,11 @@ const EditorComponent = (props) => {
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
     const editingVersion = useSuperStore.getState().modules[moduleName].useAppVersionStore.getState().editingVersion;
-    if (isVersionReleased && !isUserSwitchedVersion) {
+    if (
+      isEditorFreezed ||
+      useSuperStore.getState().modules[moduleName].useAppVersionStore.getState().isAppVersionPromoted ||
+      (isVersionReleased && !isUserSwitchedVersion)
+    ) {
       updateEditorState({
         isUpdatingEditorStateInProcess: false,
       });
@@ -1065,7 +1164,7 @@ const EditorComponent = (props) => {
     for (let key in prevPatch) {
       const type = typeof prevPatch[key];
 
-      if (type === 'object') {
+      if (type === 'object' && !_.isEmpty(prevPatch[key])) {
         handlePaths(prevPatch[key], [...paths, key], appJSON);
       } else {
         const currentpath = [...paths, key].join('.');
@@ -1190,7 +1289,7 @@ const EditorComponent = (props) => {
       const diffPatches = diff(appDefinition, updatedAppDefinition);
 
       if (!isEmpty(diffPatches)) {
-        appDefinitionChanged(updatedAppDefinition, { skipAutoSave: true, componentDefinitionChanged: true, ...props });
+        appDefinitionChanged(updatedAppDefinition, { componentDefinitionChanged: true, ...props });
       }
     }
   };
@@ -1454,6 +1553,7 @@ const EditorComponent = (props) => {
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useSuperStore.getState().modules[moduleName].useEditorStore.getState().currentPageId;
     const appDefinition = useSuperStore.getState().modules[moduleName].useEditorStore.getState().appDefinition;
+    const appId = useSuperStore.getState().modules[moduleName].useAppDataStore.getState()?.appId;
     const pageHandle = getCurrentState(moduleName).pageHandle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
@@ -1671,6 +1771,7 @@ const EditorComponent = (props) => {
       pageDefinitionChanged: true,
     });
 
+    toast.success('Page handle updated successfully');
     const queryParams = getQueryParams();
     navigateToPage(Object.entries(queryParams), newHandle);
   };
@@ -1704,6 +1805,27 @@ const EditorComponent = (props) => {
     appDefinitionChanged(newAppDefinition, {
       generalAppDefinitionChanged: true,
     });
+  };
+
+  const appEnvironmentChanged = async (currentEnvironment, envSelection) => {
+    const shouldUpdate = currentAppEnvironmentId !== currentEnvironment?.id;
+
+    if (shouldUpdate) {
+      const selectedEnvironment = environments.find((env) => env.id === currentEnvironment?.id);
+      setCurrentAppEnvironmentDetails(selectedEnvironment);
+      setCurrentAppEnvironmentId(currentEnvironment?.id);
+
+      if (!envSelection) {
+        window.location.reload(false);
+      } else {
+        const selectedEnvironmentId = currentEnvironment?.id;
+
+        callBack(app, props.params.pageHandle, false, true, selectedEnvironmentId);
+      }
+    }
+  };
+  const toggleGitSyncModal = () => {
+    setShowGitSyncModal(!showGitSyncModal);
   };
 
   const handleCanvasContainerMouseUp = (e) => {
@@ -1742,8 +1864,24 @@ const EditorComponent = (props) => {
       </div>
     );
   }
+
+  const formCustomPageSelectorClass = () => {
+    const pageHandle = getCurrentState().page.handle;
+    return `_tooljet-page-${pageHandle}`;
+  };
+
   return (
     <div className="editor wrapper">
+      <GitSyncModal
+        currentUser={currentUser}
+        showGitSyncModal={showGitSyncModal}
+        handleClose={toggleGitSyncModal}
+        app={app}
+        isVersionReleased={isVersionReleased}
+        featureAccess={featureAccess}
+        setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+        creationMode={creationMode}
+      />
       <Confirm
         show={queryConfirmationList?.length > 0}
         message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
@@ -1762,8 +1900,10 @@ const EditorComponent = (props) => {
         onCancel={() => cancelDeletePageRequest()}
         darkMode={props.darkMode}
       />
+      {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
       {isVersionReleased && <ReleasedVersionError />}
-      <EditorContextWrapper>
+      {!isVersionReleased && isEditorFreezed && creationMode !== 'GIT' && <FreezeVersionInfo />}
+      <EditorContextWrapper handleYmapEventUpdates={handleYmapEventUpdates}>
         <EditorHeader
           darkMode={props.darkMode}
           appDefinition={_.cloneDeep(appDefinition)}
@@ -1773,19 +1913,27 @@ const EditorComponent = (props) => {
           handleRedo={handleRedo}
           // saveError={saveError}
           onNameChanged={onNameChanged}
+          currentAppEnvironmentId={currentAppEnvironmentId}
           setAppDefinitionFromVersion={setAppDefinitionFromVersion}
           onVersionRelease={onVersionRelease}
           saveEditingVersion={saveEditingVersion}
+          appEnvironmentChanged={appEnvironmentChanged}
           onVersionDelete={onVersionDelete}
           isMaintenanceOn={isMaintenanceOn}
           appName={appName}
           appId={appId}
           slug={slug}
+          toggleGitSyncModal={toggleGitSyncModal}
+          showGitSyncModal={showGitSyncModal}
+          setCurrentAppVersionPromoted={(isCurrentVersionPromoted) => setAppVersionPromoted(isCurrentVersionPromoted)}
+          fetchEnvironments={fetchEnvironments}
+          isEditorFreezed={isEditorFreezed}
           isSocketOpen={isSocketOpen}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">
             <LeftSidebar
+              currentAppEnvironmentId={currentAppEnvironmentId}
               globalSettingsChanged={globalSettingsChanged}
               appId={appId}
               darkMode={props.darkMode}
@@ -1853,9 +2001,9 @@ const EditorComponent = (props) => {
                   selectionRef.current.checkScroll();
                 }}
               >
-                <div style={{ minWidth: `calc((100vw - 300px) - 48px)` }}>
+                <div style={{ minWidth: `calc((100vw - 300px) - 48px)` }} className={`app-${appId}`}>
                   <div
-                    className="canvas-area"
+                    className={`canvas-area ${formCustomPageSelectorClass()}`}
                     style={{
                       width: currentLayout === 'desktop' ? '100%' : '450px',
                       maxWidth:
@@ -1865,7 +2013,7 @@ const EditorComponent = (props) => {
                       transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                     }}
                   >
-                    {config.ENABLE_MULTIPLAYER_EDITING && (
+                    {config.ENABLE_MULTIPLAYER_EDITING && featureAccess?.multiPlayerEdit && (
                       <RealtimeCursors editingVersionId={editingVersionId} editingPageId={currentPageId} />
                     )}
                     {isLoading && (

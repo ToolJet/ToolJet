@@ -24,7 +24,8 @@ describe('FolderAppsService', () => {
     it('should create app folder', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
       // create a new folder
-      const folder = await foldersService.create(adminUser, 'folder');
+      const type = 'front-end';
+      const folder = await foldersService.create(adminUser, 'folder', type);
       const manager = getManager();
 
       // add app to folder

@@ -214,7 +214,6 @@ export const commonSelectors = {
   inspectorPinIcon: '.d-flex > [data-cy="left-sidebar-inspector"]',
   groupInputFieldLabel: '[data-cy="label-group-input-field"]',
   pageSectionHeader: '[data-cy="dashboard-section-header"]',
-  yesButton: '[data-cy="yes-button"]',
 
   documentationLink: '[data-cy="read-documentation-option-button"]',
   nameLabel: '[data-cy="name-label"]',
@@ -226,6 +225,7 @@ export const commonSelectors = {
   nameErrorText: '[data-cy="name-error-text"]',
   valueErrorText: '[data-cy="value-error-text"]',
   releaseButton: '[data-cy="button-release"]',
+  warningText: '[data-cy="warning-text"]',
   leftSideBarSettingsButton: '[data-cy="left-sidebar-settings-button"]',
   modalHeader: '[data-cy="modal-header"]',
   modalDescription: '[data-cy="modal-description"]',
@@ -244,6 +244,16 @@ export const commonSelectors = {
   importAppButton: '[data-cy="import-app"]',
   chooseFromTemplateButton: '[data-cy="choose-from-template-button"]',
   CreateAppFromTemplateButton: '[data-cy="create-new-app-from-template-title"]',
+  listItem: (ItemName) => {
+    return `[data-cy="${cyParamName(ItemName)}-list-item"]`;
+  },
+  label: (labelName) => {
+    return `[data-cy="${labelName
+      .replace(/\s+|(?<=[\w-])\s+(?=\w)|[^\w\s]/g, "-")
+      .toLowerCase()}-label"]`;
+  },
+  linkReadDocumentation: '[data-cy="link-read-documentation"]',
+
 };
 
 export const commonWidgetSelector = {
@@ -346,6 +356,7 @@ export const commonWidgetSelector = {
     modalHeader: '[data-cy="modal-header"]',
     makePublicAppToggleLabel: '[data-cy="make-public-app-label"]',
     shareableAppLink: '[data-cy="shareable-app-link-label"]',
+    // copyAppLinkButton: '[data-cy="copy-app-link-button"]',
     // iframeLinkLabel: '[data-cy="iframe-link-label"]',
     // ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
   },

@@ -1,8 +1,0 @@
-{
-  "name": "GitHub star history tracker",
-  "description": "Tracks the growth of stargazers in a GitHub repository over time.",
-  "widgets": ["Chart"],
-  "sources": [{"name": "REST API", "id": "restapi"}],
-  "id": "github-star-history-tracker",
-  "category": "product-management"
-}

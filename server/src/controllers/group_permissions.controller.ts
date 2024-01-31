@@ -7,14 +7,21 @@ import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { User } from 'src/decorators/user.decorator';
 import { User as UserEntity } from 'src/entities/user.entity';
-import { CreateGroupPermissionDto, UpdateGroupPermissionDto } from '@dto/group-permission.dto';
+import {
+  CreateGroupPermissionDto,
+  UpdateGroupPermissionDto,
+  UpdateGroupsAppsDto,
+  UpdateGroupsUsersDto,
+  UpdateGroupsDataSourcesDto,
+  UpdateGroupDto,
+} from '@dto/group-permission.dto';
 
 @Controller('group_permissions')
 export class GroupPermissionsController {
   constructor(private groupPermissionsService: GroupPermissionsService) {}
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can('createGroupPermission', UserEntity))
   @Post()
   async create(@User() user, @Body() createGroupPermissionDto: CreateGroupPermissionDto) {
     await this.groupPermissionsService.create(user, createGroupPermissionDto.group);
@@ -31,7 +38,7 @@ export class GroupPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can('updateGroupAppPermission', UserEntity))
   @Put(':id/app_group_permissions/:appGroupPermissionId')
   async updateAppGroupPermission(
     @Body() updateGroupPermissionDto: UpdateGroupPermissionDto,
@@ -49,9 +56,48 @@ export class GroupPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can('updateGroupDataSourcePermission', UserEntity))
+  @Put(':id/data_source_group_permissions/:dataSourceGroupPermissionId')
+  async updateDataSourceGroupPermission(
+    @Body() updateGroupPermissionDto: UpdateGroupPermissionDto,
+    @User() user,
+    @Param('id') id: string,
+    @Param('dataSourceGroupPermissionId') dataSourcepGroupPermissionId: string
+  ) {
+    await this.groupPermissionsService.updateDataSourceGroupPermission(
+      user,
+      id,
+      dataSourcepGroupPermissionId,
+      updateGroupPermissionDto.actions
+    );
+    return;
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateGroupUserPermission', UserEntity))
+  @Put(':id/user')
+  async updateUser(@User() user, @Param('id') id, @Body() body: UpdateGroupsUsersDto) {
+    await this.groupPermissionsService.update(user, id, body);
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateGroupAppPermission', UserEntity))
+  @Put(':id/app')
+  async updateApp(@User() user, @Param('id') id, @Body() body: UpdateGroupsAppsDto) {
+    await this.groupPermissionsService.update(user, id, body);
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateGroupDataSourcePermission', UserEntity))
+  @Put(':id/data-source')
+  async updateDataSource(@User() user, @Param('id') id, @Body() body: UpdateGroupsDataSourcesDto) {
+    await this.groupPermissionsService.update(user, id, body);
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateGroupPermission', UserEntity))
   @Put(':id')
-  async update(@User() user, @Param('id') id, @Body() body) {
+  async update(@User() user, @Param('id') id, @Body() body: UpdateGroupDto) {
     await this.groupPermissionsService.update(user, id, body);
   }
 
@@ -65,7 +111,7 @@ export class GroupPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can('deleteGroupPermission', UserEntity))
   @Delete(':id')
   async destroy(@User() user, @Param('id') id) {
     await this.groupPermissionsService.destroy(user, id);
@@ -82,12 +128,29 @@ export class GroupPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can('updateGroupAppPermission', UserEntity))
   @Get(':id/addable_apps')
   async addableApps(@User() user, @Param('id') id) {
     const apps = await this.groupPermissionsService.findAddableApps(user, id);
 
     return decamelizeKeys({ apps });
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
+  @Get(':id/data_sources')
+  async datasources(@User() user, @Param('id') id) {
+    const dataSources = await this.groupPermissionsService.findDataSources(user, id);
+    return decamelizeKeys({ dataSources });
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateGroupDataSourcePermission', UserEntity))
+  @Get(':id/addable_data_sources')
+  async addableDataSources(@User() user, @Param('id') id) {
+    const dataSources = await this.groupPermissionsService.findAddableDataSources(user, id);
+
+    return decamelizeKeys({ dataSources });
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -100,7 +163,7 @@ export class GroupPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can('updateGroupUserPermission', UserEntity))
   @Get(':id/addable_users')
   async addableUsers(@User() user, @Param('id') id, @Query('input') searchInput) {
     const users = await this.groupPermissionsService.findAddableUsers(user, id, searchInput);

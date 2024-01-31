@@ -1,5 +1,6 @@
 import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs/common';
 
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ormconfig, tooljetDbOrmconfig } from '../ormconfig';
@@ -11,6 +12,7 @@ import { SeedsService } from '@services/seeds.service';
 import { LoggerModule } from 'nestjs-pino';
 import { SentryModule } from './modules/observability/sentry/sentry.module';
 import * as Sentry from '@sentry/node';
+import { WinstonModule } from 'nest-winston';
 
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -32,21 +34,53 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
 import { CommentModule } from './modules/comments/comment.module';
 import { CommentUsersModule } from './modules/comment_users/comment_users.module';
 import { join } from 'path';
+import { BullModule } from '@nestjs/bull';
 import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
+import { AuditLogsModule } from './modules/audit_logs/audit_logs.module';
+import { InstanceSettingsModule } from './modules/instance_settings/instance_settings.module';
+import { WhiteLabellingModule } from './modules/white-labelling/white-labelling.module';
 import { TooljetDbModule } from './modules/tooljet_db/tooljet_db.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
 import { CopilotModule } from './modules/copilot/copilot.module';
 import { AppEnvironmentsModule } from './modules/app_environments/app_environments.module';
 import { OrganizationConstantModule } from './modules/organization_constants/organization_constants.module';
 import { RequestContextModule } from './modules/request_context/request-context.module';
+import { WorkerModule } from './modules/worker.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { LicenseModule } from './modules/license/license.module';
+import { CustomStylesModule } from './modules/custom_styles/custom_styles.module';
+import { AppGitModule } from './modules/app_git/app_git.module';
 import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
+import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { logfileTransportConfig, logFormat } from './helpers/logger.helper';
 
 const imports = [
+  EventEmitterModule.forRoot({
+    wildcard: false,
+    newListener: false,
+    removeListener: false,
+    maxListeners: 5,
+    verboseMemoryLeak: true,
+    ignoreErrors: false,
+  }),
   ScheduleModule.forRoot(),
+  BullModule.forRoot({
+    redis: {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT) || 6379,
+    },
+  }),
+  WinstonModule.forRootAsync({
+    useFactory: () => ({
+      format: logFormat,
+      transports: process.env.LOG_FILE_PATH ? [logfileTransportConfig(process.env.LOG_FILE_PATH, process.pid)] : [],
+      exitOnError: false,
+    }),
+    inject: [],
+  }),
   ConfigModule.forRoot({
     isGlobal: true,
     envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
@@ -60,7 +94,6 @@ const imports = [
           development: 'debug',
           test: 'error',
         };
-
         return logLevel[process.env.NODE_ENV] || 'info';
       })(),
       autoLogging: {
@@ -77,12 +110,14 @@ const imports = [
       redact: ['req.headers.authorization'],
     },
   }),
+
   TypeOrmModule.forRoot(ormconfig),
   RequestContextModule,
   AppConfigModule,
   SeedsModule,
   AuthModule,
   UsersModule,
+  LicenseModule,
   AppsModule,
   FoldersModule,
   OrgEnvironmentVariablesModule,
@@ -94,12 +129,19 @@ const imports = [
   MetaModule,
   LibraryAppModule,
   GroupPermissionsModule,
+  AuditLogsModule,
   FilesModule,
   PluginsModule,
   EventsModule,
   AppEnvironmentsModule,
+  InstanceSettingsModule,
+  WhiteLabellingModule,
+  LicenseModule,
   ImportExportResourcesModule,
   CopilotModule,
+  CustomStylesModule,
+  WorkerModule,
+  AppGitModule,
   OrganizationConstantModule,
 ];
 
@@ -130,6 +172,10 @@ if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
 if (process.env.ENABLE_TOOLJET_DB === 'true') {
   imports.unshift(TooljetDbModule);
   imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig));
+}
+
+if (process.env.DISABLE_WEBHOOKS !== 'true') {
+  imports.unshift(WebhooksModule);
 }
 
 @Module({

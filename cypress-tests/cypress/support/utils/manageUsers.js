@@ -15,7 +15,7 @@ export const manageUsersElements = () => {
   });
   cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
     "have.text",
-    usersText.breadcrumbUsersPageTitle
+    ' Users & permissions'
   );
 
   for (const element in usersSelector.usersElements) {
@@ -157,14 +157,24 @@ export const confirmInviteElements = () => {
     commonText.emailInputLabel
   );
   cy.get(commonSelectors.invitedUserEmail).should("be.visible");
-  cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
+
+  cy.get("body").then(($el) => {
+    if ($el.text().includes(commonText.passwordLabel)) {
+      cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
+        "have.text",
+        commonText.passwordLabel
+      );
+      cy.get(commonSelectors.passwordInputField).should("be.visible");
+      cy.get(commonSelectors.acceptInviteButton)
+        .verifyVisibleElement("have.text", commonText.acceptInviteButton)
+        .should("be.disabled");
+    }
+  });
+
+  cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
     "have.text",
-    commonText.passwordLabel
+    commonText.acceptInviteButton
   );
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
-  cy.get(commonSelectors.acceptInviteButton)
-    .verifyVisibleElement("have.text", commonText.acceptInviteButton)
-    .should("be.disabled");
 
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(

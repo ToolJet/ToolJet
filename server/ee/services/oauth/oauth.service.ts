@@ -1,9 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotAcceptableException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '@services/auth.service';
 import { OrganizationsService } from '@services/organizations.service';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { UsersService } from '@services/users.service';
+import { OidcOAuthService } from './oidc_auth.service';
 import { decamelizeKeys } from 'humps';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
@@ -17,12 +18,18 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
-import { dbTransactionWrap, generateInviteURL, generateNextNameAndSlug } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, generateInviteURL, isSuperAdmin, generateNextNameAndSlug } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
 import UserResponse from './models/user_response';
+import { InstanceSettingsService } from '@services/instance_settings.service';
 import { Response } from 'express';
+import { LicenseService } from '@services/license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import { LdapService } from './ldap.service';
+import { SAMLService } from './saml.service';
+import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
 export class OauthService {
@@ -33,10 +40,15 @@ export class OauthService {
     private readonly organizationUsersService: OrganizationUsersService,
     private readonly googleOAuthService: GoogleOAuthService,
     private readonly gitOAuthService: GitOAuthService,
+    private readonly oidcOAuthService: OidcOAuthService,
+    private readonly instanceSettingsService: InstanceSettingsService,
+    private readonly licenseService: LicenseService,
+    private readonly ldapService: LdapService,
+    private readonly samlService: SAMLService,
     private configService: ConfigService
   ) {}
 
-  #isValidDomain(email: string, restrictedDomain: string): boolean {
+  #isValidDomain = (email: string, restrictedDomain: string): boolean => {
     if (!email) {
       return false;
     }
@@ -58,10 +70,10 @@ export class OauthService {
       return false;
     }
     return true;
-  }
+  };
 
   async #findOrCreateUser(
-    { firstName, lastName, email, sso }: UserResponse,
+    { firstName, lastName, email, sso, groups: ssoGroups, profilePhoto }: any,
     organization: DeepPartial<Organization>,
     manager?: EntityManager
   ): Promise<User> {
@@ -69,6 +81,9 @@ export class OauthService {
     let user: User;
     let defaultOrganization: Organization;
     user = await this.usersService.findByEmail(email);
+
+    const allowPersonalWorkspace =
+      (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
 
     const organizationUser: OrganizationUser = user?.organizationUsers?.find(
       (ou) => ou.organizationId === organization.id
@@ -78,12 +93,12 @@ export class OauthService {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
 
-    if (!user) {
+    if (!user && allowPersonalWorkspace) {
       const { name, slug } = generateNextNameAndSlug('My workspace');
       defaultOrganization = await this.organizationService.create(name, slug, null, manager);
     }
 
-    const groups = ['all_users'];
+    const groups = ['all_users', ...(ssoGroups ? ssoGroups : [])];
     user = await this.usersService.create(
       { firstName, lastName, email, ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso) },
       organization.id,
@@ -93,18 +108,29 @@ export class OauthService {
       defaultOrganization?.id,
       manager
     );
+
+    /* Create avatar if profilePhoto available */
+    if (profilePhoto) {
+      try {
+        await this.usersService.addAvatar(user.id, profilePhoto, `${email}.jpeg`, manager);
+      } catch (error) {
+        /* Should not break the flow */
+        console.log('Profile picture upload failed', error);
+      }
+    }
+
     // Setting up invited organization, organization user status should be invited if user status is invited
     await this.organizationUsersService.create(user, organization, !!user.invitationToken, manager);
 
     if (defaultOrganization) {
       // Setting up default organization
       await this.organizationUsersService.create(user, defaultOrganization, true, manager);
-      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
+      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, false, manager);
     }
     return user;
   }
 
-  #getSSOConfigs(ssoType: 'google' | 'git'): Partial<SSOConfigs> {
+  #getSSOConfigs(ssoType: 'google' | 'git' | 'openid'): Partial<SSOConfigs> {
     switch (ssoType) {
       case 'google':
         return {
@@ -120,12 +146,21 @@ export class OauthService {
             hostName: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
           },
         };
+      case 'openid':
+        return {
+          enabled: !!this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
+          configs: {
+            clientId: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
+            clientSecret: this.configService.get<string>('SSO_OPENID_CLIENT_SECRET'),
+            wellKnownUrl: this.configService.get<string>('SSO_OPENID_WELL_KNOWN_URL'),
+          },
+        };
       default:
         return;
     }
   }
 
-  #getInstanceSSOConfigs(ssoType: 'google' | 'git'): DeepPartial<SSOConfigs> {
+  #getInstanceSSOConfigs(ssoType: 'google' | 'git' | 'openid'): DeepPartial<SSOConfigs> {
     return {
       organization: {
         enableSignUp: this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
@@ -141,14 +176,15 @@ export class OauthService {
     ssoResponse: SSOResponse,
     configId?: string,
     ssoType?: 'google' | 'git',
-    user?: User
+    user?: User,
+    cookies?: object
   ): Promise<any> {
-    const { organizationId } = ssoResponse;
+    const { organizationId, samlResponseId } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
     const isInstanceSSOLogin = !!(!configId && ssoType && !organizationId);
     const isInstanceSSOOrganizationLogin = !!(!configId && ssoType && organizationId);
-
+    //Specific SSO configId from organization SSO Configs
     if (configId) {
       // SSO under an organization
       ssoConfigs = await this.organizationService.getConfigs(configId);
@@ -176,7 +212,7 @@ export class OauthService {
     }
     const { enableSignUp, domain } = organization;
     const { sso, configs } = ssoConfigs;
-    const { token } = ssoResponse;
+    const { token, username, password } = ssoResponse;
 
     let userResponse: UserResponse;
     switch (sso) {
@@ -188,6 +224,28 @@ export class OauthService {
         userResponse = await this.gitOAuthService.signIn(token, configs);
         break;
 
+      case 'openid':
+        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC))) {
+          throw new UnauthorizedException('OIDC login disabled');
+        }
+        userResponse = await this.oidcOAuthService.signIn(token, {
+          ...configs,
+          configId,
+          codeVerifier: cookies['oidc_code_verifier'],
+        });
+        break;
+
+      case 'ldap':
+        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.LDAP))) {
+          throw new UnauthorizedException('Ldap login disabled');
+        }
+        userResponse = await this.ldapService.signIn({ username, password }, configs);
+        break;
+
+      case 'saml':
+        userResponse = await this.samlService.signIn(samlResponseId, configs, configId);
+        break;
+
       default:
         break;
     }
@@ -195,7 +253,16 @@ export class OauthService {
     if (!(userResponse.userSSOId && userResponse.email)) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    if (!this.#isValidDomain(userResponse.email, domain)) {
+
+    userResponse.email = userResponse.email.toLowerCase();
+
+    let userDetails: User = await this.usersService.findByEmail(userResponse.email);
+
+    if (userDetails?.status === 'archived') {
+      throw new NotAcceptableException('User has been archived, please contact the administrator');
+    }
+
+    if (!isSuperAdmin(userDetails) && !this.#isValidDomain(userResponse.email, domain)) {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
     }
 
@@ -205,18 +272,19 @@ export class OauthService {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      let userDetails: User;
       let organizationDetails: DeepPartial<Organization>;
+      const allowPersonalWorkspace =
+        isSuperAdmin(userDetails) ||
+        (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
 
       if (isInstanceSSOLogin) {
         // Login from main login page - Multi-Workspace enabled
-        userDetails = await this.usersService.findByEmail(userResponse.email);
 
         if (userDetails?.status === USER_STATUS.ARCHIVED) {
           throw new UnauthorizedException(getUserErrorMessages(userDetails.status));
         }
 
-        if (!userDetails && enableSignUp) {
+        if (!userDetails && enableSignUp && allowPersonalWorkspace) {
           // Create new user
           let defaultOrganization: DeepPartial<Organization> = organization;
 
@@ -261,10 +329,14 @@ export class OauthService {
           } else if (organizationList?.length > 0) {
             // default organization SSO login not enabled, picking first one from SSO enabled list
             organizationDetails = organizationList[0];
-          } else {
+          } else if (allowPersonalWorkspace) {
             // no SSO login enabled organization available for user - creating new one
             const { name, slug } = generateNextNameAndSlug('My workspace');
             organizationDetails = await this.organizationService.create(name, slug, userDetails, manager);
+          } else {
+            throw new UnauthorizedException(
+              'User not included in any workspace or workspace does not supports SSO login'
+            );
           }
         } else if (!userDetails) {
           throw new UnauthorizedException('User does not exist, please sign up');
@@ -315,15 +387,27 @@ export class OauthService {
             (ou) => ou.organizationId === organization.id
           )?.invitationToken;
 
-          return decamelizeKeys({
-            redirectUrl: generateInviteURL(
-              userDetails.invitationToken,
-              organizationToken,
-              organization.id,
-              URL_SSO_SOURCE
-            ),
-          });
+          if (userResponse.userinfoResponse) {
+            // update sso user info
+            await this.usersService.updateSSOUserInfo(manager, userDetails.id, userResponse.userinfoResponse);
+          }
+          return await this.validateLicense(
+            decamelizeKeys({
+              redirectUrl: generateInviteURL(
+                userDetails.invitationToken,
+                organizationToken,
+                organization.id,
+                URL_SSO_SOURCE
+              ),
+            }),
+            manager
+          );
         }
+      }
+
+      if (userResponse.userinfoResponse) {
+        // update sso user info
+        await this.usersService.updateSSOUserInfo(manager, userDetails.id, userResponse.userinfoResponse);
       }
 
       if (userDetails.invitationToken) {
@@ -333,9 +417,12 @@ export class OauthService {
           getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
           manager
         );
-        return decamelizeKeys({
-          redirectUrl: generateInviteURL(userDetails.invitationToken, null, null, URL_SSO_SOURCE),
-        });
+        return await this.validateLicense(
+          decamelizeKeys({
+            redirectUrl: generateInviteURL(userDetails.invitationToken, null, null, URL_SSO_SOURCE),
+          }),
+          manager
+        );
       }
       return await this.authService.generateLoginResultPayload(
         response,
@@ -343,14 +430,23 @@ export class OauthService {
         organizationDetails,
         isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
         false,
-        user
+        user,
+        manager
       );
     });
+  }
+  private async validateLicense(response: any, manager: EntityManager) {
+    await this.usersService.validateLicense(manager);
+    return response;
   }
 }
 
 interface SSOResponse {
   token: string;
   state?: string;
+  username?: string;
+  password?: string;
+  codeVerifier?: string;
   organizationId?: string;
+  samlResponseId?: string;
 }

@@ -14,8 +14,10 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
-import { buildURLWithQuery } from '@/_helpers/utils';
+import { buildURLWithQuery, retrieveWhiteLabelText } from '@/_helpers/utils';
+import OIDCSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import { redirectToDashboard } from '@/_helpers/routes';
+import { setCookie } from '@/_helpers/cookie';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -36,6 +38,13 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const organizationId = new URLSearchParams(location?.search).get('oid');
   const source = new URLSearchParams(location?.search).get('source');
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const setRedirectUrlToCookie = () => {
+    const params = new URL(window.location.href).searchParams;
+    const redirectPath = params.get('redirectTo');
+    authenticationService.saveLoginOrganizationId(organizationId);
+    redirectPath && setCookie('redirectPath', redirectPath);
+  };
 
   const getUserDetails = () => {
     setIsLoading(true);
@@ -157,50 +166,69 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                 ) : (
                   <div className="common-auth-container-wrapper">
                     <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
-                      Join {configs?.name ? configs?.name : 'ToolJet'}
+                      Join {configs?.name ? configs?.name : retrieveWhiteLabelText()}
                     </h2>
 
                     <div className="invite-sub-header" data-cy="invite-page-sub-header">
                       {`You are invited to ${
                         configs?.name
                           ? `a workspace ${configs?.name}. Accept the invite to join the workspace.`
-                          : 'ToolJet.'
+                          : `${retrieveWhiteLabelText()}.`
                       }`}
                     </div>
-                    {(configs?.google?.enabled || configs?.git?.enabled) && source !== 'sso' && (
-                      <div className="d-flex flex-column align-items-center separator-bottom">
-                        {configs?.google?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GoogleSSOLoginButton
-                              text={t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                              configs={configs?.google?.configs}
-                              configId={configs?.google?.config_id}
-                            />
-                          </div>
-                        )}
-                        {configs?.git?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GitSSOLoginButton
-                              text={t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
-                              configs={configs?.git?.configs}
-                            />
-                          </div>
-                        )}
-                        <div className="separator-onboarding " style={{ width: '100%' }}>
-                          <div className="mt-2 separator" data-cy="onboarding-separator">
-                            <h2>
-                              <span>{t('confirmationPage.or', 'OR')}</span>
-                            </h2>
+                    {(configs?.google?.enabled || configs?.git?.enabled || configs?.openid?.enabled) &&
+                      source !== 'sso' && (
+                        <div className="d-flex flex-column align-items-center separator-bottom">
+                          {configs?.google?.enabled && (
+                            <div className="login-sso-wrapper">
+                              <GoogleSSOLoginButton
+                                text={t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
+                                configs={configs?.google?.configs}
+                                configId={configs?.google?.config_id}
+                                setRedirectUrlToCookie={() => {
+                                  setRedirectUrlToCookie();
+                                }}
+                              />
+                            </div>
+                          )}
+                          {configs?.git?.enabled && (
+                            <div className="login-sso-wrapper">
+                              <GitSSOLoginButton
+                                text={t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
+                                configs={configs?.git?.configs}
+                                setRedirectUrlToCookie={() => {
+                                  setRedirectUrlToCookie();
+                                }}
+                              />
+                            </div>
+                          )}
+                          {configs?.openid?.enabled && (
+                            <div className="login-sso-wrapper">
+                              <OIDCSSOLoginButton
+                                configId={configs?.openid?.config_id}
+                                configs={configs?.openid?.configs}
+                                text={t('confirmationPage.signupWithOpenid', `Sign up with`)}
+                                setRedirectUrlToCookie={() => {
+                                  setRedirectUrlToCookie();
+                                }}
+                              />
+                            </div>
+                          )}
+                          <div className="separator-onboarding " style={{ width: '100%' }}>
+                            <div className="mt-2 separator" data-cy="onboarding-separator">
+                              <h2>
+                                <span>{t('confirmationPage.or', 'OR')}</span>
+                              </h2>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     <div className="org-page-inputs-wrapper">
                       <label className="tj-text-input-label" data-cy="name-input-label">
                         {t('verificationSuccessPage.name', 'Name')}
                       </label>
-                      <p className="tj-text-input" data-cy="invited-user-name">
+                      <p className="tj-text-input onbaording-disabled-field" data-cy="invited-user-name">
                         {userDetails?.name}
                       </p>
                     </div>
@@ -209,12 +237,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       <label className="tj-text-input-label" data-cy="email-input-label">
                         {t('verificationSuccessPage.workEmail', 'Email')}
                       </label>
-                      <p className="tj-text-input" data-cy="invited-user-email">
+                      <p className="tj-text-input onbaording-disabled-field" data-cy="invited-user-email">
                         {userDetails?.email}
                       </p>
                     </div>
 
-                    {userDetails?.onboarding_details?.password && (
+                    {userDetails?.onboarding_details?.password && source != 'sso' && (
                       <div className="mb-3">
                         <label className="form-label" data-cy="password-label">
                           {t('verificationSuccessPage.password', 'Password')}
@@ -275,7 +303,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         }}
                         disabled={
                           isLoading ||
-                          (userDetails?.onboarding_details?.password &&
+                          (source !== 'sso' &&
+                            userDetails?.onboarding_details?.password &&
                             (password?.length < 5 || password?.trim()?.length === 0 || !password))
                         }
                         data-cy="accept-invite-button"
@@ -335,7 +364,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   {t('verificationSuccessPage.successfullyVerifiedEmail', 'Successfully verified email')}
                 </h1>
                 <p className="info-screen-description" data-cy="onboarding-page-description">
-                  Continue to set up your workspace to start using ToolJet.
+                  Continue to set up your workspace to start using {retrieveWhiteLabelText()}.
                 </p>
                 <ButtonSolid
                   className="verification-success-info-btn "
@@ -351,7 +380,10 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                     </div>
                   ) : (
                     <>
-                      {t('verificationSuccessPage.setupTooljet', 'Set up ToolJet')}
+                      {t('verificationSuccessPage.setupTooljet', `Set up ${retrieveWhiteLabelText()}`, {
+                        whiteLabelText: retrieveWhiteLabelText(),
+                      })}
+
                       <EnterIcon fill={'#fff'}></EnterIcon>
                     </>
                   )}
@@ -369,6 +401,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           organizationToken={params?.organizationToken ?? ''}
           password={password}
           darkMode={darkMode}
+          source={source}
         />
       )}
 

@@ -30,14 +30,15 @@ export const PrivateRoute = ({ children }) => {
     );
     if (isEditorOrViewerGoingToRender && group_permissions && !isSwitchingPages) {
       const componentType = pathname.startsWith('/apps/') ? 'editor' : 'viewer';
-      const { slug, versionId, pageHandle } = params;
+      const { slug, versionId, environmentId, pageHandle } = params;
 
       /* Validate the app permissions */
-      let accessDetails = await handleAppAccess(componentType, slug, versionId);
-      const { versionName, ...restDetails } = accessDetails;
+      let accessDetails = await handleAppAccess(componentType, slug, versionId, environmentId);
+      const { versionName, environmentName, ...restDetails } = accessDetails;
       if (versionName) {
         const restQueryParams = getQueryParams();
         const search = queryString.stringify({
+          env: environmentName,
           version: versionName,
           ...restQueryParams,
         });
@@ -58,7 +59,6 @@ export const PrivateRoute = ({ children }) => {
     const subject = authenticationService.currentSession.subscribe(async (newSession) => {
       setSession(newSession);
     });
-
     () => subject.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -84,18 +84,30 @@ export const PrivateRoute = ({ children }) => {
     (pathname.startsWith('/applications/') && !isValidatingUserAccess) ||
     (pathname === '/switch-workspace' && session?.current_organization_id)
   ) {
+    if (location.pathname.startsWith('/instance-settings/') && !session.super_admin) {
+      return (
+        <Navigate
+          to={{
+            pathname: '/',
+            state: { from: location },
+          }}
+          replace
+        />
+      );
+    }
+
     return isEditorOrViewerGoingToRender ? React.cloneElement(children, extraProps) : children;
   } else {
     if (
       (session?.authentication_status === false || session?.authentication_failed) &&
       !location.pathname.startsWith('/applications/')
     ) {
-      const redirectTo = `${excludeWorkspaceIdFromURL(location.pathname)}${location.search}`;
+      const redirectTo = `?redirectTo=${excludeWorkspaceIdFromURL(location.pathname)}${location.search}`;
       const workspaceId = getWorkspaceId();
       return navigate(
         {
           pathname: `/login${workspaceId ? `/${workspaceId}` : ''}`,
-          search: `?redirectTo=${redirectTo}`,
+          search: `${redirectTo}`,
           state: { from: location },
         },
         { replace: true }
@@ -142,7 +154,7 @@ export const AdminRoute = ({ children }) => {
       return navigate(
         {
           pathname: `/login${workspaceId ? `/${workspaceId}` : ''}`,
-          search: `?redirectTo=${location.pathname}`,
+          search: `?redirectTo=${excludeWorkspaceIdFromURL(location.pathname)}`,
           state: { from: location },
         },
         { replace: true }

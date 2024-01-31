@@ -7,8 +7,15 @@ function Header() {
   const currentVersion = localStorage.getItem('currentVersion');
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
-  const routes = (path) => {
-    switch (path) {
+  const routes = (pathEnd, path) => {
+    const pathParts = path.split('/');
+    if (pathParts.length > 1) {
+      const parentPath = pathParts[pathParts.length - 2];
+      if (['workspace-settings', 'instance-settings'].includes(parentPath)) {
+        return parentPath === 'workspace-settings' ? 'Workspace settings' : 'Settings';
+      }
+    }
+    switch (pathEnd) {
       case 'workspaceId':
         return 'Applications';
       case 'database':
@@ -21,6 +28,12 @@ function Header() {
         return 'Profile settings';
       case 'integrations':
         return 'Integrations';
+      case 'instance-settings':
+        return 'Settings';
+      case 'audit-logs':
+        return 'Audit logs';
+      case 'workflows':
+        return 'Workflows';
       default:
         return 'Applications';
     }
@@ -32,7 +45,7 @@ function Header() {
       <div className="row w-100 gx-0">
         <div className="tj-dashboard-section-header">
           <p className="tj-text-md font-weight-500" data-cy="dashboard-section-header">
-            {routes(location?.pathname.split('/').pop())}
+            {routes(location?.pathname.split('/').pop(), location?.pathname)}
           </p>
         </div>
         <div className="col tj-dashboard-header-wrap">

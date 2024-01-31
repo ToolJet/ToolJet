@@ -12,6 +12,11 @@ export function createCurrentStateStore(moduleName) {
     globals: {
       theme: { name: 'light' },
       urlparams: null,
+      environment: {
+        id: null,
+        name: null,
+      },
+      mode: {},
     },
     errors: {},
     variables: {},

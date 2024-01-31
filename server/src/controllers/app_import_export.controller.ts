@@ -6,6 +6,9 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { App } from 'src/entities/app.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
 import { User } from 'src/decorators/user.decorator';
+import { AuditLoggerService } from '@services/audit_logger.service';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import { AppCountGuard } from '@ee/licensing/guards/app.guard';
 import { AppImportDto } from '@dto/app-import.dto';
 
 @Controller('apps')
@@ -13,10 +16,11 @@ export class AppsImportExportController {
   constructor(
     private appsService: AppsService,
     private appImportExportService: AppImportExportService,
-    private appsAbilityFactory: AppsAbilityFactory
+    private appsAbilityFactory: AppsAbilityFactory,
+    private auditLoggerService: AuditLoggerService
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AppCountGuard)
   @Post('/import')
   async import(@User() user, @Body() appImportDto: AppImportDto) {
     const ability = await this.appsAbilityFactory.appsActions(user);
@@ -24,8 +28,19 @@ export class AppsImportExportController {
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
+
     const { name: appName, app: appContent } = appImportDto;
     const app = await this.appImportExportService.import(user, appContent, appName);
+
+    await this.auditLoggerService.perform({
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: app.id,
+      resourceType: ResourceTypes.APP,
+      resourceName: app.name,
+      actionType: ActionTypes.APP_IMPORT,
+    });
+
     return decamelizeKeys(app);
   }
 
@@ -40,6 +55,16 @@ export class AppsImportExportController {
     }
 
     const app = await this.appImportExportService.export(user, id, query);
+
+    await this.auditLoggerService.perform({
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: app.appV2.id,
+      resourceType: ResourceTypes.APP,
+      resourceName: app.appV2.name,
+      actionType: ActionTypes.APP_EXPORT,
+    });
+
     return {
       ...app,
       tooljetVersion: globalThis.TOOLJET_VERSION,

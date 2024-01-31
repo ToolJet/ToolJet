@@ -52,14 +52,11 @@ jobs:
           context: .
           file: docker/production.Dockerfile
           push: true
-          tags: tooljet/tooljet-ce:develop
+          tags: tooljet/tooljet-ee:develop,tooljet/tooljet:develop
           platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Send Slack Notification on Failure
         if: failure()
         run: |
-          message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:develop"
+          message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ee:develop"
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL_OPS_CHANNEL }}

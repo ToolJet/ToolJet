@@ -8,11 +8,18 @@ import { File } from '../../entities/file.entity';
 import { UsersController } from 'src/controllers/users.controller';
 import { OrganizationsModule } from '../organizations/organizations.module';
 import { App } from 'src/entities/app.entity';
+import { AuditLog } from 'src/entities/audit_log.entity';
+import { AuditLoggerService } from '@services/audit_logger.service';
+import { CaslModule } from '../casl/casl.module';
 import { FilesService } from '@services/files.service';
 
 @Module({
-  imports: [OrganizationsModule, TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App])],
-  providers: [UsersService, FilesService],
+  imports: [
+    OrganizationsModule,
+    TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App, AuditLog]),
+    CaslModule,
+  ],
+  providers: [UsersService, AuditLoggerService, FilesService],
   controllers: [UsersController],
   exports: [UsersService],
 })

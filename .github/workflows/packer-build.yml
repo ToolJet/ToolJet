@@ -1,8 +1,8 @@
 name: AWS AMI build using Packer config
 
 on:
-  # release:
-  #   types: [published]
+  release:
+    types: [published]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -28,7 +28,7 @@ jobs:
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -56,7 +56,8 @@ jobs:
         uses: hashicorp/packer-github-actions@master
         with:
           command: build
-          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal
+          #The the below argument is specific for building EE AMI image
+          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal -var ssh_private_key=${{ secrets.SSH_PRIVATE_KEY }}
           target: .
           working_directory: deploy/ec2
         env:
@@ -70,4 +71,4 @@ jobs:
             message="Job '${{ env.JOB_NAME }}' failed! AMI = tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal"
           fi
 
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }} 
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

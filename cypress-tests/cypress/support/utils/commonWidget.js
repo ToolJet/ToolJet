@@ -98,6 +98,7 @@ export const verifyComponentValueFromInspector = (
   openStatus = "closed"
 ) => {
   cy.get(commonWidgetSelector.sidebarinspector).click();
+  cy.wait(500);
   if (openStatus == "closed") {
     cy.get(commonWidgetSelector.inspectorNodeComponents).click();
     cy.get(commonWidgetSelector.nodeComponent(componentName)).click();
@@ -186,8 +187,7 @@ export const verifyBoxShadowCss = (
   ).should(
     "have.css",
     "box-shadow",
-    `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3] / 100}) ${
-      shadowParam[0]
+    `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3] / 100}) ${shadowParam[0]
     }px ${shadowParam[1]}px ${shadowParam[2]}px ${shadowParam[3]}px`
   );
 };
@@ -267,8 +267,7 @@ export const verifyLoaderColor = (widgetName, color) => {
     .then((style) => {
       const loaderColor = style.split(" ").join("");
       expect(loaderColor).to.include(
-        `--loader-color:rgba(${color[0]},${color[1]},${color[2]},${
-          color[3] / 100
+        `--loader-color:rgba(${color[0]},${color[1]},${color[2]},${color[3] / 100
         })`
       );
     });

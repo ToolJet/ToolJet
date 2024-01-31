@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Injectable, NotAcceptableException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  Injectable,
+  NotAcceptableException,
+} from '@nestjs/common';
 import * as csv from 'fast-csv';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -6,11 +12,13 @@ import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
 import {
-  catchDbException,
   cleanObject,
   dbTransactionWrap,
   isPlural,
+  generatePayloadForLimits,
+  catchDbException,
   generateNextNameAndSlug,
+  isSuperAdmin,
 } from 'src/helpers/utils.helper';
 import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
@@ -21,18 +29,25 @@ import { OrganizationUsersService } from './organization_users.service';
 import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import { AuditLoggerService } from './audit_logger.service';
 import {
   getUserErrorMessages,
   getUserStatusAndSource,
   lifecycleEvents,
   USER_STATUS,
+  USER_TYPE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
+import { InstanceSettingsService } from './instance_settings.service';
 import { decamelize } from 'humps';
 import { Response } from 'express';
 import { AppEnvironmentService } from './app_environments.service';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { OrganizationUpdateDto } from '@dto/organization.dto';
+import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 const MAX_ROW_COUNT = 500;
 
@@ -80,7 +95,10 @@ export class OrganizationsService {
     private appEnvironmentService: AppEnvironmentService,
     private encryptionService: EncryptionService,
     private emailService: EmailService,
-    private configService: ConfigService
+    private instanceSettingsService: InstanceSettingsService,
+    private configService: ConfigService,
+    private auditLoggerService: AuditLoggerService,
+    private licenseService: LicenseService
   ) {}
 
   async create(name: string, slug: string, user: User, manager?: EntityManager): Promise<Organization> {
@@ -116,13 +134,20 @@ export class OrganizationsService {
         for (const groupPermission of createdGroupPermissions) {
           await this.groupPermissionService.createUserGroupPermission(user.id, groupPermission.id, manager);
         }
+
+        await this.usersService.validateLicense(manager);
       }
+      await this.organizationUserService.validateLicense(manager);
     }, manager);
 
     return organization;
   }
 
-  constructSSOConfigs() {
+  async constructSSOConfigs() {
+    const isPersonalWorkspaceAllowed = await this.instanceSettingsService.getSettings(
+      INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE
+    );
+    const oidcEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC);
     return {
       google: {
         enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
@@ -137,11 +162,20 @@ export class OrganizationsService {
           host_name: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
         },
       },
+      openid: {
+        enabled: !!(this.configService.get<string>('SSO_OPENID_CLIENT_ID') && oidcEnabled),
+        configs: {
+          client_id: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
+          name: this.configService.get<string>('SSO_OPENID_NAME'),
+        },
+      },
       form: {
-        enable_sign_up: this.configService.get<string>('DISABLE_SIGNUPS') !== 'true',
+        enable_sign_up:
+          this.configService.get<string>('DISABLE_SIGNUPS') !== 'true' && isPersonalWorkspaceAllowed === 'true',
         enabled: true,
       },
-      enableSignUp: this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
+      enableSignUp:
+        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true' && isPersonalWorkspaceAllowed === 'true',
     };
   }
 
@@ -183,6 +217,8 @@ export class OrganizationsService {
           orgEnvironmentConstantDelete: isAdmin,
           folderUpdate: isAdmin,
           folderDelete: isAdmin,
+          dataSourceDelete: isAdmin,
+          dataSourceCreate: isAdmin,
         });
         await manager.save(groupPermission);
         createdGroupPermissions.push(groupPermission);
@@ -198,8 +234,10 @@ export class OrganizationsService {
     const options = {
       searchText: searchInput,
     };
-    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'or')
-      .orderBy('user.firstName', 'ASC')
+    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'or', true)
+      .distinctOn(['user.email'])
+      .orderBy('user.email', 'ASC')
+      .take(10)
       .getMany();
 
     return organizationUsers?.map((orgUser) => {
@@ -214,7 +252,12 @@ export class OrganizationsService {
     });
   }
 
-  organizationUsersQuery(organizationId: string, options: UserFilterOptions, condition?: 'and' | 'or') {
+  organizationUsersQuery(
+    organizationId: string,
+    options: UserFilterOptions,
+    condition?: 'and' | 'or',
+    getSuperAdmin?: boolean
+  ) {
     const defaultConditions = () => {
       return new Brackets((qb) => {
         if (options?.searchText)
@@ -248,17 +291,32 @@ export class OrganizationsService {
           });
       });
     };
-    const query = createQueryBuilder(OrganizationUser, 'organization_user')
-      .innerJoinAndSelect('organization_user.user', 'user')
-      .where('organization_user.organization_id = :organizationId', {
+    const query = createQueryBuilder(OrganizationUser, 'organization_user').innerJoinAndSelect(
+      'organization_user.user',
+      'user'
+    );
+
+    if (getSuperAdmin) {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.orWhere('organization_user.organization_id = :organizationId', {
+            organizationId,
+          }).orWhere('user.userType = :userType', {
+            userType: USER_TYPE.INSTANCE,
+          });
+        })
+      );
+    } else {
+      query.andWhere('organization_user.organization_id = :organizationId', {
         organizationId,
-      })
-      .andWhere(defaultConditions());
-    query.andWhere(condition === 'and' ? getAndConditions() : getOrConditions());
+      });
+    }
+
+    query.andWhere(defaultConditions()).andWhere(condition === 'and' ? getAndConditions() : getOrConditions());
     return query;
   }
 
-  async fetchUsers(user: User, page: number, options: UserFilterOptions): Promise<FetchUserResponse[]> {
+  async fetchUsers(user: User, page = 1, options: UserFilterOptions): Promise<FetchUserResponse[]> {
     const condition = options?.searchText ? 'and' : 'or';
     const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, condition)
       .orderBy('user.firstName', 'ASC')
@@ -291,20 +349,24 @@ export class OrganizationsService {
   }
 
   async fetchOrganizations(user: any): Promise<Organization[]> {
-    return await createQueryBuilder(Organization, 'organization')
-      .innerJoin(
-        'organization.organizationUsers',
-        'organization_users',
-        'organization_users.status IN(:...statusList)',
-        {
-          statusList: [WORKSPACE_USER_STATUS.ACTIVE],
-        }
-      )
-      .andWhere('organization_users.userId = :userId', {
-        userId: user.id,
-      })
-      .orderBy('name', 'ASC')
-      .getMany();
+    if (isSuperAdmin(user)) {
+      return await this.organizationsRepository.find({ order: { name: 'ASC' } });
+    } else {
+      return await createQueryBuilder(Organization, 'organization')
+        .innerJoin(
+          'organization.organizationUsers',
+          'organization_users',
+          'organization_users.status IN(:...statusList)',
+          {
+            statusList: ['active'],
+          }
+        )
+        .andWhere('organization_users.userId = :userId', {
+          userId: user.id,
+        })
+        .orderBy('name', 'ASC')
+        .getMany();
+    }
   }
 
   async findOrganizationWithLoginSupport(
@@ -327,24 +389,25 @@ export class OrganizationsService {
         }
       );
 
-    if (loginType === 'form') {
-      query.where('organization_sso.enabled = :enabled', {
-        enabled: true,
-      });
-    } else if (loginType === 'sso') {
-      query.where('organization.inheritSSO = :inheritSSO', {
-        inheritSSO: true,
-      });
-    } else {
-      return;
+    if (!isSuperAdmin(user)) {
+      if (loginType === 'form') {
+        query.where('organization_sso.enabled = :enabled', {
+          enabled: true,
+        });
+      } else if (loginType === 'sso') {
+        query.where('organization.inheritSSO = :inheritSSO', {
+          inheritSSO: true,
+        });
+      } else {
+        return;
+      }
     }
 
-    return await query
-      .andWhere('organization_users.userId = :userId', {
-        userId: user.id,
-      })
-      .orderBy('name', 'ASC')
-      .getMany();
+    query.andWhere('organization_users.userId = :userId', {
+      userId: user.id,
+    });
+
+    return await query.orderBy('name', 'ASC').getMany();
   }
 
   async getSSOConfigs(organizationId: string, sso: string): Promise<Organization> {
@@ -408,6 +471,7 @@ export class OrganizationsService {
       }
       if (
         this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID') &&
+        this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET') &&
         !result.ssoConfigs?.some((config) => config.sso === 'git')
       ) {
         if (!result.ssoConfigs) {
@@ -427,6 +491,44 @@ export class OrganizationsService {
           },
         });
       }
+      if (
+        this.configService.get<string>('SSO_OPENID_CLIENT_ID') &&
+        this.configService.get<string>('SSO_OPENID_CLIENT_SECRET') &&
+        !result.ssoConfigs?.some((config) => config.sso === 'openid')
+      ) {
+        if (!result.ssoConfigs) {
+          result.ssoConfigs = [];
+        }
+        result.ssoConfigs.push({
+          sso: 'openid',
+          enabled: true,
+          configs: {
+            clientId: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
+            clientSecret: await this.encryptionService.encryptColumnValue(
+              'ssoConfigs',
+              'clientSecret',
+              this.configService.get<string>('SSO_OPENID_CLIENT_SECRET')
+            ),
+            wellKnownUrl: this.configService.get<string>('SSO_OPENID_WELL_KNOWN_URL'),
+          },
+        });
+      }
+    }
+
+    // filter oidc and ldap configs
+    const licenseTerms = await this.licenseService.getLicenseTerms([
+      LICENSE_FIELD.OIDC,
+      LICENSE_FIELD.LDAP,
+      LICENSE_FIELD.SAML,
+    ]);
+    if (result?.ssoConfigs?.some((sso) => sso.sso === 'openid') && !licenseTerms[LICENSE_FIELD.OIDC]) {
+      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'openid');
+    }
+    if (result?.ssoConfigs?.some((sso) => sso.sso === 'ldap') && !licenseTerms[LICENSE_FIELD.LDAP]) {
+      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'ldap');
+    }
+    if (result?.ssoConfigs?.some((sso) => sso.sso === 'saml') && !licenseTerms[LICENSE_FIELD.SAML]) {
+      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'saml');
     }
 
     if (!isHideSensitiveData) {
@@ -483,6 +585,19 @@ export class OrganizationsService {
             configs[key] = await this.encryptionService.encryptColumnValue('ssoConfigs', key, configs[key]);
           }
         }
+        if (key.toLowerCase().includes('sslCerts')) {
+          if (typeof configs[key] === 'object' && Object.keys(configs[key]).length) {
+            const sslCerts = {};
+            for (const k of Object.keys(configs[key])) {
+              try {
+                sslCerts[k] = await this.encryptionService.encryptColumnValue('ssoConfigs', k, configs[key][k]);
+              } catch (error) {
+                sslCerts[k] = configs[key][k];
+              }
+            }
+            configs[key] = sslCerts;
+          }
+        }
       })
     );
   }
@@ -494,6 +609,19 @@ export class OrganizationsService {
         if (key.toLowerCase().includes('secret')) {
           if (configs[key]) {
             configs[key] = await this.encryptionService.decryptColumnValue('ssoConfigs', key, configs[key]);
+          }
+        }
+        if (key.toLowerCase().includes('sslCerts')) {
+          if (typeof configs[key] === 'object' && Object.keys(configs[key]).length) {
+            const sslCerts = {};
+            for (const k of Object.keys(configs[key])) {
+              try {
+                sslCerts[k] = await this.encryptionService.decryptColumnValue('ssoConfigs', k, configs[key][k]);
+              } catch (error) {
+                sslCerts[k] = configs[key][k];
+              }
+            }
+            configs[key] = sslCerts;
           }
         }
       })
@@ -522,8 +650,12 @@ export class OrganizationsService {
   async updateOrganizationConfigs(organizationId: string, params: any) {
     const { type, configs, enabled } = params;
 
-    if (!(type && ['git', 'google', 'form'].includes(type))) {
+    if (!(type && ['git', 'google', 'form', 'openid', 'ldap', 'saml'].includes(type))) {
       throw new BadRequestException();
+    }
+
+    if (type === 'openid' && !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC))) {
+      throw new HttpException('OIDC disabled', 451);
     }
 
     await this.encryptSecret(configs);
@@ -599,12 +731,22 @@ export class OrganizationsService {
         // User not exist
         shouldSendWelcomeMail = true;
         // Create default organization if user not exist
-        const { name, slug } = generateNextNameAndSlug('My workspace');
-        defaultOrganization = await this.create(name, slug, null, manager);
+        if (
+          (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true'
+        ) {
+          // Create default organization if user not exist
+          const { name, slug } = generateNextNameAndSlug('My workspace');
+          defaultOrganization = await this.create(name, slug, null, manager);
+        }
       } else if (user.invitationToken) {
         // User not setup
         shouldSendWelcomeMail = true;
       }
+
+      if (user && user.status === USER_STATUS.ARCHIVED) {
+        await this.usersService.updateUser(user.id, { status: USER_STATUS.ACTIVE });
+      }
+
       user = await this.usersService.create(
         userParams,
         currentUser.organizationId,
@@ -618,17 +760,33 @@ export class OrganizationsService {
       if (defaultOrganization) {
         // Setting up default organization
         await this.organizationUserService.create(user, defaultOrganization, true, manager);
-        await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
+        await this.organizationUserService.validateLicense(manager);
+        await this.usersService.attachUserGroup(
+          ['all_users', 'admin'],
+          defaultOrganization.id,
+          user.id,
+          false,
+          manager
+        );
       }
 
       const currentOrganization: Organization = await this.organizationsRepository.findOneOrFail({
         where: { id: currentUser.organizationId },
       });
 
-      const organizationUser: OrganizationUser = await this.organizationUserService.create(
-        user,
-        currentOrganization,
-        true,
+      const organizationUser = await this.organizationUserService.create(user, currentOrganization, true, manager);
+
+      await this.usersService.validateLicense(manager);
+
+      await this.auditLoggerService.perform(
+        {
+          userId: currentUser.id,
+          organizationId: currentOrganization.id,
+          resourceId: user.id,
+          resourceName: user.email,
+          resourceType: ResourceTypes.USER,
+          actionType: ActionTypes.USER_INVITE,
+        },
         manager
       );
 
@@ -803,12 +961,31 @@ export class OrganizationsService {
           res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
         } catch (error) {
           const { status, response } = error;
-          res.status(status).send(response);
+          if (status === 451) {
+            res.status(status).send({ message: response, statusCode: status });
+            return;
+          }
+          res.status(status).send(JSON.stringify(response));
         }
       })
       .on('error', (error) => {
         throw error.message;
       });
+  }
+
+  async organizationsLimit() {
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.WORKSPACES, LICENSE_FIELD.STATUS]);
+
+    return {
+      workspacesCount: generatePayloadForLimits(
+        licenseTerms[LICENSE_FIELD.WORKSPACES] !== LICENSE_LIMIT.UNLIMITED
+          ? await this.organizationUserService.organizationsCount()
+          : 0,
+        licenseTerms[LICENSE_FIELD.WORKSPACES],
+        licenseTerms[LICENSE_FIELD.STATUS],
+        LICENSE_LIMITS_LABEL.WORKSPACES
+      ),
+    };
   }
 
   async checkWorkspaceUniqueness(name: string, slug: string) {

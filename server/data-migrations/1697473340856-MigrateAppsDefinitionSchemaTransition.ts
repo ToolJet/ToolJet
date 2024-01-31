@@ -5,7 +5,8 @@ import { Page } from 'src/entities/page.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
-import { MigrationProgress, processDataInBatches } from 'src/helpers/utils.helper';
+import { processDataInBatches } from 'src/helpers/utils.helper';
+import { MigrationProgress } from 'src/helpers/migration.helper';
 import { v4 as uuid } from 'uuid';
 
 interface AppResourceMappings {
@@ -20,6 +21,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     const appVersions = await appVersionRepository.find();
     const totalVersions = appVersions.length;
 
+    const startTime = new Date().getTime();
+
     const migrationProgress = new MigrationProgress(
       'MigrateAppsDefinitionSchemaTransition1697473340856',
       totalVersions
@@ -32,6 +35,9 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       async (entityManager: EntityManager, skip: number, take: number) => {
         return entityManager.find(AppVersion, {
           where: { id: In(appVersions.map((appVersion) => appVersion.id)) },
+          order: {
+            createdAt: 'ASC',
+          },
           take,
           skip,
         });
@@ -41,6 +47,10 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       },
       batchSize
     );
+
+    const endTime = new Date().getTime();
+
+    console.log(`Migration time taken: ${(endTime - startTime) / 1000} seconds`);
   }
 
   private async processVersions(
@@ -50,8 +60,6 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
   ) {
     for (const version of versions) {
       const definition = version['definition'];
-
-      if (!definition) return;
 
       const dataQueriesRepository = entityManager.getRepository(DataQuery);
       const dataQueries = await dataQueriesRepository.find({
@@ -82,8 +90,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           );
 
           const newPage = entityManager.create(Page, {
-            name: page.name,
-            handle: page.handle,
+            name: page.name || page.handle || pageId,
+            handle: page.handle || pageId,
             appVersionId: version.id,
             disabled: page.disabled || false,
             hidden: page.hidden || false,
@@ -124,11 +132,11 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           if (pageEvents.length > 0) {
             pageEvents.forEach(async (event, index) => {
               const newEvent = {
-                name: event.eventId,
+                name: event.eventId || `${pageCreated.name} Page Event ${index}`,
                 sourceId: pageCreated.id,
                 target: Target.page,
                 event: event,
-                index: pageEvents.index || index,
+                index: index,
                 appVersionId: version.id,
               };
 
@@ -141,11 +149,11 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
             eventObj.event.forEach(async (event, index) => {
               const newEvent = {
-                name: event.eventId,
+                name: event.eventId || `event ${index}`,
                 sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
                 target: Target.component,
                 event: event,
-                index: eventObj.index || index,
+                index: index,
                 appVersionId: version.id,
               };
 
@@ -180,11 +188,11 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
                 columnEvents.forEach((event, index) => {
                   tableActionAndColumnEvents.push({
-                    name: event.eventId,
+                    name: event.eventId || `event ${index}`,
                     sourceId: component.id,
                     target: Target.tableColumn,
                     event: { ...event, ref: column.name },
-                    index: event.index ?? index,
+                    index: index,
                     appVersionId: version.id,
                   });
                 });
@@ -206,11 +214,11 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         if (queryEvents.length > 0) {
           queryEvents.forEach(async (event, index) => {
             const newEvent = {
-              name: event.eventId,
+              name: event.eventId || `${dataQuery.name} Query Event ${index}`,
               sourceId: dataQuery.id,
               target: Target.dataQuery,
               event: event,
-              index: queryEvents.index || index,
+              index: index,
               appVersionId: version.id,
             };
 
@@ -219,13 +227,26 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         }
       }
 
+      let globalSettings = definition?.globalSettings;
+      if (!definition?.globalSettings) {
+        globalSettings = {
+          hideHeader: false,
+          appInMaintenance: false,
+          canvasMaxWidth: 100,
+          canvasMaxWidthType: '%',
+          canvasMaxHeight: 2400,
+          canvasBackgroundColor: '#edeff5',
+          backgroundFxQuery: '',
+        };
+      }
+
       await entityManager.update(
         AppVersion,
         { id: version.id },
         {
           homePageId: updateHomepageId,
           showViewerNavigation: definition?.showViewerNavigation || true,
-          globalSettings: definition.globalSettings,
+          globalSettings: globalSettings,
         }
       );
 
@@ -249,6 +270,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     const allEvents = await manager.find(EventHandler, {
       where: { appVersionId: versionId },
     });
+
+    if (!allEvents || allEvents.length === 0) return;
 
     for (const event of allEvents) {
       const eventDefinition = event.event;
@@ -276,6 +299,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     componentEvents: any[],
     componentsMapping: Record<string, string>
   ): Component[] {
+    if (!data) return [];
+
     const transformedComponents: Component[] = [];
 
     const allComponents = Object.keys(data).map((key) => {
@@ -285,9 +310,16 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       };
     });
 
+    if (!allComponents || allComponents.length === 0) return [];
+
     for (const componentId in data) {
       const component = data[componentId];
+
+      if (!component) return;
+
       const componentData = component['component'];
+
+      if (!componentData?.component) return;
 
       let skipComponent = false;
       const transformedComponent: Component = new Component();
@@ -297,11 +329,16 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       const isParentTabOrCalendar = this.isChildOfTabsOrCalendar(component, allComponents, parentId);
 
       if (isParentTabOrCalendar) {
-        const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+        const childTabId = component?.parent.split('-')[component?.parent.split('-').length - 1];
         const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
         const mappedParentId = componentsMapping[_parentId];
 
         parentId = `${mappedParentId}-${childTabId}`;
+      } else if (this.isChildOfKanbanModal(component, allComponents, parentId)) {
+        const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+        const mappedParentId = componentsMapping[_parentId];
+
+        parentId = `${mappedParentId}-modal`;
       } else {
         if (component.parent && !componentsMapping[parentId]) {
           skipComponent = true;
@@ -311,21 +348,21 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
       if (!skipComponent) {
         transformedComponent.id = uuid();
-        transformedComponent.name = componentData.name;
+        transformedComponent.name = componentData.name || componentId;
         transformedComponent.type = componentData.component;
-        transformedComponent.properties = componentData.definition.properties || {};
-        transformedComponent.styles = componentData.definition.styles || {};
-        transformedComponent.validation = componentData.definition.validation || {};
-        transformedComponent.general = componentData.definition.general || {};
-        transformedComponent.generalStyles = componentData.definition.generalStyles || {};
-        transformedComponent.displayPreferences = componentData.definition.others || {};
-        transformedComponent.parent = component.parent ? parentId : null;
+        transformedComponent.properties = componentData?.definition?.properties || {};
+        transformedComponent.styles = componentData?.definition?.styles || {};
+        transformedComponent.validation = componentData?.definition?.validation || {};
+        transformedComponent.general = componentData?.definition?.general || {};
+        transformedComponent.generalStyles = componentData?.definition?.generalStyles || {};
+        transformedComponent.displayPreferences = componentData?.definition?.others || {};
+        transformedComponent.parent = component?.parent ? parentId : null;
 
         transformedComponents.push(transformedComponent);
 
         componentEvents.push({
           componentId: componentId,
-          event: componentData.definition.events,
+          event: componentData?.definition?.events || [],
         });
         componentsMapping[componentId] = transformedComponent.id;
       }
@@ -346,6 +383,13 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     }
 
     return false;
+  };
+
+  isChildOfKanbanModal = (component, allComponents = [], componentParentId = undefined) => {
+    if (!componentParentId || !componentParentId.includes('modal')) return false;
+    const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+    const parentComponent = allComponents.find((comp) => comp.id === parentId);
+    return parentComponent.component.component === 'Kanban';
   };
 
   public async down(queryRunner: QueryRunner): Promise<void> {

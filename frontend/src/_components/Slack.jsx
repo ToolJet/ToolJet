@@ -3,8 +3,17 @@ import { datasourceService } from '@/_services';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import Button from '@/_ui/Button';
+import { retrieveWhiteLabelText } from '../_helpers/utils';
 
-const Slack = ({ optionchanged, createDataSource, options, isSaving, _selectedDataSource }) => {
+const Slack = ({
+  optionchanged,
+  createDataSource,
+  options,
+  isSaving,
+  selectedDataSource,
+  currentAppEnvironmentId,
+  isDisabled,
+}) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
 
@@ -24,6 +33,8 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, _selectedDa
         const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=select_account`;
 
         localStorage.setItem('sourceWaitingForOAuth', 'newSource');
+        localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
+
         optionchanged('provider', provider).then(() => {
           optionchanged('oauth2', true);
         });
@@ -51,7 +62,9 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, _selectedDa
             <p>
               {t(
                 'slack.connectToolJetToSlack',
-                'ToolJet can connect to Slack and list users, send messages, etc. Please select appropriate permission scopes.'
+                `${retrieveWhiteLabelText()} can connect to Slack and list users, send messages, etc. Please select appropriate permission
+              scopes.`,
+                { whiteLabelText: retrieveWhiteLabelText() }
               )}
             </p>
             <div>
@@ -61,14 +74,15 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, _selectedDa
                   type="radio"
                   onClick={() => optionchanged('access_type', 'chat:write')}
                   checked={options?.access_type?.value === 'chat:write'}
-                  disabled={authStatus === 'waiting_for_token'}
+                  disabled={authStatus === 'waiting_for_token' || isDisabled}
                 />
                 <span className="form-check-label">
                   {t('slack.chatWrite', 'chat:write')} <br />
                   <small className="text-muted">
                     {t(
                       'slack.listUsersAndSendMessage',
-                      'Your ToolJet app will be able to list users and send messages to users & channels.'
+                      `Your ${retrieveWhiteLabelText()} app will be able to list users and send messages to users & channels.`,
+                      { whiteLabelText: retrieveWhiteLabelText() }
                     )}
                   </small>
                 </span>
@@ -83,7 +97,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, _selectedDa
             <div>
               <Button
                 className={`m2 ${isSaving ? ' loading' : ''}`}
-                disabled={isSaving}
+                disabled={isSaving || isDisabled}
                 onClick={() => saveDataSource()}
               >
                 {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
@@ -94,7 +108,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, _selectedDa
           {(!authStatus || authStatus === 'waiting_for_url') && (
             <Button
               className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
-              disabled={isSaving}
+              disabled={isSaving || isDisabled}
               onClick={() => authGoogle()}
             >
               {t('slack.connectSlack', 'Connect to Slack')}

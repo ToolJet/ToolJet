@@ -72,7 +72,7 @@ export const commonText = {
   createButton: "Create",
   saveChangesButton: "Save changes",
   emailInputLabel: "Email",
-  allApplicationLink: "All apps",
+  allApplicationLink: "All applications",
   notificationsCardTitle: "Notifications",
   emptyNotificationTitle: "You're all caught up!",
   emptyNotificationSubtitle: "You don't have any unread notifications!",
@@ -112,7 +112,7 @@ export const commonText = {
   backtoSignUpButton: "Back to signup",
   createAnAccountLink: "Create an account",
   forgotPasswordPageHeader: "Forgot Password",
-  newToTooljetText: "New to ToolJet?",
+  newToTooljetText: "New to",
   emailAddressLabel: "Email address",
   resetPasswordLinkButton: " Send a reset link",
   passwordResetEmailToast:
@@ -168,7 +168,10 @@ export const commonText = {
     shareableAppLink: "Shareable app link",
     // iframeLinkLabel: "Get embeddable link for this application",
     // ifameLinkCopyButton: "copy",
+    copyAppLinkButton: "copy",
   },
+  iframeLinkLabel: "Embedded app link",
+  ifameLinkCopyButton: "copy",
   groupInputFieldLabel: "Select Group",
   documentationLink: "Read Documentation",
   constantsNameError:

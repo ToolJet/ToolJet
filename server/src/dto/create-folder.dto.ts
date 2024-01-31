@@ -6,6 +6,7 @@ import {
   Validate,
   ValidatorConstraint,
   ValidatorConstraintInterface,
+  MinLength,
 } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 
@@ -39,5 +40,17 @@ export class CreateFolderDto {
   })
   @Validate(AllowedCharactersValidator)
   @MaxLength(50, { message: 'Maximum length has been reached.' })
+  name: string;
+
+  @IsString()
+  type: string;
+}
+
+export class UpdateFolderDto {
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(25, { message: 'Folder name cannot be longer than 25 characters' })
+  @MinLength(0, { message: 'Folder name cannot be empty' })
   name: string;
 }

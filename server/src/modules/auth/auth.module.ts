@@ -17,6 +17,8 @@ import { OauthService, GoogleOAuthService, GitOAuthService } from '@ee/services/
 import { OauthController } from '@ee/controllers/oauth.controller';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
+import { AuditLog } from 'src/entities/audit_log.entity';
+import { AuditLoggerService } from '@services/audit_logger.service';
 import { File } from 'src/entities/file.entity';
 import { FilesService } from '@services/files.service';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
@@ -24,6 +26,8 @@ import { GroupPermissionsService } from '@services/group_permissions.service';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
+import { OidcOAuthService } from '@ee/services/oauth/oidc_auth.service';
+import { InstanceSettingsModule } from '../instance_settings/instance_settings.module';
 import { DataSourcesService } from '@services/data_sources.service';
 import { CredentialsService } from '@services/credentials.service';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -31,16 +35,24 @@ import { Credential } from 'src/entities/credential.entity';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
+import { AppEnvironmentsModule } from '../app_environments/app_environments.module';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 import { MetaModule } from '../meta/meta.module';
 import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
+import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { SessionService } from '@services/session.service';
 import { SessionScheduler } from 'src/schedulers/session.scheduler';
+import { LdapService } from '@ee/services/oauth/ldap.service';
+import { SAMLService } from '@ee/services/oauth/saml.service';
+import { ClearSSOResponseScheduler } from 'src/schedulers/clear_sso_response.scheduler';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
+    InstanceSettingsModule,
     TypeOrmModule.forFeature([
       User,
       File,
@@ -51,11 +63,16 @@ import { SessionScheduler } from 'src/schedulers/session.scheduler';
       SSOConfigs,
       AppGroupPermission,
       UserGroupPermission,
+      DataSourceGroupPermission,
+      AuditLog,
       DataSource,
       Credential,
       Plugin,
+      AppEnvironment,
+      AppVersion,
       Metadata,
     ]),
+    AppEnvironmentsModule,
     MetaModule,
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
@@ -75,10 +92,12 @@ import { SessionScheduler } from 'src/schedulers/session.scheduler';
     EmailService,
     OauthService,
     GoogleOAuthService,
+    AuditLoggerService,
     GitOAuthService,
     FilesService,
     GroupPermissionsService,
     EncryptionService,
+    OidcOAuthService,
     DataSourcesService,
     CredentialsService,
     AppEnvironmentService,
@@ -86,6 +105,9 @@ import { SessionScheduler } from 'src/schedulers/session.scheduler';
     PluginsHelper,
     SessionService,
     SessionScheduler,
+    ClearSSOResponseScheduler,
+    LdapService,
+    SAMLService,
   ],
   controllers: [OauthController],
   exports: [AuthService, SessionService],

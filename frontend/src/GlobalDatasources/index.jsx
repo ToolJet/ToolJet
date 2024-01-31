@@ -1,20 +1,25 @@
 import React, { createContext, useMemo, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
-import { globalDatasourceService, appEnvironmentService, authenticationService } from '@/_services';
+import { globalDatasourceService, appEnvironmentService, authenticationService, licenseService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
 import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
+import { returnDevelopmentEnv } from '@/_helpers/utils';
+import _ from 'lodash';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
   toggleDataSourceManagerModal: () => {},
   selectedDataSource: null,
   setSelectedDataSource: () => {},
+  environments: [],
+  featureAccess: {},
 });
 
 export const GlobalDatasources = (props) => {
-  const { admin } = authenticationService.currentSessionValue;
+  const { admin, data_source_group_permissions, group_permissions, super_admin, current_organization_id, load_app } =
+    authenticationService.currentSessionValue;
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -22,39 +27,82 @@ export const GlobalDatasources = (props) => {
   const [isLoading, setLoading] = useState(true);
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
+  const [environmentLoading, setEnvironmentLoading] = useState(false);
   const [activeDatasourceList, setActiveDatasourceList] = useState('#databases');
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+  const [featureAccess, setFeatureAccess] = useState({});
 
   useEffect(() => {
     if (dataSources?.length == 0) updateSidebarNAV('Databases');
+    fetchFeatureAccess();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     selectedDataSource
       ? updateSidebarNAV(selectedDataSource.name)
       : !activeDatasourceList && updateSidebarNAV('Databases');
+
+    //if user selected a new datasource to create one. switch to development env
+    if (!selectedDataSource) setCurrentEnvironment(returnDevelopmentEnv(environments));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource)]);
+  }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource), activeDatasourceList]);
 
   useEffect(() => {
-    if (!admin) {
-      toast.error("You don't have access to GDS, contact your workspace admin to add datasources");
-      navigate('/');
+    if (!_.isEmpty(featureAccess)) {
+      if (!(canReadDataSource() || canUpdateDataSource() || canCreateDataSource() || canDeleteDataSource())) {
+        toast.error("You don't have access to GDS, contact your workspace admin to add data sources");
+        return navigate('/');
+      }
+      fetchEnvironments();
     }
-    fetchEnvironments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [admin]);
+  }, [admin, load_app, featureAccess.isExpired, featureAccess.isLicenseValid]);
+
+  const canAnyGroupPerformAction = (action, permissions, id) => {
+    if (!permissions || featureAccess.isExpired || !featureAccess.isLicenseValid) {
+      return false;
+    }
+    if (id) {
+      return permissions.filter((p) => p.data_source_id === id && p[action]).length;
+    }
+
+    return permissions.some((p) => p[action]);
+  };
+
+  const canReadDataSource = () => {
+    return canAnyGroupPerformAction('read', data_source_group_permissions) || super_admin || admin;
+  };
+
+  const canCreateDataSource = () => {
+    return canAnyGroupPerformAction('data_source_create', group_permissions) || super_admin || admin;
+  };
+
+  const canUpdateDataSource = (id) => {
+    return canAnyGroupPerformAction('update', data_source_group_permissions, id) || super_admin || admin;
+  };
+
+  const canDeleteDataSource = () => {
+    return canAnyGroupPerformAction('data_source_delete', group_permissions) || super_admin || admin;
+  };
 
   function updateSelectedDatasource(source) {
     updateSidebarNAV(source);
   }
 
+  const fetchFeatureAccess = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      setFeatureAccess({ ...data?.licenseStatus });
+    });
+  };
+
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     toggleDataSourceManagerModal(false);
     setLoading(true);
     globalDatasourceService
-      .getAll()
+      .getAll(current_organization_id)
       .then((data) => {
         const orderedDataSources = data.data_sources
           .map((ds) => {
@@ -75,10 +123,22 @@ export const GlobalDatasources = (props) => {
         if (!resetSelection && ds) {
           setEditing(true);
           setSelectedDataSource(ds);
+          setActiveDatasourceList('');
           toggleDataSourceManagerModal(true);
+          fetchDataSourceByEnvironment(ds?.id, currentEnvironment?.id);
         }
         if (orderedDataSources.length && resetSelection) {
-          setActiveDatasourceList('#databases');
+          if (!canCreateDataSource()) {
+            setActiveDatasourceList('#databases');
+            setSelectedDataSource(null);
+          } else if (!canUpdateDataSource()) {
+            setSelectedDataSource(orderedDataSources[0]);
+            toggleDataSourceManagerModal(true);
+            setActiveDatasourceList('');
+          } else {
+            setActiveDatasourceList('#databases');
+            setSelectedDataSource(null);
+          }
         }
         if (!orderedDataSources.length) {
           setActiveDatasourceList('#databases');
@@ -94,7 +154,9 @@ export const GlobalDatasources = (props) => {
   const handleToggleSourceManagerModal = () => {
     toggleDataSourceManagerModal(
       (prevState) => !prevState,
-      () => setEditing((prev) => !prev)
+      () => {
+        setEditing((prev) => !prev);
+      }
     );
   };
 
@@ -102,7 +164,7 @@ export const GlobalDatasources = (props) => {
     if (selectedDataSource) {
       return setSelectedDataSource(null, () => handleToggleSourceManagerModal());
     }
-
+    setEditing(true);
     handleToggleSourceManagerModal();
   };
 
@@ -111,9 +173,17 @@ export const GlobalDatasources = (props) => {
       const envArray = data?.environments;
       setEnvironments(envArray);
       if (envArray.length > 0) {
-        const env = envArray.find((env) => env.is_default === true);
+        const env = returnDevelopmentEnv(envArray);
         setCurrentEnvironment(env);
       }
+    });
+  };
+
+  const fetchDataSourceByEnvironment = (dataSourceId, envId) => {
+    setEnvironmentLoading(true);
+    globalDatasourceService.getDataSourceByEnvironmentId(dataSourceId, envId).then((data) => {
+      setSelectedDataSource({ ...data });
+      setEnvironmentLoading(false);
     });
   };
 
@@ -130,13 +200,20 @@ export const GlobalDatasources = (props) => {
       setEditing,
       fetchEnvironments,
       environments,
+      featureAccess,
       currentEnvironment,
       setCurrentEnvironment,
       setDataSources,
+      fetchDataSourceByEnvironment,
+      canReadDataSource,
+      canUpdateDataSource,
+      canDeleteDataSource,
+      canCreateDataSource,
       isLoading,
       activeDatasourceList,
       setActiveDatasourceList,
       setLoading,
+      environmentLoading,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -145,9 +222,11 @@ export const GlobalDatasources = (props) => {
       showDataSourceManagerModal,
       isEditing,
       environments,
+      featureAccess,
       currentEnvironment,
       isLoading,
       activeDatasourceList,
+      environmentLoading,
     ]
   );
 

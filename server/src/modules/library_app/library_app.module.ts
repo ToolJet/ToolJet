@@ -16,11 +16,26 @@ import { PluginsService } from '@services/plugins.service';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
+import { UsersService } from '@services/users.service';
+import { User } from 'src/entities/user.entity';
+import { Organization } from 'src/entities/organization.entity';
 import { ImportExportResourcesModule } from '../import_export_resources/import_export_resources.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([App, Credential, File, Plugin, DataSource]),
+    TypeOrmModule.forFeature([
+      App,
+      Credential,
+      File,
+      Plugin,
+      DataSource,
+      AppEnvironment,
+      AppVersion,
+      User,
+      Organization,
+    ]),
     CaslModule,
     ImportExportResourcesModule,
   ],
@@ -34,6 +49,7 @@ import { ImportExportResourcesModule } from '../import_export_resources/import_e
     PluginsService,
     PluginsHelper,
     AppEnvironmentService,
+    UsersService,
   ],
   controllers: [LibraryAppsController],
 })

@@ -37,6 +37,7 @@ import 'jspdf-autotable';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 // eslint-disable-next-line import/no-unresolved
 import { IconEyeOff } from '@tabler/icons-react';
+// eslint-disable-next-line import/no-unresolved
 import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -399,7 +400,7 @@ export function Table({
     }
   }
 
-  tableData = tableData || [];
+  tableData = _.isArray(tableData) ? tableData : [];
 
   const tableRef = useRef();
 
@@ -1071,9 +1072,9 @@ export function Table({
                 setGlobalFilter={setGlobalFilter}
                 onComponentOptionChanged={onComponentOptionChanged}
                 component={component}
-                onEvent={onEvent}
                 darkMode={darkMode}
-                tableEvents={tableEvents}
+                setExposedVariable={setExposedVariable}
+                fireEvent={fireEvent}
               />
             )}
           </div>

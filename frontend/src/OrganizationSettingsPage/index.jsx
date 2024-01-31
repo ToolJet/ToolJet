@@ -1,53 +1,92 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { useParams, Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import cx from 'classnames';
 import Layout from '@/_ui/Layout';
-import { ManageOrgUsers } from '@/ManageOrgUsers';
-import { ManageGroupPermissions } from '@/ManageGroupPermissions';
-import { ManageSSO } from '@/ManageSSO';
-import { ManageOrgVars } from '@/ManageOrgVars';
 import { authenticationService } from '@/_services';
-import { CopilotSetting } from '@/CopilotSettings';
 import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
-import { ManageOrgConstants } from '@/ManageOrgConstants';
+import { licenseService } from '../_services/license.service';
+import { LicenseBanner } from '@/LicenseBanner';
+import Skeleton from 'react-loading-skeleton';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
-  const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
+  const [featureAccess, setFeatureAccess] = useState({});
+  const [featuresLoaded, setFeaturesLoaded] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+  const [selectedTab, setSelectedTab] = useState('Users');
+  const { workspaceId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Workspace constants'];
+  const sideBarNavs = [
+    'Users',
+    'Groups',
+    'SSO',
+    'Workspace variables',
+    'Copilot',
+    'Custom styles',
+    'Workspace constants',
+    'Configure git',
+  ];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
-      case 'Users':
+      case 'users':
         return 'Users & permissions';
-      case 'Groups':
-        return 'manageGroups';
-      case 'SSO':
-        return 'manageSSO';
-      case 'Workspace variables':
-        return 'manageEnvVars';
-      case 'Workspace constants':
-        return 'manageOrgConstants';
+      case 'groups':
+        return 'Groups';
+      case 'sso':
+        return 'SSO';
+      case 'workspace-variables':
+        return 'Workspace variables';
+      case 'copilot':
+        return 'Copilot';
+      case 'custom-styles':
+        return 'Custom styles';
+      case 'workspace-constants':
+        return 'Workspace constants';
+      case 'configure-git':
+        return 'Configure git';
       default:
         return groupName;
     }
   };
 
-  useEffect(() => {
-    const subscription = authenticationService.currentSession.subscribe((newOrd) => {
-      setAdmin(newOrd?.admin);
-      admin ? updateSidebarNAV('Users & permissions') : updateSidebarNAV('Workspace variables');
+  const fetchFeatureAccess = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      setFeatureAccess(data);
+      setFeaturesLoaded(true);
     });
-
-    () => subscription.unsubsciption();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticationService.currentSessionValue?.admin]);
-
-  const goTooOrgConstantsDashboard = () => {
-    setSelectedTab('manageOrgConstants');
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchFeatureAccess();
+      const subscription = authenticationService.currentSession.subscribe((newOrd) => {
+        setAdmin(newOrd?.admin);
+        admin ? updateSidebarNAV('Users & permissions') : updateSidebarNAV('Workspace variables');
+      });
+
+      () => subscription.unsubsciption();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      if (featuresLoaded) {
+        const selectedTabFromRoute = location.pathname.split('/').pop();
+        if (selectedTabFromRoute === 'workspace-settings') {
+          setSelectedTab(admin ? 'Users & permissions' : 'Workspace variables');
+          navigate(
+            admin
+              ? `/${workspaceId}/workspace-settings/users`
+              : `/${workspaceId}/workspace-settings/workspace-variables`
+          );
+        } else {
+          setSelectedTab(defaultOrgName(selectedTabFromRoute));
+        }
+        updateSidebarNAV(defaultOrgName(selectedTabFromRoute));
+      }
+    };
+    fetchData();
+  }, [featuresLoaded, navigate, workspaceId, authenticationService.currentSessionValue?.admin]);
 
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
@@ -55,52 +94,85 @@ export function OrganizationSettings(props) {
         <div className="row gx-0">
           <div className="organization-page-sidebar col ">
             <div className="workspace-nav-list-wrap">
-              {sideBarNavs.map((item, index) => {
-                return (
-                  <>
-                    {(admin || item == 'Workspace variables' || item == 'Copilot' || item == 'Workspace constants') && (
-                      <FolderList
-                        className="workspace-settings-nav-items"
+              {featuresLoaded ? (
+                sideBarNavs.map((item, index) => {
+                  const Wrapper = ({ children }) => <>{children}</>;
+                  return (
+                    <Wrapper key={index}>
+                      <Link
+                        to={`/${workspaceId}/workspace-settings/${item.toLowerCase().replace(/\s+/g, '-')}`} // Update the URL path here
                         key={index}
-                        onClick={() => {
-                          setSelectedTab(defaultOrgName(item));
-                          if (item == 'Users') updateSidebarNAV('Users & permissions');
-                          else updateSidebarNAV(item);
+                        style={{
+                          textDecoration: 'none',
+                          border: 'none',
+                          color: 'inherit',
+                          outline: 'none',
+                          backgroundColor: 'inherit',
                         }}
-                        selectedItem={selectedTab == defaultOrgName(item)}
-                        renderBadgeForItems={['Workspace constants']}
-                        renderBadge={() => (
-                          <span
-                            style={{ width: '40px', textTransform: 'lowercase' }}
-                            className="badge bg-color-primary badge-pill"
-                          >
-                            new
-                          </span>
-                        )}
-                        dataCy={item.toLowerCase().replace(/\s+/g, '-')}
                       >
-                        {item}
-                      </FolderList>
-                    )}
-                  </>
-                );
-              })}
+                        {(admin ||
+                          item == 'Workspace variables' ||
+                          item == 'Copilot' ||
+                          item == 'Workspace constants') && (
+                          <FolderList
+                            className="workspace-settings-nav-items"
+                            key={index}
+                            onClick={() => {
+                              if (item == 'Users') updateSidebarNAV('Users & permissions');
+                              else updateSidebarNAV(item);
+                            }}
+                            selectedItem={selectedTab == defaultOrgName(item)}
+                            renderBadgeForItems={['Workspace constants']}
+                            renderBadge={() => (
+                              <span
+                                style={{ width: '40px', textTransform: 'lowercase' }}
+                                className="badge bg-color-primary badge-pill"
+                              >
+                                new
+                              </span>
+                            )}
+                            dataCy={item.toLowerCase().replace(/\s+/g, '-')}
+                          >
+                            {item}
+                          </FolderList>
+                        )}
+                      </Link>
+                    </Wrapper>
+                  );
+                })
+              ) : (
+                <Skeleton count={7} height={22} />
+              )}
             </div>
+            <LicenseBanner
+              limits={featureAccess}
+              classes="m-3 trial-banner"
+              size="xsmall"
+              type={featureAccess?.licenseStatus?.licenseType}
+            />
             <OrganizationList />
           </div>
 
-          <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
-            <div className="w-100">
-              {selectedTab === 'Users & permissions' && <ManageOrgUsers darkMode={props.darkMode} />}
-              {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
-              {selectedTab === 'manageSSO' && <ManageSSO />}
-              {selectedTab === 'manageEnvVars' && (
-                <ManageOrgVars darkMode={props.darkMode} goTooOrgConstantsDashboard={goTooOrgConstantsDashboard} />
-              )}
-              {selectedTab === 'manageCopilot' && <CopilotSetting />}
-              {selectedTab === 'manageOrgConstants' && <ManageOrgConstants darkMode={props.darkMode} />}
+          {featuresLoaded ? (
+            <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
+              <div className="w-100">
+                <Outlet />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="col workspace-content-wrapper">
+              <div style={{ width: '880px', margin: 'auto', marginTop: '150px' }}>
+                <Skeleton className="mb-2" />
+                <Skeleton className="mb-2" />
+                <Skeleton className="mb-2" />
+                <Skeleton className="mb-2" />
+                <Skeleton className="mb-2" />
+                <Skeleton className="mb-2" />
+                <Skeleton className="mb-2" />
+                <Skeleton />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Layout>

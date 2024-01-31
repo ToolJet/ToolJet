@@ -26,15 +26,13 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources
+      postgreSqlText.allDataSources()
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase
+      postgreSqlText.allDatabase()
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -105,10 +103,10 @@ describe("Data sources", () => {
       "have.text",
       "Invalid account. The specified value must be a valid subdomain string."
     );
-    deleteDatasource(`cypress-${data.lastName}-snowflake`);
   });
 
   it.skip("Should verify the functionality of PostgreSQL connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("databases", "Snowflake", data.lastName);
 
     fillDataSourceTextField(

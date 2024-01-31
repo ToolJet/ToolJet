@@ -33,10 +33,11 @@ function create(app_id, app_version_id, name, kind, options, data_source_id, plu
   return fetch(`${config.apiUrl}/data_queries`, requestOptions).then(handleResponse);
 }
 
-function update(id, name, options) {
+function update(id, name, options, dataSourceId) {
   const body = {
     options,
     name,
+    data_source_id: dataSourceId,
   };
 
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
@@ -57,17 +58,22 @@ function del(id) {
   return fetch(`${config.apiUrl}/data_queries/${id}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, resolvedOptions, options) {
+function run(queryId, resolvedOptions, options, environmentId) {
   const body = {
     resolvedOptions: resolvedOptions,
     options: options,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data_queries/${queryId}/run`, requestOptions).then(handleResponse);
+  return fetch(
+    `${config.apiUrl}/data_queries/${queryId}/run${
+      environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
+    }`,
+    requestOptions
+  ).then(handleResponse);
 }
 
-function preview(query, options, versionId) {
+function preview(query, options, versionId, environmentId) {
   const body = {
     query,
     options: options,
@@ -75,7 +81,10 @@ function preview(query, options, versionId) {
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data_queries/preview`, requestOptions).then(handleResponse);
+  return fetch(
+    `${config.apiUrl}/data_queries/preview${environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function changeQueryDataSource(id, dataSourceId) {

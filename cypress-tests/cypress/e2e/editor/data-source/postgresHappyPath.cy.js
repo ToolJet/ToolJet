@@ -24,16 +24,18 @@ describe("Data sources", () => {
   });
 
   it("Should verify elements on connection form", () => {
+    cy.log(process.env.NODE_ENV);
+    cy.log(postgreSqlText.allDatabase());
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.wait(1000);
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources
+      postgreSqlText.allDataSources()
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase
+      postgreSqlText.allDatabase()
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -106,10 +108,10 @@ describe("Data sources", () => {
       postgreSqlText.buttonTextSave
     );
     cy.get('[data-cy="connection-alert-text"]').should("be.visible");
-    deleteDatasource(`cypress-${data.lastName}-postgresql`);
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource(
       "databases",
       postgreSqlText.postgreSQL,

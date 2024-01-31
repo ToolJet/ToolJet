@@ -78,6 +78,7 @@ export function CodeHinter({
   isCopilotEnabled = false,
   currentState: _currentState,
   verticalLine = true,
+  disabled = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -87,11 +88,14 @@ export function CodeHinter({
     mode: mode || 'handlebars',
     tabSize: 2,
     theme: theme ? theme : darkMode ? 'monokai' : 'default',
-    readOnly: false,
+    readOnly: disabled,
+    disableInput: disabled,
+    cursorBlinkRate: disabled ? -1 : 530,
     highlightSelectionMatches: true,
     placeholder,
   };
   const currentState = useCurrentState();
+
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState('');
 
@@ -117,7 +121,9 @@ export function CodeHinter({
     },
   });
   const { t } = useTranslation();
-  const { variablesExposedForPreview } = useContext(EditorContext);
+
+  const { variablesExposedForPreview } = useContext(EditorContext) || {};
+
   const prevCountRef = useRef(false);
 
   function getPropertyDefinition(paramName, component) {
@@ -263,7 +269,7 @@ export function CodeHinter({
   };
 
   const getCustomResolvables = () => {
-    if (variablesExposedForPreview.hasOwnProperty(component?.id)) {
+    if (variablesExposedForPreview?.hasOwnProperty(component?.id)) {
       if (component?.component?.component === 'Table' && fieldMeta?.name) {
         return {
           ...variablesExposedForPreview[component?.id],
@@ -491,7 +497,7 @@ export function CodeHinter({
                     height={'100%'}
                     onFocus={() => setFocused(true)}
                     onBlur={(editor, e) => {
-                      e?.stopPropagation();
+                      //e.stopPropagation();
                       const value = editor?.getValue()?.trimEnd();
                       onChange(value);
                       if (!isPreviewFocused?.current) {

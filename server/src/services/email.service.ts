@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import handlebars from 'handlebars';
 import { generateInviteURL, generateOrgInviteURL } from 'src/helpers/utils.helper';
+import { InstanceSettingsService } from './instance_settings.service';
+import { INSTANCE_SETTINGS_TYPE, INSTANCE_SYSTEM_SETTINGS } from 'src/helpers/instance_settings.constants';
+
 const path = require('path');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
@@ -19,11 +22,21 @@ export class EmailService {
   private FROM_EMAIL;
   private TOOLJET_HOST;
   private NODE_ENV;
+  private WHITE_LABEL_TEXT;
+  private WHITE_LABEL_LOGO;
+  private SUB_PATH;
 
-  constructor() {
+  constructor(private readonly instancesettingsService: InstanceSettingsService) {
     this.FROM_EMAIL = process.env.DEFAULT_FROM_EMAIL || 'hello@tooljet.io';
     this.TOOLJET_HOST = this.stripTrailingSlash(process.env.TOOLJET_HOST);
+    this.SUB_PATH = process.env.SUB_PATH;
     this.NODE_ENV = process.env.NODE_ENV || 'development';
+  }
+
+  async init() {
+    const whiteLabelSettings = await this.retrieveWhiteLabelSettings();
+    this.WHITE_LABEL_TEXT = await this.retrieveWhiteLabelText(whiteLabelSettings);
+    this.WHITE_LABEL_LOGO = await this.retrieveWhiteLabelLogo(whiteLabelSettings);
   }
 
   async sendEmail(to: string, subject: string, html: string) {
@@ -41,7 +54,7 @@ export class EmailService {
     });
 
     const message = {
-      from: `"ToolJet" <${this.FROM_EMAIL}>`,
+      from: `"${this.WHITE_LABEL_TEXT}" <${this.FROM_EMAIL}>`,
       to,
       subject,
       html,
@@ -75,7 +88,8 @@ export class EmailService {
     organizationName?: string,
     sender?: string
   ) {
-    const subject = 'Welcome to ToolJet';
+    await this.init();
+    const subject = `Welcome to ${this.WHITE_LABEL_TEXT}`;
     const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId);
     const html = `
       <!DOCTYPE html>
@@ -88,7 +102,7 @@ export class EmailService {
           ${
             organizationInvitationToken && sender && organizationName
               ? `<span>
-              ${sender} has invited you to use ToolJet workspace: ${organizationName}.
+              ${sender} has invited you to use ${this.WHITE_LABEL_TEXT} workspace: ${organizationName}.
             </span>`
               : ''
           }
@@ -100,7 +114,7 @@ export class EmailService {
           <br>
           <p>
             Welcome aboard,<br>
-            ToolJet Team
+            ${this.WHITE_LABEL_TEXT} Team
           </p>
         </body>
       </html>
@@ -116,7 +130,8 @@ export class EmailService {
     invitationtoken: string,
     organizationName: string
   ) {
-    const subject = 'Welcome to ToolJet';
+    await this.init();
+    const subject = `Welcome to ${this.WHITE_LABEL_TEXT}`;
     const inviteUrl = generateOrgInviteURL(invitationtoken);
     const html = `
       <!DOCTYPE html>
@@ -128,7 +143,9 @@ export class EmailService {
           <p>Hi ${name || ''},</p>
           <br>
           <span>
-          ${sender} has invited you to use ToolJet workspace: ${organizationName}. Use the link below to set up your account and get started.
+          ${sender} has invited you to use ${
+      this.WHITE_LABEL_TEXT
+    } workspace: ${organizationName}. Use the link below to set up your account and get started.
           </span>
           <br>
           <a href="${inviteUrl}">${inviteUrl}</a>
@@ -136,7 +153,7 @@ export class EmailService {
           <br>
           <p>
             Welcome aboard,<br>
-            ToolJet Team
+            ${this.WHITE_LABEL_TEXT} Team
           </p>
         </body>
       </html>
@@ -146,8 +163,9 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(to: string, token: string) {
+    await this.init();
     const subject = 'password reset instructions';
-    const url = `${this.TOOLJET_HOST}/reset-password/${token}`;
+    const url = `${this.TOOLJET_HOST}${this.SUB_PATH ? this.SUB_PATH : '/'}reset-password/${token}`;
     const html = `
       Please use this link to reset your password: <a href="${url}">${url}</a>
     `;
@@ -164,9 +182,12 @@ export class EmailService {
     comment: string,
     fromAvatar: string
   ) {
+    await this.init();
     const filePath = path.join(__dirname, '../assets/email-templates/comment-mention.html');
     const source = fs.readFileSync(filePath, 'utf-8').toString();
     const template = handlebars.compile(source);
+    const companyName = this.WHITE_LABEL_TEXT;
+    const companyLogo = this.WHITE_LABEL_LOGO;
     const replacements = {
       to,
       from,
@@ -176,11 +197,35 @@ export class EmailService {
       commentLink,
       comment,
       fromAvatar,
+      companyName,
+      companyLogo,
     };
     const htmlToSend = template(replacements);
     const subject = `You were mentioned on ${appName}`;
     const html = htmlToSend;
 
     await this.sendEmail(to, subject, html);
+  }
+
+  async retrieveWhiteLabelSettings() {
+    const whiteLabelSetting = await this.instancesettingsService.getSettings(
+      [INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO, INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT],
+      false,
+      INSTANCE_SETTINGS_TYPE.SYSTEM
+    );
+
+    return whiteLabelSetting;
+  }
+
+  async retrieveWhiteLabelText(whiteLabelSetting) {
+    return whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT] !== ''
+      ? whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT]
+      : 'ToolJet';
+  }
+
+  async retrieveWhiteLabelLogo(whiteLabelSetting) {
+    return whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO] !== ''
+      ? whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO]
+      : 'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg';
   }
 }

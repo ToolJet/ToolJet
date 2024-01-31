@@ -201,6 +201,7 @@ export class AppImportExportService {
     appParamsObj: any,
     appName: string,
     externalResourceMappings = {},
+    isGitApp = false,
     tooljetVersion = '',
     cloning = false
   ): Promise<App> {
@@ -228,7 +229,7 @@ export class AppImportExportService {
       ? true
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
-    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
+    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user, isGitApp);
 
     await this.setupImportedAppAssociations(
       this.entityManager,
@@ -249,7 +250,7 @@ export class AppImportExportService {
     return importedApp;
   }
 
-  async createImportedAppForUser(manager: EntityManager, appParams: any, user: User): Promise<App> {
+  async createImportedAppForUser(manager: EntityManager, appParams: any, user: User, isGitApp = false): Promise<App> {
     return await catchDbException(async () => {
       const importedApp = manager.create(App, {
         name: appParams.name,
@@ -257,6 +258,7 @@ export class AppImportExportService {
         userId: user.id,
         slug: null,
         icon: appParams.icon,
+        creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
         isPublic: false,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -712,6 +714,11 @@ export class AppImportExportService {
             const mappedParentId = newComponentIdsMap[_parentId];
 
             parentId = `${mappedParentId}-${childTabId}`;
+          } else if (isChildOfKanbanModal(component, pageComponents, parentId, true)) {
+            const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+            const mappedParentId = newComponentIdsMap[_parentId];
+
+            parentId = `${mappedParentId}-modal`;
           } else {
             if (component.parent && !newComponentIdsMap[parentId]) {
               skipComponent = true;
@@ -726,6 +733,7 @@ export class AppImportExportService {
             newComponent.type = component.type;
             newComponent.properties = component.properties;
             newComponent.styles = component.styles;
+            newComponent.generalStyles = component.generalStyles;
             newComponent.validation = component.validation;
             newComponent.parent = component.parent ? parentId : null;
 
@@ -1186,7 +1194,7 @@ export class AppImportExportService {
         version.homePageId = appVersion.homePageId;
         version.globalSettings = appVersion.globalSettings;
       } else {
-        version.showViewerNavigation = appVersion.definition.showViewerNavigation || true;
+        version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
         version.homePageId = appVersion.definition?.homePageId;
 
         if (!appVersion.definition?.globalSettings) {
@@ -1645,7 +1653,7 @@ export class AppImportExportService {
   }
 }
 
-function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
+export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
   const appParamsWithMultipageSchema = {
     ...appParams,
     appVersions: appParams.appVersions?.map((appVersion: { definition: any }) => ({
@@ -1693,6 +1701,11 @@ function transformComponentData(
       const mappedParentId = componentsMapping[_parentId];
 
       parentId = `${mappedParentId}-${childTabId}`;
+    } else if (isChildOfKanbanModal(component, allComponents, parentId, isNormalizedAppDefinitionSchema)) {
+      const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+      const mappedParentId = componentsMapping[_parentId];
+
+      parentId = `${mappedParentId}-modal`;
     } else {
       if (component.parent && !componentsMapping[parentId]) {
         skipComponent = true;
@@ -1746,4 +1759,23 @@ const isChildOfTabsOrCalendar = (
   }
 
   return false;
+};
+
+const isChildOfKanbanModal = (
+  component,
+  allComponents = [],
+  componentParentId = undefined,
+  isNormalizedAppDefinitionSchema: boolean
+) => {
+  if (!componentParentId || !componentParentId.includes('modal')) return false;
+
+  const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+  const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+  if (!isNormalizedAppDefinitionSchema) {
+    return parentComponent.component.component === 'Kanban';
+  }
+
+  return parentComponent.type === 'Kanban';
 };

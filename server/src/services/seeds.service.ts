@@ -6,7 +6,7 @@ import { OrganizationUser } from '../entities/organization_user.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 
 @Injectable()
@@ -41,6 +41,7 @@ export class SeedsService {
         lastName: 'Developer',
         email: 'dev@tooljet.io',
         password: 'password',
+        userType: USER_TYPE.INSTANCE,
         defaultOrganizationId: organization.id,
         status: USER_STATUS.ACTIVE,
       });
@@ -129,6 +130,8 @@ export class SeedsService {
         orgEnvironmentConstantDelete: group == 'admin',
         folderUpdate: group == 'admin',
         folderDelete: group == 'admin',
+        dataSourceDelete: group == 'admin',
+        dataSourceCreate: group == 'admin',
       });
       await manager.save(groupPermission);
     }

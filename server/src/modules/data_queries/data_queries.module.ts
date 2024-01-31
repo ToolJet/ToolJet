@@ -22,10 +22,13 @@ import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
+import { AuditLog } from 'src/entities/audit_log.entity';
+import { AuditLoggerService } from '@services/audit_logger.service';
 import { FilesService } from '@services/files.service';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppEnvironmentService } from '@services/app_environments.service';
 
 @Module({
@@ -45,6 +48,8 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       User,
       OrganizationUser,
       Organization,
+      AuditLog,
+      AppEnvironment,
       Plugin,
     ]),
     CaslModule,
@@ -57,6 +62,7 @@ import { AppEnvironmentService } from '@services/app_environments.service';
     AppsService,
     UsersService,
     AppImportExportService,
+    AuditLoggerService,
     FilesService,
     PluginsHelper,
     AppEnvironmentService,

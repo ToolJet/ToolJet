@@ -1,10 +1,11 @@
 module.exports = async () => {
   return {
     verbose: true,
-    moduleFileExtensions: ['js', 'json', 'ts'],
+    moduleFileExtensions: ['js', 'json', 'ts', 'node'],
     rootDir: '.',
     testEnvironment: 'node',
     testRegex: '.spec.ts$',
+    transformIgnorePatterns: ['node_modules/(?!(lib0|y-protocols)/)'],
     testPathIgnorePatterns: ['.e2e-spec.ts$'],
     transform: {
       '^.+\\.(t|j)s$': 'ts-jest',

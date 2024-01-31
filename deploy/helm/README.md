@@ -1,7 +1,7 @@
 # Helm installation
 
 This chart can be used to install ToolJet in a Kubernetes Cluster via [Helm v3](https://helm.sh).\
-This setup is very rudimentary and comes with an included PostgreSQL server out of the box.
+This setup is very rudimentary and comes with an included PostgreSQL server and Redis out of the box.
 
 ## Installation
 

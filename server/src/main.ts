@@ -11,7 +11,11 @@ import { AllExceptionsFilter } from './filters/all-exceptions-filter';
 import { RequestMethod, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
+import { custom } from 'openid-client';
 import { join } from 'path';
+import { Transport } from '@nestjs/microservices';
+import { LicenseService } from '@services/license.service';
+import License from '@ee/licensing/configs/License';
 
 const fs = require('fs');
 
@@ -48,13 +52,22 @@ async function bootstrap() {
   const configService = app.get<ConfigService>(ConfigService);
   const host = new URL(process.env.TOOLJET_HOST);
   const domain = host.hostname;
+  const licenseService = app.get<LicenseService>(LicenseService);
+  await licenseService.init();
+
+  custom.setHttpOptionsDefaults({
+    timeout: parseInt(process.env.OIDC_CONNECTION_TIMEOUT || '3500'), // Default 3.5 seconds
+  });
 
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
+
   const hasSubPath = process.env.SUB_PATH !== undefined;
   const UrlPrefix = hasSubPath ? process.env.SUB_PATH : '';
+
+  licenseService.validateHostnameSubpath();
 
   // Exclude these endpoints from prefix. These endpoints are required for health checks.
   const pathsToExclude = [];
@@ -132,8 +145,11 @@ async function bootstrap() {
     replaceSubpathPlaceHoldersInStaticAssets();
   }
 
-  await app.listen(port, listen_addr, function () {
+  await app.listen(port, listen_addr, async function () {
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
+    console.log(
+      `License valid : ${License.Instance().isValid} License Terms : ${JSON.stringify(License.Instance().terms)} 🚀`
+    );
     console.log(`Ready to use at ${tooljetHost} 🚀`);
   });
 }
@@ -143,5 +159,15 @@ if (process.env.TOOLJET_HTTP_PROXY) {
   process.env['GLOBAL_AGENT_HTTP_PROXY'] = process.env.TOOLJET_HTTP_PROXY;
   globalAgentBootstrap();
 }
+async function bootstrapWorker() {
+  const app = await NestFactory.createMicroservice<any>(AppModule, {
+    transport: Transport.REDIS,
+    options: {
+      url: 'redis://localhost:6379',
+    },
+  });
+
+  void app.listen();
+}
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-bootstrap();
+process.env.WORKER ? bootstrapWorker() : bootstrap();

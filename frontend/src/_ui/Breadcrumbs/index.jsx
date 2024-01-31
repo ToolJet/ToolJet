@@ -39,4 +39,11 @@ const routes = [
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/data-sources', breadcrumb: 'Data sources' },
   { path: '/integrations', breadcrumb: 'Integrations / plugins', props: { beta: true } },
+  { path: '/license', breadcrumb: 'Enterprise Edition' },
+  { path: '/instance-settings/all-users', breadcrumb: 'Settings' },
+  { path: '/instance-settings/manage-instance-settings', breadcrumb: 'Settings' },
+  { path: '/instance-settings/white-labelling', breadcrumb: 'Settings' },
+  { path: '/instance-settings/license', breadcrumb: 'Settings' },
+  { path: '/audit-logs', breadcrumb: 'Audit logs' },
+  { path: '/:worspace_id/workflows', breadcrumb: 'Workflows', props: { beta: true } },
 ];

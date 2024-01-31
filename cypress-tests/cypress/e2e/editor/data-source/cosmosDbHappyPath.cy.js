@@ -26,15 +26,14 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources
+      postgreSqlText.allDataSources()
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase
+      postgreSqlText.allDatabase()
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -83,10 +82,10 @@ describe("Data sources", () => {
       "have.text",
       "Invalid URL"
     );
-    deleteDatasource(`cypress-${data.lastName}-cosmosdb`);
   });
 
   it.only("Should verify the functionality of CosmosDB connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("databases", "CosmosDB", data.lastName);
 
     fillDataSourceTextField(

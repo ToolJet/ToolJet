@@ -27,6 +27,7 @@ export const LeftSidebarDataSources = ({
   dataQueriesChanged,
   toggleDataSourceManagerModal,
   showDataSourceManagerModal,
+  currentAppEnvironmentId,
   onDeleteofAllDataSources,
   setPinned,
   pinned,
@@ -35,9 +36,10 @@ export const LeftSidebarDataSources = ({
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -160,7 +162,7 @@ export const LeftSidebarDataSources = ({
             {dataSource.name}
           </span>
         </div>
-        {showDeleteIcon && !isVersionReleased && (
+        {showDeleteIcon && !(isVersionReleased || isEditorFreezed) && (
           <div className="col-auto cursor-pointer">
             <button className="btn btn-sm p-1 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
               <div>
@@ -169,7 +171,7 @@ export const LeftSidebarDataSources = ({
             </button>
           </div>
         )}
-        {convertToGlobal && admin && !isVersionReleased && (
+        {convertToGlobal && admin && !(isVersionReleased || isEditorFreezed) && (
           <div className="col-auto cursor-pointer">
             <OverlayTrigger
               rootClose={false}
@@ -219,7 +221,8 @@ export const LeftSidebarDataSources = ({
         dataSourcesChanged={dataSourcesChanged}
         globalDataSourcesChanged={globalDataSourcesChanged}
         selectedDataSource={selectedDataSource}
-        isVersionReleased={isVersionReleased}
+        currentAppEnvironmentId={currentAppEnvironmentId}
+        isVersionReleased={isVersionReleased || isEditorFreezed}
         showSaveBtn={true}
       />
     </>
@@ -228,16 +231,17 @@ export const LeftSidebarDataSources = ({
 
 const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [], setPinned, pinned }) => {
   const { t } = useTranslation();
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
   return (
     <div className="left-sidebar-local-datasources-wrapper">
       <HeaderSection darkMode={darkMode}>
-        <HeaderSection.PanelHeader title="Datasources">
+        <HeaderSection.PanelHeader title="Data sources">
           <div className="d-flex justify-content-end">
             <ButtonSolid
               title={`${pinned ? 'Unpin' : 'Pin'}`}
@@ -276,7 +280,7 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
           </div>
         </div>
       </div>
-      {!isVersionReleased && (
+      {!(isVersionReleased || isEditorFreezed) && (
         <div className="add-datasource-btn w-100 p-3">
           <Link to={getPrivateRoute('data_sources')}>
             <div className="p-2 color-primary cursor-pointer">

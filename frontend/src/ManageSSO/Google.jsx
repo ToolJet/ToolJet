@@ -5,6 +5,7 @@ import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { ssoConfMessages } from '@/_helpers';
 
 export function Google({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -27,13 +28,13 @@ export function Google({ settings, updateData }) {
         setSaving(false);
         data.id && setConfigId(data.id);
         updateData('google', { id: data.id, configs: { client_id: clientId } });
-        toast.success('updated SSO configurations', {
+        toast.success(ssoConfMessages('Google', 'sso_updated'), {
           position: 'top-center',
         });
       },
       () => {
         setSaving(false);
-        toast.error('Error while saving SSO configurations', {
+        toast.error(ssoConfMessages('Google', 'sso_update_failed'), {
           position: 'top-center',
         });
       }
@@ -42,20 +43,20 @@ export function Google({ settings, updateData }) {
 
   const changeStatus = () => {
     setSaving(true);
+    const enabled_tmp = !enabled;
     organizationService.editOrganizationConfigs({ type: 'google', enabled: !enabled }).then(
       (data) => {
         setSaving(false);
-        const enabled_tmp = !enabled;
         setEnabled(enabled_tmp);
         data.id && setConfigId(data.id);
         updateData('google', { id: data.id, enabled: enabled_tmp });
-        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} Google SSO`, {
+        toast.success(ssoConfMessages('Google', 'sso_updated'), {
           position: 'top-center',
         });
       },
       () => {
         setSaving(false);
-        toast.error('Error while saving SSO configurations', {
+        toast.error(ssoConfMessages('Google', 'sso_update_failed'), {
           position: 'top-center',
         });
       }

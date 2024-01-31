@@ -19,11 +19,13 @@ const currentSessionSubject = new BehaviorSubject({
   admin: null,
   group_permissions: null,
   app_group_permissions: null,
+  data_source_group_permissions: null,
   organizations: [],
   authentication_status: null,
   authentication_failed: null,
   isUserUpdated: false,
   load_app: false, //key is used only in the viewer mode
+  instance_id: null,
 });
 
 export const authenticationService = {
@@ -52,6 +54,7 @@ export const authenticationService = {
   authorize,
   validateSession,
   getUserDetails,
+  activateTrial,
   getLoginOrganizationSlug,
   saveLoginOrganizationSlug,
   deleteLoginOrganizationSlug,
@@ -176,7 +179,7 @@ function onboarding({ companyName, companySize, role, token, organizationToken, 
       return response;
     });
 }
-function setupAdmin({ companyName, companySize, name, role, workspace, password, email, phoneNumber }) {
+function setupAdmin({ companyName, companySize, name, role, workspace, password, email, phoneNumber, requestedTrial }) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -189,10 +192,24 @@ function setupAdmin({ companyName, companySize, name, role, workspace, password,
       workspace,
       email,
       password,
+      requestedTrial,
       ...(phoneNumber?.length > 0 && { phoneNumber: `+${phoneNumber}` }),
     }),
   };
   return fetch(`${config.apiUrl}/setup-admin`, requestOptions)
+    .then(handleResponse)
+    .then((response) => {
+      return response;
+    });
+}
+
+function activateTrial() {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/activate-trial`, requestOptions)
     .then(handleResponse)
     .then((response) => {
       return response;

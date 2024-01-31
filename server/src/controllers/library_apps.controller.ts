@@ -1,3 +1,4 @@
+import { AppCountGuard } from '@ee/licensing/guards/app.guard';
 import { Controller, Post, UseGuards, Get, ForbiddenException, Body } from '@nestjs/common';
 import { LibraryAppCreationService } from '@services/library_app_creation.service';
 import { User } from 'src/decorators/user.decorator';
@@ -14,7 +15,7 @@ export class LibraryAppsController {
   ) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AppCountGuard)
   async create(@User() user, @Body('identifier') identifier, @Body('appName') appName) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 

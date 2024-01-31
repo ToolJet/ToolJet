@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -13,20 +14,16 @@ import { UserSessions } from '../entities/user_sessions.entity';
 import { OrganizationUsersService } from './organization_users.service';
 import { EmailService } from './email.service';
 import { decamelizeKeys } from 'humps';
+import { AuditLoggerService } from './audit_logger.service';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
+import { CreateAdminDto, CreateUserDto, TelemetryDataDto, TrialUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import {
-  dbTransactionWrap,
-  generateInviteURL,
-  generateNextNameAndSlug,
-  generateOrgInviteURL,
-} from 'src/helpers/utils.helper';
 import {
   getUserErrorMessages,
   getUserStatusAndSource,
@@ -37,13 +34,26 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
+import {
+  dbTransactionWrap,
+  isSuperAdmin,
+  generateInviteURL,
+  generateNextNameAndSlug,
+  generateOrgInviteURL,
+} from 'src/helpers/utils.helper';
+import { InstanceSettingsService } from './instance_settings.service';
 import { MetadataService } from './metadata.service';
 import { CookieOptions, Response } from 'express';
 import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
+import { LicenseService } from './license.service';
+import { uuid4 } from '@sentry/utils';
+import got from 'got/dist/source';
+import { LICENSE_TRIAL_API } from 'src/helpers/license.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
+import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
 export class AuthService {
@@ -52,14 +62,19 @@ export class AuthService {
     private usersRepository: Repository<User>,
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
+    @InjectRepository(Organization)
+    private organizationsRepository: Repository<Organization>,
     private usersService: UsersService,
     private jwtService: JwtService,
     private organizationsService: OrganizationsService,
     private organizationUsersService: OrganizationUsersService,
     private emailService: EmailService,
+    private auditLoggerService: AuditLoggerService,
+    private instanceSettingsService: InstanceSettingsService,
     private metadataService: MetadataService,
     private configService: ConfigService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private licenseService: LicenseService
   ) {}
 
   verifyToken(token: string) {
@@ -107,6 +122,10 @@ export class AuthService {
 
     const user = await this.validateUser(email, password, organizationId);
 
+    const allowPersonalWorkspace =
+      isSuperAdmin(user) ||
+      (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!organizationId) {
         // Global login
@@ -124,10 +143,12 @@ export class AuthService {
         } else if (organizationList?.length > 0) {
           // default organization form login not enabled, picking first one from form enabled list
           organization = organizationList[0];
-        } else {
+        } else if (allowPersonalWorkspace) {
           // no form login enabled organization available for user - creating new one
           const { name, slug } = generateNextNameAndSlug('My workspace');
           organization = await this.organizationsService.create(name, slug, user, manager);
+        } else {
+          throw new UnauthorizedException('User is not assigned to any workspaces');
         }
 
         user.organizationId = organization.id;
@@ -154,6 +175,18 @@ export class AuthService {
         manager
       );
 
+      await this.auditLoggerService.perform(
+        {
+          userId: user.id,
+          organizationId: organization.id,
+          resourceId: user.id,
+          resourceType: ResourceTypes.USER,
+          resourceName: user.email,
+          actionType: ActionTypes.USER_LOGIN,
+        },
+        manager
+      );
+
       return await this.generateLoginResultPayload(response, user, organization, false, true, loggedInUser);
     });
   }
@@ -164,7 +197,7 @@ export class AuthService {
     }
     const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, WORKSPACE_USER_STATUS.ACTIVE);
 
-    if (!newUser) {
+    if (!newUser && !isSuperAdmin(newUser)) {
       throw new UnauthorizedException('Invalid credentials');
     }
     newUser.organizationId = newOrganizationId;
@@ -173,7 +206,10 @@ export class AuthService {
 
     const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
 
-    if ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO)) {
+    if (
+      !isSuperAdmin(newUser) && // bypassing login mode checks for super admin
+      ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO))
+    ) {
       // no configurations in organization side or Form login disabled for the organization
       throw new UnauthorizedException('Please log in to continue');
     }
@@ -204,14 +240,17 @@ export class AuthService {
         currentOrganizationId: user.organizationId,
         currentOrganizationSlug: organization.slug,
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
+        super_admin: user.userType === 'instance',
         groupPermissions: await this.usersService.groupPermissions(user, manager),
         appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+        dataSourceGroupPermissions: await this.usersService.dataSourceGroupPermissions(user, null, manager),
         currentUser: {
           id: user.id,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
           avatarId: user.avatarId,
+          ssoUserInfo: user.userDetails?.ssoUserInfo,
         },
       });
     });
@@ -222,6 +261,10 @@ export class AuthService {
       throw new BadRequestException();
     }
     const existingUser = await this.usersService.findByEmail(email);
+
+    if (existingUser?.status === USER_STATUS.ARCHIVED) {
+      throw new NotAcceptableException('User has been archived, please contact the administrator');
+    }
     if (existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
       throw new NotAcceptableException('Email already exists');
     }
@@ -290,6 +333,17 @@ export class AuthService {
       this.emailService
         .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
         .catch((err) => console.error(err));
+      await this.auditLoggerService.perform(
+        {
+          userId: user.id,
+          organizationId: organization.id,
+          resourceId: user.id,
+          resourceType: ResourceTypes.USER,
+          resourceName: user.email,
+          actionType: ActionTypes.USER_SIGNUP,
+        },
+        manager
+      );
     });
     return {};
   }
@@ -330,7 +384,8 @@ export class AuthService {
   }
 
   async setupAdmin(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
-    const { companyName, companySize, name, role, workspace, password, email, phoneNumber } = userCreateDto;
+    const { companyName, companySize, name, role, workspace, password, email, phoneNumber, requestedTrial } =
+      userCreateDto;
 
     const nameObj = this.splitName(name);
 
@@ -362,15 +417,60 @@ export class AuthService {
         manager
       );
       await this.organizationUsersService.create(user, organization, false, manager);
+      if (requestedTrial) await this.activateTrial(new TrialUserDto(userCreateDto));
       return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 
-    await this.metadataService.finishOnboarding(name, email, companyName, companySize, role);
+    await this.metadataService.finishOnboarding(new TelemetryDataDto(userCreateDto));
     return result;
   }
 
+  async activateTrial(userCreateDto: TrialUserDto) {
+    const { companyName, companySize, name, role, email, phoneNumber } = userCreateDto;
+    /* generate trial license if needed */
+    const hostname = this.configService.get<string>('TOOLJET_HOST');
+    const subpath = this.configService.get<string>('SUB_PATH');
+
+    const metadata = await this.metadataService.getMetaData();
+    const { id: customerId } = metadata;
+    const otherData = { companySize, role, phoneNumber };
+
+    const body = {
+      hostname,
+      subpath,
+      customerId,
+      email,
+      companyName,
+      version: '2',
+      ...this.splitName(name),
+      otherData,
+    };
+
+    try {
+      const licenseResponse = await got(LICENSE_TRIAL_API, {
+        method: 'POST',
+        json: body,
+      });
+      const { license_key } = JSON.parse(licenseResponse.body);
+      await this.licenseService.updateLicense({ key: license_key });
+    } catch (error) {
+      const response = JSON.parse(error?.response?.body || '{}');
+      throw new HttpException(response?.message || 'Trial could not be activated. Please try again!', 500);
+    }
+  }
+
   async setupAccountFromInvitationToken(response: Response, userCreateDto: CreateUserDto) {
-    const { companyName, companySize, token, role, organizationToken, password, source, phoneNumber } = userCreateDto;
+    const {
+      companyName,
+      companySize,
+      token,
+      role,
+      organizationToken,
+      password: userPassword,
+      source,
+      phoneNumber,
+    } = userCreateDto;
+    let password = userPassword;
 
     if (!token) {
       throw new BadRequestException('Invalid token');
@@ -381,26 +481,51 @@ export class AuthService {
       let organizationUser: OrganizationUser;
       let isSSOVerify: boolean;
 
+      const allowPersonalWorkspace =
+        (await this.usersRepository.count()) === 0 ||
+        (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
+
+      if (!(allowPersonalWorkspace || organizationToken)) {
+        throw new BadRequestException('Invalid invitation link');
+      }
       if (organizationToken) {
         organizationUser = await manager.findOne(OrganizationUser, {
           where: { invitationToken: organizationToken },
           relations: ['user'],
         });
       }
+
+      if (!password && source === URL_SSO_SOURCE) {
+        /* For SSO we don't need password. let us set uuid as a password. */
+        password = uuid4();
+      }
+
       if (user?.organizationUsers) {
         if (isPasswordMandatory(user.source) && !password) {
           throw new BadRequestException('Please enter password');
         }
-        // Getting default workspace
-        const defaultOrganizationUser: OrganizationUser = user.organizationUsers.find(
-          (ou) => ou.organizationId === user.defaultOrganizationId
-        );
 
-        if (!defaultOrganizationUser) {
-          throw new BadRequestException('Invalid invitation link');
+        if (allowPersonalWorkspace) {
+          // Getting default workspace
+          const defaultOrganizationUser: OrganizationUser = user.organizationUsers.find(
+            (ou) => ou.organizationId === user.defaultOrganizationId
+          );
+
+          if (!defaultOrganizationUser) {
+            throw new BadRequestException('Invalid invitation link');
+          }
+
+          // Activate default workspace
+          await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
         }
 
-        isSSOVerify = source === URL_SSO_SOURCE && (user.source === SOURCE.GOOGLE || user.source === SOURCE.GIT);
+        isSSOVerify =
+          source === URL_SSO_SOURCE &&
+          (user.source === SOURCE.GOOGLE ||
+            user.source === SOURCE.GIT ||
+            user.source === SOURCE.OPENID ||
+            user.source === SOURCE.SAML ||
+            user.source === SOURCE.LDAP);
 
         const lifecycleParams = getUserStatusAndSource(
           isSSOVerify ? lifecycleEvents.USER_SSO_ACTIVATE : lifecycleEvents.USER_REDEEM,
@@ -421,9 +546,6 @@ export class AuthService {
           },
           manager
         );
-
-        // Activate default workspace
-        await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
       } else {
         throw new BadRequestException('Invalid invitation link');
       }
@@ -447,6 +569,18 @@ export class AuthService {
       });
 
       const isInstanceSSOLogin = !organizationUser && isSSOVerify;
+
+      await this.auditLoggerService.perform(
+        {
+          userId: user.id,
+          organizationId: organization.id,
+          resourceId: user.id,
+          resourceName: user.email,
+          resourceType: ResourceTypes.USER,
+          actionType: ActionTypes.USER_INVITE_REDEEM,
+        },
+        manager
+      );
 
       return this.generateLoginResultPayload(response, user, organization, isInstanceSSOLogin, !isSSOVerify);
     });
@@ -546,6 +680,15 @@ export class AuthService {
       throw new BadRequestException(getUserErrorMessages(user.status));
     }
 
+    await this.auditLoggerService.perform({
+      userId: user.id,
+      organizationId: organizationUser.organizationId,
+      resourceId: user.id,
+      resourceName: user.email,
+      resourceType: ResourceTypes.USER,
+      actionType: ActionTypes.USER_INVITE_REDEEM,
+    });
+
     return {
       email: user.email,
       name: `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`,
@@ -555,7 +698,7 @@ export class AuthService {
     };
   }
 
-  generateSessionPayload(user: User, currentOrganization: Organization) {
+  generateSessionPayload(user: User, currentOrganization: Organization, appData?: any) {
     return decamelizeKeys({
       id: user.id,
       email: user.email,
@@ -567,6 +710,7 @@ export class AuthService {
         : user?.organizationIds?.includes(user?.defaultOrganizationId)
         ? user.defaultOrganizationId
         : user?.organizationIds?.[0],
+      ...(appData && { appData }),
     });
   }
 
@@ -588,9 +732,10 @@ export class AuthService {
 
     // logged in user and new user are different -> creating session
     if (loggedInUser?.id !== user.id) {
+      const clientIp = (request as any)?.clientIp;
       const session: UserSessions = await this.sessionService.createSession(
         user.id,
-        `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+        `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
           request?.headers['user-agent'] || 'unknown'
         }`,
         manager
@@ -627,6 +772,15 @@ export class AuthService {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      avatar_id: user.avatarId,
+      sso_user_info: user.userDetails?.ssoUserInfo,
+      organizationId: organization.id,
+      organization: organization.name,
+      superAdmin: isSuperAdmin(user),
+      admin: await this.usersService.hasGroup(user, 'admin', null, manager),
+      groupPermissions: await this.usersService.groupPermissions(user, manager),
+      appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+      dataSourceGroupPermissions: await this.usersService.dataSourceGroupPermissions(user, null, manager),
       currentOrganizationId: organization.id,
       currentOrganizationSlug: organization.slug,
     });

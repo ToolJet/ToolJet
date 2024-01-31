@@ -16,9 +16,9 @@ import {
   BadRequestException,
   UseFilters,
 } from '@nestjs/common';
-import { Express } from 'express';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { ActiveWorkspaceGuard } from 'src/modules/auth/active-workspace.guard';
+import { TableCountGuard } from '@ee/licensing/guards/table.guard';
 import { TooljetDbService } from '@services/tooljet_db.service';
 import { decamelizeKeys } from 'humps';
 import { PostgrestProxyService } from '@services/postgrest_proxy.service';
@@ -63,6 +63,14 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
 
+  @Get('/tables/limits')
+  @UseGuards(TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ViewTables, 'all'))
+  async getTablesLimit(@Param('organizationId') organizationId) {
+    const data = await this.tooljetDbService.getTablesLimit();
+    return data;
+  }
+
   @Get('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ViewTable, 'all'))
@@ -72,7 +80,7 @@ export class TooljetDbController {
   }
 
   @Post('/organizations/:organizationId/table')
-  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard, TableCountGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.CreateTable, 'all'))
   async createTable(@Body() createTableDto: CreatePostgrestTableDto, @Param('organizationId') organizationId) {
     const result = await this.tooljetDbService.perform(organizationId, 'create_table', createTableDto);
@@ -130,15 +138,11 @@ export class TooljetDbController {
 
   @UseInterceptors(FileInterceptor('file'))
   @Post('/organizations/:organizationId/table/:tableName/bulk-upload')
-  async bulkUpload(
-    @Param('organizationId') organizationId,
-    @Param('tableName') tableName,
-    @UploadedFile() file: Express.Multer.File
-  ) {
-    if (file.size > MAX_CSV_FILE_SIZE) {
+  async bulkUpload(@Param('organizationId') organizationId, @Param('tableName') tableName, @UploadedFile() file: any) {
+    if (file?.size > MAX_CSV_FILE_SIZE) {
       throw new BadRequestException('File size cannot be greater than 2MB');
     }
-    const result = await this.tooljetDbBulkUploadService.perform(organizationId, tableName, file.buffer);
+    const result = await this.tooljetDbBulkUploadService.perform(organizationId, tableName, file?.buffer);
 
     return decamelizeKeys({ result });
   }

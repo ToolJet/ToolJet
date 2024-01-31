@@ -41,3 +41,8 @@ postgresql:
       enabled: true
       size: 8Gi
       storageClass: ""
+
+redis:
+  architecture: standalone
+  auth:
+    password: "password"

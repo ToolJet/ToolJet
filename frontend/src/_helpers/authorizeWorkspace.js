@@ -1,4 +1,4 @@
-import { organizationService, authenticationService } from '@/_services';
+import { organizationService, authenticationService, licenseService } from '@/_services';
 import {
   pathnameToArray,
   getSubpath,
@@ -102,7 +102,7 @@ const isThisWorkspaceLoginPage = (justLoginPage = false) => {
   return (justLoginPage && pathnames[0] === 'login') || (pathnames.length === 2 && pathnames[0] === 'login');
 };
 
-const updateCurrentSession = (newSession) => {
+export const updateCurrentSession = (newSession) => {
   const currentSession = authenticationService.currentSessionValue;
   authenticationService.updateCurrentSession({ ...currentSession, ...newSession });
 };

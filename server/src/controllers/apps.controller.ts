@@ -12,6 +12,7 @@ import {
   BadRequestException,
   UseInterceptors,
   NotFoundException,
+  Headers,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
@@ -20,6 +21,9 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
 import { FoldersService } from '@services/folders.service';
 import { App } from 'src/entities/app.entity';
+import { AuditLoggerService } from '@services/audit_logger.service';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import { AppCountGuard } from '@ee/licensing/guards/app.guard';
 import { User } from 'src/decorators/user.decorator';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { AppCreateDto } from '@dto/app-create.dto';
@@ -29,6 +33,8 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
+import { WorkflowCountGuard } from '@ee/licensing/guards/workflowcount.guard';
+import { GitSyncService } from '@services/git_sync.service';
 import { AppCloneDto } from '@dto/app-clone.dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
@@ -37,28 +43,56 @@ export class AppsController {
   constructor(
     private appsService: AppsService,
     private foldersService: FoldersService,
-    private appsAbilityFactory: AppsAbilityFactory
+    private appsAbilityFactory: AppsAbilityFactory,
+    private auditLoggerService: AuditLoggerService,
+    private gitSyncService: GitSyncService
   ) {}
 
   @UseGuards(JwtAuthGuard)
+  @Get('limits')
+  async getAppsLimit() {
+    return await this.appsService.getAppsLimit();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('workflowlimit/:limitFor')
+  async getWorkflowLimit(@Headers() headers: any, @Param('limitFor') limitFor: string) {
+    // limitFor - instance | workspace
+    const params = {
+      limitFor: limitFor,
+      ...(headers['tj-workspace-id'] && { workspaceId: headers['tj-workspace-id'] }),
+    };
+
+    return await this.appsService.getWorkflowLimit(params);
+  }
+
+  @UseGuards(JwtAuthGuard, AppCountGuard, WorkflowCountGuard)
   @Post()
   async create(@User() user, @Body() appCreateDto: AppCreateDto) {
     const ability = await this.appsAbilityFactory.appsActions(user);
-    const name = appCreateDto.name;
-    const icon = appCreateDto.icon;
+    const { name, icon, type } = appCreateDto;
 
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsService.create(name, user, manager);
+      const app = await this.appsService.create(name, user, type, manager);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.name = name;
       appUpdateDto.slug = app.id;
       appUpdateDto.icon = icon;
-      await this.appsService.update(app.id, appUpdateDto, manager);
+      await this.appsService.update(app, appUpdateDto, null, manager);
+
+      await this.auditLoggerService.perform({
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: app.id,
+        resourceType: ResourceTypes.APP,
+        resourceName: app.name,
+        actionType: ActionTypes.APP_CREATE,
+      });
 
       return decamelizeKeys(app);
     });
@@ -71,7 +105,9 @@ export class AppsController {
     @Param('slug') appSlug: string,
     @Query('access_type') accessType: string,
     @Query('version_name') versionName: string,
-    @Query('version_id') versionId: string
+    @Query('environment_name') environmentName: string,
+    @Query('version_id') versionId: string,
+    @Query('environment_id') envId: string
   ) {
     const app: App = await this.appsService.findAppWithIdOrSlug(appSlug);
 
@@ -92,13 +128,14 @@ export class AppsController {
       );
     }
 
-    const { id, slug } = app;
+    const { id, slug, type } = app;
     const response = {
       id,
       slug,
+      type,
     };
     /* If the request comes from preview which needs version id */
-    if (versionName || versionId) {
+    if (versionName || environmentName || (versionId && envId)) {
       if (!ability.can('fetchVersions', app)) {
         throw new ForbiddenException(
           JSON.stringify({
@@ -114,8 +151,16 @@ export class AppsController {
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
       }
+      const environment = await this.appsService.validateVersionEnvironment(
+        environmentName,
+        envId,
+        version.currentEnvironmentId,
+        user.organizationId
+      );
       if (versionId) response['versionName'] = version.name;
+      if (envId) response['environmentName'] = environment.name;
       response['versionId'] = version.id;
+      response['environmentId'] = environment.id;
     }
     return response;
   }
@@ -206,6 +251,15 @@ export class AppsController {
           })
         );
       }
+
+      await this.auditLoggerService.perform({
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: app.id,
+        resourceType: ResourceTypes.APP,
+        resourceName: app.name,
+        actionType: ActionTypes.APP_VIEW,
+      });
     }
 
     const versionToLoad = app.currentVersionId
@@ -221,6 +275,7 @@ export class AppsController {
       is_maintenance_on: app.isMaintenanceOn,
       name: app.name,
       slug: app.slug,
+      id: app.id,
     };
   }
 
@@ -228,19 +283,31 @@ export class AppsController {
   @UseInterceptors(ValidAppInterceptor)
   @Put(':id')
   async update(@User() user, @AppDecorator() app: App, @Body('app') appUpdateDto: AppUpdateDto) {
+    const { id: userId, organizationId } = user;
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
-
+    const { name } = appUpdateDto;
     if (!ability.can('updateParams', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.update(app.id, appUpdateDto);
+    const result = await this.appsService.update(app, appUpdateDto, organizationId);
+    if (name && app.creationMode != 'GIT' && name != app.name) this.gitSyncService.renameAppOrVersion(user, app.id);
+
+    await this.auditLoggerService.perform({
+      userId,
+      organizationId,
+      resourceId: app.id,
+      resourceType: ResourceTypes.APP,
+      resourceName: app.name,
+      actionType: ActionTypes.APP_UPDATE,
+      metadata: { updateParams: { app: appUpdateDto } },
+    });
     const response = decamelizeKeys(result);
 
     return response;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AppCountGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Post(':id/clone')
   async clone(@User() user, @AppDecorator() app: App, @Body() appCloneDto: AppCloneDto) {
@@ -249,8 +316,18 @@ export class AppsController {
     if (!ability.can('cloneApp', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
+
     const appName = appCloneDto.name;
     const result = await this.appsService.clone(app, user, appName);
+
+    await this.auditLoggerService.perform({
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: result.id,
+      resourceType: ResourceTypes.APP,
+      resourceName: result.name,
+      actionType: ActionTypes.APP_CLONE,
+    });
     const response = decamelizeKeys(result);
 
     return response;
@@ -267,6 +344,16 @@ export class AppsController {
     }
 
     await this.appsService.delete(app.id);
+
+    await this.auditLoggerService.perform({
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: app.id,
+      resourceType: ResourceTypes.APP,
+      resourceName: app.name,
+      actionType: ActionTypes.APP_DELETE,
+    });
+
     return;
   }
 
@@ -276,19 +363,20 @@ export class AppsController {
     const page = query.page;
     const folderId = query.folder;
     const searchKey = query.searchKey || '';
+    const type = query.type ?? 'front-end';
 
     let apps = [];
     let totalFolderCount = 0;
 
-    if (folderId) {
+    if (folderId && folderId !== '') {
       const folder = await this.foldersService.findOne(folderId);
-      apps = await this.foldersService.getAppsFor(user, folder, page, searchKey);
+      apps = await this.foldersService.getAppsFor(user, folder, page, searchKey, type);
       totalFolderCount = await this.foldersService.userAppCount(user, folder, searchKey);
     } else {
-      apps = await this.appsService.all(user, page, searchKey);
+      apps = await this.appsService.all(user, page, searchKey, type);
     }
 
-    const totalCount = await this.appsService.count(user, searchKey);
+    const totalCount = await this.appsService.count(user, searchKey, type, 'controller');
 
     const totalPageCount = folderId ? totalFolderCount : totalCount;
 
@@ -305,6 +393,20 @@ export class AppsController {
     };
 
     return decamelizeKeys(response);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/workflows')
+  async fetchWorkflows(@User() user, @Param('id') id) {
+    const ability = await this.appsAbilityFactory.appsActions(user);
+
+    if (!ability.can('updateVersions', App)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    const result = await this.appsService.getWorkflows();
+
+    return decamelizeKeys({ workflows: result });
   }
 
   // deprecated
@@ -400,7 +502,16 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.appsService.updateVersion(version, versionEditDto, app.organizationId);
+    if (app.type === 'workflow') {
+      await this.appsService.updateWorflowVersion(version, versionEditDto, app.organizationId);
+    } else {
+      await this.appsService.updateVersion(version, versionEditDto, app.organizationId);
+      const { name } = versionEditDto;
+      console.log(`Rename is goign to work for ${name} and to change ${version.name} `);
+      if (name && app.creationMode != 'GIT' && name != version.name)
+        this.gitSyncService.renameAppOrVersion(user, app.id, true);
+    }
+
     return;
   }
 
@@ -441,7 +552,7 @@ export class AppsController {
 
     const appUpdateDto = new AppUpdateDto();
     appUpdateDto.icon = icon;
-    const appUser = await this.appsService.update(app.id, appUpdateDto);
+    const appUser = await this.appsService.update(app, appUpdateDto);
     return decamelizeKeys(appUser);
   }
 

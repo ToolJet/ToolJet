@@ -71,7 +71,12 @@ module.exports = defineConfig({
           return client.query(sql);
         },
       });
-      return require("./cypress/plugins/index.js")(on, config);
+
+      require("@cypress/code-coverage/task")(on, config);
+      // return config;
+
+      require("./cypress/plugins/index.js")(on, config);
+      return config;
     },
     experimentalRunAllSpecs: true,
     experimentalModfyObstructiveThirdPartyCode: true,
@@ -84,5 +89,9 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     trashAssetsBeforeRuns: true,
     experimentalMemoryManagement: true,
+    coverage: true,
+    codeCoverageTasksRegistered: true,
+    video: false,
+    videoUploadOnPasses: false,
   },
 });

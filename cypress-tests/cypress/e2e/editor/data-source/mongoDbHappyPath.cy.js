@@ -36,11 +36,11 @@ describe("Data source MongoDB", () => {
     closeDSModal();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources
+      postgreSqlText.allDataSources()
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase
+      postgreSqlText.allDatabase()
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -143,11 +143,11 @@ describe("Data source MongoDB", () => {
     cy.get(postgreSqlSelector.buttonSave)
       .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
       .click();
-
-    deleteDatasource(`cypress-${data.lastName}-mongodb`);
   });
 
   it("Should verify the functionality of MongoDB connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
     selectAndAddDataSource("databases", mongoDbText.mongoDb, data.lastName);
 
     cy.get('[data-cy="query-select-dropdown"]').type(

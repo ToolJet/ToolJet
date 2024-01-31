@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { EntityManager, MoreThan, Repository } from 'typeorm';
@@ -12,7 +18,13 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import { catchDbException, cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
+import {
+  cleanObject,
+  dbTransactionWrap,
+  generatePayloadForLimits,
+  catchDbException,
+  defaultAppEnvironments,
+} from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { VersionEditDto } from '@dto/version-edit.dto';
@@ -21,7 +33,10 @@ import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { AppEnvironmentService } from './app_environments.service';
 import { decode } from 'js-base64';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { v4 as uuidv4 } from 'uuid';
 import { Page } from 'src/entities/page.entity';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { Layout } from 'src/entities/layout.entity';
@@ -44,7 +59,8 @@ export class AppsService {
 
     private appImportExportService: AppImportExportService,
     private dataSourcesService: DataSourcesService,
-    private appEnvironmentService: AppEnvironmentService
+    private appEnvironmentService: AppEnvironmentService,
+    private licenseService: LicenseService
   ) {}
   async find(id: string): Promise<App> {
     return this.appsRepository.findOne({
@@ -57,6 +73,12 @@ export class AppsService {
       where: {
         slug,
       },
+    });
+  }
+
+  async findByAppName(name: string, organizationId: string): Promise<App> {
+    return this.appsRepository.findOne({
+      where: { name, organizationId },
     });
   }
 
@@ -110,16 +132,19 @@ export class AppsService {
     });
   }
 
-  async create(name: string, user: User, manager: EntityManager): Promise<App> {
+  async create(name: string, user: User, type: string, manager: EntityManager): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await catchDbException(async () => {
         const app = await manager.save(
           manager.create(App, {
+            type,
             name,
             createdAt: new Date(),
             updatedAt: new Date(),
             organizationId: user.organizationId,
             userId: user.id,
+            isMaintenanceOn: type === 'workflow' ? true : false,
+            ...(type === 'workflow' && { workflowApiToken: uuidv4() }),
           })
         );
 
@@ -162,7 +187,7 @@ export class AppsService {
         await this.createAppGroupPermissionsForAdmin(app, manager);
         return app;
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
-    });
+    }, manager);
   }
 
   async createAppGroupPermissionsForAdmin(app: App, manager: EntityManager): Promise<void> {
@@ -208,8 +233,14 @@ export class AppsService {
     return clonedApp;
   }
 
-  async count(user: User, searchKey): Promise<number> {
-    return await viewableAppsQuery(user, searchKey).getCount();
+  async count(user: User, searchKey, type: string, from?: string): Promise<number> {
+    return await viewableAppsQuery(
+      user,
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      searchKey,
+      [],
+      type
+    ).getCount();
   }
 
   getAppVersionsCount = async (appId: string) => {
@@ -218,8 +249,14 @@ export class AppsService {
     });
   };
 
-  async all(user: User, page: number, searchKey: string): Promise<App[]> {
-    const viewableAppsQb = viewableAppsQuery(user, searchKey);
+  async all(user: User, page: number, searchKey: string, type: string): Promise<App[]> {
+    const viewableAppsQb = viewableAppsQuery(
+      user,
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      searchKey,
+      undefined,
+      type
+    );
 
     if (page) {
       return await viewableAppsQb
@@ -231,11 +268,22 @@ export class AppsService {
     return await viewableAppsQb.getMany();
   }
 
-  async update(appId: string, appUpdateDto: AppUpdateDto, manager?: EntityManager) {
+  async getWorkflows() {
+    const workflowApps = await this.appsRepository.find({
+      where: { type: 'workflow' },
+    });
+
+    const result = workflowApps.map((workflowApp) => ({ id: workflowApp.id, name: workflowApp.name }));
+
+    return result;
+  }
+
+  async update(app: App, appUpdateDto: AppUpdateDto, organizationId?: string, manager?: EntityManager) {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
     const { name, slug, icon } = appUpdateDto;
+    const { id: appId, currentVersionId: lastReleasedVersion } = app;
 
     const updatableParams = {
       name,
@@ -253,7 +301,7 @@ export class AppsService {
         //check if the app version is eligible for release
         const currentEnvironment: AppEnvironment = await manager
           .createQueryBuilder(AppEnvironment, 'app_environments')
-          .select(['app_environments.id', 'app_environments.isDefault'])
+          .select(['app_environments.id', 'app_environments.isDefault', 'app_environments.priority'])
           .innerJoinAndSelect(
             'app_versions',
             'app_versions',
@@ -264,8 +312,48 @@ export class AppsService {
           })
           .getOne();
 
-        if (!currentEnvironment?.isDefault) {
+        const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+        /* 
+        Allow version release only if the environment is on 
+        production with a valid license or 
+        expired license and development environment (priority no.1) (CE rollback) 
+        */
+
+        if (isMultiEnvironmentEnabled && !currentEnvironment?.isDefault) {
           throw new BadRequestException('You can only release when the version is promoted to production');
+        }
+
+        let promotedFromQuery: string;
+        if (!isMultiEnvironmentEnabled) {
+          if (!currentEnvironment.isDefault) {
+            /* For basic plan users, Promote to the production environment first then release it */
+            const productionEnv = await this.appEnvironmentService.get(organizationId, null, false, manager);
+            await manager.update(AppVersion, currentVersionId, {
+              currentEnvironmentId: productionEnv.id,
+              promotedFrom: currentEnvironment.id,
+            });
+          }
+
+          /* demote the last released environment back to the promoted_from (if not null) */
+          if (lastReleasedVersion) {
+            promotedFromQuery = `
+            UPDATE app_versions
+            SET current_environment_id = promoted_from
+            WHERE promoted_from IS NOT NULL
+            AND id = $1;`;
+          }
+        } else {
+          if (lastReleasedVersion) {
+            promotedFromQuery = `
+            UPDATE app_versions
+            SET promoted_from = NULL
+            WHERE promoted_from IS NOT NULL
+            AND id = $1;`;
+          }
+        }
+
+        if (promotedFromQuery) {
+          await manager.query(promotedFromQuery, [lastReleasedVersion]);
         }
       }
       return await catchDbException(async () => {
@@ -282,6 +370,11 @@ export class AppsService {
       await manager.delete(App, { id: appId });
     });
     return;
+  }
+
+  async isAppPublic(appId: string): Promise<boolean> {
+    const app = await this.appsRepository.findOne(appId);
+    return app.isPublic;
   }
 
   async fetchUsers(appId: string): Promise<AppUser[]> {
@@ -477,6 +570,17 @@ export class AppsService {
       return false;
     };
 
+    const isChildOfKanbanModal = (componentParentId: string, allComponents = []) => {
+      if (!componentParentId.includes('modal')) return false;
+
+      if (componentParentId) {
+        const parentId = componentParentId.split('-').slice(0, -1).join('-');
+        const isParentKandban = allComponents.find((comp) => comp.id === parentId)?.type === 'Kanban';
+
+        return isParentKandban;
+      }
+    };
+
     for (const page of pages) {
       const savedPage = await manager.save(
         manager.create(Page, {
@@ -574,6 +678,11 @@ export class AppsService {
           const mappedParentId = oldComponentToNewComponentMapping[_parentId];
 
           parentId = `${mappedParentId}-${childTabId}`;
+        } else if (isChildOfKanbanModal(component.parent, page.components)) {
+          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const mappedParentId = oldComponentToNewComponentMapping[_parentId];
+
+          parentId = `${mappedParentId}-modal`;
         } else {
           parentId = oldComponentToNewComponentMapping[parentId];
         }
@@ -620,7 +729,7 @@ export class AppsService {
 
     if (!versionFrom) {
       //create default data sources
-      for (const defaultSource of ['restapi', 'runjs', 'tooljetdb']) {
+      for (const defaultSource of ['restapi', 'runjs', 'tooljetdb', 'workflows']) {
         const dataSource = await this.dataSourcesService.createDefaultDataSource(
           defaultSource,
           appVersion.id,
@@ -761,6 +870,13 @@ export class AppsService {
     return oldDataQueryToNewMapping;
   }
 
+  async createNewQueriesForWorkflowVersion(
+    manager: EntityManager,
+    appVersion: AppVersion,
+    versionFrom: AppVersion,
+    organizationId: string
+  ) {}
+
   private async createEnvironments(appEnvironments: any[], manager: EntityManager, organizationId: string) {
     for (const appEnvironment of appEnvironments) {
       await this.appEnvironmentService.create(
@@ -848,6 +964,20 @@ export class AppsService {
     return definition;
   }
 
+  replaceQueryMappingsInWorkflowDefinition(definition, dataQueryMapping) {
+    const newQueries = definition.queries.map((query) => ({
+      ...query,
+      id: dataQueryMapping[query.id],
+    }));
+
+    const newDefinition = {
+      ...definition,
+      queries: newQueries,
+    };
+
+    return newDefinition;
+  }
+
   async setNewCredentialValueFromOldValue(newOptions: any, oldOptions: any, manager: EntityManager) {
     const newOptionsWithCredentials = this.convertToArrayOfKeyValuePairs(newOptions).filter((opt) => opt['encrypted']);
 
@@ -865,7 +995,7 @@ export class AppsService {
     }
   }
 
-  async updateVersion(version: AppVersion, body: VersionEditDto, organizationId: string) {
+  async updateWorflowVersion(version: AppVersion, body: VersionEditDto, organizationId: string) {
     const { name, currentEnvironmentId, definition } = body;
     let currentEnvironment: AppEnvironment;
 
@@ -893,6 +1023,10 @@ export class AppsService {
 
     //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
     if (currentEnvironmentId) {
+      if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+        throw new BadRequestException('You do not have permissions to perform this action');
+      }
+
       if (version.currentEnvironmentId !== currentEnvironmentId) {
         throw new NotAcceptableException();
       }
@@ -913,13 +1047,87 @@ export class AppsService {
           organizationId,
         },
       });
-      if (editableParams['definition'] && environments > 1 && currentEnvironment.priority !== 1) {
+      if (environments > 1 && currentEnvironment.priority !== 1 && !body?.is_user_switched_version) {
         throw new BadRequestException('You cannot update a promoted version');
       }
       editableParams['definition'] = definition;
     }
 
     editableParams['updatedAt'] = new Date();
+
+    return await this.appVersionsRepository.update(version.id, editableParams);
+  }
+
+  async updateVersion(version: AppVersion, body: VersionEditDto, organizationId: string) {
+    const { name, currentEnvironmentId } = body;
+    let currentEnvironment: AppEnvironment;
+
+    if (version.id === version.app.currentVersionId && !body?.is_user_switched_version)
+      throw new BadRequestException('You cannot update a released version');
+
+    if (currentEnvironmentId) {
+      currentEnvironment = await AppEnvironment.findOne({
+        where: { id: version.currentEnvironmentId },
+      });
+    }
+
+    const editableParams = {};
+    if (name) {
+      //means user is trying to update the name
+      const versionNameExists = await this.appVersionsRepository.findOne({
+        where: { name, appId: version.appId },
+      });
+
+      if (versionNameExists) {
+        throw new BadRequestException('Version name already exists.');
+      }
+      editableParams['name'] = name;
+    }
+
+    //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
+    if (currentEnvironmentId) {
+      if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+        throw new BadRequestException('You do not have permissions to perform this action');
+      }
+
+      if (version.currentEnvironmentId !== currentEnvironmentId) {
+        throw new NotAcceptableException();
+      }
+      const nextEnvironment = await AppEnvironment.findOne({
+        select: ['id'],
+        where: {
+          priority: MoreThan(currentEnvironment.priority),
+          organizationId,
+        },
+        order: { priority: 'ASC' },
+      });
+
+      const environments = await AppEnvironment.count({
+        where: {
+          organizationId,
+        },
+      });
+      if (
+        environments > 1 &&
+        currentEnvironment.priority < nextEnvironment.priority &&
+        !body?.is_user_switched_version
+      ) {
+        throw new BadRequestException('You cannot update a promoted version');
+      }
+
+      editableParams['currentEnvironmentId'] = nextEnvironment.id;
+    }
+
+    editableParams['updatedAt'] = new Date();
+
+    if (version.promotedFrom) {
+      /* 
+      should make this field null. 
+      otherwise unreleased versions will demote back to promoted_from when the user go back to base plan again. 
+      (this query will only run one time after the user buys a paid plan)
+      */
+      editableParams['promotedFrom'] = null;
+    }
 
     return await this.appVersionsRepository.update(version.id, editableParams);
   }
@@ -961,6 +1169,26 @@ export class AppsService {
     });
   }
 
+  async appsCount() {
+    return await this.appsRepository.count({
+      where: {
+        type: 'front-end',
+      },
+    });
+  }
+
+  async getAppsLimit() {
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.APP_COUNT, LICENSE_FIELD.STATUS]);
+    return {
+      appsCount: generatePayloadForLimits(
+        licenseTerms[LICENSE_FIELD.APP_COUNT] !== LICENSE_LIMIT.UNLIMITED ? await this.appsCount() : 0,
+        licenseTerms[LICENSE_FIELD.APP_COUNT],
+        licenseTerms[LICENSE_FIELD.STATUS],
+        LICENSE_LIMITS_LABEL.APPS
+      ),
+    };
+  }
+
   async findAppWithIdOrSlug(slug: string): Promise<App> {
     let app: App;
     try {
@@ -977,6 +1205,40 @@ export class AppsService {
     return app;
   }
 
+  async validateVersionEnvironment(
+    environmentName: string,
+    environmentId: string,
+    currentEnvIdOfVersion: string,
+    organizationId: string
+  ): Promise<AppEnvironment> {
+    const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+    if (environmentName && !isMultiEnvironmentEnabled) {
+      throw new ForbiddenException('URL is not accessible. Multi-environment is not enabled');
+    }
+
+    const processEnvironmentName = environmentName
+      ? environmentName
+      : !isMultiEnvironmentEnabled
+      ? 'development'
+      : null;
+
+    const environment: AppEnvironment = environmentId
+      ? await this.appEnvironmentService.get(organizationId, environmentId)
+      : await this.appEnvironmentService.getEnvironmentByName(processEnvironmentName, organizationId);
+    if (!environment) {
+      throw new NotFoundException("Couldn't found environment in the organization");
+    }
+
+    const currentEnvOfVersion: AppEnvironment = await this.appEnvironmentService.get(
+      organizationId,
+      currentEnvIdOfVersion
+    );
+    if (environment.priority <= currentEnvOfVersion.priority) {
+      return environment;
+    } else {
+      throw new NotAcceptableException('Version is not promoted to the environment yet.');
+    }
+  }
   async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const tooljetDbDataQueries = await manager
@@ -1012,5 +1274,36 @@ export class AppsService {
         return { table_id };
       });
     });
+  }
+
+  async workflowsCount(workspaceId) {
+    return await this.appsRepository.count({
+      where: {
+        type: 'workflow',
+        ...(workspaceId && { organizationId: workspaceId }),
+      },
+    });
+  }
+
+  async getWorkflowLimit(params: { limitFor: string; workspaceId?: string }) {
+    if (params.limitFor === 'workspace' && !params.workspaceId)
+      throw new BadRequestException(`workspaceId is doesn't exist`);
+
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.WORKFLOWS, LICENSE_FIELD.STATUS]);
+    const totalCount =
+      params.limitFor === 'workspace'
+        ? licenseTerms[LICENSE_FIELD.WORKFLOWS].workspace.total
+        : licenseTerms[LICENSE_FIELD.WORKFLOWS].instance.total;
+
+    return {
+      appsCount: generatePayloadForLimits(
+        totalCount !== LICENSE_LIMIT.UNLIMITED
+          ? await this.workflowsCount(params.limitFor === 'workspace' ? params?.workspaceId ?? '' : '')
+          : 0,
+        totalCount,
+        licenseTerms[LICENSE_FIELD.STATUS],
+        LICENSE_LIMITS_LABEL.WORKFLOWS
+      ),
+    };
   }
 }

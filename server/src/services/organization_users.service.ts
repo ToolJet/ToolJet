@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
@@ -8,9 +8,10 @@ import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
-import { ConfigService } from '@nestjs/config';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
-import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
+import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD, LICENSE_LIMIT } from 'src/helpers/license.helper';
 const uuid = require('uuid');
 
 @Injectable()
@@ -20,7 +21,7 @@ export class OrganizationUsersService {
     private organizationUsersRepository: Repository<OrganizationUser>,
     private usersService: UsersService,
     private emailService: EmailService,
-    private configService: ConfigService
+    private licenseService: LicenseService
   ) {}
 
   async create(
@@ -32,7 +33,7 @@ export class OrganizationUsersService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.save(
         manager.create(OrganizationUser, {
-          user,
+          userId: user.id,
           organization,
           invitationToken: isInvite ? uuid.v4() : null,
           status: isInvite ? WORKSPACE_USER_STATUS.INVITED : WORKSPACE_USER_STATUS.ACTIVE,
@@ -56,22 +57,30 @@ export class OrganizationUsersService {
     return await this.organizationUsersRepository.update(id, { role });
   }
 
-  async archive(id: string, organizationId: string): Promise<void> {
+  async archive(id: string, organizationId: string, user?: User): Promise<void> {
     const organizationUser = await this.organizationUsersRepository.findOneOrFail({
       where: { id, organizationId },
       relations: ['user'],
     });
 
-    await this.usersService.throwErrorIfRemovingLastActiveAdmin(organizationUser?.user, undefined, organizationId);
+    !isSuperAdmin(user) &&
+      (await this.usersService.throwErrorIfRemovingLastActiveAdmin(organizationUser?.user, undefined, organizationId));
     await this.organizationUsersRepository.update(id, {
       status: WORKSPACE_USER_STATUS.ARCHIVED,
       invitationToken: null,
     });
   }
 
-  async unarchive(user: User, id: string, manager?: EntityManager): Promise<void> {
+  async archiveFromAll(userId: string): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(OrganizationUser, { userId }, { status: 'archived', invitationToken: null });
+      await this.usersService.updateUser(userId, { status: 'archived' }, manager);
+    });
+  }
+
+  async unarchive(user: User, id: string, organizationId: string, manager?: EntityManager): Promise<void> {
     const organizationUser = await this.organizationUsersRepository.findOne({
-      where: { id, organizationId: user.organizationId },
+      where: { id, organizationId },
       relations: ['user', 'organization'],
     });
 
@@ -86,6 +95,10 @@ export class OrganizationUsersService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(OrganizationUser, id, { status: WORKSPACE_USER_STATUS.INVITED, invitationToken });
+
+      await this.usersService.updateUser(organizationUser.userId, { status: USER_STATUS.ACTIVE }, manager);
+      await this.usersService.validateLicense(manager);
+      await this.validateLicense(manager);
     }, manager);
 
     this.emailService
@@ -122,5 +135,33 @@ export class OrganizationUsersService {
       .where('group_permissions.group = :admin', { admin: 'admin' })
       .andWhere('group_permissions.organization = :organizationId', { organizationId })
       .getCount();
+  }
+
+  async organizationsCount(manager?: EntityManager) {
+    return dbTransactionWrap(async (manager) => {
+      return await manager
+        .createQueryBuilder(Organization, 'organizations')
+        .innerJoin(
+          'organizations.organizationUsers',
+          'organizationUsers',
+          'organizationUsers.status IN(:...statusList)',
+          {
+            statusList: [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED],
+          }
+        )
+        .getCount();
+    }, manager);
+  }
+
+  async validateLicense(manager: EntityManager): Promise<void> {
+    const workspacesCount = await this.licenseService.getLicenseTerms(LICENSE_FIELD.WORKSPACES);
+
+    if (workspacesCount === LICENSE_LIMIT.UNLIMITED) {
+      return;
+    }
+
+    if ((await this.organizationsCount(manager)) > workspacesCount) {
+      throw new HttpException('You have reached your limit for number of workspaces.', 451);
+    }
   }
 }

@@ -6,6 +6,8 @@ import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
 import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
+import { promoteApp } from "Support/utils/multiEnv";
+
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.profileSettings).click();
@@ -30,7 +32,6 @@ export const navigateToManageGroups = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageGroupsOption).click();
   navigateToAllUserGroup();
-
 };
 
 export const navigateToAllUserGroup = () => {
@@ -265,6 +266,8 @@ export const navigateToworkspaceConstants = () => {
 };
 
 export const releaseApp = () => {
+  promoteApp();
+  promoteApp();
   cy.get(commonSelectors.releaseButton).click();
   cy.get(commonSelectors.yesButton).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");

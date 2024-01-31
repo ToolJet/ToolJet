@@ -197,6 +197,24 @@
   }
 }
 
+.expired-gradient-border {
+  border: none !important;
+  position: relative;
+  background-color: var(--slate3) !important;
+  color: var(--indigo9) !important;
+}
+
+.expired-gradient-border::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(96deg, #FF5F6D -15.44%, #FFC371 99.37%);
+  z-index: 1;
+}
+
 .debugger-content {
   background-color: var(--base);
 
@@ -349,7 +367,7 @@
   }
 
   .modal-searchbar {
-    width: 200px;
+    width: 200px !important;
     height: 36px;
     float: right;
     margin-right: 3.5rem !important;
@@ -420,6 +438,17 @@
 .select-datasource-list-modal {
   .modal-body {
     padding: 0px !important;
+  }
+}
+
+.select-datasource-list-modal {
+  .form-control:focus {
+    padding: 0px;
+    width: 200px !important;
+  }
+
+  .modal-body-content {
+    scrollbar-width: none;
   }
 }
 
@@ -640,10 +669,10 @@
   align-items: center;
   flex-direction: column;
   position: absolute;
-  bottom: 0;
+  bottom: 0px;
   padding-bottom: 8px;
   width: 44px;
-  max-height: 180px;
+  max-height: 230px;
 }
 
 .tj-leftsidebar-icon-items {

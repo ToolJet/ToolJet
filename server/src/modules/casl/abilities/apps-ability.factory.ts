@@ -28,6 +28,10 @@ type Actions =
   | 'updateQuery'
   | 'updateVersions'
   | 'updateIcon'
+  | 'createEnvironments'
+  | 'updateEnvironments'
+  | 'deleteEnvironments'
+  | 'fetchEnvironments'
   | 'viewApp'
   | 'editApp';
 
@@ -86,6 +90,11 @@ export class AppsAbilityFactory {
       can('updateDataSource', App, { organizationId: user.organizationId });
       can('createDataSource', App, { organizationId: user.organizationId });
       can('deleteDataSource', App, { organizationId: user.organizationId });
+
+      can('createEnvironments', App, { organizationId: user.organizationId });
+      can('updateEnvironments', App, { organizationId: user.organizationId });
+      can('deleteEnvironments', App, { organizationId: user.organizationId });
+      can('fetchEnvironments', App, { organizationId: user.organizationId });
     }
 
     if (await this.usersService.userCan(user, 'delete', 'App', id)) {

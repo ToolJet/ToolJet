@@ -1,4 +1,16 @@
-import { Body, Controller, Get, NotFoundException, Param, Patch, Post, UseGuards, Query, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+  Query,
+  Res,
+  NotAcceptableException,
+} from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
 import { decamelizeKeys } from 'humps';
 import { User } from 'src/decorators/user.decorator';
@@ -8,12 +20,19 @@ import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User as UserEntity } from 'src/entities/user.entity';
+import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization.dto';
 import { Response } from 'express';
 
 @Controller('organizations')
 export class OrganizationsController {
   constructor(private organizationsService: OrganizationsService, private authService: AuthService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Get('limits')
+  async getOrganizationsLimit() {
+    return await this.organizationsService.organizationsLimit();
+  }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('viewAllUsers', UserEntity))
@@ -60,7 +79,7 @@ export class OrganizationsController {
     return decamelizeKeys({ organizations: result });
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AllowPersonalWorkspaceGuard)
   @Post()
   async create(
     @User() user,
@@ -82,7 +101,7 @@ export class OrganizationsController {
       throw new NotFoundException();
     }
     if (!organizationId) {
-      const result = this.organizationsService.constructSSOConfigs();
+      const result = await this.organizationsService.constructSSOConfigs();
       return decamelizeKeys({ ssoConfigs: result });
     }
 
@@ -99,7 +118,7 @@ export class OrganizationsController {
     const result = await this.organizationsService.fetchOrganizationDetails(user.organizationId);
     return decamelizeKeys({
       organizationDetails: result,
-      instanceConfigs: this.organizationsService.constructSSOConfigs(),
+      instanceConfigs: await this.organizationsService.constructSSOConfigs(),
     });
   }
 
@@ -109,6 +128,18 @@ export class OrganizationsController {
   async update(@Body() organizationUpdateDto: OrganizationUpdateDto, @User() user) {
     await this.organizationsService.updateOrganization(user.organizationId, organizationUpdateDto);
     return;
+  }
+
+  @UseGuards(JwtAuthGuard, AllowPersonalWorkspaceGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
+  @Patch('/name')
+  async updateName(@Body('name') name, @User() user) {
+    if (!name?.trim()) {
+      throw new NotAcceptableException('Workspace name can not be empty');
+    }
+    //TODO-url
+    await this.organizationsService.updateOrganization(user.organizationId, { name, slug: '' });
+    return {};
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)

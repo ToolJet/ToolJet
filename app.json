@@ -44,6 +44,14 @@
     "DEPLOYMENT_PLATFORM": {
       "description": "Platform ToolJet is deployed on",
       "value": "heroku"
+    },
+    "LICENSE_KEY": {
+      "description": "Tooljet license key",
+      "value": ""
+    },
+    "REDIS_URL": {
+      "description": "Redis URL for team collaboration",
+      "value": ""
     }
   },
   "formation": {

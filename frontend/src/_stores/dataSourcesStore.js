@@ -3,6 +3,7 @@ import { datasourceService, globalDatasourceService } from '@/_services';
 import { useContext } from 'react';
 import { useSuperStore } from './superStore';
 import { ModuleContext } from '../_contexts/ModuleContext';
+import { shallow } from 'zustand/shallow';
 
 export function createDataSourcesStore(moduleName) {
   const initialState = {
@@ -68,4 +69,4 @@ export const useDataSources = () => useDataSourcesStore((state) => state.dataSou
 export const useGlobalDataSources = () => useDataSourcesStore((state) => state.globalDataSources);
 export const useLoadingDataSources = () => useDataSourcesStore((state) => state.loadingDataSources);
 export const useDataSourcesActions = () => useDataSourcesStore((state) => state.actions);
-export const useGlobalDataSourcesStatus = () => useDataSourcesStore((state) => state.globalDataSourceStatus);
+export const useGlobalDataSourcesStatus = () => useDataSourcesStore((state) => state.globalDataSourceStatus, shallow);

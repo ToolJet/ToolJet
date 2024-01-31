@@ -1,7 +1,10 @@
 import React from 'react';
 import {
+  // appsService,
   authenticationService,
   orgEnvironmentVariableService,
+  customStylesService,
+  appEnvironmentService,
   orgEnvironmentConstantService,
   dataqueryService,
   appService,
@@ -36,10 +39,11 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
-import { getPreviewQueryParams, redirectToErrorPage } from '@/_helpers/routes';
+import { getPreviewQueryParams, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { useSuperStore } from '../_stores/superStore';
 import { ModuleContext } from '../_contexts/ModuleContext';
+import { camelizeKeys } from 'humps';
 
 class ViewerComponent extends React.Component {
   static contextType = ModuleContext;
@@ -59,7 +63,9 @@ class ViewerComponent extends React.Component {
       isLoading: true,
       users: null,
       appDefinition: { pages: {} },
+      queryConfirmationList: [],
       isAppLoaded: false,
+      environmentId: null,
       pages: {},
       homepage: null,
     };
@@ -74,6 +80,7 @@ class ViewerComponent extends React.Component {
       switchPage: this.switchPage,
       currentPageId: this.state.currentPageId,
       moduleName: this.context,
+      environmentId: this.state.environmentId,
     };
   }
 
@@ -107,6 +114,7 @@ class ViewerComponent extends React.Component {
         firstName: currentUser.first_name,
         lastName: currentUser.last_name,
         groups: authenticationService.currentSessionValue?.group_permissions.map((group) => group.group),
+        ssoUserInfo: currentUser.sso_user_info,
       };
     }
 
@@ -137,8 +145,12 @@ class ViewerComponent extends React.Component {
         }
 
         if (query.pluginId || query?.plugin?.id) {
+          const exposedVariables =
+            query.plugin?.manifestFile?.data?.source?.exposedVariables ||
+            query.plugin?.manifest_file?.data?.source?.exposed_variables;
+
           queryState[query.name] = {
-            ...query.plugin.manifestFile.data.source.exposedVariables,
+            ...exposedVariables,
             ...this.props.currentState.queries[query.name],
           };
         } else {
@@ -154,8 +166,14 @@ class ViewerComponent extends React.Component {
     if (queryConfirmationList.length !== 0) {
       this.updateQueryConfirmationList(queryConfirmationList);
     }
+
+    await this.fetchAndInjectCustomStyles(data.slug, data.is_public);
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
     const constants = await this.fetchOrgEnvironmentConstants(data.slug, data.is_public);
+
+    /* Get current environment details from server, for released apps the environment will be production only (Release preview) */
+    const environmentResult = await this.getEnvironmentDetails(data.is_public);
+    const { environment } = environmentResult;
 
     const pages = data.pages;
     const homePageId = appVersionId ? data.editing_version.homePageId : data?.homePageId;
@@ -171,6 +189,10 @@ class ViewerComponent extends React.Component {
         currentUser: userVars, // currentUser is updated in setupViewer function as well
         theme: { name: this.props.darkMode ? 'dark' : 'light' },
         urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+        environment: {
+          id: environment.id,
+          name: environment.name,
+        },
         mode: {
           value: this.state.slug ? 'view' : 'preview',
         },
@@ -203,6 +225,7 @@ class ViewerComponent extends React.Component {
         selectedComponent: null,
         dataQueries: dataQueries,
         currentPageId: currentPage.id,
+        pages: {},
         homepage: appDefData?.pages?.[this.state.appDefinition?.homePageId]?.handle,
         events: data.events ?? [],
       },
@@ -244,13 +267,16 @@ class ViewerComponent extends React.Component {
       variablesResult = constants;
     }
 
+    const environmentResult = await this.getEnvironmentDetails();
+    const { environment } = environmentResult;
+
     if (variablesResult && Array.isArray(variablesResult)) {
       variablesResult.map((constant) => {
-        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
+        const condition = (value) =>
+          this.state.environmentId ? value.id === this.state.environmentId : value.id === environment?.id;
+        const constantValue = constant.values.find(condition)['value'];
         orgConstants[constant.name] = constantValue;
       });
-
-      // console.log('--org constant 2.0', { orgConstants });
 
       return {
         constants: orgConstants,
@@ -280,7 +306,23 @@ class ViewerComponent extends React.Component {
     return variables;
   };
 
-  loadApplicationBySlug = (slug, authentication_failed = false) => {
+  fetchAndInjectCustomStyles = async (slug, isPublic) => {
+    try {
+      let data;
+      if (!isPublic) {
+        data = await customStylesService.getForAppViewerEditor(false);
+      } else {
+        data = await customStylesService.getForPublicApp(slug);
+      }
+      const styleEl = document.createElement('style');
+      styleEl.appendChild(document.createTextNode(data.css));
+      document.head.appendChild(styleEl);
+    } catch (error) {
+      console.log('Error fetching and injecting custom styles:', error);
+    }
+  };
+
+  loadApplicationBySlug = (slug, authentication_failed) => {
     appService
       .fetchAppBySlug(slug)
       .then((data) => {
@@ -289,6 +331,7 @@ class ViewerComponent extends React.Component {
           return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
         }
         this.setStateForApp(data, true);
+        this.setState({ appId: data.id });
         this.setStateForContainer(data);
         this.setWindowTitle(data.name);
       })
@@ -332,11 +375,13 @@ class ViewerComponent extends React.Component {
       const slug = this.props.params.slug;
       const appId = this.props.id;
       const versionId = this.props.versionId;
+      const environmentId = this.props.environmentId;
 
       console.log({ slug, appId, versionId });
 
       if (currentSession?.load_app && slug) {
         if (currentSession?.group_permissions) {
+          this.setState({ environmentId });          
           useSuperStore.getState().modules[this.context].useAppDataStore.getState().actions.setAppId(appId);
 
           const currentUser = currentSession.current_user;
@@ -357,7 +402,6 @@ class ViewerComponent extends React.Component {
             userVars,
             versionId,
           });
-
           versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
         } else if (currentSession?.authentication_failed) {
           this.loadApplicationBySlug(slug, true);
@@ -521,7 +565,7 @@ class ViewerComponent extends React.Component {
 
     this.props.navigate(
       `/applications/${this.state.slug}/${handle}?${
-        !_.isEmpty(defaultParams) ? `version=${defaultParams.version}` : ''
+        !_.isEmpty(defaultParams) ? `env=${defaultParams.env}&version=${defaultParams.version}` : ''
       }${queryParamsString ? `${!_.isEmpty(defaultParams) ? '&' : ''}${queryParamsString}` : ''}`,
       {
         state: {
@@ -551,6 +595,16 @@ class ViewerComponent extends React.Component {
   componentWillUnmount() {
     this.subscription && this.subscription.unsubscribe();
   }
+
+  formCustomPageSelectorClass = () => {
+    const handle = this.state.appDefinition?.pages[this.state.currentPageId]?.handle;
+    return `_tooljet-page-${handle}`;
+  };
+
+  getEnvironmentDetails = () => {
+    const queryParams = { slug: this.props.params.slug };
+    return appEnvironmentService.getEnvironment(this.state.environmentId, queryParams);
+  };
 
   render() {
     const {
@@ -595,6 +649,40 @@ class ViewerComponent extends React.Component {
           </div>
         );
       } else {
+        const pageArray = Object.values(this.state.appDefinition?.pages || {});
+        const { env, version, ...restQueryParams } = getQueryParams();
+        const queryParamsString = Object.keys(restQueryParams)
+          .map((key) => `${key}=${restQueryParams[key]}`)
+          .join('&');
+        const constructTheURL = (homeHandle) =>
+          `/applications/${this.state.slug}/${homeHandle}${env && version ? `?env=${env}&version=${version}` : ''}`;
+        //checking if page is disabled
+        if (
+          pageArray.find((page) => page.handle === this.props.params.pageHandle)?.disabled &&
+          this.state.currentPageId !== this.state.appDefinition?.homePageId && //Prevent page crashing when home page is disabled
+          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
+        ) {
+          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+          return <Navigate to={constructTheURL(homeHandle)} replace />;
+        }
+
+        //checking if page exists
+        if (
+          !pageArray.find((page) => page.handle === this.props.params.pageHandle) &&
+          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
+        ) {
+          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+
+          return (
+            <Navigate
+              to={`${constructTheURL(homeHandle)}${
+                this.props.params.pageHandle ? '' : `${env && version ? '&' : '?'}${queryParamsString}`
+              }`}
+              replace
+            />
+          );
+        }
+
         return (
           <div className="viewer wrapper">
             <Confirm

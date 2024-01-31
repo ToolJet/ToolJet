@@ -31,6 +31,6 @@ export class CopilotController {
   @UseGuards(JwtAuthGuard)
   @Post('api-key')
   async validateCopilotAPIKey(@User() user, @Body() body: { secretKey: string; organizationId: string }) {
-    return await this.copilotService.validateCopilotAPIKey(body.organizationId, body.secretKey);
+    return await this.copilotService.validateCopilotAPIKey(body.organizationId, body.secretKey, user.email);
   }
 }

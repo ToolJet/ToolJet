@@ -7,12 +7,14 @@ import {
   OneToMany,
   JoinColumn,
   BaseEntity,
+  OneToOne,
 } from 'typeorm';
 import { GroupPermission } from './group_permission.entity';
 import { SSOConfigs } from './sso_config.entity';
 import { OrganizationUser } from './organization_user.entity';
 import { InternalTable } from './internal_table.entity';
 import { AppEnvironment } from './app_environments.entity';
+import { OrganizationGitSync } from './organization_git_sync.entity';
 
 @Entity({ name: 'organizations' })
 export class Organization extends BaseEntity {
@@ -46,6 +48,11 @@ export class Organization extends BaseEntity {
 
   @OneToMany(() => SSOConfigs, (ssoConfigs) => ssoConfigs.organization, { cascade: ['insert'] })
   ssoConfigs: SSOConfigs[];
+
+  @OneToOne(() => OrganizationGitSync, (organizationGitSync) => organizationGitSync.organization, {
+    onDelete: 'CASCADE',
+  })
+  organizationGitSync: OrganizationGitSync;
 
   @OneToMany(() => OrganizationUser, (organizationUser) => organizationUser.organization)
   organizationUsers: OrganizationUser[];

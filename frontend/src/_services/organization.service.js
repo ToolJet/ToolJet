@@ -7,10 +7,12 @@ export const organizationService = {
   getUsersByValue,
   createOrganization,
   editOrganization,
+  editOrganizationName,
   getOrganizations,
   switchOrganization,
   getSSODetails,
   editOrganizationConfigs,
+  getWorkspacesLimit,
   checkWorkspaceUniqueness,
 };
 
@@ -49,6 +51,11 @@ function editOrganization(params) {
   return fetch(`${config.apiUrl}/organizations/`, requestOptions).then(handleResponse);
 }
 
+function editOrganizationName(name) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify({ name }) };
+  return fetch(`${config.apiUrl}/organizations/name`, requestOptions).then(handleResponse);
+}
+
 function getOrganizations() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse);
@@ -72,6 +79,11 @@ function editOrganizationConfigs(params) {
     body: JSON.stringify(params),
   };
   return fetch(`${config.apiUrl}/organizations/configs`, requestOptions).then(handleResponse);
+}
+
+function getWorkspacesLimit() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organizations/limits`, requestOptions).then(handleResponse);
 }
 
 function checkWorkspaceUniqueness(name, slug) {

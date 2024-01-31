@@ -4,6 +4,7 @@ FROM node:18.18.2-buster as builder
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN npm i -g npm@9.8.1
+RUN npm cache clean --force
 RUN npm install -g @nestjs/cli
 
 RUN mkdir -p /app
@@ -73,6 +74,7 @@ COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
+COPY --from=builder /app/server/keys ./app/server/keys
 COPY --from=builder /app/server/entrypoint.sh ./app/server/entrypoint.sh
 COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
@@ -86,14 +88,25 @@ RUN useradd --create-home --home-dir /home/appuser appuser \
     && chmod u+x /app \
     && chmod -R g=u /app
 
+RUN mkdir -p /home/appuser/.npm/_cacache \
+    mkdir -p /home/appuser/.npm_cache_tmp \
+    mkdir -p /home/appuser/.npm/_logs \
+    && chown -R appuser:0 /home/appuser/.npm \
+    && chmod g+s /home/appuser/.npm_cache_tmp
+
 # Set npm cache directory
-ENV npm_config_cache /home/appuser/.npm
+RUN npm config set cache /tmp/npm-cache --global
+ENV npm_config_cache /tmp/npm-cache
 
 ENV HOME=/home/appuser
+
+# Switch back to appuser
 USER appuser
 
 WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1
+
+RUN npm cache clean --force
 
 ENTRYPOINT ["./server/entrypoint.sh"]

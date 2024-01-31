@@ -14,7 +14,7 @@ jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress-workspace' || github.event.label.name == 'run-cypress') }}
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress-platform' || github.event.label.name == 'run-cypress') }}
 
     steps:
       - name: Setup Node.js
@@ -22,13 +22,44 @@ jobs:
         with:
           node-version: 18.18.2
 
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools
+
+      - name: Install Build Essentials
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+
+      - name: Install Krb5
+        run: sudo apt-get install libkrb5-dev -y
+
+      - name: Redis service
+        run: |
+          sudo apt update
+          sudo apt install redis-server
+          sudo service redis-server start
+          sudo service redis-server status
+
       - name: Set up Docker
-        uses: docker-practice/actions-setup-docker@master
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y --allow-downgrades docker-ce=5:20.10.24~3-0~ubuntu-jammy docker-ce-cli=5:20.10.24~3-0~ubuntu-jammy
 
       - name: Run PosgtreSQL Database Docker Container
         run: |
           sudo docker network create tooljet
-          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
+          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -60,10 +91,17 @@ jobs:
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
+          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "SSO_OPENID_WELL_KNOWN_URL=http://ec2-54-193-40-51.us-west-1.compute.amazonaws.com:8080/.well-known/openid-configuration" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
 
       - name: Set up database
         run: |
@@ -112,7 +150,7 @@ jobs:
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:8082"
-          config-file: cypress-workspace.config.js
+          config-file: cypress-eeworkspace.config.js
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3
@@ -152,7 +190,7 @@ jobs:
 
       - name: Set up environment variables
         run: |
-          echo "TOOLJET_HOST=http://localhost:3000" >> .env
+          echo "TOOLJET_HOST=http://localhost:80" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
           echo "PG_DB=tooljet_development" >> .env
@@ -175,9 +213,22 @@ jobs:
           echo "SUB_PATH=/apps/tooljet/" >> .env
           echo "NODE_ENV=production" >> .env
           echo "SERVE_CLIENT=true" >> .env
+          echo "REDIS_HOST=redis" >> .env
+          echo "REDIS_PORT=6379" >> .env
+          echo "REDIS_USER=default" >> .env
+          echo "REDIS_PASSWORD=" >> .env
+          echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "SSO_OPENID_WELL_KNOWN_URL=http://ec2-54-193-40-51.us-west-1.compute.amazonaws.com:8080/.well-known/openid-configuration" >> .env
 
       - name: Pulling the docker-compose file
-        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml
+
+      - name: Folder creation
+        run: mkdir postgres_data && mkdir redis_data
 
       - name: Run docker-compose file
         run: docker-compose up -d
@@ -211,7 +262,7 @@ jobs:
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:80/apps/tooljet/"
-          config-file: cypress-workspace.config.js
+          config-file: cypress-eeworkspace.config.js
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3

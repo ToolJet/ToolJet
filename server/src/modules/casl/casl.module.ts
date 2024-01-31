@@ -14,14 +14,20 @@ import { CommentsAbilityFactory } from './abilities/comments-ability.factory';
 import { PluginsAbilityFactory } from './abilities/plugins-ability.factory';
 import { CaslAbilityFactory } from './casl-ability.factory';
 import { FoldersAbilityFactory } from './abilities/folders-ability.factory';
+import { AuditLoggerService } from '@services/audit_logger.service';
+import { AuditLog } from 'src/entities/audit_log.entity';
 import { FilesService } from '@services/files.service';
 import { OrgEnvironmentVariablesAbilityFactory } from './abilities/org-environment-variables-ability.factory';
 import { TooljetDbAbilityFactory } from './abilities/tooljet-db-ability.factory';
 import { GlobalDataSourceAbilityFactory } from './abilities/global-datasource-ability.factory';
 import { OrganizationConstantsAbilityFactory } from './abilities/organization-constants-ability.factory';
+import { InstanceSettingsModule } from '../instance_settings/instance_settings.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App])],
+  imports: [
+    TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App, AuditLog]),
+    InstanceSettingsModule,
+  ],
   providers: [
     CaslAbilityFactory,
     OrganizationUsersService,
@@ -33,6 +39,7 @@ import { OrganizationConstantsAbilityFactory } from './abilities/organization-co
     CommentsAbilityFactory,
     PluginsAbilityFactory,
     FoldersAbilityFactory,
+    AuditLoggerService,
     OrgEnvironmentVariablesAbilityFactory,
     TooljetDbAbilityFactory,
     GlobalDataSourceAbilityFactory,

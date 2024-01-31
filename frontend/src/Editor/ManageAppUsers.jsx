@@ -5,13 +5,13 @@ import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Skeleton from 'react-loading-skeleton';
 import _, { debounce } from 'lodash';
+import { retrieveWhiteLabelText, validateName } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getPrivateRoute, replaceEditorURL, getHostURL } from '@/_helpers/routes';
-import { validateName } from '@/_helpers/utils';
+import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
-import { ToolTip } from '@/_components/ToolTip';
 import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
 import { useSuperStore } from '../_stores/superStore';
 import { ModuleContext } from '../_contexts/ModuleContext';
@@ -204,27 +204,40 @@ class ManageAppUsersComponent extends React.Component {
     const appLink = `${getHostURL()}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
-    const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="Tooljet app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
-    const shouldWeDisableShareModal = !this.props.isVersionReleased;
+    const embeddableLink = `<iframe width="560" height="315" src="${appLink}${
+      this.props.slug
+    }" title="${retrieveWhiteLabelText()} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
+
+    const shouldShowShareModal = this.props.isVersionReleased
+      ? this.props.multiEnvironmentEnabled
+        ? this.props.currentEnvironment?.is_default
+          ? true
+          : false
+        : this.props.currentEnvironment?.priority === 1
+      : false;
+
+    const envTooltipFlag =
+      (!this.props.isVersionReleased && this.props.currentEnvironment?.is_default) ||
+      (!this.props.multiEnvironmentEnabled && this.props.currentEnvironment?.priority === 1);
 
     return (
       <ToolTip
-        message={TOOLTIP_MESSAGES.SHARE_URL_UNAVAILABLE}
-        placement={!this.props.isVersionReleased ? 'bottom' : 'left'}
-        show={shouldWeDisableShareModal}
+        message={envTooltipFlag ? TOOLTIP_MESSAGES.SHARE_URL_UNAVAILABLE : 'You can only share apps in production'}
+        placement="left"
+        show={!shouldShowShareModal}
       >
         <div
-          title={!shouldWeDisableShareModal ? 'Share' : ''}
+          title={shouldShowShareModal ? 'Share' : ''}
           className="manage-app-users editor-header-icon tj-secondary-btn"
           data-cy="share-button-link"
         >
           <span
             className={cx('d-flex', {
-              'share-disabled': shouldWeDisableShareModal,
+              'share-disabled': !shouldShowShareModal,
             })}
             onClick={() => {
               this.validateThePreExistingSlugs();
-              !shouldWeDisableShareModal && this.setState({ showModal: true });
+              shouldShowShareModal && this.setState({ showModal: true });
             }}
           >
             <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
@@ -375,10 +388,10 @@ class ManageAppUsersComponent extends React.Component {
                       >{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
                     )}
                   </div>
-                  {(this?.props?.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                  {this?.props?.isPublic && window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true' && (
                     <div className="tj-app-input">
                       <label className="field-name" data-cy="iframe-link-label">
-                        Embedded app link
+                        {this.props.t('editor.shareModal.embeddableLink', 'Embedded app link')}
                       </label>
                       <span className={`tj-text-input justify-content-between ${this.props.darkMode ? 'dark' : ''}`}>
                         <span data-cy="iframe-link">{embeddableLink}</span>

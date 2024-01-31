@@ -5,6 +5,7 @@ import { slide as Menu } from 'react-burger-menu';
 import LogoIcon from '@assets/images/rocket.svg';
 import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
+import AppLogo from '@/_components/AppLogo';
 import Header from './Header';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { useEditorStore } from '@/_stores/editorStore';
@@ -168,7 +169,7 @@ const ViewerHeader = ({ showHeader, appName, changeDarkMode, darkMode, pages, cu
                 redirectToDashboard();
               }}
             >
-              <LogoIcon />
+              <AppLogo isLoadingFromHeader={false} />
             </Link>
           </h1>
           {appName && <span>{appName}</span>}

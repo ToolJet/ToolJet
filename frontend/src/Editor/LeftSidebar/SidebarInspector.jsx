@@ -18,6 +18,7 @@ const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
   { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
+  { kind: 'workflows', id: 'null', name: 'Run Workflow' },
 ];
 
 export const LeftSidebarInspector = ({
@@ -32,9 +33,10 @@ export const LeftSidebarInspector = ({
   const dataSources = useGlobalDataSources();
 
   const dataQueries = useDataQueries();
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -167,7 +169,7 @@ export const LeftSidebarInspector = ({
       for: 'components',
       actions: [
         { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
-        ...(!isVersionReleased
+        ...(!isVersionReleased && !isEditorFreezed
           ? [{ name: 'Delete Component', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' }]
           : []),
       ],

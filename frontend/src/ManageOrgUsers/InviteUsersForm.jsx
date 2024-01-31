@@ -1,9 +1,11 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 import { FileDropzone } from './FileDropzone';
+import { userService } from '@/_services';
+import { LicenseBanner } from '@/LicenseBanner';
 import Multiselect from '@/_ui/Multiselect/Multiselect';
 
 function InviteUsersForm({
@@ -20,9 +22,20 @@ function InviteUsersForm({
 }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
+  const [userLimits, setUserLimits] = useState({});
   const [selectedGroups, setSelectedGroups] = useState([]);
 
   const hiddenFileInput = useRef(null);
+
+  useEffect(() => {
+    fetchUserLimits();
+  }, [activeTab]);
+
+  const fetchUserLimits = () => {
+    userService.getUserLimits('total').then((data) => {
+      setUserLimits(data);
+    });
+  };
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -90,8 +103,13 @@ function InviteUsersForm({
             </div>
           </div>
           {activeTab == 1 ? (
-            <div className="manage-users-drawer-content">
-              <div className="invite-user-by-email">
+            <div className={`manage-users-drawer-content`}>
+              <LicenseBanner classes="mb-3" limits={userLimits} type="users" size="small" />
+              <div
+                className={`invite-user-by-email ${
+                  !userLimits?.canAddUnlimited && userLimits?.percentage >= 100 && 'disabled'
+                }`}
+              >
                 <form onSubmit={handleCreateUser} noValidate className="invite-email-body" id="inviteByEmail">
                   <label className="form-label" data-cy="label-full-name-input-field">
                     {t('header.organization.menus.manageUsers.fullName', 'Enter full name')}
@@ -153,6 +171,7 @@ function InviteUsersForm({
             </div>
           ) : (
             <div className="manage-users-drawer-content-bulk">
+              <LicenseBanner limits={userLimits} type="users" size="small" />
               <div className="manage-users-drawer-content-bulk-download-prompt">
                 <div className="user-csv-template-wrap">
                   <div>
@@ -160,8 +179,8 @@ function InviteUsersForm({
                   </div>
                   <div>
                     <p className="tj-text tj-text-sm" data-cy="helper-text-bulk-upload">
-                      Download the ToolJet template to add user details or format your file in the same as the template.
-                      ToolJet won’t be able to recognise files in any other format.{' '}
+                      Download the template to add user details or format your file in the same way as the template.
+                      Files in any other format may not be recognized.{' '}
                     </p>
                     <ButtonSolid
                       href="../../assets/csv/sample_upload.csv"
@@ -204,7 +223,7 @@ function InviteUsersForm({
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              disabled={uploadingUsers}
+              disabled={uploadingUsers || (!userLimits?.canAddUnlimited && userLimits?.percentage >= 100 && 'disabled')}
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"

@@ -26,15 +26,13 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources
+      postgreSqlText.allDataSources()
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase
+      postgreSqlText.allDatabase()
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -107,10 +105,10 @@ describe("Data sources", () => {
       "have.text",
       "Failed to connect to localhost:1433 - Could not connect (sequence)"
     );
-    deleteDatasource(`cypress-${data.lastName}-sql-server`);
   });
 
   it("Should verify the functionality of SQL Server connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("databases", "SQL Server", data.lastName);
 
     fillDataSourceTextField(

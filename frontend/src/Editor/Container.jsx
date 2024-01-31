@@ -66,11 +66,12 @@ export const Container = ({
   const { appId } = useAppInfo();
 
   const currentState = useCurrentState();
-  const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+  const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -104,7 +105,7 @@ export const Container = ({
   useHotkeys(
     'meta+v, control+v',
     async () => {
-      if (isContainerFocused && !isVersionReleased) {
+      if (isContainerFocused && !(isVersionReleased || isEditorFreezed)) {
         // Check if the clipboard API is available
         if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
           try {
@@ -191,8 +192,6 @@ export const Container = ({
         },
       },
     };
-
-    //need to check if a new component is added or deleted
 
     const oldComponents = appDefinition.pages[currentPageId]?.components ?? {};
     const newComponents = boxes;
@@ -316,7 +315,7 @@ export const Container = ({
 
   const onDragStop = useCallback(
     (e, componentId, direction, currentLayout) => {
-      if (isVersionReleased) {
+      if (isVersionReleased || isEditorFreezed) {
         enableReleasedVersionPopupState();
         return;
       }
@@ -354,12 +353,13 @@ export const Container = ({
       setBoxes(newBoxes);
       updateCanvasHeight(newBoxes);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isVersionReleased, enableReleasedVersionPopupState, boxes, setBoxes, updateCanvasHeight]
   );
 
   const onResizeStop = useCallback(
     (id, e, direction, ref, d, position) => {
-      if (isVersionReleased) {
+      if (isVersionReleased || isEditorFreezed) {
         enableReleasedVersionPopupState();
         return;
       }
@@ -417,6 +417,7 @@ export const Container = ({
       setBoxes(newBoxes);
       updateCanvasHeight(newBoxes);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [setBoxes, currentLayout, boxes, enableReleasedVersionPopupState, isVersionReleased, updateCanvasHeight, gridWidth]
   );
 
@@ -446,6 +447,7 @@ export const Container = ({
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [boxes, setBoxes]
   );
 

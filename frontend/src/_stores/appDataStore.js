@@ -12,6 +12,7 @@ export function createAppDataStore(moduleName) {
     apps: [],
     appName: null,
     slug: null,
+    creationMode: 'DEFAULT',
     isPublic: null,
     isMaintenanceOn: null,
     organizationId: null,
@@ -29,6 +30,7 @@ export function createAppDataStore(moduleName) {
     appId: null,
     areOthersOnSameVersionAndPage: false,
     appVersionPreviewLink: null,
+    environments: [],
     moduleName,
   };
   return create(
@@ -126,6 +128,7 @@ export function createAppDataStore(moduleName) {
           setIsSaving: (isSaving) => set(() => ({ isSaving })),
           setAppId: (appId) => set(() => ({ appId })),
           setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),
+          setEnvironments: (environments) => set(() => ({ environments })),
         },
       }),
       { name: 'App Data Store' }

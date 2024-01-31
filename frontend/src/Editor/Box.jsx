@@ -304,6 +304,7 @@ export const Box = memo(
             backgroundColor,
           }}
           role={preview ? 'BoxPreview' : 'Box'}
+          className={inCanvas ? `_tooljet-${component.component} _tooljet-${component.name}` : ''}
         >
           {!resetComponent ? (
             <ComponentToRender

@@ -133,12 +133,7 @@ export const CopilotSetting = () => {
   return (
     <div className="wrapper org-variables-page animation-fade">
       <div className="page-wrapper">
-        <div
-          className="container-xl"
-          style={{
-            padding: '4rem',
-          }}
-        >
+        <div className="container-xl">
           <Container isCopilotEnabled={state} handleCopilotToggle={handleCopilotToggle} isAdmin={admin}>
             <div className="row">
               <div className="col-12">
@@ -160,8 +155,14 @@ export const CopilotSetting = () => {
 };
 
 const Container = ({ children, isCopilotEnabled, handleCopilotToggle, darkMode, isAdmin }) => {
+  const cardContainerStyles = {
+    width: '880px',
+    overflow: 'auto',
+    height: 'calc(100vh - 156px)',
+    margin: '0 auto',
+  };
   return (
-    <div className="card p-2 card-container">
+    <div style={cardContainerStyles} className="card p-2 card-container">
       <div className="card-header row">
         <div className="col-8 d-flex">
           <h3 className="card-title">Copilot</h3>

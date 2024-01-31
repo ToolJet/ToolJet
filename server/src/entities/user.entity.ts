@@ -21,6 +21,7 @@ import { OrganizationUser } from './organization_user.entity';
 import { UserGroupPermission } from './user_group_permission.entity';
 import { File } from './file.entity';
 import { Organization } from './organization.entity';
+import { UserDetails } from './user_details.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -60,10 +61,19 @@ export class User extends BaseEntity {
     type: 'enum',
     enumName: 'source',
     name: 'source',
-    enum: ['signup', 'invite', 'google', 'git'],
+    enum: ['signup', 'invite', 'google', 'git', 'ldap', 'saml'],
     default: 'invite',
   })
   source: string;
+
+  @Column({
+    type: 'enum',
+    enumName: 'user_type',
+    name: 'user_type',
+    enum: ['instance', 'workspace'],
+    default: 'workspace',
+  })
+  userType: string;
 
   @Column({ name: 'avatar_id', nullable: true, default: null })
   avatarId?: string;
@@ -128,6 +138,9 @@ export class User extends BaseEntity {
 
   @OneToMany(() => App, (app) => app.user)
   apps: App[];
+
+  @OneToOne(() => UserDetails, (details) => details.user, { eager: true })
+  userDetails: UserDetails;
 
   organizationId: string;
   organizationIds?: Array<string>;

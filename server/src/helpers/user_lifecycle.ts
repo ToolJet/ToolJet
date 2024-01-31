@@ -15,6 +15,14 @@ export enum SOURCE {
   SIGNUP = 'signup',
   GOOGLE = 'google',
   GIT = 'git',
+  OPENID = 'openid',
+  LDAP = 'ldap',
+  SAML = 'saml',
+}
+
+export enum USER_TYPE {
+  INSTANCE = 'instance',
+  WORKSPACE = 'workspace',
 }
 
 export enum USER_STATUS {
@@ -22,6 +30,13 @@ export enum USER_STATUS {
   VERIFIED = 'verified',
   ACTIVE = 'active',
   ARCHIVED = 'archived',
+}
+
+export enum LIMIT_TYPE {
+  TOTAL = 'total',
+  EDITOR = 'editor',
+  VIEWER = 'viewer',
+  ALL = 'all',
 }
 
 export const URL_SSO_SOURCE = 'sso';
@@ -89,5 +104,5 @@ export enum WORKSPACE_USER_STATUS {
   ARCHIVED = 'archived',
 }
 
-type source = 'google' | 'git' | 'signup' | 'invite';
+type source = 'google' | 'git' | 'signup' | 'invite' | 'openid' | 'ldap' | 'saml';
 type status = 'invited' | 'verified' | 'active' | 'archived';

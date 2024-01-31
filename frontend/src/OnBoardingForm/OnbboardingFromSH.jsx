@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
+import { copyToClipboard } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import OnBoardingInput from './OnBoardingInput';
 import OnBoardingRadioInput from './OnBoardingRadioInput';
@@ -14,12 +15,19 @@ import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
 import startsWith from 'lodash.startswith';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
+import OnboardingTrialPage from './OnboardingTrialPage';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+import SolidIcon from '../_ui/Icon/SolidIcons';
 
 function OnbboardingFromSH({ darkMode }) {
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSkipLoading, setSkipLoading] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [trialErrorMessage, setShowTrialErrorMessage] = useState('');
 
   const [formData, setFormData] = useState({
     companyName: '',
@@ -30,6 +38,7 @@ function OnbboardingFromSH({ darkMode }) {
     password: '',
     workspace: '',
     phoneNumber: '',
+    requestedTrial: false,
   });
 
   const pageProps = {
@@ -55,20 +64,25 @@ function OnbboardingFromSH({ darkMode }) {
           email: formData?.email,
           workspace: formData?.workspace,
           phoneNumber: formData?.phoneNumber,
+          requestedTrial: formData?.requestedTrial,
         })
         .then((user) => {
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
-          redirectToDashboard(user);
           setCompleted(false);
+          redirectToDashboard(user);
         })
         .catch((res) => {
+          setShowTrialErrorMessage(res?.error || 'Something went wrong');
           setIsLoading(false);
+          setShowErrorModal(true);
+          setSkipLoading(false);
           setCompleted(false);
-          toast.error(res.error || 'Something went wrong', {
-            id: 'toast-login-auth-error',
-            position: 'top-center',
-          });
+          res?.statusCode !== 500 &&
+            toast.error(res.error || 'Something went wrong', {
+              id: 'toast-login-auth-error',
+              position: 'top-center',
+            });
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -84,6 +98,13 @@ function OnbboardingFromSH({ darkMode }) {
     'Enter your phone number', //dummy placeholder
   ];
   const FormSubTitles = ['This information will help us improve ToolJet.'];
+
+  const handleRetry = () => {
+    setIsLoading(true);
+    setShowErrorModal(false);
+    setCompleted(true);
+    setShowTrialErrorMessage('');
+  };
 
   return (
     <div className="flex">
@@ -123,9 +144,20 @@ function OnbboardingFromSH({ darkMode }) {
             Set up workspace
           </p>
           <p
-            className={page >= 2 ? `active-onboarding-tab` : `passive-onboarding-tab`}
+            className={page > 5 ? `active-onboarding-tab` : `passive-onboarding-tab`}
             data-cy="company-profile-check-point"
           >
+            {page > 5 && (
+              <img
+                src={
+                  darkMode
+                    ? 'assets/images/onboardingassets/Icons/Check_dark.svg'
+                    : 'assets/images/onboardingassets/Icons/Check.svg'
+                }
+                loading="lazy"
+                alt="check mark"
+              ></img>
+            )}
             Company profile
           </p>
           <div className="onboarding-divider"></div>
@@ -138,10 +170,10 @@ function OnbboardingFromSH({ darkMode }) {
         )}
       </div>
       <div className="page-wrap-onboarding">
-        <div className="onboarding-form">
+        <div className={page < 6 ? 'onboarding-form' : 'container-xl'}>
           <div className={page !== 0 ? 'onboarding-progress' : 'onboarding-progress-layout'}>
             <div className="navigation-wrap">
-              {page > 1 && (
+              {page > 1 && page < 6 && (
                 <div
                   className="onboarding-back-button"
                   disabled={page == 0}
@@ -164,17 +196,14 @@ function OnbboardingFromSH({ darkMode }) {
                   </p>
                 </div>
               )}
-              <div className="onboarding-bubbles-container">{page > 1 && <OnboardingBubblesSH page={page} />}</div>
-              {page > 1 && (
+              <div className="onboarding-bubbles-container">
+                {page > 1 && page < 6 && <OnboardingBubblesSH page={page} />}
+              </div>
+              {page > 1 && page < 6 && (
                 <div
                   className="onboarding-back-button"
                   onClick={() => {
-                    page != 5 && setPage((currPage) => currPage + 1);
-                    if (page == 5) {
-                      setIsLoading(true);
-                      setCompleted(true);
-                      return;
-                    }
+                    setPage((currPage) => currPage + 1);
                   }}
                 >
                   <p className="onboarding-skip-text" data-cy="skip-arrow-text">
@@ -196,12 +225,16 @@ function OnbboardingFromSH({ darkMode }) {
           </div>
           <div className="form-container">
             <div className="onboarding-header-wrapper">
-              <h1 className="onboarding-page-header" data-cy="onboarding-page-header">
-                {FORM_TITLES[page]}
-              </h1>
-              <p className="onboarding-page-sub-header" data-cy="onboarding-page-sub-header">
-                {FormSubTitles[0]}
-              </p>
+              {page < 6 && (
+                <>
+                  <h1 className="onboarding-page-header" data-cy="onboarding-page-header">
+                    {FORM_TITLES[page]}
+                  </h1>
+                  <p className="onboarding-page-sub-header" data-cy="onboarding-page-sub-header">
+                    {FormSubTitles[0]}
+                  </p>
+                </>
+              )}
             </div>
             {page == 0 ? (
               <AdminSetup {...pageProps} />
@@ -213,10 +246,24 @@ function OnbboardingFromSH({ darkMode }) {
               <Page1 {...pageProps} setIsLoading={setIsLoading} />
             ) : page == 4 ? (
               <Page2 {...pageProps} setIsLoading={setIsLoading} />
-            ) : (
+            ) : page == 5 ? (
               <Page3 {...pageProps} setIsLoading={setIsLoading} />
+            ) : (
+              <TrialPage
+                {...pageProps}
+                setIsLoading={setIsLoading}
+                setSkipLoading={setSkipLoading}
+                skipLoading={isSkipLoading}
+              />
             )}
           </div>
+          <TrialErrorModal
+            showErrorModal={showErrorModal}
+            handleRetry={handleRetry}
+            message={trialErrorMessage}
+            handleClose={() => setShowErrorModal(false)}
+            darkMode={darkMode}
+          />
         </div>
       </div>
     </div>
@@ -306,8 +353,7 @@ export function Page3({ formData, setFormData, setPage, page, setCompleted, isLo
         }}
         onKeyDown={(event) => {
           if (event.key === 'Enter') {
-            setIsLoading(true);
-            setCompleted(true);
+            setPage((currPage) => currPage + 1);
           }
         }}
         isValid={(inputNumber, country, countries) => {
@@ -317,6 +363,34 @@ export function Page3({ formData, setFormData, setPage, page, setCompleted, isLo
         }}
       />
       <ContinueButtonSelfHost {...btnProps} />
+    </div>
+  );
+}
+
+export function TrialPage({
+  formData,
+  setFormData,
+  setPage,
+  page,
+  setCompleted,
+  isLoading,
+  setSkipLoading,
+  setIsLoading,
+  darkMode,
+}) {
+  const props = { formData, setFormData, fieldType: 'trialRequested', setSkipLoading };
+  const btnProps = {
+    setPage,
+    page,
+    formData,
+    setCompleted,
+    isLoading,
+    setIsLoading,
+    darkMode,
+  };
+  return (
+    <div className="onboarding-pages-wrapper">
+      <OnboardingTrialPage {...props} btnProps={btnProps} />
     </div>
   );
 }
@@ -355,6 +429,55 @@ export function WorkspaceSetupPage({
       />
       <ContinueButtonSelfHost {...btnProps} />
     </div>
+  );
+}
+
+export function TrialErrorModal({ showErrorModal, handleClose, darkMode, message, handleRetry }) {
+  const copyFunction = (input) => {
+    let text = document.getElementById(input).innerHTML;
+    copyToClipboard(text);
+  };
+
+  return (
+    <Modal
+      show={showErrorModal}
+      onHide={handleClose}
+      size="sm"
+      centered={true}
+      contentClassName={`${darkMode ? 'theme-dark dark-theme license-error-modal' : 'license-error-modal'}`}
+    >
+      <Modal.Header data-cy="modal-header">
+        <Modal.Title>Free Trial</Modal.Title>
+        <div onClick={handleClose} className="cursor-pointer">
+          <SolidIcon name="remove" width="20" />
+        </div>
+      </Modal.Header>
+      <Modal.Body data-cy="modal-message">
+        {message}
+        <div className="form-group my-3">
+          <div className="d-flex form-control p-0 border-0">
+            Or Contact us at&nbsp;
+            <span className="m-0" id="support-email">
+              hello@tooljet.com
+            </span>
+            <SolidIcon
+              className="mx-1 cursor-pointer"
+              name="copy"
+              width="16"
+              onClick={() => copyFunction('support-email')}
+            />
+          </div>
+        </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button className="cancel-btn" onClick={handleClose}>
+          Cancel
+        </Button>
+        <Button variant={'primary'} autoFocus onClick={handleRetry}>
+          Try again
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }
 

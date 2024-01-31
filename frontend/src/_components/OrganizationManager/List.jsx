@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { authenticationService } from '@/_services';
+import { authenticationService, organizationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { getAvatar } from '@/_helpers/utils';
 import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
@@ -10,9 +10,13 @@ export const OrganizationList = function () {
   const [organizationList, setOrganizationList] = useState([]);
   const [getOrgStatus, setGetOrgStatus] = useState('');
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const [workspacesLimit, setWorkspacesLimit] = useState({});
 
   useEffect(() => {
     setGetOrgStatus('loading');
+    organizationService.getWorkspacesLimit().then((data) => {
+      setWorkspacesLimit(data?.workspacesCount);
+    });
     const sessionObservable = authenticationService.currentSession.subscribe((newSession) => {
       setOrganizationList(newSession.organizations ?? []);
       if (newSession.organizations?.length > 0) setGetOrgStatus('success');
@@ -54,6 +58,7 @@ export const OrganizationList = function () {
   return (
     <div className="org-select-container">
       <CustomSelect
+        workspacesLimit={workspacesLimit}
         isLoading={getOrgStatus === 'loading'}
         options={options}
         value={current_organization_id}

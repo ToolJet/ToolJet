@@ -1,8 +1,0 @@
-{
-  "name": "KPI Management Dashboard",
-  "description": "A unified view of data that improves visibility into company health.",
-  "widgets": ["Chart", "Statistics", "Circular Progress Bar"],
-  "sources": [{"name": "Airtable", "id": "airtable"}],
-  "id": "kpi-management-dashboard",
-  "category": "data-and-analytics"
-}

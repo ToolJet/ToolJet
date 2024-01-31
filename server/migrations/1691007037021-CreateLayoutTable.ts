@@ -15,29 +15,29 @@ export class CreateLayoutTable1691007037021 implements MigrationInterface {
           {
             name: 'type',
             type: 'enum',
-            enumName: 'layput_type',
+            enumName: 'layout_type',
             enum: ['desktop', 'mobile'],
             isNullable: false,
           },
           {
             name: 'top',
             type: 'double precision',
-            isNullable: false,
+            isNullable: true,
           },
           {
             name: 'left',
             type: 'double precision',
-            isNullable: false,
+            isNullable: true,
           },
           {
             name: 'width',
             type: 'double precision',
-            isNullable: false,
+            isNullable: true,
           },
           {
             name: 'height',
             type: 'double precision',
-            isNullable: false,
+            isNullable: true,
           },
           {
             name: 'component_id',

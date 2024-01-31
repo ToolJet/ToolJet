@@ -17,6 +17,30 @@ type Git = {
   clientSecret: string;
   hostName?: string;
 };
+type OpenId = {
+  clientId: string;
+  clientSecret: string;
+  name: string;
+  wellKnownUrl: string;
+};
+type LDAP = {
+  name: string;
+  host: string;
+  port: number;
+  ssl: boolean;
+  sslOptions: {
+    clientKey: string;
+    clientCert: string;
+    serverCert: string;
+  };
+  basedn: string;
+};
+type SAML = {
+  name: string;
+  idpMetadata: string;
+  groupAttribute: string;
+};
+
 @Entity({ name: 'sso_configs' })
 export class SSOConfigs {
   @PrimaryGeneratedColumn('uuid')
@@ -26,10 +50,10 @@ export class SSOConfigs {
   organizationId: string;
 
   @Column({ name: 'sso' })
-  sso: 'google' | 'git' | 'form';
+  sso: 'google' | 'git' | 'form' | 'openid' | 'ldap' | 'saml';
 
   @Column({ type: 'json' })
-  configs: Google | Git;
+  configs: Google | Git | OpenId | LDAP | SAML;
 
   @Column({ name: 'enabled' })
   enabled: boolean;

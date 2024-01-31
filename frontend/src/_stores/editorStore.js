@@ -3,6 +3,8 @@ import { v4 as uuid } from 'uuid';
 import { useContext } from 'react';
 import { useSuperStore } from './superStore';
 import { ModuleContext } from '../_contexts/ModuleContext';
+import { licenseService } from '@/_services';
+import { shallow } from 'zustand/shallow';
 const STORE_NAME = 'Editor';
 
 export const EMPTY_ARRAY = [];
@@ -44,6 +46,9 @@ export function createEditorStore(moduleName) {
     queryConfirmationList: [],
     currentPageId: null,
     currentSessionId: uuid(),
+    currentAppEnvironment: null,
+    currentAppEnvironmentId: null,
+    featureAccess: null,
     moduleName,
   };
 
@@ -93,6 +98,14 @@ export function createEditorStore(moduleName) {
           });
         },
         setCurrentPageId: (currentPageId) => set({ currentPageId }),
+        setCurrentAppEnvironmentId: (currentAppEnvironmentId) => set({ currentAppEnvironmentId }),
+        setCurrentAppEnvironmentDetails: (currentAppEnvironmentDetails) =>
+          set({ currentAppEnvironment: currentAppEnvironmentDetails }),
+        updateFeatureAccess: () => {
+          licenseService.getFeatureAccess().then((data) => {
+            set({ featureAccess: data });
+          });
+        },
       },
     }),
     { name: STORE_NAME }
@@ -110,4 +123,4 @@ export const useEditorStore = (callback, shallow) => {
 };
 
 export const useEditorActions = () => useEditorStore((state) => state.actions);
-export const useEditorState = () => useEditorStore((state) => state);
+export const useEditorState = () => useEditorStore((state) => state, shallow);

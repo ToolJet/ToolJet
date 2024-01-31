@@ -1,5 +1,6 @@
 import React from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
+import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import { useNavigate } from 'react-router-dom';
 
 export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ darkMode }) {
@@ -22,7 +23,7 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ darkMo
           Password has been reset
         </h1>
         <p className="info-screen-description" data-cy="reset-password-page-description">
-          Your password has been reset successfully, log into ToolJet to continue your session
+          Your password has been reset successfully, log into {retrieveWhiteLabelText()} to continue your session
         </p>
         <ButtonSolid
           variant="secondary"

@@ -2,10 +2,24 @@ import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
+import { USER_TYPE } from './user_lifecycle';
+import { EncryptionService } from '@services/encryption.service';
+import { Credential } from 'src/entities/credential.entity';
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
 const protobuf = require('protobufjs');
 const semver = require('semver');
+
+import { LICENSE_LIMIT } from './license.helper';
+import { CredentialsService } from '@services/credentials.service';
+
+export function parseJson(jsonString: string, errorMessage?: string): object {
+  try {
+    return JSON.parse(jsonString);
+  } catch (err) {
+    throw new QueryError(errorMessage, err.message, {});
+  }
+}
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -17,14 +31,6 @@ export function maybeSetSubPath(path) {
 
   const pathWithoutLeadingSlash = path.replace(/^\/+/, '');
   return urlPrefix + pathWithoutLeadingSlash;
-}
-
-export function parseJson(jsonString: string, errorMessage?: string): object {
-  try {
-    return JSON.parse(jsonString);
-  } catch (err) {
-    throw new QueryError(errorMessage, err.message, {});
-  }
 }
 
 export async function cacheConnection(dataSourceId: string, connection: any): Promise<any> {
@@ -81,6 +87,16 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   }
 }
 
+export const defaultAppEnvironments = [
+  { name: 'development', isDefault: false, priority: 1 },
+  { name: 'staging', isDefault: false, priority: 2 },
+  { name: 'production', isDefault: true, priority: 3 },
+];
+
+export const isSuperAdmin = (user) => {
+  return !!(user?.userType === USER_TYPE.INSTANCE);
+};
+
 export const updateTimestampForAppVersion = async (manager, appVersionId) => {
   const appVersion = await manager.findOne('app_versions', appVersionId);
   if (appVersion) {
@@ -120,8 +136,6 @@ export async function catchDbException(operation: () => any, dbConstraints: DbCo
   }
 }
 
-export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
-
 export function isPlural(data: Array<any>) {
   return data?.length > 1 ? 's' : '';
 }
@@ -138,6 +152,65 @@ export async function dropForeignKey(tableName: string, columnName: string, quer
   await queryRunner.dropForeignKey(tableName, foreignKey);
 }
 
+function convertToArrayOfKeyValuePairs(options): Array<object> {
+  if (!options) return;
+  return Object.keys(options).map((key) => {
+    return {
+      key: key,
+      value: options[key]['value'],
+      encrypted: options[key]['encrypted'],
+      credential_id: options[key]['credential_id'],
+    };
+  });
+}
+
+export async function filterEncryptedFromOptions(
+  options: Array<object>,
+  encryptionService: EncryptionService,
+  credentialService?: CredentialsService,
+  copyEncryptedValues = false,
+  entityManager?: EntityManager
+) {
+  const kvOptions = convertToArrayOfKeyValuePairs(options);
+
+  if (!kvOptions) return;
+
+  const parsedOptions = {};
+
+  for (const option of kvOptions) {
+    if (option['encrypted']) {
+      const value = copyEncryptedValues ? await credentialService.getValue(option['credential_id']) : '';
+      const credential = await createCredential(value, encryptionService, entityManager);
+
+      parsedOptions[option['key']] = {
+        credential_id: credential.id,
+        encrypted: option['encrypted'],
+      };
+    } else {
+      parsedOptions[option['key']] = {
+        value: option['value'],
+        encrypted: false,
+      };
+    }
+  }
+
+  return parsedOptions;
+}
+
+async function createCredential(
+  value: string,
+  encryptionService: EncryptionService,
+  entityManager: EntityManager
+): Promise<Credential> {
+  const credentialRepository = entityManager.getRepository(Credential);
+  const newCredential = credentialRepository.create({
+    valueCiphertext: await encryptionService.encryptColumnValue('credentials', 'value', value),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  const credential = await credentialRepository.save(newCredential);
+  return credential;
+}
 export async function getServiceAndRpcNames(protoDefinition) {
   const root = protobuf.parse(protoDefinition).root;
   const serviceNamesAndMethods = root.nestedArray
@@ -150,14 +223,21 @@ export async function getServiceAndRpcNames(protoDefinition) {
   return serviceNamesAndMethods;
 }
 
-export class MigrationProgress {
-  private progress = 0;
-  constructor(private fileName: string, private totalCount: number) {}
-
-  show() {
-    this.progress++;
-    console.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
-  }
+export function generatePayloadForLimits(currentCount: number, totalCount: any, licenseStatus: object, label?: string) {
+  return totalCount !== LICENSE_LIMIT.UNLIMITED
+    ? {
+        percentage: (currentCount / totalCount) * 100,
+        total: totalCount,
+        current: currentCount,
+        licenseStatus,
+        label,
+        canAddUnlimited: false,
+      }
+    : {
+        canAddUnlimited: true,
+        licenseStatus,
+        label,
+      };
 }
 
 export const processDataInBatches = async <T>(
@@ -216,6 +296,29 @@ export const generateOrgInviteURL = (organizationToken: string, organizationId?:
   return `${host}${subpath ? subpath : '/'}organization-invitations/${organizationToken}${
     organizationId ? `?oid=${organizationId}` : ''
   }`;
+};
+
+export function extractFirstAndLastName(fullName: string) {
+  if (fullName) {
+    const nameParts = fullName.trim().split(' ');
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(' ');
+
+    return {
+      firstName: firstName,
+      lastName: lastName,
+    };
+  }
+}
+
+export const getServerURL = () => {
+  const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+  const API_URL = {
+    production: process.env.TOOLJET_SERVER_URL || (process.env.SERVE_CLIENT !== 'false' ? '__REPLACE_SUB_PATH__' : ''),
+    development: `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
+  };
+
+  return API_URL[environment];
 };
 
 export function extractMajorVersion(version) {

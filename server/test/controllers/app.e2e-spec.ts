@@ -132,6 +132,16 @@ describe('Authentication', () => {
         expect(response.statusCode).toBe(201);
         expect(response.headers['set-cookie'][0]).toMatch(/^tj_auth_token=/);
       });
+      it('throw unauthorized error if user status is archived', async () => {
+        const adminUser = await userRepository.findOneOrFail({
+          email: 'admin@tooljet.io',
+        });
+        await userRepository.update({ id: adminUser.id }, { status: 'archived' });
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'password' })
+          .expect(401);
+      });
       it('throw unauthorized error if user does not exist in given organization if valid credentials', async () => {
         await request(app.getHttpServer())
           .post('/api/authenticate/82249621-efc1-4cd2-9986-5c22182fa8a7')
@@ -345,7 +355,22 @@ describe('Authentication', () => {
 
         expect(response.statusCode).toBe(200);
         expect(Object.keys(response.body).sort()).toEqual(
-          ['id', 'email', 'first_name', 'last_name', 'current_organization_id', 'current_organization_slug'].sort()
+          [
+            'id',
+            'email',
+            'first_name',
+            'last_name',
+            'current_organization_id',
+            'admin',
+            'app_group_permissions',
+            'avatar_id',
+            'data_source_group_permissions',
+            'group_permissions',
+            'organization',
+            'organization_id',
+            'super_admin',
+            'current_organization_slug',
+          ].sort()
         );
 
         const { email, first_name, last_name } = response.body;
@@ -374,7 +399,22 @@ describe('Authentication', () => {
 
         expect(response.statusCode).toBe(200);
         expect(Object.keys(response.body).sort()).toEqual(
-          ['id', 'email', 'first_name', 'last_name', 'current_organization_id', 'current_organization_slug'].sort()
+          [
+            'admin',
+            'app_group_permissions',
+            'avatar_id',
+            'current_organization_id',
+            'data_source_group_permissions',
+            'email',
+            'first_name',
+            'group_permissions',
+            'id',
+            'last_name',
+            'organization',
+            'organization_id',
+            'super_admin',
+            'current_organization_slug',
+          ].sort()
         );
 
         const { email, first_name, last_name, current_organization_id } = response.body;

@@ -7,7 +7,14 @@ import { App } from 'src/entities/app.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { UsersService } from './users.service';
+import { AuditLoggerService } from './audit_logger.service';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { DataSource } from 'src/entities/data_source.entity';
+import { DataSourceScopes } from 'src/helpers/data_source.constants';
+import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 
 @Injectable()
 export class GroupPermissionsService {
@@ -18,16 +25,23 @@ export class GroupPermissionsService {
     @InjectRepository(AppGroupPermission)
     private appGroupPermissionsRepository: Repository<AppGroupPermission>,
 
+    @InjectRepository(DataSourceGroupPermission)
+    private dataSourceGroupPermissionRepository: Repository<DataSourceGroupPermission>,
+
     @InjectRepository(UserGroupPermission)
     private userGroupPermissionsRepository: Repository<UserGroupPermission>,
-
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
 
     @InjectRepository(App)
     private appRepository: Repository<App>,
 
-    private usersService: UsersService
+    @InjectRepository(DataSource)
+    private dataSourceRepository: Repository<DataSource>,
+
+    private usersService: UsersService,
+
+    private auditLoggerService: AuditLoggerService,
+
+    private licenseService: LicenseService
   ) {}
 
   async create(user: User, group: string, manager?: EntityManager): Promise<void> {
@@ -53,11 +67,22 @@ export class GroupPermissionsService {
     }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.save(
+      const groupPermission: GroupPermission = await manager.save(
         manager.create(GroupPermission, {
           organizationId: user.organizationId,
           group: group,
         })
+      );
+      await this.auditLoggerService.perform(
+        {
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: groupPermission.id,
+          resourceName: groupPermission.group,
+          resourceType: ResourceTypes.GROUP_PERMISSION,
+          actionType: ActionTypes.GROUP_PERMISSION_CREATE,
+        },
+        manager
       );
     }, manager);
   }
@@ -89,6 +114,20 @@ export class GroupPermissionsService {
         organizationId: user.organizationId,
         id: groupPermissionId,
       });
+
+      await this.usersService.validateLicense(manager);
+
+      await this.auditLoggerService.perform(
+        {
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: groupPermission.id,
+          resourceName: groupPermission.group,
+          resourceType: ResourceTypes.GROUP_PERMISSION,
+          actionType: ActionTypes.GROUP_PERMISSION_DELETE,
+        },
+        manager
+      );
     }, manager);
   }
 
@@ -120,6 +159,67 @@ export class GroupPermissionsService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(AppGroupPermission, appGroupPermissionId, actions);
+
+      await this.usersService.validateLicense(manager);
+
+      await this.auditLoggerService.perform(
+        {
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: appGroupPermission.id,
+          resourceName: groupPermission.group,
+          resourceType: ResourceTypes.APP_GROUP_PERMISSION,
+          actionType: ActionTypes.APP_GROUP_PERMISSION_UPDATE,
+          metadata: { updateParams: actions },
+        },
+        manager
+      );
+    }, manager);
+  }
+
+  async updateDataSourceGroupPermission(
+    user: User,
+    groupPermissionId: string,
+    dataSourceGroupPermissionId: string,
+    actions: any,
+    manager?: EntityManager
+  ) {
+    const dataSourceGroupPermission = await this.dataSourceGroupPermissionRepository.findOne({
+      where: {
+        id: dataSourceGroupPermissionId,
+        groupPermissionId: groupPermissionId,
+      },
+    });
+    const groupPermission = await this.groupPermissionsRepository.findOne({
+      where: {
+        id: dataSourceGroupPermission.groupPermissionId,
+      },
+    });
+
+    if (groupPermission.organizationId !== user.organizationId) {
+      throw new BadRequestException();
+    }
+    if (groupPermission.group == 'admin') {
+      throw new BadRequestException('Cannot update admin group');
+    }
+
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(DataSourceGroupPermission, dataSourceGroupPermissionId, actions);
+
+      await this.usersService.validateLicense(manager);
+
+      await this.auditLoggerService.perform(
+        {
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: dataSourceGroupPermission.id,
+          resourceName: groupPermission.group,
+          resourceType: ResourceTypes.APP_GROUP_PERMISSION,
+          actionType: ActionTypes.APP_GROUP_PERMISSION_UPDATE,
+          metadata: { updateParams: actions },
+        },
+        manager
+      );
     }, manager);
   }
 
@@ -136,6 +236,10 @@ export class GroupPermissionsService {
       app_create,
       app_delete,
       add_apps,
+      data_source_create,
+      data_source_delete,
+      add_data_sources,
+      remove_data_sources,
       remove_apps,
       add_users,
       remove_users,
@@ -196,6 +300,8 @@ export class GroupPermissionsService {
         }),
         ...(typeof folder_delete === 'boolean' && { folderDelete: folder_delete }),
         ...(typeof folder_update === 'boolean' && { folderUpdate: folder_update }),
+        ...(typeof data_source_create === 'boolean' && { dataSourceCreate: data_source_create }),
+        ...(typeof data_source_delete === 'boolean' && { dataSourceDelete: data_source_delete }),
 
         ...(typeof org_environment_constant_create === 'boolean' && {
           orgEnvironmentConstantCreate: org_environment_constant_create,
@@ -237,6 +343,35 @@ export class GroupPermissionsService {
         }
       }
 
+      // update datasource group permissions
+      if (add_data_sources) {
+        if (groupPermission.group == 'admin') {
+          throw new BadRequestException('Cannot update admin group');
+        }
+        for (const dataSourceId of add_data_sources) {
+          await manager.save(
+            DataSourceGroupPermission,
+            manager.create(DataSourceGroupPermission, {
+              dataSourceId: dataSourceId,
+              groupPermissionId: groupPermissionId,
+              read: true,
+            })
+          );
+        }
+      }
+
+      if (remove_data_sources) {
+        if (groupPermission.group == 'admin') {
+          throw new BadRequestException('Cannot update admin group');
+        }
+        for (const dataSourceId of remove_data_sources) {
+          await manager.delete(DataSourceGroupPermission, {
+            dataSourceId: dataSourceId,
+            groupPermissionId: groupPermissionId,
+          });
+        }
+      }
+
       // update user group permissions
       if (remove_users) {
         for (const userId of body.remove_users) {
@@ -255,6 +390,23 @@ export class GroupPermissionsService {
           await this.usersService.update(userId, params, manager, user.organizationId);
         }
       }
+
+      await this.usersService.validateLicense(manager);
+
+      await this.auditLoggerService.perform(
+        {
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: groupPermission.id,
+          resourceName: groupPermission.group,
+          resourceType: ResourceTypes.GROUP_PERMISSION,
+          actionType: ActionTypes.GROUP_PERMISSION_UPDATE,
+          metadata: {
+            updateParams: body,
+          },
+        },
+        manager
+      );
     }, manager);
   }
 
@@ -268,10 +420,21 @@ export class GroupPermissionsService {
   }
 
   async findAll(user: User): Promise<GroupPermission[]> {
-    return this.groupPermissionsRepository.find({
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
+    const groupPermissions = await this.groupPermissionsRepository.find({
       where: { organizationId: user.organizationId },
       order: { createdAt: 'ASC' },
     });
+
+    for (const groupPermission of groupPermissions) {
+      if (!['all_users', 'admin'].includes(groupPermission.group) && !isLicenseValid) {
+        groupPermission['enabled'] = false;
+      } else {
+        groupPermission['enabled'] = true;
+      }
+    }
+
+    return groupPermissions;
   }
 
   async findApps(user: User, groupPermissionId: string): Promise<App[]> {
@@ -286,6 +449,21 @@ export class GroupPermissionsService {
       })
       .andWhere('app_group_permissions.group_permission_id = :groupPermissionId', { groupPermissionId })
       .orderBy('apps.created_at', 'DESC')
+      .getMany();
+  }
+
+  async findDataSources(user: User, groupPermissionId: string): Promise<DataSource[]> {
+    return createQueryBuilder(DataSource, 'datasources')
+      .innerJoinAndSelect('datasources.groupPermissions', 'group_permissions')
+      .innerJoinAndSelect('datasources.dataSourceGroupPermissions', 'data_source_group_permissions')
+      .where('group_permissions.id = :groupPermissionId', {
+        groupPermissionId,
+      })
+      .andWhere('group_permissions.organization_id = :organizationId', {
+        organizationId: user.organizationId,
+      })
+      .andWhere('data_source_group_permissions.group_permission_id = :groupPermissionId', { groupPermissionId })
+      .orderBy('datasources.created_at', 'DESC')
       .getMany();
   }
 
@@ -307,6 +485,28 @@ export class GroupPermissionsService {
       },
       loadEagerRelations: false,
       relations: ['groupPermissions', 'appGroupPermissions'],
+    });
+  }
+
+  async findAddableDataSources(user: User, groupPermissionId: string): Promise<DataSource[]> {
+    const groupPermission = await this.groupPermissionsRepository.findOne({
+      where: {
+        id: groupPermissionId,
+        organizationId: user.organizationId,
+      },
+    });
+
+    const dataSourcesInGroup = await groupPermission.dataSources;
+    const DataSourcesInGroupIds = dataSourcesInGroup.map((u) => u.id);
+
+    return await this.dataSourceRepository.find({
+      where: {
+        id: Not(In(DataSourcesInGroupIds)),
+        organizationId: user.organizationId,
+        scope: DataSourceScopes.GLOBAL,
+      },
+      loadEagerRelations: false,
+      relations: ['groupPermissions', 'dataSourceGroupPermissions'],
     });
   }
 

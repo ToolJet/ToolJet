@@ -25,7 +25,7 @@ export function createDataQueriesStore(moduleName) {
     isUpdatingQueryInProcess: false,
     /** When a 'Create Data Query' operation is in progress, rename/update API calls are cached in the variable. */
     queuedActions: {},
-    moduleName, // TODOS: change this
+    moduleName,
   };
 
   return create(

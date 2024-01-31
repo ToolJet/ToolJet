@@ -11,7 +11,13 @@ export const groupPermissionService = {
   getAppsNotInGroup,
   getUsersInGroup,
   getUsersNotInGroup,
+  getDataSourcesInGroup,
+  getDataSourcesNotInGroup,
   updateAppGroupPermission,
+  updateDataSourceGroupPermission,
+  updateUserPermission,
+  updateAppPermission,
+  updateDataSourcePermission,
 };
 
 function create(group) {
@@ -36,6 +42,38 @@ function update(groupPermissionId, body) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}`, requestOptions).then(handleResponse);
+}
+
+function updateUserPermission(groupPermissionId, body) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/user`, requestOptions).then(handleResponse);
+}
+
+function updateAppPermission(groupPermissionId, body) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/app`, requestOptions).then(handleResponse);
+}
+
+function updateDataSourcePermission(groupPermissionId, body) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/data-source`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function del(groupPermissionId) {
@@ -85,6 +123,28 @@ function getAppsNotInGroup(groupPermissionId) {
   );
 }
 
+function getDataSourcesInGroup(groupPermissionId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/data_sources`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getDataSourcesNotInGroup(groupPermissionId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/addable_data_sources`, requestOptions).then(
+    handleResponse
+  );
+}
+
 function getUsersInGroup(groupPermissionId) {
   const requestOptions = {
     method: 'GET',
@@ -119,6 +179,23 @@ function updateAppGroupPermission(groupPermissionId, appGroupPermissionId, actio
   };
   return fetch(
     `${config.apiUrl}/group_permissions/${groupPermissionId}/app_group_permissions/${appGroupPermissionId}`,
+    requestOptions
+  ).then(handleResponse);
+}
+
+function updateDataSourceGroupPermission(groupPermissionId, dataSourceGroupPermissionId, actions) {
+  const body = {
+    actions,
+  };
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+    credentials: 'include',
+  };
+  return fetch(
+    `${config.apiUrl}/group_permissions/${groupPermissionId}/data_source_group_permissions/${dataSourceGroupPermissionId}`,
     requestOptions
   ).then(handleResponse);
 }

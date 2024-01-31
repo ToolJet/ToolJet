@@ -10,7 +10,7 @@ import {
 } from "Support/utils/common";
 
 export const login = () => {
-  cy.visit("/");
+  cy.visit("/my-workspace");
   cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.loginButton).click();

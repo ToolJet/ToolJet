@@ -15,14 +15,22 @@ export class addUserStatusAndSource1666763190092 implements MigrationInterface {
         name: 'source',
         type: 'enum',
         enumName: 'source',
-        enum: ['signup', 'invite', 'google', 'git'],
+        enum: ['signup', 'invite', 'google', 'git', 'openid'],
         default: `'invite'`,
+        isNullable: false,
+      }),
+      new TableColumn({
+        name: 'user_type',
+        type: 'enum',
+        enumName: 'user_type',
+        enum: ['instance', 'workspace'],
+        default: `'workspace'`,
         isNullable: false,
       }),
     ]);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropColumns('users', ['status', 'source']);
+    await queryRunner.dropColumns('users', ['status', 'source', 'user_type']);
   }
 }

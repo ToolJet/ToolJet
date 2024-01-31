@@ -1,5 +1,5 @@
 export const ssoText = {
-  pagetitle: " SSO",
+  pagetitle: "SSO",
   generalSettingsElements: {
     generalSettings: "General Settings",
     enableSignupLabel: "Enable Signup",
@@ -17,12 +17,12 @@ export const ssoText = {
   saveButton: "Save changes",
   allowedDomain: "tooljet.io,gmail.com",
   ssoToast: "updated sso configurations",
-  ssoToast2: "updated SSO configurations",
+  // ssoToast2: "updated SSO configurations",
   googleTitle: "Google",
   enabledLabel: "Enabled",
-  googleEnabledToast: "Enabled Google SSO",
+
   disabledLabel: "Disabled",
-  googleDisableToast: "Disabled Google SSO",
+
   googleSSOText: "Sign in with Google",
   clientIdLabel: "Client Id",
   redirectUrlLabel: "Redirect URL",
@@ -55,4 +55,7 @@ export const ssoText = {
   alertText: "Danger zone",
   disablePasswordHelperText:
     "Disable password login only if your SSO is configured otherwise you will get logged out.",
+  toggleUpdateToast: (toggle) => {
+    return `${toggle} configuration updated \n successfully`
+  }
 };

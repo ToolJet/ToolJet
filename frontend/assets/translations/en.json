@@ -57,18 +57,23 @@
     },
     "slack": {
         "authorize": "Authorize",
-        "connectToolJetToSlack": "ToolJet can connect to Slack and list users, send messages, etc. Please select appropriate permission scopes.",
+        "connectToolJetToSlack": "{{whiteLabelText}} can connect to Slack and list users, send messages, etc. Please select appropriate permission scopes.",
         "chatWrite": "chat:write",
-        "listUsersAndSendMessage": "Your ToolJet app will be able to list users and send messages to users & channels.",
+        "listUsersAndSendMessage": "Your {{whiteLabelText}} app will be able to list users and send messages to users & channels.",
         "connectSlack": "Connect to Slack"
     },
     "googleSheets": {
         "readOnly": "Read only",
-        "enableReadAndWrite": "If you want your ToolJet apps to modify your Google sheets, make sure to select read and write access",
-        "readDataFromSheets": "Your ToolJet apps can only read data from Google sheets",
+        "enableReadAndWrite": "If you want your {{whiteLabelText}} apps to modify your Google sheets, make sure to select read and write access",
+        "readDataFromSheets": "Your {{whiteLabelText}} can only read data from Google sheets",
         "readWrite": "Read and write",
-        "readModifySheets": "Your ToolJet apps can read data from sheets, modify sheets, and more.",
+        "readModifySheets": "Your {{whiteLabelText}} apps can read data from sheets, modify sheets, and more.",
         "toGoogleSheets": "to Google Sheets"
+    },
+    "zendesk": {
+        "enableReadAndWrite": "If you want your {{whiteLabelText}} apps to modify your Zendesk resources, make sure to select read and write access",
+        "readDataFromResources": "Your {{whiteLabelText}} apps can only read data from resources",
+        "readModifySheets": "Your {{whiteLabelText}} apps can read data from resources, modify resources, and more."
     },
     "profile": {
         "profileSettings": "Profile Settings"
@@ -81,7 +86,7 @@
         "password": "Password",
         "acceptInvite": "Accept invite",
         "successfullyVerifiedEmail": "Successfully verified email",
-        "setupTooljet": "Set up ToolJet"
+        "setupTooljet": "Set up {{whiteLabelText}}"
     },
     "loginSignupPage": {
         "forgotPassword": "Forgot Password",
@@ -102,12 +107,12 @@
         "emailConfirmLink": "Please check your email for confirmation link",
         "newPassword": "New Password",
         "passwordConfirmation": "Password Confirmation",
-        "newToTooljet": "New to ToolJet?",
+        "newToTooljet": "New to {{whiteLabelText}}?",
         "enterWorkEmail": "Enter your email",
         "enterPassword": "Enter password",
         "forgot": "Forgot?",
         "workEmail": "Email",
-        "joinTooljet": "Join ToolJet",
+        "joinTooljet": "Join {{whiteLabelText}}",
         "getStartedForFree": "Get started for free",
         "passwordCharacter": "Password must be at least 5 characters",
         "enterFullName": "Enter your full name",
@@ -275,9 +280,11 @@
                     "permissionResources": {
                         "userGroup": "User group",
                         "apps": "Apps",
+                        "workflows": "Workflows",
                         "users": "User",
                         "permissions": "Permissions",
                         "addAppsToGroup": "Select apps to add to the group",
+                        "addWorkflowsToGroup": "Select workflows to add to the group",
                         "name": "name",
                         "addUsersToGroup": "Select users to add to the group",
                         "email": "email",
@@ -389,7 +396,7 @@
             "importApplication": "Import an app"
         },
         "foldersSection": {
-            "allApplications": "All apps",
+            "allApplications": "All applications",
             "folders": "Folders",
             "createNewFolder": "+ Create new",
             "noFolders": "You haven't created any folders. Use folders to organize your apps",
@@ -425,10 +432,58 @@
             "createAppfromTemplate": "Create application from template"
         }
     },
+    "workflowsDashboard": {
+        "appCard": {
+            "run": "Run",
+            "openInWorkflowEditor": "Open in workflow editor"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "Welcome to your new ToolJet workspace",
+            "getStartedCreateNewApp": "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
+            "importApplication": "Import an application"
+        },
+        "foldersSection": {
+            "allApplications": "All workflows",
+            "folders": "Folders",
+            "createNewFolder": "+ Create new",
+            "noFolders": "You haven't created any folders. Use folders to organize your apps",
+            "createFolder": "Create folder",
+            "updateFolder": "Update folder",
+            "editFolder": "Edit folder",
+            "deleteFolder": "Delete folder",
+            "folderName": "Folder name",
+            "wishToDeleteFolder": "Are you sure you want to delete the folder? Apps within the folder will not be deleted."
+        },
+        "header": {
+            "createNewApplication": "Create new workflow",
+            "import": "Import",
+            "chooseFromTemplate": "Choose from template"
+        },
+        "pagination": {
+            "showing": "Showing",
+            "of": "of",
+            "to": "to"
+        },
+        "noApplicationFound": "No Applications found",
+        "thisFolderIsEmpty": "This folder is empty",
+        "deleteAppAndData": "The app and the associated data will be permanently deleted, do you want to continue?",
+        "removeAppFromFolder": "The app will be removed from this folder, do you want to continue?",
+        "change": "Change",
+        "templateCard": {
+            "use": "Use",
+            "preview": "Preview",
+            "leadGeneretion": "Lead generetion"
+        },
+        "templateLibraryModal": {
+            "select": "Select template",
+            "createAppfromTemplate": "Create application from template"
+        }
+    },
     "confirmationPage": {
         "setupAccount": "Set up your account",
         "signupWithGoogle": "Sign up with Google",
         "signupWithGitHub": "Sign up with GitHub",
+        "signupWithOpenid": "Sign up with",
         "or": "OR",
         "firstName": "First name",
         "lastName": "Last name",
@@ -508,7 +563,7 @@
             "showOnDesktop": "Show on desktop",
             "showOnMobile": "Show on mobile",
             "showLoadingState": "Show loading state",
-            "backgroundColor": "Background Color",
+            "backgroundColor": "Background color",
             "textColor": "Text color",
             "loaderColor": "Loader color",
             "defaultValue": "Default value",

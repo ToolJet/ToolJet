@@ -88,7 +88,7 @@ describe('folders controller', () => {
 
       let folder1 = folders[0];
       expect(new Set(Object.keys(folder1))).toEqual(
-        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count'])
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count', 'type'])
       );
       expect(folder1.organization_id).toEqual(user.organizationId);
       expect(folder1.count).toEqual(1);
@@ -108,7 +108,7 @@ describe('folders controller', () => {
 
       folder1 = folders[0];
       expect(new Set(Object.keys(folder1))).toEqual(
-        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count'])
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count', 'type'])
       );
       expect(folder1.organization_id).toEqual(user.organizationId);
       expect(folder1.count).toEqual(1);
@@ -128,7 +128,122 @@ describe('folders controller', () => {
 
       folder1 = folders[0];
       expect(new Set(Object.keys(folder1))).toEqual(
-        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count'])
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count', 'type'])
+      );
+      expect(folder1.organization_id).toEqual(user.organizationId);
+      expect(folder1.count).toEqual(0);
+    });
+
+    it('super admin should able to list all folders in an organization', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+      });
+      const superAdminUserData = await createUser(nestApp, {
+        email: 'superadmin@tooljet.io',
+        userType: 'instance',
+      });
+      const { user } = adminUserData;
+
+      let loggedUser = await authenticateUser(nestApp);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      loggedUser = await authenticateUser(
+        nestApp,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      const folder = await getManager().save(Folder, {
+        name: 'Folder1',
+        organizationId: adminUserData.organization.id,
+      });
+      await getManager().save(Folder, {
+        name: 'Folder2',
+        organizationId: adminUserData.organization.id,
+      });
+      await getManager().save(Folder, {
+        name: 'Folder3',
+        organizationId: adminUserData.organization.id,
+      });
+      await getManager().save(Folder, {
+        name: 'Folder4',
+        organizationId: adminUserData.organization.id,
+      });
+
+      const appInFolder = await createApplication(nestApp, {
+        name: 'App in folder',
+        user: adminUserData.user,
+      });
+      await getManager().save(FolderApp, {
+        app: appInFolder,
+        folder: folder,
+      });
+
+      const anotherUserData = await createUser(nestApp, {
+        email: 'admin@organization.com',
+      });
+      await getManager().save(Folder, {
+        name: 'Folder1',
+        organizationId: anotherUserData.organization.id,
+      });
+
+      let response = await request(nestApp.getHttpServer())
+        .get(`/api/folders`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie']);
+
+      expect(response.statusCode).toBe(200);
+      expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
+
+      let { folders } = response.body;
+      expect(new Set(folders.map((folder) => folder.name))).toEqual(
+        new Set(['Folder1', 'Folder2', 'Folder3', 'Folder4'])
+      );
+
+      let folder1 = folders[0];
+      expect(new Set(Object.keys(folder1))).toEqual(
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count', 'type'])
+      );
+      expect(folder1.organization_id).toEqual(user.organizationId);
+      expect(folder1.count).toEqual(1);
+
+      response = await request(nestApp.getHttpServer())
+        .get(`/api/folders?searchKey=app in`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie']);
+
+      expect(response.statusCode).toBe(200);
+      expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
+
+      ({ folders } = response.body);
+      expect(new Set(folders.map((folder) => folder.name))).toEqual(
+        new Set(['Folder1', 'Folder2', 'Folder3', 'Folder4'])
+      );
+
+      folder1 = folders[0];
+      expect(new Set(Object.keys(folder1))).toEqual(
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count', 'type'])
+      );
+      expect(folder1.organization_id).toEqual(user.organizationId);
+      expect(folder1.count).toEqual(1);
+
+      response = await request(nestApp.getHttpServer())
+        .get(`/api/folders?searchKey=some text`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie']);
+
+      expect(response.statusCode).toBe(200);
+      expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
+
+      ({ folders } = response.body);
+      expect(new Set(folders.map((folder) => folder.name))).toEqual(
+        new Set(['Folder1', 'Folder2', 'Folder3', 'Folder4'])
+      );
+
+      folder1 = folders[0];
+      expect(new Set(Object.keys(folder1))).toEqual(
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count', 'type'])
       );
       expect(folder1.organization_id).toEqual(user.organizationId);
       expect(folder1.count).toEqual(0);
@@ -307,7 +422,7 @@ describe('folders controller', () => {
         .post(`/api/folders`)
         .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
-        .send({ name: 'my folder' });
+        .send({ name: 'my folder', type: 'front-end' });
 
       expect(response.statusCode).toBe(201);
 
@@ -318,13 +433,54 @@ describe('folders controller', () => {
       expect(name).toEqual('my folder');
       expect(organization_id).toEqual(user.organizationId);
     });
+
+    it('super admin should be able to create new folder in an organization', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+      });
+
+      const superAdminUserData = await createUser(nestApp, {
+        email: 'superadmin@tooljet.io',
+        userType: 'instance',
+      });
+
+      let loggedUser = await authenticateUser(nestApp);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      loggedUser = await authenticateUser(
+        nestApp,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/folders`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie'])
+        .send({ name: 'my folder', type: 'front-end' });
+
+      expect(response.statusCode).toBe(201);
+
+      const { id, name, organization_id, created_at, updated_at } = response.body;
+      expect(id).toBeDefined();
+      expect(created_at).toBeDefined();
+      expect(updated_at).toBeDefined();
+      expect(name).toEqual('my folder');
+      expect(organization_id).toEqual(adminUserData.user.organizationId);
+    });
   });
 
   describe('PUT /api/folders/:id', () => {
-    it('should be able to update an existing folder if group is admin or has update permission in the same organization', async () => {
+    it('should be able to update an existing folder if group is admin or has update permission in the same organization or the user is a super admin', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
+      });
+      const superAdminUserData = await createUser(nestApp, {
+        email: 'superadmin@tooljet.io',
+        groups: ['all_users', 'admin'],
+        userType: 'instance',
       });
       const developerUserData = await createUser(nestApp, {
         email: 'dev@tooljet.io',
@@ -347,6 +503,14 @@ describe('folders controller', () => {
       loggedUser = await authenticateUser(nestApp, developerUserData.user.email);
       developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
+      loggedUser = await authenticateUser(
+        nestApp,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const developerGroup = await getManager().findOneOrFail(GroupPermission, {
         where: { group: 'developer' },
       });
@@ -360,11 +524,11 @@ describe('folders controller', () => {
         organizationId: adminUserData.organization.id,
       });
 
-      for (const [i, userData] of [adminUserData, developerUserData].entries()) {
+      for (const [i, userData] of [adminUserData, developerUserData, superAdminUserData].entries()) {
         const name = `folder ${i}`;
         await request(nestApp.getHttpServer())
           .put(`/api/folders/${folder.id}`)
-          .set('tj-workspace-id', userData.user.defaultOrganizationId)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
           .set('Cookie', userData['tokenCookie'])
           .send({ name })
           .expect(200);
@@ -384,10 +548,15 @@ describe('folders controller', () => {
   });
 
   describe('DELETE /api/folders/:id', () => {
-    it('should be able to delete an existing folder if group is admin or has delete permission in the same organization', async () => {
+    it('should be able to delete an existing folder if group is admin or has delete permission in the same organization or the user is a super admin', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
+      });
+      const superAdminUserData = await createUser(nestApp, {
+        email: 'superadmin@tooljet.io',
+        groups: ['all_users', 'admin'],
+        userType: 'instance',
       });
       const developerUserData = await createUser(nestApp, {
         email: 'dev@tooljet.io',
@@ -418,7 +587,15 @@ describe('folders controller', () => {
       loggedUser = await authenticateUser(nestApp, developerUserData.user.email);
       developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      for (const userData of [adminUserData, developerUserData]) {
+      loggedUser = await authenticateUser(
+        nestApp,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
         const folder = await getManager().save(Folder, {
           name: 'Folder1',
           organizationId: adminUserData.organization.id,
@@ -428,7 +605,7 @@ describe('folders controller', () => {
 
         await request(nestApp.getHttpServer())
           .delete(`/api/folders/${folder.id}`)
-          .set('tj-workspace-id', userData.user.defaultOrganizationId)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
           .set('Cookie', userData['tokenCookie'])
           .send()
           .expect(200);

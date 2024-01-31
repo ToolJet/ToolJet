@@ -1,0 +1,35 @@
+.transparent-modal .modal-content {
+    border: none;
+    background-color: transparent;
+    width: fit-content;
+  }
+
+
+  .transparent-modal .modal-backdrop {
+    background-color: transparent;
+  }
+
+  .transparent-backdrop {
+    background-color: transparent;
+  }
+  
+
+
+ .react-flow__handle {
+    right: -10px;
+    width: 15px;
+    height: 15px;
+    background-color: #778899;
+  }
+  
+
+  .show-node-modal {
+    display: flex !important;
+    justify-content: flex-end;
+
+    .modal-dialog {
+      margin: 0px;
+      max-width: unset;
+      overflow-y: clip;
+    }
+  }
