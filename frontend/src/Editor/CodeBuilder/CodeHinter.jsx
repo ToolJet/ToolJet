@@ -33,7 +33,7 @@ import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { Alert } from '@/_ui/Alert/Alert';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import ClientServerSwitch from './Elements/ClientServerSwitch';
 import { CodeHinterContext } from './CodeHinterContext';
 import { validateProperty } from '../component-properties-validation';
@@ -94,7 +94,7 @@ export function CodeHinter({
     highlightSelectionMatches: true,
     placeholder,
   };
-  const currentState = useCurrentStateStore((state) => state);
+  const currentState = useCurrentState();
   const [realState, setRealState] = useState({ ...currentState, ..._currentState, ...context });
 
   const [currentValue, setCurrentValue] = useState('');
