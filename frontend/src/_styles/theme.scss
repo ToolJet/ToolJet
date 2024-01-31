@@ -14087,3 +14087,48 @@ flex-direction: row;
     justify-content: center;
   }
 }
+
+.reset-password-info-banner {
+  width: inherit;
+  background-color: #F8FAFF;
+  border-color: #D9E2FC;
+  padding-left: 30px;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  padding-left: 35px !important;
+  padding-right: 30px !important;
+}
+
+.tj-text-input-wrapper { 
+  .signup-password-wrapper {
+    .tj-text-input {
+    width: 290px !important;
+    background: var(--slate3);
+    color: var(--slate9);
+    height: auto !important;
+    margin-bottom: 5px;
+    border-color: var(--slate7);
+    }
+  }
+}
+
+.tj-text-input-icon-wrapper {
+  .signup-password-wrapper {
+    .tj-text-input {
+    width: 320px !important;
+    background: #F1F3F5;
+    color: var(--slate9);
+    height: 38px !important;
+    margin-bottom: 10px;
+    border-color: var(--slate7) !important;
+    }
+    .icon-wrapper {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      align-items: center;
+      gap: 5px; /* space between icons */
+    }
+  }
+}

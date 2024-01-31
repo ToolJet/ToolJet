@@ -37,7 +37,7 @@ describe("dashboard", () => {
   });
 
   it("should verify the elements on empty dashboard", () => {
-    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
+    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=&type=front-end", {
       fixture: "intercept/emptyDashboard.json",
     }).as("emptyDashboard");
     cy.intercept("GET", "/api/folders?searchKey=&type=front-end", { folders: [] }).as(
@@ -131,7 +131,7 @@ describe("dashboard", () => {
     });
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      " All apps"
+      dashboardText.dashboardAppsHeaderLabel
     );
 
     cy.get(dashboardSelector.versionLabel).verifyVisibleElement(
@@ -170,6 +170,7 @@ describe("dashboard", () => {
     verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");
     verifyTooltip(dashboardSelector.modeToggle, "Mode");
   });
+
   it("Should verify app card elements and app card operations", () => {
     cy.apiLogin();
     cy.apiCreateApp(data.appName);
@@ -195,7 +196,6 @@ describe("dashboard", () => {
           });
       });
 
-    cy.wait(1000);
     viewAppCardOptions(data.appName);
     cy.get(
       commonSelectors.appCardOptions(commonText.changeIconOption)
@@ -336,6 +336,7 @@ describe("dashboard", () => {
     );
     verifyAppDelete(data.appName);
   });
+
   it("Should verify the app CRUD operation", () => {
     data.appName = `${fake.companyName}-App`;
     cy.defaultWorkspaceLogin();
@@ -361,6 +362,7 @@ describe("dashboard", () => {
     );
     verifyAppDelete(data.appName);
   });
+
   it("Should verify the folder CRUD operation", () => {
     data.appName = `${fake.companyName}-App`;
     cy.defaultWorkspaceLogin();

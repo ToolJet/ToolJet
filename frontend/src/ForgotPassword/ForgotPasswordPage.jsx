@@ -7,8 +7,9 @@ import { ForgotPasswordInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
 import { withTranslation } from 'react-i18next';
-import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
+import EnterIcon from '@/../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
+import { Alert } from '@/_ui/Alert';
 
 class ForgotPasswordComponent extends React.Component {
   constructor(props) {
@@ -119,6 +120,32 @@ class ForgotPasswordComponent extends React.Component {
                           </>
                         )}
                       </ButtonSolid>
+                      <div className="separator-onboarding ">
+                        <div className="mt-2 separator" data-cy="onboarding-separator">
+                          <h2>
+                            <span>OR</span>
+                          </h2>
+                        </div>
+                      </div>
+                      <Alert
+                        svg="tj-info"
+                        cls="reset-password-info-banner justify-content-center"
+                        useDarkMode={false}
+                        imgHeight={'25px'}
+                        imgWidth={'25px'}
+                      >
+                        <div
+                          className="d-flex align-items-center"
+                          style={{
+                            height: '100%',
+                            fontSize: '12px',
+                            color: '#3E63DD',
+                            fontWeight: '500',
+                          }}
+                        >
+                          {'Contact super admin to reset your password'}
+                        </div>
+                      </Alert>
                     </div>
                   </>
                 ) : (

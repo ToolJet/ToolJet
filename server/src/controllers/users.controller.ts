@@ -24,12 +24,13 @@ import { EntityManager } from 'typeorm';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { LIMIT_TYPE, USER_TYPE } from 'src/helpers/user_lifecycle';
+import { SessionService } from '@services/session.service';
 
 const MAX_AVATAR_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService, private sessionService: SessionService) {}
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get('all')
@@ -126,5 +127,22 @@ export class UsersController {
   @Get('limits/:type')
   async getUserLimits(@Param('type') type: LIMIT_TYPE) {
     return await this.usersService.getUserLimitsByType(type);
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Patch(':id/password/generate')
+  async autoUpdateUserPassword(@Param('id') userId: string) {
+    const newPassword = await this.usersService.autoUpdateUserPassword(userId);
+    await this.sessionService.terminateAllSessions(userId);
+    return { newPassword };
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Patch(':id/password')
+  async changeUserPassword(@Param('id') userId: string, @Body() changePasswordDto: ChangePasswordDto) {
+    await this.usersService.update(userId, {
+      password: changePasswordDto.newPassword,
+    });
+    await this.sessionService.terminateAllSessions(userId);
   }
 }

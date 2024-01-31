@@ -8,7 +8,13 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
-import { cleanObject, dbTransactionWrap, generatePayloadForLimits, isSuperAdmin } from 'src/helpers/utils.helper';
+import {
+  cleanObject,
+  dbTransactionWrap,
+  generatePayloadForLimits,
+  isSuperAdmin,
+  generateSecurePassword,
+} from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { LIMIT_TYPE, USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { Organization } from 'src/entities/organization.entity';
@@ -979,5 +985,14 @@ export class UsersService {
       },
       ['userId']
     );
+  }
+
+  async autoUpdateUserPassword(userId) {
+    // Generate new password
+    const newPassword = generateSecurePassword();
+    await this.update(userId, {
+      password: newPassword,
+    });
+    return newPassword;
   }
 }

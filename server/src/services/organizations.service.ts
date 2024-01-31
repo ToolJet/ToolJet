@@ -297,7 +297,7 @@ export class OrganizationsService {
         'group_permissions',
         'group_permissions.organization_id = :organizationId',
         {
-          organizationId,
+          organizationId: organizationId,
         }
       )
       .where('organization_user.organization_id = :organizationId', {

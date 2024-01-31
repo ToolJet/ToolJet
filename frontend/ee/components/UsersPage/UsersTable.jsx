@@ -9,6 +9,7 @@ import { Tooltip } from 'react-tooltip';
 import UsersActionMenu from './UsersActionMenu';
 import { humanizeifDefaultGroupName } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { ResetPasswordModal } from '@/_components/ResetPasswordModal';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
 const UsersTable = ({
@@ -29,7 +30,15 @@ const UsersTable = ({
   openEditModal,
   customStyles,
   toggleEditUserDrawer,
+  resetPassword = false,
 }) => {
+  const [isResetPasswordModalVisible, setIsResetPasswordModalVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const handleResetPasswordClick = (user) => {
+    setSelectedUser(user);
+    setIsResetPasswordModalVisible(true);
+  };
   return (
     <div className="workspace-settings-table-wrap mb-4">
       <div style={customStyles} className="tj-user-table-wrapper">
@@ -203,6 +212,8 @@ const UsersTable = ({
                           unarchiveOrgUser={unarchiveOrgUser}
                           archiveOrgUser={archiveOrgUser}
                           toggleEditUserDrawer={() => toggleEditUserDrawer(user)}
+                          onResetPasswordClick={() => handleResetPasswordClick(user)}
+                          resetPassword={resetPassword}
                         />
                       </td>
                     </tr>
@@ -221,6 +232,16 @@ const UsersTable = ({
           />
         )}
       </div>
+      {isResetPasswordModalVisible && (
+        <ResetPasswordModal
+          show={isResetPasswordModalVisible}
+          closeModal={() => {
+            setIsResetPasswordModalVisible(false);
+            setSelectedUser(null);
+          }}
+          user={selectedUser}
+        />
+      )}
     </div>
   );
 };

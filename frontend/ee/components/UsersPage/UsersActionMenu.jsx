@@ -3,6 +3,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { authenticationService } from '@/_services';
 
 export default function UsersActionMenu({
   toggleEditUserDrawer,
@@ -12,13 +13,17 @@ export default function UsersActionMenu({
   unarchiveOrgUser,
   onOpen,
   user,
+  onResetPasswordClick,
+  resetPassword = false,
 }) {
   const closeMenu = () => {
     document.body.click();
   };
 
-  const darkMode = localStorage.getItem('darkMode') === 'true';
+  const currentSession = authenticationService.currentSessionValue;
+  const currentUser = currentSession?.current_user?.email;
 
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <OverlayTrigger
       trigger="click"
@@ -44,6 +49,20 @@ export default function UsersActionMenu({
               >
                 Edit user details
               </ButtonSolid>
+              {resetPassword && user.email !== currentUser && user.status === 'active' && (
+                <ButtonSolid
+                  onClick={() => {
+                    closeMenu();
+                    onResetPasswordClick();
+                  }}
+                  className="tj-text-xsm edit-user-btn"
+                  variant="tertiary"
+                  leftIcon="lock"
+                  iconWidth="12"
+                >
+                  Reset password
+                </ButtonSolid>
+              )}
               <ButtonSolid
                 variant="tertiary"
                 className="tj-text-xsm user-archive"

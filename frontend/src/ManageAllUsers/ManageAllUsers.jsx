@@ -451,6 +451,7 @@ class ManageAllUsersComponent extends React.Component {
                   isLoadingAllUsers={true}
                   openOrganizationModal={this.openOrganizationModal}
                   toggleEditUserDrawer={this.openEditModal}
+                  resetPassword={true}
                 />
               )}
             </div>

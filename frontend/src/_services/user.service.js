@@ -13,6 +13,8 @@ export const userService = {
   updateAvatar,
   updateUserType,
   getUserLimits,
+  changeUserPassword,
+  generateUserPassword,
 };
 
 function getInstanceUsers(page, options) {
@@ -82,6 +84,17 @@ function changePassword(currentPassword, newPassword) {
   const body = { currentPassword, newPassword };
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/users/change_password`, requestOptions).then(handleResponse);
+}
+
+function changeUserPassword(userId, newPassword) {
+  const body = { newPassword };
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/users/${userId}/password`, requestOptions).then(handleResponse);
+}
+
+function generateUserPassword(userId) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/users/${userId}/password/generate`, requestOptions).then(handleResponse);
 }
 
 function getUserLimits(type) {

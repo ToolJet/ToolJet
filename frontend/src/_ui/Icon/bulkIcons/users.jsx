@@ -1,5 +1,4 @@
 import React from 'react';
-
 const Users = ({ width = '48', className = '', viewBox = '0 0 48 48' }) => (
   <svg width={width} viewBox={viewBox} fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
     <path
