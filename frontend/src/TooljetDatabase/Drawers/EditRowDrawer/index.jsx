@@ -43,8 +43,11 @@ const EditRowDrawer = ({ isEditRowDrawerOpen, setIsEditRowDrawerOpen, selectedRo
         variant="tertiary"
         size="sm"
         onClick={() => setIsEditRowDrawerOpen(!isEditRowDrawerOpen)}
-        className="px-1 pe-3 ps-2 gap-0"
+        className="gap-0"
         data-cy="edit-row-button-"
+        style={{
+          padding: '4px 8px 4px 8px',
+        }}
       >
         {/* <SolidIcon name="editrectangle" width="14" fill={isCreateRowDrawerOpen ? '#3E63DD' : '#889096'} /> */}
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="13" viewBox="0 0 12 13" fill="none">

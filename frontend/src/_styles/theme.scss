@@ -6919,7 +6919,7 @@ tbody {
   .table-cell-hover-background {
     background-color: #F8F9FA;
     border-width: 0px 1px 1px 1px;
-    padding: 0.5rem !important;
+    padding: 0rem;
 
     input.form-control {
       border: none;
@@ -6931,7 +6931,7 @@ tbody {
   .table-cell-hover-background-dark {
     background-color: #242f3c;
     border-width: 0px 1px 1px 1px;
-    padding: 0.5rem !important;
+    padding: 0rem;
 
     input.form-control {
       border: none;
@@ -6941,14 +6941,9 @@ tbody {
   }
 
   .table-editable-parent-cell {
-    border: 2px solid var(--indigo9);
     background-color: var(--indigo2);
     cursor: pointer;
     padding: 0rem;
-
-    .input-cell-parent {
-      padding: 0.5rem;
-    }
 
     .form-control {
       background-color: var(--indigo2);
@@ -6967,7 +6962,6 @@ tbody {
   }
 
   .table-columnHeader-click {
-    // background-color: #fbfdff;
     background-color: #F8F9FA;
     border-left: 1.5px solid #3E63DD !important;
     border-right: 1.5px solid #3E63DD !important;
@@ -7066,6 +7060,10 @@ tbody {
     max-width: 230px !important;
   }
 
+  .table-cell {
+    padding: 0;
+  }
+
   .add-more-columns-btn {
     background: var(--indigo3);
     font-weight: 500;
@@ -7079,6 +7077,7 @@ tbody {
   }
 
   .tjdb-table-row{
+    height: 36px;
     &:hover {
       background: var(--Slate-02, #F8F9FA);
 

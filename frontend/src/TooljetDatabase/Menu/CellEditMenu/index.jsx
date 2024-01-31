@@ -151,7 +151,7 @@ export const CellEditMenu = ({
 
           {/* Footer */}
           <div className="d-flex justify-content-end align-items-end gap-2">
-            <ButtonSolid onClick={closePopover} variant="tertiary" size="sm">
+            <ButtonSolid onClick={closePopover} variant="tertiary" size="sm" className="fs-12">
               Cancel
             </ButtonSolid>
             <ButtonSolid
@@ -159,6 +159,7 @@ export const CellEditMenu = ({
               disabled={cellValue == previousCellValue ? true : false}
               variant="primary"
               size="sm"
+              className="fs-12"
             >
               Save
             </ButtonSolid>
@@ -169,7 +170,7 @@ export const CellEditMenu = ({
   );
 
   return (
-    <OverlayTrigger show={show} trigger="click" placement="bottom" rootclose overlay={popover} defaultShow>
+    <OverlayTrigger show={show} trigger="click" placement="bottom-start" rootclose overlay={popover} defaultShow>
       {children}
     </OverlayTrigger>
   );

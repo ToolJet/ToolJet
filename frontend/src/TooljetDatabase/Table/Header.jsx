@@ -225,8 +225,11 @@ const Header = ({
                             variant="dangerTertiary"
                             onClick={handleDeleteRow}
                             size="sm"
-                            className="px-1 pe-3 ps-2 gap-0"
+                            className="gap-0"
                             data-cy="delete-row-records-button"
+                            style={{
+                              padding: '4px 8px 4px 8px',
+                            }}
                           >
                             <DeleteIcon />
                             &nbsp; Delete row
