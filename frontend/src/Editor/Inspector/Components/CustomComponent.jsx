@@ -32,7 +32,7 @@ export const CustomComponent = function CustomComponent({
     title: 'Code',
     children: (
       <CodeHinter
-        type="multiLine"
+        type="basic"
         initialValue={code.value ?? {}}
         theme={darkMode ? 'monokai' : 'base16-light'}
         lang="jsx"

@@ -76,7 +76,11 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
   };
 
   return (
-    <div ref={wrapperRef} className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
+    <div
+      ref={wrapperRef}
+      className="code-hinter-wrapper position-relative"
+      style={{ width: '100%', height: restProps?.lang === 'jsx' && '320px' }}
+    >
       <div className="code-editor-basic-wrapper d-flex">
         <div className="codehinter-container w-100">
           <SingleLineCodeEditor.Editor
@@ -118,6 +122,7 @@ const EditorInput = ({
   portalProps,
   ignoreValidation,
   fxActive,
+  lang,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
@@ -194,12 +199,12 @@ const EditorInput = ({
           <CodeMirror
             value={currentValue}
             placeholder={placeholder}
-            height={'100%'}
+            height={lang === 'jsx' ? '400px' : '100%'}
             width="100%"
-            extensions={[javascript({ jsx: false }), autoCompleteConfig]}
+            extensions={[javascript({ jsx: lang === 'jsx' }), autoCompleteConfig]}
             onChange={handleOnChange}
             basicSetup={{
-              lineNumbers: false,
+              lineNumbers: lang === 'jsx',
               syntaxHighlighting: true,
               bracketMatching: true,
               foldGutter: false,
