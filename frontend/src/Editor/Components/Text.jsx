@@ -96,7 +96,6 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
   const handleClick = () => {
     fireEvent('onClick');
   };
-
   const computedStyles = {
     height: `${height}px`,
     backgroundColor: darkMode && ['#edeff5'].includes(backgroundColor) ? '#2f3c4c' : backgroundColor,
@@ -113,7 +112,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     wordSpacing: `${wordSpacing}px` ?? '0px',
     boxShadow,
     border: '1px solid',
-    borderColor: darkMode && ['#f2f2f5'].includes(borderColor) ? '#2f3c4c' : borderColor,
+    borderColor: darkMode && ['#f2f2f5'].includes(borderColor) ? '#2f3c4c' : borderColor ? borderColor : 'transparent',
     borderRadius: borderRadius ? `${borderRadius}px` : '0px',
     fontSize: `${textSize}px`,
   };

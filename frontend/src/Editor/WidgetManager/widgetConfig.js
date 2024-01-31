@@ -1106,7 +1106,6 @@ export const widgets = [
           verticalAlignment: 'top',
           padding: 'default',
           boxShadow: '0px 0px 0px 0px #00000090',
-          borderColor: '#f2f2f5',
           borderRadius: '0',
           isScrollRequired: 'enabled',
         },
@@ -1158,7 +1157,6 @@ export const widgets = [
           verticalAlignment: 'top',
           padding: 'default',
           boxShadow: '0px 0px 0px 0px #00000090',
-          borderColor: '#f2f2f5',
           borderRadius: '0',
           isScrollRequired: 'enabled',
         },
@@ -1210,7 +1208,6 @@ export const widgets = [
           verticalAlignment: 'top',
           padding: 'default',
           boxShadow: '0px 0px 0px 0px #00000090',
-          borderColor: '#f2f2f5',
           borderRadius: '0',
           isScrollRequired: 'enabled',
         },
@@ -2982,7 +2979,7 @@ export const widgets = [
 
       backgroundColor: {
         type: 'color',
-        displayName: 'Background color',
+        displayName: 'Background',
         validation: {
           schema: { type: 'string' },
         },
