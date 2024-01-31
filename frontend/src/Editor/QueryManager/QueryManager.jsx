@@ -6,8 +6,7 @@ import { runQuery } from '@/_helpers/appUtils';
 import { defaultSources } from './constants';
 import { useDataSources, useGlobalDataSources, useLoadingDataSources } from '@/_stores/dataSourcesStore';
 import { useQueryToBeRun, useSelectedQuery, useQueryPanelActions } from '@/_stores/queryPanelStore';
-import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
-import { CodeHinterContext } from '.@/Editor/CodeBuilder/CodeHinterContext';
+import { CodeHinterContext } from '@/Editor/CodeBuilder/CodeHinterContext';
 import { resolveReferences } from '@/_helpers/utils';
 
 const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinition, editorRef }) => {
