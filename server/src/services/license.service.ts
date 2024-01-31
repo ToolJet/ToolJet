@@ -306,6 +306,11 @@ export class LicenseService {
         throw new Error('License key not generated');
       }
 
+      const extraData = {
+        ...(otherData || {}),
+        name: `${firstName || ''}${firstName ? (lastName ? ` ${lastName}` : '') : `${lastName || ''}`}`,
+      };
+
       /* add new entry to license table */
       const licenseEntry = manager.create(SelfhostCustomerLicense, {
         email,
@@ -313,7 +318,7 @@ export class LicenseService {
         subpath,
         companyName: customerName,
         customerId: customerIdGenerated,
-        otherData: JSON.stringify(otherData),
+        otherData: JSON.stringify(extraData || {}),
         licenseKey,
       });
       await manager.save(SelfhostCustomerLicense, licenseEntry);

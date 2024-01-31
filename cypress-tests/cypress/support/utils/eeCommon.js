@@ -513,3 +513,86 @@ export const updateLicense = (key) => {
     sql: `update instance_settings set value='${key}', updated_at= NOW() where key='LICENSE_KEY';`,
   });
 };
+
+// export const insertGitSyncSSHSecondKey = (workspaceId) => {
+//   const pvtKey =
+//     "-----BEGIN PRIVATE KEY-----\n" +
+//     "MC4CAQAwBQYDK2VwBCIEIArTDR1KzuLCjXQSNlk76Hj6TmcfqMfK0GwuHjdtal2o\n" +
+//     "-----END PRIVATE KEY-----";
+//   cy.task("updateId", {
+//     dbconfig: Cypress.env("app_db"),
+//     sql: `INSERT INTO organization_git_sync(
+//        organization_id, git_url, is_enabled, is_finalized, ssh_private_key, ssh_public_key)
+//       VALUES ('${workspaceId}', 'git@github.com:ajith-k-v/test.git', true, true, '${pvtKey}', 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFVfSwzw8zz0UlrhNFCLF3AXEtt6vqBuPCUcxEVNt9g (unnamed)');`,
+//   });
+// };
+
+export const insertGitSyncSSHSecondKey = (workspaceId) => {
+  const pvtKey =
+    "-----BEGIN PRIVATE KEY-----\n" +
+    "MC4CAQAwBQYDK2VwBCIEIArTDR1KzuLCjXQSNlk76Hj6TmcfqMfK0GwuHjdtal2o\n" +
+    "-----END PRIVATE KEY-----";
+
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `
+      DELETE FROM organization_git_sync
+      WHERE ssh_public_key = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFVfSwzw8zz0UlrhNFCLF3AXEtt6vqBuPCUcxEVNt9g (unnamed)';
+
+      INSERT INTO organization_git_sync (
+        organization_id, git_url, is_enabled, is_finalized, ssh_private_key, ssh_public_key
+      )
+      SELECT '${workspaceId}', 'git@github.com:ajith-k-v/test.git', true, true, '${pvtKey}', 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFVfSwzw8zz0UlrhNFCLF3AXEtt6vqBuPCUcxEVNt9g (unnamed)'
+      WHERE NOT EXISTS (
+        SELECT 1 FROM organization_git_sync
+        WHERE organization_id = '${workspaceId}'
+      );
+    `,
+  });
+};
+
+export const insertGitSyncSSHKey = (workspaceId) => {
+  const pvtKey =
+    "-----BEGIN PRIVATE KEY-----\n" +
+    "MC4CAQAwBQYDK2VwBCIEIFGXNAirYFsVnYzHaj6jvt4o7C0eNwCHMVO0Gaw+ir/X\n" +
+    "-----END PRIVATE KEY-----";
+
+
+
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `
+      INSERT INTO organization_git_sync (
+        organization_id, git_url, is_enabled, is_finalized, ssh_private_key, ssh_public_key
+      )
+      SELECT '${workspaceId}', 'git@github.com:ajith-k-v/test.git', true, true, '${pvtKey}', 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOgxYAo7Z6rYgm/JBFUgb4onp0GD/jRFQ1ORBLmNxBsa (unnamed)'
+      WHERE NOT EXISTS (
+        SELECT 1 FROM organization_git_sync WHERE organization_id = '${workspaceId}'
+      );
+    `,
+  });
+};
+
+
+// export const insertGitSyncSSHKey = (workspaceId) => {
+//   const pvtKey =
+//     "-----BEGIN PRIVATE KEY-----\n" +
+//     "MC4CAQAwBQYDK2VwBCIEIFGXNAirYFsVnYzHaj6jvt4o7C0eNwCHMVO0Gaw+ir/X\n" +
+//     "-----END PRIVATE KEY-----";
+
+//   cy.task("updateId", {
+//     dbconfig: Cypress.env("app_db"),
+//     sql: `
+//       DELETE FROM organization_git_sync
+//       WHERE ssh_public_key = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOgxYAo7Z6rYgm/JBFUgb4onp0GD/jRFQ1ORBLmNxBsa (unnamed)';
+
+//       INSERT INTO organization_git_sync (
+//         organization_id, git_url, is_enabled, is_finalized, ssh_private_key, ssh_public_key
+//       )
+//       SELECT '${workspaceId}', 'git@github.com:ajith-k-v/test.git', true, true, '${pvtKey}', 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOgxYAo7Z6rYgm/JBFUgb4onp0GD/jRFQ1ORBLmNxBsa (unnamed)'
+//       WHERE NOT EXISTS (
+//         SELECT 1 FROM organization_git_sync WHERE organization_id = '${workspaceId}'
+//       );
+//     `,
+//   });
+// };

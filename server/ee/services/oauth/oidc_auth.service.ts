@@ -93,8 +93,8 @@ export class OidcOAuthService {
     userinfoResponse = {
       ...userinfoResponse,
       access_token,
-      ...(id_token && { id_token }) 
-    }
+      ...(id_token && { id_token }),
+    };
 
     return { userSSOId: access_token, firstName, lastName, email, sso: 'openid', userinfoResponse };
   }

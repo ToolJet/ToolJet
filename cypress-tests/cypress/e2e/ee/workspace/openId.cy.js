@@ -20,9 +20,12 @@ import * as SSO from "Support/utils/manageSSO";
 import { confirmInviteElements } from "Support/utils/manageUsers";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
+import { verifyOnboardingQuestions } from "Support/utils/onboarding";
+import { fake } from "Fixtures/fake";
 
 describe("Verify OIDC user onboarding", () => {
   const envVar = Cypress.env("environment");
+  let workspaceName = fake.companyName;
 
   beforeEach(() => {
     cy.apiLogin();
@@ -197,7 +200,7 @@ describe("Verify OIDC user onboarding", () => {
 
       cy.get(commonSelectors.acceptInviteButton).click();
       cy.wait("@apps");
-
+      verifyOnboardingQuestions('Admin', workspaceName);
 
       common.logout();
       cy.apiLogin();
