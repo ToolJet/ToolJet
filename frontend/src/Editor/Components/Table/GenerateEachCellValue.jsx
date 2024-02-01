@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import _ from 'lodash';
-import { resolveReferences, validateWidget } from '@/_helpers/utils';
+import { validateWidget } from '@/_helpers/utils';
 import { useMounted } from '@/_hooks/use-mount';
 
 export default function GenerateEachCellValue({
