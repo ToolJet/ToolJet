@@ -104,7 +104,7 @@ const ParameterList = ({
               <Popover.Body
                 key={'1'}
                 bsPrefix="popover-body"
-                className={`ps-1 pe-1 me-2 py-2 query-manager`}
+                className={`ps-1 pe-1  py-2 query-manager`}
                 style={{ maxWidth: '500px' }}
               >
                 {formattedParameters

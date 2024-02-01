@@ -330,7 +330,7 @@ button {
 
   .resizer-select,
   .resizer-active {
-    border: solid 1px $primary !important;
+    border: solid 1px $primary  !important;
 
     .top-right,
     .top-left,
@@ -830,7 +830,7 @@ button {
 
   .list-group.list-group-transparent.dark .all-apps-link,
   .list-group-item-action.dark.active {
-    background-color: $dark-background !important;
+    background-color: $dark-background  !important;
   }
 }
 
@@ -1562,7 +1562,7 @@ button {
   .select-search-dark input {
     width: 224px !important;
     height: 32px !important;
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
   }
 }
 
@@ -1573,7 +1573,7 @@ button {
   .select-search__value input,
   .select-search-dark input {
     height: 32px !important;
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
   }
 }
 
@@ -1634,7 +1634,7 @@ button {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  border-radius: $border-radius !important;
+  border-radius: $border-radius  !important;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
@@ -3680,7 +3680,7 @@ input[type="text"] {
 
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
-  color: $primary !important;
+  color: $primary  !important;
 }
 
 .empty {
@@ -4206,7 +4206,7 @@ input[type="text"] {
 
 .tabs-inspector.dark {
   .nav-link.active {
-    border-bottom: 1px solid $primary !important;
+    border-bottom: 1px solid $primary  !important;
   }
 }
 
@@ -4455,7 +4455,7 @@ input[type="text"] {
   }
 
   input {
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
     padding-left: 1.75rem !important;
   }
 }
@@ -4624,20 +4624,20 @@ input[type="text"] {
 }
 
 .modal-content.home-modal-component.dark {
-  background-color: $bg-dark-light !important;
-  color: $white !important;
+  background-color: $bg-dark-light  !important;
+  color: $white  !important;
 
   .modal-title {
-    color: $white !important;
+    color: $white  !important;
   }
 
   .tj-version-wrap-sub-footer {
-    background-color: $bg-dark-light !important;
+    background-color: $bg-dark-light  !important;
     border-top: 1px solid #3A3F42 !important;
 
 
     p {
-      color: $white !important;
+      color: $white  !important;
     }
   }
 
@@ -4648,8 +4648,8 @@ input[type="text"] {
   }
 
   .modal-header {
-    background-color: $bg-dark-light !important;
-    color: $white !important;
+    background-color: $bg-dark-light  !important;
+    color: $white  !important;
     border-bottom: 2px solid #3A3F42 !important;
   }
 
@@ -4658,22 +4658,22 @@ input[type="text"] {
   }
 
   .form-control {
-    border-color: $border-grey-dark !important;
+    border-color: $border-grey-dark  !important;
     color: inherit;
   }
 
   input {
-    background-color: $bg-dark-light !important;
+    background-color: $bg-dark-light  !important;
   }
 
   .form-select {
-    background-color: $bg-dark !important;
-    color: $white !important;
-    border-color: $border-grey-dark !important;
+    background-color: $bg-dark  !important;
+    color: $white  !important;
+    border-color: $border-grey-dark  !important;
   }
 
   .text-muted {
-    color: $white !important;
+    color: $white  !important;
   }
 }
 
@@ -4984,7 +4984,7 @@ div#driver-page-overlay {
 }
 
 .dark-theme-walkthrough#driver-popover-item {
-  background-color: $bg-dark-light !important;
+  background-color: $bg-dark-light  !important;
   border-color: rgba(101, 109, 119, 0.16) !important;
 
   .driver-popover-title {
@@ -4992,7 +4992,7 @@ div#driver-page-overlay {
   }
 
   .driver-popover-tip {
-    border-color: transparent transparent transparent $bg-dark-light !important;
+    border-color: transparent transparent transparent $bg-dark-light  !important;
   }
 
   .driver-popover-description {
@@ -5024,7 +5024,7 @@ div#driver-page-overlay {
 
   .driver-next-btn,
   .driver-prev-btn {
-    color: $primary !important;
+    color: $primary  !important;
   }
 
   .driver-disabled {
@@ -5497,7 +5497,7 @@ div#driver-page-overlay {
   }
 
   .selected-node {
-    border-color: $primary-light !important;
+    border-color: $primary-light  !important;
   }
 
   .json-tree-icon-container .selected-node>svg:first-child {
@@ -5588,7 +5588,7 @@ div#driver-page-overlay {
   }
 
   .selected-node {
-    border-color: $primary-light !important;
+    border-color: $primary-light  !important;
   }
 
   .selected-node .group-object-container .badge {
@@ -5906,7 +5906,7 @@ div#driver-page-overlay {
 
 //Kanban board
 .kanban-container.dark-themed {
-  background-color: $bg-dark-light !important;
+  background-color: $bg-dark-light  !important;
 
   .kanban-column {
     .card-header {
@@ -5952,7 +5952,7 @@ div#driver-page-overlay {
     }
 
     .dnd-card.card.card-dark {
-      background-color: $bg-dark !important;
+      background-color: $bg-dark  !important;
     }
   }
 
@@ -6298,6 +6298,7 @@ input.hide-input-arrows {
       background-color: #232e3c;
       border-bottom: 1px solid #324156;
     }
+
     .popover-body {
       background-color: #232e3c;
       border-radius: 6px;
@@ -10251,6 +10252,7 @@ tbody {
       border: 1px solid var(--indigo9) !important;
       box-shadow: none !important;
     }
+
     &.input-error-border {
       border-color: #DB4324 !important;
     }
@@ -10666,7 +10668,7 @@ tbody {
 
 
 #global-settings-popover.theme-dark {
-  background-color: $bg-dark-light !important;
+  background-color: $bg-dark-light  !important;
   border: 1px solid #2B2F31;
 
   .global-popover-text {
@@ -10674,7 +10676,7 @@ tbody {
   }
 
   .maximum-canvas-width-input-select {
-    background-color: $bg-dark-light !important;
+    background-color: $bg-dark-light  !important;
     border: 1px solid #324156;
     color: $white;
   }
@@ -11064,11 +11066,13 @@ tbody {
     .field-name {
       color: var(--slate-12) !important;
     }
+
     input.slug-input {
       background: #1f2936 !important;
       color: #f4f6fa !important;
       border-color: #324156 !important;
-    }  
+    }
+
     .applink-text {
       background-color: #2b394b !important;
     }
@@ -11082,7 +11086,7 @@ tbody {
     }
 
     .input-with-icon {
-      .form-control{
+      .form-control {
         background-color: #1f2936 !important;
         border-color: #3E4B5A !important;
         color: #fff !important;
@@ -11092,7 +11096,7 @@ tbody {
 
 }
 
-.dark-theme{
+.dark-theme {
   .manage-app-users-footer {
     .default-secondary-button {
       background-color: var(--indigo9);
@@ -11105,9 +11109,9 @@ tbody {
   word-break: break-all;
 }
 
-.workspace-folder-modal{
+.workspace-folder-modal {
   .tj-text-input.dark {
-    background:  #202425;
+    background: #202425;
     border-color: var(--slate7) !important;
   }
 }
@@ -11116,7 +11120,7 @@ tbody {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 150px; 
+  width: 150px;
 }
 
 .app-slug-container,
@@ -11148,7 +11152,7 @@ tbody {
     &:hover {
       box-shadow: none;
     }
-    
+
     &:active {
       border: 1px solid #D7DBDF;
       box-shadow: none;
@@ -11157,6 +11161,7 @@ tbody {
 
   .input-with-icon {
     flex: none;
+
     .icon-container {
       right: 20px;
       top: calc(50% - 13px);
@@ -11171,7 +11176,7 @@ tbody {
     color: #3D9A50;
   }
 
-  
+
   .workspace-spinner {
     color: #889096 !important;
     width: 16px;
@@ -11183,6 +11188,7 @@ tbody {
     color: var(--indigo9);
   }
 }
+
 .confirm-dialogue-modal {
   background: var(--base);
 }
@@ -11440,7 +11446,9 @@ tbody {
 }
 
 .runjs-parameter-badge {
-  max-width: 140px;
+  max-width: 104px;
+  height: 24px !important;
+  padding: 2px 6px !important;
 }
 
 .release-buttons {
@@ -11512,10 +11520,10 @@ tbody {
       border-color: var(--tomato9) !important;
     }
 
-    .icon-container {  
+    .icon-container {
       right: 12px;
-      top: calc(50% - 11px);  
-      
+      top: calc(50% - 11px);
+
       .spinner-border {
         width: 20px;
         height: 20px;
@@ -11532,6 +11540,7 @@ tbody {
 .manage-app-users-footer {
   padding-bottom: 20px;
   margin-top: 18px;
+
   .default-secondary-button {
     width: auto !important;
     padding: 18px;

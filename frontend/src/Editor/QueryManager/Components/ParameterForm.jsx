@@ -65,7 +65,7 @@ const ParameterForm = ({
         className={darkMode && 'dark-theme dark-theme'}
         key={'1'}
         bsPrefix="popover-body"
-        style={{ marginBottom: '16px' }}
+        style={{ padding: '16px 16px 32px 16px', overflowY: 'auto' }}
       >
         <Form
           className="container p-0 tj-app-input"
@@ -114,7 +114,7 @@ const ParameterForm = ({
                     theme={darkMode ? 'monokai' : 'default'}
                     currentState={emptyObj.current}
                     usePortalEditor={false}
-                    style={{ height: '32px', width: '177px', padding: '0px' }}
+                    style={{ height: '32px', width: '177px', marginBotto: '16px' }}
                     initialValue={defaultValue}
                     enablePreview={false}
                   />

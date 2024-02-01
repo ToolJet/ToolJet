@@ -20,8 +20,7 @@ $border-radius: 4px;
 
       .more-parameters-button {
         background-color: var(--base) !important;
-        height: 20px;
-        padding: 0;
+        height: 24px;
 
         button {
           height: inherit;
@@ -30,13 +29,14 @@ $border-radius: 4px;
 
       .card-header {
         background-color: var(--slate3);
-        height: 30px;
+        height: 28px;
         border-radius: 4px;
         color: var(--slate11);
+        border: none !important;
 
         .parameterItem {
 
-          height: 20px;
+          height: 24px;
 
           .parameterItemPillButton {
             height: inherit;

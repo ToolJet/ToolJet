@@ -80,18 +80,17 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
             onRemove={onRemove}
           />
         ) : (
-          <ButtonSolid
-            variant="ghostBlack"
-            size="sm"
+          <button
             onClick={() => setShowModal((show) => !show)}
             className="ms-2"
             id="runjs-param-add-btn"
             data-cy={`runjs-add-param-button`}
+            style={{ background: 'none' }}
           >
             <span className="m-0">
               <PlusRectangle fill={darkMode ? '#9BA1A6' : '#687076'} width={15} />
             </span>
-          </ButtonSolid>
+          </button>
         )}
       </span>
     </OverlayTrigger>
@@ -102,18 +101,18 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom, className, s
   <ButtonGroup
     aria-label="Parameter"
     className={cx('bg-slate3', { 'mb-2': marginBottom, ...(className && { [className]: true }) })}
-    style={{ borderRadius: '19px', marginLeft: '2px' }}
+    style={{ borderRadius: '6px', marginLeft: '6px', height: '24px' }}
   >
     <Button
       size="sm"
       className={cx('bg-transparent color-slate12 runjs-parameter-badge', { 'py-0 px-2': size === 'sm' })}
       onClick={onClick}
       style={{
-        borderTopLeftRadius: '19px',
-        borderBottomLeftRadius: '19px',
+        borderTopLeftRadius: '6px',
+        borderBottomLeftRadius: '6px',
         textTransform: 'none',
         fontWeight: 500,
-        ...(!onRemove && { borderRadius: '19px' }),
+        ...(!onRemove && { borderRadius: '6px' }),
       }}
     >
       <span data-cy={`query-param-${String(name).toLowerCase()}`} className="text-truncate query-param-text">
@@ -127,10 +126,11 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom, className, s
         size="sm"
         className={cx('bg-transparent color-slate12', { 'p-0 pe-1': size === 'sm' })}
         style={{
-          borderTopRightRadius: '19px',
-          borderBottomRightRadius: '19px',
+          borderTopRightRadius: '6px',
+          borderBottomRightRadius: '6px',
           paddingLeft: 0,
           paddingRight: '0.1rem',
+          height: '24px',
         }}
       >
         <Remove fill="var(--slate12)" height={20} width={20} />
