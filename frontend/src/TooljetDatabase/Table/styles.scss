@@ -42,6 +42,7 @@
 
 .tj-table {
   thead th {
+    z-index: 1;
     position: sticky;
     top: 0px;
   }

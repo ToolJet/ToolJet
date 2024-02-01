@@ -40,11 +40,11 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
                   {routes(location?.pathname.split('/').pop())}
                 </p>
               </div>
-              <ToolTip message="Collapse sidebar" placement="bottom">
-                <div className="col-3 px-3">
-                  {enableCollapsibleSidebar && !collapseSidebar && (
+              {enableCollapsibleSidebar && !collapseSidebar && (
+                <ToolTip message="Collapse sidebar" placement="bottom" delay={{ show: 0, hide: 100 }}>
+                  <div className="col-3 px-3">
                     <ButtonSolid
-                      variant="ghostBlue"
+                      variant="primary"
                       className="tj-text-xsm"
                       style={{
                         minWidth: '28px',
@@ -54,6 +54,8 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
                         display: 'flex',
                         justifyContent: 'center',
                         cursor: 'pointer',
+                        background: '#F0F4FF',
+                        borderColor: '#AEC0F5',
                       }}
                       leftIcon="cheveronleftdouble"
                       fill="#3E63DD"
@@ -61,19 +63,19 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
                       size="md"
                       onClick={toggleCollapsibleSidebar}
                     ></ButtonSolid>
-                  )}
-                </div>
-              </ToolTip>
+                  </div>
+                </ToolTip>
+              )}
             </div>
           </div>
         )}
         <div className="col tj-dashboard-header-wrap">
           <div className="d-flex justify-content-sm-between">
             {enableCollapsibleSidebar && collapseSidebar && (
-              <ToolTip message="Open sidebar" placement="bottom">
+              <ToolTip message="Open sidebar" placement="bottom" delay={{ show: 0, hide: 100 }}>
                 <div className="pe-3">
                   <ButtonSolid
-                    variant="ghostBlue"
+                    variant="primary"
                     className="tj-text-xsm"
                     style={{
                       minWidth: '28px',
@@ -83,6 +85,8 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
                       display: 'flex',
                       justifyContent: 'center',
                       cursor: 'pointer',
+                      background: '#F0F4FF',
+                      borderColor: '#AEC0F5',
                     }}
                     leftIcon="cheveronrightdouble"
                     fill="#3E63DD"

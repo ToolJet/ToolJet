@@ -522,7 +522,7 @@ const Table = ({ collapseSidebar }) => {
 
   function showTooltipForId(column) {
     return (
-      <ToolTip message="Column cannot be edited or deleted" placement="bottom">
+      <ToolTip message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
         <div className="primaryKeyTooltip">
           <div>
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
@@ -766,7 +766,8 @@ const Table = ({ collapseSidebar }) => {
                                   cellClick.rowIndex === rIndex &&
                                   cellClick.cellIndex === index &&
                                   cellClick.editable === true &&
-                                  cellClick.cellIndex !== 0,
+                                  cellClick.cellIndex !== 0 &&
+                                  !showUpdateProgressBar,
                               })}
                             >
                               {cellClick.editable &&
@@ -886,6 +887,9 @@ const Table = ({ collapseSidebar }) => {
             <div
               onClick={() => setIsCreateRowDrawerOpen(true)}
               className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
+              style={{
+                zIndex: 3,
+              }}
             >
               +
             </div>
