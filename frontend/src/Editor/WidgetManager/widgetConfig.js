@@ -3572,6 +3572,25 @@ export const widgets = [
         displayName: 'Select option',
         params: [{ handle: 'select', displayName: 'Select' }],
       },
+      {
+        handle: 'setVisibility',
+        displayName: 'Set Visibility',
+        params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+      },
+      {
+        handle: 'clear',
+        displayName: 'Clear',
+      },
+      {
+        handle: 'setLoading',
+        displayName: 'Set loading',
+        params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      },
+      {
+        handle: 'setDisabled',
+        displayName: 'Set disabled',
+        params: [{ handle: 'setDisabled', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      },
     ],
     definition: {
       others: {
