@@ -139,7 +139,7 @@ export const Chart = function Chart({
   const handleClick = useCallback((data) => {
     if (data.length > 0) {
       const { x: xAxisLabel, y: yAxisLabel, label: dataLabel, value: dataValue, percent: dataPercent } = data[0];
-      setExposedVariable('clickedDataPoints', { xAxisLabel, yAxisLabel, dataLabel, dataValue, dataPrecent });
+      setExposedVariable('clickedDataPoint', { xAxisLabel, yAxisLabel, dataLabel, dataValue, dataPercent });
       fireEvent('onClick');
     }
   }, []);
