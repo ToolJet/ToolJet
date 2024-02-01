@@ -796,7 +796,7 @@ export const widgets = [
       },
     },
     events: {
-      onClick: { displayName: 'On click' },
+      onClick: { displayName: 'On data point click' },
     },
     styles: {
       padding: {
