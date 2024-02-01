@@ -235,9 +235,6 @@ export const DropDown = function DropDown({
         'optionLabels',
         schema?.filter((item) => item?.visible)?.map((item) => item.label)
       );
-      if (hasVisibleFalse(currentValue)) {
-        setCurrentValue(findDefaultItem(schema));
-      }
     } else setExposedVariable('optionLabels', display_values);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(schema), advanced, JSON.stringify(display_values), currentValue]);
@@ -384,6 +381,9 @@ export const DropDown = function DropDown({
   };
 
   useEffect(() => {
+    if (advanced) {
+      setCurrentValue(findDefaultItem(schema));
+    }
     document.addEventListener('mousedown', handleOutsideClick);
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
