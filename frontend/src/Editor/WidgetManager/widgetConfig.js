@@ -795,7 +795,9 @@ export const widgets = [
         },
       },
     },
-    events: {},
+    events: {
+      onClick: { displayName: 'On click' },
+    },
     styles: {
       padding: {
         type: 'code',

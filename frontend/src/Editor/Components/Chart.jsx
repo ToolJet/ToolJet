@@ -1,12 +1,22 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, memo, useCallback } from 'react';
 
 // Use plotly basic bundle
 import Plotly from 'plotly.js-basic-dist-min';
 import createPlotlyComponent from 'react-plotly.js/factory';
 import { isJson } from '@/_helpers/utils';
 const Plot = createPlotlyComponent(Plotly);
+import { isEqual, cloneDeep } from 'lodash';
 
-export const Chart = function Chart({ width, height, darkMode, properties, styles, dataCy }) {
+export const Chart = function Chart({
+  width,
+  height,
+  darkMode,
+  properties,
+  styles,
+  fireEvent,
+  setExposedVariable,
+  dataCy,
+}) {
   const [loadingState, setLoadingState] = useState(false);
 
   const { padding, visibility, disabledState, boxShadow } = styles;
@@ -126,6 +136,14 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
     [data, dataString, chartType, markerColor]
   );
 
+  const handleClick = useCallback((data) => {
+    if (data.length > 0) {
+      const { x: xAxisLabel, y: yAxisLabel, label: dataLabel, value: dataValue, percent: dataPrecent } = data[0];
+      setExposedVariable('clickedDataPoints', { xAxisLabel, yAxisLabel, dataLabel, dataValue, dataPrecent });
+      fireEvent('onClick');
+    }
+  }, []);
+
   return (
     <div data-disabled={disabledState} style={computedStyles} data-cy={dataCy}>
       {loadingState === true ? (
@@ -135,15 +153,32 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
           </center>
         </div>
       ) : (
-        <Plot
+        <PlotComponent
           data={plotFromJson ? jsonChartData : memoizedChartData}
           layout={layout}
           config={{
             displayModeBar: false,
-            // staticPlot: true
           }}
+          onClick={handleClick}
         />
       )}
     </div>
   );
 };
+
+// onClick event was not working when the component is re-rendered for every click. Hance, memoization is used
+const PlotComponent = memo(
+  ({ data, layout, config, onClick }) => {
+    return (
+      <Plot
+        data={data}
+        layout={cloneDeep(layout)} // Cloning the layout since the object is getting mutated inside the package
+        config={config}
+        onClick={(e) => {
+          onClick(e.points);
+        }}
+      />
+    );
+  },
+  (prevProps, nextProps) => isEqual(prevProps, nextProps)
+);
