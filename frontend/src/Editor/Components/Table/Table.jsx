@@ -1464,8 +1464,6 @@ export function Table({
                               cellTextColor={cellTextColor}
                               cell={cell}
                               currentState={currentState}
-                              selectRowOnCellEdit={selectRowOnCellEdit}
-                              allowSelection={allowSelection}
                             />
                           </div>
                         </td>

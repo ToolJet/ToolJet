@@ -15,8 +15,6 @@ export default function GenerateEachCellValue({
   cellTextColor,
   cell,
   currentState,
-  selectRowOnCellEdit,
-  allowSelection,
 }) {
   const mounted = useMounted();
   const updateCellValue = useRef();
