@@ -13,15 +13,16 @@ import {
   verifyLayout,
   verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
-  verifyTooltip
+  verifyTooltip,
 } from "Support/utils/commonWidget";
 import {
   addAllInputFieldColors,
   addAndVerifyAdditionalActions,
   addValidations,
+  verifyInputFieldColors,
 } from "Support/utils/editor/inputFieldUtils";
 import {
-  addSupportCSAData,ßß
+  addSupportCSAData,
   selectCSA,
   selectEvent,
 } from "Support/utils/events";
@@ -36,7 +37,7 @@ import { textInputText } from "Texts/textInput";
 describe("Text Input", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.apiCreateApp(`${fake.companyName}-Textinput-App`);
     cy.openApp();
     cy.dragAndDropWidget("Text Input", 500, 500);
   });
@@ -211,19 +212,17 @@ describe("Text Input", () => {
 
     openEditorSidebar(textInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    cy.log("-------------------------------------------------");
     addAllInputFieldColors(data);
-    cy.log("-------------------------------------------------");
 
-    verifyAndModifyParameter(
-      commonWidgetText.parameterBorderRadius,
-      commonWidgetText.borderRadiusInput
-    );
+    cy.clearAndType('[data-cy="border-radius-input"]', "20");
+    cy.get('[data-cy="icon-visibility-button"]').click();
 
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     cy.get(
       commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
     ).should("have.css", "border-radius", "20px");
+
+    verifyInputFieldColors("textinput1", data);
 
     verifyStylesGeneralAccordion(
       textInputText.defaultWidgetName,
