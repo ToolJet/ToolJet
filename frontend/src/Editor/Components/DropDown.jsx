@@ -421,15 +421,24 @@ export const DropDown = function DropDown({
         data-cy={dataCy}
       >
         <div
-          className="my-auto"
+          className="my-auto text-truncate"
           style={{
             alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
             width: alignment === 'top' || labelAutoWidth ? 'auto' : `${labelWidth}%`,
             maxWidth: alignment === 'top' || labelAutoWidth ? '100%' : `${labelWidth}%`,
           }}
         >
-          <label style={labelStyles} className="font-size-12 font-weight-500 py-0 my-0">
-            {label}
+          <label style={labelStyles} className="font-size-12 font-weight-500 py-0 my-0 d-flex">
+            <span
+              style={{
+                overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
+                textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+                whiteSpace: 'nowrap',
+                display: 'block',
+              }}
+            >
+              {label}
+            </span>
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         </div>
