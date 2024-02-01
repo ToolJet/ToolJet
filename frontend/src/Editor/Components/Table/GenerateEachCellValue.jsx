@@ -90,14 +90,7 @@ export default function GenerateEachCellValue({
   }
   return (
     <div
-      onClick={(e) => {
-        if (
-          isEditable &&
-          resolveReferences(allowSelection, currentState) &&
-          !resolveReferences(selectRowOnCellEdit, currentState)
-        ) {
-          e.stopPropagation();
-        }
+      onClick={() => {
         if (isEditable && columnTypeAllowToRenderMarkElement.includes(columnType)) {
           setHighlighterCells(false);
         }

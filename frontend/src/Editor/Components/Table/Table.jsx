@@ -1428,6 +1428,14 @@ export function Table({
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                           onClick={(e) => {
+                            if (
+                              (isEditable || ['rightActions', 'leftActions'].includes(cell.column.id)) &&
+                              allowSelection &&
+                              !selectRowOnCellEdit
+                            ) {
+                              // to avoid on click event getting propagating to row when td is editable or has action button and allowSelection is true and selectRowOnCellEdit is false
+                              e.stopPropagation();
+                            }
                             setExposedVariable('selectedCell', {
                               columnName: cell.column.exportValue,
                               columnKey: cell.column.key,
