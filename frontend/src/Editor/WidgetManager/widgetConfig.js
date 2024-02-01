@@ -795,6 +795,12 @@ export const widgets = [
         },
       },
     },
+    actions: [
+      {
+        handle: 'clearClickedPoint',
+        displayName: 'Clear clicked point',
+      },
+    ],
     events: {
       onClick: { displayName: 'On data point click' },
     },

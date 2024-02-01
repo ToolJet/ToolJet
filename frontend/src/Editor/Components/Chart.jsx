@@ -144,6 +144,13 @@ export const Chart = function Chart({
     }
   }, []);
 
+  useEffect(() => {
+    setExposedVariable('clearClickedPoint', () => {
+      setExposedVariable('clickedDataPoint', {});
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div data-disabled={disabledState} style={computedStyles} data-cy={dataCy}>
       {loadingState === true ? (
