@@ -152,7 +152,7 @@ export const DropDown = function DropDown({
       : [
           ...values
             .map((value, index) => {
-              if (optionVisibility[index]) {
+              if (optionVisibility[index] !== false) {
                 return { label: display_values[index], value: value, isDisabled: optionDisable[index] };
               }
             })
