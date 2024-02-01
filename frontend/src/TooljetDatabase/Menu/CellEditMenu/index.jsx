@@ -3,6 +3,9 @@ import Popover from 'react-bootstrap/Popover';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import LeftNav from '../../Icons/LeftNav.svg';
+import RightNav from '../../Icons/RightNav.svg';
+import cx from 'classnames';
 import './styles.scss';
 
 export const CellEditMenu = ({
@@ -150,19 +153,37 @@ export const CellEditMenu = ({
           )}
 
           {/* Footer */}
-          <div className="d-flex justify-content-end align-items-end gap-2">
-            <ButtonSolid onClick={closePopover} variant="tertiary" size="sm" className="fs-12">
-              Cancel
-            </ButtonSolid>
-            <ButtonSolid
-              onClick={saveFunction}
-              disabled={cellValue == previousCellValue ? true : false}
-              variant="primary"
-              size="sm"
-              className="fs-12"
-            >
-              Save
-            </ButtonSolid>
+          <div
+            className={cx('d-flex align-items-center gap-2', {
+              'justify-content-between': isBoolean,
+              'justify-content-end': !isBoolean,
+            })}
+          >
+            {isBoolean ? (
+              <div className="cell-editmenu-keyActions">
+                <div className="leftNav-parent-container">
+                  <LeftNav style={{ verticalAlign: 'baseline' }} width={8} height={8} />
+                </div>
+                <div className="rightNav-parent-container">
+                  <RightNav style={{ verticalAlign: 'baseline' }} width={8} height={8} />
+                </div>
+                <div className="navigate-title fs-10">Navigate</div>
+              </div>
+            ) : null}
+            <div className="d-flex" style={{ gap: '8px' }}>
+              <ButtonSolid onClick={closePopover} variant="tertiary" size="sm" className="fs-12">
+                Cancel
+              </ButtonSolid>
+              <ButtonSolid
+                onClick={saveFunction}
+                disabled={cellValue == previousCellValue ? true : false}
+                variant="primary"
+                size="sm"
+                className="fs-12"
+              >
+                Save
+              </ButtonSolid>
+            </div>
           </div>
         </div>
       </Popover.Body>

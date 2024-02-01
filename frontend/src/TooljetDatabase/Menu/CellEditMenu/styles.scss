@@ -20,6 +20,9 @@
     }
 
     .tjdb-cell-menu-shortcuts-info {
+        display: flex;
+        justify-content: center;
+        width: 24px;
         border-radius: 4px;
         border: 1px solid #D7DBDF;
         padding: 4px;
@@ -30,5 +33,20 @@
     .tjdb-cell-menu-shortcuts-text {
         font-size: 10px;
         color: #7E868C;
+    }
+
+    .cell-editmenu-keyActions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 5px;
+  
+      .leftNav-parent-container,
+      .rightNav-parent-container {
+        border-radius: 6px;
+        border: 1px solid var(--slate7);
+        width: 24px;
+        text-align: center;
+      }
     }
 }
