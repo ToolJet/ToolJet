@@ -130,7 +130,9 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     >
       {!isLoading &&
         (textFormat === 'markdown' ? (
-          <Markdown>{text}</Markdown>
+          <div>
+            <Markdown>{text}</Markdown>
+          </div>
         ) : (
           <div
             style={{
