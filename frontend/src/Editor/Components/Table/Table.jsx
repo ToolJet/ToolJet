@@ -886,16 +886,14 @@ export function Table({
   useEffect(() => {
     // csa for select all rows in table
     setExposedVariable('selectAllRows', async function () {
+      console.log('manish :: select all');
       if (showBulkSelector) {
         toggleAllRowsSelected(true);
       }
     });
-    //adding empty dependency array here, can add in the future if required
-  }, []);
-
-  useEffect(() => {
-    // csa for deselecting all  rows in table
+    // csa for deselect all rows in table
     setExposedVariable('deselectAllRows', async function () {
+      console.log('manish :: deselect all');
       if (showBulkSelector) {
         toggleAllRowsSelected(false);
       }
