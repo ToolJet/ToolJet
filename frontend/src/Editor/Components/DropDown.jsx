@@ -125,7 +125,7 @@ export const DropDown = function DropDown({
   const [inputValue, setInputValue] = useState('');
   // We are substracting 4px because of 2px padding each in top bottom
   const _height = padding === 'default' ? `${height - 4}px` : `${height}px`;
-
+  console.log(optionVisibility, 'optionVisibility');
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
     if (isDropdownLoading !== dropdownLoadingState) setIsDropdownLoading(dropdownLoadingState);
