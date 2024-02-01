@@ -2,21 +2,26 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { authenticationService } from '@/_services';
-import { getPrivateRoute } from '@/_helpers/routes';
+import { getPrivateRoute, redirectToDashboard } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from '@/_components/AppLogo';
 
 export default function LogoNavDropdown({ darkMode, type = 'apps' }) {
+  const isWorkflows = type === 'workflows';
+
+  const handleBackClick = (e) => {
+    e.preventDefault();
+    // Force a reload for clearing interval triggers
+    redirectToDashboard();
+  };
+
+  const backToLinkProps = isWorkflows ? { to: getPrivateRoute('workflows') } : { onClick: handleBackClick };
+
   const getOverlay = () => {
-    const isWorkflows = type === 'workflows';
     const { admin } = authenticationService?.currentSessionValue ?? {};
     return (
       <div className={`logo-nav-card settings-card card ${darkMode && 'dark-theme'}`}>
-        <Link
-          to={getPrivateRoute(isWorkflows ? 'workflows' : 'dashboard')}
-          className="dropdown-item tj-text tj-text-xsm"
-          data-cy="back-to-app-option"
-        >
+        <Link className="dropdown-item tj-text tj-text-xsm" data-cy="back-to-app-option" {...backToLinkProps}>
           <SolidIcon name="arrowbackdown" width="20" viewBox="0 0 20 20" fill="#C1C8CD" />
           <span>Back to {isWorkflows ? 'workflows' : 'apps'}</span>
         </Link>

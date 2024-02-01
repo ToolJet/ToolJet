@@ -16,7 +16,14 @@ export function UserGroupsSelect(props) {
         <div className="add-group-btn">
           <ButtonSolid
             onClick={() =>
-              window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/${workspaceId}/workspace-settings/groups`))
+              window.open(
+                urlJoin(
+                  `${window.public_config?.TOOLJET_HOST}${
+                    window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : ''
+                  }`,
+                  `/${workspaceId}/workspace-settings/groups`
+                )
+              )
             }
             iconCustomClass="rectangle-add-icon"
             className="create-group"

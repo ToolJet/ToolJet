@@ -718,6 +718,7 @@ const EditorComponent = (props) => {
   };
 
   const fetchEnvironments = () => {
+    const appId = props?.id;
     appEnvironmentService.getAllEnvironments(appId).then((data) => {
       const envArray = data?.environments;
 
