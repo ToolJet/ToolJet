@@ -293,7 +293,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={item.visible}
+              initialValue={item.visible !== false}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
