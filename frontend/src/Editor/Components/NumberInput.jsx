@@ -72,7 +72,6 @@ export const NumberInput = function NumberInput({
 
   const handleBlur = (e) => {
     setValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
-
     setShowValidationError(true);
     e.stopPropagation();
     fireEvent('onBlur');
@@ -187,8 +186,11 @@ export const NumberInput = function NumberInput({
     setValue(Number(parseFloat(e.target.value)));
     if (e.target.value == '') {
       setValue(null);
+      setExposedVariable('value', null).then(fireEvent('onChange'));
     }
-    fireEvent('onChange');
+    if (!isNaN(Number(parseFloat(e.target.value)))) {
+      setExposedVariable('value', Number(parseFloat(e.target.value))).then(fireEvent('onChange'));
+    }
   };
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
@@ -208,13 +210,17 @@ export const NumberInput = function NumberInput({
 
     const newValue = (value || 0) + 1;
     setValue(newValue);
-    fireEvent('onChange');
+    if (!isNaN(newValue)) {
+      setExposedVariable('value', newValue).then(fireEvent('onChange'));
+    }
   };
   const handleDecrement = (e) => {
     e.preventDefault();
     const newValue = (value || 0) - 1;
     setValue(newValue);
-    fireEvent('onChange');
+    if (!isNaN(newValue)) {
+      setExposedVariable('value', newValue).then(fireEvent('onChange'));
+    }
   };
   useEffect(() => {
     setExposedVariable('setFocus', async function () {
@@ -250,9 +256,9 @@ export const NumberInput = function NumberInput({
       <>
         <div
           data-disabled={disable || loading}
-          className={`text-input overflow-hidden d-flex ${
-            defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '
-          }  ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+          className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
+            direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
+          }
          ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
          ${visibility || 'invisible'}`}
           style={{
@@ -339,7 +345,9 @@ export const NumberInput = function NumberInput({
             onFocus={(e) => {
               setIsFocused(true);
               e.stopPropagation();
-              fireEvent('onFocus');
+              setTimeout(() => {
+                fireEvent('onFocus');
+              }, 0);
             }}
           />
           {!isResizing && (

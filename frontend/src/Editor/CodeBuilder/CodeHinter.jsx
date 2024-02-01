@@ -428,7 +428,8 @@ export function CodeHinter({
             <div className="col-auto pt-0 fx-common">
               {paramLabel !== 'Type' &&
                 paramLabel !== ' ' &&
-                paramLabel !== 'Padding' && ( //add some key if these extends
+                paramLabel !== 'Padding' &&
+                paramLabel !== 'Width' && ( //add some key if these extends
                   <FxButton
                     active={codeShow}
                     onPress={() => {
@@ -493,6 +494,7 @@ export function CodeHinter({
                   maxHeight: '320px',
                   overflow: 'auto',
                   fontSize: ' .875rem',
+                  maxWidth: paramLabel == 'Tooltip' && '190px',
                 }}
                 data-cy={`${cyLabel}-input-field`}
               >

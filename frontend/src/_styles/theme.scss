@@ -2522,7 +2522,7 @@ hr {
 
 .codehinter-default-input {
   font-family: "Roboto", sans-serif;
-  padding: 0.0475rem 0rem !important;
+  // padding: 0.0475rem 0rem !important;
   display: block;
   width: 100%;
   font-size: 0.875rem;
@@ -4880,6 +4880,7 @@ input[type="text"] {
 
   .CodeMirror-lines {
     height: 32px !important;
+    padding: 7px 0px !important;
   }
 }
 
@@ -7989,7 +7990,6 @@ tbody {
     .CodeMirror-lines {
       margin-top: 0px !important;
       min-height: 32px !important;
-      padding: 0 !important;
     }
   }
 }

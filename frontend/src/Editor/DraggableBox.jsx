@@ -345,6 +345,7 @@ export const DraggableBox = React.memo(
                       widgetHeight={layoutData.height}
                       isMultipleComponentsSelected={isMultipleComponentsSelected}
                       configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
+                      isVerticalResizingAllowed={isVerticalResizingAllowed}
                     />
                   )}
                 {/* Adding a sentry's error boundary to differentiate between our generic error boundary and one from editor's component  */}

@@ -156,8 +156,6 @@ export const Box = memo(
     const currentState = useCurrentState();
     let styles = {
       height: '100%',
-      // paddingRight: '1px',
-      // paddingLeft: '1px',
     };
 
     if (inCanvas) {
