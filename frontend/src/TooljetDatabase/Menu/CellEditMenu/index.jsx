@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -24,6 +24,7 @@ export const CellEditMenu = ({
   nullValue,
   isBoolean,
 }) => {
+  // below state is used only for boolean cell
   const [selectedValue, setSelectedValue] = useState(previousCellValue);
 
   const handleDefaultChange = (defaultColumnValue, defaultBooleanValue) => {
@@ -60,6 +61,39 @@ export const CellEditMenu = ({
     close();
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowRight' && isBoolean) {
+      e.preventDefault();
+      if (selectedValue === false) handleSelectedState(true);
+      if (selectedValue === true) handleSelectedState(null);
+    }
+
+    if (e.key === 'ArrowLeft' && isBoolean) {
+      e.preventDefault();
+      if (selectedValue === null) handleSelectedState(true);
+      if (selectedValue === true) handleSelectedState(false);
+    }
+
+    if (e.key === 'Escape') {
+      console.log('Escape envet trigger');
+      closePopover();
+    }
+
+    if (e.key === 'Enter' && cellValue !== previousCellValue && show) {
+      saveFunction(cellValue);
+    }
+    e.stopPropagation();
+  };
+
+  useEffect(() => {
+    if (show) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [show, isBoolean, selectedValue, cellValue]);
+
   const popover = (
     <Popover className={`${darkMode && 'dark-theme'} tjdb-table-cell-edit-popover`}>
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
@@ -80,7 +114,7 @@ export const CellEditMenu = ({
                 className={`boolean-state-${
                   selectedValue === true ? 'selected' : ''
                 } d-flex align-items-center gap-2 fw-500 tjdb-bool-cell-menu-badge-default`}
-                tabIndex="0"
+                tabIndex="1"
                 onClick={() => handleSelectedState(true)}
               >
                 True
@@ -90,7 +124,7 @@ export const CellEditMenu = ({
                   className={`boolean-state-${
                     selectedValue === null ? 'selected' : ''
                   } d-flex align-items-center gap-2 fw-500 tjdb-bool-cell-menu-badge-default`}
-                  tabIndex="0"
+                  tabIndex="2"
                   onClick={() => handleSelectedState(null)}
                 >
                   Null
@@ -175,7 +209,7 @@ export const CellEditMenu = ({
                 Cancel
               </ButtonSolid>
               <ButtonSolid
-                onClick={saveFunction}
+                onClick={() => saveFunction(selectedValue)}
                 disabled={cellValue == previousCellValue ? true : false}
                 variant="primary"
                 size="sm"

@@ -264,17 +264,21 @@ const Table = ({ collapseSidebar }) => {
         cellValue === null ? setNullValue(true) : setNullValue(false);
         setDefaultValue(false);
       } else if (e.key === 'Enter') {
+        setEditPopover(true);
         document.getElementById('edit-input-blur').focus();
       }
     }
+    e.stopPropagation();
   };
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [cellClick]);
+    if (!editPopover) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [cellClick, editPopover]);
 
   useEffect(() => {
     setSelectedRowIds({});
@@ -423,25 +427,6 @@ const Table = ({ collapseSidebar }) => {
     handleProgressAnimation('column edited successfully', true);
   };
 
-  const handleInputKeyDown = (event, cellValue, rowId, index, rIndex, directToggle) => {
-    if (event.key === 'Enter') {
-      if (cellValue != cellVal) {
-        handleToggleCellEdit(cellValue, rowId, index, rIndex, directToggle);
-        document.getElementById('edit-input-blur').blur();
-      } else {
-        setEditPopover(false);
-        handleOnCloseEditMenu();
-        document.getElementById('edit-input-blur').blur();
-      }
-    } else if (event.key === 'Escape') {
-      setEditPopover(false);
-      cellValue === null ? setNullValue(true) : setNullValue(false);
-      setDefaultValue(false);
-      setCellVal(cellValue);
-      document.getElementById('edit-input-blur').blur();
-    }
-  };
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (editColumnHeader.columnEditPopover && event.target.closest('.popover') === null) {
@@ -497,7 +482,6 @@ const Table = ({ collapseSidebar }) => {
 
   const handleCellClick = (e, cellIndex, rowIndex, cellVal) => {
     if (['table-editable-parent-cell', 'tjdb-td-wrapper', 'table-cell'].includes(e.target.classList.value)) {
-      // e.stopPropagation();
       if (cellIndex !== 0) {
         setCellVal(cellVal);
         setCellClick((prevState) => ({
@@ -518,6 +502,7 @@ const Table = ({ collapseSidebar }) => {
     previousValue === null ? setNullValue(true) : setNullValue(false);
     setDefaultValue(false);
     setCellVal(previousValue);
+    document.getElementById('edit-input-blur').blur();
   };
 
   function showTooltipForId(column) {
@@ -757,7 +742,6 @@ const Table = ({ collapseSidebar }) => {
                             }`}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
-                            onKeyDown={(e) => handleInputKeyDown(e, cell.value, row.values.id, index, rIndex, false)}
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
                             <div
@@ -779,9 +763,9 @@ const Table = ({ collapseSidebar }) => {
                                   show={editPopover}
                                   close={() => closeEditPopover(cell.value)}
                                   columnDetails={headerGroups[0].headers[index]}
-                                  saveFunction={() =>
-                                    handleToggleCellEdit(cell.value, row.values.id, index, rIndex, false)
-                                  }
+                                  saveFunction={(newValue) => {
+                                    handleToggleCellEdit(newValue, row.values.id, index, rIndex, false);
+                                  }}
                                   setCellValue={setCellVal}
                                   cellValue={cellVal}
                                   previousCellValue={cell.value}
