@@ -100,8 +100,8 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
 export const PillButton = ({ name, onClick, onRemove, marginBottom, className, size }) => (
   <ButtonGroup
     aria-label="Parameter"
-    className={cx('bg-slate3', { 'mb-2': marginBottom, ...(className && { [className]: true }) })}
-    style={{ borderRadius: '6px', marginLeft: '6px', height: '24px' }}
+    className={cx({ 'mb-2': marginBottom, ...(className && { [className]: true }) })}
+    style={{ borderRadius: '6px', marginLeft: '6px', height: '24px', background: '#CCD1D54D' }}
   >
     <Button
       size="sm"
