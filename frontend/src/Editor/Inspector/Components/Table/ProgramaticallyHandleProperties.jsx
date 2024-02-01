@@ -1,3 +1,4 @@
+import { resolveReferences } from '@/_helpers/utils';
 import React from 'react';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 
@@ -13,6 +14,7 @@ export const ProgramaticallyHandleProperties = ({
   paramMeta,
   // eslint-disable-next-line no-unused-vars
   paramType,
+  currentState,
 }) => {
   const getValueBasedOnProperty = (property, props) => {
     switch (property) {
@@ -56,6 +58,41 @@ export const ProgramaticallyHandleProperties = ({
     return propertyPresentInFxActiveFields;
   };
 
+  const calculateFxActiveFields = (active, props, property) => {
+    const fxActiveFieldsPropExists = props?.hasOwnProperty('fxActiveFields') ?? false;
+    //to support backward compatibility, when fxActive is true for a particular column, we are passing all possible combinations which should render codehinter
+    const fxActive =
+      props?.fxActive && resolveReferences(props.fxActive, currentState)
+        ? ['isEditable', 'columnVisibility', 'linkTarget']
+        : [];
+
+    const checkFxActiveFieldIsArrray = (fxActiveFieldsProperty) => {
+      // adding error handling mechanism for fxActiveFieldsProperty , if props.fxActiveFields is array , then return props.fxActiveFields or else return [], this will make sure, fxActiveFields wil always be array
+      return Array.isArray(fxActiveFieldsProperty) ? fxActiveFieldsProperty : [];
+    };
+
+    const fxActiveFields = fxActiveFieldsPropExists ? checkFxActiveFieldIsArrray(props.fxActiveFields) : fxActive;
+
+    const findIndexOfPropertyInFxActiveFields = (property, fxActiveFields) => {
+      // checking if particular property is already present in the fxActiveFields or not
+      const index = fxActiveFields.findIndex((prop) => prop === property);
+      return index;
+    };
+
+    const indexOfProp = findIndexOfPropertyInFxActiveFields(property, fxActiveFields);
+
+    // removing or addding property for which we want to render codehinter
+    if (active && indexOfProp === -1) {
+      //if active is true and property does not present in the fxActiveField before hand, if both conditions are satisfied, we add it to the array of fxActiveField.
+      fxActiveFields.push(property);
+    } else if (!active && indexOfProp !== -1) {
+      // if active is falsy and particular property is present in the fxActiveField , we remove that particular property from the array
+      fxActiveFields.splice(indexOfProp, 1);
+    }
+
+    return fxActiveFields;
+  };
+
   return (
     <div className={`mb-2 field ${options.className}`} onClick={(e) => e.stopPropagation()}>
       <CodeHinter
@@ -71,24 +108,8 @@ export const ProgramaticallyHandleProperties = ({
         paramLabel={paramMeta.displayName}
         fieldMeta={paramMeta}
         onFxPress={(active) => {
-          const fxActiveFieldsPropExists = props?.hasOwnProperty('fxActiveFields');
-          //to support backward compatibility, when fxActive is true for a particular column, we are passing all possible combinations which should render codehinter
-          const fxActive = props?.fxActive ? ['isEditable', 'columnVisibility', 'linkTarget'] : [];
-          const fxActiveFields = fxActiveFieldsPropExists ? props.fxActiveFields : fxActive;
-
-          const findIndexOfPropertyInFxActiveFields = (property, fxActiveFields) => {
-            const index = fxActiveFields.findIndex((prop) => prop === property);
-            return index;
-          };
-
-          const indexOfProp = findIndexOfPropertyInFxActiveFields(property, fxActiveFields);
-
-          if (active) {
-            indexOfProp === -1 && fxActiveFields.push(property);
-          } else {
-            indexOfProp !== -1 && fxActiveFields.splice(indexOfProp, 1);
-          }
-          callbackFunction(index, 'fxActiveFields', fxActiveFields);
+          const resultFxActiveFields = calculateFxActiveFields(active, props, property);
+          callbackFunction(index, 'fxActiveFields', resultFxActiveFields);
         }}
         fxActive={calcFxActiveState(props, property)}
         component={component.component}
