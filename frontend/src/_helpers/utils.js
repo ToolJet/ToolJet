@@ -654,6 +654,7 @@ export const setFaviconAndTitle = async (whiteLabelFavicon, whiteLabelText, loca
     'account-settings': pageTitles.ACCOUNT_SETTINGS,
     settings: pageTitles.SETTINGS,
     'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
+    setup: '',
     login: '',
     'forgot-password': '',
   };
