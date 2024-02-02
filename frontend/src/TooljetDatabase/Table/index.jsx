@@ -757,7 +757,7 @@ const Table = ({ collapseSidebar }) => {
                     >
                       <td className="table-cell">
                         <div
-                          className="d-flex align-items-center gap-2"
+                          className="d-flex align-items-center"
                           style={{
                             cursor: 'pointer',
                           }}
