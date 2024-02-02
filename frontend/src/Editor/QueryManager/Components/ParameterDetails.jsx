@@ -124,16 +124,16 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom, className, s
         data-cy={`query-param-${String(name).toLowerCase()}-remove-button`}
         onClick={onRemove}
         size="sm"
-        className={cx('bg-transparent color-slate12', { 'p-0 pe-1': size === 'sm' })}
+        className={cx('bg-transparent color-slate12', { 'p-0': size === 'sm' })}
         style={{
           borderTopRightRadius: '6px',
           borderBottomRightRadius: '6px',
-          paddingLeft: 0,
-          paddingRight: '0.1rem',
+          paddingRight: '6px',
+          paddingLeft: '0px',
           height: '24px',
         }}
       >
-        <Remove fill="var(--slate12)" height={20} width={20} />
+        <Remove fill="#6A727CCC" height={20} width={20} />
       </Button>
     )}
   </ButtonGroup>
