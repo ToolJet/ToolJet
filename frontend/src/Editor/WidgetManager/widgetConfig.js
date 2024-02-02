@@ -2916,8 +2916,8 @@ export const widgets = [
         ],
         accordian: 'Text',
       },
-      lineHeight: { type: 'numberInput', displayName: 'Line Height', accordian: 'Text' },
-      textIndent: { type: 'numberInput', displayName: 'Text Indent', accordian: 'Text' },
+      lineHeight: { type: 'numberInput', displayName: 'Line height', accordian: 'Text' },
+      textIndent: { type: 'numberInput', displayName: 'Text indent', accordian: 'Text' },
       textAlign: {
         type: 'alignButtons',
         displayName: 'Alignment',
@@ -2963,8 +2963,8 @@ export const widgets = [
         ],
         accordian: 'Text',
       },
-      letterSpacing: { type: 'numberInput', displayName: 'Letter Spacing', accordian: 'Text' },
-      wordSpacing: { type: 'numberInput', displayName: 'Word Spacing', accordian: 'Text' },
+      letterSpacing: { type: 'numberInput', displayName: 'Letter spacing', accordian: 'Text' },
+      wordSpacing: { type: 'numberInput', displayName: 'Word spacing', accordian: 'Text' },
       fontVariant: {
         type: 'select',
         displayName: 'Font variant',
