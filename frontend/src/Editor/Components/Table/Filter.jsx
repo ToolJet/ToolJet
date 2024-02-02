@@ -56,6 +56,10 @@ export function Filter(props) {
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
   }
 
+  const debouncedFilterValueChanged = _.debounce((index, val) => {
+    filterValueChanged(index, val);
+  }, 500);
+
   function addFilter() {
     mergeToFilterDetails({ filters: [...filters, { id: '', value: { condition: 'contains', value: '' } }] });
   }
@@ -184,7 +188,7 @@ export function Filter(props) {
                   value={filter.value.value}
                   placeholder="value"
                   className="form-control"
-                  onChange={(e) => _.debounce(filterValueChanged(index, e.target.value), 500)}
+                  onChange={(e) => debouncedFilterValueChanged(index, e.target.value)}
                 />
               )}
             </div>
