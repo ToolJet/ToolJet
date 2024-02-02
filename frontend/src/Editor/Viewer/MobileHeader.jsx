@@ -96,7 +96,6 @@ const MobileHeader = ({
         <Header
           styles={{
             height: '46px',
-            backgroundColor: '#f2f2f5',
             position: 'fixed',
             width: '450px',
             zIndex: '100',

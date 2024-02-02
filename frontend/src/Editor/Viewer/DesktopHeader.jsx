@@ -43,12 +43,21 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
     </div>
   );
 
-  // Desktop layout
-  if (!showHeader && isVersionReleased) {
+  if (!showHeader) {
     return (
-      <span className="released-version-no-header-dark-mode-icon">
-        <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
-      </span>
+      <>
+        {!isVersionReleased && !isEmpty(editingVersion) && (
+          <PreviewSettings
+            isMobileLayout={false}
+            showHeader={showHeader}
+            setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+            darkMode={darkMode}
+          />
+        )}
+        <span className="released-version-no-header-dark-mode-icon">
+          <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
+        </span>
+      </>
     );
   }
 
