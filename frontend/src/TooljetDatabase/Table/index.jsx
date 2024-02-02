@@ -213,8 +213,15 @@ const Table = ({ collapseSidebar }) => {
     setDefaultValue(false);
   };
 
+  // const specialEvents = ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'Backspace'];
+
   const handleKeyDown = (e) => {
     if (cellClick.errorState || isCellUpdateInProgress) e.preventDefault();
+
+    // if (!editPopover && !cellClick.errorState && !isCellUpdateInProgress && !specialEvents.includes(e.key)) {
+
+    // }
+
     if (cellClick.rowIndex !== null && !cellClick.errorState && !isCellUpdateInProgress) {
       if (e.key === 'ArrowRight') {
         setEditPopover(false);
@@ -267,17 +274,17 @@ const Table = ({ collapseSidebar }) => {
       } else if (e.key === 'Enter') {
         setEditPopover(true);
         document.getElementById('edit-input-blur').focus();
+      } else if (e.key === 'Backspace' && !editPopover) {
+        const cellValue = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.value;
+        const cellDataType = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.column?.dataType;
+        if (cellValue === null) {
+          cellDataType === 'boolean' ? setCellVal(true) : setCellVal('');
+          setNullValue(false);
+          setDefaultValue(false);
+          setEditPopover(true);
+          document.getElementById('edit-input-blur').focus();
+        }
       }
-      // else if (e.key === 'Backspace') {
-      //   const cellValue = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.value;
-      //   if (cellValue === null) {
-      //     isBoolean ? setCellVal(true) : setCellVal('');
-      //     setNullValue(false);
-      //     setDefaultValue(false);
-      //     setEditPopover(true);
-      //     document.getElementById('edit-input-blur').focus();
-      //   }
-      // }
     }
     e.stopPropagation();
   };

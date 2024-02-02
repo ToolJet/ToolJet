@@ -25,7 +25,7 @@ export const CellEditMenu = ({
   isBoolean,
 }) => {
   // below state is used only for boolean cell
-  const [selectedValue, setSelectedValue] = useState(previousCellValue);
+  const [selectedValue, setSelectedValue] = useState(cellValue);
 
   const handleDefaultChange = (defaultColumnValue, defaultBooleanValue) => {
     if (defaultBooleanValue === true) {
@@ -75,12 +75,26 @@ export const CellEditMenu = ({
     }
 
     if (e.key === 'Escape') {
-      console.log('Escape envet trigger');
       closePopover();
     }
 
     if (e.key === 'Enter' && cellValue !== previousCellValue && show) {
       saveFunction(cellValue);
+    }
+
+    if (e.key === 'Backspace') {
+      if (selectedValue === null) {
+        if (isBoolean) {
+          setSelectedValue(true);
+          setCellValue(true);
+        } else {
+          setSelectedValue('');
+          setCellValue('');
+        }
+        setNullValue(false);
+        setDefaultValue(false);
+        document.getElementById('edit-input-blur').focus();
+      }
     }
     e.stopPropagation();
   };
@@ -93,6 +107,10 @@ export const CellEditMenu = ({
       };
     }
   }, [show, isBoolean, selectedValue, cellValue]);
+
+  useEffect(() => {
+    if (selectedValue !== cellValue) setSelectedValue(cellValue);
+  }, [cellValue]);
 
   const popover = (
     <Popover className={`${darkMode && 'dark-theme'} tjdb-table-cell-edit-popover`}>
