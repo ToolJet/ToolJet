@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
@@ -96,7 +96,7 @@ export function Filter(props) {
     setTimeout(() => fireEvent('onFilterChanged'), 0);
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (filters.length > 0) {
       const tableFilters = JSON.parse(JSON.stringify(filters));
       const shouldFire = findFilterDiff(activeFilters, tableFilters);
@@ -107,7 +107,8 @@ export function Filter(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(filters)]);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    // Add CSA to set filters
     setExposedVariable('setFilters', async function (_filters) {
       if (!isArray(_filters)) return;
       const filterArr = [];
@@ -134,10 +135,8 @@ export function Filter(props) {
         });
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(props.columns)]);
 
-  React.useEffect(() => {
+    // Add CSA to clear filters
     setExposedVariable('clearFilters', async function (_filters) {
       setAllFilters([]);
       mergeToFilterDetails({
