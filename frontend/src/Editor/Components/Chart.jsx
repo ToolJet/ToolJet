@@ -201,7 +201,6 @@ export const Chart = function Chart({
           layout={layout}
           config={{
             displayModeBar: false,
-            doubleClickDelay: 1,
           }}
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}
@@ -223,7 +222,7 @@ const PlotComponent = memo(
           console.log('here--- onclick');
           onClick(e.points);
         }}
-        onDoubleClick={(e) => {
+        onDoubleClick={() => {
           console.log('here--- ondoubleclick');
           // onDoubleClick(e.points);
         }}
