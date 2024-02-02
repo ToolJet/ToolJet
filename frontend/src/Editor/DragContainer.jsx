@@ -388,6 +388,7 @@ export default function DragContainer({
         onResize={(e) => {
           console.log('onResize', e);
           console.log('onResize---', list, e.target.id, boxList);
+          e.target.style.opacity = '0.5';
           const currentLayout = list.find(({ id }) => id === e.target.id);
           const currentWidget = boxes.find(({ id }) => id === e.target.id);
           console.log('onResize---currentLayout', currentLayout);
@@ -437,6 +438,7 @@ export default function DragContainer({
         }}
         onResizeEnd={(e) => {
           try {
+            e.target.style.opacity = '';
             useGridStore.getState().actions.setResizingComponentId(null);
             setIsResizing(false);
             console.log('onResizeEnd>>>>>>>>>>>>>>', e);

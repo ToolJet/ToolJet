@@ -39,6 +39,7 @@ export const ConfigHandle = function ConfigHandle({
           }}
           role="button"
           data-cy={`${component.name.toLowerCase()}-config-handle`}
+          className="text-truncate"
         >
           <img
             style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
