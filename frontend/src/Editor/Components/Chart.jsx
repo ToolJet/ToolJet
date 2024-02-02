@@ -50,7 +50,7 @@ export const Chart = function Chart({
 
   const fontColor = darkMode ? '#c3c3c3' : null;
 
-  const chartTitle = plotFromJson ? chartLayout?.title?.text ?? title : title;
+  const chartTitle = plotFromJson ? chartLayout?.title ?? title : title;
 
   useEffect(() => {
     const { xaxis, yaxis } = chartLayout;
