@@ -43,6 +43,9 @@ export function Filter(props) {
     });
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
   }
+  const debouncedFilterChanged = _.debounce((newFilters) => {
+    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
+  }, 500);
 
   function filterValueChanged(index, value) {
     const newFilters = filters;
@@ -53,12 +56,8 @@ export function Filter(props) {
     mergeToFilterDetails({
       filters: newFilters,
     });
-    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
+    debouncedFilterChanged(newFilters);
   }
-
-  const debouncedFilterValueChanged = _.debounce((index, val) => {
-    filterValueChanged(index, val);
-  }, 500);
 
   function addFilter() {
     mergeToFilterDetails({ filters: [...filters, { id: '', value: { condition: 'contains', value: '' } }] });
@@ -188,7 +187,7 @@ export function Filter(props) {
                   value={filter.value.value}
                   placeholder="value"
                   className="form-control"
-                  onChange={(e) => debouncedFilterValueChanged(index, e.target.value)}
+                  onChange={(e) => filterValueChanged(index, e.target.value)}
                 />
               )}
             </div>
