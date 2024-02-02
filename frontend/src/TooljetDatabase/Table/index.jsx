@@ -71,7 +71,7 @@ const Table = ({ collapseSidebar }) => {
   const [defaultValue, setDefaultValue] = useState(false);
   const [nullValue, setNullValue] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [showUpdateProgressBar, setShowUpdateProgressBar] = useState(false);
+  const [isCellUpdateInProgress, setIsCellUpdateInProgress] = useState(false);
 
   const prevSelectedTableRef = useRef({});
   const duration = 300;
@@ -214,7 +214,8 @@ const Table = ({ collapseSidebar }) => {
   };
 
   const handleKeyDown = (e) => {
-    if (cellClick.rowIndex !== null) {
+    if (cellClick.errorState || isCellUpdateInProgress) e.preventDefault();
+    if (cellClick.rowIndex !== null && !cellClick.errorState && !isCellUpdateInProgress) {
       if (e.key === 'ArrowRight') {
         setEditPopover(false);
         const cellIndexValue =
@@ -267,6 +268,16 @@ const Table = ({ collapseSidebar }) => {
         setEditPopover(true);
         document.getElementById('edit-input-blur').focus();
       }
+      // else if (e.key === 'Backspace') {
+      //   const cellValue = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.value;
+      //   if (cellValue === null) {
+      //     isBoolean ? setCellVal(true) : setCellVal('');
+      //     setNullValue(false);
+      //     setDefaultValue(false);
+      //     setEditPopover(true);
+      //     document.getElementById('edit-input-blur').focus();
+      //   }
+      // }
     }
     e.stopPropagation();
   };
@@ -278,7 +289,7 @@ const Table = ({ collapseSidebar }) => {
         document.removeEventListener('keydown', handleKeyDown);
       };
     }
-  }, [cellClick, editPopover]);
+  }, [cellClick, editPopover, isCellUpdateInProgress]);
 
   useEffect(() => {
     setSelectedRowIds({});
@@ -352,7 +363,7 @@ const Table = ({ collapseSidebar }) => {
   };
 
   const handleProgressAnimation = (message, status) => {
-    setShowUpdateProgressBar(true);
+    setIsCellUpdateInProgress(true);
     const startTime = Date.now();
     const updateProgress = () => {
       const runningTime = Date.now() - startTime;
@@ -363,20 +374,21 @@ const Table = ({ collapseSidebar }) => {
         requestAnimationFrame(updateProgress);
       } else {
         setTimeout(() => {
-          setShowUpdateProgressBar(false);
           setProgress(0);
           if (status === true) {
             toast.success(message);
           } else {
-            toast.error(message);
+            toast.error(message, { duration: 3000 });
           }
+          setIsCellUpdateInProgress(false);
         }, 100);
       }
     };
     requestAnimationFrame(updateProgress);
   };
 
-  const handleToggleCellEdit = async (cellValue, rowId, index, rIndex, directToggle) => {
+  const handleToggleCellEdit = async (cellValue, rowId, index, rIndex, directToggle, oldValue) => {
+    setIsCellUpdateInProgress(true);
     const cellKey = headerGroups[0].headers[index].id;
     const query = `id=eq.${rowId}&order=id`;
     const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
@@ -393,11 +405,21 @@ const Table = ({ collapseSidebar }) => {
       setTimeout(() => {
         setCellClick((prev) => ({
           ...prev,
-          editable: false,
+          editable: true,
           errorState: true,
         }));
         setCellVal(cellValue);
       }, 400);
+
+      setTimeout(() => {
+        setCellClick((prev) => ({
+          ...prev,
+          editable: true,
+          errorState: false,
+        }));
+        setCellVal(oldValue);
+        document.getElementById('edit-input-blur').blur();
+      }, 3000);
       return;
     }
 
@@ -425,6 +447,7 @@ const Table = ({ collapseSidebar }) => {
       errorState: false,
     }));
     handleProgressAnimation('column edited successfully', true);
+    document.getElementById('edit-input-blur').blur();
   };
 
   useEffect(() => {
@@ -734,10 +757,6 @@ const Table = ({ collapseSidebar }) => {
                                   cellClick.editable === true &&
                                   cellClick.cellIndex !== 0
                                 ? 'table-editable-parent-cell'
-                                : cellClick.rowIndex === rIndex &&
-                                  cellClick.cellIndex === index &&
-                                  cellClick.errorState === true
-                                ? 'tjdb-cell-error'
                                 : `table-cell`
                             }`}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
@@ -751,7 +770,11 @@ const Table = ({ collapseSidebar }) => {
                                   cellClick.cellIndex === index &&
                                   cellClick.editable === true &&
                                   cellClick.cellIndex !== 0 &&
-                                  !showUpdateProgressBar,
+                                  !isCellUpdateInProgress,
+                                'tjdb-cell-error':
+                                  cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index &&
+                                  cellClick.errorState === true,
                               })}
                             >
                               {cellClick.editable &&
@@ -764,7 +787,7 @@ const Table = ({ collapseSidebar }) => {
                                   close={() => closeEditPopover(cell.value)}
                                   columnDetails={headerGroups[0].headers[index]}
                                   saveFunction={(newValue) => {
-                                    handleToggleCellEdit(newValue, row.values.id, index, rIndex, false);
+                                    handleToggleCellEdit(newValue, row.values.id, index, rIndex, false, cell.value);
                                   }}
                                   setCellValue={setCellVal}
                                   cellValue={cellVal}
@@ -795,7 +818,14 @@ const Table = ({ collapseSidebar }) => {
                                               checked={editPopover ? cellVal : cell.value}
                                               onChange={() => {
                                                 if (!editPopover)
-                                                  handleToggleCellEdit(cell.value, row.values.id, index, rIndex, true);
+                                                  handleToggleCellEdit(
+                                                    cell.value,
+                                                    row.values.id,
+                                                    index,
+                                                    rIndex,
+                                                    true,
+                                                    cell.value
+                                                  );
                                               }}
                                               onClick={(e) => {
                                                 e.stopPropagation();
@@ -836,7 +866,14 @@ const Table = ({ collapseSidebar }) => {
                                             type="checkbox"
                                             checked={cell.value}
                                             onChange={() =>
-                                              handleToggleCellEdit(cell.value, row.values.id, index, rIndex, true)
+                                              handleToggleCellEdit(
+                                                cell.value,
+                                                row.values.id,
+                                                index,
+                                                rIndex,
+                                                true,
+                                                cell.value
+                                              )
                                             }
                                           />
                                         </label>
@@ -850,7 +887,7 @@ const Table = ({ collapseSidebar }) => {
                               {cellClick.cellIndex !== 0 &&
                               cellClick.rowIndex === rIndex &&
                               cellClick.cellIndex === index &&
-                              showUpdateProgressBar ? (
+                              isCellUpdateInProgress ? (
                                 <div>
                                   <progress
                                     className="progress progress-sm tjdb-cell-save-progress"

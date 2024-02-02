@@ -6,16 +6,17 @@
     .tjdb-bool-cell-menu-badge-default {
         padding: 2px 12px;
         border-radius: 20px;
-        background: #F1F3F5;
+        background: var(--slate3);
         color: #687076;
         font-size: 14px;
         height: 26px;
         cursor: pointer;
+        border: 1px solid transparent;
     }
 
     .boolean-state-selected {
-        border: 1px solid #3E63DD;
-        background: #F0F4FF;
+        border-color:#3E63DD;
+        background: var(--indigo3);
         color: #3E63DD;
     }
 

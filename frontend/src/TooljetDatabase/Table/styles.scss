@@ -108,6 +108,10 @@
     border-color: var(--Indigo-09, #3E63DD);
   }
 
+  .card-table tr td:last-child {
+    padding: 0;
+  }
+
 }
 
 .keyPress-actions {

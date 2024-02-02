@@ -6958,7 +6958,8 @@ tbody {
   }
 
   .tjdb-cell-error {
-    border: 1.5px solid var(--Tomato-09, #E54D2E) !important;
+    padding: 0rem;
+    border-color: var(--Tomato-09, #E54D2E) !important;
   }
 
   .table-columnHeader-click {
@@ -6966,6 +6967,7 @@ tbody {
     border-left: 1.5px solid #3E63DD !important;
     border-right: 1.5px solid #3E63DD !important;
     border-width: 0px 1px 1px 1px;
+    padding: 0;
 
     input.form-control {
       border: none;
