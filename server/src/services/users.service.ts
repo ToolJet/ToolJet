@@ -110,7 +110,7 @@ export class UsersService {
         email: user.email,
         firstName: user.firstName ?? '',
         lastName: user.lastName ?? '',
-        name: `${user.firstName ?? ''} ${user.lastName ?? ''}`,
+        name: `${user.firstName || ''}${user.lastName ? ` ${user.lastName}` : ''}`,
         id: user.id,
         avatarId: user.avatarId,
         organizationUsers: user.organizationUsers,
