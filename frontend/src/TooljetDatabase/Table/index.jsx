@@ -213,15 +213,61 @@ const Table = ({ collapseSidebar }) => {
     setDefaultValue(false);
   };
 
-  // const specialEvents = ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'Backspace'];
+  // Allowlist keys for entering on text field to enable edit mode
+  const allowListForKeys = [
+    ...Array(26)
+      .fill()
+      .map((_, i) => 65 + i),
+    ...Array(26)
+      .fill()
+      .map((_, i) => 97 + i),
+    ...Array(10)
+      .fill()
+      .map((_, i) => 48 + i),
+    32,
+    186,
+    188,
+    189,
+    190,
+    191,
+    192,
+    219,
+    220,
+    221,
+    22,
+  ];
 
   const handleKeyDown = (e) => {
+    // Disables Cell navigation while error and update-inprogress
     if (cellClick.errorState || isCellUpdateInProgress) e.preventDefault();
 
-    // if (!editPopover && !cellClick.errorState && !isCellUpdateInProgress && !specialEvents.includes(e.key)) {
+    // Logic to edit value in a cell and simultaneously trigger edit menu
+    if (
+      cellClick.rowIndex !== null &&
+      !editPopover &&
+      !cellClick.errorState &&
+      !isCellUpdateInProgress &&
+      allowListForKeys.includes(e.keyCode)
+    ) {
+      e.preventDefault();
+      const cellValue = rows[cellClick.rowIndex].cells[cellClick.cellIndex].value;
+      console.log('cellValue!!!', cellValue);
+      const cellDataType = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.column?.dataType;
+      if (cellDataType !== 'boolean') {
+        if (cellValue === null) {
+          setNullValue(false);
+          setEditPopover(true);
+          setCellVal(e.key);
+          document.getElementById('edit-input-blur')?.focus();
+        } else {
+          setCellVal((prevValue) => prevValue + e.key);
+          setEditPopover(true);
+          document.getElementById('edit-input-blur')?.focus();
+        }
+      }
+    }
 
-    // }
-
+    // Logic for Cell Navigation - Enter ( Opens edit menu ), Backspace (removes Null value ) & ESC event ( close edit menu )
     if (cellClick.rowIndex !== null && !cellClick.errorState && !isCellUpdateInProgress) {
       if (e.key === 'ArrowRight') {
         setEditPopover(false);
