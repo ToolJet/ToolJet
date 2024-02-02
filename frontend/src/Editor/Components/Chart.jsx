@@ -6,6 +6,7 @@ import createPlotlyComponent from 'react-plotly.js/factory';
 import { isJson } from '@/_helpers/utils';
 const Plot = createPlotlyComponent(Plotly);
 import { isEqual, cloneDeep } from 'lodash';
+var tinycolor = require('tinycolor2');
 
 export const Chart = function Chart({
   width,
@@ -20,7 +21,12 @@ export const Chart = function Chart({
 }) {
   const [loadingState, setLoadingState] = useState(false);
 
-  const { padding, visibility, disabledState, boxShadow } = styles;
+  const getColor = (color) => {
+    if (tinycolor(color).getBrightness() > 128) return '#000';
+    return '#fff';
+  };
+
+  const { padding, visibility, disabledState, boxShadow, backgroundColor } = styles;
   const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes, barmode } =
     properties;
 
@@ -48,7 +54,12 @@ export const Chart = function Chart({
 
   const chartLayout = isDescriptionJson ? JSON.parse(jsonDescription).layout ?? {} : {};
 
-  const fontColor = darkMode ? '#c3c3c3' : null;
+  const updatedBgColor = ['#fff', '#ffffff'].includes(backgroundColor)
+    ? darkMode
+      ? '#1f2936'
+      : '#fff'
+    : backgroundColor;
+  const fontColor = getColor(updatedBgColor);
 
   const chartTitle = plotFromJson ? chartLayout?.title ?? title : title;
 
@@ -72,8 +83,8 @@ export const Chart = function Chart({
   const layout = {
     width: width - 4,
     height,
-    plot_bgcolor: darkMode ? '#1f2936' : null,
-    paper_bgcolor: darkMode ? '#1f2936' : null,
+    plot_bgcolor: updatedBgColor,
+    paper_bgcolor: updatedBgColor,
     title: {
       text: chartTitle,
       font: {
@@ -156,28 +167,22 @@ export const Chart = function Chart({
     [data, dataString, chartType, markerColor]
   );
 
-  const handleClick = useCallback(
-    (data) => {
-      if (data.length > 0) {
-        console.log('here--- single', data[0]);
-        const { x: xAxisLabel, y: yAxisLabel, label: dataLabel, value: dataValue, percent: dataPercent } = data[0];
-        setExposedVariable('clickedDataPoint', {
-          xAxisLabel,
-          yAxisLabel,
-          dataLabel,
-          dataValue,
-          dataPercent,
-        });
-        fireEvent('onClick');
-      }
-    },
-    [chartTitle]
-  );
-
-  const handleDoubleClick = useCallback((data) => {
+  const handleClick = useCallback((data) => {
     if (data.length > 0) {
-      console.log('here--- double', data[0]);
+      const { x: xAxisLabel, y: yAxisLabel, label: dataLabel, value: dataValue, percent: dataPercent } = data[0];
+      setExposedVariable('clickedDataPoint', {
+        xAxisLabel,
+        yAxisLabel,
+        dataLabel,
+        dataValue,
+        dataPercent,
+      });
+      fireEvent('onClick');
     }
+  }, []);
+
+  const handleDoubleClick = useCallback(() => {
+    fireEvent('onDoubleClick');
   }, []);
 
   useEffect(() => {
@@ -219,12 +224,10 @@ const PlotComponent = memo(
         layout={cloneDeep(layout)} // Cloning the layout since the object is getting mutated inside the package
         config={config}
         onClick={(e) => {
-          console.log('here--- onclick');
           onClick(e.points);
         }}
         onDoubleClick={() => {
-          console.log('here--- ondoubleclick');
-          // onDoubleClick(e.points);
+          onDoubleClick();
         }}
       />
     );
