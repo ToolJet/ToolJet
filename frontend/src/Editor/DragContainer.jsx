@@ -151,7 +151,39 @@ export default function DragContainer({
       }
     }
     setTimeout(reloadGrid, 100);
-  }, [JSON.stringify(selectedComponents), JSON.stringify(boxes)]);
+
+    try {
+      // for (let key in widgets) {
+      //   const box = widgets[key];
+      //   const boxEle = document.getElementById(key);
+      //   console.log('boxEle->', boxEle, box);
+      //   if (boxEle) {
+      //     boxEle.addEventListener('scrollend', (event) => {
+      //       alert('Scrolled..');
+      //     });
+      //   }
+      // }
+
+      const boxes = document.querySelectorAll('.jet-container');
+      var timer;
+      boxes.forEach((box) => {
+        box.addEventListener('scroll', function handleClick(event) {
+          console.log('timer---->', timer);
+          if (timer) {
+            clearTimeout(timer);
+          }
+
+          console.log('timer---->Setting up the timer', timer);
+          timer = setTimeout(function () {
+            console.log('timer----> triggered');
+            reloadGrid();
+          }, 250); //Threshold is 100ms
+        });
+      });
+    } catch (error) {
+      console.error('Error---->', error);
+    }
+  }, [JSON.stringify(selectedComponents), JSON.stringify(boxes), hoveredComponent]);
   // }, [JSON.stringify(selectedComponents), JSON.stringify(boxes), hoveredComponent]);
 
   useEffect(() => {
@@ -360,6 +392,7 @@ export default function DragContainer({
           const currentWidget = boxes.find(({ id }) => id === e.target.id);
           console.log('onResize---currentLayout', currentLayout);
           let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
+          document.getElementById('canvas-' + currentWidget.component?.parent)?.classList.add('show-grid');
           const currentWidth = currentLayout.width * _gridWidth;
           const diffWidth = e.width - currentWidth;
           const diffHeight = e.height - currentLayout.height;
@@ -424,6 +457,7 @@ export default function DragContainer({
               console.log('e.target.id', id, e, e.target.id);
               return id === e.target.id;
             });
+            document.getElementById('canvas-' + currentWidget.component?.parent)?.classList.remove('show-grid');
             let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
             const width = Math.round(e.lastEvent.width / _gridWidth) * _gridWidth;
             const height = Math.round(e.lastEvent.height / 10) * 10;
