@@ -2984,6 +2984,7 @@ export const widgets = [
           schema: { type: 'string' },
         },
         accordian: 'Container',
+        colorPickerPosition: 'top',
       },
       borderColor: {
         type: 'color',
@@ -2992,6 +2993,7 @@ export const widgets = [
           schema: { type: 'string' },
         },
         accordian: 'Container',
+        colorPickerPosition: 'top',
       },
       borderRadius: {
         type: 'numberInput',
