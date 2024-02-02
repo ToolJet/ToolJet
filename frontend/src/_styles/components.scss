@@ -378,6 +378,7 @@ $btn-dark-color: #FFFFFF;
 }
 
 #inspector-tabpane-properties .code-hinter textarea {
-  visibility: hidden;
+  border: 0;
+  overflow: hidden;
   max-height: 22.5px;
 }
