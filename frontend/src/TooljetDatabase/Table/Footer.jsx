@@ -70,8 +70,14 @@ const Footer = ({ darkMode, dataLoading, tableDataLength, collapseSidebar }) => 
   };
 
   React.useEffect(() => {
+    setPageCount(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalRecords]);
+
+  React.useEffect(() => {
     reset();
-  }, [totalRecords, selectedTable]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTable]);
 
   return (
     <div
