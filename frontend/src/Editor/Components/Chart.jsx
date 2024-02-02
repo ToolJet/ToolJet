@@ -15,6 +15,7 @@ export const Chart = function Chart({
   styles,
   fireEvent,
   setExposedVariable,
+  setExposedVariables,
   dataCy,
 }) {
   const [loadingState, setLoadingState] = useState(false);
@@ -49,19 +50,38 @@ export const Chart = function Chart({
 
   const fontColor = darkMode ? '#c3c3c3' : null;
 
+  const chartTitle = plotFromJson ? chartLayout?.title?.text ?? title : title;
+
+  useEffect(() => {
+    const { xaxis, yaxis } = chartLayout;
+    let xAxisTitle, yAxisTitle;
+    if (xaxis) {
+      xAxisTitle = xaxis?.title?.text;
+    }
+    if (yaxis) {
+      yAxisTitle = yaxis?.title?.text;
+    }
+    const exposedVariables = {
+      chartTitle: chartTitle,
+      xAxisTitle: xAxisTitle,
+      yAxisTitle: yAxisTitle,
+    };
+    setExposedVariables(exposedVariables);
+  }, [JSON.stringify(chartLayout, chartTitle)]);
+
   const layout = {
     width: width - 4,
     height,
     plot_bgcolor: darkMode ? '#1f2936' : null,
     paper_bgcolor: darkMode ? '#1f2936' : null,
     title: {
-      text: chartLayout.title ?? title,
+      text: chartTitle,
       font: {
         color: fontColor,
       },
     },
     legend: {
-      text: chartLayout.title ?? title,
+      text: chartTitle,
       font: {
         color: fontColor,
       },
@@ -136,11 +156,27 @@ export const Chart = function Chart({
     [data, dataString, chartType, markerColor]
   );
 
-  const handleClick = useCallback((data) => {
+  const handleClick = useCallback(
+    (data) => {
+      if (data.length > 0) {
+        console.log('here--- single', data[0]);
+        const { x: xAxisLabel, y: yAxisLabel, label: dataLabel, value: dataValue, percent: dataPercent } = data[0];
+        setExposedVariable('clickedDataPoint', {
+          xAxisLabel,
+          yAxisLabel,
+          dataLabel,
+          dataValue,
+          dataPercent,
+        });
+        fireEvent('onClick');
+      }
+    },
+    [chartTitle]
+  );
+
+  const handleDoubleClick = useCallback((data) => {
     if (data.length > 0) {
-      const { x: xAxisLabel, y: yAxisLabel, label: dataLabel, value: dataValue, percent: dataPercent } = data[0];
-      setExposedVariable('clickedDataPoint', { xAxisLabel, yAxisLabel, dataLabel, dataValue, dataPercent });
-      fireEvent('onClick');
+      console.log('here--- double', data[0]);
     }
   }, []);
 
@@ -165,8 +201,10 @@ export const Chart = function Chart({
           layout={layout}
           config={{
             displayModeBar: false,
+            doubleClickDelay: 1,
           }}
           onClick={handleClick}
+          onDoubleClick={handleDoubleClick}
         />
       )}
     </div>
@@ -175,14 +213,19 @@ export const Chart = function Chart({
 
 // onClick event was not working when the component is re-rendered for every click. Hance, memoization is used
 const PlotComponent = memo(
-  ({ data, layout, config, onClick }) => {
+  ({ data, layout, config, onClick, onDoubleClick }) => {
     return (
       <Plot
         data={data}
         layout={cloneDeep(layout)} // Cloning the layout since the object is getting mutated inside the package
         config={config}
         onClick={(e) => {
+          console.log('here--- onclick');
           onClick(e.points);
+        }}
+        onDoubleClick={(e) => {
+          console.log('here--- ondoubleclick');
+          // onDoubleClick(e.points);
         }}
       />
     );

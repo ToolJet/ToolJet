@@ -836,6 +836,10 @@ export const widgets = [
     },
     exposedVariables: {
       show: null,
+      chartTitle: undefined,
+      xAxisTitle: undefined,
+      yAxisTitle: undefined,
+      clickedDataPoint: {},
     },
     definition: {
       others: {
