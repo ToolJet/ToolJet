@@ -49,7 +49,7 @@ export default function UsersActionMenu({
               >
                 Edit user details
               </ButtonSolid>
-              {resetPassword && user.email !== currentUser && user.status === 'active' && (
+              {resetPassword && user.email !== currentUser && (
                 <ButtonSolid
                   onClick={() => {
                     closeMenu();
