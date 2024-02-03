@@ -641,6 +641,16 @@ const Table = ({ collapseSidebar }) => {
                       }
                       checked={Object.keys(selectedRowIds).length === rows.length && rows.length}
                       onChange={() => toggleSelectOrDeSelectAllRows(rows.length)}
+                      // For indeterminate & Checked - bg color will be blue
+                      style={{
+                        backgroundColor: `${
+                          (Object.keys(selectedRowIds).length > 0 &&
+                            Object.keys(selectedRowIds).length < rows.length) ||
+                          (Object.keys(selectedRowIds).length === rows.length && rows.length)
+                            ? '#3E63DD'
+                            : 'var(--base)'
+                        }`,
+                      }}
                     />
                   </div>
                 </th>
