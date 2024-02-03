@@ -426,3 +426,4 @@ jobs:
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
+          
