@@ -7080,7 +7080,7 @@ tbody {
 
   .tjdb-table-row{
     height: 36px;
-    &:hover {
+    &:not(.table-row-selected):hover {
       background: var(--Slate-02, #F8F9FA);
 
       td:nth-child(1),

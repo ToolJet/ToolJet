@@ -79,6 +79,12 @@ const Table = ({ collapseSidebar }) => {
 
   const toggleSelectOrDeSelectAllRows = (totalRowsCount) => {
     if (!totalRowsCount) return;
+    setCellClick({
+      rowIndex: null,
+      cellIndex: null,
+      editable: false,
+      errorState: false,
+    });
     const isSelectAll =
       Object.keys(selectedRowIds).length !== totalRowsCount && Object.keys(selectedRowIds).length < totalRowsCount;
     if (!isSelectAll) {
@@ -95,6 +101,12 @@ const Table = ({ collapseSidebar }) => {
     if (!uniqueRowId) return;
     const selectedRowIdsRef = { ...selectedRowIds };
     selectedRowIdsRef[uniqueRowId] ? delete selectedRowIdsRef[uniqueRowId] : (selectedRowIdsRef[uniqueRowId] = true);
+    setCellClick({
+      rowIndex: null,
+      cellIndex: null,
+      editable: false,
+      errorState: false,
+    });
     setSelectedRowIds(selectedRowIdsRef);
     return;
   };
@@ -251,9 +263,9 @@ const Table = ({ collapseSidebar }) => {
     ) {
       e.preventDefault();
       const cellValue = rows[cellClick.rowIndex].cells[cellClick.cellIndex].value;
-      console.log('cellValue!!!', cellValue);
       const cellDataType = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.column?.dataType;
       if (cellDataType !== 'boolean') {
+        setSelectedRowIds({});
         if (cellValue === null) {
           setNullValue(false);
           setEditPopover(true);
@@ -270,6 +282,7 @@ const Table = ({ collapseSidebar }) => {
     // Logic for Cell Navigation - Enter ( Opens edit menu ), Backspace (removes Null value ) & ESC event ( close edit menu )
     if (cellClick.rowIndex !== null && !cellClick.errorState && !isCellUpdateInProgress) {
       if (e.key === 'ArrowRight') {
+        setSelectedRowIds({});
         setEditPopover(false);
         const cellIndexValue =
           cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
@@ -284,6 +297,7 @@ const Table = ({ collapseSidebar }) => {
         cellValue === null ? setNullValue(true) : setNullValue(false);
         setDefaultValue(false);
       } else if (e.key === 'ArrowLeft') {
+        setSelectedRowIds({});
         setEditPopover(false);
         const cellIndexValue = cellClick.cellIndex === 1 ? 1 : cellClick.cellIndex - 1;
         const cellValue = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
@@ -296,6 +310,7 @@ const Table = ({ collapseSidebar }) => {
         cellValue === null ? setNullValue(true) : setNullValue(false);
         setDefaultValue(false);
       } else if (e.key === 'ArrowUp') {
+        setSelectedRowIds({});
         setEditPopover(false);
         const cellValue = rows[cellClick.rowIndex - 1].cells[cellClick.cellIndex].value; // row Index's value
         const newRowIndex = cellClick.rowIndex === 0 ? 0 : cellClick.rowIndex - 1;
@@ -307,6 +322,7 @@ const Table = ({ collapseSidebar }) => {
         cellValue === null ? setNullValue(true) : setNullValue(false);
         setDefaultValue(false);
       } else if (e.key === 'ArrowDown') {
+        setSelectedRowIds({});
         setEditPopover(false);
         const cellValue = rows[cellClick.rowIndex + 1].cells[cellClick.cellIndex].value; // row Index's value
         const newRowIndex = cellClick.rowIndex === rows.length - 1 ? rows.length - 1 : cellClick.rowIndex + 1;
@@ -324,6 +340,7 @@ const Table = ({ collapseSidebar }) => {
         const cellValue = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.value;
         const cellDataType = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.column?.dataType;
         if (cellValue === null) {
+          setSelectedRowIds({});
           cellDataType === 'boolean' ? setCellVal(true) : setCellVal('');
           setNullValue(false);
           setDefaultValue(false);
@@ -559,6 +576,7 @@ const Table = ({ collapseSidebar }) => {
   const handleCellClick = (e, cellIndex, rowIndex, cellVal) => {
     if (['table-editable-parent-cell', 'tjdb-td-wrapper', 'table-cell'].includes(e.target.classList.value)) {
       if (cellIndex !== 0) {
+        setSelectedRowIds({});
         setCellVal(cellVal);
         setCellClick((prevState) => ({
           ...prevState,
@@ -761,11 +779,18 @@ const Table = ({ collapseSidebar }) => {
                 return (
                   <>
                     <tr
-                      className={`tjdb-table-row ${`row-tj`} ${darkMode && 'dark-bg'}`}
+                      className={cx(`tjdb-table-row row-tj`, {
+                        'dark-bg': darkMode,
+                        'table-row-selected': selectedRowIds[row.id] ?? false,
+                      })}
                       {...row.getRowProps()}
                       key={rIndex}
                     >
-                      <td className="table-cell">
+                      <td
+                        className={cx('table-cell', {
+                          'table-cell-selected': selectedRowIds[row.id] ?? false,
+                        })}
+                      >
                         <div
                           className="d-flex align-items-center"
                           style={{
@@ -802,26 +827,31 @@ const Table = ({ collapseSidebar }) => {
                             {...cell.getCellProps()}
                             key={`cell.value-${index}`}
                             title={cell.value || ''}
-                            className={`${
-                              editColumnHeader?.clickedColumn === index &&
-                              editColumnHeader?.columnEditPopover === true &&
-                              !darkMode
-                                ? `table-columnHeader-click`
-                                : editColumnHeader?.clickedColumn === index &&
-                                  editColumnHeader?.columnEditPopover === true &&
-                                  darkMode
-                                ? `table-columnHeader-click-dark`
-                                : editColumnHeader?.hoveredColumn === index && !darkMode
-                                ? 'table-cell-hover-background'
-                                : editColumnHeader?.hoveredColumn === index && darkMode
-                                ? 'table-cell-hover-background-dark'
-                                : cellClick.rowIndex === rIndex &&
-                                  cellClick.cellIndex === index &&
-                                  cellClick.editable === true &&
-                                  cellClick.cellIndex !== 0
-                                ? 'table-editable-parent-cell'
-                                : `table-cell`
-                            }`}
+                            className={cx(
+                              `${
+                                editColumnHeader?.clickedColumn === index &&
+                                editColumnHeader?.columnEditPopover === true &&
+                                !darkMode
+                                  ? `table-columnHeader-click`
+                                  : editColumnHeader?.clickedColumn === index &&
+                                    editColumnHeader?.columnEditPopover === true &&
+                                    darkMode
+                                  ? `table-columnHeader-click-dark`
+                                  : editColumnHeader?.hoveredColumn === index && !darkMode
+                                  ? 'table-cell-hover-background'
+                                  : editColumnHeader?.hoveredColumn === index && darkMode
+                                  ? 'table-cell-hover-background-dark'
+                                  : cellClick.rowIndex === rIndex &&
+                                    cellClick.cellIndex === index &&
+                                    cellClick.editable === true &&
+                                    cellClick.cellIndex !== 0
+                                  ? 'table-editable-parent-cell'
+                                  : `table-cell`
+                              }`,
+                              {
+                                'table-cell-selected': selectedRowIds[row.id] ?? false,
+                              }
+                            )}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}

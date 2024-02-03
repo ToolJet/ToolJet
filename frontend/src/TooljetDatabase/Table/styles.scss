@@ -186,12 +186,21 @@
 
 .tj-db-table {
   .table-cell {
-    &:hover {
+    &:not(.table-cell-selected):hover {
       background: var(--Slate-03, #F1F3F5) !important;
     }
   }
 
-  .dark-bg {
+  .table-row-selected {
+    background-color: var(--indigo4);
+
+    td:nth-child(1),
+    td:nth-child(2) {
+      background: var(--indigo4);
+    }
+  }
+
+  .dark-bg:not(.table-row-selected) {
     &:hover {
       background: #22303C;
 
