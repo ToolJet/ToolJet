@@ -67,6 +67,13 @@ const TableForm = ({
     onCreate && onCreate({ id: data.result.id, table_name: tableName });
   };
 
+  function handleKeyPress(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleCreate(e);
+    }
+  }
+
   const handleEdit = async () => {
     if (!validateTableName()) return;
 
@@ -119,6 +126,7 @@ const TableForm = ({
                   setTableName(e.target.value);
                 }}
                 autoFocus
+                onKeyPress={handleKeyPress}
               />
             </div>
           </div>
