@@ -14,7 +14,7 @@ import BookSearch from './BookSearch.jsx';
 import Branch from './Branch.jsx';
 import Bug from './Bug.jsx';
 import Calender from './Calender.jsx';
-import Users from './Users.jsx';
+import UsersList from './UsersList.jsx';
 import CheckRectangle from './CheckRectangle.jsx';
 import CheveronDown from './CheveronDown.jsx';
 import CheveronLeft from './CheveronLeft.jsx';
@@ -310,7 +310,7 @@ const Icon = (props) => {
     case 'uparrow':
       return <UpArrow {...props} />;
     case 'users':
-      return <Users {...props} />;
+      return <UsersList {...props} />;
 
     case 'useradd':
       return <UserAdd {...props} />;
