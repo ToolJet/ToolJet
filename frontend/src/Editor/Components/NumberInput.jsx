@@ -54,7 +54,7 @@ export const NumberInput = function NumberInput({
   const labelRef = useRef();
 
   useEffect(() => {
-    setExposedVariable('value', label);
+    setExposedVariable('label', label);
   }, [label]);
 
   useEffect(() => {

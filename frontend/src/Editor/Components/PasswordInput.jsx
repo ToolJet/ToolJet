@@ -84,7 +84,7 @@ export const PasswordInput = function PasswordInput({
   };
 
   useEffect(() => {
-    setExposedVariable('value', label);
+    setExposedVariable('label', label);
   }, [label]);
 
   useEffect(() => {

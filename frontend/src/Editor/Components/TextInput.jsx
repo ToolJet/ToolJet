@@ -101,7 +101,7 @@ export const TextInput = function TextInput({
   ]);
 
   useEffect(() => {
-    setExposedVariable('value', label);
+    setExposedVariable('label', label);
   }, [label]);
 
   useEffect(() => {
