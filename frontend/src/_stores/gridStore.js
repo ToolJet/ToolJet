@@ -37,3 +37,4 @@ export const useNoOfGrid = () => useGridStore((state) => state.noOfGrid, shallow
 export const useDraggedSubContainer = () => useGridStore((state) => state.draggedSubContainer, shallow);
 export const useGridStoreActions = () => useGridStore((state) => state.actions, shallow);
 export const useDragTarget = () => useGridStore((state) => state.dragTarget, shallow);
+export const useResizingComponentId = () => useGridStore((state) => state.resizingComponentId, shallow);

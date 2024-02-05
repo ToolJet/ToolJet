@@ -24,7 +24,7 @@ import _, { cloneDeep, isEmpty } from 'lodash';
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
-import { useDraggedSubContainer } from '@/_stores/gridStore';
+import { useDraggedSubContainer, useResizingComponentId } from '@/_stores/gridStore';
 import useConfirm from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/Confirm';
 // eslint-disable-next-line import/no-unresolved
 
@@ -59,6 +59,7 @@ export const Container = ({
   const noOfGrids = 43;
   const [subContainerWidths, setSubContainerWidths] = useState({});
   const draggedSubContainer = useDraggedSubContainer(false);
+  const resizedComponentId = useResizingComponentId();
   // const [dragTarget] = useDragTarget();
 
   const { showComments, currentLayout, selectedComponents } = useEditorStore(
@@ -851,11 +852,21 @@ export const Container = ({
       )}
       <div className="root">
         <div className="container-fluid rm-container p-0">
-          {Object.entries(boxes)
+          {Object.entries({
+            ...boxes,
+            ...(resizedComponentId && boxes[resizedComponentId] && { resizedComponentId: boxes[resizedComponentId] }),
+          })
             .filter(([, box]) => isEmpty(box?.component?.parent))
             .map(([id, box]) => {
               return (
-                <WidgetWrapper widget={box} key={id} id={id} gridWidth={gridWidth} currentLayout={currentLayout}>
+                <WidgetWrapper
+                  isResizing={resizedComponentId === id}
+                  widget={box}
+                  key={id}
+                  id={id}
+                  gridWidth={gridWidth}
+                  currentLayout={currentLayout}
+                >
                   <DraggableBox
                     className={showComments && 'pointer-events-none'}
                     canvasWidth={canvasWidth}
@@ -868,7 +879,7 @@ export const Container = ({
                     onComponentOptionsChanged={onComponentOptionsChanged}
                     key={id}
                     paramUpdated={paramUpdated}
-                    id={id}
+                    id={id === 'resizedComponentId' ? resizedComponentId : id}
                     {...box}
                     mode={mode}
                     resizingStatusChanged={(status) => setIsResizing(status)}
@@ -963,7 +974,8 @@ export const Container = ({
   );
 };
 
-const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout }) => {
+const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResizing }) => {
+  const isGhostComponent = id === 'resizedComponentId';
   const {
     component: { parent },
     layouts,
@@ -986,22 +998,25 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout }) => {
     width: width + 'px',
     height: layoutData.height + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
+    ...(isGhostComponent ? { opacity: 0.5 } : isResizing ? { opacity: 0 } : {}),
   };
 
   return (
-    <div
-      className={`target widget-target target1 ele-${id} moveable-box`}
-      data-id={`${parent}`}
-      id={id}
-      widgetid={id}
-      style={{
-        transform: `translate(332px, -134px)`,
-        ...styles,
-        ...(hoveredComponent === id ? { zIndex: 3 } : {}),
-      }}
-    >
-      {children}
-    </div>
+    <>
+      <div
+        className={isGhostComponent ? `` : `target widget-target target1 ele-${id} moveable-box`}
+        data-id={`${parent}`}
+        id={id}
+        widgetid={id}
+        style={{
+          transform: `translate(332px, -134px)`,
+          ...styles,
+          ...(hoveredComponent === id ? { zIndex: 3 } : {}),
+        }}
+      >
+        {children}
+      </div>
+    </>
   );
 };
 
