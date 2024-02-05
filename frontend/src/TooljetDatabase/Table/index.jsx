@@ -571,6 +571,7 @@ const Table = ({ collapseSidebar }) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
       columnEditPopover: false,
+      hoveredColumn: null,
     }));
   };
 
