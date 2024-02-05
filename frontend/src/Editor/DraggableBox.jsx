@@ -100,7 +100,7 @@ export const DraggableBox = React.memo(
     const [isResizing, setResizing] = useState(false);
     const [isDragging2, setDragging] = useState(false);
     const [canDrag, setCanDrag] = useState(true);
-    const [noOfGrid] = useNoOfGrid();
+    const noOfGrid = useNoOfGrid();
     const {
       currentLayout,
       setHoveredComponent,

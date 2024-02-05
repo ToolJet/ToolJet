@@ -575,15 +575,15 @@ export default function DragContainer({
           try {
             if (isDraggingRef.current) {
               console.log('timeDifference0', performance.now() - startTime);
-              runAsync(() => useGridStore.getState().actions.setDraggingComponentId(null));
+              useGridStore.getState().actions.setDraggingComponentId(null);
               console.log('timeDifference1.1', performance.now() - startTime);
               isDraggingRef.current = false;
-              runAsync(() => setIsDragging(false));
+              setIsDragging(false);
               console.log('timeDifference1.2', performance.now() - startTime);
             }
             console.log('timeDifference1', performance.now() - startTime);
 
-            runAsync(() => setDraggedTarget());
+            setDraggedTarget();
             if (draggedSubContainer) {
               return;
             }
@@ -649,19 +649,17 @@ export default function DragContainer({
             console.log('timeDifference4', performance.now() - startTime);
 
             console.log('draggedOverElemId->', draggedOverElemId, currentParentId);
-            runAsync(() =>
-              onDrag([
-                {
-                  id: e.target.id,
-                  x: left,
-                  y: Math.round(top / 10) * 10,
-                  parent: isParentChangeAllowed ? draggedOverElemId : undefined,
-                },
-              ])
-            );
+            onDrag([
+              {
+                id: e.target.id,
+                x: left,
+                y: Math.round(top / 10) * 10,
+                parent: isParentChangeAllowed ? draggedOverElemId : undefined,
+              },
+            ]);
             const box = boxes.find((box) => box.id === e.target.id);
             console.log('timeDifference5', performance.now() - startTime);
-            runAsync(() => useEditorStore.getState().actions.setSelectedComponents([{ ...box }]));
+            useEditorStore.getState().actions.setSelectedComponents([{ ...box }]);
             console.log('timeDifference6', performance.now() - startTime);
           } catch (error) {
             console.log('draggedOverElemId->error', error);
@@ -675,17 +673,23 @@ export default function DragContainer({
           });
         }}
         onDrag={(e) => {
+          const startTime = performance.now();
           console.log('onDrager----', e.target.id, hoveredComponent);
           if (!isDraggingRef.current) {
-            runAsync(() => useGridStore.getState().actions.setDraggingComponentId(e.target.id));
+            console.log('timeDiff->1', performance.now() - startTime);
+            useGridStore.getState().actions.setDraggingComponentId(e.target.id);
+            console.log('timeDiff->2', performance.now() - startTime);
             isDraggingRef.current = true;
-            runAsync(() => setIsDragging(true));
+            setIsDragging(true);
+            console.log('timeDiff->3', performance.now() - startTime);
           }
           if (draggedSubContainer) {
             return;
           }
           if (e.target.id !== draggedTarget) {
-            runAsync(() => setDraggedTarget(e.target.id));
+            console.log('timeDiff->4', performance.now() - startTime);
+            setDraggedTarget(e.target.id);
+            console.log('timeDiff->5', performance.now() - startTime);
           }
           // setDraggedTarget(e.target.id);
           if (!draggedSubContainer) {
@@ -729,6 +733,7 @@ export default function DragContainer({
               draggedOverElemRef.current = draggedOverContainer;
             }
           }
+          console.log('timeDiff->6', performance.now() - startTime);
           console.log('draggedOverElemId parent', draggedOverElemId, parent);
         }}
         onDragGroup={({ events }) => {
@@ -1202,8 +1207,8 @@ function findHighestLevelofSelection(selectedComponents) {
 }
 
 async function runAsync(fn) {
-  console.log('Executing_ssetState==>' + fn);
-  setImmediate(() => {
-    fn();
-  });
+  // console.log('Executing_ssetState==>' + fn);
+  // setImmediate(() => {
+  fn();
+  // });
 }

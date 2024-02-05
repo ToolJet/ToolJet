@@ -15,7 +15,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
-import { useNoOfGrid } from '@/_stores/gridStore';
+// import { useNoOfGrid } from '@/_stores/gridStore';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -43,7 +43,7 @@ export const GlobalSettings = ({
     }),
     shallow
   );
-  const [noOfGrids, setNoOfGrids] = useNoOfGrid();
+  // const [noOfGrids, setNoOfGrids] = useNoOfGrid();
 
   const { app, slug: oldSlug } = useAppInfo();
 
@@ -300,7 +300,7 @@ export const GlobalSettings = ({
                 </div>
               </div>
 
-              <div className="d-flex mb-3">
+              {/* <div className="d-flex mb-3">
                 <span data-cy={`label-max-canvas-width`} className="w-full m-auto">
                   No. of Grids
                 </span>
@@ -324,7 +324,7 @@ export const GlobalSettings = ({
                     </select>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               <div className="d-flex justify-content-between mb-3">
                 <span className="pt-2" data-cy={`label-bg-canvas`}>

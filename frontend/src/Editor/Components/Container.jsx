@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import Spinner from '@/_ui/Spinner';
-import { useDraggedSubContainer } from '@/_stores/gridStore';
 
 export const Container = function Container({
   id,
@@ -17,7 +16,6 @@ export const Container = function Container({
   properties,
 }) {
   const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
-  const [draggedSubContainer] = useDraggedSubContainer();
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const computedStyles = {
