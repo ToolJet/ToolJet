@@ -44,6 +44,10 @@ export function Filter(props) {
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
   }
 
+  const debouncedFilterChanged = _.debounce((newFilters) => {
+    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
+  }, 500);
+
   function filterValueChanged(index, value) {
     const newFilters = filters;
     newFilters[index].value = {
@@ -53,7 +57,7 @@ export function Filter(props) {
     mergeToFilterDetails({
       filters: newFilters,
     });
-    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
+    debouncedFilterChanged(newFilters);
   }
 
   function addFilter() {
@@ -184,7 +188,8 @@ export function Filter(props) {
                   value={filter.value.value}
                   placeholder="value"
                   className="form-control"
-                  onChange={(e) => _.debounce(filterValueChanged(index, e.target.value), 500)}
+                  onChange={(e) => filterValueChanged(index, e.target.value)}
+
                 />
               )}
             </div>
