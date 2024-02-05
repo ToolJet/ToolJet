@@ -19,7 +19,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import DragContainerNested from './DragContainerNested';
-import { useGridStore } from '@/_stores/gridStore';
+import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
 import { SUBCONTAINER_WITH_SCROLL } from './constants';
 import { widgets } from './WidgetManager/widgetConfig';
 
@@ -86,6 +86,7 @@ export const SubContainer = ({
     }),
     shallow
   );
+  const resizingComponentId = useResizingComponentId();
 
   // const [noOfGrids] = useNoOfGrid();
   const noOfGrids = 43;
@@ -742,9 +743,13 @@ export const SubContainer = ({
       <div className="root h-100">
         <div className={`container-fluid p-0 h-100 drag-container-parent`} component-id={parent}>
           {checkParentVisibility() &&
-            Object.keys(childWidgets).map((key) => {
-              const addDefaultChildren = childWidgets[key]['withDefaultChildren'] || false;
-              const box = childWidgets[key];
+            Object.entries({
+              ...childWidgets,
+              ...(resizingComponentId &&
+                childWidgets[resizingComponentId] && { resizingComponentId: childWidgets[resizingComponentId] }),
+            }).map(([key, box]) => {
+              const addDefaultChildren = box['withDefaultChildren'] || false;
+              // const box = childWidgets[key];
 
               const canShowInCurrentLayout =
                 box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
@@ -752,6 +757,7 @@ export const SubContainer = ({
               if (box.component.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
                 return (
                   <SubWidgetWrapper
+                    isResizing={resizingComponentId === key}
                     key={key}
                     id={key}
                     parent={parent}
@@ -760,6 +766,7 @@ export const SubContainer = ({
                     currentLayout={currentLayout}
                     canvasWidth={_containerCanvasWidth}
                     gridWidth={gridWidth}
+                    isGhostComponent={key === 'resizingComponentId'}
                   >
                     <DraggableBox
                       onComponentClick={onComponentClick}
@@ -790,9 +797,9 @@ export const SubContainer = ({
                       }}
                       // key={key}
                       paramUpdated={paramUpdated}
-                      id={key}
+                      id={key === 'resizingComponentId' ? resizingComponentId : key}
                       allComponents={allComponents}
-                      {...childWidgets[key]}
+                      {...box}
                       mode={mode}
                       resizingStatusChanged={(status) => setIsResizing(status)}
                       draggingStatusChanged={(status) => setIsDragging(status)}
@@ -942,7 +949,18 @@ export const SubContainer = ({
   );
 };
 
-const SubWidgetWrapper = ({ parent, readOnly, id, widget, currentLayout, canvasWidth, gridWidth, children }) => {
+const SubWidgetWrapper = ({
+  parent,
+  readOnly,
+  id,
+  widget,
+  currentLayout,
+  canvasWidth,
+  gridWidth,
+  children,
+  isResizing,
+  isGhostComponent,
+}) => {
   const { layouts } = widget;
   const layoutData = layouts?.[currentLayout] || layouts?.['desktop'];
   if (isEmpty(layoutData)) {
@@ -953,12 +971,15 @@ const SubWidgetWrapper = ({ parent, readOnly, id, widget, currentLayout, canvasW
     width: width + 'px',
     height: layoutData.height + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
+    ...(isGhostComponent ? { opacity: 0.5 } : isResizing ? { opacity: 0 } : {}),
   };
 
   return (
     <div
       className={
-        readOnly
+        isGhostComponent
+          ? ''
+          : readOnly
           ? `ele-${id} nested-target moveable-box`
           : `target-${parent} target1-${parent} ele-${id} nested-target moveable-box target`
       }
