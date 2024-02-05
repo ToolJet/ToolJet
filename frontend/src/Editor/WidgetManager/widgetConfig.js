@@ -3037,14 +3037,14 @@ export const widgets = [
         displayName: 'Clear',
       },
       {
-        handle: 'setLoadingState',
-        displayName: 'Set loading state',
-        params: [{ handle: 'setLoadingState', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+        handle: 'setLoading',
+        displayName: 'Set loading',
+        params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
       {
-        handle: 'setDisabled',
-        displayName: 'Set disabled',
-        params: [{ handle: 'setDisabled', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+        handle: 'setDisable',
+        displayName: 'Set disable',
+        params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
     ],
     definition: {

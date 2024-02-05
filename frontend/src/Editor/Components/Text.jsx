@@ -69,11 +69,11 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
       setVisibility(value);
     });
 
-    setExposedVariable('setLoadingState', async function (value) {
+    setExposedVariable('setLoading', async function (value) {
       setLoading(value);
     });
 
-    setExposedVariable('setDisabled', async function (value) {
+    setExposedVariable('setDisable', async function (value) {
       setIsDisabled(value);
     });
 
