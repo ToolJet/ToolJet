@@ -554,8 +554,11 @@ class ViewerComponent extends React.Component {
 
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
-
     const canvasMaxWidth = this.computeCanvasMaxWidth();
+    const pages =
+      Object.entries(_.cloneDeep(appDefinition)?.pages)
+        .map(([id, page]) => ({ id, ...page }))
+        .sort((a, b) => a.index - b.index) || [];
 
     if (this.state.app?.isLoading) {
       return (
@@ -600,7 +603,7 @@ class ViewerComponent extends React.Component {
                 appName={this.state.app?.name ?? null}
                 changeDarkMode={this.changeDarkMode}
                 darkMode={this.props.darkMode}
-                pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                pages={pages}
                 currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                 switchPage={this.switchPage}
               />
@@ -617,7 +620,7 @@ class ViewerComponent extends React.Component {
                         <ViewerNavigation
                           isMobileDevice={this.props.currentLayout === 'mobile'}
                           canvasBackgroundColor={this.computeCanvasBackgroundColor()}
-                          pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                          pages={pages}
                           currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                           switchPage={this.switchPage}
                           darkMode={this.props.darkMode}
