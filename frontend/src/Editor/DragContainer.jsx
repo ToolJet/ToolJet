@@ -588,9 +588,10 @@ export default function DragContainer({
               return;
             }
 
-            let draggedOverElemId;
             console.log('timeDifference2', performance.now() - startTime);
-            if (document.elementFromPoint(e.clientX, e.clientY)) {
+            let draggedOverElemId = widgets[e.target.id]?.component?.parent;
+            const parentComponent = widgets[widgets[e.target.id]?.component?.parent];
+            if (document.elementFromPoint(e.clientX, e.clientY) && parentComponent?.component?.component !== 'Modal') {
               const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
               const draggedOverElem = targetElems.find((ele) => {
                 const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
@@ -777,6 +778,8 @@ export default function DragContainer({
         isDisplaySnapDigit={false}
         // snapGridWidth={gridWidth}
         bounds={{ left: 0, top: 0, right: 0, bottom: 0, position: 'css' }}
+        displayAroundControls={true}
+        controlPadding={10}
       />
       {/* {removeDuplicates(list)
         .filter((i) => !isEmpty(i.parent))

@@ -28,7 +28,7 @@
 	visibility: visible !important;
 }
 .moveable-control-box.modal-moveable{
-    z-index: 1000 !important;
+    z-index: 3001 !important;
 }
 
 .moveable-control-box {
