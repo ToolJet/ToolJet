@@ -879,7 +879,7 @@ export const Container = ({
                     onComponentOptionsChanged={onComponentOptionsChanged}
                     key={id}
                     paramUpdated={paramUpdated}
-                    id={id === 'resizedComponentId' ? resizedComponentId : id}
+                    id={id}
                     {...box}
                     mode={mode}
                     resizingStatusChanged={(status) => setIsResizing(status)}
