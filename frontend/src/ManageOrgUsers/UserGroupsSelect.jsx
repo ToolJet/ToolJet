@@ -30,6 +30,7 @@ export function UserGroupsSelect(props) {
             fill="var(--indigo9)"
             variant="secondary"
             leftIcon="addrectangle"
+            data-cy="create-new-group-button"
           >
             Create new group
           </ButtonSolid>

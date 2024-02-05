@@ -87,6 +87,7 @@ function FolderList({
                   variant="tertiary"
                   onMouseEnter={handleMouseEnterInside}
                   onMouseLeave={handleMouseLeaveInside}
+                  dataCy={'groups-list-option-button'}
                 ></ButtonSolid>
               </div>
               <Overlay

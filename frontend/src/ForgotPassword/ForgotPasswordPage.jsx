@@ -142,6 +142,7 @@ class ForgotPasswordComponent extends React.Component {
                             color: '#3E63DD',
                             fontWeight: '500',
                           }}
+                          data-cy="reset-password-info-banner"
                         >
                           {'Contact super admin to reset your password'}
                         </div>

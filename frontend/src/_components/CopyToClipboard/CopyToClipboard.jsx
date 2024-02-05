@@ -60,7 +60,14 @@ const DefaultCopyIcon = () => (
 );
 
 const CustomCopyIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 17 17" fill="none">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="17"
+    height="17"
+    viewBox="0 0 17 17"
+    fill="none"
+    data-cy="copy-path-to-clipboard"
+  >
     <path
       d="M9.12453 5.02051H6.0293V4.68717C6.0293 3.21442 7.2232 2.02051 8.69596 2.02051H12.696C14.1687 2.02051 15.3626 3.21442 15.3626 4.68717V8.68717C15.3626 10.1599 14.1687 11.3538 12.696 11.3538H12.3626V8.2586C12.3626 6.47025 10.9129 5.02051 9.12453 5.02051Z"
       fill="#889096"

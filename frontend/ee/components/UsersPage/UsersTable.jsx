@@ -57,7 +57,7 @@ const UsersTable = ({
                     {translator('header.organization.menus.manageUsers.userType', 'Type')}
                   </th>
                 )}
-                {!isLoadingAllUsers && <th data-cy="users-table-email-column-header">Groups</th>}
+                {!isLoadingAllUsers && <th data-cy="users-table-groups-column-header">Groups</th>}
                 {users && users[0]?.status ? (
                   <th data-cy="users-table-status-column-header">
                     {translator('header.organization.menus.manageUsers.status', 'Status')}

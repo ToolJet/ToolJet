@@ -54,13 +54,15 @@ export default function UserEditDrawer({
           <div className="drawer-card-wrap invite-user-drawer-wrap">
             <div className="card-header">
               <div className="card-header-inner-wrap">
-                <h3 className="tj-text-lg tj-text font-weight-500">Edit user details</h3>
+                <h3 className="tj-text-lg tj-text font-weight-500" data-cy="modal-title">
+                  Edit user details
+                </h3>
                 <div
                   onClick={() => {
                     onClose();
                   }}
                   style={{ cursor: 'pointer' }}
-                  data-cy="close-button"
+                  data-cy="modal-close-button"
                 >
                   <SolidIcon name="remove" width="16" />
                 </div>
@@ -69,7 +71,9 @@ export default function UserEditDrawer({
             <div className="manage-users-drawer-content">
               <div className={`invite-user-by-email`}>
                 <form noValidate>
-                  <label className="form-label">Name</label>
+                  <label className="form-label" data-cy="name-label">
+                    Name
+                  </label>
                   <div className="form-group mb-3 ">
                     <ToolTip
                       delay={{ show: '0', hide: '0' }}
@@ -95,7 +99,7 @@ export default function UserEditDrawer({
                     </ToolTip>
                   </div>
                   <div className="form-group mb-3 ">
-                    <label className="form-label">
+                    <label className="form-label" data-cy="email-address-label">
                       {t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
                     </label>
                     <ToolTip
@@ -155,6 +159,7 @@ export default function UserEditDrawer({
                   onClose();
                 }}
                 variant="tertiary"
+                data-cy="cancel-button"
               >
                 {t('globals.cancel', 'Cancel')}
               </ButtonSolid>
@@ -167,6 +172,7 @@ export default function UserEditDrawer({
                 }
                 isLoading={isUpdatingUser}
                 onClick={updateUser}
+                data-cy="update-button"
               >
                 Update
               </ButtonSolid>

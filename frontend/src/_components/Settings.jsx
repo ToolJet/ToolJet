@@ -34,6 +34,7 @@ export default function Settings({ darkMode, checkForUnsavedChanges, featureAcce
             onClick={(event) => checkForUnsavedChanges('/integrations', event)}
             to={'/integrations'}
             className="dropdown-item tj-text-xsm"
+            data-cy="marketplace-option"
           >
             <span>Marketplace</span>
           </Link>
@@ -53,6 +54,7 @@ export default function Settings({ darkMode, checkForUnsavedChanges, featureAcce
               onClick={(event) => checkForUnsavedChanges(getPrivateRoute('audit_logs'), event)}
               to={featureAccess?.auditLogs && getPrivateRoute('audit_logs')}
               className="dropdown-item tj-text-xsm"
+              data-cy="audit-log-option"
             >
               <span>Audit logs</span>
             </Link>
@@ -64,7 +66,7 @@ export default function Settings({ darkMode, checkForUnsavedChanges, featureAcce
             onClick={(event) => checkForUnsavedChanges('/instance-settings', event)}
             to={'/instance-settings'}
             className="dropdown-item tj-text-xsm"
-            data-cy="workspace-settings"
+            data-cy="instance-settings-option"
           >
             <span>Settings</span>
           </Link>
@@ -74,6 +76,7 @@ export default function Settings({ darkMode, checkForUnsavedChanges, featureAcce
             onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
             to={getPrivateRoute('workspace_settings')}
             className="dropdown-item tj-text-xsm"
+            data-cy="workspace-settings"
           >
             <span>Workspace settings</span>
           </Link>

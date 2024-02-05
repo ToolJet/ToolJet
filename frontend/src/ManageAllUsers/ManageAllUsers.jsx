@@ -289,16 +289,22 @@ class ManageAllUsersComponent extends React.Component {
     return (
       <ModalBase
         title={
-          <div className="my-3">
+          <div className="my-3" data-cy="modal-title">
             <span className="tj-text-md font-weight-500">{!isArchived ? 'Archive user' : 'Unarchive user'}</span>
-            <div className="tj-text-sm text-muted">{updatingUser?.email}</div>
+            <div className="tj-text-sm text-muted" data-cy="user-email">
+              {updatingUser?.email}
+            </div>
           </div>
         }
         show={showArchiveModal}
         handleClose={this.toggleArchiveModal}
         handleConfirm={() => (!isArchived ? this.archiveAll(updatingUser) : this.unarchiveAll(updatingUser))}
         confirmBtnProps={confirmButtonProps}
-        body={<div className="tj-text-sm">{body}</div>}
+        body={
+          <div className="tj-text-sm" data-cy="modal-message">
+            {body}
+          </div>
+        }
         darkMode={this.props.darkMode}
       />
     );

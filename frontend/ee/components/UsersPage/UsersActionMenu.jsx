@@ -59,6 +59,7 @@ export default function UsersActionMenu({
                   variant="tertiary"
                   leftIcon="lock"
                   iconWidth="12"
+                  data-cy="reset-password-button"
                 >
                   Reset password
                 </ButtonSolid>
@@ -83,7 +84,7 @@ export default function UsersActionMenu({
         </Popover>
       }
     >
-      <div className="user-actions-menu-container">
+      <div className="user-actions-menu-container" data-cy="user-actions-button">
         <SolidIcon className="actions-menu-icon" name="morevertical" />
       </div>
     </OverlayTrigger>

@@ -68,13 +68,17 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
           }
         }}
         title="Reset password"
-        headerContent={<p style={{ marginBottom: '0px', color: '#687076' }}>{user?.email}</p>}
+        headerContent={
+          <p style={{ marginBottom: '0px', color: '#687076' }} data-cy="user-email">
+            {user?.email}
+          </p>
+        }
         footerContent={
           <>
-            <ButtonSolid variant="tertiary" onClick={closeModal}>
+            <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
               Cancel
             </ButtonSolid>
-            <ButtonSolid onClick={handleResetPassword} disabled={isDisabled}>
+            <ButtonSolid onClick={handleResetPassword} disabled={isDisabled} data-cy="reset-button">
               {isLoading ? 'Resetting...' : 'Reset'}
             </ButtonSolid>
           </>
@@ -83,7 +87,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
         <div className="row workspace-folder-modal mb-3">
           <div className="col modal-main tj-app-input">
             <div>
-              <label className="form-check-label">
+              <label className="form-check-label" data-cy="automatically-generate-a-password-label">
                 <input
                   type="radio"
                   name="passwordOption"
@@ -91,18 +95,19 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                   checked={passwordOption === 'auto'}
                   onChange={() => setPasswordOption('auto')}
                   style={{ marginRight: '8px', marginBottom: '3px', marginTop: '3px' }}
+                  data-cy="automatically-generate-a-password-input"
                 />
                 Automatically generate a password
               </label>
               <small>
-                <div style={{ marginLeft: '20px', color: '#687076' }}>
+                <div style={{ marginLeft: '20px', color: '#687076' }} data-cy="helper-text">
                   You will be able to view and copy the password in the next step
                 </div>
               </small>
             </div>
 
             <div style={{ marginTop: '20px' }}>
-              <label className="form-check-label">
+              <label className="form-check-label" data-cy="create-password-label">
                 <input
                   type="radio"
                   name="passwordOption"
@@ -110,6 +115,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                   checked={passwordOption === 'manual'}
                   onChange={() => setPasswordOption('manual')}
                   style={{ marginRight: '8px', marginBottom: '3px', marginTop: '3px' }}
+                  data-cy="create-password-input"
                 />
                 Create password
               </label>
@@ -125,6 +131,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                           className="tj-text-input"
                           placeholder={'Enter password'}
                           autoComplete="new-password"
+                          data-cy="password-input"
                         />
                         <div
                           className="signup-password-hide-img"
@@ -167,7 +174,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                         </div>
                       </div>
                     </div>
-                    <small>Password should be at least 5 characters</small>
+                    <small data-cy="password-helper-text">Password should be at least 5 characters</small>
                   </div>
                 )}
               </div>
@@ -180,7 +187,11 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
           show={true}
           closeModal={closeSuccessModal}
           title="Reset password"
-          footerContent={<ButtonSolid onClick={closeSuccessModal}>Done</ButtonSolid>}
+          footerContent={
+            <ButtonSolid onClick={closeSuccessModal} data-cy="done-button">
+              Done
+            </ButtonSolid>
+          }
         >
           <label className="form-check-label" data-cy="password-label">
             Password
@@ -192,6 +203,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                 className="tj-text-input"
                 value={generatedPassword}
                 readOnly
+                data-cy="password-input"
               />
               <div
                 className="icon-wrapper"
