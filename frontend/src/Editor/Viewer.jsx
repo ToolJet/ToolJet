@@ -569,9 +569,8 @@ class ViewerComponent extends React.Component {
     } = this.state;
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
-
+    const isMobilePreviewMode = this.props.versionId && this.props.currentLayout === 'mobile';
     const canvasMaxWidth = this.computeCanvasMaxWidth();
-
     if (this.state.app?.isLoading) {
       return (
         <div className="tooljet-logo-loader">
@@ -622,6 +621,20 @@ class ViewerComponent extends React.Component {
                 showViewerNavigation={appDefinition?.showViewerNavigation}
               />
             )}
+            {/* Render following mobile header only when its in preview mode and not in launched app */}
+            {this.props.currentLayout === 'mobile' && !isMobilePreviewMode && (
+              <MobileHeader
+                showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
+                appName={this.state.app?.name ?? null}
+                changeDarkMode={this.changeDarkMode}
+                darkMode={this.props.darkMode}
+                pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                switchPage={this.switchPage}
+                setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                showViewerNavigation={appDefinition?.showViewerNavigation}
+              />
+            )}
             <div className="sub-section">
               <div className="main">
                 <div
@@ -643,19 +656,19 @@ class ViewerComponent extends React.Component {
                     )}
                     <div
                       className="flex-grow-1 d-flex justify-content-center"
-                      style={{ backgroundColor: this.props.currentLayout === 'mobile' ? '#ACB2B9' : 'unset' }}
+                      style={{ backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset' }}
                     >
                       <div
                         className="canvas-area"
                         style={{
-                          width: this.props.currentLayout === 'mobile' ? '450px' : currentCanvasWidth,
-                          maxWidth: this.props.currentLayout === 'mobile' ? '450px' : canvasMaxWidth,
+                          width: isMobilePreviewMode ? '450px' : currentCanvasWidth,
+                          maxWidth: isMobilePreviewMode ? '450px' : canvasMaxWidth,
                           backgroundColor: this.computeCanvasBackgroundColor(),
                           margin: 0,
                           padding: 0,
                         }}
                       >
-                        {this.props.currentLayout === 'mobile' && (
+                        {this.props.currentLayout === 'mobile' && isMobilePreviewMode && (
                           <MobileHeader
                             showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
                             appName={this.state.app?.name ?? null}
@@ -685,7 +698,7 @@ class ViewerComponent extends React.Component {
                                 darkMode={this.props.darkMode}
                                 onEvent={this.handleEvent}
                                 mode="view"
-                                deviceWindowWidth={this.props.currentLayout === 'mobile' ? '450px' : deviceWindowWidth}
+                                deviceWindowWidth={isMobilePreviewMode ? '450px' : deviceWindowWidth}
                                 selectedComponent={this.state.selectedComponent}
                                 onComponentClick={(id, component) => {
                                   this.setState({
@@ -721,12 +734,8 @@ class ViewerComponent extends React.Component {
                         <TooljetLogoText fill={this.props.darkMode ? '#ECEDEE' : '#11181C'} />
                       </div>
                       {/* Following div is a hack to prevent showing mobile drawer navigation coming from left*/}
-                      {this.props.currentLayout === 'mobile' && (
-                        <div className="hide-drawer-transition" style={{ right: 0 }}></div>
-                      )}
-                      {this.props.currentLayout === 'mobile' && (
-                        <div className="hide-drawer-transition" style={{ left: 0 }}></div>
-                      )}
+                      {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
+                      {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                     </div>
                   </div>
                 </div>

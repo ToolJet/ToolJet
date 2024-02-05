@@ -30,6 +30,11 @@ const MobileHeader = ({
     }),
     shallow
   );
+
+  // Fetch the version parameter from the query string
+  const searchParams = new URLSearchParams(window.location.search);
+  const version = searchParams.get('version');
+
   const _renderAppNameAndLogo = () => (
     <div
       className={classNames('d-flex', 'align-items-center')}
@@ -97,7 +102,7 @@ const MobileHeader = ({
           styles={{
             height: '46px',
             position: 'fixed',
-            width: '450px',
+            width: version ? '450px' : '100%',
             zIndex: '100',
           }}
           showNavbarClass={false}
@@ -114,9 +119,6 @@ const MobileHeader = ({
     <Header
       styles={{
         height: '46px',
-        position: 'fixed',
-        width: '450px',
-        zIndex: '100',
       }}
     >
       <div className="d-flex">

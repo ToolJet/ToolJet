@@ -112,7 +112,10 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
     );
   }
   return (
-    <div className="released-version-no-header-mbl-preview" style={{ backgroundColor: 'var(--slate5)' }}>
+    <div
+      className="released-version-no-header-mbl-preview"
+      style={{ backgroundColor: 'var(--slate5)', top: showHeader ? '' : '14px' }}
+    >
       <span
         style={{
           color: 'var(--slate12)',
