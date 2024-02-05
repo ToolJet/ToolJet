@@ -1,4 +1,4 @@
-import { commonSelectors } from "../../constants/selectors/common";
+import { commonSelectors } from "Selectors/common";
 import { commonText } from "../../constants/texts/common";
 import { fake } from "Fixtures/fake";
 import { addNewUser } from "Support/utils/onboarding";
@@ -7,6 +7,7 @@ import { logout } from "Support/utils/common";
 describe("Password reset functionality", () => {
   const data = {};
   let passwordResetLink = "";
+  const envVar = Cypress.env("environment");
 
   it("Verify wrong password limit", () => {
     data.firstName = fake.firstName;
@@ -59,6 +60,12 @@ describe("Password reset functionality", () => {
       .verifyVisibleElement("have.text", commonText.resetPasswordLinkButton)
       .and("be.disabled");
     cy.get(commonSelectors.enterIcon).should("be.visible");
+    if (envVar === "Enterprise") {
+      cy.get('[data-cy="reset-password-info-banner"]').verifyVisibleElement(
+        "have.text",
+        "Contact super admin to reset your password"
+      );
+    }
 
     cy.clearAndType(commonSelectors.emailInputField, data.email);
     cy.get(commonSelectors.resetPasswordLinkButton).click();

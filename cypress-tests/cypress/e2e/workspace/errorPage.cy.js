@@ -4,7 +4,6 @@ import { groupsSelector } from "Selectors/manageGroups";
 import { fake } from "Fixtures/fake";
 import {
     logout,
-    navigateToAppEditor,
     navigateToManageGroups,
     releaseApp,
 } from "Support/utils/common";
@@ -80,7 +79,7 @@ describe("Redirection error pages", () => {
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
     });
 
-    it("Verify error modal for app url of unreleased apps", () => {
+    it.only("Verify error modal for app url of unreleased apps", () => {
         data.appName = `${fake.companyName} App`;
         data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 

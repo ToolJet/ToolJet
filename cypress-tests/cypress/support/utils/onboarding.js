@@ -147,6 +147,7 @@ export const userSignUp = (fullName, email, workspaceName) => {
       : verifyCloudOnboardingQuestions;
   let invitationLink;
   cy.visit("/");
+  cy.wait(1000);
   cy.get(commonSelectors.createAnAccountLink).realClick();
   cy.clearAndType(commonSelectors.nameInputField, fullName);
   cy.clearAndType(commonSelectors.emailInputField, email);
@@ -163,7 +164,6 @@ export const userSignUp = (fullName, email, workspaceName) => {
     cy.get(commonSelectors.setUpToolJetButton).click();
     cy.wait(4000);
     verificationFunction(fullName, workspaceName);
-    verifyOnboardingQuestions(fullName, workspaceName);
     updateWorkspaceName(email, workspaceName);
   });
 };

@@ -16,7 +16,7 @@ import {
 } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
-import { addNewUserMW } from "Support/utils/userPermissions";
+import { addNewUser } from "Support/utils/onboarding";
 import { groupsSelector } from "Selectors/manageGroups";
 import { eeGroupsSelector } from "Selectors/eeCommon";
 import {
@@ -46,6 +46,7 @@ describe("Global Datasource Manager", () => {
         cy.defaultWorkspaceLogin();
         cy.viewport(1200, 1300);
         cy.wait(1000);
+        cy.skipWalkthrough();
     });
 
     it("Should verify the global data source manager UI", () => {
@@ -177,7 +178,7 @@ describe("Global Datasource Manager", () => {
         data.ds1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.text1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-        addNewUserMW(data.userName1, data.userEmail1);
+        addNewUser(data.userName1, data.userEmail1);
         cy.logoutApi();
 
         cy.defaultWorkspaceLogin();
@@ -247,7 +248,7 @@ describe("Global Datasource Manager", () => {
         data.text2 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.groupName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-        addNewUserMW(data.userName1, data.userEmail1);
+        addNewUser(data.userName1, data.userEmail1);
         cy.logoutApi();
 
         cy.defaultWorkspaceLogin();
@@ -348,6 +349,7 @@ describe("Global Datasource Manager", () => {
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.wait(1000);
         cy.get(
             commonWidgetSelector.draggableWidget(data.text2)
         ).verifyVisibleElement("have.text", "ricky");

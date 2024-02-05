@@ -196,7 +196,7 @@ describe(
       cy.defaultWorkspaceLogin();
       navigateToAppEditor(data.appName);
       cy.wait(2000);
-      cy.skipEditorPopover();
+      // cy.skipEditorPopover();
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).check();
       cy.wait(2000);

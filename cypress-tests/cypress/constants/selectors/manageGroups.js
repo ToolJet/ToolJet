@@ -68,4 +68,16 @@ export const groupsSelector = {
   userRow: (email) => {
     return `[data-cy="${cyParamName(email)}-user-row"]`;
   },
+  groupOptionIcon: (groupName) => {
+    return `[data-cy="${cyParamName(groupName)}-list-item"] > :nth-child(2) > .tj-base-btn`
+  },
+  duplicateOption: '[data-cy="duplicate-group-card-option"]',
+  deleteGroupOption: '[data-cy="delete-group-card-option"]',
+  usersCheckInput: '[data-cy="users-check-input"]',
+  permissionCheckInput: '[data-cy="permissions-check-input"]',
+  appsCheckInput: '[data-cy="apps-check-input"]',
+  confimButton: '[data-cy="confim-button"]',
+  duplicatedGroupLink: (groupName) => {
+    return `[data-cy="${cyParamName(groupName)}_copy-list-item"]`
+  },
 };

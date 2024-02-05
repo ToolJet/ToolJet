@@ -34,15 +34,16 @@ describe("dashboard", () => {
   beforeEach(() => {
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
+    cy.skipWalkthrough();
   });
 
   it("should verify the elements on empty dashboard", () => {
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=&type=front-end", {
       fixture: "intercept/emptyDashboard.json",
     }).as("emptyDashboard");
-    cy.intercept("GET", "/api/folders?searchKey=&type=front-end", { folders: [] }).as(
-      "folders"
-    );
+    cy.intercept("GET", "/api/folders?searchKey=&type=front-end", {
+      folders: [],
+    }).as("folders");
     cy.intercept("GET", "api/metadata", {
       installed_version: "2.9.2",
       version_ignored: false,
@@ -105,7 +106,7 @@ describe("dashboard", () => {
       .should("have.attr", "class")
       .and("contain", "bg-light-gray");
 
-    cy.wait(500)
+    cy.wait(500);
     cy.get(commonSelectors.settingsIcon).click();
     cy.get(commonSelectors.marketplaceOption).verifyVisibleElement(
       "have.text",

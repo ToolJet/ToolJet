@@ -56,7 +56,7 @@ export const instanceSettingsText = {
   archiveAllButton: "Archive All",
   archiveState: "Archive",
   editModalTitle: "Edit user details",
-  superAdminToggleLabel: "Make the user super admin",
+  superAdminToggleLabel: "Super admin",
   allowWorkspaceToggleLabel: "Allow personal workspace",
   allowWorkspaceHelperText:
     "This feature will enable users to create their own workspace",

@@ -20,6 +20,7 @@ describe("", () => {
         cy.get('[href="/instance-settings"]').click();
 
         cy.clearAndType(commonSelectors.inputUserSearch, data.email);
+        cy.wait(1000)
         cy.get('[data-cy="user-actions-button"]').click();
         cy.get('[data-cy="reset-password-button"]').click();
 
@@ -74,6 +75,7 @@ describe("", () => {
         cy.get('[href="/instance-settings"]').click();
 
         cy.clearAndType(commonSelectors.inputUserSearch, data.email);
+        cy.wait(1000)
         cy.get('[data-cy="user-actions-button"]').click();
         cy.get('[data-cy="reset-password-button"]').click();
         cy.get('[data-cy="create-password-input"]').check();

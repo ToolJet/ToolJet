@@ -1,8 +1,8 @@
 import { cyParamName } from "./common";
 
 export const commonEeSelectors = {
-  instanceSettingIcon: '[data-cy="icon-instance-settings"]',
-  auditLogIcon: '[data-cy="icon-audit-logs"]',
+  instanceSettingIcon: '[data-cy="instance-settings-option"]',
+  auditLogIcon: '[data-cy="audit-log-option"]',
   cancelButton: '[data-cy="cancel-button"]',
   saveButton: '[data-cy="save-button"]',
   pageTitle: '[data-cy="dashboard-section-header"]',

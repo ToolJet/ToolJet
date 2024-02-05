@@ -170,31 +170,15 @@ export const userSignUp = (fullName, email, workspaceName) => {
   });
 };
 
-// export const resetAllowPersonalWorkspace = () => {
-//   cy.get(commonEeSelectors.instanceSettingIcon).click();
-//   cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-//   cy.get(instanceSettingsSelector.allowWorkspaceToggle)
-//     .eq(0)
-//     .then(($el) => {
-//       if (!$el.is(":checked")) {
-//         cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).check();
-//         cy.get(commonEeSelectors.saveButton).click();
-//         cy.verifyToastMessage(
-//           commonSelectors.toastMessage,
-//           "Instance settings have been updated"
-//         );
-//       }
-//     });
-// };
-
-export const resetAllowPersonalWorkspace = () => {
+export const allowPersonalWorkspace = (allow = true) => {
+  const value = allow ? "true" : "false";
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
-    sql: "UPDATE instance_settings SET value = 'true' WHERE key = 'ALLOW_PERSONAL_WORKSPACE';",
+    sql: `UPDATE instance_settings SET value = '${value}' WHERE key = 'ALLOW_PERSONAL_WORKSPACE';`,
   });
 };
 
-export const addNewUser = (firstName, email, companyName) => {
+export const addNewUserEE = (firstName, email) => {
   common.navigateToManageUsers();
   inviteUser(firstName, email);
   cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
@@ -207,8 +191,8 @@ export const addNewUser = (firstName, email, companyName) => {
 
 export const inviteUser = (firstName, email) => {
   cy.get(usersSelector.buttonAddUsers).click();
-  cy.clearAndType(commonSelectors.inputFieldFullName, firstName);
-  cy.clearAndType(commonSelectors.inputFieldEmailAddress, email);
+  cy.get(commonSelectors.inputFieldFullName).type(firstName);
+  cy.get(commonSelectors.inputFieldEmailAddress).type(email);
 
   cy.get(usersSelector.buttonInviteUsers).click();
   cy.verifyToastMessage(
@@ -230,6 +214,7 @@ export const defaultWorkspace = () => {
 };
 
 export const trunOffAllowPersonalWorkspace = () => {
+  cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonEeSelectors.instanceSettingIcon).click();
   cy.get(instanceSettingsSelector.manageInstanceSettings).click();
   cy.get(instanceSettingsSelector.allowWorkspaceToggle)
@@ -514,19 +499,6 @@ export const updateLicense = (key) => {
   });
 };
 
-// export const insertGitSyncSSHSecondKey = (workspaceId) => {
-//   const pvtKey =
-//     "-----BEGIN PRIVATE KEY-----\n" +
-//     "MC4CAQAwBQYDK2VwBCIEIArTDR1KzuLCjXQSNlk76Hj6TmcfqMfK0GwuHjdtal2o\n" +
-//     "-----END PRIVATE KEY-----";
-//   cy.task("updateId", {
-//     dbconfig: Cypress.env("app_db"),
-//     sql: `INSERT INTO organization_git_sync(
-//        organization_id, git_url, is_enabled, is_finalized, ssh_private_key, ssh_public_key)
-//       VALUES ('${workspaceId}', 'git@github.com:ajith-k-v/test.git', true, true, '${pvtKey}', 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFVfSwzw8zz0UlrhNFCLF3AXEtt6vqBuPCUcxEVNt9g (unnamed)');`,
-//   });
-// };
-
 export const insertGitSyncSSHSecondKey = (workspaceId) => {
   const pvtKey =
     "-----BEGIN PRIVATE KEY-----\n" +
@@ -557,8 +529,6 @@ export const insertGitSyncSSHKey = (workspaceId) => {
     "MC4CAQAwBQYDK2VwBCIEIFGXNAirYFsVnYzHaj6jvt4o7C0eNwCHMVO0Gaw+ir/X\n" +
     "-----END PRIVATE KEY-----";
 
-
-
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
     sql: `
@@ -573,26 +543,12 @@ export const insertGitSyncSSHKey = (workspaceId) => {
   });
 };
 
+export const openInstanceSettings = () => {
+  cy.get(commonSelectors.settingsIcon).click();
+  cy.get(commonEeSelectors.instanceSettingIcon).click();
+};
 
-// export const insertGitSyncSSHKey = (workspaceId) => {
-//   const pvtKey =
-//     "-----BEGIN PRIVATE KEY-----\n" +
-//     "MC4CAQAwBQYDK2VwBCIEIFGXNAirYFsVnYzHaj6jvt4o7C0eNwCHMVO0Gaw+ir/X\n" +
-//     "-----END PRIVATE KEY-----";
-
-//   cy.task("updateId", {
-//     dbconfig: Cypress.env("app_db"),
-//     sql: `
-//       DELETE FROM organization_git_sync
-//       WHERE ssh_public_key = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOgxYAo7Z6rYgm/JBFUgb4onp0GD/jRFQ1ORBLmNxBsa (unnamed)';
-
-//       INSERT INTO organization_git_sync (
-//         organization_id, git_url, is_enabled, is_finalized, ssh_private_key, ssh_public_key
-//       )
-//       SELECT '${workspaceId}', 'git@github.com:ajith-k-v/test.git', true, true, '${pvtKey}', 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOgxYAo7Z6rYgm/JBFUgb4onp0GD/jRFQ1ORBLmNxBsa (unnamed)'
-//       WHERE NOT EXISTS (
-//         SELECT 1 FROM organization_git_sync WHERE organization_id = '${workspaceId}'
-//       );
-//     `,
-//   });
-// };
+export const openUserActionMenu = (email) => {
+  cy.clearAndType(commonSelectors.inputUserSearch, email);
+  cy.get('[data-cy="user-actions-button"]').eq(0).click();
+};

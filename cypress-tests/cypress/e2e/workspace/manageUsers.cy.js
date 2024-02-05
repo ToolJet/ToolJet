@@ -209,17 +209,19 @@ describe("Manage Users", () => {
   it("Should verify the user onboarding with groups", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+    const groupNames = ["All users", "Admin"];
+
     common.navigateToManageUsers();
 
     users.fillUserInviteForm(data.firstName, data.email);
     cy.wait(1500);
-    cy.get(".css-1c6ox7i-Input").dblclick();
+    cy.get('[data-cy="user-group-select"]>>>>>').dblclick();
     cy.get("body").then(($body) => {
-      if (!$body.find(".css-1c6ox7i-Input").length > 0) {
-        cy.get(".css-1c6ox7i-Input").click();
+      if (!$body.find('[data-cy="user-group-select"]>>>>>').length > 0) {
+        cy.get('[data-cy="user-group-select"]>>>>>').click();
       }
     });
-    cy.get(".css-1c6ox7i-Input>").type("Test");
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Test");
     cy.get(".css-1wlit7h-NoOptionsMessage").verifyVisibleElement(
       "have.text",
       "No groups found"
@@ -238,13 +240,12 @@ describe("Manage Users", () => {
     );
     cy.get(commonSelectors.cancelButton).click();
 
-    users.inviteUserWithUserGroup(
+    users.inviteUserWithUserGroups(
       data.firstName,
       data.email,
       "All users",
       "Admin"
     );
-
     common.navigateToManageGroups();
     cy.get(groupsSelector.groupLink("Admin")).click();
     cy.get(groupsSelector.usersLink).click();
@@ -262,7 +263,7 @@ describe("Manage Users", () => {
     );
 
     common.navigateToManageUsers();
-    users.inviteUserWithUserGroup(
+    users.inviteUserWithUserGroups(
       data.firstName,
       data.email,
       "All users",
