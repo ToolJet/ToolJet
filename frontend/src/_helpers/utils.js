@@ -6,7 +6,7 @@ import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
-
+import { useSuperStore } from '../_stores/superStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
@@ -418,7 +418,7 @@ export async function executeMultilineJS(
   parameters = {},
   hasParamSupport = false
 ) {
-  const currentState = getCurrentState();
+  const currentState = getCurrentState(_ref.moduleName);
   let result = {},
     error = null;
 
@@ -429,7 +429,10 @@ export async function executeMultilineJS(
 
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
-  const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
+  const queryDetails = useSuperStore
+    .getState()
+    .modules[_ref.moduleName].useDataQueriesStore.getState()
+    .dataQueries.find((q) => q.id === queryId);
   hasParamSupport = !hasParamSupport ? queryDetails?.options?.hasParamSupport : hasParamSupport;
 
   const defaultParams =
@@ -459,7 +462,10 @@ export async function executeMultilineJS(
           params = {};
         }
         const processedParams = {};
-        const query = useDataQueriesStore.getState().dataQueries.find((q) => q.name === key);
+        const query = useSuperStore
+          .getState()
+          .modules.modules[_ref.moduleName].useDataQueriesStore.getState()
+          .dataQueries.find((q) => q.name === key);
         query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
         return actions.runQuery(key, processedParams);
       },
@@ -576,14 +582,17 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     : {};
 
   const runQuery = (queryName = '', parameters) => {
-    const query = useDataQueriesStore.getState().dataQueries.find((query) => {
-      const isFound = query.name === queryName;
-      if (isPreview) {
-        return isFound;
-      } else {
-        return isFound && isQueryRunnable(query);
-      }
-    });
+    const query = useSuperStore
+      .getState()
+      .modules[_ref.moduleName].useDataQueriesStore.getState()
+      .dataQueries.find((query) => {
+        const isFound = query.name === queryName;
+        if (isPreview) {
+          return isFound;
+        } else {
+          return isFound && isQueryRunnable(query);
+        }
+      });
 
     const processedParams = {};
     if (_.isEmpty(query) || queryId === query?.id) {

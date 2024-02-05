@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useModuleName } from '@/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { debuggerActions } from '@/_helpers/appUtils';
 import { flow } from 'lodash';
@@ -10,6 +11,8 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
   const [errorHistory, setErrorHistory] = useState({ appLevel: [], pageLevel: [] });
   const [unReadErrorCount, setUnReadErrorCount] = useState({ read: 0, unread: 0 });
   const [allLog, setAllLog] = useState([]);
+
+  const moduleName = useModuleName();
 
   const { errors, succededQuery } = useCurrentStateStore(
     (state) => ({
@@ -43,7 +46,7 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
       (arr) => arr.filter(([key, value]) => value.data?.status),
       Object.fromEntries,
     ])(errors);
-    const newErrorLogs = debuggerActions.generateErrorLogs(newError);
+    const newErrorLogs = debuggerActions.generateErrorLogs(newError, moduleName);
     const newPageLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'page_level');
     const newAppLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'app_level');
     if (newErrorLogs) {
@@ -64,19 +67,19 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
         };
       });
     }
-    debuggerActions.flush();
+    debuggerActions.flush(moduleName);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ errors })]);
 
   useEffect(() => {
-    const successQueryLogs = debuggerActions.generateQuerySuccessLogs(succededQuery);
+    const successQueryLogs = debuggerActions.generateQuerySuccessLogs(succededQuery, moduleName);
     if (successQueryLogs?.length) {
       setAllLog((prevLogs) => {
         const temp = [...successQueryLogs, ...prevLogs];
         const sortedDatesDesc = temp.sort((a, b) => moment(b.timestamp).diff(moment(a.timestamp)));
         return sortedDatesDesc;
       });
-      debuggerActions.flushAllLog();
+      debuggerActions.flushAllLog(moduleName);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ succededQuery })]);

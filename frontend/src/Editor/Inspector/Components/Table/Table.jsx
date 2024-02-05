@@ -17,8 +17,11 @@ import List from '@/ToolJetUI/List/List';
 import { capitalize, has } from 'lodash';
 import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
-import { useAppDataStore } from '@/_stores/appDataStore';
+import { ModuleContext } from '../../../../_contexts/ModuleContext';
+import { useSuperStore } from '@/_stores/superStore';
 class TableComponent extends React.Component {
+  static contextType = ModuleContext;
+
   constructor(props) {
     super(props);
 
@@ -749,13 +752,19 @@ class TableComponent extends React.Component {
   };
 
   deleteEvents = (ref, eventTarget) => {
-    const events = useAppDataStore.getState().events.filter((event) => event.target === eventTarget);
+    const events = useSuperStore
+      .getState()
+      .modules[this.context].useAppDataStore.getState()
+      .events.filter((event) => event.target === eventTarget);
 
     const toDelete = events?.filter((e) => e.event?.ref === ref.ref);
 
     return new Promise.all(
       toDelete?.forEach((e) => {
-        return useAppDataStore.getState().actions.deleteAppVersionEventHandler(e.id);
+        return useSuperStore
+          .getState()
+          .modules[this.context].useAppDataStore.getState()
+          .actions.deleteAppVersionEventHandler(e.id);
       })
     );
   };
