@@ -797,7 +797,7 @@ export const SubContainer = ({
                       }}
                       // key={key}
                       paramUpdated={paramUpdated}
-                      id={key === 'resizingComponentId' ? resizingComponentId : key}
+                      id={key}
                       allComponents={allComponents}
                       {...box}
                       mode={mode}
