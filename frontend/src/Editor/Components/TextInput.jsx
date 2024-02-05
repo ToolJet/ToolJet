@@ -101,6 +101,10 @@ export const TextInput = function TextInput({
   ]);
 
   useEffect(() => {
+    setExposedVariable('value', label);
+  }, [label]);
+
+  useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);

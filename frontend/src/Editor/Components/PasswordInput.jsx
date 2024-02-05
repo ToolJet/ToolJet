@@ -84,6 +84,10 @@ export const PasswordInput = function PasswordInput({
   };
 
   useEffect(() => {
+    setExposedVariable('value', label);
+  }, [label]);
+
+  useEffect(() => {
     if (labelRef.current) {
       const width = labelRef.current.offsetWidth;
       padding == 'default' ? setElementWidth(width + 17) : setElementWidth(width + 15);

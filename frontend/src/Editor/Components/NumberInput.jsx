@@ -54,6 +54,10 @@ export const NumberInput = function NumberInput({
   const labelRef = useRef();
 
   useEffect(() => {
+    setExposedVariable('value', label);
+  }, [label]);
+
+  useEffect(() => {
     if (alignment == 'top' && label?.length > 0) {
       adjustHeightBasedOnAlignment(true);
     } else adjustHeightBasedOnAlignment(false);
