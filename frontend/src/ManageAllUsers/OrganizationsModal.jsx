@@ -153,7 +153,6 @@ const OrganizationsModal = ({
                               ? unarchiveOrgUser(organization_user.id, organization_user.organization_id)
                               : archiveOrgUser(organization_user.id, organization_user.organization_id)
                             : toggleWorkspaceUserArchiveModal(organization_user);
-                          hideModal();
                         }}
                         data-cy="user-state-change-button"
                       >

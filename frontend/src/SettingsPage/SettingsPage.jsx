@@ -36,7 +36,7 @@ function SettingsPage(props) {
   }
 
   const handleNameSplit = (fullName) => {
-    const words = fullName.split(' ');
+    const words = fullName.trim().split(' ');
     const firstName = words.length > 1 ? words.slice(0, -1).join(' ') : words[0];
     const lastName = words.length > 1 ? words[words.length - 1] : '';
     return [firstName, lastName];

@@ -171,9 +171,9 @@ class ManageOrgUsersComponent extends React.Component {
   };
 
   handleNameSplit = (fullName) => {
-    const words = fullName.split(' ');
-    const firstName = words.length > 0 ? words.slice(0, -1).join(' ') : '';
-    const lastName = words.length > 0 ? words[words.length - 1] : '';
+    const words = fullName.trim().split(' ');
+    const firstName = words.length > 1 ? words.slice(0, -1).join(' ') : words[0];
+    const lastName = words.length > 1 ? words[words.length - 1] : '';
     let fields = this.state.fields;
     fields['firstName'] = firstName;
     fields['lastName'] = lastName;

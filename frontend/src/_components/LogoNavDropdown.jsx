@@ -26,14 +26,16 @@ export default function LogoNavDropdown({ darkMode, type = 'apps' }) {
           <span>Back to {isWorkflows ? 'workflows' : 'apps'}</span>
         </Link>
         <div className="divider"></div>
-        <Link
-          target="_blank"
-          to={getPrivateRoute(!isWorkflows ? 'workflows' : 'dashboard')}
-          className="dropdown-item tj-text tj-text-xsm"
-        >
-          <SolidIcon name={isWorkflows ? 'apps' : 'workflows'} width="20" fill="#C1C8CD" />
-          <span>{isWorkflows ? 'Apps' : 'Workflows'}</span>
-        </Link>
+        {admin && (
+          <Link
+            target="_blank"
+            to={getPrivateRoute(!isWorkflows ? 'workflows' : 'dashboard')}
+            className="dropdown-item tj-text tj-text-xsm"
+          >
+            <SolidIcon name={isWorkflows ? 'apps' : 'workflows'} width="20" fill="#C1C8CD" />
+            <span>{isWorkflows ? 'Apps' : 'Workflows'}</span>
+          </Link>
+        )}
 
         {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
           <Link

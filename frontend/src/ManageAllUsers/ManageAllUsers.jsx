@@ -251,7 +251,7 @@ class ManageAllUsersComponent extends React.Component {
 
   hideModal = () => this.setState({ showOrganizationsModal: false });
 
-  hideEditUserDrawer = () => this.setState({ isEditUserDrawerOpen: false, updatingUser: null });
+  hideEditUserDrawer = () => this.setState({ isEditUserDrawerOpen: false, updatingUser: null, errors: {} });
 
   changeNewUserOption = (name, value) => {
     this.setState({
