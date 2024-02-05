@@ -1334,7 +1334,7 @@ export const widgets = [
     },
     events: {
       onChange: { displayName: 'On change' },
-      onEnterPressed: { displayName: 'On Enter Pressed' },
+      onEnterPressed: { displayName: 'On enter pressed' },
       onFocus: { displayName: 'On focus' },
       onBlur: { displayName: 'On blur' },
     },
@@ -1463,7 +1463,7 @@ export const widgets = [
       {
         handle: 'setText',
         displayName: 'Set text',
-        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
+        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New text' }],
       },
       {
         handle: 'clear',
@@ -1489,17 +1489,17 @@ export const widgets = [
       },
       {
         handle: 'setVisibility',
-        displayName: 'setVisibility',
+        displayName: 'Set visibility',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setDisable',
-        displayName: 'setDisable',
+        displayName: 'Set disable',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setLoading',
-        displayName: 'setLoading',
+        displayName: 'Set loading',
         params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
     ],
@@ -1751,17 +1751,17 @@ export const widgets = [
       },
       {
         handle: 'setVisibility',
-        displayName: 'setVisibility',
+        displayName: 'Set visibility',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setDisable',
-        displayName: 'setDisable',
+        displayName: 'Set disable',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setLoading',
-        displayName: 'setLoading',
+        displayName: 'Set loading',
         params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
     ],
@@ -2008,7 +2008,7 @@ export const widgets = [
       },
       boxShadow: {
         type: 'boxShadow',
-        displayName: 'Box Shadow',
+        displayName: 'Box shadow',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'field',
       },
@@ -2051,17 +2051,17 @@ export const widgets = [
       },
       {
         handle: 'setVisibility',
-        displayName: 'setVisibility',
+        displayName: 'Set visibility',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setDisable',
-        displayName: 'setDisable',
+        displayName: 'Set disable',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setLoading',
-        displayName: 'setLoading',
+        displayName: 'Set loading',
         params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
     ],
