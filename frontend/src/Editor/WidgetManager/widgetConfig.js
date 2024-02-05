@@ -3038,12 +3038,12 @@ export const widgets = [
       },
       {
         handle: 'setLoading',
-        displayName: 'Set loading',
+        displayName: 'Set Loading',
         params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
       {
         handle: 'setDisable',
-        displayName: 'Set disable',
+        displayName: 'Set Disable',
         params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
     ],

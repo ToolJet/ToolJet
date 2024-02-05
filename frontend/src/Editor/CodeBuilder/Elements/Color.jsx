@@ -7,7 +7,7 @@ import classNames from 'classnames';
 export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowPopover = true, meta }) => {
   const [showPicker, setShowPicker] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { colorPickerPosition = '' } = meta;
+  const colorPickerPosition = meta?.colorPickerPosition ?? '';
   const coverStyles = {
     position: 'fixed',
     top: '0px',
