@@ -305,14 +305,15 @@ export const verifyStylesGeneralAccordion = (
   boxShadowParameter,
   hexColor,
   boxShadowColor,
-  index = 0
+  index = 0,
+  boxShadowDefaultValue = commonWidgetText.boxShadowDefaultValue
 ) => {
   openEditorSidebar(widgetName);
   cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
   // openAccordion(commonWidgetText.accordionGenaral, []);
   verifyAndModifyStylePickerFx(
     commonWidgetText.parameterBoxShadow,
-    commonWidgetText.boxShadowDefaultValue,
+    boxShadowDefaultValue,
     `${boxShadowParameter[0]}px ${boxShadowParameter[1]}px ${boxShadowParameter[2]}px ${boxShadowParameter[3]}px ${hexColor}`,
     0,
     "0px 0px 0px 0px "
@@ -393,4 +394,17 @@ export const closeAccordions = (accordionNames = [], index = "0") => {
         });
     });
   }
+};
+
+export const selectFromSidebarDropdown = (property, option) => {
+  cy.get(`[data-cy="dropdown-${property.toLowerCase().replace(/\s+/g, "-")}"]`)
+    .click()
+    .type(`${option}{enter}`);
+};
+
+export const addValueOnInput = (property, value) => {
+  cy.get(`[data-cy="${property.toLowerCase().replace(/\s+/g, "-")}-input"]`)
+    .clear()
+    .click()
+    .type(`${value}`);
 };
