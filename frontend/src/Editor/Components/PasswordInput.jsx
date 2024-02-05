@@ -137,12 +137,6 @@ export const PasswordInput = function PasswordInput({
     setExposedVariable('setBlur', async function () {
       textInputRef.current.blur();
     });
-    setExposedVariable('disable', async function (value) {
-      setDisable(value);
-    });
-    setExposedVariable('visibility', async function (value) {
-      setVisibility(value);
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
