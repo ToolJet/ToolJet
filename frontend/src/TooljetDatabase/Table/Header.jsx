@@ -232,7 +232,7 @@ const Header = ({
                             }}
                           >
                             <DeleteIcon />
-                            &nbsp; Delete row
+                            &nbsp; {Object.keys(selectedRowIds).length === 1 ? 'Delete row' : 'Delete rows'}
                           </ButtonSolid>
                         </div>
                       )}
