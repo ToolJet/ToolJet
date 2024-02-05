@@ -20,8 +20,10 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
+import { useModuleName } from '@/_contexts/ModuleContext';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, ref) => {
+  const moduleName = useModuleName();
   const { renameQuery } = useDataQueriesActions();
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
@@ -51,7 +53,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
       return false;
     }
 
-    const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
+    const isNewQueryNameAlreadyExists = checkExistingQueryName(newName, moduleName);
     if (isNewQueryNameAlreadyExists) {
       toast.error('Query name already exists');
       return false;

@@ -38,8 +38,12 @@ import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { getPreviewQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
+import { useSuperStore } from '../_stores/superStore';
+import { ModuleContext } from '../_contexts/ModuleContext';
 
 class ViewerComponent extends React.Component {
+  static contextType = ModuleContext;
+
   constructor(props) {
     super(props);
 
@@ -69,6 +73,7 @@ class ViewerComponent extends React.Component {
       navigate: this.props.navigate,
       switchPage: this.switchPage,
       currentPageId: this.state.currentPageId,
+      moduleName: this.context,
     };
   }
 
@@ -158,7 +163,7 @@ class ViewerComponent extends React.Component {
     const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
 
-    useDataQueriesStore.getState().actions.setDataQueries(dataQueries);
+    useSuperStore.getState().modules[this.context].useDataQueriesStore.getState().actions.setDataQueries(dataQueries);
     this.props.setCurrentState({
       queries: queryState,
       components: {},
@@ -180,7 +185,10 @@ class ViewerComponent extends React.Component {
       ...variables,
       ...constants,
     });
-    useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
+    useSuperStore
+      .getState()
+      .modules[this.context].useEditorStore.getState()
+      .actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
     this.props.updateState({ events: data.events ?? [] });
     this.setState(
       {
@@ -201,9 +209,8 @@ class ViewerComponent extends React.Component {
       () => {
         const components = appDefData?.pages[currentPageId]?.components || {};
 
-        computeComponentState(components).then(async () => {
+        computeComponentState(components, this.context).then(async () => {
           this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
-          console.log('Default component state computed and set');
           this.runQueries(dataQueries);
 
           const currentPageEvents = this.state.events.filter(
@@ -236,8 +243,6 @@ class ViewerComponent extends React.Component {
 
       variablesResult = constants;
     }
-
-    console.log('--org constant 2.0', { variablesResult });
 
     if (variablesResult && Array.isArray(variablesResult)) {
       variablesResult.map((constant) => {
@@ -317,7 +322,10 @@ class ViewerComponent extends React.Component {
   };
 
   updateQueryConfirmationList = (queryConfirmationList) =>
-    useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
+    useSuperStore
+      .getState()
+      .modules[this.context].useEditorStore.getState()
+      .actions.updateQueryConfirmationList(queryConfirmationList);
 
   setupViewer() {
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
@@ -325,9 +333,11 @@ class ViewerComponent extends React.Component {
       const appId = this.props.id;
       const versionId = this.props.versionId;
 
+      console.log({ slug, appId, versionId });
+
       if (currentSession?.load_app && slug) {
         if (currentSession?.group_permissions) {
-          useAppDataStore.getState().actions.setAppId(appId);
+          useSuperStore.getState().modules[this.context].useAppDataStore.getState().actions.setAppId(appId);
 
           const currentUser = currentSession.current_user;
           const userVars = {
@@ -376,7 +386,10 @@ class ViewerComponent extends React.Component {
   componentDidMount() {
     this.setupViewer();
     const isMobileDevice = this.state.deviceWindowWidth < 600;
-    useEditorStore.getState().actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
+    useSuperStore
+      .getState()
+      .modules[this.context].useEditorStore.getState()
+      .actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
     window.addEventListener('message', this.handleMessage);
   }
 
@@ -434,7 +447,10 @@ class ViewerComponent extends React.Component {
           name: targetPage.name,
         },
         async () => {
-          computeComponentState(this.state.appDefinition?.pages[this.state.currentPageId].components).then(async () => {
+          computeComponentState(
+            this.state.appDefinition?.pages[this.state.currentPageId].components,
+            this.context
+          ).then(async () => {
             const currentPageEvents = this.state.events.filter(
               (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
             );
@@ -547,6 +563,8 @@ class ViewerComponent extends React.Component {
       canvasWidth,
     } = this.state;
 
+    const moduleName = this.context;
+
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
 
@@ -589,89 +607,184 @@ class ViewerComponent extends React.Component {
               queryConfirmationData={queryConfirmationList[0]}
               key={queryConfirmationList[0]?.queryName}
             />
-            <DndProvider backend={HTML5Backend}>
-              <ViewerNavigation.Header
-                showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
-                appName={this.state.app?.name ?? null}
-                changeDarkMode={this.changeDarkMode}
-                darkMode={this.props.darkMode}
-                pages={Object.entries(this.state.appDefinition?.pages) ?? []}
-                currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
-                switchPage={this.switchPage}
-              />
-              <div className="sub-section">
-                <div className="main">
-                  <div
-                    className="canvas-container align-items-center"
-                    style={{
-                      background: this.computeCanvasBackgroundColor() || (!this.props.darkMode ? '#EBEBEF' : '#2E3035'),
-                    }}
-                  >
-                    <div className="areas d-flex flex-rows">
-                      {appDefinition?.showViewerNavigation && (
-                        <ViewerNavigation
-                          isMobileDevice={this.props.currentLayout === 'mobile'}
-                          canvasBackgroundColor={this.computeCanvasBackgroundColor()}
-                          pages={Object.entries(this.state.appDefinition?.pages) ?? []}
-                          currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
-                          switchPage={this.switchPage}
-                          darkMode={this.props.darkMode}
-                        />
-                      )}
-                      <div className="flex-grow-1 d-flex justify-content-center">
-                        <div
-                          className="canvas-area"
-                          style={{
-                            width: currentCanvasWidth,
-                            maxWidth: canvasMaxWidth,
-                            backgroundColor: this.computeCanvasBackgroundColor(),
-                            margin: 0,
-                            padding: 0,
-                          }}
-                        >
-                          {defaultComponentStateComputed && (
-                            <>
-                              {isLoading ? (
-                                <div className="mx-auto mt-5 w-50 p-5">
-                                  <center>
-                                    <div className="spinner-border text-azure" role="status"></div>
-                                  </center>
-                                </div>
-                              ) : (
-                                <Container
-                                  appDefinition={appDefinition}
-                                  appDefinitionChanged={() => false} // function not relevant in viewer
-                                  snapToGrid={true}
-                                  appLoading={isLoading}
-                                  darkMode={this.props.darkMode}
-                                  onEvent={this.handleEvent}
-                                  mode="view"
-                                  deviceWindowWidth={deviceWindowWidth}
-                                  selectedComponent={this.state.selectedComponent}
-                                  onComponentClick={(id, component) => {
-                                    this.setState({
-                                      selectedComponent: { id, component },
-                                    });
-                                    onComponentClick(this, id, component, 'view');
-                                  }}
-                                  onComponentOptionChanged={(component, optionName, value) => {
-                                    return onComponentOptionChanged(component, optionName, value);
-                                  }}
-                                  onComponentOptionsChanged={onComponentOptionsChanged}
-                                  canvasWidth={this.getCanvasWidth()}
-                                  dataQueries={dataQueries}
-                                  currentPageId={this.state.currentPageId}
-                                />
-                              )}
-                            </>
-                          )}
+            {!this.props.moduleMode && (
+              <DndProvider backend={HTML5Backend}>
+                <ViewerNavigation.Header
+                  showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded && !this.props.moduleMode}
+                  appName={this.state.app?.name ?? null}
+                  changeDarkMode={this.changeDarkMode}
+                  darkMode={this.props.darkMode}
+                  pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                  currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                  switchPage={this.switchPage}
+                />
+                <div className="sub-section">
+                  <div className="main">
+                    <div
+                      className="canvas-container align-items-center"
+                      style={{
+                        background:
+                          this.computeCanvasBackgroundColor() || (!this.props.darkMode ? '#EBEBEF' : '#2E3035'),
+                        ...(this.props.moduleMode ? { top: 0 } : {}),
+                      }}
+                    >
+                      <div className="areas d-flex flex-rows">
+                        {appDefinition?.showViewerNavigation && !this.props.moduleMode && (
+                          <ViewerNavigation
+                            isMobileDevice={this.props.currentLayout === 'mobile'}
+                            canvasBackgroundColor={this.computeCanvasBackgroundColor()}
+                            pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                            currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                            switchPage={this.switchPage}
+                            darkMode={this.props.darkMode}
+                          />
+                        )}
+                        <div className="flex-grow-1 d-flex justify-content-center">
+                          <div
+                            className="canvas-area"
+                            style={{
+                              width: currentCanvasWidth,
+                              maxWidth: canvasMaxWidth,
+                              backgroundColor: this.computeCanvasBackgroundColor(),
+                              margin: 0,
+                              padding: 0,
+                            }}
+                          >
+                            {defaultComponentStateComputed && (
+                              <>
+                                {isLoading ? (
+                                  <div className="mx-auto mt-5 w-50 p-5">
+                                    <center>
+                                      <div className="spinner-border text-azure" role="status"></div>
+                                    </center>
+                                  </div>
+                                ) : (
+                                  <Container
+                                    appDefinition={appDefinition}
+                                    appDefinitionChanged={() => false} // function not relevant in viewer
+                                    snapToGrid={true}
+                                    appLoading={isLoading}
+                                    darkMode={this.props.darkMode}
+                                    onEvent={this.handleEvent}
+                                    mode="view"
+                                    deviceWindowWidth={deviceWindowWidth}
+                                    selectedComponent={this.state.selectedComponent}
+                                    onComponentClick={(id, component) => {
+                                      this.setState({
+                                        selectedComponent: { id, component },
+                                      });
+                                      onComponentClick(this, id, component, 'view');
+                                    }}
+                                    onComponentOptionChanged={(component, optionName, value) => {
+                                      return onComponentOptionChanged(this.context, component, optionName, value);
+                                    }}
+                                    onComponentOptionsChanged={(...props) =>
+                                      onComponentOptionsChanged(this.context, ...props)
+                                    }
+                                    canvasWidth={this.getCanvasWidth()}
+                                    dataQueries={dataQueries}
+                                    currentPageId={this.state.currentPageId}
+                                  />
+                                )}
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </DndProvider>
+              </DndProvider>
+            )}
+            {this.props.moduleMode && (
+              <>
+                <ViewerNavigation.Header
+                  showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded && !this.props.moduleMode}
+                  appName={this.state.app?.name ?? null}
+                  changeDarkMode={this.changeDarkMode}
+                  darkMode={this.props.darkMode}
+                  pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                  currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                  switchPage={this.switchPage}
+                />
+                <div className="sub-section">
+                  <div className="main">
+                    <div
+                      className="canvas-container align-items-center"
+                      style={{
+                        background:
+                          this.computeCanvasBackgroundColor() || (!this.props.darkMode ? '#EBEBEF' : '#2E3035'),
+                        ...(this.props.moduleMode ? { top: 0 } : {}),
+                      }}
+                    >
+                      <div className="areas d-flex flex-rows">
+                        {appDefinition?.showViewerNavigation && !this.props.moduleMode && (
+                          <ViewerNavigation
+                            isMobileDevice={this.props.currentLayout === 'mobile'}
+                            canvasBackgroundColor={this.computeCanvasBackgroundColor()}
+                            pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                            currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                            switchPage={this.switchPage}
+                            darkMode={this.props.darkMode}
+                          />
+                        )}
+                        <div className="flex-grow-1 d-flex justify-content-center">
+                          <div
+                            className="canvas-area"
+                            style={{
+                              width: currentCanvasWidth,
+                              maxWidth: canvasMaxWidth,
+                              backgroundColor: this.computeCanvasBackgroundColor(),
+                              margin: 0,
+                              padding: 0,
+                            }}
+                          >
+                            {defaultComponentStateComputed && (
+                              <>
+                                {isLoading ? (
+                                  <div className="mx-auto mt-5 w-50 p-5">
+                                    <center>
+                                      <div className="spinner-border text-azure" role="status"></div>
+                                    </center>
+                                  </div>
+                                ) : (
+                                  <Container
+                                    appDefinition={appDefinition}
+                                    appDefinitionChanged={() => false} // function not relevant in viewer
+                                    snapToGrid={true}
+                                    appLoading={isLoading}
+                                    darkMode={this.props.darkMode}
+                                    onEvent={this.handleEvent}
+                                    mode="view"
+                                    deviceWindowWidth={deviceWindowWidth}
+                                    selectedComponent={this.state.selectedComponent}
+                                    onComponentClick={(id, component) => {
+                                      this.setState({
+                                        selectedComponent: { id, component },
+                                      });
+                                      onComponentClick(this, id, component, 'view');
+                                    }}
+                                    onComponentOptionChanged={(component, optionName, value) => {
+                                      return onComponentOptionChanged(this.context, component, optionName, value);
+                                    }}
+                                    onComponentOptionsChanged={(...props) =>
+                                      onComponentOptionsChanged(this.context, ...props)
+                                    }
+                                    canvasWidth={this.getCanvasWidth()}
+                                    dataQueries={dataQueries}
+                                    currentPageId={this.state.currentPageId}
+                                  />
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         );
       }
