@@ -3505,19 +3505,19 @@ export const widgets = [
 
       fieldBorderColor: {
         type: 'color',
-        displayName: 'Border Color',
+        displayName: 'Border',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       selectedTextColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       errTextColor: {
         type: 'color',
-        displayName: 'Error Text Color',
+        displayName: 'Error text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -3530,7 +3530,7 @@ export const widgets = [
       },
       iconColor: {
         type: 'color',
-        displayName: 'Icon color',
+        displayName: 'Icon',
         validation: {
           schema: { type: 'string' },
         },
@@ -3544,7 +3544,7 @@ export const widgets = [
       },
       boxShadow: {
         type: 'boxShadow',
-        displayName: 'Box Shadow',
+        displayName: 'Box shadow',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'field',
       },
@@ -3574,7 +3574,7 @@ export const widgets = [
       },
       {
         handle: 'setVisibility',
-        displayName: 'Set Visibility',
+        displayName: 'Set visibility',
         params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
       },
       {
@@ -3618,6 +3618,7 @@ export const widgets = [
         dropdownLoadingState: { value: '{{false}}' },
         optionVisibility: { value: '{{[true, true, true]}}' },
         optionDisable: { value: '{{[false, false, false]}}' },
+        tooltip: { value: '' },
       },
       events: [],
 
