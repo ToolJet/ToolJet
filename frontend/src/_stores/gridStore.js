@@ -33,8 +33,7 @@ export const useGridStore = create(
 );
 
 export const useActiveGrid = () => useGridStore((state) => state.activeGrid, shallow);
-export const useNoOfGrid = () => useGridStore((state) => [state.noOfGrid, state.actions.setNoOfGrid]);
-export const useDraggedSubContainer = () =>
-  useGridStore((state) => [state.draggedSubContainer, state.actions.setDraggedSubContainer]);
+export const useNoOfGrid = () => useGridStore((state) => state.noOfGrid, shallow);
+export const useDraggedSubContainer = () => useGridStore((state) => state.draggedSubContainer, shallow);
 export const useGridStoreActions = () => useGridStore((state) => state.actions, shallow);
-export const useDragTarget = () => useGridStore((state) => [state.dragTarget, state.actions.setDragTarget]);
+export const useDragTarget = () => useGridStore((state) => state.dragTarget, shallow);

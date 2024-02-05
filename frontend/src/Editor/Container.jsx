@@ -24,7 +24,7 @@ import _, { cloneDeep, isEmpty } from 'lodash';
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
-import { useDraggedSubContainer, useNoOfGrid, useDragTarget } from '@/_stores/gridStore';
+import { useDraggedSubContainer } from '@/_stores/gridStore';
 import useConfirm from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/Confirm';
 // eslint-disable-next-line import/no-unresolved
 
@@ -58,7 +58,7 @@ export const Container = ({
   // const [noOfGrids, setNoOfGrids] = useNoOfGrid();
   const noOfGrids = 43;
   const [subContainerWidths, setSubContainerWidths] = useState({});
-  const [draggedSubContainer, setDraggedSubContainer] = useDraggedSubContainer(false);
+  const draggedSubContainer = useDraggedSubContainer(false);
   // const [dragTarget] = useDragTarget();
 
   const { showComments, currentLayout, selectedComponents } = useEditorStore(

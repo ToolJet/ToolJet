@@ -19,7 +19,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import DragContainerNested from './DragContainerNested';
-import { useGridStore, useDragTarget } from '@/_stores/gridStore';
+import { useGridStore } from '@/_stores/gridStore';
 import { SUBCONTAINER_WITH_SCROLL } from './constants';
 import { widgets } from './WidgetManager/widgetConfig';
 

@@ -176,7 +176,7 @@ const EditorComponent = (props) => {
   const [isQueryPaneDragging, setIsQueryPaneDragging] = useState(false);
   const [isQueryPaneExpanded, setIsQueryPaneExpanded] = useState(false); //!check where this is used
   const [editorMarginLeft, setEditorMarginLeft] = useState(0);
-  const [noOfGrids] = useNoOfGrid();
+  const noOfGrids = useNoOfGrid();
 
   const [isDragging, setIsDragging] = useState(false);
 
