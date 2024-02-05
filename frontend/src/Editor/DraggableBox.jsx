@@ -109,7 +109,21 @@ export const DraggableBox = React.memo(
         right: '-4px',
         bottom: '-4px',
       },
-      right: {
+      bottomLeft: {
+        width: '8px',
+        height: '8px',
+        left: '-4px',
+        bottom: '-4px',
+      },
+      topLeft: {
+        width: '8px',
+        height: '8px',
+        left: '-4px',
+        top: '-4px',
+      },
+    };
+    if (!isVerticalResizingAllowed()) {
+      resizerStyles.right = {
         position: 'absolute',
         height: '20px',
         width: '5px',
@@ -124,8 +138,8 @@ export const DraggableBox = React.memo(
               ? 'none'
               : 'block'
             : 'none',
-      },
-      left: {
+      };
+      resizerStyles.left = {
         position: 'absolute',
         height: '20px',
         width: '5px',
@@ -140,20 +154,8 @@ export const DraggableBox = React.memo(
               ? 'none'
               : 'block'
             : 'none',
-      },
-      bottomLeft: {
-        width: '8px',
-        height: '8px',
-        left: '-4px',
-        bottom: '-4px',
-      },
-      topLeft: {
-        width: '8px',
-        height: '8px',
-        left: '-4px',
-        top: '-4px',
-      },
-    };
+      };
+    }
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({
         type: ItemTypes.BOX,
