@@ -101,7 +101,7 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom, className, s
   <ButtonGroup
     aria-label="Parameter"
     className={cx({ 'mb-2': marginBottom, ...(className && { [className]: true }) })}
-    style={{ borderRadius: '6px', marginLeft: '6px', height: '24px', background: '#CCD1D54D' }}
+    style={{ borderRadius: '6px', marginLeft: '6px', height: '24px', background: '#A1A7AE1F' }}
   >
     <Button
       size="sm"
