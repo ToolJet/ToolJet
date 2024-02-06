@@ -30,6 +30,7 @@ export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 const AppWrapper = (props) => {
   return (
@@ -56,6 +57,7 @@ class AppComponent extends React.Component {
   };
   fetchMetadata = () => {
     tooljetService.fetchMetaData().then((data) => {
+      useAppDataStore.getState().actions.setMetadata(data);
       localStorage.setItem('currentVersion', data.installed_version);
       if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
         this.setState({ updateAvailable: true });
