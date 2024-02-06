@@ -47,7 +47,6 @@ describe("Text Input", () => {
 
   it("should verify the properties of the text input widget", () => {
     const data = {};
-    data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
     data.tooltipText = fake.randomSentence;
     data.minimumLength = randomNumber(1, 4);

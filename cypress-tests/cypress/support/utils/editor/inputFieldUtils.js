@@ -18,7 +18,6 @@ export const addValidations = (
   max = commonWidgetText.labelMaxLength
 ) => {
   openEditorSidebar(widgetName);
-  ß;
   openAccordion(commonWidgetText.accordionValidation);
   verifyAndModifyParameter(
     commonWidgetText.labelRegex,
