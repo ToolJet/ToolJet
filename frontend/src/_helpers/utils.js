@@ -342,7 +342,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const minValue = validationObject?.minValue?.value;
   const maxValue = validationObject?.maxValue?.value;
   const customRule = validationObject?.customRule?.value;
-
+  const mandatory = validationObject?.mandatory?.value;
   const validationRegex = resolveWidgetFieldValue(regex, currentState, '', customResolveObjects);
   const re = new RegExp(validationRegex, 'g');
 
@@ -373,7 +373,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMinValue = resolveWidgetFieldValue(minValue, currentState, undefined, customResolveObjects);
   if (resolvedMinValue !== undefined) {
-    if (widgetValue === undefined || widgetValue < parseInt(resolvedMinValue)) {
+    if (widgetValue === undefined || widgetValue < parseFloat(resolvedMinValue)) {
       return {
         isValid: false,
         validationError: `Minimum value is ${resolvedMinValue}`,
@@ -383,7 +383,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMaxValue = resolveWidgetFieldValue(maxValue, currentState, undefined, customResolveObjects);
   if (resolvedMaxValue !== undefined) {
-    if (widgetValue === undefined || widgetValue > parseInt(resolvedMaxValue)) {
+    if (widgetValue === undefined || widgetValue > parseFloat(resolvedMaxValue)) {
       return {
         isValid: false,
         validationError: `Maximum value is ${resolvedMaxValue}`,
@@ -396,6 +396,13 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     return { isValid: false, validationError: resolvedCustomRule };
   }
 
+  const resolvedMandatory = resolveWidgetFieldValue(mandatory, currentState, false, customResolveObjects);
+
+  if (resolvedMandatory == true) {
+    if (!widgetValue) {
+      return { isValid: false, validationError: `Field cannot be empty` };
+    }
+  }
   return {
     isValid,
     validationError,
@@ -462,6 +469,18 @@ export async function executeMultilineJS(
         const query = useDataQueriesStore.getState().dataQueries.find((q) => q.name === key);
         query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
         return actions.runQuery(key, processedParams);
+      },
+
+      getData: () => {
+        return getCurrentState().queries[key].data;
+      },
+
+      getRawData: () => {
+        return getCurrentState().queries[key].rawData;
+      },
+
+      getloadingState: () => {
+        return getCurrentState().queries[key].isLoading;
       },
     };
   }
@@ -598,9 +617,9 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
       );
     }
 
-    if (isPreview) {
-      return previewQuery(_ref, query, true, processedParams);
-    }
+    // if (isPreview) {
+    //   return previewQuery(_ref, query, true, processedParams);
+    // }
 
     const event = {
       actionId: 'run-query',
@@ -618,6 +637,16 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
         actionId: 'set-custom-variable',
         key,
         value,
+      };
+      return executeAction(_ref, event, mode, {});
+    }
+  };
+
+  const getVariable = (key = '') => {
+    if (key) {
+      const event = {
+        actionId: 'get-custom-variable',
+        key,
       };
       return executeAction(_ref, event, mode, {});
     }
@@ -728,6 +757,14 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     return executeAction(_ref, event, mode, {});
   };
 
+  const getPageVariable = (key = '') => {
+    const event = {
+      actionId: 'get-page-variable',
+      key,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
   const unsetPageVariable = (key = '') => {
     const event = {
       actionId: 'unset-page-variable',
@@ -766,6 +803,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
   return {
     runQuery,
     setVariable,
+    getVariable,
     unSetVariable,
     showAlert,
     logout,
@@ -776,6 +814,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     goToApp,
     generateFile,
     setPageVariable,
+    getPageVariable,
     unsetPageVariable,
     switchPage,
   };

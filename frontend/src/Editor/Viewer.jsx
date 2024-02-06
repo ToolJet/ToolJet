@@ -251,7 +251,6 @@ class ViewerComponent extends React.Component {
         const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
         orgConstants[constant.name] = constantValue;
       });
-
       return {
         constants: orgConstants,
       };

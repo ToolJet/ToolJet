@@ -26,6 +26,9 @@ const initialState = {
   areOthersOnSameVersionAndPage: false,
   appVersionPreviewLink: null,
   metadata: null,
+  eventsUpdatedLoader: false,
+  eventsCreatedLoader: false,
+  actionsUpdatedLoader: false,
 };
 
 export const useAppDataStore = create(
@@ -64,14 +67,21 @@ export const useAppDataStore = create(
               .finally(() => resolve());
           });
         },
-        updateAppVersionEventHandlers: async (events, updateType = 'update') => {
+        updateAppVersionEventHandlers: async (events, updateType = 'update', param) => {
           useAppDataStore.getState().actions.setIsSaving(true);
+          if (param === 'actionId') {
+            set({ actionsUpdatedLoader: true });
+          }
+          if (param === 'eventId') {
+            set({ eventsUpdatedLoader: true });
+          }
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
           const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, events, updateType);
 
           useAppDataStore.getState().actions.setIsSaving(false);
+          set({ eventsUpdatedLoader: false, actionsUpdatedLoader: false });
           const updatedEvents = get().events;
 
           updatedEvents.forEach((e, index) => {
@@ -86,12 +96,16 @@ export const useAppDataStore = create(
 
         createAppVersionEventHandlers: async (event) => {
           useAppDataStore.getState().actions.setIsSaving(true);
+          set({ eventsCreatedLoader: true });
+
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
           const updatedEvents = get().events;
           const response = await appVersionService.createAppVersionEventHandler(appId, versionId, event);
           useAppDataStore.getState().actions.setIsSaving(false);
+          set({ eventsCreatedLoader: false });
+
           updatedEvents.push(response);
 
           set(() => ({ events: updatedEvents }));
