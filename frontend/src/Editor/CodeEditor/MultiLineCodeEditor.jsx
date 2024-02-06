@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
@@ -163,7 +163,7 @@ const MultiLineCodeEditor = (props) => {
           callback={handleTogglePopupExapand}
           icon="portal-open"
           tip="Pop out code editor into a new window"
-          transformation={componentName === 'transformation'}
+          isMultiEditor={true}
         />
         <CodeHinter.Portal
           isCopilotEnabled={false}

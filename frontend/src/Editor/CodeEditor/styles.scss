@@ -172,6 +172,14 @@
     .cm-editor {
         min-height: 32px;
         max-height: 220px;
+        // popup-btn need to postioned it as per the parent .cm-editor height, if the height is not 32px then the positon should be at the bottom
+        // .popup-btn {
+        //     //if height is 32px then the position should be at the top
+        //     top: 10 !important;
+
+        //     //if height is not 32px then the position should be at the bottom
+        //     bottom: 0 !important;
+        // }
     }
 
     .cm-content > .cm-line {
@@ -179,6 +187,10 @@
         white-space: pre-wrap;
         word-wrap: break-word;
     }
+
+    
+
+
 
   }
 

@@ -8,6 +8,7 @@ import MultiLineCodeEditor from './MultiLineCodeEditor';
 import usePortal from '@/_hooks/use-portal';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { isNumber } from 'lodash';
 
 const CODE_EDITOR_TYPE = {
   fxEditor: SingleLineCodeEditor.EditorBridge,
@@ -83,11 +84,13 @@ const Portal = ({ children, ...restProps }) => {
   return <React.Fragment>{renderPortal}</React.Fragment>;
 };
 
-const PopupIcon = ({ callback, icon, tip }) => {
+const PopupIcon = ({ callback, icon, tip, position, isMultiEditor = false }) => {
   const size = 16;
+  const topRef = isNumber(position?.height) ? Math.floor(position?.height) - 30 : 32;
+  let top = isMultiEditor ? 370 : topRef > 32 ? topRef : 0;
 
   return (
-    <div className="d-flex justify-content-end w-100" style={{ top: 0 }}>
+    <div className="d-flex justify-content-end w-100 position-absolute" style={{ top }}>
       <OverlayTrigger
         trigger={['hover', 'focus']}
         placement="top"

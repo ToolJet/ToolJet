@@ -181,14 +181,20 @@ const EditorInput = ({
     'focus-box-shadow-active': firstTimeFocus,
   });
 
+  const currentEditorHeightRef = useRef(null);
+
   return (
-    <div className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
+    <div
+      ref={currentEditorHeightRef}
+      className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'}`}
+      cyLabel={cyLabel}
+    >
       {usePortalEditor && (
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
           icon="portal-open"
           tip="Pop out code editor into a new window"
-          transformation={componentName === 'transformation'}
+          position={currentEditorHeightRef?.current?.getBoundingClientRect()}
         />
       )}
       <CodeHinter.Portal
