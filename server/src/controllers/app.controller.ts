@@ -33,6 +33,7 @@ import { UsersService } from '@services/users.service';
 import { SessionService } from '@services/session.service';
 import { OrganizationsService } from '@services/organizations.service';
 import { Organization } from 'src/entities/organization.entity';
+import { InvitedUserSessionAuthGuard } from 'src/modules/auth/invited-user-session.guard';
 
 @Controller()
 export class AppController {
@@ -79,6 +80,12 @@ export class AppController {
     }
 
     return this.authService.generateSessionPayload(user, currentOrganization);
+  }
+
+  @UseGuards(InvitedUserSessionAuthGuard)
+  @Get('session/invite-user/:token')
+  async getInvitedUserSessionDetails(@User() user) {
+    return await this.authService.validateInvitedUserSession(user);
   }
 
   @UseGuards(JwtAuthGuard)

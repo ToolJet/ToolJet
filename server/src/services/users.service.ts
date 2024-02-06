@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
@@ -28,8 +28,8 @@ export class UsersService {
     return this.usersRepository.count();
   }
 
-  async findOne(id: string): Promise<User> {
-    return this.usersRepository.findOne({ where: { id } });
+  async findOne(id: string, selectArray = []): Promise<User> {
+    return this.usersRepository.findOne({ where: { id }, select: [...selectArray] });
   }
 
   async findByEmail(

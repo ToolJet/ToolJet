@@ -7,13 +7,15 @@ import { User } from 'src/entities/user.entity';
 import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { Request } from 'express';
 import { SessionService } from '@services/session.service';
+import { OrganizationUsersService } from '@services/organization_users.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private usersService: UsersService,
     private configService: ConfigService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private organizationUsersService: OrganizationUsersService
   ) {
     super({
       jwtFromRequest: (request) => {
@@ -28,6 +30,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(req: Request, payload: JWTPayload) {
     const isUserMandatory = !req['isUserNotMandatory'];
     const isGetUserSession = !!req['isGetUserSession'];
+    /* User is going through invite flow */
+    const isThisInviteSession = !!req['isThisInviteSession'];
 
     if (isUserMandatory || isGetUserSession) {
       await this.sessionService.validateUserSession(payload.username, payload.sessionId);
@@ -45,7 +49,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         : req.headers['tj-workspace-id'];
 
     if (isUserMandatory) {
-      // header des not exist
+      // header deos not exist
       if (!organizationId) return false;
 
       // No authenticated workspaces

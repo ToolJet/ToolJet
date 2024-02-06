@@ -56,6 +56,13 @@ export class OrganizationUsersService {
     return await this.organizationUsersRepository.update(id, { role });
   }
 
+  async findByWorkspaceInviteToken(invitationToken:string) {
+    const organizationUser = await this.organizationUsersRepository.findOneOrFail({ invitationToken }, {
+      select: ['id']
+    });
+    return this.usersService.findOne(organizationUser.id, ['id','email', 'invitationToken', 'status']);
+  }
+
   async updateOrgUser(organizationUserId: string, updateUserDto) {
     const organizationUser = await this.organizationUsersRepository.findOne({ where: { id: organizationUserId } });
     return await this.usersService.update(

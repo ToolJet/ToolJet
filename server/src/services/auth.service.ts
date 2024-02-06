@@ -631,6 +631,16 @@ export class AuthService {
       currentOrganizationSlug: organization.slug,
     });
   }
+
+  async validateInvitedUserSession(user:User) {
+    const {invitationToken: accountInviteToken, status} = user;
+    if(accountInviteToken && status === USER_STATUS.INVITED) {
+      throw new NotAcceptableException({
+        accountInviteToken,
+      },'Account creation not completed') 
+    }
+    return this.generateSessionPayload(user, null);
+  }
 }
 
 interface JWTPayload {
