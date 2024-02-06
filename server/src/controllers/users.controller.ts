@@ -10,7 +10,6 @@ import {
   Query,
   BadRequestException,
   Param,
-  Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
@@ -25,12 +24,13 @@ import { EntityManager } from 'typeorm';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { LIMIT_TYPE, USER_TYPE } from 'src/helpers/user_lifecycle';
+import { SessionService } from '@services/session.service';
 
 const MAX_AVATAR_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService, private sessionService: SessionService) {}
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get('all')
@@ -72,9 +72,8 @@ export class UsersController {
   //cloud-licensing specific, don't change
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Patch('/user-type')
-  async updateUserTypr(@Body() body, @Req() request) {
-    const organizationId = request.headers['tj-workspace-id'];
-    const { userType, userId } = body;
+  async updateUserType(@Body() body, @User() user) {
+    const { userType, userId, firstName, lastName } = body;
 
     if (!userType || !userId) {
       throw new BadRequestException();
@@ -85,7 +84,7 @@ export class UsersController {
         throw new Error('At least one super admin is required');
       }
     }
-    await this.usersService.updateUser(userId, { userType }, organizationId);
+    await this.usersService.updateUser(userId, { userType, firstName, lastName }, user.organizationId);
   }
 
   @UseGuards(JwtAuthGuard, UserCountGuard)
@@ -131,5 +130,22 @@ export class UsersController {
   async getUserLimits(@Param('type') type: LIMIT_TYPE, @User() user) {
     const organizationId = user.organizationId;
     return await this.usersService.getUserLimitsByType(type, organizationId);
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Patch(':id/password/generate')
+  async autoUpdateUserPassword(@Param('id') userId: string) {
+    const newPassword = await this.usersService.autoUpdateUserPassword(userId);
+    await this.sessionService.terminateAllSessions(userId);
+    return { newPassword };
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Patch(':id/password')
+  async changeUserPassword(@Param('id') userId: string, @Body() changePasswordDto: ChangePasswordDto) {
+    await this.usersService.update(userId, {
+      password: changePasswordDto.newPassword,
+    });
+    await this.sessionService.terminateAllSessions(userId);
   }
 }

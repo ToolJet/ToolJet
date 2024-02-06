@@ -211,7 +211,7 @@ class LoginPageComponent extends React.Component {
       id: 'toast-login-auth-error',
       position: 'top-center',
       style: {
-        maxWidth: '700px',
+        maxWidth: 'unset',
       },
     });
     this.setState({ isLoading: false });

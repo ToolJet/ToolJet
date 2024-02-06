@@ -48,7 +48,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { retrieveWhiteLabelText, getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -269,7 +269,7 @@ const EditorComponent = (props) => {
 
     // 6. Unsubscribe from the observable when the component is unmounted
     return () => {
-      document.title = 'Tooljet - Dashboard';
+      document.title = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
       socket && socket?.close();
       subscription.unsubscribe();
       if (featureAccess?.multiPlayerEdit) props?.provider?.disconnect();
@@ -603,7 +603,7 @@ const EditorComponent = (props) => {
 
   const onNameChanged = (newName) => {
     updateState({ appName: newName });
-    setWindowTitle(newName);
+    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: newName });
   };
 
   const onZoomChanged = (zoom) => {
@@ -734,6 +734,7 @@ const EditorComponent = (props) => {
   };
 
   const fetchEnvironments = () => {
+    const appId = props?.id;
     appEnvironmentService.getAllEnvironments(appId).then((data) => {
       const envArray = data?.environments;
 
@@ -748,7 +749,7 @@ const EditorComponent = (props) => {
     environmentSwitch = false,
     selectedEnvironmentId = null
   ) => {
-    setWindowTitle(data.name);
+    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
 
     if (!environmentSwitch && (!releasedVersionId || !versionSwitched)) {

@@ -87,7 +87,8 @@ describe("App Import Functionality", () => {
       data.appName
     );
     cy.waitForAutoSave();
-    cy.get(commonSelectors.editorPageLogo).should("be.visible").click();
+    cy.get(commonSelectors.editorPageLogo).should("be.visible");
+    cy.backToApps();
     cy.get(commonSelectors.appHeaderLable).should("be.visible");
     cy.reload();
     selectAppCardOption(
@@ -141,7 +142,7 @@ describe("App Import Functionality", () => {
       cy.exec("cd ./cypress/downloads/ && rm -rf *");
     });
     cy.renameApp(data.appReName);
-    cy.get(commonSelectors.editorPageLogo).click();
+    cy.backToApps();
     cy.get(commonSelectors.appHeaderLable).should("be.visible");
     cy.reload();
     navigateToAppEditor(data.appReName);
@@ -159,7 +160,7 @@ describe("App Import Functionality", () => {
           .invoke("text")
           .then((versionText) => {
             cy.log(versionText);
-            cy.get(commonSelectors.editorPageLogo).click();
+            cy.backToApps();
             cy.get(commonSelectors.appHeaderLable).should("be.visible");
             cy.reload();
             selectAppCardOption(

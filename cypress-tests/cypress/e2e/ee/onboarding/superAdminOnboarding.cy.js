@@ -5,7 +5,7 @@ import { logout } from "Support/utils/common";
 
 describe("Self host onboarding", () => {
     beforeEach(() => {
-        cy.visit('/setup');
+        cy.visit("/setup");
     });
 
     it("verify elements on self host onboarding page", () => {
@@ -147,30 +147,84 @@ describe("Self host onboarding", () => {
         cy.get(commonSelectors.continueButton).click();
 
         // signup.commonElementsWorkspaceSetup();
-        cy.get('.tj-header-h1').verifyVisibleElement("have.text", "Start your 14-day Free Trial");
-        cy.get('.start-trial > .tj-text-md').verifyVisibleElement("have.text", "Build internal tools faster than ever with our advanced features.");
-        cy.get(commonSelectors.continueButton).verifyVisibleElement("have.text", "Start your free trial")
-        cy.get('.tj-base-btn').verifyVisibleElement("have.text", "Skip");
+        cy.get(".tj-header-h1").verifyVisibleElement(
+            "have.text",
+            "Start your 14-day Free Trial"
+        );
+        cy.get(".start-trial > .tj-text-md").verifyVisibleElement(
+            "have.text",
+            "Build internal tools faster than ever with our advanced features."
+        );
+        cy.get(commonSelectors.continueButton).verifyVisibleElement(
+            "have.text",
+            "Start your free trial"
+        );
+        cy.get(".tj-base-btn").verifyVisibleElement("have.text", "Skip");
 
-        cy.get('.header > :nth-child(1)').verifyVisibleElement("have.text", "Features");
-        cy.get('.header > :nth-child(2)').verifyVisibleElement("have.text", "Free");
-        cy.get('.header > :nth-child(3)').verifyVisibleElement("have.text", "Paid");
-        cy.get(':nth-child(1) > .feature-title').verifyVisibleElement("have.text", "Unlimited applications");
-        cy.get(':nth-child(2) > .feature-title').verifyVisibleElement("have.text", "Unlimited users");
-        cy.get(':nth-child(3) > .feature-title').verifyVisibleElement("have.text", "Custom react components");
-        cy.get(':nth-child(4) > .feature-title').verifyVisibleElement("have.text", "Google & GitHub sign-in");
-        cy.get(':nth-child(5) > .feature-title').verifyVisibleElement("have.text", "Okta, AzureAD & OpenID Connect");
-        cy.get(':nth-child(6) > .feature-title').verifyVisibleElement("have.text", "White labelling");
-        cy.get(':nth-child(7) > .feature-title').verifyVisibleElement("have.text", "Custom user groups & roles");
-        cy.get(':nth-child(8) > .feature-title').verifyVisibleElement("have.text", "Unlimited ToolJet tables and rows");
-        cy.get(':nth-child(9) > .feature-title').verifyVisibleElement("have.text", "Multiplayer editing");
-        cy.get(':nth-child(10) > .feature-title').verifyVisibleElement("have.text", "Multi-environments");
-        cy.get(':nth-child(11) > .feature-title').verifyVisibleElement("have.text", "GitSync");
-        cy.get(':nth-child(12) > .feature-title').verifyVisibleElement("have.text", "Audit logs");
-        cy.get(':nth-child(13) > .feature-title').verifyVisibleElement("have.text", "Air-gapped deployment");
-        cy.get(':nth-child(14) > .feature-title').verifyVisibleElement("have.text", "Priority support via email, phone & private channel");
+        cy.get(".header > :nth-child(1)").verifyVisibleElement(
+            "have.text",
+            "Features"
+        );
+        cy.get(".header > :nth-child(2)").verifyVisibleElement("have.text", "Free");
+        cy.get(".header > :nth-child(3)").verifyVisibleElement("have.text", "Paid");
+        cy.get(":nth-child(1) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "Unlimited applications"
+        );
+        cy.get(":nth-child(2) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "Unlimited users"
+        );
+        cy.get(":nth-child(3) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "Custom react components"
+        );
+        cy.get(":nth-child(4) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "Google & GitHub sign-in"
+        );
+        cy.get(":nth-child(5) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "Okta, AzureAD & OpenID Connect"
+        );
+        cy.get(":nth-child(6) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "White labelling"
+        );
+        cy.get(":nth-child(7) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "Custom user groups & roles"
+        );
+        cy.get(":nth-child(8) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "Unlimited ToolJet tables and rows"
+        );
+        cy.get(":nth-child(9) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "Multiplayer editing"
+        );
+        cy.get(":nth-child(10) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "Multi-environments"
+        );
+        cy.get(":nth-child(11) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "GitSync"
+        );
+        cy.get(":nth-child(12) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "Audit logs"
+        );
+        cy.get(":nth-child(13) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "Air-gapped deployment"
+        );
+        cy.get(":nth-child(14) > .feature-title").verifyVisibleElement(
+            "have.text",
+            "Priority support via email, phone & private channel"
+        );
 
-        cy.get(commonSelectors.continueButton).click()
+        cy.get(commonSelectors.continueButton).click();
         cy.get("body").then(($title) => {
             if (!$title.text().includes("Start your 14-day Free Trial")) {
                 cy.get(commonSelectors.workspaceName).verifyVisibleElement(

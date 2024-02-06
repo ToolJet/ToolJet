@@ -9,6 +9,7 @@ import {
   Res,
   BadRequestException,
   NotAcceptableException,
+  Put,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
@@ -23,7 +24,6 @@ import { InviteNewUserDto } from '../dto/invite-new-user.dto';
 import { OrganizationsService } from '@services/organizations.service';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ValidateLicenseGuard } from '@ee/licensing/guards/validLicense.guard';
 
 const MAX_CSV_FILE_SIZE = 1024 * 1024 * 1; // 1MB
 @Controller('organization_users')
@@ -63,13 +63,28 @@ export class OrganizationUsersController {
     return;
   }
 
-  @UseGuards(JwtAuthGuard, SuperAdminGuard, ValidateLicenseGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Post(':userId/archive-all')
   async archiveAll(@User() user: UserEntity, @Param('userId') userId: string) {
     if (user.id === userId) {
       throw new NotAcceptableException('Self archive not allowed');
     }
     await this.organizationUsersService.archiveFromAll(userId);
+    return;
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Post(':userId/unarchive-all')
+  async unarchiveAll(@User() user: UserEntity, @Param('userId') userId: string) {
+    await this.organizationUsersService.unarchiveUser(userId);
+    return;
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateUser', UserEntity))
+  @Put(':id')
+  async updateUser(@Param('id') id: string, @Body() updateUserDto) {
+    await this.organizationUsersService.updateOrgUser(id, updateUserDto);
     return;
   }
 

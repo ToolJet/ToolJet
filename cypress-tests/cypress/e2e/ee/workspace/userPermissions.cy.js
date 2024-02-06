@@ -4,7 +4,7 @@ import { usersText } from "Texts/manageUsers";
 import * as common from "Support/utils/common";
 import { groupsSelector } from "Selectors/manageGroups";
 import { commonText } from "Texts/common";
-import { adminLogin, addNewUserMW } from "Support/utils/userPermissions";
+import { addNewUser } from "Support/utils/onboarding";
 import {
   resetDsPermissions,
   deleteAssignedDatasources,
@@ -24,14 +24,14 @@ data.dsEdit = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("User permissions", () => {
   beforeEach(() => {
-    cy.defaultWorkspaceLogin()
+    cy.defaultWorkspaceLogin();
     resetDsPermissions();
     deleteAssignedDatasources();
     cy.viewport(1200, 1300);
   });
   before(() => {
-    cy.defaultWorkspaceLogin()
-    addNewUserMW(data.firstName, data.email);
+    cy.defaultWorkspaceLogin();
+    addNewUser(data.firstName, data.email);
     cy.logoutApi();
   });
 
@@ -57,13 +57,11 @@ describe("User permissions", () => {
     cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
 
     cy.logoutApi();
-    cy.defaultWorkspaceLogin()
+    cy.defaultWorkspaceLogin();
     common.navigateToManageGroups();
     cy.get(eeGroupsSelector.datasourceLink).click();
     cy.wait(500);
-    cy.get(
-      '[data-cy="datasource-select-search"] >> .rmsc > .dropdown-container > .dropdown-heading > .dropdown-heading-value > .gray'
-    ).click();
+    cy.get('[data-cy="datasource-select-search"]>>>>>>').eq(0).click();
     cy.contains(`cypress-${data.lastName}-bigquery`).realClick();
     cy.get(eeGroupsSelector.AddDsButton).click();
 
@@ -81,18 +79,15 @@ describe("User permissions", () => {
     cy.get(dataSourceSelector.buttonSave)
       .should("be.disabled")
       .and("be.visible");
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      data.dsEdit
-    );
-    cy.get(dataSourceSelector.buttonSave).should("be.enabled").click()
+    cy.clearAndType('[data-cy="data-source-name-input-filed"]', data.dsEdit);
+    cy.get(dataSourceSelector.buttonSave).should("be.enabled").click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       "You do not have permissions to perform this action"
     );
 
     cy.logoutApi();
-    cy.defaultWorkspaceLogin()
+    cy.defaultWorkspaceLogin();
 
     common.navigateToManageGroups();
     cy.get(eeGroupsSelector.datasourceLink).click();
@@ -118,11 +113,8 @@ describe("User permissions", () => {
     cy.get(dataSourceSelector.buttonSave)
       .should("be.disabled")
       .and("be.visible");
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      data.dsEdit
-    );
-    cy.get(dataSourceSelector.buttonSave).should("be.enabled").click()
+    cy.clearAndType('[data-cy="data-source-name-input-filed"]', data.dsEdit);
+    cy.get(dataSourceSelector.buttonSave).should("be.enabled").click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved");
 
     cy.logoutApi();
@@ -244,5 +236,4 @@ describe("User permissions", () => {
     cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
     cy.logoutApi();
   });
-
 });

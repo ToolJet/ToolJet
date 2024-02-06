@@ -28,6 +28,7 @@ export const CreateVersion = ({
   const [cancommit, setCommitEnabled] = useState(false);
   const [orgGit, setOrgGit] = useState(null);
   const { t } = useTranslation();
+  const { currentAppEnvironmentId } = useEditorState();
   const { editingVersion } = useAppVersionStore(
     (state) => ({
       editingVersion: state.editingVersion,
@@ -56,7 +57,7 @@ export const CreateVersion = ({
     setIsCreatingVersion(true);
 
     appVersionService
-      .create(appId, versionName, selectedVersion.id)
+      .create(appId, versionName, selectedVersion.id, currentAppEnvironmentId)
       .then((data) => {
         toast.success('Version Created');
         appVersionService.getAll(appId).then((data) => {

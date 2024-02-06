@@ -14,10 +14,7 @@ import {
     editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
 
-import {
-    addQuery,
-    selectDatasource,
-} from "Support/utils/dataSource";
+import { addQuery, selectDatasource } from "Support/utils/dataSource";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 
@@ -48,7 +45,7 @@ describe("Workspace constants", () => {
             ]
         );
         cy.visit("/");
-        common.navigateToworkspaceConstants();
+        cy.get('[data-cy="icon-workspace-constants"]').click();
         AddNewconstants(data.constantsName, "development_multi_env");
         AddNewconstants(
             `${data.constantsName}_password`,
@@ -257,7 +254,7 @@ describe("Workspace constants", () => {
         cy.go("back");
         cy.waitForAppLoad();
         cy.wait(3000);
-        promoteApp()
+        promoteApp();
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
@@ -272,7 +269,7 @@ describe("Workspace constants", () => {
         cy.go("back");
         cy.waitForAppLoad();
         cy.wait(3000);
-        promoteApp()
+        promoteApp();
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
@@ -288,9 +285,9 @@ describe("Workspace constants", () => {
         cy.go("back");
         cy.waitForAppLoad();
         cy.wait(3000);
-        releaseApp()
+        releaseApp();
 
-        launchApp()
+        launchApp();
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
         ).verifyVisibleElement("have.text", "Production");

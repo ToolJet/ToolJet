@@ -9,7 +9,7 @@ import { commonText } from "Texts/common";
 import { addQuery, addQueryAndOpenEditor } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
-import { addNewUserMW } from "Support/utils/userPermissions";
+import { addNewUser } from "Support/utils/onboarding";
 import { groupsSelector } from "Selectors/manageGroups";
 import { eeGroupsSelector } from "Selectors/eeCommon";
 import {
@@ -45,16 +45,17 @@ data.text4 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 describe("Global Datasource Manager", () => {
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
+        cy.skipWalkthrough();
     });
 
     it("Connect Data source and assign to user groups", () => {
         cy.apiCreateApp(data.appName);
-        addNewUserMW(data.userName1, data.userEmail1);
+        addNewUser(data.userName1, data.userEmail1);
         cy.logoutApi();
         cy.defaultWorkspaceLogin();
         navigateToManageGroups();
         createGroupAddAppAndUserToGroup(data.userName1, data.userEmail1);
-        addNewUserMW(data.userName2, data.userEmail2);
+        addNewUser(data.userName2, data.userEmail2);
         cy.logoutApi();
         cy.defaultWorkspaceLogin();
         navigateToManageGroups();
@@ -153,7 +154,7 @@ describe("Global Datasource Manager", () => {
             commonWidgetSelector.draggableWidget(data.text2)
         ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
 
-        cy.get(commonSelectors.editorPageLogo).click();
+        cy.backToApps();
 
         addDsToGroup(data.userName1, `cypress-${data.ds1}-postgresql`);
         addDsToGroup(data.userName2, `cypress-${data.ds2}-rest-api`);

@@ -27,7 +27,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -526,10 +526,6 @@ class ViewerComponent extends React.Component {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
     return canvasBoundingRect?.width;
   };
-
-  setWindowTitle(name) {
-    document.title = name ?? 'My App';
-  }
 
   computeCanvasBackgroundColor = () => {
     const bgColor =

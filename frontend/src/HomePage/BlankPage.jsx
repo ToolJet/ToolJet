@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-import { retrieveWhiteLabelText } from '@/_helpers/utils';
-import TemplateLibraryModal from './TemplateLibraryModal/';
+import { retrieveWhiteLabelText, defaultWhiteLabellingSettings } from '@/_helpers/utils';
+import TemplateLibraryModal from './TemplateLibraryModal';
 import { useTranslation } from 'react-i18next';
 import { authenticationService, appsService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';
 import posthog from 'posthog-js';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 
 export const BlankPage = function BlankPage({
   readAndImport,
@@ -17,6 +17,8 @@ export const BlankPage = function BlankPage({
   openCreateAppFromTemplateModal,
   creatingApp,
   darkMode,
+  showTemplateLibraryModal,
+  hideTemplateLibraryModal,
   viewTemplateLibraryModal,
   appType,
   canCreateApp,
@@ -206,6 +208,19 @@ export const BlankPage = function BlankPage({
             </div>
           </div>
         </div>
+        <div className="d-flex justify-content-center align-items-center flex-column mt-3 blank-page-wrapper-mobile">
+          <div className="mb-4">
+            <EmptyFoldersIllustration />
+          </div>
+          <div className="tj-text-md text-secondary">No apps created yet</div>
+        </div>
+        <TemplateLibraryModal
+          show={showTemplateLibraryModal}
+          onHide={hideTemplateLibraryModal}
+          onCloseButtonClick={hideTemplateLibraryModal}
+          darkMode={darkMode}
+          appCreationDisabled={appCreationDisabled}
+        />
       </div>
     )
   );

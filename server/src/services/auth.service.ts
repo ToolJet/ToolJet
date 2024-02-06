@@ -89,7 +89,10 @@ export class AuthService {
   }
 
   private async validateUser(email: string, password: string, organizationId?: string): Promise<User> {
-    const user = await this.usersService.findByEmail(email, organizationId, WORKSPACE_USER_STATUS.ACTIVE);
+    const user = await this.usersService.findByEmail(email, organizationId, [
+      WORKSPACE_USER_STATUS.ACTIVE,
+      WORKSPACE_USER_STATUS.ARCHIVED,
+    ]);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -97,6 +100,17 @@ export class AuthService {
 
     if (user.status !== USER_STATUS.ACTIVE) {
       throw new UnauthorizedException(getUserErrorMessages(user.status));
+    }
+
+    if (organizationId) {
+      const organizationUser = user.organizationUsers.find(
+        (organizationUser) => organizationUser.organizationId === organizationId
+      );
+      if (organizationUser && organizationUser.status === WORKSPACE_USER_STATUS.ARCHIVED) {
+        throw new UnauthorizedException(
+          'You have been archived from this workspace. Sign in to another workspace or contact admin to know more.'
+        );
+      }
     }
 
     const passwordRetryConfig = this.configService.get<string>('PASSWORD_RETRY_LIMIT');

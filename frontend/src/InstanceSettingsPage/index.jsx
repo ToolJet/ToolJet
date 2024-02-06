@@ -4,7 +4,6 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { authenticationService } from '@/_services/authentication.service';
 import { BreadCrumbContext } from '@/App/App';
-import { OrganizationList } from '@/_components/OrganizationManager/List';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { licenseService } from '@/_services';
 import Skeleton from 'react-loading-skeleton';
@@ -104,7 +103,6 @@ export function InstanceSettings(props) {
                   <Skeleton count={3} height={22} />
                 )}
               </div>
-              <OrganizationList />
             </div>
 
             {licenseLoaded ? (

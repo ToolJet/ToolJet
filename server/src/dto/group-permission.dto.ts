@@ -97,3 +97,17 @@ export class UpdateGroupDto {
   @IsBoolean()
   org_environment_constant_delete;
 }
+
+export class DuplucateGroupDto {
+  @IsBoolean()
+  addPermission;
+
+  @IsBoolean()
+  addApps;
+
+  @IsBoolean()
+  addDataSource;
+
+  @IsBoolean()
+  addUsers;
+}

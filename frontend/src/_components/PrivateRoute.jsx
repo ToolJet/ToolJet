@@ -3,11 +3,10 @@ import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { authenticationService } from '@/_services';
 import { appendWorkspaceId, excludeWorkspaceIdFromURL, getPathname, getQueryParams } from '@/_helpers/routes';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, setFaviconAndTitle } from '@/_helpers/utils';
 import { handleAppAccess } from '@/_helpers/handleAppAccess';
 import queryString from 'query-string';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
-import { setFaviconAndTitle } from '@/_helpers/utils';
 
 export const PrivateRoute = ({ children }) => {
   const [session, setSession] = React.useState(authenticationService.currentSessionValue);

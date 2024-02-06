@@ -3,6 +3,7 @@ import { groupsText } from "Texts/manageGroups";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { navigateToAllUserGroup, createGroup } from "Support/utils/common";
+import { cyParamName } from "../../constants/selectors/common";
 
 export const manageGroupsElements = () => {
   cy.get(groupsSelector.groupLink("All users")).verifyVisibleElement(
@@ -87,13 +88,16 @@ export const manageGroupsElements = () => {
     groupsText.createGroupButton
   );
   cy.get(groupsSelector.cancelButton).click();
-  cy.get(groupsSelector.searchBox).should("be.visible");
-
-  cy.get(groupsSelector.usersLink).click();
   cy.get(groupsSelector.helperTextAllUsersIncluded).verifyVisibleElement(
     "have.text",
     groupsText.helperTextAllUsersIncluded
   );
+
+  // cy.get(groupsSelector.usersLink).click();
+  // cy.get(groupsSelector.helperTextAllUsersIncluded).verifyVisibleElement(
+  //   "have.text",
+  //   groupsText.helperTextAllUsersIncluded
+  // );
   cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
     "have.text",
     groupsText.userNameTableHeader
@@ -302,6 +306,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
         cy.get('[data-cy="all-users-list-item"] > span').click();
         cy.get(`[data-cy="${groupName}-list-item"]`).click();
         cy.wait(1000);
+        cy.get('[data-cy="apps-link"]').click();
         cy.get('[data-cy="checkbox-app-edit"]').check();
       });
     });
@@ -344,4 +349,19 @@ export const addDsToGroup = (groupName, dsName) => {
       });
     });
   });
+};
+
+export const OpenGroupCardOption = (groupName) => {
+  cy.get(groupsSelector.groupLink(groupName))
+    .trigger("mouseenter")
+    .trigger("mouseover")
+    .then(() => {
+      cy.wait(2000).then(() => {
+        cy.get(
+          `[data-cy="${cyParamName(
+            groupName
+          )}-list-item"] > :nth-child(2) > .tj-base-btn`
+        ).click({ force: true });
+      });
+    });
 };

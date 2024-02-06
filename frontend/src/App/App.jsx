@@ -2,8 +2,8 @@ import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import { retrieveWhiteLabelText, setFaviconAndTitle } from '@/_helpers/utils';
-import { authenticationService, tooljetService, whiteLabellingService } from '@/_services';
+import { setFaviconAndTitle } from '@/_helpers/utils';
+import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
@@ -49,7 +49,7 @@ import { Settings } from '@/Settings';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import { ManageSubscriptionKey } from '@/ManageLicenseKey/MangeSubscriptionKey';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import WorkspaceConstants from '@/WorkspaceConstants';
 
 const AppWrapper = (props) => {
   return (
@@ -286,6 +286,15 @@ class AppComponent extends React.Component {
                 element={
                   <PrivateRoute>
                     <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/:workspaceId/workspace-constants"
+                element={
+                  <PrivateRoute>
+                    <WorkspaceConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </PrivateRoute>
                 }
               />

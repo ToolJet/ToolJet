@@ -29,6 +29,7 @@ describe("LDAP flow", () => {
 
     beforeEach(() => {
         cy.appUILogin();
+        cy.skipWalkthrough();
     });
 
     it("Verify the LDAP UI and user onboarding", () => {
@@ -133,7 +134,7 @@ describe("LDAP flow", () => {
 
         cy.createApp(data.appName);
         cy.dragAndDropWidget("Table", 250, 250);
-        cy.get(commonSelectors.editorPageLogo).click();
+        cy.backToApps();
         navigateToManageGroups();
         addAppToGroup(data.appName);
         cy.get(commonSelectors.dashboardIcon).click();
@@ -161,11 +162,8 @@ describe("LDAP flow", () => {
     it("Verify archive and unarchive functionality", () => {
         navigateToManageUsers();
         searchUser("professor@planetexpress.com");
-        cy.contains("td", "professor@planetexpress.com")
-            .parent()
-            .within(() => {
-                cy.get("td button").click();
-            });
+        cy.get('[data-cy="user-actions-button"]').click();
+        cy.get('[data-cy="archive-button"]').click();
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
             usersText.archivedToast
@@ -188,17 +186,11 @@ describe("LDAP flow", () => {
             "LDAP login failed - User does not exist in the workspace"
         );
 
-        // cy.login("professor@planetexpress.com", "password");
-        // logout();
-
         cy.appUILogin();
         navigateToManageUsers();
         searchUser("professor@planetexpress.com");
-        cy.contains("td", "professor@planetexpress.com")
-            .parent()
-            .within(() => {
-                cy.get("td button").click();
-            });
+        cy.get('[data-cy="user-actions-button"]').click();
+        cy.get('[data-cy="archive-button"]').click();
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
             usersText.unarchivedToast

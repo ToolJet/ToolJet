@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   authenticationService,
   orgEnvironmentConstantService,
@@ -18,6 +18,8 @@ import ConstantForm from './ConstantForm';
 import EmptyState from './EmptyState';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { LicenseTooltip } from '@/LicenseTooltip';
+import { BreadCrumbContext } from '@/App';
+import { OrganizationList } from '@/_components/OrganizationManager/List';
 
 const MODES = Object.freeze({
   CREATE: 'create',
@@ -43,6 +45,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [errors, setErrors] = useState([]);
   const [showConstantDeleteConfirmation, setShowConstantDeleteConfirmation] = useState(false);
   const [selectedConstant, setSelectedConstant] = useState(null);
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   const { group_permissions, super_admin, admin } = authenticationService.currentSessionValue;
   const [licenseValid, setLicenseValid] = useState(true);
@@ -142,15 +145,30 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   };
 
   const canCreateVariable = () => {
-    return canAnyGroupPerformAction('org_environment_constant_create', group_permissions) || super_admin || admin;
+    return (
+      canAnyGroupPerformAction(
+        'org_environment_variable_create',
+        authenticationService.currentSessionValue.group_permissions
+      ) || admin
+    );
   };
 
   const canUpdateVariable = () => {
-    return canAnyGroupPerformAction('org_environment_constant_create', group_permissions) || super_admin || admin;
+    return (
+      canAnyGroupPerformAction(
+        'org_environment_variable_update',
+        authenticationService.currentSessionValue.group_permissions
+      ) || admin
+    );
   };
 
   const canDeleteVariable = () => {
-    return canAnyGroupPerformAction('org_environment_constant_delete', group_permissions) || super_admin || admin;
+    return (
+      canAnyGroupPerformAction(
+        'org_environment_variable_delete',
+        authenticationService.currentSessionValue.group_permissions
+      ) || admin
+    );
   };
 
   const fetchEnvironments = () => {
@@ -278,6 +296,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
   useEffect(() => {
     fetchConstantsAndEnvironments(true);
+    updateSidebarNAV('Development');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -318,115 +337,122 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
         </Drawer>
       )}
 
-      <div className="page-wrapper">
-        <div className="container-xl">
-          <div>
-            <div className="page-header workspace-constant-header">
-              <div className="tj-text-sm font-weight-500" data-cy="constants-count-title">
-                {currentTableData.length} constants
-              </div>
-              <div className="mt-3">
-                <Alert svg="tj-info">
-                  <div
-                    className="d-flex align-items-center"
-                    style={{
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      width: '100%',
-                    }}
-                  >
-                    <div class="text-muted" data-cy="workspace-constant-helper-text">
-                      To resolve a Workspace constant use{' '}
-                      <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{constants.access_token}}'}</strong>
+      <div className="row gx-0">
+        <div className="organization-page-sidebar col ">
+          <div className="workspace-nav-list-wrap">
+            <ManageOrgConstantsComponent.EnvironmentsTabs
+              allEnvironments={environments}
+              currentEnvironment={activeTabEnvironment}
+              setActiveTabEnvironment={setActiveTabEnvironment}
+              isLoading={isLoading}
+              allConstants={constants}
+              licenseValid={licenseValid}
+            />
+          </div>
+          <OrganizationList />
+        </div>
+        <div className="page-wrapper mt-3">
+          <div className="container-xl">
+            <div>
+              <div className="page-header workspace-constant-header">
+                <div className="tj-text-sm font-weight-500" data-cy="constants-count-title">
+                  {currentTableData.length} constants
+                </div>
+                <div className="mt-3">
+                  <Alert svg="tj-info">
+                    <div
+                      className="d-flex align-items-center"
+                      style={{
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        width: '100%',
+                      }}
+                    >
+                      <div class="text-muted" data-cy="workspace-constant-helper-text">
+                        To resolve a Workspace constant use{' '}
+                        <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{constants.access_token}}'}</strong>
+                      </div>
+                      <div>
+                        <Button
+                          // Todo: Update link to documentation: workspace constants
+                          onClick={() =>
+                            window.open(
+                              'https://docs.tooljet.com/docs/org-management/workspaces/workspace_constants/',
+                              '_blank'
+                            )
+                          }
+                          darkMode={darkMode}
+                          size="sm"
+                          styles={{
+                            width: '100%',
+                            fontSize: '12px',
+                            fontWeight: 500,
+                          }}
+                        >
+                          <Button.Content title={'Read Documentation'} iconSrc="assets/images/icons/student.svg" />
+                        </Button>
+                      </div>
                     </div>
-                    <div>
-                      <Button
-                        // Todo: Update link to documentation: workspace constants
-                        onClick={() =>
-                          window.open(
-                            'https://docs.tooljet.com/docs/org-management/workspaces/workspace_constants/',
-                            '_blank'
-                          )
-                        }
-                        darkMode={darkMode}
-                        size="sm"
-                        styles={{
-                          width: '100%',
-                          fontSize: '12px',
-                          fontWeight: 500,
-                        }}
-                      >
-                        <Button.Content title={'Read Documentation'} iconSrc="assets/images/icons/student.svg" />
-                      </Button>
-                    </div>
-                  </div>
-                </Alert>
+                  </Alert>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="workspace-variable-container-wrap mt-2">
-          <div className="container-xl">
-            <div className="workspace-constant-table-card">
-              <div className="manage-sso-container h-100">
-                <div className="d-flex manage-constant-wrapper-card">
-                  <ManageOrgConstantsComponent.EnvironmentsTabs
-                    allEnvironments={environments}
-                    currentEnvironment={activeTabEnvironment}
-                    setActiveTabEnvironment={setActiveTabEnvironment}
-                    isLoading={isLoading}
-                    allConstants={constants}
-                    licenseValid={licenseValid}
-                  />
-                  {constants.length > 0 ? (
-                    <div className="w-100 workspace-constant-card-body">
-                      <div className="align-items-center d-flex p-3 justify-content-between">
-                        <div className="tj-text-sm font-weight-500" data-cy="env-name">
-                          {capitalize(activeTabEnvironment?.name)}
+          <div className="workspace-variable-container-wrap constants-list mt-2">
+            <div className="container-xl">
+              <div className="workspace-constant-table-card">
+                <div className="manage-sso-container h-100">
+                  <div className="d-flex manage-constant-wrapper-card">
+                    {constants.length > 0 ? (
+                      <div className="w-100 workspace-constant-card-body">
+                        <div className="align-items-center d-flex p-3 justify-content-between">
+                          <div className="tj-text-sm font-weight-500" data-cy="env-name">
+                            {capitalize(activeTabEnvironment?.name)}
+                          </div>
+                          <div className="workspace-setting-buttons-wrap">
+                            {canCreateVariable() && (
+                              <ButtonSolid
+                                data-cy="add-new-constant-button"
+                                vaiant="primary"
+                                onClick={() => {
+                                  setMode(MODES.CREATE);
+                                  setIsManageVarDrawerOpen(true);
+                                }}
+                                className="add-new-constant-button"
+                                customStyles={{ minWidth: '200px', height: '32px' }}
+                                disabled={isManageVarDrawerOpen}
+                              >
+                                Create new constant
+                              </ButtonSolid>
+                            )}
+                          </div>
                         </div>
-                        <div className="workspace-setting-buttons-wrap">
-                          {canCreateVariable() && (
-                            <ButtonSolid
-                              data-cy="add-new-constant-button"
-                              vaiant="primary"
-                              onClick={() => {
-                                setMode(MODES.CREATE);
-                                setIsManageVarDrawerOpen(true);
-                              }}
-                              className="add-new-constant-button"
-                              customStyles={{ minWidth: '200px', height: '32px' }}
-                              disabled={isManageVarDrawerOpen}
-                            >
-                              Create new constant
-                            </ButtonSolid>
-                          )}
-                        </div>
+                        <ConstantTable
+                          constants={currentTableData}
+                          onEditBtnClicked={onEditBtnClicked}
+                          onDeleteBtnClicked={onDeleteBtnClicked}
+                          isLoading={isLoading}
+                          canUpdateDeleteConstant={canUpdateVariable() || canDeleteVariable()}
+                        />
+                        <ManageOrgConstantsComponent.Footer
+                          darkMode={darkMode}
+                          totalPage={totalPages}
+                          pageCount={currentPage}
+                          dataLoading={false}
+                          gotoNextPage={goToNextPage}
+                          gotoPreviousPage={goToPreviousPage}
+                          showPagination={constants.length > 0}
+                        />
                       </div>
-                      <ConstantTable
-                        constants={currentTableData}
-                        onEditBtnClicked={onEditBtnClicked}
-                        onDeleteBtnClicked={onDeleteBtnClicked}
+                    ) : (
+                      <EmptyState
+                        canCreateVariable={canCreateVariable()}
+                        setIsManageVarDrawerOpen={setIsManageVarDrawerOpen}
                         isLoading={isLoading}
-                        canUpdateDeleteConstant={canUpdateVariable() || canDeleteVariable()}
                       />
-                      <ManageOrgConstantsComponent.Footer
-                        darkMode={darkMode}
-                        totalPage={totalPages}
-                        pageCount={currentPage}
-                        dataLoading={false}
-                        gotoNextPage={goToNextPage}
-                        gotoPreviousPage={goToPreviousPage}
-                        showPagination={constants.length > 0}
-                      />
-                    </div>
-                  ) : (
-                    <EmptyState
-                      canCreateVariable={canCreateVariable()}
-                      setIsManageVarDrawerOpen={setIsManageVarDrawerOpen}
-                      isLoading={isLoading}
-                    />
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -445,6 +471,7 @@ const RenderEnvironmentsTab = ({
   allConstants,
   licenseValid,
 }) => {
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
   if (!currentEnvironment || allEnvironments.length <= 1) return null;
 
   const constantCount = (constants, envId) => {
@@ -462,6 +489,7 @@ const RenderEnvironmentsTab = ({
   const updateCurrentEnvironment = (env) => {
     const selectedEnv = allEnvironments.find((e) => e.id === env.id);
     setActiveTabEnvironment(selectedEnv);
+    updateSidebarNAV(capitalize(env?.name));
   };
 
   const menuItems = allEnvironments.map((env) => ({
@@ -469,47 +497,46 @@ const RenderEnvironmentsTab = ({
     label: `${capitalize(env.name)} ${env.enabled ? `(${constantCount(allConstants, env?.id)})` : ''}`,
     priority: env?.priority,
     enabled: env?.enabled,
+    name: env?.name,
   }));
 
   return (
-    <div className="left-menu">
-      <ul data-cy="left-menu-items tj-text-xsm">
-        {menuItems.map((item, index) => {
-          const Wrapper = ({ children }) =>
-            !item.enabled ? (
-              <LicenseTooltip
-                placement="bottom"
-                feature={'Multi-environments'}
-                isAvailable={item?.enabled}
-                noTooltipIfValid={true}
-                customMessage={
-                  !licenseValid
-                    ? 'Multi-environments are available only in paid plans'
-                    : 'Multi-environments are not included in your current plan'
-                }
-              >
-                {children}
-              </LicenseTooltip>
-            ) : (
-              <>{children}</>
-            );
-          return (
-            <Wrapper key={index}>
-              <FolderList
-                onClick={() => {
-                  item?.enabled && updateCurrentEnvironment(item);
-                }}
-                key={index}
-                selectedItem={currentEnvironment.id === item.id}
-                items={menuItems}
-                isLoading={isLoading}
-              >
-                {item.label}
-              </FolderList>
-            </Wrapper>
+    <div data-cy="left-menu-items tj-text-xsm">
+      {menuItems.map((item, index) => {
+        const Wrapper = ({ children }) =>
+          !item.enabled ? (
+            <LicenseTooltip
+              placement="bottom"
+              feature={'Multi-environments'}
+              isAvailable={item?.enabled}
+              noTooltipIfValid={true}
+              customMessage={
+                !licenseValid
+                  ? 'Multi-environments are available only in paid plans'
+                  : 'Multi-environments are not included in your current plan'
+              }
+            >
+              {children}
+            </LicenseTooltip>
+          ) : (
+            <>{children}</>
           );
-        })}
-      </ul>
+        return (
+          <Wrapper key={index}>
+            <FolderList
+              onClick={() => {
+                item?.enabled && updateCurrentEnvironment(item);
+              }}
+              key={index}
+              selectedItem={currentEnvironment.id === item.id}
+              items={menuItems}
+              isLoading={isLoading}
+            >
+              {item.label}
+            </FolderList>
+          </Wrapper>
+        );
+      })}
     </div>
   );
 };

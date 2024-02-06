@@ -17,7 +17,6 @@ export class AppEnvironmentsController {
   @Get()
   async index(@User() user, @Query('app_id') appId: string) {
     const { organizationId } = user;
-    // TODO: add fetchEnvironments privilege
     const environments = await this.appEnvironmentServices.getAll(organizationId, null, appId);
     return decamelizeKeys({ environments });
   }

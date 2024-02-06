@@ -26,6 +26,7 @@ describe("Multi env", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.viewport(1200, 1300);
+    cy.skipWalkthrough();
   });
 
   it("Verify the datasource configuration and data on each env", () => {
@@ -75,7 +76,9 @@ describe("Multi env", () => {
     cy.get(commonSelectors.dashboardIcon).click();
 
     cy.openApp();
+    cy.wait(2500);
     cy.get(`[data-cy="${data.ds}-add-query-card"] > .text-truncate`).click();
+    cy.wait(1000);
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
     cy.get(".custom-toggle-switch>.switch>").eq(3).click();
     cy.waitForAutoSave();
@@ -132,7 +135,7 @@ describe("Multi env", () => {
       "Query could not be completed"
     );
 
-    cy.get(commonSelectors.editorPageLogo).click();
+    cy.backToApps();
     cy.get(commonSelectors.globalDataSourceIcon).click();
     selectDatasource(data.ds);
     cy.get('[data-cy="staging-label"]').click();
@@ -188,7 +191,7 @@ describe("Multi env", () => {
       "Query could not be completed"
     );
 
-    cy.get(commonSelectors.editorPageLogo).click();
+    cy.backToApps();
     cy.get(commonSelectors.globalDataSourceIcon).click();
     selectDatasource(data.ds);
     cy.get('[data-cy="production-label"]').click();
