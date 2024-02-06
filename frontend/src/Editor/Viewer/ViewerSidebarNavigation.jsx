@@ -9,7 +9,7 @@ export const ViewerSidebarNavigation = ({ isMobileDevice, pages, currentPageId, 
   }
   return (
     <div
-      className={`navigation-area`}
+      className={`navigation-area overflow-y-auto`}
       style={{
         width: 200,
         position: 'fixed',
