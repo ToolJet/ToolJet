@@ -4000,6 +4000,9 @@ input[type="text"] {
 .popup-btn {
   cursor: pointer !important;
   display: block;
+  padding: 2px;
+  border-radius: 4px;
+  border:  1px solid rgba(204, 209, 213, 1);
 }
 
 .preview-icons {

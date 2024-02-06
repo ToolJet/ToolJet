@@ -83,8 +83,8 @@ const Portal = ({ children, ...restProps }) => {
   return <React.Fragment>{renderPortal}</React.Fragment>;
 };
 
-const PopupIcon = ({ callback, icon, tip, transformation = false }) => {
-  const size = transformation ? 20 : 12;
+const PopupIcon = ({ callback, icon, tip }) => {
+  const size = 16;
 
   return (
     <div className="d-flex justify-content-end w-100 position-absolute" style={{ top: 0 }}>
