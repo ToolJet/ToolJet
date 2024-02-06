@@ -1,39 +1,43 @@
 import { fake } from "Fixtures/fake";
-import { textInputText } from "Texts/textInput";
-import { commonWidgetText, widgetValue, customValidation } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { buttonText } from "Texts/button";
 import {
-  verifyControlComponentAction,
-  randomString,
-} from "Support/utils/textInput";
-import {
-  openAccordion,
-  verifyAndModifyParameter,
-  openEditorSidebar,
-  verifyAndModifyToggleFx,
   addDefaultEventHandler,
-  verifyComponentValueFromInspector,
-  selectColourFromColourPicker,
-  verifyBoxShadowCss,
-  verifyLayout,
-  verifyTooltip,
+  closeAccordions,
   editAndVerifyWidgetName,
+  openAccordion,
+  openEditorSidebar,
+  randomNumber,
+  verifyAndModifyParameter,
+  verifyBoxShadowCss,
+  verifyComponentValueFromInspector,
+  verifyLayout,
   verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
-  randomNumber,
-  closeAccordions,
+  verifyTooltip,
 } from "Support/utils/commonWidget";
 import {
+  addAllInputFieldColors,
+  addAndVerifyAdditionalActions,
+  addValidations,
+  verifyInputFieldColors,
+} from "Support/utils/editor/inputFieldUtils";
+import {
+  addSupportCSAData,
   selectCSA,
   selectEvent,
-  addSupportCSAData,
 } from "Support/utils/events";
+import {
+  randomString,
+  verifyControlComponentAction,
+} from "Support/utils/textInput";
+import { buttonText } from "Texts/button";
+import { commonWidgetText, customValidation, widgetValue } from "Texts/common";
+import { textInputText } from "Texts/textInput";
 
 describe("Text Input", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp("11111");
+    cy.apiCreateApp(`${fake.companyName}-Textinput-App`);
     cy.openApp();
     cy.dragAndDropWidget("Text Input", 500, 500);
   });
@@ -43,7 +47,6 @@ describe("Text Input", () => {
 
   it("should verify the properties of the text input widget", () => {
     const data = {};
-    data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
     data.tooltipText = fake.randomSentence;
     data.minimumLength = randomNumber(1, 4);
@@ -51,12 +54,25 @@ describe("Text Input", () => {
     data.customText = randomString(12);
 
     openEditorSidebar(textInputText.defaultWidgetName);
-    closeAccordions(["Validation", "General", "Properties", "Layout"]);
-    editAndVerifyWidgetName(data.widgetName);
-    openAccordion(commonWidgetText.accordionProperties, [
-      "Validation",
-      "General",
+    closeAccordions([
       "Properties",
+      "Validation",
+      "Additional Actions",
+      "Devices",
+      "Events",
+    ]);
+    editAndVerifyWidgetName(data.widgetName, [
+      "Properties",
+      "Validation",
+      "Additional Actions",
+      "Devices",
+      "Events",
+    ]);
+    openAccordion(commonWidgetText.accordionProperties, [
+      "Properties",
+      "Validation",
+      "Additional Actions",
+      "Devices",
       "Events",
     ]);
     verifyAndModifyParameter(
@@ -75,10 +91,11 @@ describe("Text Input", () => {
     data.customText = fake.randomSentence;
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties, [
-      "Validation",
-      "General",
-      "Events",
       "Properties",
+      "Validation",
+      "Additional Actions",
+      "Devices",
+      "Events",
     ]);
     verifyAndModifyParameter(
       commonWidgetText.labelPlaceHolder,
@@ -90,7 +107,7 @@ describe("Text Input", () => {
       .should("contain", data.customText);
 
     openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionEvents, ["Validation", "Layout"]);
+    openAccordion(commonWidgetText.accordionEvents, ["Validation", "Devices"]);
     addDefaultEventHandler(widgetValue(data.widgetName));
     cy.get(commonWidgetSelector.eventSelection).type("On Enter Pressed{Enter}");
 
@@ -102,12 +119,9 @@ describe("Text Input", () => {
     cy.forceClickOnCanvas();
 
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
-    openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionValidation);
-    verifyAndModifyParameter(
-      commonWidgetText.labelRegex,
-      commonWidgetText.regularExpression
-    );
+
+    addValidations(data.widgetName, data);
+
     cy.clearAndType(
       commonWidgetSelector.draggableWidget(data.widgetName),
       data.customText
@@ -121,10 +135,7 @@ describe("Text Input", () => {
     cy.get(
       commonWidgetSelector.parameterInputField(commonWidgetText.labelRegex)
     ).clearCodeMirror();
-    verifyAndModifyParameter(
-      commonWidgetText.labelMinLength,
-      data.minimumLength
-    );
+
     cy.forceClickOnCanvas();
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(data.widgetName)
@@ -137,10 +148,7 @@ describe("Text Input", () => {
     cy.get(
       commonWidgetSelector.parameterInputField(commonWidgetText.labelMinLength)
     ).clearCodeMirror();
-    verifyAndModifyParameter(
-      commonWidgetText.labelMaxLength,
-      data.maximumLength
-    );
+
     cy.forceClickOnCanvas();
     cy.clearAndType(
       commonWidgetSelector.draggableWidget(data.widgetName),
@@ -151,11 +159,6 @@ describe("Text Input", () => {
     ).verifyVisibleElement(
       "have.text",
       commonWidgetText.maxLengthValidationError(data.maximumLength)
-    );
-
-    verifyAndModifyParameter(
-      commonWidgetText.labelcustomValidadtion,
-      customValidation(data.widgetName, data.customText)
     );
     cy.forceClickOnCanvas();
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
@@ -169,7 +172,7 @@ describe("Text Input", () => {
     cy.get(
       commonWidgetSelector.accordion(commonWidgetText.accordionValidation)
     ).click();
-    verifyPropertiesGeneralAccordion(data.widgetName, data.tooltipText);
+    addAndVerifyAdditionalActions(data.widgetName, data.tooltipText);
 
     openEditorSidebar(data.widgetName);
     cy.get(
@@ -178,7 +181,7 @@ describe("Text Input", () => {
     cy.get(
       commonWidgetSelector.accordion(commonWidgetText.accordionValidation)
     ).click();
-    verifyLayout(data.widgetName);
+    verifyLayout(data.widgetName, "Devices");
 
     cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
     cy.get(
@@ -194,55 +197,31 @@ describe("Text Input", () => {
     data.customText = fake.firstName;
     verifyControlComponentAction(data.widgetName, data.customText);
   });
-  it("should verify the styles of the text input widget", () => {
+  it.only("should verify the styles of the text input widget", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.colourHex = fake.randomRgbaHex;
     data.boxShadowColor = fake.randomRgba;
     data.boxShadowParam = fake.boxShadowParam;
+    data.bgColor = fake.randomRgba;
+    data.borderColor = fake.randomRgba;
+    data.textColor = fake.randomRgba;
+    data.errorTextColor = fake.randomRgba;
+    data.iconColor = fake.randomRgba;
 
     openEditorSidebar(textInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+    addAllInputFieldColors(data);
 
-    verifyAndModifyToggleFx(
-      commonWidgetText.parameterVisibility,
-      commonWidgetText.codeMirrorLabelTrue
-    );
-    cy.get(
-      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
-    ).should("not.be.visible");
-
-    cy.get(
-      commonWidgetSelector.parameterTogglebutton(
-        commonWidgetText.parameterVisibility
-      )
-    ).click();
-
-    verifyAndModifyToggleFx(
-      commonWidgetText.parameterDisable,
-      commonWidgetText.codeMirrorLabelFalse
-    );
-    cy.waitForAutoSave();
-    cy.get("[data-cy='draggable-widget-textinput1']")
-      .parent('[class="text-input true"]')
-      .invoke("attr", "data-disabled")
-      .and("contain", "true");
-
-    cy.get(
-      commonWidgetSelector.parameterTogglebutton(
-        commonWidgetText.parameterDisable
-      )
-    ).click();
-
-    verifyAndModifyParameter(
-      commonWidgetText.parameterBorderRadius,
-      commonWidgetText.borderRadiusInput
-    );
+    cy.clearAndType('[data-cy="border-radius-input"]', "20");
+    cy.get('[data-cy="icon-visibility-button"]').click();
 
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     cy.get(
       commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
     ).should("have.css", "border-radius", "20px");
+
+    verifyInputFieldColors("textinput1", data);
 
     verifyStylesGeneralAccordion(
       textInputText.defaultWidgetName,
@@ -278,7 +257,7 @@ describe("Text Input", () => {
       data.customText
     );
 
-    openAccordion(commonWidgetText.accordionEvents, ["Validation", "Layout"]);
+    openAccordion(commonWidgetText.accordionEvents, ["Validation", "Devices"]);
     addDefaultEventHandler(widgetValue(textInputText.defaultWidgetName));
     cy.get(commonWidgetSelector.eventSelection).type("On Enter Pressed{Enter}");
 

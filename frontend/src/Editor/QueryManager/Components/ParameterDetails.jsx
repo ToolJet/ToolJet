@@ -71,23 +71,26 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
         </Popover>
       }
     >
-      <span>
+      <span className="parameterItem">
         {isEdit ? (
-          <PillButton name={name} onClick={() => setShowModal(true)} onRemove={onRemove} />
+          <PillButton
+            className="parameterItemPillButton"
+            name={name}
+            onClick={() => setShowModal(true)}
+            onRemove={onRemove}
+          />
         ) : (
-          <ButtonSolid
-            variant="ghostBlue"
-            size="sm"
+          <button
             onClick={() => setShowModal((show) => !show)}
             className="ms-2"
             id="runjs-param-add-btn"
             data-cy={`runjs-add-param-button`}
+            style={{ background: 'none' }}
           >
             <span className="m-0">
-              <PlusRectangle fill={'#3E63DD'} width={15} />
+              <PlusRectangle fill={darkMode ? '#9BA1A6' : '#687076'} width={15} />
             </span>
-            Add
-          </ButtonSolid>
+          </button>
         )}
       </span>
     </OverlayTrigger>
@@ -97,23 +100,22 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
 export const PillButton = ({ name, onClick, onRemove, marginBottom, className, size }) => (
   <ButtonGroup
     aria-label="Parameter"
-    className={cx('ms-2 bg-slate3', { 'mb-2': marginBottom, ...(className && { [className]: true }) })}
-    style={{ borderRadius: '15px' }}
+    className={cx({ 'mb-2': marginBottom, ...(className && { [className]: true }) })}
+    style={{ borderRadius: '6px', marginLeft: '6px', height: '24px', background: '#A1A7AE1F' }}
   >
     <Button
       size="sm"
       className={cx('bg-transparent color-slate12 runjs-parameter-badge', { 'py-0 px-2': size === 'sm' })}
       onClick={onClick}
       style={{
-        borderTopLeftRadius: '15px',
-        borderBottomLeftRadius: '15px',
+        borderTopLeftRadius: '6px',
+        borderBottomLeftRadius: '6px',
         textTransform: 'none',
-        padding: '0.8rem',
         fontWeight: 500,
-        ...(!onRemove && { borderRadius: '15px' }),
+        ...(!onRemove && { borderRadius: '6px' }),
       }}
     >
-      <span data-cy={`query-param-${String(name).toLowerCase()}`} className="text-truncate">
+      <span data-cy={`query-param-${String(name).toLowerCase()}`} className="text-truncate query-param-text">
         {name}
       </span>
     </Button>
@@ -122,15 +124,16 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom, className, s
         data-cy={`query-param-${String(name).toLowerCase()}-remove-button`}
         onClick={onRemove}
         size="sm"
-        className={cx('bg-transparent color-slate12', { 'p-0 pe-1': size === 'sm' })}
+        className={cx('bg-transparent color-slate12', { 'p-0': size === 'sm' })}
         style={{
-          borderTopRightRadius: '15px',
-          borderBottomRightRadius: '15px',
-          paddingLeft: 0,
-          paddingRight: '0.75rem',
+          borderTopRightRadius: '6px',
+          borderBottomRightRadius: '6px',
+          paddingRight: '6px',
+          paddingLeft: '0px',
+          height: '24px',
         }}
       >
-        <Remove fill="var(--slate12)" />
+        <Remove fill="#6A727CCC" height={20} width={20} />
       </Button>
     )}
   </ButtonGroup>
