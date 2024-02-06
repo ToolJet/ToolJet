@@ -13,7 +13,7 @@ const resetters = [];
 export const defaultWhiteLabellingSettings = {
   WHITE_LABEL_LOGO: 'https://app.tooljet.com/logo.svg',
   WHITE_LABEL_TEXT: 'ToolJet',
-  WHITE_LABEL_FAVICON: 'https://app.tooljet.com/favico.png',
+  WHITE_LABEL_FAVICON:  "assets/images/logo.svg",
 };
 
 export const whiteLabellingOptions = {

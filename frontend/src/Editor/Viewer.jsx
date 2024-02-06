@@ -76,6 +76,7 @@ class ViewerComponent extends React.Component {
     if (links.length === 0) {
       const link = document.createElement('link');
       link.rel = 'icon';
+      link.type = 'image/svg+xml';
       document.getElementsByTagName('head')[0].appendChild(link);
       links = [link];
     }
