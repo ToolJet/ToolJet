@@ -164,15 +164,7 @@
     -moz-appearance: none;
     appearance: none;
     cursor: text;
-
     height: inherit;
-
-    &:focus {
-        outline: none;
-        border-color: var(--slate9);
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-    }
-
 
     .cm-tooltip-autocomplete {
         @extend .cm-base-autocomplete;
@@ -180,6 +172,20 @@
         top: 35px !important;
     }
 
+  }
+
+  .codehinter-input.focused {
+
+    .cm-editor {
+        outline: none;
+        border-color: $color-dark-indigo-09 !important;
+    }
+  }
+
+  .focus-box-shadow-active {
+    .cm-editor {
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+    }
   }
 
   .codehinter-multi-line-input {

@@ -87,6 +87,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
             currentValue={currentValue}
             setCurrentValue={setCurrentValue}
             hints={suggestions}
+            isFocused={isFocused}
             setFocus={setIsFocused}
             validationType={validation?.schema?.type}
             onBlurUpdate={onChange}
@@ -123,6 +124,7 @@ const EditorInput = ({
   ignoreValidation,
   fxActive,
   lang,
+  isFocused,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
@@ -171,6 +173,14 @@ const EditorInput = ({
 
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
 
+  const [firstTimeFocus, setFirstTimeFocus] = useState(false);
+
+  const customClassNames = cx('codehinter-input', {
+    'border-danger': error,
+    focused: isFocused,
+    'focus-box-shadow-active': firstTimeFocus,
+  });
+
   return (
     <div className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
       {usePortalEditor && (
@@ -202,7 +212,13 @@ const EditorInput = ({
             height={lang === 'jsx' ? '400px' : '100%'}
             width="100%"
             extensions={[javascript({ jsx: lang === 'jsx' }), autoCompleteConfig]}
-            onChange={handleOnChange}
+            onChange={(val) => {
+              setFirstTimeFocus(false);
+              handleOnChange(val);
+            }}
+            onClick={() => {
+              setFirstTimeFocus(true);
+            }}
             basicSetup={{
               lineNumbers: lang === 'jsx',
               syntaxHighlighting: true,
@@ -213,7 +229,7 @@ const EditorInput = ({
             }}
             onFocus={() => setFocus(true)}
             onBlur={handleOnBlur}
-            className={`codehinter-input ${error && 'border-danger'}`}
+            className={customClassNames}
             theme={theme}
           />
         </ErrorBoundary>
