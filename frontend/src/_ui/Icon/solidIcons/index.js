@@ -143,11 +143,17 @@ import Save from './Save.jsx';
 import Cross from './Cross.jsx';
 import WorkspaceConstants from './WorkspaceConstants.jsx';
 import ArrowBackDown from './ArrowBackDown.jsx';
+import AlignRightinspector from './AlignRightinspector.jsx';
+import AlignLeftinspector from './AlignLeftinspector.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
     case 'addrectangle':
       return <AddRectangle {...props} />;
+    case 'alignleftinspector':
+      return <AlignRightinspector {...props} />;
+    case 'alignrightinspector':
+      return <AlignLeftinspector {...props} />;
     case 'alignright':
       return <AlignRight {...props} />;
     case 'apps':

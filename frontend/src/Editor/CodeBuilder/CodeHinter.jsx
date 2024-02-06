@@ -35,7 +35,15 @@ import cx from 'classnames';
 import { Alert } from '@/_ui/Alert/Alert';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import ClientServerSwitch from './Elements/ClientServerSwitch';
+import { CodeHinterContext } from './CodeHinterContext';
+import Switch from './Elements/Switch';
+import Checkbox from './Elements/Checkbox';
+import Slider from './Elements/Slider';
+import { Input } from './Elements/Input';
+import { Icon } from './Elements/Icon';
+import { Visibility } from './Elements/Visibility';
 import { validateProperty } from '../component-properties-validation';
+
 const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
 const AllElements = {
@@ -47,11 +55,18 @@ const AllElements = {
   Number,
   BoxShadow,
   ClientServerSwitch,
+  Slider,
+  Switch,
+  Input,
+  Checkbox,
+  Icon,
+  Visibility,
 };
 
 export function CodeHinter({
   initialValue,
   onChange,
+  onVisibilityChange,
   mode,
   theme,
   lineNumbers,
@@ -77,8 +92,12 @@ export function CodeHinter({
   callgpt = () => null,
   isCopilotEnabled = false,
   currentState: _currentState,
-  verticalLine = true,
+  isIcon = false,
+  paramUpdated,
+  staticText,
 }) {
+  const context = useContext(CodeHinterContext);
+
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
     lineNumbers: lineNumbers ?? false,
@@ -92,7 +111,8 @@ export function CodeHinter({
     placeholder,
   };
   const currentState = useCurrentState();
-  const [realState, setRealState] = useState(currentState);
+  const [realState, setRealState] = useState({ ...currentState, ..._currentState, ...context });
+
   const [currentValue, setCurrentValue] = useState('');
 
   const [prevCurrentValue, setPrevCurrentValue] = useState(null);
@@ -172,13 +192,10 @@ export function CodeHinter({
   }, []);
 
   useEffect(() => {
-    if (_currentState) {
-      setRealState(_currentState);
-    } else {
-      setRealState(currentState);
-    }
+    const newState = { ...currentState, ..._currentState, ...context };
+    setRealState(newState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ currentState, _currentState })]);
+  }, [JSON.stringify([currentState.components, _currentState, context])]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -199,38 +216,43 @@ export function CodeHinter({
     };
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
-  useEffect(() => {
+  const updatePreview = () => {
     let globalPreviewCopy = null;
     let globalErrorCopy = null;
-    if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
-      const [preview, error] = getPreviewAndErrorFromValue(currentValue);
-      // checking type error if any in run time
-      const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
+    const [preview, error] = getPreviewAndErrorFromValue(currentValue);
+    setPrevCurrentValue(currentValue);
 
-      setPrevCurrentValue(currentValue);
-      if (error || !_valid || typeof preview === 'function') {
-        globalPreviewCopy = null;
-        globalErrorCopy = error || errorMessages?.[errorMessages?.length - 1];
-        setResolvingError(error || errorMessages?.[errorMessages?.length - 1]);
-        setResolvedValue(null);
-      } else {
-        globalPreviewCopy = preview;
-        globalErrorCopy = null;
-        setResolvingError(null);
-        setResolvedValue(preview);
-      }
+    const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
+
+    setPrevCurrentValue(currentValue);
+    if (error || !_valid || typeof preview === 'function') {
+      globalPreviewCopy = null;
+      globalErrorCopy = error || errorMessages?.[errorMessages?.length - 1];
+      setResolvingError(error || errorMessages?.[errorMessages?.length - 1]);
+      setResolvedValue(null);
+    } else {
+      globalPreviewCopy = preview;
+      globalErrorCopy = null;
+      setResolvingError(null);
+      setResolvedValue(preview);
     }
 
+    return [globalPreviewCopy, globalErrorCopy];
+  };
+
+  useEffect(() => {
+    let [globalPreviewCopy, globalErrorCopy] = enablePreview ? updatePreview() : [null, null];
+
     return () => {
-      if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
+      if (enablePreview) {
         setPrevCurrentValue(null);
         setResolvedValue(globalPreviewCopy);
         setResolvingError(globalErrorCopy);
       }
     };
-  }, [JSON.stringify({ currentValue, realState, isFocused })]);
+  }, [JSON.stringify({ currentValue, realState, isFocused, context })]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [JSON.stringify({ currentValue, realState, isFocused })]);
+  // }, [JSON.stringify({ currentValue, realState, isFocused, context })]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
     if (editor.getValue()?.trim() !== currentValue) {
@@ -376,23 +398,33 @@ export function CodeHinter({
     className === 'query-hinter' || className === 'custom-component' || undefined ? '' : 'code-hinter';
 
   const ElementToRender = AllElements[TypeMapping[type]];
-
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
+  const onFocusHandler = () => {
+    setFocused(true);
+    updatePreview();
+  };
+
   return (
-    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
-      <div className={cx('d-flex align-items-center justify-content-between')}>
-        {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
+    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow, 'd-flex': paramLabel == 'Tooltip' })}>
+      <div
+        className={cx('d-flex justify-content-between')}
+        style={{
+          marginRight: paramLabel == 'Tooltip' && '40px',
+          alignItems: paramLabel == 'Tooltip' ? 'flex-start' : 'center',
+        }}
+      >
         {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'label-hinter-margin' : 'mb-0'} ${
                 darkMode && 'color-whitish-darkmode'
               }`}
+              // bold={!AllElements.hasOwnProperty(TypeMapping[type]) ? true : false}
             />
           </div>
         )}
@@ -402,7 +434,9 @@ export function CodeHinter({
             className="d-flex align-items-center"
           >
             <div className="col-auto pt-0 fx-common">
-              {paramLabel !== 'Type' && (
+              {!['Type', 'selectRowOnCellEdit', 'Select row on cell edit', ' ', 'Padding', 'Width'].includes(
+                paramLabel
+              ) && (
                 <FxButton
                   active={codeShow}
                   onPress={() => {
@@ -427,6 +461,12 @@ export function CodeHinter({
                     setCurrentValue(value);
                   }
                 }}
+                onVisibilityChange={(value) => {
+                  if (value !== currentValue) {
+                    onVisibilityChange(value);
+                    setCurrentValue(value);
+                  }
+                }}
                 paramName={paramName}
                 paramLabel={paramLabel}
                 forceCodeBox={() => {
@@ -435,6 +475,9 @@ export function CodeHinter({
                 }}
                 meta={fieldMeta}
                 cyLabel={cyLabel}
+                isIcon={isIcon}
+                staticText={staticText}
+                component={component}
               />
             )}
           </div>
@@ -442,15 +485,14 @@ export function CodeHinter({
       </div>
       <div
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''} custom-row`}
-        style={{ width: width, display: codeShow ? 'flex' : 'none' }}
+        style={{ width: paramLabel == 'Tooltip' ? '100%' : width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`}>
           <div className="d-flex">
-            <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div>
             <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
               <div
                 className={`${defaultClassName} ${className || 'codehinter-default-input'} ${
-                  resolvingError && 'border-danger'
+                  paramName && resolvingError && 'border-danger'
                 }`}
                 key={componentName}
                 style={{
@@ -459,6 +501,7 @@ export function CodeHinter({
                   maxHeight: '320px',
                   overflow: 'auto',
                   fontSize: ' .875rem',
+                  maxWidth: paramLabel == 'Tooltip' && '190px',
                 }}
                 data-cy={`${cyLabel}-input-field`}
               >
@@ -489,7 +532,7 @@ export function CodeHinter({
                     realState={realState}
                     scrollbarStyle={null}
                     height={'100%'}
-                    onFocus={() => setFocused(true)}
+                    onFocus={onFocusHandler}
                     onBlur={(editor, e) => {
                       e?.stopPropagation();
                       const value = editor?.getValue()?.trimEnd();
