@@ -34,6 +34,7 @@ describe("dashboard", () => {
   beforeEach(() => {
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
+    cy.skipWalkthrough();
   });
 
   it("should verify the elements on empty dashboard", () => {
@@ -105,7 +106,7 @@ describe("dashboard", () => {
       .should("have.attr", "class")
       .and("contain", "bg-light-gray");
 
-    cy.wait(500)
+    cy.wait(500);
     cy.get(commonSelectors.settingsIcon).click();
     cy.get(commonSelectors.marketplaceOption).verifyVisibleElement(
       "have.text",
@@ -338,6 +339,7 @@ describe("dashboard", () => {
   });
 
   it("Should verify the app CRUD operation", () => {
+    cy.skipWalkthrough();
     data.appName = `${fake.companyName}-App`;
     cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);

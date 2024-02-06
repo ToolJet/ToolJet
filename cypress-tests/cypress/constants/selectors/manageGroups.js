@@ -13,6 +13,7 @@ export const groupsSelector = {
   userGroup: "[data-cy=user-groups]",
   appsLink: "[data-cy=apps-link]",
   usersLink: "[data-cy=users-link]",
+  tableslink: "[data-cy=tables-link]",
   permissionsLink: "[data-cy=permissions-link]",
   searchBox: '[data-cy="select-search"]',
   appSearchBox: "[data-cy=select-search]>>>>>.dropdown-heading-value > .gray",
