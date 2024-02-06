@@ -98,7 +98,7 @@ class ViewerComponent extends React.Component {
   };
 
   setStateForContainer = async (data, appVersionId) => {
-    const appDefData = buildAppDefinition(data);
+    const appDefData = this.state.appDefinition;
 
     const currentUser = this.state.currentUser;
     let userVars = {};
