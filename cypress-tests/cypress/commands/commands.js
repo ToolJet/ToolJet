@@ -256,7 +256,6 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
 });
 
 Cypress.Commands.add("skipEditorPopover", () => {
-  // cy.get(".text-muted");
   cy.wait(1000);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip", { timeout: 2000 })) {
@@ -366,7 +365,7 @@ Cypress.Commands.add("getPosition", (componentName) => {
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
   cy.apiLogin();
-  cy.intercept("GET", "http://localhost:3000/api/library_apps/").as(
+  cy.intercept("GET", "http://localhost:3000/api/library_apps").as(
     "library_apps"
   );
   cy.visit("/my-workspace");
@@ -412,4 +411,10 @@ Cypress.Commands.add("verifyLabel", (labelName) => {
     "have.text",
     labelName
   );
+});
+
+Cypress.Commands.add("skipWalkthrough", () => {
+  cy.window({ log: false }).then((win) => {
+    win.localStorage.setItem("walkthroughCompleted", "true");
+  });
 });

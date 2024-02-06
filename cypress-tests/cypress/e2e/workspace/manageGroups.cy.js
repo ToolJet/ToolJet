@@ -10,7 +10,7 @@ const groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 const newGroupname = `New ${groupName}`;
 
 describe("Manage Groups", () => {
-  before(() => {
+  beforeEach(() => {
     cy.defaultWorkspaceLogin();
     permissions.reset("all_users");
   });
