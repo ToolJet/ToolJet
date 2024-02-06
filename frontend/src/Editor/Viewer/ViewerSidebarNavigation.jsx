@@ -12,6 +12,8 @@ export const ViewerSidebarNavigation = ({ isMobileDevice, pages, currentPageId, 
       className={`navigation-area`}
       style={{
         width: 200,
+        position: 'fixed',
+        height: '100%',
       }}
     >
       <div className="page-handler-wrapper">
