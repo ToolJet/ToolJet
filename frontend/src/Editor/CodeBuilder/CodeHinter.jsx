@@ -515,7 +515,7 @@ export function CodeHinter({
             <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
               <div
                 className={`${defaultClassName} ${className || 'codehinter-default-input'} ${
-                  resolvingError && 'border-danger'
+                  paramName && resolvingError && 'border-danger'
                 }`}
                 key={componentName}
                 style={{

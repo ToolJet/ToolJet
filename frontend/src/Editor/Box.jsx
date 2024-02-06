@@ -150,6 +150,7 @@ export const Box = memo(
     childComponents,
     isResizing,
     adjustHeightBasedOnAlignment,
+    currentLayout,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
@@ -284,12 +285,24 @@ export const Box = memo(
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
         delay={{ show: 500, hide: 0 }}
-        trigger={inCanvas && !validatedProperties.tooltip?.toString().trim() ? null : ['hover', 'focus']}
+        trigger={
+          inCanvas && shouldAddBoxShadow.includes(component.component)
+            ? !validatedProperties.tooltip?.toString().trim()
+              ? null
+              : ['hover', 'focus']
+            : !validatedGeneralProperties.tooltip?.toString().trim()
+            ? null
+            : ['hover', 'focus']
+        }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${validatedProperties.tooltip}`
+              ? `${
+                  shouldAddBoxShadow.includes(component.component)
+                    ? validatedProperties.tooltip
+                    : validatedGeneralProperties.tooltip
+                }`
               : `${t(`widget.${component.name}.description`, component.description)}`,
           })
         }
@@ -301,53 +314,52 @@ export const Box = memo(
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >
-          {inCanvas ? (
-            !resetComponent ? (
-              <ComponentToRender
-                onComponentClick={onComponentClick}
-                onComponentOptionChanged={onComponentOptionChanged}
-                currentState={currentState}
-                onEvent={onEvent}
-                id={id}
-                paramUpdated={paramUpdated}
-                width={width}
-                changeCanDrag={changeCanDrag}
-                onComponentOptionsChanged={onComponentOptionsChanged}
-                height={height}
-                component={component}
-                containerProps={containerProps}
-                darkMode={darkMode}
-                removeComponent={removeComponent}
-                canvasWidth={canvasWidth}
-                properties={validatedProperties}
-                exposedVariables={exposedVariables}
-                styles={{
-                  ...validatedStyles,
-                  ...(!shouldAddBoxShadow.includes(component.component)
-                    ? { boxShadow: validatedGeneralStyles?.boxShadow }
-                    : {}),
-                }}
-                setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
-                setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
-                fireEvent={fireEvent}
-                validate={validate}
-                parentId={parentId}
-                customResolvables={customResolvables}
-                variablesExposedForPreview={variablesExposedForPreview}
-                exposeToCodeHinter={exposeToCodeHinter}
-                setProperty={(property, value) => {
-                  paramUpdated(id, property, { value });
-                }}
-                mode={mode}
-                resetComponent={() => setResetStatus(true)}
-                childComponents={childComponents}
-                dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
-                isResizing={isResizing}
-                adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
-              ></ComponentToRender>
-            ) : (
-              <></>
-            )
+          {!resetComponent ? (
+            <ComponentToRender
+              onComponentClick={onComponentClick}
+              onComponentOptionChanged={onComponentOptionChanged}
+              currentState={currentState}
+              onEvent={onEvent}
+              id={id}
+              paramUpdated={paramUpdated}
+              width={width}
+              changeCanDrag={changeCanDrag}
+              onComponentOptionsChanged={onComponentOptionsChanged}
+              height={height}
+              component={component}
+              containerProps={containerProps}
+              darkMode={darkMode}
+              removeComponent={removeComponent}
+              canvasWidth={canvasWidth}
+              properties={validatedProperties}
+              exposedVariables={exposedVariables}
+              styles={{
+                ...validatedStyles,
+                ...(!shouldAddBoxShadow.includes(component.component)
+                  ? { boxShadow: validatedGeneralStyles?.boxShadow }
+                  : {}),
+              }}
+              setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
+              setExposedVariables={(variableSet) =>
+                onComponentOptionsChanged(component, Object.entries(variableSet), id)
+              }
+              fireEvent={fireEvent}
+              validate={validate}
+              parentId={parentId}
+              customResolvables={customResolvables}
+              variablesExposedForPreview={variablesExposedForPreview}
+              exposeToCodeHinter={exposeToCodeHinter}
+              setProperty={(property, value) => {
+                paramUpdated(id, property, { value });
+              }}
+              mode={mode}
+              resetComponent={() => setResetStatus(true)}
+              childComponents={childComponents}
+              dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
+              isResizing={isResizing}
+              adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
+              currentLayout={currentLayout}
+            ></ComponentToRender>
           ) : (
             <></>
           )}

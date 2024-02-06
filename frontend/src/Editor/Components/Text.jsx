@@ -69,11 +69,11 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
       setVisibility(value);
     });
 
-    setExposedVariable('setLoadingState', async function (value) {
+    setExposedVariable('setLoading', async function (value) {
       setLoading(value);
     });
 
-    setExposedVariable('setDisabled', async function (value) {
+    setExposedVariable('setDisable', async function (value) {
       setIsDisabled(value);
     });
 
@@ -117,6 +117,16 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     fontSize: `${textSize}px`,
   };
 
+  const commonStyles = {
+    width: '100%',
+    height: '100%',
+    overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: VERTICAL_ALIGNMENT_VS_CSS_VALUE[verticalAlignment],
+    textAlign,
+  };
+
   return (
     <div
       data-disabled={isDisabled}
@@ -130,21 +140,11 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     >
       {!isLoading &&
         (textFormat === 'markdown' ? (
-          <div>
+          <div style={commonStyles}>
             <Markdown>{text}</Markdown>
           </div>
         ) : (
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: VERTICAL_ALIGNMENT_VS_CSS_VALUE[verticalAlignment],
-              textAlign,
-            }}
-          >
+          <div style={commonStyles}>
             <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text || '') }} />
           </div>
         ))}

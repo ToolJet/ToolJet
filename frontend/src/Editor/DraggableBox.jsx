@@ -94,7 +94,7 @@ export const DraggableBox = React.memo(
       shallow
     );
     const currentState = useCurrentState();
-    const [calculatedHeight, setCalculatedHeight] = useState(layoutData?.height);
+    const [calculatedHeight, setCalculatedHeight] = useState(layoutData?.height); // height for layouting with top and side values
 
     const resizerStyles = {
       topRight: {
@@ -109,7 +109,21 @@ export const DraggableBox = React.memo(
         right: '-4px',
         bottom: '-4px',
       },
-      right: {
+      bottomLeft: {
+        width: '8px',
+        height: '8px',
+        left: '-4px',
+        bottom: '-4px',
+      },
+      topLeft: {
+        width: '8px',
+        height: '8px',
+        left: '-4px',
+        top: '-4px',
+      },
+    };
+    if (!isVerticalResizingAllowed()) {
+      resizerStyles.right = {
         position: 'absolute',
         height: '20px',
         width: '5px',
@@ -124,8 +138,8 @@ export const DraggableBox = React.memo(
               ? 'none'
               : 'block'
             : 'none',
-      },
-      left: {
+      };
+      resizerStyles.left = {
         position: 'absolute',
         height: '20px',
         width: '5px',
@@ -140,20 +154,8 @@ export const DraggableBox = React.memo(
               ? 'none'
               : 'block'
             : 'none',
-      },
-      bottomLeft: {
-        width: '8px',
-        height: '8px',
-        left: '-4px',
-        bottom: '-4px',
-      },
-      topLeft: {
-        width: '8px',
-        height: '8px',
-        left: '-4px',
-        top: '-4px',
-      },
-    };
+      };
+    }
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({
         type: ItemTypes.BOX,
@@ -345,6 +347,7 @@ export const DraggableBox = React.memo(
                       widgetHeight={layoutData.height}
                       isMultipleComponentsSelected={isMultipleComponentsSelected}
                       configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
+                      isVerticalResizingAllowed={isVerticalResizingAllowed}
                     />
                   )}
                 {/* Adding a sentry's error boundary to differentiate between our generic error boundary and one from editor's component  */}
@@ -379,6 +382,7 @@ export const DraggableBox = React.memo(
                     childComponents={childComponents}
                     isResizing={isResizing}
                     adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
+                    currentLayout={currentLayout}
                   />
                 </Sentry.ErrorBoundary>
               </div>
