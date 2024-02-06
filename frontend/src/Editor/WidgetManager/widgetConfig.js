@@ -821,6 +821,14 @@ export const widgets = [
           },
         },
       },
+      borderRadius: {
+        type: 'number',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'number' },
+          defaultValue: false,
+        },
+      },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
@@ -892,6 +900,7 @@ export const widgets = [
       styles: {
         backgroundColor: { value: '#fff' },
         padding: { value: '50' },
+        borderRadius: { value: '{{4}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },

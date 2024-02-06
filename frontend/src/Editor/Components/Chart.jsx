@@ -26,7 +26,7 @@ export const Chart = function Chart({
     return '#fff';
   };
 
-  const { padding, visibility, disabledState, boxShadow, backgroundColor } = styles;
+  const { padding, visibility, disabledState, boxShadow, backgroundColor, borderRadius } = styles;
   const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes, barmode } =
     properties;
 
@@ -43,6 +43,7 @@ export const Chart = function Chart({
     display: visibility ? '' : 'none',
     background: darkMode ? '#1f2936' : 'white',
     boxShadow,
+    borderRadius,
   };
   const dataString = data ?? [];
 
@@ -193,7 +194,7 @@ export const Chart = function Chart({
   }, []);
 
   return (
-    <div data-disabled={disabledState} style={computedStyles} data-cy={dataCy}>
+    <div class="widget-chart" data-disabled={disabledState} style={computedStyles} data-cy={dataCy}>
       {loadingState === true ? (
         <div style={{ width }} className="p-2 loader-main-container">
           <center>
