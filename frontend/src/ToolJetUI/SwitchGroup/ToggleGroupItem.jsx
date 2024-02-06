@@ -13,7 +13,7 @@ const ToggleGroupItem = ({ children, value, isIcon, ...restProps }) => {
           <SolidIcon
             data-tooltip-id="tooltip-for-copy-invitation-link"
             data-tooltip-content="Copy invitation link"
-            width="14"
+            width="12"
             fill="#889096"
             name={children}
           />

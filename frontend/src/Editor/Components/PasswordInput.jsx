@@ -18,6 +18,7 @@ export const PasswordInput = function PasswordInput({
   dataCy,
   isResizing,
   adjustHeightBasedOnAlignment,
+  currentLayout,
 }) {
   const textInputRef = useRef();
   const labelRef = useRef();
@@ -84,6 +85,10 @@ export const PasswordInput = function PasswordInput({
   };
 
   useEffect(() => {
+    setExposedVariable('label', label);
+  }, [label]);
+
+  useEffect(() => {
     if (labelRef.current) {
       const width = labelRef.current.offsetWidth;
       padding == 'default' ? setElementWidth(width + 17) : setElementWidth(width + 15);
@@ -137,12 +142,6 @@ export const PasswordInput = function PasswordInput({
     setExposedVariable('setBlur', async function () {
       textInputRef.current.blur();
     });
-    setExposedVariable('disable', async function (value) {
-      setDisable(value);
-    });
-    setExposedVariable('visibility', async function (value) {
-      setVisibility(value);
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -167,7 +166,7 @@ export const PasswordInput = function PasswordInput({
     if (alignment == 'top' && label?.length > 0) adjustHeightBasedOnAlignment(true);
     else adjustHeightBasedOnAlignment(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length]);
+  }, [alignment, label?.length, currentLayout]);
 
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);

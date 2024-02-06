@@ -150,6 +150,7 @@ export const Box = memo(
     childComponents,
     isResizing,
     adjustHeightBasedOnAlignment,
+    currentLayout,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
@@ -280,13 +281,13 @@ export const Box = memo(
       });
     const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
-    const calculateHeight = useCallback(() => {
-      // 2px needs to be added since we are removing 1px each from top bottom padding when padding selected to none
-      if (validatedStyles?.padding === 'none') {
-        return height + 2;
-      }
-      return height;
-    }, [validatedStyles?.padding, height]);
+    // const calculateHeight = useCallback(() => {
+    //   // 2px needs to be added since we are removing 1px each from top bottom padding when padding selected to none
+    //   if (validatedStyles?.padding === 'none') {
+    //     return height + 2;
+    //   }
+    //   return height;
+    // }, [validatedStyles?.padding, height]);
 
     return (
       <OverlayTrigger
@@ -320,7 +321,7 @@ export const Box = memo(
               width={width}
               changeCanDrag={changeCanDrag}
               onComponentOptionsChanged={onComponentOptionsChanged}
-              height={calculateHeight()}
+              height={height}
               component={component}
               containerProps={containerProps}
               darkMode={darkMode}
@@ -353,6 +354,7 @@ export const Box = memo(
               dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
               isResizing={isResizing}
               adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
+              currentLayout={currentLayout}
             ></ComponentToRender>
           ) : (
             <></>
