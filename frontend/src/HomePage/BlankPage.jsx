@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-import { retrieveWhiteLabelText, defaultWhiteLabellingSettings } from '@/_helpers/utils';
+import { retrieveWhiteLabelText } from '@/_helpers/utils';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import TemplateLibraryModal from './TemplateLibraryModal';
 import { useTranslation } from 'react-i18next';
 import { authenticationService, appsService } from '@/_services';

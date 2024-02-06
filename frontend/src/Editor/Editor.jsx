@@ -48,7 +48,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId, fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
+import { retrieveWhiteLabelText, getWorkspaceId, pageTitles } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -70,29 +70,12 @@ import { diff } from 'deep-object-diff';
 import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import { getQueryParams } from '@/_helpers/routes';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
+import { fetchAndSetWindowTitle } from '@/_helpers/utils';
 
 setAutoFreeze(false);
 enablePatches();
-
-async function setWindowTitle(name) {
-  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
-  let whiteLabelText;
-
-  // Only fetch white labeling details if they haven't been fetched yet
-  if (!isWhiteLabelDetailsFetched) {
-    try {
-      await actions.fetchWhiteLabelDetails();
-    } catch (error) {
-      console.error('Unable to update white label settings', error);
-    }
-  }
-
-  whiteLabelText = useWhiteLabellingStore.getState().whiteLabelText;
-  document.title = name ? `${name} - ${whiteLabelText}` : `My App - ${whiteLabelText}`;
-}
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
@@ -269,7 +252,7 @@ const EditorComponent = (props) => {
 
     // 6. Unsubscribe from the observable when the component is unmounted
     return () => {
-      document.title = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+      document.title = 'Dashboard | ToolJet';
       socket && socket?.close();
       subscription.unsubscribe();
       if (featureAccess?.multiPlayerEdit) props?.provider?.disconnect();

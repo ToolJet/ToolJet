@@ -14,7 +14,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
-import { buildURLWithQuery, retrieveWhiteLabelText, setFaviconAndTitle } from '@/_helpers/utils';
+import { buildURLWithQuery, setFaviconAndTitle } from '@/_helpers/utils';
 import OIDCSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import posthog from 'posthog-js';
 import initPosthog from '../_helpers/initPosthog';
@@ -89,7 +89,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     if (organizationId) {
       authenticationService.saveLoginOrganizationId(organizationId);
       organizationId &&
-        authenticationService.getOrganizationConfigs(organizationId, null).then(
+        authenticationService.getOrganizationConfigs(organizationId).then(
           (configs) => {
             setIsGettingConfigs(false);
             setConfigs(configs);
@@ -108,8 +108,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   }, []);
 
   useEffect(() => {
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
-  }, [whiteLabelFavicon, whiteLabelText]);
+    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
+  }, [whiteLabelFavicon, whiteLabelText, location]);
 
   useEffect(() => {
     const keyDownHandler = (event) => {

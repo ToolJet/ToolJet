@@ -581,9 +581,18 @@ export const hightlightMentionedUserInComment = (comment) => {
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
 };
 
-export const retrieveWhiteLabelText = () => {
-  const custom_label = window.public_config?.WHITE_LABEL_TEXT;
-  return custom_label ? custom_label : defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+export const retrieveWhiteLabelText = async (organizationId = null) => {
+  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
+  if (!isWhiteLabelDetailsFetched) {
+    try {
+      await actions.fetchWhiteLabelDetails(organizationId);
+    } catch (error) {
+      console.error('Unable to update white label settings', error);
+    }
+  }
+
+  const { whiteLabelText } = useWhiteLabellingStore.getState();
+  return whiteLabelText;
 };
 
 export const pageTitles = {
@@ -603,31 +612,8 @@ export const pageTitles = {
   WORKSPACE_CONSTANTS: 'Workspace constants',
 };
 
-export const fetchAndSetWindowTitle = async (pageDetails) => {
-  const whiteLabelText = `${retrieveWhiteLabelText()}`;
-  let pageTitleKey = pageDetails?.page || '';
-  let pageTitle = '';
-  switch (pageTitleKey) {
-    case pageTitles.VIEWER: {
-      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
-      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
-      break;
-    }
-    case pageTitles.EDITOR:
-    case pageTitles.WORKFLOW_EDITOR: {
-      pageTitle = pageDetails?.appName || 'My App';
-      break;
-    }
-    default: {
-      pageTitle = pageTitleKey;
-      break;
-    }
-  }
-  document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
-};
-
 // to set favicon and title from router for individual pages
-export const setFaviconAndTitle = async (whiteLabelFavicon, whiteLabelText, location) => {
+export const setFaviconAndTitle = (whiteLabelFavicon, whiteLabelText, location) => {
   // Set favicon
   let links = document.querySelectorAll("link[rel='icon']");
   if (links.length === 0) {
@@ -651,11 +637,11 @@ export const setFaviconAndTitle = async (whiteLabelFavicon, whiteLabelText, loca
     'data-sources': pageTitles.DATA_SOURCES,
     'audit-logs': pageTitles.AUDIT_LOGS,
     'account-settings': pageTitles.ACCOUNT_SETTINGS,
-    settings: pageTitles.SETTINGS,
-    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
-    setup: '',
+    settings: pageTitles.INSTANCE_SETTINGS,
     login: '',
     'forgot-password': '',
+    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
+    setup: '',
   };
   const pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path));
   const pageTitle = pathToTitle[pageTitleKey];
@@ -664,6 +650,40 @@ export const setFaviconAndTitle = async (whiteLabelFavicon, whiteLabelText, loca
       ? `${pageTitle} | ${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`
       : `${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
   }
+};
+
+export const fetchAndSetWindowTitle = async (pageDetails) => {
+  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
+  let whiteLabelText;
+
+  // Only fetch white labeling details if they haven't been fetched yet
+  if (!isWhiteLabelDetailsFetched) {
+    try {
+      await actions.fetchWhiteLabelDetails();
+    } catch (error) {
+      console.error('Unable to update white label settings', error);
+    }
+  }
+  whiteLabelText = useWhiteLabellingStore.getState().whiteLabelText;
+  let pageTitleKey = pageDetails?.page || '';
+  let pageTitle = '';
+  switch (pageTitleKey) {
+    case pageTitles.VIEWER: {
+      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
+      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
+      break;
+    }
+    case pageTitles.EDITOR:
+    case pageTitles.WORKFLOW_EDITOR: {
+      pageTitle = pageDetails?.appName || 'My App';
+      break;
+    }
+    default: {
+      pageTitle = pageTitleKey;
+      break;
+    }
+  }
+  document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
 };
 
 export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {

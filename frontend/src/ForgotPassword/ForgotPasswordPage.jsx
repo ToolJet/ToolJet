@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { validateEmail, retrieveWhiteLabelText, defaultWhiteLabellingSettings } from '@/_helpers/utils';
+import { validateEmail, retrieveWhiteLabelText } from '@/_helpers/utils';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import { authenticationService } from '@/_services';
 import { ForgotPasswordInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';

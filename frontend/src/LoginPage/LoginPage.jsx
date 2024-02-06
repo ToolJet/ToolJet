@@ -74,7 +74,7 @@ class LoginPageComponent extends React.Component {
       }
     });
 
-    authenticationService.getOrganizationConfigs(null, this.organizationSlug).then(
+    authenticationService.getOrganizationConfigs(this.organizationSlug).then(
       (configs) => {
         this.organizationId = configs.id;
         this.setState({
@@ -82,7 +82,7 @@ class LoginPageComponent extends React.Component {
           configs,
         });
         const { whiteLabelText, whiteLabelFavicon } = useWhiteLabellingStore.getState();
-        setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
+        setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, this.props.location);
       },
       (response) => {
         if (response.data.statusCode !== 404 && response.data.statusCode !== 422) {

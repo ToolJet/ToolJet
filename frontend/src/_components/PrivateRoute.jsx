@@ -66,7 +66,7 @@ export const PrivateRoute = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
+    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
     setUserValidationStatus(true);
     /* When route changes (not hard reload). will validate the access */
     validateRoutes(session?.group_permissions, () => {

@@ -342,7 +342,7 @@ class ViewerComponent extends React.Component {
       this.setState({ organizationId: data?.organizationId });
       await this.updateWhiteLabels(data?.organizationId);
       const isAppPublic = data?.is_public;
-
+      const preview = !!queryString.parse(this.props?.location?.search)?.version;
       if (authentication_failed && !isAppPublic) {
         return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
       }
@@ -350,7 +350,11 @@ class ViewerComponent extends React.Component {
       this.setStateForApp(data, true);
       this.setState({ appId: data.id });
       this.setStateForContainer(data);
-      this.setWindowTitle(data.name);
+      fetchAndSetWindowTitle({
+        page: pageTitles.VIEWER,
+        appName: data.name,
+        preview,
+      });
     } catch (error) {
       this.setState({
         isLoading: false,

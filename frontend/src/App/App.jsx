@@ -152,11 +152,10 @@ class AppComponent extends React.Component {
     }
     const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
     // Set favicon and title
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
+    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, this.props.location);
   };
 
   componentDidMount() {
-    setFaviconAndTitle();
     authorizeWorkspace();
     this.fetchMetadata();
     // setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);

@@ -21,7 +21,7 @@ import TemplateLibraryModal from './TemplateLibraryModal/';
 import HomeHeader from './Header';
 import Modal from './Modal';
 import configs from './Configs/AppIcon.json';
-import { fetchAndSetWindowTitle, getWorkspaceId, pageTitles } from '../_helpers/utils';
+import { getWorkspaceId, fetchAndSetWindowTitle, pageTitles } from '../_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { sample, isEmpty } from 'lodash';
 import ExportAppModal from './ExportAppModal';

@@ -5,7 +5,7 @@ import { globalDatasourceService, appEnvironmentService, authenticationService, 
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
 import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
-import { returnDevelopmentEnv } from '@/_helpers/utils';
+import { returnDevelopmentEnv, fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
 import _ from 'lodash';
 
 export const GlobalDataSourcesContext = createContext({
@@ -43,6 +43,8 @@ export const GlobalDatasources = (props) => {
     selectedDataSource
       ? updateSidebarNAV(selectedDataSource.name)
       : !activeDatasourceList && updateSidebarNAV('Databases');
+
+    fetchAndSetWindowTitle({ page: `${selectedDataSource?.name || pageTitles.DATA_SOURCES}` });
 
     //if user selected a new datasource to create one. switch to development env
     if (!selectedDataSource) setCurrentEnvironment(returnDevelopmentEnv(environments));

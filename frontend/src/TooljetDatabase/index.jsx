@@ -4,7 +4,7 @@ import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
 import { authenticationService } from '../_services/authentication.service';
 import { BreadCrumbContext } from '@/App/App';
-import { pageTitles, fetchAndSetWindowTitle } from '@/_helpers/utils';
+import { fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
 import { useNavigate } from 'react-router-dom';
 
 export const TooljetDatabaseContext = createContext({

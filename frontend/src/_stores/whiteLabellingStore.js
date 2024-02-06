@@ -14,11 +14,11 @@ export const useWhiteLabellingStore = create(
     (set) => ({
       ...initialState,
       actions: {
-        fetchWhiteLabelDetails: (organizationId, organizationSlug) => {
+        fetchWhiteLabelDetails: (organizationId) => {
           return new Promise((resolve, reject) => {
             set({ loadingWhiteLabelDetails: true });
             whiteLabellingService
-              .get(null, organizationId, organizationSlug)
+              .get(null, organizationId)
               .then((settings) => {
                 set({
                   whiteLabelText:

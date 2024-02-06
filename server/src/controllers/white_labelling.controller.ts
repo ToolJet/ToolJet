@@ -26,46 +26,16 @@ export class WhiteLabellingController {
   ) {}
 
   @UseGuards()
-  @Get('/:organizationId')
-  async getSettings(@Param('organizationId') organizationId: string, @Query('key') key?: string) {
-    const whiteLabellingEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.WHITE_LABEL, organizationId);
-    let setting;
-
-    if (whiteLabellingEnabled) {
-      setting = await this.whiteLabellingService.getSettings(organizationId);
-    }
-    if (key) {
-      let settingValue = DEFAULT_WHITE_LABELLING_SETTINGS[key];
-      if (whiteLabellingEnabled) {
-        settingValue = setting?.[WHITE_LABELLING_COLUMNS[key]];
-        if (settingValue === '' || setting.status === 'INACTIVE') {
-          settingValue = DEFAULT_WHITE_LABELLING_SETTINGS[key];
-        }
-      }
-      return { [key]: settingValue };
-    }
-    const formattedSettings = Object.keys(WHITE_LABELLING_OPTIONS).reduce((settings, option) => {
-      const columnName = WHITE_LABELLING_COLUMNS[option];
-      settings[WHITE_LABELLING_OPTIONS[option]] = whiteLabellingEnabled ? setting?.[columnName] || '' : '';
-
-      return settings;
-    }, {});
-
-    return formattedSettings;
-  }
-
-  @UseGuards()
-  @Get('/by-slug/:workspaceSlug')
-  async getSettingsBySlug(@Param('workspaceSlug') workspaceSlug: string, @Query('key') key?: string) {
-    // Find the organization by slug
+  @Get('/:workspaceId')
+  async getSettings(@Param('workspaceId') workspaceId: string, @Query('key') key?: string) {
     let organization: Organization;
     try {
-      organization = await this.entityManager.findOneOrFail(Organization, { slug: workspaceSlug });
+      organization = await this.entityManager.findOneOrFail(Organization, { id: workspaceId });
     } catch (error) {
-      organization = await this.entityManager.findOne(Organization, { id: workspaceSlug });
+      organization = await this.entityManager.findOne(Organization, { slug: workspaceId });
     }
     if (!organization) {
-      throw new NotFoundException(`Organization with slug '${workspaceSlug}' not found.`);
+      throw new NotFoundException(`Organization with given slug or id '${workspaceId}' not found.`);
     }
     const organizationId = organization.id;
     const whiteLabellingEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.WHITE_LABEL, organizationId);
