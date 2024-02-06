@@ -276,6 +276,11 @@ export const EventManager = ({
     let updatedEvent = newEvents[index];
     updatedEvent.event[param] = value;
 
+    // Remove debounce key if it's empty
+    if (param === 'debounce' && value === '') {
+      delete updatedEvent.event.debounce;
+    }
+
     if (param === 'componentSpecificActionHandle') {
       const getDefault = getComponentActionDefaultParams(updatedEvent.event?.componentId, value);
       updatedEvent.event['componentSpecificActionParams'] = getDefault;
