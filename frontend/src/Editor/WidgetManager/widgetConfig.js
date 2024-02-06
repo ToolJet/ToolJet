@@ -477,6 +477,14 @@ export const widgets = [
         ],
       },
       {
+        handle: 'selectAllRows',
+        displayName: 'Select all rows',
+      },
+      {
+        handle: 'deselectAllRows',
+        displayName: 'Deselect all rows',
+      },
+      {
         handle: 'setFilters',
         displayName: 'Set filters',
         params: [{ handle: 'parameters', displayName: 'Parameters' }],

@@ -913,6 +913,21 @@ export function Table({
     //hack : in the initial render, data is undefined since, upon feeding data to the table from some query, query inside current state is {}. Hence we added data in the dependency array, now question is should we add data or rows?
   }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
 
+  useEffect(() => {
+    // csa for select all rows in table
+    setExposedVariable('selectAllRows', async function () {
+      if (showBulkSelector) {
+        await toggleAllRowsSelected(true);
+      }
+    });
+    // csa for deselect all rows in table
+    setExposedVariable('deselectAllRows', async function () {
+      if (showBulkSelector) {
+        await toggleAllRowsSelected(false);
+      }
+    });
+  }, [JSON.stringify(tableDetails.selectedRowsDetails)]);
+
   const pageData = page.map((row) => row.original);
   useEffect(() => {
     setExposedVariable('currentPageData', pageData);
