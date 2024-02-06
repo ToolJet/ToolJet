@@ -197,6 +197,16 @@
   }
 
   .codehinter-multi-line-input {
+
+    .cm-editor {
+        height: 300px;
+        max-height: fit-content !important;
+
+        .cm-gutters {
+            width: 42px;
+        }
+    }
+
     .cm-tooltip-autocomplete {
         @extend .cm-base-autocomplete;
     }

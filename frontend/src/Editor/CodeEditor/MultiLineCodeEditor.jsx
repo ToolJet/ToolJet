@@ -70,6 +70,7 @@ const MultiLineCodeEditor = (props) => {
     foldGutter: true,
     highlightActiveLine: false,
     autocompletion: hideSuggestion ?? true,
+    highlightActiveLineGutter: false,
   };
 
   function autoCompleteExtensionConfig(context) {
