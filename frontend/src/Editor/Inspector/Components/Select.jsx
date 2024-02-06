@@ -518,7 +518,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
         'properties',
         currentState,
         allComponents,
-        darkMode
+        darkMode,
+        componentMeta.properties?.[property]?.placeholder
       );
     }),
   });

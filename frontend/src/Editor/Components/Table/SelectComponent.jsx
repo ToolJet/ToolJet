@@ -101,7 +101,7 @@ export const CustomMenuList = ({ selectProps, ...props }) => {
             e.target.focus();
           }}
           onFocus={onMenuInputFocus}
-          placeholder="Search..."
+          placeholder="Search"
           className="table-select-column-type-search-box"
         />
       </div>

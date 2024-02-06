@@ -3612,7 +3612,7 @@ export const widgets = [
         values: { value: '{{["1","2","3"]}}' },
         display_values: { value: '{{["Option 1", "Option 2", "Option 3"]}}' },
         loadingState: { value: '{{false}}' },
-        placeholder: { value: '-Select' },
+        placeholder: { value: 'select' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         dropdownLoadingState: { value: '{{false}}' },
