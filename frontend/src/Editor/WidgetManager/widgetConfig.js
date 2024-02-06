@@ -252,7 +252,7 @@ export const widgets = [
       },
       actionButtonBackgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -581,7 +581,7 @@ export const widgets = [
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
           defaultValue: false,
@@ -1190,7 +1190,7 @@ export const widgets = [
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1326,6 +1326,7 @@ export const widgets = [
       },
     },
     validation: {
+      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
       regex: { type: 'code', displayName: 'Regex', placeholder: '^[a-zA-Z0-9_ -]{3,16}$' },
       minLength: { type: 'code', displayName: 'Min length', placeholder: 'Enter min length' },
       maxLength: { type: 'code', displayName: 'Max length', placeholder: 'Enter max length' },
@@ -1334,18 +1335,17 @@ export const widgets = [
         displayName: 'Custom validation',
         placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
       },
-      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
     events: {
       onChange: { displayName: 'On change' },
-      onEnterPressed: { displayName: 'On Enter Pressed' },
+      onEnterPressed: { displayName: 'On enter pressed' },
       onFocus: { displayName: 'On focus' },
       onBlur: { displayName: 'On blur' },
     },
     styles: {
       color: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text',
         validation: { schema: { type: 'string' } },
         accordian: 'label',
       },
@@ -1374,7 +1374,7 @@ export const widgets = [
       width: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        validation: { schema: { type: 'number' } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
@@ -1395,26 +1395,26 @@ export const widgets = [
 
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
 
       borderColor: {
         type: 'color',
-        displayName: 'Border color',
+        displayName: 'Border',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       errTextColor: {
         type: 'color',
-        displayName: 'Error text color',
+        displayName: 'Error text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -1431,6 +1431,7 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
         visibility: false,
+        showLabel: false,
       },
       borderRadius: {
         type: 'input',
@@ -1466,7 +1467,7 @@ export const widgets = [
       {
         handle: 'setText',
         displayName: 'Set text',
-        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
+        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New text' }],
       },
       {
         handle: 'clear',
@@ -1492,23 +1493,23 @@ export const widgets = [
       },
       {
         handle: 'setVisibility',
-        displayName: 'setVisibility',
+        displayName: 'Set visibility',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setDisable',
-        displayName: 'setDisable',
+        displayName: 'Set disable',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setLoading',
-        displayName: 'setLoading',
+        displayName: 'Set loading',
         params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
     ],
     definition: {
       validation: {
-        mandatory: { value: false },
+        mandatory: { value: '{{false}}' },
         regex: { value: '' },
         minLength: { value: null },
         maxLength: { value: null },
@@ -1537,10 +1538,10 @@ export const widgets = [
         backgroundColor: { value: '#fff' },
         iconColor: { value: '#C1C8CD' },
         direction: { value: 'left' },
-        width: { value: '33' },
+        width: { value: '{{33}}' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
-        auto: { value: true },
+        auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
         icon: { value: 'IconHome2' },
@@ -1623,7 +1624,7 @@ export const widgets = [
     styles: {
       color: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text',
         validation: { schema: { type: 'string' } },
         accordian: 'label',
       },
@@ -1652,7 +1653,7 @@ export const widgets = [
       width: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        validation: { schema: { type: 'number' } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
@@ -1673,26 +1674,26 @@ export const widgets = [
 
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
 
       borderColor: {
         type: 'color',
-        displayName: 'Border color',
+        displayName: 'Border',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       errTextColor: {
         type: 'color',
-        displayName: 'Error text color',
+        displayName: 'Error text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -1709,6 +1710,7 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
         visibility: false,
+        showLabel: false,
       },
       borderRadius: {
         type: 'input',
@@ -1753,17 +1755,17 @@ export const widgets = [
       },
       {
         handle: 'setVisibility',
-        displayName: 'setVisibility',
+        displayName: 'Set visibility',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setDisable',
-        displayName: 'setDisable',
+        displayName: 'Set disable',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setLoading',
-        displayName: 'setLoading',
+        displayName: 'Set loading',
         params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
     ],
@@ -1775,6 +1777,7 @@ export const widgets = [
       isLoading: false,
     },
     validation: {
+      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
       regex: { type: 'code', displayName: 'Regex', placeholder: '^d+$' },
       minValue: { type: 'code', displayName: 'Min value', placeholder: 'Enter min value' },
       maxValue: { type: 'code', displayName: 'Max value', placeholder: 'Enter max value' },
@@ -1783,7 +1786,6 @@ export const widgets = [
         displayName: 'Custom validation',
         placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
       },
-      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
     definition: {
       others: {
@@ -1791,7 +1793,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       validation: {
-        mandatory: { value: false },
+        mandatory: { value: '{{false}}' },
         regex: { value: '' },
         minValue: { value: '' },
         maxValue: { value: '' },
@@ -1818,10 +1820,10 @@ export const widgets = [
         textColor: { value: '#232e3c' },
         iconColor: { value: '#C1C8CD' },
         direction: { value: 'left' },
-        width: { value: '33' },
+        width: { value: '{{33}}' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
-        auto: { value: true },
+        auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
         icon: { value: 'IconHome2' },
@@ -1891,6 +1893,7 @@ export const widgets = [
       },
     },
     validation: {
+      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
       regex: {
         type: 'code',
         displayName: 'Regex',
@@ -1903,7 +1906,6 @@ export const widgets = [
         displayName: 'Custom validation',
         placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
       },
-      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -1914,7 +1916,7 @@ export const widgets = [
     styles: {
       color: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text',
         validation: { schema: { type: 'string' } },
         accordian: 'label',
       },
@@ -1943,7 +1945,7 @@ export const widgets = [
       width: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        validation: { schema: { type: 'number' } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
@@ -1964,26 +1966,26 @@ export const widgets = [
 
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
 
       borderColor: {
         type: 'color',
-        displayName: 'Border color',
+        displayName: 'Border',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
       errTextColor: {
         type: 'color',
-        displayName: 'Error text color',
+        displayName: 'Error text',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -2000,6 +2002,7 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
         visibility: false,
+        showLabel: false,
       },
       borderRadius: {
         type: 'input',
@@ -2009,7 +2012,7 @@ export const widgets = [
       },
       boxShadow: {
         type: 'boxShadow',
-        displayName: 'Box Shadow',
+        displayName: 'Box shadow',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'field',
       },
@@ -2027,7 +2030,7 @@ export const widgets = [
     },
     exposedVariables: {
       value: '',
-      isMandatory: false,
+      mandatory: { value: '{{false}}' },
       isVisible: true,
       isDisabled: false,
       isLoading: false,
@@ -2052,17 +2055,17 @@ export const widgets = [
       },
       {
         handle: 'setVisibility',
-        displayName: 'setVisibility',
+        displayName: 'Set visibility',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setDisable',
-        displayName: 'setDisable',
+        displayName: 'Set disable',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setLoading',
-        displayName: 'setLoading',
+        displayName: 'Set loading',
         params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
     ],
@@ -2072,7 +2075,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        placeholder: { value: 'password' },
+        placeholder: { value: 'Password' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         loadingState: { value: '{{false}}' },
@@ -2096,10 +2099,10 @@ export const widgets = [
         textColor: { value: '#11181C' },
         iconColor: { value: '#C1C8CD' },
         direction: { value: 'left' },
-        width: { value: '33' },
+        width: { value: '{{33}}' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
-        auto: { value: true },
+        auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
         icon: { value: 'IconLock' },
@@ -2781,7 +2784,7 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -2928,7 +2931,7 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3019,7 +3022,7 @@ export const widgets = [
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -4624,7 +4627,7 @@ export const widgets = [
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -5521,7 +5524,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       backgroundColor: {
         type: 'color',
-        displayName: 'BG color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },

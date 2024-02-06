@@ -150,14 +150,13 @@ export const Box = memo(
     childComponents,
     isResizing,
     adjustHeightBasedOnAlignment,
+    currentLayout,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
     let styles = {
       height: '100%',
-      // paddingRight: '1px',
-      // paddingLeft: '1px',
     };
 
     if (inCanvas) {
@@ -347,6 +346,7 @@ export const Box = memo(
               dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
               isResizing={isResizing}
               adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
+              currentLayout={currentLayout}
             ></ComponentToRender>
           ) : (
             <></>
