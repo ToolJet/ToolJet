@@ -1919,7 +1919,7 @@ export const buildAppDefinition = (data) => {
 
   const appJSON = {
     globalSettings: editingVersion.globalSettings,
-    homePageId: editingVersion?.homePageId,
+    homePageId: editingVersion.homePageId,
     showViewerNavigation: editingVersion.showViewerNavigation ?? true,
     pages: pages,
   };
