@@ -281,24 +281,28 @@ export const Box = memo(
       });
     const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
-    // const calculateHeight = useCallback(() => {
-    //   // 2px needs to be added since we are removing 1px each from top bottom padding when padding selected to none
-    //   if (validatedStyles?.padding === 'none') {
-    //     return height + 2;
-    //   }
-    //   return height;
-    // }, [validatedStyles?.padding, height]);
-
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
         delay={{ show: 500, hide: 0 }}
-        trigger={inCanvas && !validatedProperties.tooltip?.toString().trim() ? null : ['hover', 'focus']}
+        trigger={
+          inCanvas && shouldAddBoxShadow.includes(component.component)
+            ? !validatedProperties.tooltip?.toString().trim()
+              ? null
+              : ['hover', 'focus']
+            : !validatedGeneralProperties.tooltip?.toString().trim()
+            ? null
+            : ['hover', 'focus']
+        }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${validatedProperties.tooltip}`
+              ? `${
+                  shouldAddBoxShadow.includes(component.component)
+                    ? validatedProperties.tooltip
+                    : validatedGeneralProperties.tooltip
+                }`
               : `${t(`widget.${component.name}.description`, component.description)}`,
           })
         }
