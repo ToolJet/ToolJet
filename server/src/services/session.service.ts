@@ -58,6 +58,12 @@ export class SessionService {
     });
   }
 
+  async terminateAllSessions(userId: string): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.delete(UserSessions, { userId });
+    });
+  }
+
   getSessionUserDetails(user: User): Partial<User> {
     const { firstName, lastName, avatarId, email, id } = user;
     return {

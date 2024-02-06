@@ -18,6 +18,7 @@ export const groupPermissionService = {
   updateUserPermission,
   updateAppPermission,
   updateDataSourcePermission,
+  duplicate,
 };
 
 function create(group) {
@@ -198,4 +199,16 @@ function updateDataSourceGroupPermission(groupPermissionId, dataSourceGroupPermi
     `${config.apiUrl}/group_permissions/${groupPermissionId}/data_source_group_permissions/${dataSourceGroupPermissionId}`,
     requestOptions
   ).then(handleResponse);
+}
+
+function duplicate(groupPermissionId, body) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/duplicate`, requestOptions).then(
+    handleResponse
+  );
 }

@@ -40,13 +40,19 @@
     color: var(--slate8);
 }
 
+.tj-list-item-option-opened {
+    background-color: var(--indigo4);
+}
+
+
+
 .tj-list-item-icon {
     display: flex;
     align-items: center;
 }
 
 .user-group-actions {
-    width: 231px;
+    width: 100px;
 
     a {
         display: flex;

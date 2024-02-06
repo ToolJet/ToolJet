@@ -10,13 +10,13 @@ import { promoteApp } from "Support/utils/multiEnv";
 
 
 export const navigateToProfile = () => {
+  cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.profileSettings).click();
-  cy.get(profileSelector.profileLink).click();
   cy.url().should("include", "settings");
 };
 
 export const logout = () => {
-  cy.get(commonSelectors.profileSettings).click();
+  cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.logoutLink).click();
   cy.intercept("GET", "/api/metadata").as("publicConfig");
   cy.wait("@publicConfig");
@@ -24,14 +24,16 @@ export const logout = () => {
 };
 
 export const navigateToManageUsers = () => {
-  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.settingsIcon).click();
+  cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.manageUsersOption).click();
 };
 
 export const navigateToManageGroups = () => {
-  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.settingsIcon).click();
+  cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.manageGroupsOption).click();
-  navigateToAllUserGroup();
+  // navigateToAllUserGroup();
 };
 
 export const navigateToAllUserGroup = () => {
@@ -56,12 +58,14 @@ export const navigateToAllUserGroup = () => {
 };
 
 export const navigateToWorkspaceVariable = () => {
-  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.settingsIcon).click();
+  cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.workspaceVariableOption).click();
 };
 
 export const navigateToManageSSO = () => {
-  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.settingsIcon).click();
+  cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.manageSSOOption).click();
 };
 
@@ -122,6 +126,7 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
+  cy.wait(1000);
   cy.reloadAppForTheElement(appName);
   cy.contains("div", appName)
     .parent()
@@ -202,6 +207,7 @@ export const manageUsersPagination = (email) => {
 
 export const searchUser = (email) => {
   cy.clearAndType(commonSelectors.inputUserSearch, email);
+  cy.wait(1000)
 };
 
 export const createWorkspace = (workspaceName) => {
@@ -209,7 +215,7 @@ export const createWorkspace = (workspaceName) => {
   cy.get(commonSelectors.addWorkspaceButton).click();
   cy.clearAndType(commonSelectors.workspaceNameInput, workspaceName);
   cy.clearAndType('[data-cy="workspace-slug-input-field"]', workspaceName);
-  cy.wait(1000)
+  cy.wait(1000);
   cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
   cy.get(commonSelectors.createWorkspaceButton).click();
   cy.wait("@homePage");

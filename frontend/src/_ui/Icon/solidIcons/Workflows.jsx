@@ -1,8 +1,8 @@
 import React from 'react';
 
-export default function Workflows({ fill = 'none' }) {
+export default function Workflows({ fill = 'none', width = '18', viewBox = '0 0 18 16' }) {
   return (
-    <svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={width} height={width} viewBox={viewBox} fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
         d="M9.00016 0.083313L12.7501 2.16665V6.33331L9.00016 8.41665L5.25012 6.33331V2.16665L9.00016 0.083313Z"
         fill={fill}

@@ -35,7 +35,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       selectedDataSourceIds: [],
       removeAppIds: [],
       removeDataSourceIds: [],
-      currentTab: 'apps',
+      currentTab: 'users',
       selectedUsers: [],
       editorLimits: {},
       featureAccess: {},
@@ -54,7 +54,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     }
 
     if (this.props.selectedGroup === 'Admin' && this.state.currentTab === 'datasources') {
-      this.setState({ currentTab: 'apps' });
+      this.setState({ currentTab: 'users' });
     }
   }
 
@@ -101,9 +101,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   searchUsersNotInGroup = async (query, groupPermissionId) => {
-    if (!query) {
-      return [];
-    }
     return new Promise((resolve, reject) => {
       groupPermissionService
         .getUsersNotInGroup(query, groupPermissionId)
@@ -175,9 +172,17 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         toast.success('Group permissions updated');
         this.fetchGroupPermission(groupPermissionId);
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, data }) => {
+        this.toastError({ error, data });
       });
+  };
+
+  toastError = ({ error, data }, callback = () => {}) => {
+    const { statusCode } = data;
+    if ([451].indexOf(statusCode) === -1) {
+      toast.error(error);
+    }
+    callback();
   };
 
   updateAppGroupPermission = (app, groupPermissionId, action) => {
@@ -205,10 +210,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchEditorLimits();
       })
       .catch(({ error, data }) => {
-        const { statusCode } = data;
-        if ([451].indexOf(statusCode) === -1) {
-          toast.error(error);
-        }
+        this.toastError({ error, data });
       });
   };
 
@@ -249,8 +251,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
         this.fetchDataSourcesInGroup(groupPermissionId);
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, data }) => {
+        this.toastError({ error, data });
       });
   };
 
@@ -316,10 +318,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           selectedApps: [],
         });
       })
-      .catch(({ error }) => {
-        toast.error(error);
-        this.setState({
-          isAddingApps: false,
+      .catch(({ error, data }) => {
+        this.toastError({ error, data }, () => {
+          this.setState({
+            isAddingApps: false,
+          });
         });
       });
   };
@@ -343,10 +346,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .then(() => {
         toast.success('Datasources added to the group');
       })
-      .catch(({ error }) => {
-        toast.error(error);
-        this.setState({
-          isAddingDataSources: false,
+      .catch(({ error, data }) => {
+        this.toastError({ error, data }, () => {
+          this.setState({
+            isAddingDataSources: false,
+          });
         });
       });
   };
@@ -366,8 +370,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .then(() => {
         toast.success('App removed from the group');
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, data }) => {
+        this.toastError({ error, data });
       });
   };
 
@@ -386,8 +390,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .then(() => {
         toast.success('DataSource removed from the group');
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, data }) => {
+        this.toastError({ error, data });
       });
   };
 
@@ -409,9 +413,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .then(() => {
         toast.success('Users added to the group');
       })
-      .catch(() => {
-        this.setState({
-          isAddingUsers: false,
+      .catch(({ error, data }) => {
+        this.toastError({ error, data }, () => {
+          this.setState({
+            isAddingUsers: false,
+          });
         });
       });
   };
@@ -430,8 +436,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .then(() => {
         toast.success('User removed from the group');
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, data }) => {
+        this.toastError({ error, data });
       });
   };
 
@@ -533,34 +539,14 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                         .replace(/\s+/g, '-')}-group-name-update-link`}
                       className="tj-text-xsm font-weight-500 edit-group"
                     >
-                      <SolidIcon fill="#28303F" name="editrectangle" width="14" />
-                      Edit name
-                    </Link>
-                    <Link
-                      className="delete-group tj-text-xsm font-weight-500"
-                      onClick={() => this.props.deleteGroup(groupPermission.id)}
-                      data-cy={`${String(groupPermission.group).toLowerCase().replace(/\s+/g, '-')}-group-delete-link`}
-                    >
-                      <SolidIcon fill="#E54D2E" name="trash" width="14" /> Delete group
+                      <SolidIcon name="editrectangle" width="14" />
+                      Rename
                     </Link>
                   </div>
                 )}
               </div>
 
               <nav className="nav nav-tabs groups-sub-header-wrap">
-                <a
-                  onClick={() => this.setState({ currentTab: 'apps' })}
-                  className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
-                  data-cy="apps-link"
-                >
-                  <SolidIcon
-                    className="manage-group-tab-icons"
-                    fill={currentTab === 'apps' ? '#3E63DD' : '#C1C8CD'}
-                    name="grid"
-                    width="16"
-                  ></SolidIcon>
-                  {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
-                </a>
                 <a
                   onClick={() => this.setState({ currentTab: 'users' })}
                   className={cx('nav-item nav-link', { active: currentTab === 'users' })}
@@ -575,6 +561,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
                   {this.props.t('header.organization.menus.manageGroups.permissionResources.users', 'Users')}
                 </a>
+
                 <a
                   onClick={() => this.setState({ currentTab: 'permissions' })}
                   className={cx('nav-item nav-link', {
@@ -602,6 +589,19 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       'Permissions'
                     )}
                   </span>
+                </a>
+                <a
+                  onClick={() => this.setState({ currentTab: 'apps' })}
+                  className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
+                  data-cy="apps-link"
+                >
+                  <SolidIcon
+                    className="manage-group-tab-icons"
+                    fill={currentTab === 'apps' ? '#3E63DD' : '#C1C8CD'}
+                    name="grid"
+                    width="16"
+                  ></SolidIcon>
+                  {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
                 </a>
                 {groupPermission?.group !== 'admin' && (
                   <a
@@ -926,7 +926,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                               <div className="skeleton-line w-10"></div>
                             </td>
                           </tr>
-                        ) : (
+                        ) : usersInGroup.length > 0 ? (
                           usersInGroup.map((user) => (
                             <div
                               key={user.id}
@@ -959,6 +959,19 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                               </p>
                             </div>
                           ))
+                        ) : (
+                          <div className="manage-groups-no-apps-wrap">
+                            <div className="manage-groups-no-apps-icon">
+                              <BulkIcon name="users" fill="#3E63DD" width="48" />
+                            </div>
+                            <p className="tj-text-md font-weight-500" data-cy="helper-text-no-apps-added">
+                              No users added yet
+                            </p>
+                            <span className="tj-text-sm text-center" data-cy="helper-text-user-groups-permissions">
+                              Add users to this group to configure
+                              <br /> permissions for them!
+                            </span>
+                          </div>
                         )}
                       </section>
                     </div>
@@ -1091,7 +1104,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 </div>
                                 <div className="apps-variable-permission-wrap">
                                   <div data-cy="resource-workspace-variable">
-                                    {this.props.t('globals.environmentVar', 'Environment variables')}
+                                    {this.props.t('globals.environmentVar', 'Workspace constant/variable')}
                                   </div>
                                   <div className="text-muted">
                                     <div>
@@ -1184,6 +1197,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             disabled={getPermissionInputStatus()}
                             setState={this.setState}
                             selectedData={this.state.selectedDataSourceIds}
+                            darkMode={this.props.darkMode}
                           />
                         </div>
                         <div className="col-1">

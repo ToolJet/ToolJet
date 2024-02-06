@@ -232,6 +232,16 @@
     .start-trial-btn {
         min-width: 131px;
     }
+
+    @media only screen and (max-width: 768px) {
+        .warning-info-text {
+            font-size: 12px;
+        }
+        
+        .upgrade-btn {
+            display: none;
+        }
+    }
 }
 
 .paid-feature-banner{

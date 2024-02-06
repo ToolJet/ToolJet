@@ -48,7 +48,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { retrieveWhiteLabelText, getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -57,7 +57,13 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
-import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, resetAllStores } from '@/_stores/utils';
+import {
+  computeAppDiff,
+  computeComponentPropertyDiff,
+  isParamFromTableColumn,
+  resetAllStores,
+  defaultWhiteLabellingSettings,
+} from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import GitSyncModal from './GitSyncModal';
 import { EMPTY_ARRAY, useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
@@ -75,10 +81,6 @@ import { shallow } from 'zustand/shallow';
 
 setAutoFreeze(false);
 enablePatches();
-
-function setWindowTitle(name) {
-  return (document.title = name ? `${name} - ${retrieveWhiteLabelText()}` : `My App - ${retrieveWhiteLabelText()}`);
-}
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
@@ -255,10 +257,10 @@ const EditorComponent = (props) => {
 
     // 6. Unsubscribe from the observable when the component is unmounted
     return () => {
-      document.title = 'Tooljet - Dashboard';
+      document.title = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
       socket && socket?.close();
       subscription.unsubscribe();
-      if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
+      if (window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true') props?.provider?.disconnect();
       useEditorStore.getState().actions.setIsEditorActive(false);
       prevAppDefinition.current = null;
     };
@@ -438,7 +440,7 @@ const EditorComponent = (props) => {
    */
   const initRealtimeSave = () => {
     // Check if multiplayer editing is enabled; if not, return early
-    if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
+    if (!window?.public_config?.ENABLE_MULTIPLAYER_EDITING) return null;
 
     // Observe changes in the 'appDef' property of the 'ymap' object
     props.ymap?.observeDeep(() => {
@@ -496,14 +498,14 @@ const EditorComponent = (props) => {
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
 
-    await fetchApp(props.params.pageHandle, true);
+    await fetchApp(props.params.pageHandle);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
     await fetchEnvironments();
 
     await fetchAndInjectCustomStyles();
     initComponentVersioning();
-    initRealtimeSave();
+    window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && initRealtimeSave();
     initEventListeners();
     updateEditorState({
       selectedComponents: [],
@@ -585,7 +587,7 @@ const EditorComponent = (props) => {
 
   const onNameChanged = (newName) => {
     updateState({ appName: newName });
-    setWindowTitle(newName);
+    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: newName });
   };
 
   const onZoomChanged = (zoom) => {
@@ -716,6 +718,7 @@ const EditorComponent = (props) => {
   };
 
   const fetchEnvironments = () => {
+    const appId = props?.id;
     appEnvironmentService.getAllEnvironments(appId).then((data) => {
       const envArray = data?.environments;
 
@@ -730,7 +733,7 @@ const EditorComponent = (props) => {
     environmentSwitch = false,
     selectedEnvironmentId = null
   ) => {
-    setWindowTitle(data.name);
+    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
 
     if (!environmentSwitch && (!releasedVersionId || !versionSwitched)) {
@@ -831,14 +834,9 @@ const EditorComponent = (props) => {
     }
   };
 
-  const fetchApp = async (startingPageHandle, onMount = false) => {
-    const _appId = props?.params?.id || props?.params?.slug;
-
-    if (!onMount) {
-      await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
-    } else {
-      callBack(app, startingPageHandle);
-    }
+  const fetchApp = async (startingPageHandle) => {
+    const _appId = props?.id;
+    await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
   };
 
   const setAppDefinitionFromVersion = (
@@ -1020,6 +1018,8 @@ const EditorComponent = (props) => {
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
     const editingVersion = useAppVersionStore.getState().editingVersion;
+    //skipAutoSave means the updates are coming from websocket and we don't need to save it again
+    if (appDiffOptions?.skipAutoSave) return;
     if (
       isEditorFreezed ||
       useAppVersionStore.getState().isAppVersionPromoted ||
@@ -1055,7 +1055,7 @@ const EditorComponent = (props) => {
           };
           useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
 
-          if (config.ENABLE_MULTIPLAYER_EDITING) {
+          if (window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true') {
             props.ymap?.set('appDef', {
               newDefinition: appDefinition,
               editingVersionId: editingVersion.id,
@@ -1946,7 +1946,7 @@ const EditorComponent = (props) => {
                       transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                     }}
                   >
-                    {config.ENABLE_MULTIPLAYER_EDITING && featureAccess?.multiPlayerEdit && (
+                    {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && (
                       <RealtimeCursors editingVersionId={editingVersionId} editingPageId={currentPageId} />
                     )}
                     {isLoading && (

@@ -9,12 +9,13 @@ import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { UsersService } from './users.service';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, getMaxCopyNumber } from 'src/helpers/utils.helper';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import { DuplucateGroupDto } from '@dto/group-permission.dto';
 
 @Injectable()
 export class GroupPermissionsService {
@@ -73,6 +74,7 @@ export class GroupPermissionsService {
           group: group,
         })
       );
+      await this.usersService.validateLicense(manager);
       await this.auditLoggerService.perform(
         {
           userId: user.id,
@@ -114,8 +116,6 @@ export class GroupPermissionsService {
         organizationId: user.organizationId,
         id: groupPermissionId,
       });
-
-      await this.usersService.validateLicense(manager);
 
       await this.auditLoggerService.perform(
         {
@@ -253,7 +253,7 @@ export class GroupPermissionsService {
       org_environment_constant_delete,
     } = body;
 
-    await dbTransactionWrap(async (manager: EntityManager) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
       //update user group name
       if (name) {
         const newName = name.trim();
@@ -282,6 +282,7 @@ export class GroupPermissionsService {
         } else if (!groupToFind) {
           await manager.update(GroupPermission, groupPermissionId, { group: newName });
         }
+        return;
       }
 
       // update group permissions
@@ -312,6 +313,7 @@ export class GroupPermissionsService {
       };
       if (Object.keys(groupPermissionUpdateParams).length !== 0) {
         await manager.update(GroupPermission, groupPermissionId, groupPermissionUpdateParams);
+        await this.usersService.validateLicense(manager);
       }
 
       // update app group permissions
@@ -389,9 +391,8 @@ export class GroupPermissionsService {
           };
           await this.usersService.update(userId, params, manager, user.organizationId);
         }
+        await this.usersService.validateLicense(manager);
       }
-
-      await this.usersService.validateLicense(manager);
 
       await this.auditLoggerService.perform(
         {
@@ -419,6 +420,135 @@ export class GroupPermissionsService {
     });
   }
 
+  async duplicateGroup(
+    user: User,
+    groupPermissionId: string,
+    body: DuplucateGroupDto,
+    manager?: EntityManager
+  ): Promise<GroupPermission> {
+    const groupToDuplicate = await this.findOne(user, groupPermissionId);
+    let newGroup: GroupPermission;
+
+    const { addPermission, addApps, addDataSource, addUsers } = body;
+
+    if (!groupToDuplicate) throw new BadRequestException('Wrong group id');
+
+    const existNameList = await createQueryBuilder()
+      .select(['group_permissions.group', 'group_permissions.id'])
+      .from(GroupPermission, 'group_permissions')
+      .where('group_permissions.group ~* :pattern', { pattern: `^${groupToDuplicate.group}_copy_[0-9]+$` })
+      .orWhere('group_permissions.group = :groupToDuplicateGroup', {
+        groupToDuplicateGroup: `${groupToDuplicate.group}_copy`,
+      })
+      .andWhere('group_permissions.id != :groupPermissionId', { groupPermissionId })
+      .andWhere('group_permissions.organizationId = :organizationId', { organizationId: user.organizationId })
+      .getMany();
+
+    let newName = `${groupToDuplicate.group}_copy`;
+    const number = getMaxCopyNumber(existNameList);
+    if (number) newName = `${groupToDuplicate.group}_copy_${number}`;
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      newGroup = manager.create(GroupPermission, {
+        organizationId: user.organizationId,
+        group: newName,
+      });
+      await manager.save(GroupPermission, newGroup);
+      await this.usersService.validateLicense(manager);
+      if (addPermission) {
+        const {
+          appCreate,
+          appDelete,
+          folderCreate,
+          orgEnvironmentVariableCreate,
+          orgEnvironmentVariableUpdate,
+          orgEnvironmentVariableDelete,
+          orgEnvironmentConstantCreate,
+          orgEnvironmentConstantDelete,
+          folderDelete,
+          folderUpdate,
+          dataSourceCreate,
+          dataSourceDelete,
+        } = groupToDuplicate;
+
+        const updateParam = {
+          appCreate,
+          appDelete,
+          folderCreate,
+          orgEnvironmentVariableCreate,
+          orgEnvironmentVariableUpdate,
+          orgEnvironmentVariableDelete,
+          orgEnvironmentConstantCreate,
+          orgEnvironmentConstantDelete,
+          folderDelete,
+          folderUpdate,
+          dataSourceCreate,
+          dataSourceDelete,
+        };
+
+        await manager.update(GroupPermission, { id: newGroup.id }, updateParam);
+      }
+      const apps = await groupToDuplicate.apps;
+
+      if (addApps) {
+        for (const app of apps) {
+          const appGrpPermission = await this.appGroupPermissionsRepository.findOne({
+            where: {
+              appId: app.id,
+              groupPermissionId: groupToDuplicate.id,
+            },
+          });
+          if (appGrpPermission)
+            await manager.save(
+              AppGroupPermission,
+              manager.create(AppGroupPermission, {
+                appId: app.id,
+                groupPermissionId: newGroup.id,
+                read: appGrpPermission.read,
+                update: appGrpPermission.update,
+                delete: appGrpPermission.delete,
+                hideFromDashboard: appGrpPermission.hideFromDashboard,
+              })
+            );
+        }
+      }
+
+      if (addDataSource) {
+        const dataSources = await groupToDuplicate.dataSources;
+        for (const dataSource of dataSources) {
+          const dataSrcPermission = await this.dataSourceGroupPermissionRepository.findOne({
+            where: {
+              groupPermissionId: groupToDuplicate.id,
+              dataSourceId: dataSource.id,
+            },
+          });
+          if (dataSrcPermission)
+            await manager.save(
+              DataSourceGroupPermission,
+              manager.create(DataSourceGroupPermission, {
+                dataSourceId: dataSource.id,
+                groupPermissionId: newGroup.id,
+                read: dataSrcPermission.read,
+                update: dataSrcPermission.update,
+                delete: dataSrcPermission.delete,
+              })
+            );
+        }
+      }
+    }, manager);
+
+    if (addUsers) {
+      const usersGroup = await groupToDuplicate.users;
+      for (const userAdd of usersGroup) {
+        const params = {
+          addGroups: [newGroup.group],
+        };
+        await this.usersService.update(userAdd.id, params, manager, user.organizationId);
+      }
+    }
+
+    return newGroup;
+  }
+
   async findAll(user: User): Promise<GroupPermission[]> {
     const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
     const groupPermissions = await this.groupPermissionsRepository.find({
@@ -434,7 +564,21 @@ export class GroupPermissionsService {
       }
     }
 
-    return groupPermissions;
+    const customSortGroupPermission = (a, b) => {
+      if (a.group === 'all_users') {
+        return -1; // 'all_users' comes first
+      } else if (b.group === 'all_users') {
+        return 1; // 'all_users' comes first
+      } else if (a.group === 'admin') {
+        return -1; // 'admin' comes second
+      } else if (b.group === 'admin') {
+        return 1; // 'admin' comes second
+      } else {
+        return 0; // No specific order for other groups
+      }
+    };
+
+    return groupPermissions.sort(customSortGroupPermission);
   }
 
   async findApps(user: User, groupPermissionId: string): Promise<App[]> {
@@ -527,10 +671,6 @@ export class GroupPermissionsService {
   }
 
   async findAddableUsers(user: User, groupPermissionId: string, searchInput: string): Promise<User[]> {
-    if (!searchInput) {
-      return [];
-    }
-
     const groupPermission = await this.groupPermissionsRepository.findOne({
       where: {
         id: groupPermissionId,
@@ -568,7 +708,7 @@ export class GroupPermissionsService {
       });
     };
 
-    return await createQueryBuilder(User, 'user')
+    const builtQuery = createQueryBuilder(User, 'user')
       .select(['user.id', 'user.firstName', 'user.lastName', 'user.email'])
       .innerJoin(
         'user.organizationUsers',
@@ -577,8 +717,15 @@ export class GroupPermissionsService {
         { organizationId: user.organizationId }
       )
       .andWhere(getOrConditions)
-      .where('user.id NOT IN (:...userList)', { userList: [...usersInGroupIds, ...adminUserIds] })
-      .getMany();
+      .where('user.id NOT IN (:...userList)', { userList: [...usersInGroupIds, ...adminUserIds] });
+
+    if (searchInput) {
+      builtQuery.andWhere(getOrConditions);
+    } else {
+      builtQuery.take(10); // Limiting to 10 users if there's no search input
+    }
+    builtQuery.orderBy('user.firstName');
+    return await builtQuery.getMany();
   }
 
   async createUserGroupPermission(userId: string, groupPermissionId: string, manager?: EntityManager) {
