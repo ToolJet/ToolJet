@@ -66,6 +66,8 @@ jobs:
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
 
       - name: Set up database
         run: |
