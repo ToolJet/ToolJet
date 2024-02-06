@@ -65,6 +65,8 @@ export const Modal = function Modal({
     const canShowModal = exposedVariables.show ?? false;
     setShowModal(exposedVariables.show ?? false);
     fireEvent(canShowModal ? 'onOpen' : 'onClose');
+    const inpuRef = document.getElementsByClassName('tj-text-input-widget')[0];
+    inpuRef.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
 
@@ -158,7 +160,7 @@ export const Modal = function Modal({
   useEffect(() => {
     if (closeOnClickingOutside) {
       const handleClickOutside = (event) => {
-        const modalRef = parentRef.current.parentElement.parentElement.parentElement;
+        const modalRef = parentRef?.current?.parentElement?.parentElement?.parentElement;
 
         if (modalRef && modalRef === event.target) {
           hideModal();

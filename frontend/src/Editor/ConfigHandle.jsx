@@ -13,13 +13,14 @@ export const ConfigHandle = function ConfigHandle({
   customClassName = '',
   configWidgetHandlerForModalComponent = false,
   isVersionReleased,
+  isVerticalResizingAllowed,
 }) {
   return (
     <div
       className={`config-handle ${customClassName}`}
       ref={dragRef}
       style={{
-        top: position === 'top' ? '-22px' : widgetTop + widgetHeight - 10,
+        top: position === 'top' ? (!isVerticalResizingAllowed() ? '-20px' : '-22px') : widgetTop + widgetHeight - 10,
       }}
     >
       <span

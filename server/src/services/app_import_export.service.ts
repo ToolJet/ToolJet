@@ -712,6 +712,11 @@ export class AppImportExportService {
             const mappedParentId = newComponentIdsMap[_parentId];
 
             parentId = `${mappedParentId}-${childTabId}`;
+          } else if (isChildOfKanbanModal(component, pageComponents, parentId, true)) {
+            const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+            const mappedParentId = newComponentIdsMap[_parentId];
+
+            parentId = `${mappedParentId}-modal`;
           } else {
             if (component.parent && !newComponentIdsMap[parentId]) {
               skipComponent = true;
@@ -1694,6 +1699,11 @@ function transformComponentData(
       const mappedParentId = componentsMapping[_parentId];
 
       parentId = `${mappedParentId}-${childTabId}`;
+    } else if (isChildOfKanbanModal(component, allComponents, parentId, true)) {
+      const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+      const mappedParentId = componentsMapping[_parentId];
+
+      parentId = `${mappedParentId}-modal`;
     } else {
       if (component.parent && !componentsMapping[parentId]) {
         skipComponent = true;
@@ -1747,4 +1757,23 @@ const isChildOfTabsOrCalendar = (
   }
 
   return false;
+};
+
+const isChildOfKanbanModal = (
+  component,
+  allComponents = [],
+  componentParentId = undefined,
+  isNormalizedAppDefinitionSchema: boolean
+) => {
+  if (!componentParentId || !componentParentId.includes('modal')) return false;
+
+  const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+  const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+  if (!isNormalizedAppDefinitionSchema) {
+    return parentComponent.component.component === 'Kanban';
+  }
+
+  return parentComponent.type === 'Kanban';
 };
