@@ -268,6 +268,25 @@ class TableComponent extends React.Component {
               }}
             />
           </div>
+
+          <div data-cy={`transformation-field`} className="field mb-2 mt-1">
+            <label className="form-label">{this.props.t('widget.Table.transformationField', 'Transformation')}</label>
+            <CodeHinter
+              currentState={this.props.currentState}
+              initialValue={column?.transformation ?? '{{cellValue}}'}
+              theme={this.props.darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={column.name}
+              onChange={(value) => this.onColumnItemChange(index, 'transformation', value)}
+              componentName={this.getPopoverFieldSource(column.columnType, 'transformation')}
+              popOverCallback={(showing) => {
+                this.setColumnPopoverRootCloseBlocker('transformation', showing);
+              }}
+              enablePreview={false}
+            />
+          </div>
+
           <div className="field mb-2">
             <label className="form-label">
               {this.props.t('widget.Table.horizontalAlignment', 'Horizontal Alignment')}
