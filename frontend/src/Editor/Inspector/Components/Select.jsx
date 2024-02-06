@@ -370,8 +370,12 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                                       }}
                                     >
                                       {index === hoveredOptionIndex && (
-                                        <ButtonSolid variant="tertiary" size="xs" className={'list-menu-option-btn'}>
-                                          <span style={{ border: '1px solid #E54D2E' }}>
+                                        <ButtonSolid
+                                          variant="tertiary"
+                                          size="xs"
+                                          className={'inspector-select-option-btn'}
+                                        >
+                                          <span className="d-flex">
                                             <Trash fill={'#E54D2E'} width={'14'} />
                                           </span>
                                         </ButtonSolid>

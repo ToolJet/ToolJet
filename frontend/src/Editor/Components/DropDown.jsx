@@ -8,6 +8,8 @@ import { CustomMenuList } from './Table/SelectComponent';
 import { Spinner } from 'react-bootstrap';
 
 const { ValueContainer, SingleValue, Placeholder } = components;
+const INDICATOR_CONTAINER_WIDTH = 60;
+const ICON_WIDTH = 18; // includes flex gap 2px
 
 const CustomValueContainer = ({ children, ...props }) => {
   const selectProps = props.selectProps;
@@ -50,7 +52,9 @@ const Option = (props) => {
   return (
     <components.Option {...props}>
       <div className="d-flex justify-content-between">
-        <span style={{ color: props.isDisabled ? '#889096' : 'unset' }}>{props.label}</span>
+        <span className="text-truncate" style={{ color: props.isDisabled ? '#889096' : 'unset' }}>
+          {props.label}
+        </span>
         {props.isSelected && (
           <span style={{ maxHeight: '20px' }}>
             <CheckMark
@@ -125,6 +129,7 @@ export const DropDown = function DropDown({
   const [inputValue, setInputValue] = useState('');
   // We are substracting 4px because of 2px padding each in top bottom
   const _height = padding === 'default' ? `${height - 4}px` : `${height}px`;
+
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
     if (isDropdownLoading !== dropdownLoadingState) setIsDropdownLoading(dropdownLoadingState);
@@ -235,6 +240,7 @@ export const DropDown = function DropDown({
         schema?.filter((item) => item?.visible)?.map((item) => item.label)
       );
     } else setExposedVariable('optionLabels', display_values);
+    setExposedVariable('options', selectOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(schema), advanced, JSON.stringify(display_values), currentValue]);
 
@@ -253,12 +259,16 @@ export const DropDown = function DropDown({
     setExposedVariable('setLoading', async function (value) {
       setIsDropdownLoading(value);
     });
-    setExposedVariable('setDisabled', async function (value) {
+    setExposedVariable('setDisable', async function (value) {
       setIsDropdownDisabled(value);
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, dropdownLoadingState, disabledState, isMandatory]);
+
+  useEffect(() => {
+    setExposedVariable('options', selectOptions);
+  }, [JSON.stringify(selectOptions)]);
 
   useEffect(() => {
     if (alignment == 'top' && label) adjustHeightBasedOnAlignment(true);
@@ -284,6 +294,10 @@ export const DropDown = function DropDown({
   };
 
   const customStyles = {
+    container: (base) => ({
+      ...base,
+      width: '100%',
+    }),
     control: (provided, state) => {
       return {
         ...provided,
@@ -324,6 +338,12 @@ export const DropDown = function DropDown({
     singleValue: (provided, _state) => ({
       ...provided,
       color: darkMode && selectedTextColor === '#11181C' ? '#ECEDEE' : selectedTextColor,
+      maxWidth:
+        ref?.current?.offsetWidth -
+        (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
     }),
 
     input: (provided, _state) => ({
@@ -404,6 +424,7 @@ export const DropDown = function DropDown({
       </div>
     );
   }
+
   return (
     <>
       <div

@@ -3587,9 +3587,9 @@ export const widgets = [
         params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
       {
-        handle: 'setDisabled',
-        displayName: 'Set disabled',
-        params: [{ handle: 'setDisabled', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+        handle: 'setDisable',
+        displayName: 'Set disable',
+        params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
     ],
     definition: {
