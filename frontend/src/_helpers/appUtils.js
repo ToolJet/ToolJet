@@ -1904,13 +1904,8 @@ export const buildComponentMetaDefinition = (components = {}) => {
 export const buildAppDefinition = (data) => {
   const editingVersion = _.omit(camelizeKeys(data.editing_version), ['definition', 'updatedAt', 'createdAt', 'name']);
 
-  // isEditingVersionTruthyValue will be falsy value in viewer mode and truthy in editor mode
-  const isEditingVersionTruthyValue = data?.hasOwnProperty('editing_version') ?? false;
-
-  if (isEditingVersionTruthyValue) {
-    editingVersion['currentVersionId'] = editingVersion.id;
-    _.unset(editingVersion, 'id');
-  }
+  editingVersion['currentVersionId'] = editingVersion.id;
+  _.unset(editingVersion, 'id');
 
   const pages = data.pages.reduce((acc, page) => {
     const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components));
@@ -1922,19 +1917,12 @@ export const buildAppDefinition = (data) => {
     return acc;
   }, {});
 
-  const appJSON = isEditingVersionTruthyValue
-    ? {
-        globalSettings: editingVersion.globalSettings,
-        homePageId: editingVersion?.homePageId,
-        showViewerNavigation: editingVersion.showViewerNavigation ?? true,
-        pages: pages,
-      }
-    : {
-        globalSettings: data?.globalSettings,
-        homePageId: data?.homePageId,
-        showViewerNavigation: data?.showViewerNavigation ?? true,
-        pages: pages,
-      };
+  const appJSON = {
+    globalSettings: editingVersion.globalSettings,
+    homePageId: editingVersion?.homePageId,
+    showViewerNavigation: editingVersion.showViewerNavigation ?? true,
+    pages: pages,
+  };
 
   return appJSON;
 };
