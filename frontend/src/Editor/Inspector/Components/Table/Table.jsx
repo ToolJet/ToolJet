@@ -1152,7 +1152,9 @@ class TableComponent extends React.Component {
 
     const rowSelectionsOptions = [
       'allowSelection',
-      ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow'] : []),
+      ...(allowSelection
+        ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow', 'selectRowOnCellEdit']
+        : []),
     ];
     const searchSortFilterOptions = [
       ...(displaySearchBox ? ['displaySearchBox'] : []),
