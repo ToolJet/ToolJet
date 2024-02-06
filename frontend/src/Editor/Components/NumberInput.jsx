@@ -19,6 +19,7 @@ export const NumberInput = function NumberInput({
   dataCy,
   isResizing,
   adjustHeightBasedOnAlignment,
+  currentLayout,
 }) {
   const { loadingState, tooltip, disabledState, label, placeholder } = properties;
   const {
@@ -62,7 +63,7 @@ export const NumberInput = function NumberInput({
       adjustHeightBasedOnAlignment(true);
     } else adjustHeightBasedOnAlignment(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length]);
+  }, [alignment, label?.length, currentLayout]);
 
   useEffect(() => {
     setValue(Number(parseFloat(value).toFixed(properties.decimalPlaces)));

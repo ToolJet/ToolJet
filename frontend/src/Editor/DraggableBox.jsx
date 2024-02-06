@@ -94,7 +94,7 @@ export const DraggableBox = React.memo(
       shallow
     );
     const currentState = useCurrentState();
-    const [calculatedHeight, setCalculatedHeight] = useState(layoutData?.height);
+    const [calculatedHeight, setCalculatedHeight] = useState(layoutData?.height); // height for layouting with top and side values
 
     const resizerStyles = {
       topRight: {
@@ -381,6 +381,7 @@ export const DraggableBox = React.memo(
                     childComponents={childComponents}
                     isResizing={isResizing}
                     adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
+                    currentLayout={currentLayout}
                   />
                 </Sentry.ErrorBoundary>
               </div>
