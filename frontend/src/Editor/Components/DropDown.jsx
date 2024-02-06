@@ -6,9 +6,8 @@ import * as Icons from '@tabler/icons-react';
 import CheckMark from '@/_ui/Icon/solidIcons/CheckMark';
 import { CustomMenuList } from './Table/SelectComponent';
 import { Spinner } from 'react-bootstrap';
-import Loader from '@/ToolJetUI/Loader/Loader';
 
-const { ValueContainer, SingleValue, Placeholder } = components;
+const { ValueContainer, SingleValue, Placeholder, DropdownIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
 const ICON_WIDTH = 18; // includes flex gap 2px
 
@@ -131,14 +130,6 @@ export const DropDown = function DropDown({
   // We are substracting 4px because of 2px padding each in top bottom
   const _height = padding === 'default' ? `${height - 4}px` : `${height}px`;
 
-  useEffect(() => {
-    if (visibility !== properties.visibility) setVisibility(properties.visibility);
-    if (isDropdownLoading !== dropdownLoadingState) setIsDropdownLoading(dropdownLoadingState);
-    if (isDropdownDisabled !== disabledState) setIsDropdownDisabled(disabledState);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, dropdownLoadingState, disabledState]);
-
   function findDefaultItem(schema) {
     const foundItem = schema?.find((item) => item?.default === true);
     return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
@@ -167,46 +158,79 @@ export const DropDown = function DropDown({
     return _selectOptions;
   }, [advanced, schema, display_values, values, optionDisable, optionVisibility]);
 
-  const setExposedItem = (value, index, onSelectFired = false) => {
-    setCurrentValue(value);
-    onSelectFired ? setExposedVariable('value', value).then(fireEvent('onSelect')) : setExposedVariable('value', value);
-    setExposedVariable('selectedOptionLabel', index === undefined ? undefined : display_values?.[index]);
-  };
-
   function selectOption(value) {
-    let index = null;
-    index = values?.indexOf(value);
-
-    if (values?.includes(value)) {
-      setExposedItem(value, index, true);
-    } else {
-      setExposedItem(undefined, undefined, true);
+    const val = selectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
+    if (val) {
+      setCurrentValue(value);
+      fireEvent('onSelect');
     }
   }
+
+  function hasVisibleFalse(value) {
+    for (let i = 0; i < schema?.length; i++) {
+      if (schema[i].value === value && schema[i].visible === false) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  const onSearchTextChange = (searchText, actionProps) => {
+    if (actionProps.action === 'input-change') {
+      setInputValue(searchText);
+      setExposedVariable('searchText', searchText);
+      fireEvent('onSearchTextChanged');
+    }
+  };
+
+  const handleOutsideClick = (e) => {
+    let menu = ref.current.querySelector('.select__menu');
+    if (!ref.current.contains(e.target) || !menu || !menu.contains(e.target)) {
+      setIsFocused(false);
+      setInputValue('');
+    }
+  };
+
+  useEffect(() => {
+    if (advanced) {
+      setCurrentValue(findDefaultItem(schema));
+    } else setCurrentValue(value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced]);
+
+  useEffect(() => {
+    if (alignment == 'top' && label) adjustHeightBasedOnAlignment(true);
+    else adjustHeightBasedOnAlignment(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alignment, label]);
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, []);
+
+  // Exposed variables UseEffect's
+  useEffect(() => {
+    if (visibility !== properties.visibility) setVisibility(properties.visibility);
+    if (isDropdownLoading !== dropdownLoadingState) setIsDropdownLoading(dropdownLoadingState);
+    if (isDropdownDisabled !== disabledState) setIsDropdownDisabled(disabledState);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility, dropdownLoadingState, disabledState]);
 
   useEffect(() => {
     setExposedVariable('selectOption', async function (value) {
       selectOption(value);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(values), setCurrentValue, JSON.stringify(display_values)]);
+  }, [JSON.stringify(selectOptions)]);
 
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
-
-  useEffect(() => {
-    let newValue = undefined;
-    let index = null;
-    if (values?.includes(value)) {
-      newValue = value;
-      index = values?.indexOf(value);
-    }
-    setExposedItem(newValue, index);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, JSON.stringify(values)]);
 
   useEffect(() => {
     if (exposedValue !== currentValue) {
@@ -217,17 +241,6 @@ export const DropDown = function DropDown({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentValue, JSON.stringify(display_values), JSON.stringify(values), JSON.stringify(selectOptions)]);
-
-  useEffect(() => {
-    let newValue = undefined;
-    let index = null;
-
-    if (values?.includes(currentValue)) newValue = currentValue;
-    else if (values?.includes(value)) newValue = value;
-    index = values?.indexOf(newValue);
-    setExposedItem(newValue, index);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(values)]);
 
   useEffect(() => {
     setExposedVariable('label', label);
@@ -270,29 +283,6 @@ export const DropDown = function DropDown({
     setExposedVariable('options', selectOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(selectOptions)]);
-
-  useEffect(() => {
-    if (alignment == 'top' && label) adjustHeightBasedOnAlignment(true);
-    else adjustHeightBasedOnAlignment(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label]);
-
-  function hasVisibleFalse(value) {
-    for (let i = 0; i < schema?.length; i++) {
-      if (schema[i].value === value && schema[i].visible === false) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  const onSearchTextChange = (searchText, actionProps) => {
-    if (actionProps.action === 'input-change') {
-      setInputValue(searchText);
-      setExposedVariable('searchText', searchText);
-      fireEvent('onSearchTextChanged');
-    }
-  };
 
   const customStyles = {
     container: (base) => ({
@@ -392,39 +382,11 @@ export const DropDown = function DropDown({
     }),
   };
 
-  const handleOutsideClick = (e) => {
-    let menu = ref.current.querySelector('.select__menu');
-    if (!ref.current.contains(e.target) || !menu || !menu.contains(e.target)) {
-      setIsFocused(false);
-      setInputValue('');
-    }
-  };
-
-  useEffect(() => {
-    if (advanced) {
-      setCurrentValue(findDefaultItem(schema));
-    } else setCurrentValue(value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced]);
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-    };
-  }, []);
-
   const labelStyles = {
     [alignment === 'side' && direction === 'alignRight' ? 'marginLeft' : 'marginRight']: label ? '1rem' : '0.001rem',
     color: darkMode && labelColor === '#11181C' ? '#ECEDEE' : labelColor,
     alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
   };
-
-  // const loaderStyle = {
-  //   right: '11px',
-  //   // top: `${defaultAlignment === 'top' ? '53%' : ''}`,
-  //   transform: 'translateY(-50%)',
-  // };
 
   return (
     <>
@@ -496,10 +458,10 @@ export const DropDown = function DropDown({
               MenuList: CustomMenuList,
               ValueContainer: CustomValueContainer,
               Option,
-              LoadingIndicator: () => <Spinner style={{ width: '16px', height: '16px', color: 'var(--indigo9)' }} />,
-              // LoadingIndicator: () => <Loader style={{ ...loaderStyle }} width="16" />,
-
-              // IndicatorsContainer: isDropdownLoading && () => null,
+              LoadingIndicator: () => (
+                <Spinner style={{ width: '16px', height: '16px', color: 'var(--indigo9)', marginRight: '5px' }} />
+              ),
+              DropdownIndicator: isDropdownLoading ? () => null : DropdownIndicator,
             }}
             isClearable
             icon={icon}
@@ -512,6 +474,7 @@ export const DropDown = function DropDown({
               isFocused: isFocused || undefined,
             }}
             inputValue={inputValue}
+            optionLoadingState={properties.loadingState}
           />
         </div>
       </div>
