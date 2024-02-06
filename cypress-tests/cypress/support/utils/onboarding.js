@@ -212,6 +212,8 @@ export const fetchAndVisitInviteLink = (email) => {
 export const inviteUser = (firstName, email) => {
   cy.userInviteApi(firstName, email);
   fetchAndVisitInviteLink(email);
+  cy.wait(1000)
+  cy.get(commonSelectors.passwordInputField).should("be.visible")
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.acceptInviteButton).click();
 };
