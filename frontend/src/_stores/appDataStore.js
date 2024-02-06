@@ -25,6 +25,7 @@ const initialState = {
   appId: null,
   areOthersOnSameVersionAndPage: false,
   appVersionPreviewLink: null,
+  metadata: null,
   eventsUpdatedLoader: false,
   eventsCreatedLoader: false,
   actionsUpdatedLoader: false,
@@ -38,6 +39,7 @@ export const useAppDataStore = create(
         updateEditingVersion: (version) => set(() => ({ editingVersion: version })),
         updateApps: (apps) => set(() => ({ apps: apps })),
         updateState: (state) => set((prev) => ({ ...prev, ...state })),
+
         updateAppDefinitionDiff: (appDefinitionDiff) => set(() => ({ appDefinitionDiff: appDefinitionDiff })),
         updateAppVersion: (appId, versionId, pageId, appDefinitionDiff, isUserSwitchedVersion = false) => {
           return new Promise((resolve, reject) => {
@@ -136,6 +138,7 @@ export const useAppDataStore = create(
         setIsSaving: (isSaving) => set(() => ({ isSaving })),
         setAppId: (appId) => set(() => ({ appId })),
         setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),
+        setMetadata: (metadata) => set(() => ({ metadata })),
       },
     }),
     { name: 'App Data Store' }
