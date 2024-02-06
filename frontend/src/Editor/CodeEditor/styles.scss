@@ -23,9 +23,6 @@
     }
 }
 
-// .code-editor-basic-wrapper, .cm-codehinter {
-//     height: 32px;
-// }
 
 
 .cm-base-autocomplete {
@@ -164,12 +161,23 @@
     -moz-appearance: none;
     appearance: none;
     cursor: text;
-    height: inherit;
+    
 
     .cm-tooltip-autocomplete {
         @extend .cm-base-autocomplete;
         left: 0 !important;
         top: 35px !important;
+    }
+
+    .cm-editor {
+        min-height: 32px;
+        max-height: 220px;
+    }
+
+    .cm-content > .cm-line {
+        max-width: 220px !important;
+        white-space: pre-wrap;
+        word-wrap: break-word;
     }
 
   }
@@ -252,8 +260,7 @@
     border: 1px solid var(--slate7);
     border-radius: 4px;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    height: inherit !important;
-    // padding: 2px;
+    // height: inherit !important;
 }
 
 .border-danger {

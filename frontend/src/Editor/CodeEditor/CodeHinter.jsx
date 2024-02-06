@@ -87,7 +87,7 @@ const PopupIcon = ({ callback, icon, tip }) => {
   const size = 16;
 
   return (
-    <div className="d-flex justify-content-end w-100 position-absolute" style={{ top: 0 }}>
+    <div className="d-flex justify-content-end w-100" style={{ top: 0 }}>
       <OverlayTrigger
         trigger={['hover', 'focus']}
         placement="top"
