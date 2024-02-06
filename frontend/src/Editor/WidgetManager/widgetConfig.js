@@ -3545,7 +3545,8 @@ export const widgets = [
       },
       iconColor: {
         type: 'color',
-        displayName: 'Icon',
+        displayName: '',
+        showLabel: false,
         validation: {
           schema: { type: 'string' },
         },

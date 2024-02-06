@@ -6,6 +6,7 @@ import * as Icons from '@tabler/icons-react';
 import CheckMark from '@/_ui/Icon/solidIcons/CheckMark';
 import { CustomMenuList } from './Table/SelectComponent';
 import { Spinner } from 'react-bootstrap';
+import Loader from '@/ToolJetUI/Loader/Loader';
 
 const { ValueContainer, SingleValue, Placeholder } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -208,14 +209,14 @@ export const DropDown = function DropDown({
   }, [value, JSON.stringify(values)]);
 
   useEffect(() => {
-    let index = null;
     if (exposedValue !== currentValue) {
       setExposedVariable('value', currentValue);
     }
-    index = values?.indexOf(currentValue);
-    setExposedVariable('selectedOptionLabel', display_values?.[index]);
+    const _selectedOptionLabel = selectOptions.find((option) => option.value === currentValue)?.label;
+    setExposedVariable('selectedOptionLabel', _selectedOptionLabel);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue, JSON.stringify(display_values), JSON.stringify(values)]);
+  }, [currentValue, JSON.stringify(display_values), JSON.stringify(values), JSON.stringify(selectOptions)]);
 
   useEffect(() => {
     let newValue = undefined;
@@ -240,7 +241,6 @@ export const DropDown = function DropDown({
         schema?.filter((item) => item?.visible)?.map((item) => item.label)
       );
     } else setExposedVariable('optionLabels', display_values);
-    setExposedVariable('options', selectOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(schema), advanced, JSON.stringify(display_values), currentValue]);
 
@@ -268,6 +268,7 @@ export const DropDown = function DropDown({
 
   useEffect(() => {
     setExposedVariable('options', selectOptions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(selectOptions)]);
 
   useEffect(() => {
@@ -366,7 +367,7 @@ export const DropDown = function DropDown({
       ...provided,
       padding: '0px',
     }),
-    option: (provided, state) => ({
+    option: (provided) => ({
       ...provided,
       backgroundColor: darkMode && ['#fff'].includes(fieldBackgroundColor) ? '#313538' : fieldBackgroundColor,
       color: darkMode && ['#11181C'].includes(selectedTextColor) ? '#ECEDEE' : selectedTextColor,
@@ -375,7 +376,7 @@ export const DropDown = function DropDown({
         color: 'white',
       },
     }),
-    menuList: (provided, state) => ({
+    menuList: (provided) => ({
       ...provided,
       padding: '2px',
       // this is needed otherwise :active state doesn't look nice, gap is required
@@ -384,7 +385,7 @@ export const DropDown = function DropDown({
       gap: '4px !important',
       overflowY: 'auto',
     }),
-    menu: (provided, state) => ({
+    menu: (provided) => ({
       ...provided,
       marginTop: '5px',
       backgroundColor: darkMode && ['#fff'].includes(fieldBackgroundColor) ? '#313538' : fieldBackgroundColor,
@@ -402,7 +403,11 @@ export const DropDown = function DropDown({
   useEffect(() => {
     if (advanced) {
       setCurrentValue(findDefaultItem(schema));
-    }
+    } else setCurrentValue(value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced]);
+
+  useEffect(() => {
     document.addEventListener('mousedown', handleOutsideClick);
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
@@ -415,15 +420,11 @@ export const DropDown = function DropDown({
     alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
   };
 
-  if (isDropdownLoading) {
-    return (
-      <div className="d-flex align-items-center justify-content-center" style={{ width: '100%', height }}>
-        <center>
-          <div className="spinner-border" role="status"></div>
-        </center>
-      </div>
-    );
-  }
+  // const loaderStyle = {
+  //   right: '11px',
+  //   // top: `${defaultAlignment === 'top' ? '53%' : ''}`,
+  //   transform: 'translateY(-50%)',
+  // };
 
   return (
     <>
@@ -474,18 +475,15 @@ export const DropDown = function DropDown({
               }
               if (actionProps.action === 'select-option') {
                 setCurrentValue(selectedOption.value);
-                setExposedVariable('value', selectedOption.value);
                 fireEvent('onSelect');
-                setExposedVariable('selectedOptionLabel', selectedOption.label);
               }
               setIsFocused(false);
             }}
             options={selectOptions}
             styles={customStyles}
-            // Only show loading when dynamic options are enabled
-            isLoading={advanced && properties.loadingState}
+            isLoading={isDropdownLoading}
             onInputChange={onSearchTextChange}
-            onFocus={(event) => {
+            onFocus={() => {
               fireEvent('onFocus');
             }}
             onMenuInputFocus={() => setIsFocused(true)}
@@ -499,6 +497,9 @@ export const DropDown = function DropDown({
               ValueContainer: CustomValueContainer,
               Option,
               LoadingIndicator: () => <Spinner style={{ width: '16px', height: '16px', color: 'var(--indigo9)' }} />,
+              // LoadingIndicator: () => <Loader style={{ ...loaderStyle }} width="16" />,
+
+              // IndicatorsContainer: isDropdownLoading && () => null,
             }}
             isClearable
             icon={icon}
