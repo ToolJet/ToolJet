@@ -1488,8 +1488,8 @@ export const widgets = [
         showLabel: false,
         isIcon: true,
         options: [
-          { displayName: 'alignleftinspector', value: 'left' },
-          { displayName: 'alignrightinspector', value: 'right' },
+          { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+          { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
         ],
         accordian: 'label',
       },
@@ -1767,8 +1767,8 @@ export const widgets = [
         showLabel: false,
         isIcon: true,
         options: [
-          { displayName: 'alignleftinspector', value: 'left' },
-          { displayName: 'alignrightinspector', value: 'right' },
+          { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+          { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
         ],
         accordian: 'label',
       },
@@ -2059,8 +2059,8 @@ export const widgets = [
         showLabel: false,
         isIcon: true,
         options: [
-          { displayName: 'alignleftinspector', value: 'left' },
-          { displayName: 'alignrightinspector', value: 'right' },
+          { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+          { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
         ],
         accordian: 'label',
       },
