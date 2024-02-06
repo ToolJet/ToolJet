@@ -143,6 +143,18 @@ async function executeRunPycode(_ref, code, query, isPreview, mode) {
         currentState.queries[key] = {
           ...currentState.queries[key],
           run: () => actions.runQuery(key),
+
+          getData: () => {
+            return getCurrentState().queries[key].data;
+          },
+
+          getRawData: () => {
+            return getCurrentState().queries[key].rawData;
+          },
+
+          getloadingState: () => {
+            return getCurrentState().queries[key].isLoading;
+          },
         };
       }
 
@@ -536,6 +548,12 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         });
       }
 
+      case 'get-custom-variable': {
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const customAppVariables = { ...getCurrentState().variables };
+        return customAppVariables[key];
+      }
+
       case 'unset-custom-variable': {
         const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
@@ -558,6 +576,14 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
             variables: customPageVariables,
           },
         });
+      }
+
+      case 'get-page-variable': {
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const customPageVariables = {
+          ...getCurrentState().page.variables,
+        };
+        return customPageVariables[key];
       }
 
       case 'unset-page-variable': {

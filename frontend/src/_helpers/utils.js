@@ -470,6 +470,18 @@ export async function executeMultilineJS(
         query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
         return actions.runQuery(key, processedParams);
       },
+
+      getData: () => {
+        return getCurrentState().queries[key].data;
+      },
+
+      getRawData: () => {
+        return getCurrentState().queries[key].rawData;
+      },
+
+      getloadingState: () => {
+        return getCurrentState().queries[key].isLoading;
+      },
     };
   }
 
@@ -605,9 +617,9 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
       );
     }
 
-    if (isPreview) {
-      return previewQuery(_ref, query, true, processedParams);
-    }
+    // if (isPreview) {
+    //   return previewQuery(_ref, query, true, processedParams);
+    // }
 
     const event = {
       actionId: 'run-query',
@@ -625,6 +637,16 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
         actionId: 'set-custom-variable',
         key,
         value,
+      };
+      return executeAction(_ref, event, mode, {});
+    }
+  };
+
+  const getVariable = (key = '') => {
+    if (key) {
+      const event = {
+        actionId: 'get-custom-variable',
+        key,
       };
       return executeAction(_ref, event, mode, {});
     }
@@ -735,6 +757,14 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     return executeAction(_ref, event, mode, {});
   };
 
+  const getPageVariable = (key = '') => {
+    const event = {
+      actionId: 'get-page-variable',
+      key,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
   const unsetPageVariable = (key = '') => {
     const event = {
       actionId: 'unset-page-variable',
@@ -773,6 +803,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
   return {
     runQuery,
     setVariable,
+    getVariable,
     unSetVariable,
     showAlert,
     logout,
@@ -783,6 +814,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     goToApp,
     generateFile,
     setPageVariable,
+    getPageVariable,
     unsetPageVariable,
     switchPage,
   };
