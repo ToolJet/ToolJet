@@ -42,6 +42,7 @@ export default function EditorHeader({
   setCurrentAppVersionPromoted,
   fetchEnvironments,
   isEditorFreezed,
+  isSocketOpen,
 }) {
   const currentUser = useCurrentUser();
   const {

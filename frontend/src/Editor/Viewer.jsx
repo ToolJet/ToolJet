@@ -637,7 +637,7 @@ class ViewerComponent extends React.Component {
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
     const canvasMaxWidth = this.computeCanvasMaxWidth();
-     const pages =
+    const pages =
       Object.entries(_.cloneDeep(appDefinition)?.pages)
         .map(([id, page]) => ({ id, ...page }))
         .sort((a, b) => a.index - b.index) || [];

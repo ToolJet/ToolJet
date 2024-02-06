@@ -1,12 +1,6 @@
-import React from "react";
+import React from 'react';
 
-const Support = ({
-  fill = "#C1C8CD",
-  width = "24",
-  className = "",
-  viewBox = "0 0 25 25",
-  style,
-}) => (
+const Support = ({ fill = '#C1C8CD', width = '24', className = '', viewBox = '0 0 25 25', style }) => (
   <svg
     width={width}
     height={width}

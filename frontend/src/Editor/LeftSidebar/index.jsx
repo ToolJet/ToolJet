@@ -1,33 +1,27 @@
-import "@/_styles/left-sidebar.scss";
-import React, {
-  useState,
-  useImperativeHandle,
-  forwardRef,
-  useEffect,
-  useRef,
-} from "react";
-import _ from "lodash";
-import { LeftSidebarInspector } from "./SidebarInspector";
-import { LeftSidebarDataSources } from "./SidebarDatasources";
-import { DarkModeToggle } from "../../_components/DarkModeToggle";
-import useRouter from "../../_hooks/use-router";
-import { LeftSidebarDebugger } from "./SidebarDebugger/SidebarDebugger";
-import { LeftSidebarComment } from "./SidebarComment";
-import LeftSidebarPageSelector from "./SidebarPageSelector";
-import { ConfirmDialog } from "@/_components";
-import config from "config";
-import { LeftSidebarItem } from "./SidebarItem";
-import Popover from "@/_ui/Popover";
-import { usePanelHeight } from "@/_stores/queryPanelStore";
-import { useAppVersionStore } from "@/_stores/appVersionStore";
-import { useEditorStore } from "@/_stores/editorStore";
-import { useDataSources } from "@/_stores/dataSourcesStore";
-import { shallow } from "zustand/shallow";
-import useDebugger from "./SidebarDebugger/useDebugger";
-import { GlobalSettings } from "../Header/GlobalSettings";
-import { resolveReferences } from "@/_helpers/utils";
-import { useCurrentState } from "@/_stores/currentStateStore";
-import SolidIcon from "@/_ui/Icon/SolidIcons";
+import '@/_styles/left-sidebar.scss';
+import React, { useState, useImperativeHandle, forwardRef, useEffect, useRef } from 'react';
+import _ from 'lodash';
+import { LeftSidebarInspector } from './SidebarInspector';
+import { LeftSidebarDataSources } from './SidebarDatasources';
+import { DarkModeToggle } from '../../_components/DarkModeToggle';
+import useRouter from '../../_hooks/use-router';
+import { LeftSidebarDebugger } from './SidebarDebugger/SidebarDebugger';
+import { LeftSidebarComment } from './SidebarComment';
+import LeftSidebarPageSelector from './SidebarPageSelector';
+import { ConfirmDialog } from '@/_components';
+import config from 'config';
+import { LeftSidebarItem } from './SidebarItem';
+import Popover from '@/_ui/Popover';
+import { usePanelHeight } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
+import { useDataSources } from '@/_stores/dataSourcesStore';
+import { shallow } from 'zustand/shallow';
+import useDebugger from './SidebarDebugger/useDebugger';
+import { GlobalSettings } from '../Header/GlobalSettings';
+import { resolveReferences } from '@/_helpers/utils';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -65,18 +59,14 @@ export const LeftSidebar = forwardRef((props, ref) => {
   } = props;
 
   const dataSources = useDataSources();
-  const prevSelectedSidebarItem = localStorage.getItem("selectedSidebarItem");
+  const prevSelectedSidebarItem = localStorage.getItem('selectedSidebarItem');
   const queryPanelHeight = usePanelHeight();
   const [selectedSidebarItem, setSelectedSidebarItem] = useState(
-    dataSources?.length === 0 && prevSelectedSidebarItem === "datasource"
-      ? "inspect"
-      : prevSelectedSidebarItem
+    dataSources?.length === 0 && prevSelectedSidebarItem === 'datasource' ? 'inspect' : prevSelectedSidebarItem
   );
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
-  const [showDataSourceManagerModal, toggleDataSourceManagerModal] =
-    useState(false);
-  const [popoverContentHeight, setPopoverContentHeight] =
-    useState(queryPanelHeight);
+  const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
+  const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -91,9 +81,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     shallow
   );
   const currentState = useCurrentState();
-  const [pinned, setPinned] = useState(
-    !!localStorage.getItem("selectedSidebarItem")
-  );
+  const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
 
   const { errorLogs, clearErrorLogs, unReadErrorCount, allLog } = useDebugger({
     currentPageId,
@@ -103,9 +91,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const sideBarBtnRefs = useRef({});
 
   useEffect(() => {
-    setPopoverContentHeight(
-      ((window.innerHeight - queryPanelHeight - 45) / window.innerHeight) * 100
-    );
+    setPopoverContentHeight(((window.innerHeight - queryPanelHeight - 45) / window.innerHeight) * 100);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryPanelHeight]);
 
@@ -129,25 +115,23 @@ export const LeftSidebar = forwardRef((props, ref) => {
       setSelectedSidebarItem(null);
     } else {
       setSelectedSidebarItem(item);
-      pinned && localStorage.setItem("selectedSidebarItem", item);
+      pinned && localStorage.setItem('selectedSidebarItem', item);
     }
   };
 
   const handlePin = (isPin) => {
     isPin
-      ? localStorage.setItem("selectedSidebarItem", selectedSidebarItem)
-      : localStorage.removeItem("selectedSidebarItem");
+      ? localStorage.setItem('selectedSidebarItem', selectedSidebarItem)
+      : localStorage.removeItem('selectedSidebarItem');
 
     setPinned(isPin);
   };
 
   const handleInteractOutside = (ev) => {
-    const isBtnClicked = Object.values(sideBarBtnRefs.current).some(
-      (btnRef) => {
-        if (!btnRef) return false;
-        return btnRef.contains(ev?.target) || false;
-      }
-    );
+    const isBtnClicked = Object.values(sideBarBtnRefs.current).some((btnRef) => {
+      if (!btnRef) return false;
+      return btnRef.contains(ev?.target) || false;
+    });
 
     if (!isBtnClicked && !pinned) {
       setSelectedSidebarItem(null);
@@ -217,7 +201,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         onDeleteofAllDataSources={() => {
           handleSelectedSidebarItem(null);
           handlePin(false);
-          delete sideBarBtnRefs.current["datasource"];
+          delete sideBarBtnRefs.current['datasource'];
         }}
         setPinned={handlePin}
         pinned={pinned}
@@ -250,10 +234,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
   useEffect(() => {
     backgroundFxQuery &&
       globalSettingsChanged({
-        canvasBackgroundColor: resolveReferences(
-          backgroundFxQuery,
-          currentState
-        ),
+        canvasBackgroundColor: resolveReferences(backgroundFxQuery, currentState),
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(resolveReferences(backgroundFxQuery, currentState))]);
@@ -262,52 +243,52 @@ export const LeftSidebar = forwardRef((props, ref) => {
     <div className="left-sidebar" data-cy="left-sidebar-inspector">
       <LeftSidebarItem
         selectedSidebarItem={selectedSidebarItem}
-        onClick={() => handleSelectedSidebarItem("page")}
+        onClick={() => handleSelectedSidebarItem('page')}
         icon="page"
         className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
         tip="Pages"
-        ref={setSideBarBtnRefs("page")}
+        ref={setSideBarBtnRefs('page')}
       />
 
       <LeftSidebarItem
         selectedSidebarItem={selectedSidebarItem}
-        onClick={() => handleSelectedSidebarItem("inspect")}
+        onClick={() => handleSelectedSidebarItem('inspect')}
         icon="inspect"
         className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
         tip="Inspector"
-        ref={setSideBarBtnRefs("inspect")}
+        ref={setSideBarBtnRefs('inspect')}
       />
 
       <LeftSidebarItem
         icon="debugger"
         selectedSidebarItem={selectedSidebarItem}
         // eslint-disable-next-line no-unused-vars
-        onClick={(e) => handleSelectedSidebarItem("debugger")}
+        onClick={(e) => handleSelectedSidebarItem('debugger')}
         className={`left-sidebar-item  left-sidebar-layout`}
         badge={true}
         count={unReadErrorCount.unread}
         tip="Debugger"
-        ref={setSideBarBtnRefs("debugger")}
+        ref={setSideBarBtnRefs('debugger')}
       />
       <LeftSidebarItem
         icon="settings"
         selectedSidebarItem={selectedSidebarItem}
         // eslint-disable-next-line no-unused-vars
-        onClick={(e) => handleSelectedSidebarItem("settings")}
+        onClick={(e) => handleSelectedSidebarItem('settings')}
         className={`left-sidebar-item  left-sidebar-layout`}
         badge={true}
         tip="Settings"
-        ref={setSideBarBtnRefs("settings")}
+        ref={setSideBarBtnRefs('settings')}
       />
 
       {dataSources?.length > 0 && (
         <LeftSidebarItem
           selectedSidebarItem={selectedSidebarItem}
-          onClick={() => handleSelectedSidebarItem("datasource")}
+          onClick={() => handleSelectedSidebarItem('datasource')}
           icon="datasource"
           className={`left-sidebar-item left-sidebar-layout sidebar-datasources`}
           tip="Sources"
-          ref={setSideBarBtnRefs("datasource")}
+          ref={setSideBarBtnRefs('datasource')}
         />
       )}
 
@@ -321,10 +302,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
       <ConfirmDialog
         show={showLeaveDialog}
-        message={
-          "The unsaved changes will be lost if you leave the editor, do you want to leave?"
-        }
-        onConfirm={() => router.push("/")}
+        message={'The unsaved changes will be lost if you leave the editor, do you want to leave?'}
+        onConfirm={() => router.push('/')}
         onCancel={() => setShowLeaveDialog(false)}
         darkMode={darkMode}
       />
@@ -336,37 +315,27 @@ export const LeftSidebar = forwardRef((props, ref) => {
               window.fcWidget.open();
             }}
           >
-            <SolidIcon
-              name="support"
-              fill={"var(--slate8)"}
-              style={{ marginBottom: "16px" }}
-            />
+            <SolidIcon name="support" fill={'var(--slate8)'} style={{ marginBottom: '16px' }} />
           </a>
           {config.COMMENT_FEATURE_ENABLE && (
             <div
-              className={`${
-                (isVersionReleased || isEditorFreezed) && "disabled"
-              }`}
+              className={`${(isVersionReleased || isEditorFreezed) && 'disabled'}`}
               style={{
-                maxHeight: "32px",
-                maxWidth: "32px",
-                marginBottom: "16px",
+                maxHeight: '32px',
+                maxWidth: '32px',
+                marginBottom: '16px',
               }}
             >
               <LeftSidebarComment
-                selectedSidebarItem={showComments ? "comments" : ""}
+                selectedSidebarItem={showComments ? 'comments' : ''}
                 currentPageId={currentPageId}
                 isVersionReleased={isVersionReleased}
                 isEditorFreezed={isEditorFreezed}
-                ref={setSideBarBtnRefs("comments")}
+                ref={setSideBarBtnRefs('comments')}
               />
             </div>
           )}
-          <DarkModeToggle
-            switchDarkMode={switchDarkMode}
-            darkMode={darkMode}
-            tooltipPlacement="right"
-          />
+          <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
         {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}
       </div>
