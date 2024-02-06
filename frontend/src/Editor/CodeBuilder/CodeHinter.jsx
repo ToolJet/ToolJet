@@ -36,7 +36,14 @@ import { Alert } from '@/_ui/Alert/Alert';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import ClientServerSwitch from './Elements/ClientServerSwitch';
 import { CodeHinterContext } from './CodeHinterContext';
+import Switch from './Elements/Switch';
+import Checkbox from './Elements/Checkbox';
+import Slider from './Elements/Slider';
+import { Input } from './Elements/Input';
+import { Icon } from './Elements/Icon';
+import { Visibility } from './Elements/Visibility';
 import { validateProperty } from '../component-properties-validation';
+
 const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
 const AllElements = {
@@ -48,11 +55,18 @@ const AllElements = {
   Number,
   BoxShadow,
   ClientServerSwitch,
+  Slider,
+  Switch,
+  Input,
+  Checkbox,
+  Icon,
+  Visibility,
 };
 
 export function CodeHinter({
   initialValue,
   onChange,
+  onVisibilityChange,
   mode,
   theme,
   lineNumbers,
@@ -78,7 +92,9 @@ export function CodeHinter({
   callgpt = () => null,
   isCopilotEnabled = false,
   currentState: _currentState,
-  verticalLine = true,
+  isIcon = false,
+  paramUpdated,
+  staticText,
 }) {
   const context = useContext(CodeHinterContext);
 
@@ -382,7 +398,6 @@ export function CodeHinter({
     className === 'query-hinter' || className === 'custom-component' || undefined ? '' : 'code-hinter';
 
   const ElementToRender = AllElements[TypeMapping[type]];
-
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
@@ -393,17 +408,23 @@ export function CodeHinter({
   };
 
   return (
-    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
-      <div className={cx('d-flex align-items-center justify-content-between')}>
-        {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
+    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow, 'd-flex': paramLabel == 'Tooltip' })}>
+      <div
+        className={cx('d-flex justify-content-between')}
+        style={{
+          marginRight: paramLabel == 'Tooltip' && '40px',
+          alignItems: paramLabel == 'Tooltip' ? 'flex-start' : 'center',
+        }}
+      >
         {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'label-hinter-margin' : 'mb-0'} ${
                 darkMode && 'color-whitish-darkmode'
               }`}
+              // bold={!AllElements.hasOwnProperty(TypeMapping[type]) ? true : false}
             />
           </div>
         )}
@@ -413,21 +434,24 @@ export function CodeHinter({
             className="d-flex align-items-center"
           >
             <div className="col-auto pt-0 fx-common">
-              {paramLabel !== 'Type' && (
-                <FxButton
-                  active={codeShow}
-                  onPress={() => {
-                    if (codeShow) {
-                      setForceCodeBox(false);
-                      onFxPress(false);
-                    } else {
-                      setForceCodeBox(true);
-                      onFxPress(true);
-                    }
-                  }}
-                  dataCy={cyLabel}
-                />
-              )}
+              {paramLabel !== 'Type' &&
+                paramLabel !== ' ' &&
+                paramLabel !== 'Padding' &&
+                paramLabel !== 'Width' && ( //add some key if these extends
+                  <FxButton
+                    active={codeShow}
+                    onPress={() => {
+                      if (codeShow) {
+                        setForceCodeBox(false);
+                        onFxPress(false);
+                      } else {
+                        setForceCodeBox(true);
+                        onFxPress(true);
+                      }
+                    }}
+                    dataCy={cyLabel}
+                  />
+                )}
             </div>
             {!codeShow && (
               <ElementToRender
@@ -435,6 +459,12 @@ export function CodeHinter({
                 onChange={(value) => {
                   if (value !== currentValue) {
                     onChange(value);
+                    setCurrentValue(value);
+                  }
+                }}
+                onVisibilityChange={(value) => {
+                  if (value !== currentValue) {
+                    onVisibilityChange(value);
                     setCurrentValue(value);
                   }
                 }}
@@ -446,6 +476,9 @@ export function CodeHinter({
                 }}
                 meta={fieldMeta}
                 cyLabel={cyLabel}
+                isIcon={isIcon}
+                staticText={staticText}
+                component={component}
               />
             )}
           </div>
@@ -453,15 +486,14 @@ export function CodeHinter({
       </div>
       <div
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''} custom-row`}
-        style={{ width: width, display: codeShow ? 'flex' : 'none' }}
+        style={{ width: paramLabel == 'Tooltip' ? '100%' : width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`}>
           <div className="d-flex">
-            <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div>
             <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
               <div
                 className={`${defaultClassName} ${className || 'codehinter-default-input'} ${
-                  resolvingError && 'border-danger'
+                  paramName && resolvingError && 'border-danger'
                 }`}
                 key={componentName}
                 style={{
@@ -470,6 +502,7 @@ export function CodeHinter({
                   maxHeight: '320px',
                   overflow: 'auto',
                   fontSize: ' .875rem',
+                  maxWidth: paramLabel == 'Tooltip' && '190px',
                 }}
                 data-cy={`${cyLabel}-input-field`}
               >

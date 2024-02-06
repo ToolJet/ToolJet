@@ -143,6 +143,18 @@ async function executeRunPycode(_ref, code, query, isPreview, mode, currentState
         currentState.queries[key] = {
           ...currentState.queries[key],
           run: () => actions.runQuery(key),
+
+          getData: () => {
+            return getCurrentState().queries[key].data;
+          },
+
+          getRawData: () => {
+            return getCurrentState().queries[key].rawData;
+          },
+
+          getloadingState: () => {
+            return getCurrentState().queries[key].isLoading;
+          },
         };
       }
 
@@ -326,7 +338,8 @@ export async function runTransformation(
 }
 
 export async function executeActionsForEventId(_ref, eventId, events = [], mode, customVariables) {
-  const filteredEvents = events.filter((event) => event?.event.eventId === eventId);
+  if (!events || events.length === 0) return;
+  const filteredEvents = events?.filter((event) => event?.event.eventId === eventId)?.sort((a, b) => a.index - b.index);
 
   for (const event of filteredEvents) {
     await executeAction(_ref, event.event, mode, customVariables); // skipcq: JS-0032
@@ -385,16 +398,24 @@ function logoutAction() {
 }
 
 function debounce(func) {
-  let timer;
+  const timers = new Map();
+
   return (...args) => {
     const event = args[1] || {};
+    const eventId = uuidv4();
+
     if (event.debounce === undefined) {
       return func.apply(this, args);
     }
-    clearTimeout(timer);
-    timer = setTimeout(() => {
+
+    clearTimeout(timers.get(eventId));
+
+    const timer = setTimeout(() => {
       func.apply(this, args);
+      timers.delete(eventId);
     }, Number(event.debounce));
+
+    timers.set(eventId, timer);
   };
 }
 
@@ -536,6 +557,12 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         });
       }
 
+      case 'get-custom-variable': {
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const customAppVariables = { ...getCurrentState().variables };
+        return customAppVariables[key];
+      }
+
       case 'unset-custom-variable': {
         const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
@@ -558,6 +585,14 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
             variables: customPageVariables,
           },
         });
+      }
+
+      case 'get-page-variable': {
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const customPageVariables = {
+          ...getCurrentState().page.variables,
+        };
+        return customPageVariables[key];
       }
 
       case 'unset-page-variable': {
@@ -1255,7 +1290,6 @@ export function computeComponentState(components = {}) {
 
       const { component } = components[key];
       const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component === comp.component));
-
       const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
       const existingValues = currentComponents[existingComponentName];
 
@@ -1877,8 +1911,15 @@ export const buildComponentMetaDefinition = (components = {}) => {
 
     const mergedDefinition = {
       ...componentMeta.definition,
-
-      properties: _.merge(componentMeta.definition.properties, currentComponentData?.component.definition.properties),
+      properties: _.mergeWith(
+        componentMeta.definition.properties,
+        currentComponentData?.component?.definition?.properties,
+        (objValue, srcValue) => {
+          if (currentComponentData?.component?.component === 'Table' && _.isArray(objValue)) {
+            return srcValue;
+          }
+        }
+      ),
       styles: _.merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
       generalStyles: _.merge(
         componentMeta.definition.generalStyles,

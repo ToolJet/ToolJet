@@ -37,6 +37,7 @@ import 'jspdf-autotable';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 // eslint-disable-next-line import/no-unresolved
 import { IconEyeOff } from '@tabler/icons-react';
+// eslint-disable-next-line import/no-unresolved
 import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -392,15 +393,21 @@ export function Table({
     dynamicColumn = useDynamicColumn
       ? resolveReferences(component.definition.properties?.columnData?.value, currentState, []) ?? []
       : [];
-    if (!Array.isArray(tableData)) tableData = [];
+    if (!Array.isArray(tableData)) {
+      tableData = [];
+    } else {
+      tableData = tableData.filter((data) => data !== null && data !== undefined);
+    }
   }
 
   tableData = tableData || [];
 
   const tableRef = useRef();
 
+  const columnProperties = useDynamicColumn ? generatedColumn : component.definition.properties.columns.value;
+
   let columnData = generateColumnsData({
-    columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
+    columnProperties,
     columnSizes,
     currentState,
     handleCellValueChange: handleExistingRowCellValueChange,
@@ -427,6 +434,32 @@ export function Table({
       }),
     [columnData, currentState]
   );
+
+  const transformations = columnProperties
+    .filter((column) => column.transformation && column.transformation != '{{cellValue}}')
+    .map((column) => ({
+      key: column.key ? column.key : column.name,
+      transformation: column.transformation,
+    }));
+
+  tableData = useMemo(() => {
+    return tableData.map((row) => ({
+      ...row,
+      ...Object.fromEntries(
+        transformations.map((t) => [
+          t.key,
+          resolveReferences(t.transformation, currentState, row[t.key], { cellValue: row[t.key], rowData: row }),
+        ])
+      ),
+    }));
+  }, [JSON.stringify([transformations, currentState])]);
+
+  useEffect(() => {
+    setExposedVariables({
+      currentData: tableData,
+      updatedData: tableData,
+    });
+  }, [JSON.stringify(tableData)]);
 
   const columnDataForAddNewRows = generateColumnsData({
     columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
@@ -507,7 +540,7 @@ export function Table({
       }
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
-  }, [tableData.length, component.definition.properties.data.value, JSON.stringify(properties.data)]);
+  }, [tableData.length, component.definition.properties.data.value, JSON.stringify([properties.data, tableData])]);
 
   useEffect(() => {
     if (
@@ -621,7 +654,7 @@ export function Table({
             Cell: ({ row }) => {
               return (
                 <div className="d-flex flex-column align-items-center">
-                  <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+                  <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} fireEvent={fireEvent} />
                 </div>
               );
             },
@@ -711,6 +744,7 @@ export function Table({
       }
     });
   }, [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]);
+
   useEffect(() => {
     setExposedVariable('discardNewlyAddedRows', async function () {
       if (
@@ -878,6 +912,11 @@ export function Table({
     //hack : in the initial render, data is undefined since, upon feeding data to the table from some query, query inside current state is {}. Hence we added data in the dependency array, now question is should we add data or rows?
   }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
 
+  const pageData = page.map((row) => row.original);
+  useEffect(() => {
+    setExposedVariable('currentPageData', pageData);
+  }, [JSON.stringify(pageData)]);
+
   function downlaodPopover() {
     const options = [
       { dataCy: 'option-download-CSV', text: 'Download as CSV', value: 'csv' },
@@ -1008,7 +1047,6 @@ export function Table({
             )}
             {showFilterButton && !loadingState && (
               <div className="position-relative">
-                {''}
                 <Tooltip id="tooltip-for-filter-data" className="tooltip" />
                 <ButtonSolid
                   variant="tertiary"
@@ -1067,9 +1105,9 @@ export function Table({
                 setGlobalFilter={setGlobalFilter}
                 onComponentOptionChanged={onComponentOptionChanged}
                 component={component}
-                onEvent={onEvent}
                 darkMode={darkMode}
-                tableEvents={tableEvents}
+                setExposedVariable={setExposedVariable}
+                fireEvent={fireEvent}
               />
             )}
           </div>
@@ -1678,20 +1716,19 @@ export function Table({
           </div>
         </div>
       )}
-      {tableDetails.filterDetails.filtersVisible && (
-        <Filter
-          hideFilters={hideFilters}
-          filters={tableDetails.filterDetails.filters}
-          columns={columnData.map((column) => {
-            return { name: column.Header, value: column.id };
-          })}
-          mergeToFilterDetails={mergeToFilterDetails}
-          filterDetails={tableDetails.filterDetails}
-          darkMode={darkMode}
-          setAllFilters={setAllFilters}
-          fireEvent={fireEvent}
-        />
-      )}
+      <Filter
+        hideFilters={hideFilters}
+        filters={tableDetails.filterDetails.filters}
+        columns={columnData.map((column) => {
+          return { name: column.Header, value: column.id };
+        })}
+        mergeToFilterDetails={mergeToFilterDetails}
+        filterDetails={tableDetails.filterDetails}
+        darkMode={darkMode}
+        setAllFilters={setAllFilters}
+        fireEvent={fireEvent}
+        setExposedVariable={setExposedVariable}
+      />
       {tableDetails.addNewRowsDetails.addingNewRows && (
         <AddNewRowComponent
           hideAddNewRowPopup={hideAddNewRowPopup}

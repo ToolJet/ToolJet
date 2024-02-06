@@ -68,9 +68,8 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
-import WidgetIcon from '@/../assets/images/icons/widgets';
 
-const AllComponents = {
+export const AllComponents = {
   Button,
   Image,
   Text,
@@ -149,14 +148,15 @@ export const Box = memo(
     sideBarDebugger,
     readOnly,
     childComponents,
+    isResizing,
+    adjustHeightBasedOnAlignment,
+    currentLayout,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
-
     let styles = {
       height: '100%',
-      padding: '1px',
     };
 
     if (inCanvas) {
@@ -279,6 +279,7 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
+    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput'];
 
     return (
       <OverlayTrigger
@@ -320,7 +321,12 @@ export const Box = memo(
               canvasWidth={canvasWidth}
               properties={validatedProperties}
               exposedVariables={exposedVariables}
-              styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
+              styles={{
+                ...validatedStyles,
+                ...(!shouldAddBoxShadow.includes(component.component)
+                  ? { boxShadow: validatedGeneralStyles?.boxShadow }
+                  : {}),
+              }}
               setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
               setExposedVariables={(variableSet) =>
                 onComponentOptionsChanged(component, Object.entries(variableSet), id)
@@ -338,6 +344,9 @@ export const Box = memo(
               resetComponent={() => setResetStatus(true)}
               childComponents={childComponents}
               dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
+              isResizing={isResizing}
+              adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
+              currentLayout={currentLayout}
             ></ComponentToRender>
           ) : (
             <></>

@@ -5,6 +5,9 @@ import * as ToggleGroup from '@radix-ui/react-toggle-group';
 
 const ToggleGroup1 = ({ children, className, onValueChange, defaultValue, ...restProps }) => {
   const [value, setValue] = React.useState(defaultValue);
+  React.useEffect(() => {
+    setValue(defaultValue);
+  }, [defaultValue]);
   return (
     <ToggleGroup.Root
       className={`ToggleGroup ${className}`}

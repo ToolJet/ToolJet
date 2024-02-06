@@ -156,7 +156,7 @@ class HomePageComponent extends React.Component {
     _self.setState({ renamingApp: true });
     try {
       await appsService.saveApp(appId, { name: newAppName });
-      await this.fetchApps();
+      await this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
       toast.success('App name has been updated!');
       _self.setState({ renamingApp: false });
       return true;
@@ -878,15 +878,15 @@ class HomePageComponent extends React.Component {
                 />
               )}
             </div>
-            <TemplateLibraryModal
-              show={this.state.showTemplateLibraryModal}
-              onHide={() => this.setState({ showTemplateLibraryModal: false })}
-              onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
-              darkMode={this.props.darkMode}
-              openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
-              appCreationDisabled={!this.canCreateApp()}
-            />
           </div>
+          <TemplateLibraryModal
+            show={this.state.showTemplateLibraryModal}
+            onHide={() => this.setState({ showTemplateLibraryModal: false })}
+            onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
+            darkMode={this.props.darkMode}
+            openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
+            appCreationDisabled={!this.canCreateApp()}
+          />
         </div>
       </Layout>
     );
