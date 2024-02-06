@@ -66,7 +66,10 @@ export class TooljetDbBulkUploadService {
           idstoUpdate.add(row.id);
           rowsToUpdate.push(row);
         } else {
-          rowsToInsert.push(row);
+          // TODO: Revise logic for primary key instead of hardcoded id column
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { id, ...rowWithoutId } = row;
+          rowsToInsert.push(rowWithoutId);
         }
       })
       .on('error', (error) => {
