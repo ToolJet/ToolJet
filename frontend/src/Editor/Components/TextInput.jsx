@@ -18,6 +18,7 @@ export const TextInput = function TextInput({
   dataCy,
   isResizing,
   adjustHeightBasedOnAlignment,
+  currentLayout,
 }) {
   const textInputRef = useRef();
   const labelRef = useRef();
@@ -61,7 +62,7 @@ export const TextInput = function TextInput({
         ? '#4C5155'
         : '#D7DBDF'
       : borderColor,
-    backgroundColor: isFocused ? 'red' : darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
+    backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
     boxShadow:
       boxShadow !== '0px 0px 0px 0px #00000040' ? boxShadow : isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
     padding: styles.iconVisibility
@@ -99,6 +100,10 @@ export const TextInput = function TextInput({
     direction,
     alignment,
   ]);
+
+  useEffect(() => {
+    setExposedVariable('label', label);
+  }, [label]);
 
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
@@ -169,7 +174,7 @@ export const TextInput = function TextInput({
     if (alignment == 'top' && label?.length > 0) adjustHeightBasedOnAlignment(true);
     else adjustHeightBasedOnAlignment(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length]);
+  }, [alignment, label?.length, currentLayout]);
 
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
