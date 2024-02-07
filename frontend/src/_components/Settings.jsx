@@ -61,10 +61,10 @@ export default function Settings({ darkMode, checkForUnsavedChanges, featureAcce
           </LicenseTooltip>
         )}
         {admin && <div className="divider"></div>}
-        {superAdmin && (
+        {admin && (
           <Link
-            onClick={(event) => checkForUnsavedChanges('/instance-settings', event)}
-            to={'/instance-settings'}
+            onClick={(event) => checkForUnsavedChanges(getPrivateRoute('settings'), event)}
+            to={getPrivateRoute('settings')}
             className="dropdown-item tj-text-xsm"
             data-cy="instance-settings-option"
           >
@@ -83,8 +83,8 @@ export default function Settings({ darkMode, checkForUnsavedChanges, featureAcce
         )}
 
         <Link
-          onClick={(event) => checkForUnsavedChanges(getPrivateRoute('settings'), event)}
-          to={getPrivateRoute('settings')}
+          onClick={(event) => checkForUnsavedChanges(getPrivateRoute('account_settings'), event)}
+          to={getPrivateRoute('account_settings')}
           className="dropdown-item tj-text-xsm"
           data-cy="profile-settings"
         >

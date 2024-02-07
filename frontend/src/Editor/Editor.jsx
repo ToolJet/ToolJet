@@ -48,7 +48,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { retrieveWhiteLabelText, getWorkspaceId, pageTitles } from '@/_helpers/utils';
+import { retrieveWhiteLabelText, getWorkspaceId, pageTitles, fetchAndSetWindowTitle } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -72,7 +72,6 @@ import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import { getQueryParams } from '@/_helpers/routes';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
-import { fetchAndSetWindowTitle } from '@/_helpers/utils';
 
 setAutoFreeze(false);
 enablePatches();

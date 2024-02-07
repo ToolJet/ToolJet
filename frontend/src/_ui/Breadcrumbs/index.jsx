@@ -39,7 +39,7 @@ const routes = [
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/data-sources', breadcrumb: 'Data sources' },
   { path: '/:worspace_id/workspace-constants', breadcrumb: 'Workspace constants' },
-  { path: '/:worspace_id/settings', breadcrumb: ' ' },
+  { path: '/:worspace_id/settings', breadcrumb: 'Settings' },
   { path: '/integrations', breadcrumb: 'Integrations / plugins', props: { beta: true } },
   { path: '/license', breadcrumb: 'Enterprise Edition' },
   { path: '/instance-settings/all-users', breadcrumb: 'Settings' },

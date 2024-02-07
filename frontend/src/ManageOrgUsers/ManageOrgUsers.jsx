@@ -11,8 +11,7 @@ import posthog from 'posthog-js';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ManageOrgUsersDrawer from './ManageOrgUsersDrawer';
 import { LicenseBannerCloud } from '@/LicenseBannerCloud';
-import { getDateDifferenceInDays } from '@/_helpers/utils';
-import { USER_DRAWER_MODES } from '@/_helpers/utils';
+import { getDateDifferenceInDays, USER_DRAWER_MODES } from '@/_helpers/utils';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
