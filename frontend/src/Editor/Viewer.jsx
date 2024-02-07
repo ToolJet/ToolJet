@@ -653,7 +653,7 @@ class ViewerComponent extends React.Component {
                       <ViewerSidebarNavigation
                         isMobileDevice={this.props.currentLayout === 'mobile'}
                         canvasBackgroundColor={this.computeCanvasBackgroundColor()}
-                        pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                        pages={pages}
                         currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                         switchPage={this.switchPage}
                         darkMode={this.props.darkMode}
