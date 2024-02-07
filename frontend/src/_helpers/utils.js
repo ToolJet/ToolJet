@@ -633,7 +633,6 @@ export const setFaviconAndTitle = (whiteLabelFavicon, whiteLabelText, location) 
     'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
     integrations: pageTitles.INTEGRATIONS,
     workflows: pageTitles.WORKFLOWS,
-    database: pageTitles.DATABASE,
     'data-sources': pageTitles.DATA_SOURCES,
     'audit-logs': pageTitles.AUDIT_LOGS,
     'account-settings': pageTitles.ACCOUNT_SETTINGS,

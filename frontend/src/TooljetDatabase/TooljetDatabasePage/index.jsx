@@ -14,6 +14,8 @@ import { toast } from 'react-hot-toast';
 import { isEmpty } from 'lodash';
 import { tooljetDatabaseService } from '@/_services';
 import { pluralize } from '@/_helpers/utils';
+import { fetchAndSetWindowTitle } from '@/_helpers/utils';
+import { pageTitles } from '@/_helpers/utils';
 
 const TooljetDatabasePage = ({ totalTables }) => {
   const {
@@ -46,6 +48,10 @@ const TooljetDatabasePage = ({ totalTables }) => {
     handleFileValidation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bulkUploadFile]);
+
+  useEffect(() => {
+    fetchAndSetWindowTitle({ page: `${selectedTable?.table_name || pageTitles.DATABASE}` });
+  }, [selectedTable]);
 
   useEffect(() => {
     if (!isBulkUploadDrawerOpen) {
