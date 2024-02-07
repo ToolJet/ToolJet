@@ -6918,7 +6918,6 @@ tbody {
 
   .table-cell-hover-background {
     background-color: #F8F9FA;
-    border-width: 0px 1px 1px 1px;
     padding: 0rem;
     max-width: 230px;
 
@@ -6931,7 +6930,6 @@ tbody {
 
   .table-cell-hover-background-dark {
     background-color: #242f3c;
-    border-width: 0px 1px 1px 1px;
     padding: 0rem;
     max-width: 230px;
 
@@ -6964,13 +6962,20 @@ tbody {
     border-color: var(--Tomato-09, #E54D2E) !important;
   }
 
+  .tjdb-column-select-border {
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
+  }
+
   .table-columnHeader-click {
     background-color: #F8F9FA;
-    border-left: 1.5px solid #3E63DD !important;
-    border-right: 1.5px solid #3E63DD !important;
-    border-width: 0px 1px 1px 1px;
     padding: 0;
     max-width: 230px;
+
+    .tjdb-column-select-border {
+      border-left-color: #3E63DD !important;
+      border-right-color: #3E63DD !important;
+    }
 
     input.form-control {
       border: none;
@@ -6981,11 +6986,13 @@ tbody {
 
   .table-columnHeader-click-dark {
     background-color: #242f3c;
-    border-left: 1.5px solid white !important;
-    border-right: 1.5px solid white !important;
-    border-width: 0px 1px 1px 1px;
     padding: 0;
     max-width: 230px;
+
+    .tjdb-column-select-border {
+      border-left-color: white !important;
+      border-right-color: white !important;
+    }
 
     input.form-control {
       border: none;
@@ -6995,22 +7002,38 @@ tbody {
   }
 
   .row-tj:first-child {
+    .tjdb-column-select-border {
+      border-top: 1px solid transparent;
+    }
+
     .table-columnHeader-click {
-      border-top: 1.5px solid #3E63DD !important;
+      .tjdb-column-select-border {
+        border-top-color: #3E63DD !important;
+      }
     }
 
     .table-columnHeader-click-dark {
-      border-top: 1.5px solid white !important;
+      .tjdb-column-select-border {
+        border-top-color: white !important;
+      }
     }
   }
 
   .row-tj:last-of-type {
+    .tjdb-column-select-border {
+      border-bottom: 1px solid transparent;
+    }
+
     .table-columnHeader-click {
-      border-bottom: 1.5px solid #3E63DD !important;
+      .tjdb-column-select-border {
+        border-bottom-color: #3E63DD !important;
+      }
     }
 
     .table-columnHeader-click-dark {
-      border-bottom: 1.5px solid white !important;
+      .tjdb-column-select-border {
+        border-bottom-color: white !important;
+      }
     }
   }
 
