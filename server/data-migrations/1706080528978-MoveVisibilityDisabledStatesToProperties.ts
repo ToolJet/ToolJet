@@ -1,21 +1,35 @@
 import { Component } from 'src/entities/component.entity';
-import { In, MigrationInterface, QueryRunner } from 'typeorm';
+import { processDataInBatches } from 'src/helpers/utils.helper';
+import { EntityManager, In, MigrationInterface, QueryRunner } from 'typeorm';
 
-export class MoveVisibilityDisabledStatesToProperties1706080528978 implements MigrationInterface {
+export class MoveVisibilityDisabledStatesToProperties1706080528991 implements MigrationInterface {
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Array of component types to be enhanced
     const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'Text', 'DropDown'];
-
+    const batchSize = 100; // Number of apps to migrate at a time
     // Obtaining the TypeORM EntityManager from the QueryRunner
     const entityManager = queryRunner.manager;
 
-    // Retrieving components of specified types from the database
-    const components = await entityManager.find(Component, {
-      where: { type: In(componentTypes) }, // Filtering by component types
-      order: { createdAt: 'ASC' }, // Ordering components by creation date in ascending order
-    });
+    for (const componentType of componentTypes) {
+      await processDataInBatches(
+        entityManager,
+        async (entityManager: EntityManager) => {
+          return await entityManager.find(Component, {
+            where: { type: componentType }, // Filtering by component types
+            order: { createdAt: 'ASC' }, // Ordering components by creation date in ascending order
+          });
+        },
+        async (entityManager: EntityManager, components: Component[]) => {
+          await this.processUpdates(entityManager, components);
+        },
+        batchSize
+      );
+    }
+  }
 
-    // Iterating through each retrieved component
+  private async processUpdates(entityManager, components) {
+    console.log(components, "components")
     for (const component of components) {
       // Extracting properties and styles from the component
       const properties = component.properties;
@@ -43,7 +57,8 @@ export class MoveVisibilityDisabledStatesToProperties1706080528978 implements Mi
       // Updating the component in the database with the modified properties and styles
       await entityManager.update(Component, component.id, { properties, styles, general });
     }
+
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> { }
 }
