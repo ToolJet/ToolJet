@@ -176,7 +176,12 @@ export const Modal = function Modal({
   }, [closeOnClickingOutside, parentRef]);
 
   return (
-    <div className="container" data-disabled={disabledState} data-cy={dataCy}>
+    <div
+      className="container d-flex align-items-center"
+      data-disabled={disabledState}
+      data-cy={dataCy}
+      style={{ height }}
+    >
       {useDefaultButton && (
         <button
           disabled={disabledState}
