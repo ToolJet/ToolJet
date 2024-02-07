@@ -777,7 +777,7 @@ export default function DragContainer({
           middle: true,
         }}
         snapThreshold={5}
-        // elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
+        elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
         isDisplaySnapDigit={false}
         // snapGridWidth={gridWidth}
         bounds={{ left: 0, top: 0, right: 0, bottom: 0, position: 'css' }}
