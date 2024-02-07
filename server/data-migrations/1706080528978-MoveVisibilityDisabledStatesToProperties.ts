@@ -2,7 +2,7 @@ import { Component } from 'src/entities/component.entity';
 import { processDataInBatches } from 'src/helpers/utils.helper';
 import { EntityManager, In, MigrationInterface, QueryRunner } from 'typeorm';
 
-export class MoveVisibilityDisabledStatesToProperties1706080528991 implements MigrationInterface {
+export class MoveVisibilityDisabledStatesToProperties1706080528992 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Array of component types to be enhanced
@@ -29,7 +29,6 @@ export class MoveVisibilityDisabledStatesToProperties1706080528991 implements Mi
   }
 
   private async processUpdates(entityManager, components) {
-    console.log(components, "components")
     for (const component of components) {
       // Extracting properties and styles from the component
       const properties = component.properties;
