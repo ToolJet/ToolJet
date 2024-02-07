@@ -33,18 +33,19 @@ const Table = ({ collapseSidebar }) => {
     columns,
     selectedTable,
     selectedTableData,
-    setSelectedTableData,
     setColumns,
-    setTotalRecords,
+    queryFilters,
     setQueryFilters,
+    sortFilters,
     setSortFilters,
     resetAll,
     pageSize,
     pageCount,
+    handleRefetchQuery,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
-  const [loading, setLoading] = useState(false);
+  const [loading, _setLoading] = useState(false);
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [editColumnHeader, setEditColumnHeader] = useState({
@@ -140,23 +141,6 @@ const Table = ({ collapseSidebar }) => {
     } else {
       setColumns([]);
     }
-  };
-
-  const fetchTableData = (queryParams = '', pagesize = 50, pagecount = 1) => {
-    const defaultQueryParams = `limit=${pagesize}&offset=${(pagecount - 1) * pagesize}&order=id.desc`;
-    let params = queryParams ? queryParams : defaultQueryParams;
-    setLoading(true);
-
-    tooljetDatabaseService.findOne(organizationId, selectedTable.id, params).then(({ headers, data = [], error }) => {
-      setLoading(false);
-      if (error) {
-        toast.error(error?.message ?? `Error fetching table "${selectedTable.table_name}" data`);
-        return;
-      }
-      const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
-      setTotalRecords(totalContentRangeRecords);
-      setSelectedTableData(data);
-    });
   };
 
   const onSelectedTableChange = () => {
@@ -422,7 +406,7 @@ const Table = ({ collapseSidebar }) => {
         }
 
         toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable.table_name}"`);
-        fetchTableData();
+        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
         setSelectedRowIds({});
       } else {
         toast.error('Something went wrong - Record Id is incorrect');
@@ -506,21 +490,7 @@ const Table = ({ collapseSidebar }) => {
       return;
     }
 
-    const limit = pageSize;
-    const pageRange = `${(pageCount - 1) * pageSize + 1}`;
-    tooljetDatabaseService
-      .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}&offset=${pageRange - 1}`)
-      .then(({ headers, data = [], error }) => {
-        if (error) {
-          toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
-          return;
-        }
-        if (Array.isArray(data) && data?.length > 0) {
-          const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
-          setTotalRecords(totalContentRangeRecords);
-          setSelectedTableData(data);
-        }
-      });
+    handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
     setEditPopover(false);
     handleOnCloseEditMenu();
     setCellClick((prev) => ({
