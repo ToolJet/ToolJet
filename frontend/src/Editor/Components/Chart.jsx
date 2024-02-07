@@ -49,11 +49,13 @@ export const Chart = function Chart({
 
   const chartType = type;
 
-  const isDescriptionJson = isJson(jsonDescription);
+  const jsonData = typeof jsonDescription === 'object' ? JSON.stringify(jsonDescription) : jsonDescription;
 
-  const jsonChartData = isDescriptionJson ? JSON.parse(jsonDescription).data : [];
+  const isDescriptionJson = plotFromJson ? isJson(jsonData) : false;
 
-  const chartLayout = isDescriptionJson ? JSON.parse(jsonDescription).layout ?? {} : {};
+  const jsonChartData = isDescriptionJson ? JSON.parse(jsonData).data : [];
+
+  const chartLayout = isDescriptionJson ? JSON.parse(jsonData).layout ?? {} : {};
 
   const updatedBgColor = ['#fff', '#ffffff'].includes(backgroundColor)
     ? darkMode
