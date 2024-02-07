@@ -19,6 +19,7 @@ const initialState = {
     hints: {},
     resolvedRefs: {},
   },
+  componentDefaultValues: {},
 };
 
 export const useResolveStore = create(
@@ -37,9 +38,18 @@ export const useResolveStore = create(
         const hints = createJavaScriptSuggestions();
         set(() => ({ suggestions: { ...get().suggestions, jsHints: hints } }));
       },
+
+      updateComponentDefaultValues: (componentDefaultValues) => {
+        set(() => ({ componentDefaultValues }));
+      },
+
+      getDefaultComponentValue: (componentName) => {
+        const { componentDefaultValues } = get();
+        return componentDefaultValues[componentName];
+      },
     },
   }),
   { name: 'Resolver Store' }
 );
 
-export const useResolverStoreActions = useResolveStore.getState().actions;
+export const useResolverStoreActions = () => useResolveStore.getState().actions;

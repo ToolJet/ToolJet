@@ -206,7 +206,7 @@ const PreviewContainer = ({ children, isFocused, enablePreview, ...restProps }) 
                   </span>
                 </div>
                 <div class="p-2 pt-0">
-                  <PreviewBox.CodeBlock code={validationSchema?.expectedValue} />
+                  <PreviewBox.CodeBlock code={validationSchema?.expectedValue} isExpectValue={true} />
                 </div>
               </div>
             </Card.Body>
@@ -227,6 +227,8 @@ const PreviewContainer = ({ children, isFocused, enablePreview, ...restProps }) 
               className="p-1"
               style={{
                 minHeight: '60px',
+                maxHeight: '100px',
+                overflowY: 'auto',
               }}
             >
               <PreviewBox isFocused={isFocused} setErrorMessage={setErrorMessage} {...restProps} />
@@ -251,9 +253,24 @@ const PreviewContainer = ({ children, isFocused, enablePreview, ...restProps }) 
   );
 };
 
-const PreviewCodeBlock = ({ code }) => {
+const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
+  let preview = code.trim();
+  const shouldTrim = code.length > 10;
+
+  if (isExpectValue && shouldTrim) {
+    preview = code.substring(0, 10) + '...' + code.substring(code.length - 2, code.length);
+  }
+
+  let prettyPrintedJson = null;
+
+  try {
+    prettyPrintedJson = JSON.stringify(JSON.parse(preview), null, 2);
+  } catch (e) {
+    prettyPrintedJson = preview;
+  }
+
   return (
-    <code
+    <pre
       className="text-secondary"
       style={{
         whiteSpace: 'pre-wrap',
@@ -268,10 +285,11 @@ const PreviewCodeBlock = ({ code }) => {
         width: '100%',
         fontSize: '12px',
         overflowY: 'auto',
+        padding: '0',
       }}
     >
-      {code}
-    </code>
+      {prettyPrintedJson}
+    </pre>
   );
 };
 

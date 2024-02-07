@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import CodeEditor from '@/Editor/CodeEditor';
+import { useResolverStoreActions } from '@/_stores/resolverStore';
 
 const CLIENT_SERVER_TOGGLE_FIELDS = ['serverSidePagination', 'serverSideSort', 'serverSideFilter'];
 
@@ -80,6 +81,17 @@ export const Code = ({
   const getfieldName = React.useMemo(() => {
     return param.name;
   }, [param]);
+
+  const { getDefaultComponentValue } = useResolverStoreActions();
+
+  // getDefaultComponentValue(component?.component?.component);
+
+  const defaultValue = paramMeta?.validation ? getDefaultComponentValue(component?.component?.component) : undefined;
+
+  if (paramMeta?.validation) {
+    paramMeta.validation.expectedValue = defaultValue[param.name];
+  }
+
   return (
     <div className={`field ${options.className}`} style={{ marginBottom: '20px' }}>
       <CodeEditor
