@@ -1,9 +1,9 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
-  fillDataSourceTextField,
-  selectAndAddDataSource,
-  fillConnectionForm,
+    fillDataSourceTextField,
+    selectAndAddDataSource,
+    fillConnectionForm,
 } from "Support/utils/postgreSql";
 import { commonText } from "Texts/common";
 import { addQuery, addQueryAndOpenEditor } from "Support/utils/dataSource";
@@ -13,11 +13,9 @@ import { addNewUser } from "Support/utils/onboarding";
 import { groupsSelector } from "Selectors/manageGroups";
 import { eeGroupsSelector } from "Selectors/eeCommon";
 import {
-  pinInspector,
-  createGroup,
-  logout,
-  navigateToAppEditor,
-  navigateToManageGroups,
+    logout,
+    navigateToAppEditor,
+    navigateToManageGroups,
 } from "Support/utils/common";
 import {
     verifyAndModifyParameter,
@@ -115,7 +113,7 @@ describe("Global Datasource Manager", () => {
 
         addQuery(
             "table_preview",
-            `SELECT * FROM Persons;`,
+            `SELECT * FROM persons;`,
             `cypress-${data.ds1}-postgresql`
         );
         cy.wait(500);
@@ -133,7 +131,7 @@ describe("Global Datasource Manager", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text1)
-        ).verifyVisibleElement("have.text", "four");
+        ).verifyVisibleElement("have.text", "Jane");
 
         cy.intercept("POST", "/api/data_queries/**").as("run");
         cy.get('[data-cy="show-ds-popover-button"]').click();
@@ -187,7 +185,7 @@ describe("Global Datasource Manager", () => {
 
         addQueryAndOpenEditor(
             "user_query",
-            `SELECT * FROM Persons;`,
+            `SELECT * FROM persons;`,
             `cypress-${data.ds1}-postgresql`,
             data.appName
         );
@@ -209,14 +207,14 @@ describe("Global Datasource Manager", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text3)
-        ).verifyVisibleElement("have.text", "four");
+        ).verifyVisibleElement("have.text", "Jane");
 
         cy.get('[data-cy="list-query-table_preview"]').click();
         cy.wait(500);
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text1)
-        ).verifyVisibleElement("have.text", "four");
+        ).verifyVisibleElement("have.text", "Jane");
 
         cy.get('[data-cy="list-query-restapi1"]').click();
         cy.wait(500);
@@ -284,7 +282,7 @@ describe("Global Datasource Manager", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text1)
-        ).verifyVisibleElement("have.text", "four");
+        ).verifyVisibleElement("have.text", "Jane");
 
         cy.get('[data-cy="list-query-restapi1"]').click();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
