@@ -143,6 +143,7 @@ export const verifyInvalidInvitationLink = () => {
 export const userSignUp = (fullName, email, workspaceName) => {
   let invitationLink;
   cy.visit("/");
+  cy.wait(1000);
   cy.get(commonSelectors.createAnAccountLink).realClick();
   cy.clearAndType(commonSelectors.nameInputField, fullName);
   cy.clearAndType(commonSelectors.emailInputField, email);
@@ -207,6 +208,8 @@ export const fetchAndVisitInviteLink = (email) => {
 export const inviteUser = (firstName, email) => {
   cy.userInviteApi(firstName, email);
   fetchAndVisitInviteLink(email);
+  cy.wait(1000)
+  cy.get(commonSelectors.passwordInputField).should("be.visible")
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.acceptInviteButton).click();
 };
