@@ -48,6 +48,6 @@ const routes = [
   { path: '/instance-settings/license', breadcrumb: 'Settings' },
   { path: '/:worspace_id/audit-logs', breadcrumb: ' ' },
   { path: '/settings', breadcrumb: 'Settings' },
-  { path: '/account-settings', breadcrumb: 'Account settings' },
+  { path: '/:worspace_id/account-settings', breadcrumb: ' ' },
   { path: '/:worspace_id/workflows', breadcrumb: 'Workflows', props: { beta: true } },
 ];

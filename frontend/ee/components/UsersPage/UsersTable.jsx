@@ -315,7 +315,11 @@ const GroupChipTD = ({ groups = [] }) => {
                     +{orderedArray.length - 1} more
                   </span>
                   {showAllGroups && (
-                    <div className="all-groups-list">{groups.map((group, index) => renderGroupChip(group, index))}</div>
+                    <div className="all-groups-wrapper">
+                      <div className="all-groups-list">
+                        {groups.map((group, index) => renderGroupChip(group, index))}
+                      </div>
+                    </div>
                   )}
                 </>
               );
