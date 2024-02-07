@@ -83,6 +83,7 @@ export const DropDown = function DropDown({
   exposedVariables,
   dataCy,
   adjustHeightBasedOnAlignment,
+  currentLayout,
 }) {
   let {
     label,
@@ -203,7 +204,7 @@ export const DropDown = function DropDown({
     if (alignment == 'top' && label) adjustHeightBasedOnAlignment(true);
     else adjustHeightBasedOnAlignment(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label]);
+  }, [alignment, label, currentLayout]);
 
   useEffect(() => {
     document.addEventListener('mousedown', handleOutsideClick);
@@ -281,7 +282,8 @@ export const DropDown = function DropDown({
   }, [properties.visibility, dropdownLoadingState, disabledState, isMandatory]);
 
   useEffect(() => {
-    setExposedVariable('options', selectOptions);
+    const _options = selectOptions?.map((selectOption) => ({ label: selectOption?.label, value: selectOption?.value }));
+    setExposedVariable('options', _options);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(selectOptions)]);
 
