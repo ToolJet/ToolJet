@@ -4,7 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace } from '@/_helpers/authorizeWorkspace';
 import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
-import { PrivateRoute, AdminRoute } from '@/_components';
+import { PrivateRoute, AdminRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
@@ -31,6 +31,8 @@ import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
+import { AppsRoute } from '@/Routes/AppsRoute';
+import { SwitchWorkspaceRoute } from '@/Routes/SwitchWorkspaceRoute';
 
 const AppWrapper = (props) => {
   return (
@@ -174,9 +176,9 @@ class AppComponent extends React.Component {
                 exact
                 path="/:workspaceId/apps/:slug/:pageHandle?/*"
                 element={
-                  <PrivateRoute>
+                  <AppsRoute componentType="editor">
                     <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
+                  </AppsRoute>
                 }
               />
               <Route
@@ -192,18 +194,18 @@ class AppComponent extends React.Component {
                 exact
                 path="/applications/:slug/:pageHandle?"
                 element={
-                  <PrivateRoute>
+                  <AppsRoute componentType="viewer">
                     <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
+                  </AppsRoute>
                 }
               />
               <Route
                 exact
                 path="/applications/:slug/versions/:versionId/:pageHandle?"
                 element={
-                  <PrivateRoute>
+                  <AppsRoute componentType="viewer">
                     <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
+                  </AppsRoute>
                 }
               />
               <Route
@@ -275,9 +277,9 @@ class AppComponent extends React.Component {
                 exact
                 path="/switch-workspace"
                 element={
-                  <PrivateRoute>
+                  <SwitchWorkspaceRoute>
                     <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
+                  </SwitchWorkspaceRoute>
                 }
               />
               <Route

@@ -1,4 +1,3 @@
-export * from './PrivateRoute';
 export * from './Pagination';
 export * from './ConfirmDialog';
 export * from './DarkModeToggle';
