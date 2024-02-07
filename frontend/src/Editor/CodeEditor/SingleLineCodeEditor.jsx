@@ -58,11 +58,16 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, portalProps?.isOpen]);
 
-  const renderPreview = () => {
-    if (!enablePreview) return null;
-
-    return (
-      <PreviewBox
+  const isWorkspaceVariable =
+    typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
+  return (
+    <div
+      ref={wrapperRef}
+      className="code-hinter-wrapper position-relative"
+      style={{ width: '100%', height: restProps?.lang === 'jsx' && '320px' }}
+    >
+      <PreviewBox.Container
+        enablePreview={enablePreview}
         currentValue={currentValue}
         isFocused={isFocused}
         componentName={componentName}
@@ -71,38 +76,29 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
         componentId={restProps?.componentId ?? null}
         fxActive={fxActive}
-      />
-    );
-  };
-
-  return (
-    <div
-      ref={wrapperRef}
-      className="code-hinter-wrapper position-relative"
-      style={{ width: '100%', height: restProps?.lang === 'jsx' && '320px' }}
-    >
-      <div className="code-editor-basic-wrapper d-flex">
-        <div className="codehinter-container w-100">
-          <SingleLineCodeEditor.Editor
-            currentValue={currentValue}
-            setCurrentValue={setCurrentValue}
-            hints={suggestions}
-            isFocused={isFocused}
-            setFocus={setIsFocused}
-            validationType={validation?.schema?.type}
-            onBlurUpdate={onChange}
-            error={errorStateActive}
-            cyLabel={restProps.cyLabel}
-            renderPreview={renderPreview}
-            portalProps={portalProps}
-            componentName={componentName}
-            fxActive={fxActive}
-            {...restProps}
-          />
-
-          {!portalProps?.isOpen && renderPreview()}
+        isWorkspaceVariable={isWorkspaceVariable}
+        errorStateActive={errorStateActive}
+      >
+        <div className="code-editor-basic-wrapper d-flex">
+          <div className="codehinter-container w-100">
+            <SingleLineCodeEditor.Editor
+              currentValue={currentValue}
+              setCurrentValue={setCurrentValue}
+              hints={suggestions}
+              isFocused={isFocused}
+              setFocus={setIsFocused}
+              validationType={validation?.schema?.type}
+              onBlurUpdate={onChange}
+              error={errorStateActive}
+              cyLabel={restProps.cyLabel}
+              portalProps={portalProps}
+              componentName={componentName}
+              fxActive={fxActive}
+              {...restProps}
+            />
+          </div>
         </div>
-      </div>
+      </PreviewBox.Container>
     </div>
   );
 };

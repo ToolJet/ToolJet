@@ -9,6 +9,7 @@ import usePortal from '@/_hooks/use-portal';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { isNumber } from 'lodash';
+import { Alert } from '@/_ui/Alert/Alert';
 
 const CODE_EDITOR_TYPE = {
   fxEditor: SingleLineCodeEditor.EditorBridge,
@@ -113,8 +114,25 @@ const PopupIcon = ({ callback, icon, tip, position, isMultiEditor = false }) => 
   );
 };
 
+const DepericatedAlertForWorkspaceVariable = ({ text }) => {
+  return (
+    <Alert
+      svg="tj-info-warning"
+      cls="codehinter workspace-variables-alert-banner p-1 mb-0 mt-2"
+      data-cy={``}
+      imgHeight={18}
+      imgWidth={18}
+    >
+      <div className="d-flex align-items-center">
+        <div class="">{text}</div>
+      </div>
+    </Alert>
+  );
+};
+
 CodeHinter.Portal = Portal;
 CodeHinter.PopupIcon = PopupIcon;
+CodeHinter.DepericatedAlert = DepericatedAlertForWorkspaceVariable;
 
 CodeHinter.propTypes = {
   type: PropTypes.string.isRequired,
