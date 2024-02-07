@@ -1398,7 +1398,6 @@ export const widgets = [
       width: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'number' } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
@@ -1677,7 +1676,6 @@ export const widgets = [
       width: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'number' } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
@@ -1969,7 +1967,6 @@ export const widgets = [
       width: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'number' } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
