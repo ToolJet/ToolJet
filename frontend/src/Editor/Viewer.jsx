@@ -646,6 +646,7 @@ class ViewerComponent extends React.Component {
                   <div className="areas d-flex flex-rows">
                     {appDefinition?.showViewerNavigation && (
                       <ViewerSidebarNavigation
+                        showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
                         isMobileDevice={this.props.currentLayout === 'mobile'}
                         canvasBackgroundColor={this.computeCanvasBackgroundColor()}
                         pages={Object.entries(this.state.appDefinition?.pages) ?? []}
