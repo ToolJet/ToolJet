@@ -134,6 +134,7 @@ const EditorComponent = (props) => {
     currentAppEnvironment,
     currentAppEnvironmentId,
     featureAccess,
+    loadModules,
   } = useEditorStore(
     (state) => ({
       appDefinition: state.appDefinition,
@@ -150,6 +151,7 @@ const EditorComponent = (props) => {
       currentAppEnvironment: state.currentAppEnvironment,
       currentAppEnvironmentId: state.currentAppEnvironmentId,
       featureAccess: state.featureAccess,
+      loadModules: state.actions.loadModules,
     }),
     shallow
   );
@@ -508,8 +510,10 @@ const EditorComponent = (props) => {
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
     await fetchEnvironments();
-
     await fetchAndInjectCustomStyles();
+
+    loadModules();
+
     initComponentVersioning();
     initRealtimeSave();
     initEventListeners();

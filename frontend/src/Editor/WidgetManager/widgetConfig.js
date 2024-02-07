@@ -5911,8 +5911,43 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     description: 'Module',
     component: 'Module',
     defaultSize: {
-      width: 5,
-      height: 150,
+      width: 10,
+      height: 400,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      moduleAppId: {
+        type: 'code',
+        displayName: 'Module App Id',
+      },
+    },
+    events: {},
+    styles: {},
+    exposedVariables: {},
+    actions: [],
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {},
+      events: [],
+      styles: {
+        backgroundColor: { value: '#fff' },
+      },
+    },
+  },
+  {
+    name: 'ModuleContainer',
+    displayName: 'Module Container',
+    description: 'Module Container',
+    component: 'ModuleContainer',
+    defaultSize: {
+      width: 10,
+      height: 400,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -5930,7 +5965,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       properties: {},
       events: [],
-      styles: {},
+      styles: {
+        backgroundColor: { value: '#fff' },
+      },
     },
   },
 ];

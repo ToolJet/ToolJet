@@ -7,4 +7,5 @@ export const restrictedWidgetsObj = {
   Tabs: ['Calendar', 'Kanban'],
   Kanban_popout: ['Calendar', 'Kanban'],
   Listview: ['Calendar', 'Kanban'],
+  ModuleContainer: [],
 };

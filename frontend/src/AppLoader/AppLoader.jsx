@@ -15,6 +15,7 @@ const AppLoaderComponent = (props) => {
 
   if (appType === 'front-end') return <AppBuilder {...props} />;
   else if (appType === 'workflow') return <WorkflowEditor {...props} />;
+  else if (appType === 'module') return <AppBuilder {...props} moduleMode={true} />;
 };
 
 const AppBuilder = React.memo((props) => {

@@ -1023,7 +1023,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
 export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', parameters = {}) {
   const query = useSuperStore
     .getState()
-    .modules[_ref.moduleName].useQueriesDataStore.getState()
+    .modules[_ref.moduleName].useDataQueriesStore.getState()
     .dataQueries.find((query) => query.id === queryId);
 
   const queryEvents = useSuperStore
@@ -1801,7 +1801,8 @@ export const addNewWidgetToTheEditor = (
   shouldSnapToGrid,
   zoomLevel,
   isInSubContainer = false,
-  addingDefault = false
+  addingDefault = false,
+  moduleInfo
 ) => {
   const componentMetaData = _.cloneDeep(componentMeta);
   const componentData = _.cloneDeep(componentMetaData);
@@ -1815,6 +1816,12 @@ export const addNewWidgetToTheEditor = (
 
   let left = 0;
   let top = 0;
+
+  if (moduleInfo) {
+    componentData.definition.properties.moduleAppId = { value: moduleInfo.moduleId };
+    componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId };
+    componentData.definition.properties.moduleEnvironmentId = { value: moduleInfo.environmentId };
+  }
 
   if (isInSubContainer && addingDefault) {
     const newComponent = {

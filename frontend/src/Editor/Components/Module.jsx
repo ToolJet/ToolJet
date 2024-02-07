@@ -3,8 +3,9 @@ import { Viewer } from '../Viewer';
 import { ModuleContext } from '../../_contexts/ModuleContext';
 import { useSuperStore } from '../../_stores/superStore';
 import { v4 as uuidv4 } from 'uuid';
+import { useEditorStore } from '../../_stores/editorStore';
 
-export const Module = function Module({ component, width, id, parentId, removeComponent, containerProps }) {
+export const Module = function Module({ component, properties, styles, width, height }) {
   const parentRef = useRef(null);
 
   const [created, setCreated] = useState(false);
@@ -14,7 +15,6 @@ export const Module = function Module({ component, width, id, parentId, removeCo
 
   useEffect(() => {
     const status = createModule(moduleId);
-    console.log({ status });
     setCreated(status);
 
     return () => {
@@ -24,16 +24,31 @@ export const Module = function Module({ component, width, id, parentId, removeCo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const { moduleAppId, moduleVersionId, moduleEnvironmentId } = properties;
+  const { backgroundColor, visibility, boxShadow, borderRadius, borderColor } = styles;
+
+  const computedStyles = {
+    backgroundColor,
+    borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
+    border: `1px solid ${borderColor}`,
+    height,
+    display: visibility ? 'flex' : 'none',
+    overflow: 'hidden auto',
+    position: 'relative',
+    boxShadow,
+  };
+
   return (
-    <div ref={parentRef}>
+    <div ref={parentRef} styles={computedStyles}>
       {created && (
         <ModuleContext.Provider value={moduleId}>
           <Viewer
             moduleMode={true}
-            id={'f596caec-7f00-4c37-9d98-846813d61691'}
-            slug={'f596caec-7f00-4c37-9d98-846813d61691'}
-            versionId={'f68508aa-fdf5-4be2-b13e-4bf2e12f9413'}
-            environmentId={'fcc709b7-e91b-47cd-ba68-e5af4f0331ab'}
+            id={moduleAppId}
+            versionId={moduleVersionId}
+            environmentId={moduleEnvironmentId}
+            width={width}
+            height={height}
           />
         </ModuleContext.Provider>
       )}

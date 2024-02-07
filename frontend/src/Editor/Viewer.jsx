@@ -400,6 +400,7 @@ class ViewerComponent extends React.Component {
             userVars,
             versionId,
           });
+
           versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
         } else if (currentSession?.authentication_failed) {
           this.loadApplicationBySlug(slug, true);
@@ -768,7 +769,7 @@ class ViewerComponent extends React.Component {
                                     onComponentOptionsChanged={(...props) =>
                                       onComponentOptionsChanged(this.context, ...props)
                                     }
-                                    canvasWidth={this.getCanvasWidth()}
+                                    canvasWidth={this.props.width ? this.props.width : this.getCanvasWidth()}
                                     dataQueries={dataQueries}
                                     currentPageId={this.state.currentPageId}
                                   />
@@ -857,7 +858,7 @@ class ViewerComponent extends React.Component {
                                     onComponentOptionsChanged={(...props) =>
                                       onComponentOptionsChanged(this.context, ...props)
                                     }
-                                    canvasWidth={this.getCanvasWidth()}
+                                    canvasWidth={this.props.width ? this.props.width : this.getCanvasWidth()}
                                     dataQueries={dataQueries}
                                     currentPageId={this.state.currentPageId}
                                   />

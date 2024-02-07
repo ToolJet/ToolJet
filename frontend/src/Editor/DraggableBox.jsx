@@ -249,7 +249,7 @@ export const DraggableBox = React.memo(
               defaultSize={{}}
               className={`resizer ${
                 mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
-              } `}
+              } ${component.component == 'ModuleContainer' ? 'module-resizer-active' : ''}`}
               onResize={() => setResizing(true)}
               onDrag={(e) => {
                 e.preventDefault();
@@ -288,6 +288,7 @@ export const DraggableBox = React.memo(
                       widgetHeight={layoutData.height}
                       isMultipleComponentsSelected={isMultipleComponentsSelected}
                       configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
+                      customClassName={component.component === 'ModuleContainer' ? 'module-container' : ''}
                     />
                   )}
                 {/* Adding a sentry's error boundary to differentiate between our generic error boundary and one from editor's component  */}

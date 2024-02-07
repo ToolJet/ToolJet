@@ -204,7 +204,11 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ creatingApp: true });
     try {
-      const data = await appsService.createApp({ icon: sample(iconList), name: appName, type: this.props.appType });
+      const data = await appsService.createApp({
+        icon: sample(iconList),
+        name: appName,
+        type: type ?? this.props.appType,
+      });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, { state: { commitEnabled: this.state.commitEnabled } });
       toast.success(`${this.props.appType === 'workflow' ? 'Workflow' : 'App'} created successfully!`);

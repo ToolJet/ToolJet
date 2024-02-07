@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { useContext } from 'react';
 import { useSuperStore } from './superStore';
 import { ModuleContext } from '../_contexts/ModuleContext';
-import { licenseService } from '@/_services';
+import { licenseService, appsService } from '@/_services';
 import { shallow } from 'zustand/shallow';
 const STORE_NAME = 'Editor';
 
@@ -50,6 +50,7 @@ export function createEditorStore(moduleName) {
     currentAppEnvironmentId: null,
     featureAccess: null,
     moduleName,
+    loadedModules: [],
   };
 
   return create(
@@ -104,6 +105,12 @@ export function createEditorStore(moduleName) {
         updateFeatureAccess: () => {
           licenseService.getFeatureAccess().then((data) => {
             set({ featureAccess: data });
+          });
+        },
+        loadModules: async () => {
+          // TODO: implement this
+          appsService.getAll(0, '', '', 'module').then((data) => {
+            set({ loadedModules: data.apps });
           });
         },
       },

@@ -353,6 +353,26 @@ button {
     outline-color: #ffda7e;
   }
 
+  .module-resizer-select,
+  .module-resizer-active {
+    border: solid 1px green !important;
+
+    .top-right,
+    .top-left,
+    .bottom-right,
+    .bottom-left {
+      background: white;
+      border-radius: 10px;
+      border: solid 1px $primary;
+    }
+  }
+
+  .module-resizer-selected {
+    outline-width: thin;
+    outline-style: solid;
+    outline-color: #ffda7e;
+  }
+
   // query data source card style start
 
   .query-datasource-card-container,
@@ -2658,6 +2678,14 @@ hr {
         content: "";
         vertical-align: middle;
       }
+    }
+  }
+
+  .config-handle.module-container {
+    .handle-content {
+      cursor: move;
+      color: #ffffff;
+      background: green;
     }
   }
 }
@@ -12813,6 +12841,7 @@ tbody {
   font-style: normal;
   font-weight: 400;
   line-height: 20px;
+  margin-top: 6px;
 }
 
 .release-button {
@@ -13134,6 +13163,7 @@ tbody {
   font-style: normal;
   font-weight: 400;
   line-height: 20px;
+  margin-top: 6px;
 }
 
 .release-button {

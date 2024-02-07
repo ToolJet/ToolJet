@@ -131,7 +131,31 @@ export const Container = ({
   );
 
   useEffect(() => {
-    setBoxes(components);
+    if (moduleName != '#main') {
+      const [moduleContainerId, moduleContainer] = _.find(
+        Object.entries(components),
+        ([_id, component]) => component.component.component === 'ModuleContainer'
+      );
+
+      const newComponents = Object.fromEntries(
+        Object.entries(components)
+          .filter(([id, _component]) => id != moduleContainerId)
+          .map(([id, component]) => [
+            id,
+            {
+              ...component,
+              component: {
+                ...component.component,
+                parent: component.component.parent === moduleContainerId ? undefined : component.component.parent,
+              },
+            },
+          ])
+      );
+
+      setBoxes(newComponents);
+    } else {
+      setBoxes(components);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(components)]);
 
@@ -282,6 +306,15 @@ export const Container = ({
         const componentMeta = _.cloneDeep(
           componentTypes.find((component) => component.component === item.component.component)
         );
+
+        const moduleInfo = item.component.moduleId
+          ? {
+              moduleId: item.component.moduleId,
+              versionId: item.component.versionId,
+              environmentId: item.component.environmentId,
+            }
+          : undefined;
+
         const newComponent = addNewWidgetToTheEditor(
           componentMeta,
           monitor,
@@ -289,13 +322,18 @@ export const Container = ({
           canvasBoundingRect,
           item.currentLayout,
           snapToGrid,
-          zoomLevel
+          zoomLevel,
+          false,
+          false,
+          moduleInfo
         );
 
         const newBoxes = {
           ...boxes,
           [newComponent.id]: {
-            component: newComponent.component,
+            component: {
+              ...newComponent.component,
+            },
             layouts: {
               ...newComponent.layout,
             },
@@ -621,7 +659,7 @@ export const Container = ({
         canvasRef.current = el;
         drop(el);
       }}
-      style={{ ...styles, height: canvasHeight }}
+      style={{ ...styles, height: moduleName === '#main' ? canvasHeight : 'inherit', overflow: 'hidden auto' }}
       className={cx('real-canvas', {
         'show-grid': isDragging || isResizing,
       })}
