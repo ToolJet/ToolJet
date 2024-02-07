@@ -357,15 +357,5 @@ export const PasswordInput = function PasswordInput({
     </>
   );
 
-  return (
-    <>
-      {tooltip?.length > 0 ? (
-        <ToolTip message={tooltip}>
-          <div>{renderInput()}</div>
-        </ToolTip>
-      ) : (
-        <div>{renderInput()}</div>
-      )}
-    </>
-  );
+  return <div>{renderInput()}</div>;
 };
