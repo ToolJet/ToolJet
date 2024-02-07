@@ -24,6 +24,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
   const [isFocused, setIsFocused] = useState(false);
   const [currentValue, setCurrentValue] = useState('');
   const [errorStateActive, setErrorStateActive] = useState(false);
+  const [cursorInsidePreview, setCursorInsidePreview] = useState(false);
 
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
@@ -42,7 +43,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (portalProps?.isOpen) {
+      if (cursorInsidePreview || portalProps?.isOpen) {
         return;
       }
 
@@ -56,7 +57,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
       document.removeEventListener('mousedown', handleClickOutside);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wrapperRef, isFocused, isPreviewFocused, currentValue, portalProps?.isOpen]);
+  }, [wrapperRef, isFocused, isPreviewFocused, currentValue, portalProps?.isOpen, cursorInsidePreview]);
 
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
@@ -70,6 +71,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
         enablePreview={enablePreview}
         currentValue={currentValue}
         isFocused={isFocused}
+        setCursorInsidePreview={setCursorInsidePreview}
         componentName={componentName}
         validationSchema={validation}
         setErrorStateActive={setErrorStateActive}

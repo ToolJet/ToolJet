@@ -136,8 +136,8 @@ const RenderResolvedValue = ({ error, currentValue, previewType, resolvedValue, 
   );
 };
 
-const PreviewContainer = ({ children, isFocused, enablePreview, ...restProps }) => {
-  const { validationSchema, isWorkspaceVariable, errorStateActive } = restProps;
+const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsidePreview, ...restProps }) => {
+  const { validationSchema, isWorkspaceVariable, errorStateActive, ref } = restProps;
 
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -147,28 +147,14 @@ const PreviewContainer = ({ children, isFocused, enablePreview, ...restProps }) 
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
-  const [showPreview, setShowPreview] = useState(false);
-
-  const toggleShowHidePreview = (bool) => {
-    setShowPreview(bool);
-  };
-
   const popover = (
     <Popover
+      bsPrefix="codehinter-preview-popover"
       id="popover-basic"
       className={`${darkMode && 'dark-theme'} shadow`}
       style={{ width: '250px', maxWidth: '350px' }}
-      onClick={(e) => {
-        e.stopPropagation();
-      }}
-      onMouseEnter={(e) => {
-        if (!showPreview) {
-          setShowPreview(true);
-        }
-      }}
-      onMouseLeave={() => {
-        setShowPreview(isFocused);
-      }}
+      onMouseEnter={() => setCursorInsidePreview(true)}
+      onMouseLeave={() => setCursorInsidePreview(false)}
     >
       <Popover.Body>
         <div>
@@ -241,13 +227,7 @@ const PreviewContainer = ({ children, isFocused, enablePreview, ...restProps }) 
   );
 
   return (
-    <OverlayTrigger
-      trigger="click"
-      show={enablePreview && showPreview}
-      onToggle={toggleShowHidePreview}
-      placement="left-start"
-      overlay={popover}
-    >
+    <OverlayTrigger trigger="click" show={enablePreview && isFocused} placement="left-start" overlay={popover}>
       {children}
     </OverlayTrigger>
   );
