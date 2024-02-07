@@ -339,6 +339,7 @@ describe("dashboard", () => {
   });
 
   it("Should verify the app CRUD operation", () => {
+    cy.skipWalkthrough();
     data.appName = `${fake.companyName}-App`;
     cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);

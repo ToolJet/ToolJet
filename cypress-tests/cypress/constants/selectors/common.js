@@ -259,6 +259,14 @@ export const commonSelectors = {
   databaseOption: '[data-cy="database-option"]',
   datasourceOption: '[data-cy="data-source-option"]',
   workspaceConstantsOption: '[data-cy="workspace-constants-option"]',
+  label: (labelName) => {
+    return `[data-cy="${labelName
+      .replace(/\s+|(?<=[\w-])\s+(?=\w)|[^\w\s]/g, "-")
+      .toLowerCase()}-label"]`;
+  },
+  defaultModalTitle: '[data-cy="modal-title"]',
+  workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]'
+
 };
 
 export const commonWidgetSelector = {

@@ -301,6 +301,7 @@ const EditorComponent = (props) => {
 
   useEffect(() => {
     // This effect runs when lastKeyPressTimestamp changes
+    if (!appDiffOptions?.widgetMovedWithKeyboard) return;
     if (Date.now() - lastKeyPressTimestamp < 500) {
       updateEditorState({
         isUpdatingEditorStateInProcess: true,
