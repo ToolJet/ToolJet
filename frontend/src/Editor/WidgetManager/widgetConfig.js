@@ -3492,7 +3492,6 @@ export const widgets = [
       labelWidth: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
