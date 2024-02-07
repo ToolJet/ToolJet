@@ -6,6 +6,7 @@ import * as Icons from '@tabler/icons-react';
 import CheckMark from '@/_ui/Icon/solidIcons/CheckMark';
 import { CustomMenuList } from './Table/SelectComponent';
 import { Spinner } from 'react-bootstrap';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const { ValueContainer, SingleValue, Placeholder, DropdownIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -313,7 +314,7 @@ export const DropDown = function DropDown({
             : fieldBackgroundColor,
         '&:hover': {
           backgroundColor: 'var(--tj-text-input-widget-hover) !important',
-          borderColor: '#3E63DD',
+          borderColor: '#6A727C',
         },
       };
     },
@@ -383,9 +384,9 @@ export const DropDown = function DropDown({
   };
 
   const labelStyles = {
-    [alignment === 'side' && direction === 'alignRight' ? 'marginLeft' : 'marginRight']: label ? '1rem' : '0.001rem',
+    [direction === 'alignRight' ? 'marginLeft' : 'marginRight']: label ? '1rem' : '0.001rem',
     color: darkMode && labelColor === '#11181C' ? '#ECEDEE' : labelColor,
-    alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
+    justifyContent: direction === 'alignRight' ? 'flex-end' : 'flex-start',
   };
 
   return (
@@ -401,11 +402,13 @@ export const DropDown = function DropDown({
         }}
         onMouseDown={(event) => {
           onComponentClick(id, component, event);
+          // This following line is needed because sometimes after clicking on canvas then also dropdown remains selected
+          useEditorStore.getState().actions.setHoveredComponent('');
         }}
         data-cy={dataCy}
       >
         <div
-          className="my-auto text-truncate"
+          className={`my-auto text-truncate`}
           style={{
             alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
             width: alignment === 'top' || labelAutoWidth ? 'auto' : `${labelWidth}%`,
