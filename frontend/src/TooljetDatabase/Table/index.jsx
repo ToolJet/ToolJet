@@ -225,6 +225,16 @@ const Table = ({ collapseSidebar }) => {
     setDefaultValue(false);
   };
 
+  const resetCellAndRowSelection = () => {
+    setSelectedRowIds({});
+    setCellClick({
+      rowIndex: null,
+      cellIndex: null,
+      editable: false,
+      errorState: false,
+    });
+  };
+
   // Allowlist keys for entering on text field to enable edit mode
   const allowListForKeys = [
     ...Array(26)
@@ -360,6 +370,7 @@ const Table = ({ collapseSidebar }) => {
         document.removeEventListener('keydown', handleKeyDown);
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cellClick, editPopover, isCellUpdateInProgress]);
 
   useEffect(() => {
@@ -589,6 +600,7 @@ const Table = ({ collapseSidebar }) => {
       cellVal === null ? setNullValue(true) : setNullValue(false);
       setEditPopover(false);
     }
+    e.stopPropagation();
   };
 
   const closeEditPopover = (previousValue) => {
@@ -659,7 +671,6 @@ const Table = ({ collapseSidebar }) => {
                       }
                       checked={Object.keys(selectedRowIds).length === rows.length && rows.length}
                       onChange={() => toggleSelectOrDeSelectAllRows(rows.length)}
-                      // For indeterminate & Checked - bg color will be blue
                       style={{
                         backgroundColor: `${
                           (Object.keys(selectedRowIds).length > 0 &&
@@ -743,7 +754,10 @@ const Table = ({ collapseSidebar }) => {
                   </th>
                 ))}
                 <th
-                  onClick={() => setIsCreateColumnDrawerOpen(true)}
+                  onClick={() => {
+                    resetCellAndRowSelection();
+                    setIsCreateColumnDrawerOpen(true);
+                  }}
                   className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
                 >
                   <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
@@ -935,7 +949,7 @@ const Table = ({ collapseSidebar }) => {
                                     ) : (
                                       <input
                                         autoComplete="off"
-                                        className="form-control fs-12"
+                                        className="form-control fs-12 text-truncate"
                                         id="edit-input-blur"
                                         value={cellVal === null ? '' : cellVal}
                                         onChange={(e) => {
@@ -980,7 +994,9 @@ const Table = ({ collapseSidebar }) => {
                                       </div>
                                     </div>
                                   ) : (
-                                    <>{isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}</>
+                                    <div className="table-cell">
+                                      {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                                    </div>
                                   )}
                                 </>
                               )}
@@ -1006,7 +1022,10 @@ const Table = ({ collapseSidebar }) => {
               })
             )}
             <div
-              onClick={() => setIsCreateRowDrawerOpen(true)}
+              onClick={() => {
+                resetCellAndRowSelection();
+                setIsCreateRowDrawerOpen(true);
+              }}
               className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
               style={{
                 zIndex: 3,

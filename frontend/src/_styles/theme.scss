@@ -6920,6 +6920,7 @@ tbody {
     background-color: #F8F9FA;
     border-width: 0px 1px 1px 1px;
     padding: 0rem;
+    max-width: 230px;
 
     input.form-control {
       border: none;
@@ -6932,6 +6933,7 @@ tbody {
     background-color: #242f3c;
     border-width: 0px 1px 1px 1px;
     padding: 0rem;
+    max-width: 230px;
 
     input.form-control {
       border: none;
@@ -6968,6 +6970,7 @@ tbody {
     border-right: 1.5px solid #3E63DD !important;
     border-width: 0px 1px 1px 1px;
     padding: 0;
+    max-width: 230px;
 
     input.form-control {
       border: none;
@@ -6981,6 +6984,8 @@ tbody {
     border-left: 1.5px solid white !important;
     border-right: 1.5px solid white !important;
     border-width: 0px 1px 1px 1px;
+    padding: 0;
+    max-width: 230px;
 
     input.form-control {
       border: none;
