@@ -330,6 +330,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      selectRowOnCellEdit: {
+        type: 'toggle',
+        displayName: 'Select row on cell edit',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
@@ -468,6 +475,14 @@ export const widgets = [
             type: 'select',
           },
         ],
+      },
+      {
+        handle: 'selectAllRows',
+        displayName: 'Select all rows',
+      },
+      {
+        handle: 'deselectAllRows',
+        displayName: 'Deselect all rows',
       },
       {
         handle: 'setFilters',
@@ -1275,7 +1290,7 @@ export const widgets = [
     properties: {
       buttonToSubmit: {
         type: 'select',
-        displayName: 'Button To Submit Form',
+        displayName: 'Button to submit form',
         options: [{ name: 'None', value: 'none' }],
         validation: {
           schema: { type: 'string' },
@@ -1319,7 +1334,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
@@ -3037,12 +3052,12 @@ export const widgets = [
     actions: [
       {
         handle: 'setText',
-        displayName: 'Set Text',
+        displayName: 'Set text',
         params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
       },
       {
         handle: 'setVisibility',
-        displayName: 'Set Visibility',
+        displayName: 'Set visibility',
         params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
       },
       {
@@ -3051,12 +3066,12 @@ export const widgets = [
       },
       {
         handle: 'setLoading',
-        displayName: 'Set Loading',
+        displayName: 'Set loading',
         params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
       {
         handle: 'setDisable',
-        displayName: 'Set Disable',
+        displayName: 'Set disable',
         params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
     ],

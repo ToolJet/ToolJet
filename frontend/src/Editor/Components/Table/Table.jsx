@@ -132,6 +132,7 @@ export function Table({
     showAddNewRowButton,
     allowSelection,
     enablePagination,
+    selectRowOnCellEdit,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
@@ -912,6 +913,21 @@ export function Table({
     //hack : in the initial render, data is undefined since, upon feeding data to the table from some query, query inside current state is {}. Hence we added data in the dependency array, now question is should we add data or rows?
   }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
 
+  useEffect(() => {
+    // csa for select all rows in table
+    setExposedVariable('selectAllRows', async function () {
+      if (showBulkSelector) {
+        await toggleAllRowsSelected(true);
+      }
+    });
+    // csa for deselect all rows in table
+    setExposedVariable('deselectAllRows', async function () {
+      if (showBulkSelector) {
+        await toggleAllRowsSelected(false);
+      }
+    });
+  }, [JSON.stringify(tableDetails.selectedRowsDetails)]);
+
   const pageData = page.map((row) => row.original);
   useEffect(() => {
     setExposedVariable('currentPageData', pageData);
@@ -1460,6 +1476,14 @@ export function Table({
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                           onClick={(e) => {
+                            if (
+                              (isEditable || ['rightActions', 'leftActions'].includes(cell.column.id)) &&
+                              allowSelection &&
+                              !selectRowOnCellEdit
+                            ) {
+                              // to avoid on click event getting propagating to row when td is editable or has action button and allowSelection is true and selectRowOnCellEdit is false
+                              e.stopPropagation();
+                            }
                             setExposedVariable('selectedCell', {
                               columnName: cell.column.exportValue,
                               columnKey: cell.column.key,

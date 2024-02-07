@@ -67,6 +67,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
           'client',
           'server',
           'constants',
+          'parameters',
           'moment',
           '_',
           ...Object.keys(customObjects),
@@ -83,6 +84,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
         isJsCode ? undefined : state?.client,
         isJsCode ? undefined : state?.server,
         state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
+        state?.parameters,
         moment,
         _,
         ...Object.values(customObjects),
@@ -416,15 +418,7 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(
-  _ref,
-  code,
-  queryId,
-  isPreview,
-  mode = '',
-  parameters = {},
-  hasParamSupport = false
-) {
+export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
   const currentState = getCurrentState();
   let result = {},
     error = null;
@@ -437,7 +431,6 @@ export async function executeMultilineJS(
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
   const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
-  hasParamSupport = !hasParamSupport ? queryDetails?.options?.hasParamSupport : hasParamSupport;
 
   const defaultParams =
     queryDetails?.options?.parameters?.reduce(
@@ -458,6 +451,7 @@ export async function executeMultilineJS(
     //this will handle the preview case where you cannot find the queryDetails in state.
     formattedParams = { ...parameters };
   }
+
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
       ...currentState.queries[key],
@@ -500,7 +494,7 @@ export async function executeMultilineJS(
       'client',
       'server',
       'constants',
-      ...(hasParamSupport ? ['parameters'] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+      ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
       code,
     ];
     var evalFn = new AsyncFunction(...fnParams);
@@ -518,7 +512,7 @@ export async function executeMultilineJS(
       currentState?.client,
       currentState?.server,
       currentState?.constants,
-      ...(hasParamSupport ? [formattedParams] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+      ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
     ];
     result = {
       status: 'ok',
@@ -1097,5 +1091,87 @@ export const determineJustifyContentValue = (value) => {
       return 'center';
     default:
       return 'start';
+  }
+};
+
+export const USER_DRAWER_MODES = {
+  EDIT: 'EDIT',
+  CREATE: 'CREATE',
+};
+
+export const humanizeifDefaultGroupName = (groupName) => {
+  switch (groupName) {
+    case 'all_users':
+      return 'All users';
+
+    case 'admin':
+      return 'Admin';
+
+    default:
+      return groupName;
+  }
+};
+
+export const defaultWhiteLabellingSettings = {
+  WHITE_LABEL_LOGO: 'https://app.tooljet.com/logo.svg',
+  WHITE_LABEL_TEXT: 'ToolJet',
+  WHITE_LABEL_FAVICON: 'https://app.tooljet.com/favico.png',
+};
+
+export const pageTitles = {
+  INSTANCE_SETTINGS: 'Settings',
+  WORKSPACE_SETTINGS: 'Workspace settings',
+  INTEGRATIONS: 'Marketplace',
+  WORKFLOWS: 'Workflows',
+  DATABASE: 'Database',
+  DATA_SOURCES: 'Data sources',
+  AUDIT_LOGS: 'Audit logs',
+  ACCOUNT_SETTINGS: 'Profile settings',
+  SETTINGS: 'Profile settings',
+  EDITOR: 'Editor',
+  WORKFLOW_EDITOR: 'workflowEditor',
+  VIEWER: 'Viewer',
+  DASHBOARD: 'Dashboard',
+  WORKSPACE_CONSTANTS: 'Workspace constants',
+};
+
+export const setWindowTitle = async (pageDetails, location) => {
+  const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
+  const pathToTitle = {
+    'instance-settings': pageTitles.INSTANCE_SETTINGS,
+    'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
+    integrations: pageTitles.INTEGRATIONS,
+    workflows: pageTitles.WORKFLOWS,
+    database: pageTitles.DATABASE,
+    'data-sources': pageTitles.DATA_SOURCES,
+    'audit-logs': pageTitles.AUDIT_LOGS,
+    'account-settings': pageTitles.ACCOUNT_SETTINGS,
+    settings: pageTitles.SETTINGS,
+    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
+  };
+  const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+  let pageTitleKey = pageDetails?.page || '';
+  let pageTitle = '';
+  if (!pageTitleKey && !isEditorOrViewerGoingToRender) {
+    pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path)) || '';
+  }
+  switch (pageTitleKey) {
+    case pageTitles.VIEWER: {
+      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
+      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
+      break;
+    }
+    case pageTitles.EDITOR:
+    case pageTitles.WORKFLOW_EDITOR: {
+      pageTitle = pageDetails?.appName || 'My App';
+      break;
+    }
+    default: {
+      pageTitle = pathToTitle[pageTitleKey] || pageTitleKey;
+      break;
+    }
+  }
+  if (pageTitle) {
+    document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
   }
 };

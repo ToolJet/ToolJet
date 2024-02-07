@@ -403,7 +403,10 @@ describe("Text Input", () => {
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 50, 400);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Disable", "500");
-    cy.get('[data-cy="Value-toggle-button"]').click();
+    cy.wait(500);
+    cy.get('[data-cy="Value-fx-button"]').click();
+    cy.get('[data-cy="Value-input-field"]').clearAndTypeOnCodeMirror("{{true");
+    // cy.wait(1000);
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 300, 50);

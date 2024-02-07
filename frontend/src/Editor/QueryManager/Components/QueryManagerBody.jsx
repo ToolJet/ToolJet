@@ -269,7 +269,6 @@ export const QueryManagerBody = ({
       }`}
     >
       {selectedQuery?.data_source_id && selectedDataSource !== null ? renderChangeDataSource() : null}
-
       {selectedDataSource === null || !selectedQuery ? renderDataSourcesList() : renderQueryElement()}
       {selectedDataSource !== null ? renderQueryOptions() : null}
     </div>
