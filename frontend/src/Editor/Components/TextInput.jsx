@@ -340,15 +340,5 @@ export const TextInput = function TextInput({
     </>
   );
 
-  return (
-    <>
-      {properties?.tooltip?.length > 0 ? (
-        <ToolTip message={tooltip}>
-          <div>{renderInput()}</div>
-        </ToolTip>
-      ) : (
-        <div>{renderInput()}</div>
-      )}
-    </>
-  );
+  return <>{renderInput()}</>;
 };

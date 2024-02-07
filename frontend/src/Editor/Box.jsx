@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext, useRef, memo } from 'react';
+import React, { useEffect, useState, useMemo, useContext, useRef, memo, useCallback } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -155,16 +155,6 @@ export const Box = memo(
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
-    let styles = {
-      height: '100%',
-    };
-
-    if (inCanvas) {
-      styles = {
-        ...styles,
-      };
-    }
-
     const { events } = useAppInfo();
 
     const componentMeta = useMemo(() => {
@@ -183,11 +173,11 @@ export const Box = memo(
         : [resolvedProperties, []];
 
     const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
+
     const [validatedStyles, styleErrors] =
       mode === 'edit' && component.validate
         ? validateProperties(resolvedStyles, componentMeta.styles)
         : [resolvedStyles, []];
-    validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
 
     const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
     const [validatedGeneralProperties, generalPropertiesErrors] =
@@ -205,6 +195,16 @@ export const Box = memo(
     const darkMode = localStorage.getItem('darkMode') === 'true';
     const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
+    let styles = {
+      height: '100%',
+      padding: validatedStyles?.padding === 'none' ? '0px' : '1px',
+    };
+
+    if (inCanvas) {
+      styles = {
+        ...styles,
+      };
+    }
     useEffect(() => {
       if (!component?.parent) {
         onComponentOptionChanged && onComponentOptionChanged(component, 'id', id);
@@ -279,18 +279,30 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
-    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput'];
+    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
         delay={{ show: 500, hide: 0 }}
-        trigger={inCanvas && !validatedGeneralProperties.tooltip?.toString().trim() ? null : ['hover', 'focus']}
+        trigger={
+          inCanvas && shouldAddBoxShadow.includes(component.component)
+            ? !validatedProperties.tooltip?.toString().trim()
+              ? null
+              : ['hover', 'focus']
+            : !validatedGeneralProperties.tooltip?.toString().trim()
+            ? null
+            : ['hover', 'focus']
+        }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${validatedGeneralProperties.tooltip}`
+              ? `${
+                  shouldAddBoxShadow.includes(component.component)
+                    ? validatedProperties.tooltip
+                    : validatedGeneralProperties.tooltip
+                }`
               : `${t(`widget.${component.name}.description`, component.description)}`,
           })
         }

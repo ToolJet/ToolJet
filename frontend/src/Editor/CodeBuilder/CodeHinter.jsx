@@ -42,9 +42,10 @@ import Slider from './Elements/Slider';
 import { Input } from './Elements/Input';
 import { Icon } from './Elements/Icon';
 import { Visibility } from './Elements/Visibility';
+import { NumberInput } from './Elements/NumberInput';
 import { validateProperty } from '../component-properties-validation';
 
-const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
+const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'TextComponentTextInput'];
 
 const AllElements = {
   Color,
@@ -61,6 +62,7 @@ const AllElements = {
   Checkbox,
   Icon,
   Visibility,
+  NumberInput,
 };
 
 export function CodeHinter({
@@ -93,7 +95,7 @@ export function CodeHinter({
   isCopilotEnabled = false,
   currentState: _currentState,
   isIcon = false,
-  paramUpdated,
+  inspectorTab,
   staticText,
 }) {
   const context = useContext(CodeHinterContext);
@@ -122,6 +124,7 @@ export function CodeHinter({
   const [isFocused, setFocused] = useState(false);
   const [heightRef, currentHeight] = useHeight();
   const isPreviewFocused = useRef(false);
+  const [isPropertyHovered, setPropertyHovered] = useState(false);
   const wrapperRef = useRef(null);
 
   // Todo: Remove this when workspace variables are deprecated
@@ -402,15 +405,47 @@ export function CodeHinter({
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
+  const fxBtn = () => (
+    <div className="col-auto pt-0 fx-common">
+      {!['Type', 'selectRowOnCellEdit', 'Select row on cell edit', ' ', 'Padding', 'Width'].includes(paramLabel) && ( //add some key if these extends
+        <FxButton
+          active={codeShow}
+          onPress={() => {
+            if (codeShow) {
+              setForceCodeBox(false);
+              onFxPress(false);
+            } else {
+              setForceCodeBox(true);
+              onFxPress(true);
+            }
+          }}
+          dataCy={cyLabel}
+        />
+      )}
+    </div>
+  );
+
+  const _renderFxBtn = () => {
+    if (inspectorTab === 'styles') {
+      return isPropertyHovered || codeShow ? fxBtn() : null;
+    } else {
+      return fxBtn();
+    }
+  };
   const onFocusHandler = () => {
     setFocused(true);
     updatePreview();
   };
 
   return (
-    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow, 'd-flex': paramLabel == 'Tooltip' })}>
+    <div
+      ref={wrapperRef}
+      className={cx({ 'codeShow-active': codeShow, 'd-flex': paramLabel == 'Tooltip' })}
+      onMouseEnter={() => setPropertyHovered(true)}
+      onMouseLeave={() => setPropertyHovered(false)}
+    >
       <div
-        className={cx('d-flex justify-content-between')}
+        className={cx('d-flex justify-content-between', { 'w-full': fieldMeta?.fullWidth })}
         style={{
           marginRight: paramLabel == 'Tooltip' && '40px',
           alignItems: paramLabel == 'Tooltip' ? 'flex-start' : 'center',
@@ -428,30 +463,12 @@ export function CodeHinter({
             />
           </div>
         )}
-        <div className={`${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
+        <div className={cx(`${(type ?? 'code') === 'code' ? 'd-none' : ''}`, { 'w-full': fieldMeta?.fullWidth })}>
           <div
             style={{ width: width, marginBottom: codeShow ? '0.5rem' : '0px' }}
-            className="d-flex align-items-center"
+            className={cx('d-flex align-items-center', { 'w-full': fieldMeta?.fullWidth })}
           >
-            <div className="col-auto pt-0 fx-common">
-              {!['Type', 'selectRowOnCellEdit', 'Select row on cell edit', ' ', 'Padding', 'Width'].includes(
-                paramLabel
-              ) && (
-                <FxButton
-                  active={codeShow}
-                  onPress={() => {
-                    if (codeShow) {
-                      setForceCodeBox(false);
-                      onFxPress(false);
-                    } else {
-                      setForceCodeBox(true);
-                      onFxPress(true);
-                    }
-                  }}
-                  dataCy={cyLabel}
-                />
-              )}
-            </div>
+            {!fieldMeta?.isFxNotRequired && _renderFxBtn()}
             {!codeShow && (
               <ElementToRender
                 value={resolveReferences(initialValue, realState)}
@@ -555,11 +572,6 @@ export function CodeHinter({
       </div>
     </div>
   );
-}
-
-// eslint-disable-next-line no-unused-vars
-function CodeHinterInputField() {
-  return <></>;
 }
 
 const PopupIcon = ({ callback, icon, tip, transformation = false }) => {
