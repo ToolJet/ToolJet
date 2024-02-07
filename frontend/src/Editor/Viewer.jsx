@@ -98,7 +98,7 @@ class ViewerComponent extends React.Component {
   };
 
   setStateForContainer = async (data, appVersionId) => {
-    const appDefData = buildAppDefinition(data);
+    const appDefData = this.state.appDefinition;
 
     const currentUser = this.state.currentUser;
     let userVars = {};
@@ -569,8 +569,13 @@ class ViewerComponent extends React.Component {
     } = this.state;
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
-    const isMobilePreviewMode = this.props.versionId && this.props.currentLayout === 'mobile';
     const canvasMaxWidth = this.computeCanvasMaxWidth();
+    const pages =
+      Object.entries(_.cloneDeep(appDefinition)?.pages)
+        .map(([id, page]) => ({ id, ...page }))
+        .sort((a, b) => a.index - b.index) || [];
+
+    const isMobilePreviewMode = this.props.versionId && this.props.currentLayout === 'mobile';
     if (this.state.app?.isLoading) {
       return (
         <div className="tooljet-logo-loader">
@@ -614,7 +619,7 @@ class ViewerComponent extends React.Component {
                 appName={this.state.app?.name ?? null}
                 changeDarkMode={this.changeDarkMode}
                 darkMode={this.props.darkMode}
-                pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                pages={pages}
                 currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                 switchPage={this.switchPage}
                 setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
@@ -628,7 +633,7 @@ class ViewerComponent extends React.Component {
                 appName={this.state.app?.name ?? null}
                 changeDarkMode={this.changeDarkMode}
                 darkMode={this.props.darkMode}
-                pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                pages={pages}
                 currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                 switchPage={this.switchPage}
                 setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
@@ -649,7 +654,7 @@ class ViewerComponent extends React.Component {
                         showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
                         isMobileDevice={this.props.currentLayout === 'mobile'}
                         canvasBackgroundColor={this.computeCanvasBackgroundColor()}
-                        pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                        pages={pages}
                         currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                         switchPage={this.switchPage}
                         darkMode={this.props.darkMode}
@@ -681,7 +686,7 @@ class ViewerComponent extends React.Component {
                             appName={this.state.app?.name ?? null}
                             changeDarkMode={this.changeDarkMode}
                             darkMode={this.props.darkMode}
-                            pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                            pages={pages}
                             currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                             switchPage={this.switchPage}
                             setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}

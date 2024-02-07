@@ -84,16 +84,16 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
 
           <div className="w-100">
             <div className={`pages-container ${darkMode && 'dark'}`}>
-              {pages.map(([id, page]) =>
-                page.hidden || page.disabled ? null : (
+              {pages.map((page) =>
+                page?.hidden || page?.disabled ? null : (
                   <div
                     key={page.handle}
-                    onClick={() => handlepageSwitch(id)}
+                    onClick={() => handlepageSwitch(page?.id)}
                     className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
                   >
-                    <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
+                    <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
                       <div className="card-body">
-                        <span style={{ color: 'var(--slate12)' }}>{_.truncate(page.name, { length: 22 })}</span>
+                        <span style={{ color: 'var(--slate12)' }}>{_.truncate(page?.name, { length: 22 })}</span>
                       </div>
                     </div>
                   </div>

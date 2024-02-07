@@ -21,11 +21,15 @@ export const ViewerSidebarNavigation = ({ isMobileDevice, pages, currentPageId, 
       }}
     >
       <div className="page-handler-wrapper">
-        {pages.map(([id, page]) =>
+        {pages.map((page) =>
           page.hidden || page.disabled ? null : (
-            <FolderList key={page.handle} onClick={() => switchPage(id)} selectedItem={id === currentPageId}>
-              <span data-cy={`pages-name-${String(page.name).toLowerCase()}`} className="mx-3 text-wrap">
-                {_.truncate(page.name, { length: 18 })}
+            <FolderList
+              key={page.handle}
+              onClick={() => switchPage(page?.id)}
+              selectedItem={page?.id === currentPageId}
+            >
+              <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`} className="mx-3 text-wrap">
+                {_.truncate(page?.name, { length: 18 })}
               </span>
             </FolderList>
           )
