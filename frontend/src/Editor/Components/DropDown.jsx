@@ -180,7 +180,6 @@ export const DropDown = function DropDown({
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
       setInputValue(searchText);
-      setExposedVariable('searchText', searchText);
       fireEvent('onSearchTextChanged');
     }
   };
@@ -246,8 +245,9 @@ export const DropDown = function DropDown({
 
   useEffect(() => {
     setExposedVariable('label', label);
+    setExposedVariable('searchText', inputValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [label]);
+  }, [label, inputValue]);
 
   useEffect(() => {
     if (advanced) {
