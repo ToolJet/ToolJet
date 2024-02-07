@@ -76,6 +76,8 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const showAddNewRowButton = properties?.showAddNewRowButton ?? true;
   const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
   const defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
+  const selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? true;
+
   return {
     color,
     serverSidePagination,
@@ -107,5 +109,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     defaultSelectedRow,
     showAddNewRowButton,
     allowSelection,
+    selectRowOnCellEdit,
   };
 }

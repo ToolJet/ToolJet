@@ -1,10 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import {
-  commonWidgetText,
-  commonText,
-  codeMirrorInputLabel,
-} from "Texts/common";
+import { commonWidgetSelector } from "Selectors/common";
+import { codeMirrorInputLabel, commonWidgetText } from "Texts/common";
 
 export const openAccordion = (
   accordionName,
@@ -131,7 +127,7 @@ export const selectColourFromColourPicker = (
   index = 0,
   parent = commonWidgetSelector.colourPickerParent
 ) => {
-  cy.get(commonWidgetSelector.stylePicker(paramName)).click();
+  cy.get(commonWidgetSelector.stylePicker(paramName)).last().click();
   cy.get(parent)
     .eq(index)
     .then(() => {
@@ -274,9 +270,12 @@ export const verifyLoaderColor = (widgetName, color) => {
     });
 };
 
-export const verifyLayout = (widgetName) => {
+export const verifyLayout = (
+  widgetName,
+  layout = commonWidgetText.accordionLayout
+) => {
   openEditorSidebar(widgetName);
-  openAccordion(commonWidgetText.accordionLayout);
+  openAccordion(layout);
   verifyAndModifyToggleFx(
     commonWidgetText.parameterShowOnDesktop,
     commonWidgetText.codeMirrorLabelTrue
@@ -354,9 +353,7 @@ export const verifyTooltip = (widgetSelector, message) => {
     .trigger("mouseover", { timeout: 2000 })
     .trigger("mouseover")
     .then(() => {
-      cy.get(commonWidgetSelector.tooltipLabel)
-        .last()
-        .should("have.text", message);
+      cy.get(".tooltip-inner").last().should("have.text", message);
     });
 };
 

@@ -4,7 +4,7 @@ import AppLogo from '@/_components/AppLogo';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
-import { AppVersionsManager } from '../AppVersionsManager/List';
+import { AppVersionsManager } from '@/Editor/AppVersionsManager/AppVersionsManager';
 import { ManageAppUsers } from '../ManageAppUsers';
 import { ReleaseVersionButton } from '../ReleaseVersionButton';
 import cx from 'classnames';
@@ -19,6 +19,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { redirectToDashboard } from '@/_helpers/routes';
 import queryString from 'query-string';
 import { isEmpty } from 'lodash';
+import LogoNavDropdown from '@/_components/LogoNavDropdown';
 
 export default function EditorHeader({
   M,
@@ -71,12 +72,6 @@ export default function EditorHeader({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
-  const handleLogoClick = (e) => {
-    e.preventDefault();
-    // Force a reload for clearing interval triggers
-    redirectToDashboard();
-  };
-
   useEffect(() => {
     const previewQuery = queryString.stringify({ version: editingVersion.name });
     const appVersionPreviewLink = editingVersion.id
@@ -91,10 +86,8 @@ export default function EditorHeader({
       <header className="navbar navbar-expand-md d-print-none">
         <div className="container-xl header-container">
           <div className="d-flex w-100">
-            <h1 className="navbar-brand d-none-navbar-horizontal p-0">
-              <Link data-cy="editor-page-logo" onClick={handleLogoClick}>
-                <AppLogo isLoadingFromHeader={true} />
-              </Link>
+            <h1 className="navbar-brand d-none-navbar-horizontal p-0" data-cy="editor-page-logo">
+              <LogoNavDropdown darkMode={darkMode} />
             </h1>
             <div
               style={{
@@ -117,7 +110,14 @@ export default function EditorHeader({
                 <div className="global-settings-app-wrapper p-0 m-0 ">
                   <EditAppName appId={appId} appName={appName} onNameChanged={onNameChanged} />
                 </div>
-                <HeaderActions canUndo={canUndo} canRedo={canRedo} handleUndo={handleUndo} handleRedo={handleRedo} />
+                <HeaderActions
+                  canUndo={canUndo}
+                  canRedo={canRedo}
+                  handleUndo={handleUndo}
+                  handleRedo={handleRedo}
+                  showToggleLayoutBtn
+                  showUndoRedoBtn
+                />
                 <div className="d-flex align-items-center">
                   <div style={{ width: '100px', marginRight: '20px' }}>
                     <span
@@ -147,18 +147,15 @@ export default function EditorHeader({
                 </div>
               </div>
               <div className="navbar-seperator"></div>
-              <div className="d-flex align-items-center p-0" style={{ marginRight: '12px' }}>
-                <div className="d-flex version-manager-container p-0">
-                  {editingVersion && (
-                    <AppVersionsManager
-                      appId={appId}
-                      setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-                      onVersionDelete={onVersionDelete}
-                      isPublic={isPublic ?? false}
-                    />
-                  )}
-                </div>
-              </div>
+
+              {editingVersion && (
+                <AppVersionsManager
+                  appId={appId}
+                  setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+                  onVersionDelete={onVersionDelete}
+                  isPublic={isPublic ?? false}
+                />
+              )}
             </div>
             <div
               className="d-flex justify-content-end navbar-right-section"

@@ -121,7 +121,7 @@ export class User extends BaseEntity {
       name: 'group_permission_id',
     },
   })
-  groupPermissions: Promise<GroupPermission[]>;
+  groupPermissions: GroupPermission[];
 
   @OneToMany(() => UserGroupPermission, (userGroupPermission) => userGroupPermission.user, { onDelete: 'CASCADE' })
   userGroupPermissions: UserGroupPermission[];
