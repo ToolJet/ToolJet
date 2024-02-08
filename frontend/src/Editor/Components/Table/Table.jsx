@@ -1370,15 +1370,21 @@ export function Table({
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
                       const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
                       const rowData = tableData[cell.row.index];
-                      const cellBackgroundColor = resolveReferences(
-                        cell.column?.cellBackgroundColor,
-                        currentState,
-                        '',
-                        {
-                          cellValue,
-                          rowData,
-                        }
-                      );
+                      const cellBackgroundColor = ![
+                        'dropdown',
+                        'badge',
+                        'badges',
+                        'tags',
+                        'link',
+                        'radio',
+                        'multiselect',
+                        'toggle',
+                      ].includes(cell?.column?.columnType)
+                        ? resolveReferences(cell.column?.cellBackgroundColor, currentState, '', {
+                            cellValue,
+                            rowData,
+                          })
+                        : '';
                       const cellTextColor = resolveReferences(cell.column?.textColor, currentState, '', {
                         cellValue,
                         rowData,
