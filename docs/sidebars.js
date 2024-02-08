@@ -192,6 +192,7 @@ const sidebars = {
         ]
       },
       'items': [
+        'how-to/use-custom-parameters',
         'how-to/setup-rsyslog',
         'how-to/use-inspector',
         'how-to/use-form-component',
@@ -215,6 +216,7 @@ const sidebars = {
         'how-to/upload-files-gcs',
         'how-to/loading-image-pdf-from-db',
         'how-to/use-events-on-chart',
+        'how-to/print-multi-tabs-report'
       ],
     },
     {
