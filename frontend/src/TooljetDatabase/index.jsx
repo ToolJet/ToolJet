@@ -35,6 +35,7 @@ export const TooljetDatabaseContext = createContext({
   setPageCount: () => {},
   pageSize: 50,
   setPageSize: () => {},
+  handleRefetchQuery: () => {},
 });
 
 export const TooljetDatabase = (props) => {
@@ -66,6 +67,7 @@ export const TooljetDatabase = (props) => {
     resetSortQuery,
     resetFilterQuery,
     resetAll,
+    handleRefetchQuery,
   } = usePostgrestQueryBuilder({
     organizationId,
     selectedTable,
@@ -103,6 +105,7 @@ export const TooljetDatabase = (props) => {
       setPageCount,
       pageSize,
       setPageSize,
+      handleRefetchQuery,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [

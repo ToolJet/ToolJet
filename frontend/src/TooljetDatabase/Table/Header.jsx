@@ -225,11 +225,14 @@ const Header = ({
                             variant="dangerTertiary"
                             onClick={handleDeleteRow}
                             size="sm"
-                            className="px-1 pe-3 ps-2 gap-0"
+                            className="gap-0"
                             data-cy="delete-row-records-button"
+                            style={{
+                              padding: '4px 8px 4px 8px',
+                            }}
                           >
                             <DeleteIcon />
-                            &nbsp; Delete row
+                            &nbsp; {Object.keys(selectedRowIds).length === 1 ? 'Delete row' : 'Delete rows'}
                           </ButtonSolid>
                         </div>
                       )}
@@ -259,7 +262,10 @@ const Header = ({
                         fontWeight: 500,
                       }}
                     >
-                      <span>{Object.keys(selectedRowIds).length} record selected</span>
+                      <span>
+                        {Object.keys(selectedRowIds).length}{' '}
+                        {Object.keys(selectedRowIds).length > 1 ? 'records' : 'record'} selected
+                      </span>
                     </div>
                   )}
                 </div>

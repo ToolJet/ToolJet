@@ -6,6 +6,7 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { toast } from 'react-hot-toast';
 import { TablePopover } from './ActionsPopover';
+import { CellEditMenu } from '../Menu/CellEditMenu';
 import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import Skeleton from 'react-loading-skeleton';
@@ -32,18 +33,19 @@ const Table = ({ collapseSidebar }) => {
     columns,
     selectedTable,
     selectedTableData,
-    setSelectedTableData,
     setColumns,
-    setTotalRecords,
+    queryFilters,
     setQueryFilters,
+    sortFilters,
     setSortFilters,
     resetAll,
     pageSize,
     pageCount,
+    handleRefetchQuery,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
-  const [loading, setLoading] = useState(false);
+  const [loading, _setLoading] = useState(false);
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [editColumnHeader, setEditColumnHeader] = useState({
@@ -62,14 +64,28 @@ const Table = ({ collapseSidebar }) => {
     rowIndex: null,
     cellIndex: null,
     editable: false,
+    errorState: false,
   });
+
   const [cellVal, setCellVal] = useState('');
+  const [editPopover, setEditPopover] = useState(false);
+  const [defaultValue, setDefaultValue] = useState(false);
+  const [nullValue, setNullValue] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [isCellUpdateInProgress, setIsCellUpdateInProgress] = useState(false);
 
   const prevSelectedTableRef = useRef({});
+  const duration = 300;
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const toggleSelectOrDeSelectAllRows = (totalRowsCount) => {
     if (!totalRowsCount) return;
+    setCellClick({
+      rowIndex: null,
+      cellIndex: null,
+      editable: false,
+      errorState: false,
+    });
     const isSelectAll =
       Object.keys(selectedRowIds).length !== totalRowsCount && Object.keys(selectedRowIds).length < totalRowsCount;
     if (!isSelectAll) {
@@ -86,6 +102,12 @@ const Table = ({ collapseSidebar }) => {
     if (!uniqueRowId) return;
     const selectedRowIdsRef = { ...selectedRowIds };
     selectedRowIdsRef[uniqueRowId] ? delete selectedRowIdsRef[uniqueRowId] : (selectedRowIdsRef[uniqueRowId] = true);
+    setCellClick({
+      rowIndex: null,
+      cellIndex: null,
+      editable: false,
+      errorState: false,
+    });
     setSelectedRowIds(selectedRowIdsRef);
     return;
   };
@@ -119,23 +141,6 @@ const Table = ({ collapseSidebar }) => {
     } else {
       setColumns([]);
     }
-  };
-
-  const fetchTableData = (queryParams = '', pagesize = 50, pagecount = 1) => {
-    const defaultQueryParams = `limit=${pagesize}&offset=${(pagecount - 1) * pagesize}&order=id.desc`;
-    let params = queryParams ? queryParams : defaultQueryParams;
-    setLoading(true);
-
-    tooljetDatabaseService.findOne(organizationId, selectedTable.id, params).then(({ headers, data = [], error }) => {
-      setLoading(false);
-      if (error) {
-        toast.error(error?.message ?? `Error fetching table "${selectedTable.table_name}" data`);
-        return;
-      }
-      const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
-      setTotalRecords(totalContentRangeRecords);
-      setSelectedTableData(data);
-    });
   };
 
   const onSelectedTableChange = () => {
@@ -197,11 +202,189 @@ const Table = ({ collapseSidebar }) => {
     useRowSelect
   );
 
+  const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
+
+  const handleOnCloseEditMenu = () => {
+    setNullValue(false);
+    setDefaultValue(false);
+  };
+
+  const resetCellAndRowSelection = () => {
+    setSelectedRowIds({});
+    setCellClick({
+      rowIndex: null,
+      cellIndex: null,
+      editable: false,
+      errorState: false,
+    });
+  };
+
+  // Allowlist keys for entering on text field to enable edit mode
+  const allowListForKeys = [
+    ...Array(26)
+      .fill()
+      .map((_, i) => 65 + i),
+    ...Array(26)
+      .fill()
+      .map((_, i) => 97 + i),
+    ...Array(10)
+      .fill()
+      .map((_, i) => 48 + i),
+    32,
+    186,
+    188,
+    189,
+    190,
+    191,
+    192,
+    219,
+    220,
+    221,
+    22,
+  ];
+
+  const handleKeyDown = (e) => {
+    // Disables Cell navigation while error and update-inprogress
+    if (cellClick.errorState || isCellUpdateInProgress) e.preventDefault();
+
+    // Logic to edit value in a cell and simultaneously trigger edit menu
+    if (
+      cellClick.rowIndex !== null &&
+      !editPopover &&
+      !cellClick.errorState &&
+      !isCellUpdateInProgress &&
+      allowListForKeys.includes(e.keyCode) &&
+      cellClick.cellIndex !== 0
+    ) {
+      e.preventDefault();
+      const cellValue = rows[cellClick.rowIndex].cells[cellClick.cellIndex].value;
+      const cellDataType = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.column?.dataType;
+      if (cellDataType !== 'boolean') {
+        setSelectedRowIds({});
+        if (cellValue === null) {
+          setNullValue(false);
+          setEditPopover(true);
+          setCellVal(e.key);
+          document.getElementById('edit-input-blur')?.focus();
+        } else {
+          setCellVal((prevValue) => prevValue + e.key);
+          setEditPopover(true);
+          document.getElementById('edit-input-blur')?.focus();
+        }
+      }
+    }
+
+    // Logic for Cell Navigation - Enter ( Opens edit menu ), Backspace (removes Null value ) & ESC event ( close edit menu )
+    if (cellClick.rowIndex !== null && !cellClick.errorState && !isCellUpdateInProgress) {
+      if (e.key === 'ArrowRight') {
+        setSelectedRowIds({});
+        setEditPopover(false);
+        const cellIndexValue =
+          cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
+        const cellValue = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
+        const newIndex =
+          cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
+        setCellClick((prevState) => ({
+          ...prevState,
+          cellIndex: newIndex,
+        }));
+        setCellVal(cellValue);
+        cellValue === null ? setNullValue(true) : setNullValue(false);
+        setDefaultValue(false);
+      } else if (e.key === 'ArrowLeft') {
+        setSelectedRowIds({});
+        setEditPopover(false);
+        const cellIndexValue = cellClick.cellIndex === 0 ? 0 : cellClick.cellIndex - 1;
+        const cellValue = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
+        const newIndex = cellClick.cellIndex === 0 ? 0 : cellClick.cellIndex - 1;
+        setCellClick((prevState) => ({
+          ...prevState,
+          cellIndex: newIndex,
+        }));
+        setCellVal(cellValue);
+        cellValue === null ? setNullValue(true) : setNullValue(false);
+        setDefaultValue(false);
+      } else if (e.key === 'ArrowUp') {
+        setSelectedRowIds({});
+        setEditPopover(false);
+        const cellValue = rows[cellClick.rowIndex - 1].cells[cellClick.cellIndex].value; // row Index's value
+        const newRowIndex = cellClick.rowIndex === 0 ? 0 : cellClick.rowIndex - 1;
+        setCellClick((prevState) => ({
+          ...prevState,
+          rowIndex: newRowIndex,
+        }));
+        setCellVal(cellValue);
+        cellValue === null ? setNullValue(true) : setNullValue(false);
+        setDefaultValue(false);
+      } else if (e.key === 'ArrowDown') {
+        setSelectedRowIds({});
+        setEditPopover(false);
+        const cellValue = rows[cellClick.rowIndex + 1].cells[cellClick.cellIndex].value; // row Index's value
+        const newRowIndex = cellClick.rowIndex === rows.length - 1 ? rows.length - 1 : cellClick.rowIndex + 1;
+        setCellClick((prevState) => ({
+          ...prevState,
+          rowIndex: newRowIndex,
+        }));
+        setCellVal(cellValue);
+        cellValue === null ? setNullValue(true) : setNullValue(false);
+        setDefaultValue(false);
+      } else if (e.key === 'Enter' && cellClick.cellIndex !== 0) {
+        setEditPopover(true);
+        document.getElementById('edit-input-blur').focus();
+      } else if (e.key === 'Backspace' && !editPopover && cellClick.cellIndex !== 0) {
+        const cellValue = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.value;
+        const cellDataType = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.column?.dataType;
+        if (cellValue === null) {
+          setSelectedRowIds({});
+          cellDataType === 'boolean' ? setCellVal(true) : setCellVal('');
+          setNullValue(false);
+          setDefaultValue(false);
+          setEditPopover(true);
+          document.getElementById('edit-input-blur').focus();
+        }
+      }
+    }
+    e.stopPropagation();
+  };
+
+  useEffect(() => {
+    if (!editPopover) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cellClick, editPopover, isCellUpdateInProgress]);
+
   useEffect(() => {
     setSelectedRowIds({});
   }, []);
 
-  const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
+  const handleCellOutsideClick = (event) => {
+    if (
+      !event.target.closest('.table-cell-click') &&
+      !event.target.closest('.table-editable-parent-cell') &&
+      !event.target.closest('.popover-body')
+    ) {
+      setCellClick((prevState) => ({
+        ...prevState,
+        rowIndex: null,
+        cellIndex: null,
+        editable: false,
+        errorState: false,
+      }));
+      handleOnCloseEditMenu();
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('click', handleCellOutsideClick);
+    return () => {
+      document.removeEventListener('click', handleCellOutsideClick);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDeleteRow = async () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
@@ -223,7 +406,7 @@ const Table = ({ collapseSidebar }) => {
         }
 
         toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable.table_name}"`);
-        fetchTableData();
+        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
         setSelectedRowIds({});
       } else {
         toast.error('Something went wrong - Record Id is incorrect');
@@ -246,33 +429,78 @@ const Table = ({ collapseSidebar }) => {
     toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
   };
 
-  const handleToggleCellEdit = async (cellVal, rowId, index) => {
+  const handleProgressAnimation = (message, status) => {
+    setIsCellUpdateInProgress(true);
+    const startTime = Date.now();
+    const updateProgress = () => {
+      const runningTime = Date.now() - startTime;
+      const progressPercentage = Math.min(1, runningTime / duration);
+      setProgress(progressPercentage * 100);
+
+      if (progressPercentage < 1) {
+        requestAnimationFrame(updateProgress);
+      } else {
+        setTimeout(() => {
+          setProgress(0);
+          if (status === true) {
+            toast.success(message);
+          } else {
+            toast.error(message, { duration: 3000 });
+          }
+          setIsCellUpdateInProgress(false);
+        }, 100);
+      }
+    };
+    requestAnimationFrame(updateProgress);
+  };
+
+  const handleToggleCellEdit = async (cellValue, rowId, index, rIndex, directToggle, oldValue) => {
+    setIsCellUpdateInProgress(true);
     const cellKey = headerGroups[0].headers[index].id;
     const query = `id=eq.${rowId}&order=id`;
-    const cellData = { [cellKey]: !cellVal };
+    const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
+
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
+
     if (error) {
-      toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
+      handleProgressAnimation(
+        error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`,
+        false
+      );
+      setEditPopover(false);
+      handleOnCloseEditMenu();
+      setTimeout(() => {
+        setCellClick((prev) => ({
+          ...prev,
+          editable: true,
+          errorState: true,
+        }));
+        setCellVal(cellValue);
+      }, 400);
+
+      setTimeout(() => {
+        setCellClick((prev) => ({
+          ...prev,
+          editable: true,
+          errorState: false,
+        }));
+        setCellVal(oldValue);
+        document.getElementById('edit-input-blur').blur();
+      }, 3000);
       return;
     }
 
-    const limit = pageSize;
-    const pageRange = `${(pageCount - 1) * pageSize + 1}`;
-    tooljetDatabaseService
-      .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}&offset=${pageRange - 1}`)
-      .then(({ headers, data = [], error }) => {
-        if (error) {
-          toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
-          return;
-        }
-
-        if (Array.isArray(data) && data?.length > 0) {
-          const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
-          setTotalRecords(totalContentRangeRecords);
-          setSelectedTableData(data);
-        }
-      });
-    toast.success(`cell edited successfully`);
+    handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+    setEditPopover(false);
+    handleOnCloseEditMenu();
+    setCellClick((prev) => ({
+      ...prev,
+      rowIndex: rIndex,
+      cellIndex: index,
+      errorState: false,
+    }));
+    handleProgressAnimation('column edited successfully', true);
+    document.getElementById('edit-input-blur').blur();
   };
 
   useEffect(() => {
@@ -325,26 +553,40 @@ const Table = ({ collapseSidebar }) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
       columnEditPopover: false,
+      hoveredColumn: null,
     }));
   };
 
   const handleCellClick = (e, cellIndex, rowIndex, cellVal) => {
-    if (e.target.classList.value === 'table-cell') {
-      if (cellIndex !== 0 && cellIndex !== 1) {
-        setCellVal(cellVal);
-        setCellClick((prevState) => ({
-          ...prevState,
-          rowIndex: rowIndex,
-          cellIndex: cellIndex,
-          editable: true,
-        }));
-      }
+    if (
+      ['table-editable-parent-cell', 'tjdb-td-wrapper', 'table-cell', 'cell-text'].includes(e.target.classList.value)
+    ) {
+      setSelectedRowIds({});
+      setCellVal(cellVal);
+      setCellClick((prevState) => ({
+        ...prevState,
+        rowIndex: rowIndex,
+        cellIndex: cellIndex,
+        editable: true,
+        errorState: false,
+      }));
+      cellVal === null ? setNullValue(true) : setNullValue(false);
+      setEditPopover(false);
     }
+    e.stopPropagation();
+  };
+
+  const closeEditPopover = (previousValue) => {
+    setEditPopover(false);
+    previousValue === null ? setNullValue(true) : setNullValue(false);
+    setDefaultValue(false);
+    setCellVal(previousValue);
+    document.getElementById('edit-input-blur').blur();
   };
 
   function showTooltipForId(column) {
     return (
-      <ToolTip message="Column cannot be edited or deleted" placement="bottom">
+      <ToolTip message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
         <div className="primaryKeyTooltip">
           <div>
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
@@ -402,6 +644,15 @@ const Table = ({ collapseSidebar }) => {
                       }
                       checked={Object.keys(selectedRowIds).length === rows.length && rows.length}
                       onChange={() => toggleSelectOrDeSelectAllRows(rows.length)}
+                      style={{
+                        backgroundColor: `${
+                          (Object.keys(selectedRowIds).length > 0 &&
+                            Object.keys(selectedRowIds).length < rows.length) ||
+                          (Object.keys(selectedRowIds).length === rows.length && rows.length)
+                            ? '#3E63DD'
+                            : 'var(--base)'
+                        }`,
+                      }}
                     />
                   </div>
                 </th>
@@ -410,7 +661,7 @@ const Table = ({ collapseSidebar }) => {
                     key={column.Header}
                     width={230}
                     style={{ height: index === 0 ? '32px' : '' }}
-                    title={index === 1 ? '' : column?.Header}
+                    title={index === 0 ? '' : column?.Header}
                     className={
                       darkMode
                         ? 'table-header-dark tj-database-column-header tj-text-xsm'
@@ -476,7 +727,10 @@ const Table = ({ collapseSidebar }) => {
                   </th>
                 ))}
                 <th
-                  onClick={() => setIsCreateColumnDrawerOpen(true)}
+                  onClick={() => {
+                    resetCellAndRowSelection();
+                    setIsCreateColumnDrawerOpen(true);
+                  }}
                   className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
                 >
                   <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
@@ -512,13 +766,20 @@ const Table = ({ collapseSidebar }) => {
                 return (
                   <>
                     <tr
-                      className={`tjdb-table-row ${`row-tj`} ${darkMode && 'dark-bg'}`}
+                      className={cx(`tjdb-table-row row-tj`, {
+                        'dark-bg': darkMode,
+                        'table-row-selected': selectedRowIds[row.id] ?? false,
+                      })}
                       {...row.getRowProps()}
                       key={rIndex}
                     >
-                      <td className="table-cell">
+                      <td
+                        className={cx('table-cell', {
+                          'table-cell-selected': selectedRowIds[row.id] ?? false,
+                        })}
+                      >
                         <div
-                          className="d-flex align-items-center gap-2"
+                          className="d-flex align-items-center"
                           style={{
                             cursor: 'pointer',
                           }}
@@ -538,7 +799,7 @@ const Table = ({ collapseSidebar }) => {
                               display: 'none',
                             }}
                           >
-                            <SolidIcon name="expand" width={14} viewBox="0 0 14 14" />
+                            <SolidIcon name="expand" width={16} viewBox="0 0 16 16" />
                           </div>
                         </div>
                       </td>
@@ -552,71 +813,197 @@ const Table = ({ collapseSidebar }) => {
                           <td
                             {...cell.getCellProps()}
                             key={`cell.value-${index}`}
-                            title={cell.value || ''}
-                            //tabIndex="0"
-                            className={`${
-                              editColumnHeader?.clickedColumn === index &&
-                              editColumnHeader?.columnEditPopover === true &&
-                              !darkMode
-                                ? `table-columnHeader-click`
-                                : editColumnHeader?.clickedColumn === index &&
-                                  editColumnHeader?.columnEditPopover === true &&
-                                  darkMode
-                                ? `table-columnHeader-click-dark`
-                                : editColumnHeader?.hoveredColumn === index && !darkMode
-                                ? 'table-cell-hover-background'
-                                : editColumnHeader?.hoveredColumn === index && darkMode
-                                ? 'table-cell-hover-background-dark'
-                                : cellClick.rowIndex === rIndex &&
-                                  cellClick.cellIndex === index &&
-                                  cellClick.editable === true &&
-                                  cellClick.cellIndex !== 0 &&
-                                  cellClick.cellIndex !== 1
-                                ? 'table-editable-parent-cell'
-                                : `table-cell`
-                            }`}
+                            className={cx(
+                              `${
+                                editColumnHeader?.clickedColumn === index &&
+                                editColumnHeader?.columnEditPopover === true &&
+                                !darkMode
+                                  ? `table-columnHeader-click`
+                                  : editColumnHeader?.clickedColumn === index &&
+                                    editColumnHeader?.columnEditPopover === true &&
+                                    darkMode
+                                  ? `table-columnHeader-click-dark`
+                                  : editColumnHeader?.hoveredColumn === index && !darkMode
+                                  ? 'table-cell-hover-background'
+                                  : editColumnHeader?.hoveredColumn === index && darkMode
+                                  ? 'table-cell-hover-background-dark'
+                                  : cellClick.rowIndex === rIndex &&
+                                    cellClick.cellIndex === index &&
+                                    cellClick.editable === true
+                                  ? 'table-editable-parent-cell'
+                                  : `table-cell`
+                              }`,
+                              {
+                                'table-cell-selected': selectedRowIds[row.id] ?? false,
+                              }
+                            )}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
-                            //onKeyDown={(e) => handleKeyDown(e, cell.value)}
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
-                            {/* {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')} */}
-                            {cellClick.editable &&
-                            index !== 0 &&
-                            index !== 1 &&
-                            cellClick.cellIndex !== 0 &&
-                            cellClick.cellIndex !== 1 &&
-                            cellClick.rowIndex === rIndex &&
-                            cellClick.cellIndex === index ? (
-                              <input
-                                className="form-control"
-                                value={cellVal}
-                                onChange={(e) => setCellVal(e.target.value)}
-                              />
-                            ) : (
-                              <>
-                                {cell.value === null ? (
-                                  <span className="cell-text-null">Null</span>
-                                ) : cell.column.dataType === 'boolean' ? (
-                                  <div className="row">
-                                    <div className="col-1">
-                                      <label className={`form-switch`}>
-                                        <input
-                                          className="form-check-input"
-                                          type="checkbox"
-                                          checked={cell.value}
-                                          onChange={() => handleToggleCellEdit(cell.value, row.values.id, index)}
-                                        />
-                                      </label>
+                            <ToolTip
+                              message={index === 0 ? 'Cannot edit primary key values' : cell.value || ''}
+                              placement="bottom"
+                              delay={{ show: 0, hide: 0 }}
+                              show={
+                                !(
+                                  cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index &&
+                                  cellClick.editable
+                                ) &&
+                                cell.value !== null &&
+                                cell.column.dataType !== 'boolean'
+                              }
+                            >
+                              <div className="tjdb-column-select-border">
+                                <div
+                                  className={cx('tjdb-td-wrapper', {
+                                    'tjdb-selected-cell':
+                                      cellClick.rowIndex === rIndex &&
+                                      cellClick.cellIndex === index &&
+                                      cellClick.editable === true &&
+                                      !isCellUpdateInProgress,
+                                    'tjdb-cell-error':
+                                      cellClick.rowIndex === rIndex &&
+                                      cellClick.cellIndex === index &&
+                                      cellClick.errorState === true,
+                                  })}
+                                >
+                                  {cellClick.editable &&
+                                  cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index ? (
+                                    <CellEditMenu
+                                      show={index === 0 ? false : editPopover}
+                                      close={() => closeEditPopover(cell.value)}
+                                      columnDetails={headerGroups[0].headers[index]}
+                                      saveFunction={(newValue) => {
+                                        handleToggleCellEdit(newValue, row.values.id, index, rIndex, false, cell.value);
+                                      }}
+                                      setCellValue={setCellVal}
+                                      cellValue={cellVal}
+                                      previousCellValue={cell.value}
+                                      setDefaultValue={setDefaultValue}
+                                      defaultValue={defaultValue}
+                                      setNullValue={setNullValue}
+                                      nullValue={nullValue}
+                                      isBoolean={cell.column?.dataType === 'boolean' ? true : false}
+                                      darkMode={darkMode}
+                                    >
+                                      <div
+                                        className="input-cell-parent"
+                                        onClick={() => {
+                                          if (index !== 0) setEditPopover(true);
+                                        }}
+                                      >
+                                        {cellVal === null ? (
+                                          <span className="cell-text-null-input">Null</span>
+                                        ) : cell.column?.dataType === 'boolean' ? (
+                                          <div
+                                            className="row"
+                                            style={{ marginLeft: '0px' }}
+                                            onClick={() => {
+                                              if (index !== 0) setEditPopover(true);
+                                            }}
+                                          >
+                                            <div className="col-1 p-0">
+                                              <label className={`form-switch`}>
+                                                <input
+                                                  autoComplete="off"
+                                                  id="edit-input-blur"
+                                                  className="form-check-input fs-12"
+                                                  type="checkbox"
+                                                  checked={editPopover ? cellVal : cell.value}
+                                                  onChange={() => {
+                                                    if (!editPopover && index !== 0)
+                                                      handleToggleCellEdit(
+                                                        cell.value,
+                                                        row.values.id,
+                                                        index,
+                                                        rIndex,
+                                                        true,
+                                                        cell.value
+                                                      );
+                                                  }}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setCellClick((prev) => ({
+                                                      ...prev,
+                                                      editable: false,
+                                                    }));
+                                                  }}
+                                                />
+                                              </label>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <input
+                                            autoComplete="off"
+                                            className="form-control fs-12 text-truncate"
+                                            id="edit-input-blur"
+                                            value={cellVal === null ? '' : cellVal}
+                                            onChange={(e) => {
+                                              if (index !== 0) setCellVal(e.target.value);
+                                            }}
+                                            onFocus={() => {
+                                              if (index !== 0) setEditPopover(true);
+                                            }}
+                                            disabled={
+                                              defaultValue === true || nullValue === true || index === 0 ? true : false
+                                            }
+                                          />
+                                        )}
+                                      </div>
+                                    </CellEditMenu>
+                                  ) : (
+                                    <>
+                                      {cell.value === null ? (
+                                        <span className="cell-text-null">Null</span>
+                                      ) : cell.column.dataType === 'boolean' ? (
+                                        <div className="row" style={{ width: '33px' }}>
+                                          <div className="col-1">
+                                            <label className={`form-switch`}>
+                                              <input
+                                                className="form-check-input"
+                                                type="checkbox"
+                                                checked={cell.value}
+                                                onChange={() => {
+                                                  if (index !== 0) {
+                                                    handleToggleCellEdit(
+                                                      cell.value,
+                                                      row.values.id,
+                                                      index,
+                                                      rIndex,
+                                                      true,
+                                                      cell.value
+                                                    );
+                                                  }
+                                                }}
+                                              />
+                                            </label>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="cell-text">
+                                          {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
+                                  {cellClick.cellIndex !== 0 &&
+                                  cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index &&
+                                  isCellUpdateInProgress ? (
+                                    <div>
+                                      <progress
+                                        className="progress progress-sm tjdb-cell-save-progress"
+                                        value={progress}
+                                        max="100"
+                                      />
                                     </div>
-                                  </div>
-                                ) : (
-                                  <span className="cell-text">
-                                    {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
-                                  </span>
-                                )}
-                              </>
-                            )}
+                                  ) : null}
+                                </div>
+                              </div>
+                            </ToolTip>
                           </td>
                         );
                       })}
@@ -626,8 +1013,14 @@ const Table = ({ collapseSidebar }) => {
               })
             )}
             <div
-              onClick={() => setIsCreateRowDrawerOpen(true)}
+              onClick={() => {
+                resetCellAndRowSelection();
+                setIsCreateRowDrawerOpen(true);
+              }}
               className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
+              style={{
+                zIndex: 3,
+              }}
             >
               +
             </div>

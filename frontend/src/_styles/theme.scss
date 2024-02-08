@@ -6918,58 +6918,122 @@ tbody {
 
   .table-cell-hover-background {
     background-color: #F8F9FA;
-    border-width: 0px 1px 1px 1px;
+    padding: 0rem;
+    max-width: 230px;
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+      background-color: #F8F9FA;
+    }
   }
 
   .table-cell-hover-background-dark {
     background-color: #242f3c;
-    border-width: 0px 1px 1px 1px;
-  }
+    padding: 0rem;
+    max-width: 230px;
 
-  .table-editable-parent-cell {
-    border: 1.5px solid var(--indigo9);
-    background-color: var(--indigo2);
-    cursor: pointer;
-    padding: 0;
-
-    .form-control {
+    input.form-control {
       border: none;
-      padding: 0.5rem;
+      padding: 0px !important;
+      background-color: #242f3c;
     }
   }
 
+  .table-editable-parent-cell {
+    background-color: var(--indigo2);
+    cursor: pointer;
+    padding: 0rem;
+
+    .form-control {
+      background-color: var(--indigo2);
+      border: none;
+      padding: 0;
+      border-radius: 0px;
+    }
+
+    .popover-body {
+      margin-top: 10px;
+    }
+  }
+
+  .tjdb-cell-error {
+    padding: 0rem;
+    border-color: var(--Tomato-09, #E54D2E) !important;
+  }
+
+  .tjdb-column-select-border {
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
+  }
+
   .table-columnHeader-click {
-    // background-color: #fbfdff;
     background-color: #F8F9FA;
-    border-left: 1.5px solid #3E63DD !important;
-    border-right: 1.5px solid #3E63DD !important;
-    border-width: 0px 1px 1px 1px;
+    padding: 0;
+    max-width: 230px;
+
+    .tjdb-column-select-border {
+      border-left-color: #3E63DD !important;
+      border-right-color: #3E63DD !important;
+    }
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+      background-color: #F8F9FA;
+    }
   }
 
   .table-columnHeader-click-dark {
     background-color: #242f3c;
-    border-left: 1.5px solid white !important;
-    border-right: 1.5px solid white !important;
-    border-width: 0px 1px 1px 1px;
+    padding: 0;
+    max-width: 230px;
+
+    .tjdb-column-select-border {
+      border-left-color: white !important;
+      border-right-color: white !important;
+    }
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+      background-color: #242f3c;
+    }
   }
 
   .row-tj:first-child {
+    .tjdb-column-select-border {
+      border-top: 1px solid transparent;
+    }
+
     .table-columnHeader-click {
-      border-top: 1.5px solid #3E63DD !important;
+      .tjdb-column-select-border {
+        border-top-color: #3E63DD !important;
+      }
     }
 
     .table-columnHeader-click-dark {
-      border-top: 1.5px solid white !important;
+      .tjdb-column-select-border {
+        border-top-color: white !important;
+      }
     }
   }
 
   .row-tj:last-of-type {
+    .tjdb-column-select-border {
+      border-bottom: 1px solid transparent;
+    }
+
     .table-columnHeader-click {
-      border-bottom: 1.5px solid #3E63DD !important;
+      .tjdb-column-select-border {
+        border-bottom-color: #3E63DD !important;
+      }
     }
 
     .table-columnHeader-click-dark {
-      border-bottom: 1.5px solid white !important;
+      .tjdb-column-select-border {
+        border-bottom-color: white !important;
+      }
     }
   }
 
@@ -7026,6 +7090,10 @@ tbody {
     max-width: 230px !important;
   }
 
+  .table-cell {
+    padding: 0;
+  }
+
   .add-more-columns-btn {
     background: var(--indigo3);
     font-weight: 500;
@@ -7039,7 +7107,8 @@ tbody {
   }
 
   .tjdb-table-row{
-    &:hover {
+    height: 36px;
+    &:not(.table-row-selected):hover {
       background: var(--Slate-02, #F8F9FA);
 
       td:nth-child(1),
@@ -10550,6 +10619,7 @@ tbody {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  z-index: 2;
 }
 
 // custom styles for users multiselect in manage users
