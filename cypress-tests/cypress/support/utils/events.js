@@ -46,3 +46,11 @@ export const selectSupportCSAData = (option) => {
     .find("input")
     .type(`{selectAll}{backspace}${option}{enter}`);
 };
+
+export const changeEventType = (event, eventIndex = 0) => {
+  cy.get('[data-cy="event-handler"]').eq(eventIndex).click();
+  cy.get('[data-cy="event-selection"]')
+    .click()
+    .find("input")
+    .type(`{selectAll}{backspace}${event}{enter}`);
+};
