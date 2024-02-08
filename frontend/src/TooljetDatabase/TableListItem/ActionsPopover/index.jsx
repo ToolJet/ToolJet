@@ -2,12 +2,19 @@ import React from 'react';
 import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import EditIcon from './Icons/Edit.svg';
+import EditIcon from '../../Icons/EditColumn.svg';
 // import CloneIcon from './Icons/Clone.svg';
 import DeleteIcon from './Icons/Delete.svg';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const ListItemPopover = ({ onEdit, onDelete, darkMode, handleExportTable, onMenuToggle }) => {
+export const ListItemPopover = ({
+  onEdit,
+  onDelete,
+  darkMode,
+  handleExportTable,
+  onMenuToggle,
+  onAddNewColumnBtnClick,
+}) => {
   const closeMenu = () => {
     document.body.click();
   };
@@ -28,12 +35,27 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode, handleExportTable,
               onEdit();
             }}
           >
-            Rename
+            Rename table
+          </div>
+        </div>
+        <div className={`row mt-3 cursor-pointer`}>
+          <div className="col-auto">
+            <SolidIcon name="column" width="14" />
+          </div>
+          <div
+            className="col text-truncate"
+            onClick={(event) => {
+              event.stopPropagation();
+              closeMenu();
+              onAddNewColumnBtnClick();
+            }}
+          >
+            Add new column
           </div>
         </div>
         <div className="row mt-3 cursor-pointer">
           <div className="col-auto" data-cy="export-option-icon">
-            <SolidIcon name="filedownload" width="13" viewBox="0 0 25 25" />
+            <SolidIcon name="filedownload" width="14" viewBox="0 0 25 25" />
           </div>
           <div
             className="col text-truncate"
@@ -64,7 +86,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode, handleExportTable,
               onDelete();
             }}
           >
-            Delete
+            Delete table
           </div>
         </div>
       </Popover.Body>

@@ -6923,47 +6923,132 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    border-width: 0px 1px 1px 1px;
+    cursor: pointer;
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+    }
   }
 
   .table-cell-hover-background {
     background-color: #F8F9FA;
+    padding: 0rem;
+    max-width: 230px;
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+      background-color: #F8F9FA;
+    }
   }
 
   .table-cell-hover-background-dark {
     background-color: #242f3c;
+    padding: 0rem;
+    max-width: 230px;
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+      background-color: #242f3c;
+    }
   }
 
-  .table-cell-click {
-    // background-color: #fbfdff;
+  .table-editable-parent-cell {
+    background-color: var(--indigo2);
+    cursor: pointer;
+    padding: 0rem;
+
+    .form-control {
+      background-color: var(--indigo2);
+      border: none;
+      padding: 0;
+      border-radius: 0px;
+    }
+
+    .popover-body {
+      margin-top: 10px;
+    }
+  }
+
+  .tjdb-cell-error {
+    padding: 0rem;
+    border-color: var(--Tomato-09, #E54D2E) !important;
+  }
+
+  .tjdb-column-select-border {
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
+  }
+
+  .table-columnHeader-click {
     background-color: #F8F9FA;
-    border-left: 1.5px solid #3E63DD !important;
-    border-right: 1.5px solid #3E63DD !important;
+    padding: 0;
+    max-width: 230px;
+
+    .tjdb-column-select-border {
+      border-left-color: #3E63DD !important;
+      border-right-color: #3E63DD !important;
+    }
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+      background-color: #F8F9FA;
+    }
   }
 
-  .table-cell-click-dark {
+  .table-columnHeader-click-dark {
     background-color: #242f3c;
-    border-left: 1.5px solid white !important;
-    border-right: 1.5px solid white !important;
+    padding: 0;
+    max-width: 230px;
+
+    .tjdb-column-select-border {
+      border-left-color: white !important;
+      border-right-color: white !important;
+    }
+
+    input.form-control {
+      border: none;
+      padding: 0px !important;
+      background-color: #242f3c;
+    }
   }
 
   .row-tj:first-child {
-    .table-cell-click {
-      border-top: 1.5px solid #3E63DD !important;
+    .tjdb-column-select-border {
+      border-top: 1px solid transparent;
     }
 
-    .table-cell-click-dark {
-      border-top: 1.5px solid white !important;
+    .table-columnHeader-click {
+      .tjdb-column-select-border {
+        border-top-color: #3E63DD !important;
+      }
+    }
+
+    .table-columnHeader-click-dark {
+      .tjdb-column-select-border {
+        border-top-color: white !important;
+      }
     }
   }
 
   .row-tj:last-of-type {
-    .table-cell-click {
-      border-bottom: 1.5px solid #3E63DD !important;
+    .tjdb-column-select-border {
+      border-bottom: 1px solid transparent;
     }
 
-    .table-cell-click-dark {
-      border-bottom: 1.5px solid white !important;
+    .table-columnHeader-click {
+      .tjdb-column-select-border {
+        border-bottom-color: #3E63DD !important;
+      }
+    }
+
+    .table-columnHeader-click-dark {
+      .tjdb-column-select-border {
+        border-bottom-color: white !important;
+      }
     }
   }
 
@@ -7020,6 +7105,10 @@ tbody {
     max-width: 230px !important;
   }
 
+  .table-cell {
+    padding: 0;
+  }
+
   .add-more-columns-btn {
     background: var(--indigo3);
     font-weight: 500;
@@ -7031,6 +7120,23 @@ tbody {
   .delete-row-btn {
     max-width: 140px;
   }
+
+  .tjdb-table-row{
+    height: 36px;
+    &:not(.table-row-selected):hover {
+      background: var(--Slate-02, #F8F9FA);
+
+      td:nth-child(1),
+      td:nth-child(2) {
+        background: var(--Slate-02, #F8F9FA);
+      }
+  
+      .tjdb-checkbox-cell {
+        display: block !important;
+      }
+    }
+
+  } 
 }
 
 .apploader {
@@ -7330,7 +7436,7 @@ tbody {
 
 .workspace-content-wrapper,
 .database-page-content-wrap {
-  // background: var(--slate2);
+  height: calc(100vh - 64px) !important;
 }
 
 .workspace-variable-table-card {
@@ -7385,6 +7491,7 @@ tbody {
   max-width: 288px;
   background: var(--base);
   border-right: 1px solid var(--slate5);
+  height: calc(100vh - 64px) !important;
 
 
   .sidebar-container {
@@ -7891,11 +7998,10 @@ tbody {
 }
 
 .toojet-db-table-footer,
+.toojet-db-table-footer-collapse,
 .home-page-footer {
   position: fixed;
   bottom: 0px;
-  right: 0;
-  left: 336px;
 }
 
 .home-page-footer {
@@ -8089,6 +8195,19 @@ tbody {
 .toojet-db-table-footer {
   height: 52px;
   background: var(--base) !important;
+  width: calc(100vw - 336px);
+}
+
+.toojet-db-table-footer-collapse {
+  height: 52px;
+  background: var(--base) !important;
+  width: calc(100vw - 48px);
+}
+
+.toojet-db-table-footer-collapse {
+  height: 52px;
+  background: var(--base) !important;
+  width: calc(100vw - 48px);
 }
 
 .home-app-card-header {
@@ -8921,8 +9040,8 @@ tbody {
   color: var(--slate12) !important;
 
   &:first-child {
-    display: flex !important;
-    align-items: center !important;
+    // display: flex !important;
+    // align-items: center !important;
     padding-left: 1rem !important;
   }
 
@@ -8932,16 +9051,12 @@ tbody {
   margin: 0;
   width: 300px;
 
-  th:first-child {
-    height: 29px;
-  }
 
   th:first-child>div {
     height: 16px;
     width: 16px;
     display: flex;
     align-items: center;
-    height: 29px;
 
     input {
       border-radius: 4px;
@@ -10026,7 +10141,8 @@ tbody {
   height: 110px;
 
   table {
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     width: max-content;
 
     .row-tj {
@@ -10714,6 +10830,7 @@ tbody {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  z-index: 2;
 }
 
 // custom styles for users multiselect in manage users
