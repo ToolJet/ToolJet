@@ -376,3 +376,19 @@ $btn-dark-color: #FFFFFF;
 
   border: none;
 }
+
+// Style for Chart component
+.widget-chart{
+  .js-plotly-plot{
+    border-radius: inherit;
+    .plot-container{
+      border-radius: inherit;
+      .svg-container{
+        border-radius: inherit;
+        .main-svg{
+          border-radius: inherit;
+        }
+      }
+    }
+  }
+}
