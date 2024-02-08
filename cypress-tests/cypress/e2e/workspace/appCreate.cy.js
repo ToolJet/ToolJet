@@ -12,6 +12,7 @@ describe("App creation", () => {
 
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
+        cy.skipWalkthrough();
     });
 
     it("Should verify create, rename and clone app flow", () => {
