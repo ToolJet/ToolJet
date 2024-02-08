@@ -305,6 +305,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 
         cy.get('[data-cy="all-users-list-item"] > span').click();
         cy.get(`[data-cy="${cyParamName(groupName)}-list-item"]`).click();
+        cy.wait(1000);
         cy.get(groupsSelector.appsLink).click();
         cy.wait(1000);
         cy.get('[data-cy="checkbox-app-edit"]').check();
@@ -314,17 +315,19 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 };
 
 export const OpenGroupCardOption = (groupName) => {
-  cy.get(groupsSelector.groupLink(groupName)).click()
   cy.get(groupsSelector.groupLink(groupName))
-    .trigger("mousehover")
-    .trigger("mouseenter");
-  cy.get(
-    `[data-cy="${cyParamName(
-      groupName
-    )}-list-item"] > :nth-child(2) > .tj-base-btn`
-  ).click({ force: true });
+    .trigger("mouseenter")
+    .trigger("mouseover")
+    .then(() => {
+      cy.wait(2000).then(() => {
+        cy.get(
+          `[data-cy="${cyParamName(
+            groupName
+          )}-list-item"] > :nth-child(2) > .tj-base-btn`
+        ).click({ force: true });
+      });
+    });
 };
-
 export const verifyGroupCardOptions = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   OpenGroupCardOption(groupName);
