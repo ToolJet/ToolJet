@@ -844,8 +844,11 @@ const Table = ({ collapseSidebar }) => {
                               placement="bottom"
                               delay={{ show: 0, hide: 0 }}
                               show={
-                                cellClick.rowIndex !== rIndex &&
-                                cellClick.cellIndex !== index &&
+                                !(
+                                  cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index &&
+                                  cellClick.editable
+                                ) &&
                                 cell.value !== null &&
                                 cell.column.dataType !== 'boolean'
                               }
