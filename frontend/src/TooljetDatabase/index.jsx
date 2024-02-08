@@ -4,6 +4,8 @@ import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
 import { authenticationService } from '../_services/authentication.service';
 import { BreadCrumbContext } from '@/App/App';
+import { pageTitles, setWindowTitle } from '@/_helpers/utils';
+import { useNavigate } from 'react-router-dom';
 
 export const TooljetDatabaseContext = createContext({
   organizationId: null,
@@ -53,6 +55,12 @@ export const TooljetDatabase = (props) => {
 
   const [queryFilters, setQueryFilters] = useState({});
   const [sortFilters, setSortFilters] = useState({});
+  const navigate = useNavigate();
+  const { admin } = authenticationService.currentSessionValue;
+
+  if (!admin) {
+    navigate('/');
+  }
 
   const {
     handleBuildFilterQuery,
@@ -119,6 +127,10 @@ export const TooljetDatabase = (props) => {
     updateSidebarNAV('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setWindowTitle({ page: `${selectedTable?.table_name || pageTitles.DATABASE}` });
+  }, [selectedTable]);
 
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
