@@ -823,8 +823,22 @@ export const widgets = [
         },
       },
     },
-    events: {},
+    actions: [
+      {
+        handle: 'clearClickedPoint',
+        displayName: 'Clear clicked point',
+      },
+    ],
+    events: {
+      onClick: { displayName: 'On data point click' },
+      onDoubleClick: { displayName: 'On double click' },
+    },
     styles: {
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+        validation: { schema: { type: 'string' } },
+      },
       padding: {
         type: 'code',
         displayName: 'Padding',
@@ -833,6 +847,14 @@ export const widgets = [
             type: 'union',
             schemas: [{ type: 'number' }, { type: 'string' }],
           },
+        },
+      },
+      borderRadius: {
+        type: 'number',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'number' },
+          defaultValue: false,
         },
       },
       visibility: {
@@ -856,6 +878,10 @@ export const widgets = [
     },
     exposedVariables: {
       show: null,
+      chartTitle: undefined,
+      xAxisTitle: undefined,
+      yAxisTitle: undefined,
+      clickedDataPoint: {},
     },
     definition: {
       others: {
@@ -900,7 +926,9 @@ export const widgets = [
       },
       events: [],
       styles: {
+        backgroundColor: { value: '#fff' },
         padding: { value: '50' },
+        borderRadius: { value: '{{4}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },

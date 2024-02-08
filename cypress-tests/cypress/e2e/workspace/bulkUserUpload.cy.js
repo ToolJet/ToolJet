@@ -35,7 +35,9 @@ describe("Bulk user upload", () => {
     data.email = fake.email.toLowerCase();
     data.workspaceName = data.firstName.toLowerCase();
 
-    userSignUp(data.firstName, data.email, data.workspaceName);
+    cy.apiLogin()
+    cy.apiCreateWorkspace(data.firstName, data.workspaceName);
+    cy.visit(`${data.workspaceName}`)
 
     common.navigateToManageUsers();
 
@@ -118,7 +120,13 @@ describe("Bulk user upload", () => {
   });
 
   it("Verify bulk user upload functionality", () => {
-    cy.login(data.email, usersText.password);
+    data.firstName = fake.firstName;
+    data.email = fake.email.toLowerCase();
+    data.workspaceName = data.firstName.toLowerCase();
+
+    cy.apiLogin()
+    cy.apiCreateWorkspace(data.firstName, data.workspaceName);
+    cy.visit(`${data.workspaceName}`)
     common.navigateToManageUsers();
 
     cy.get(usersSelector.buttonAddUsers).click();

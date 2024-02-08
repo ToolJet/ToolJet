@@ -205,6 +205,7 @@ export const manageUsersPagination = (email) => {
 
 export const searchUser = (email) => {
   cy.clearAndType(commonSelectors.inputUserSearch, email);
+  cy.wait(1000)
 };
 
 export const createWorkspace = (workspaceName) => {

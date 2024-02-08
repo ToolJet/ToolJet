@@ -247,6 +247,7 @@ export const TextInput = function TextInput({
               display: 'flex',
               fontWeight: 500,
               justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
+              fontSize: '12px',
             }}
           >
             <span
