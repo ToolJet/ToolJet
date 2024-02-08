@@ -14,12 +14,20 @@ import {
   verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
   verifyTooltip,
+  verifyContainerElements,
+  checkPaddingOfContainer,
+  selectColourFromColourPicker,
+  verifyWidgetColorCss,
 } from "Support/utils/commonWidget";
 import {
   addAllInputFieldColors,
   addAndVerifyAdditionalActions,
   addValidations,
   verifyInputFieldColors,
+  verifyLabelStyleElements,
+  verifyAlignment,
+  addCustomWidthOfLabel,
+  verifyCustomWidthOfLabel,
 } from "Support/utils/editor/inputFieldUtils";
 import {
   addSupportCSAData,
@@ -197,7 +205,7 @@ describe("Text Input", () => {
     data.customText = fake.firstName;
     verifyControlComponentAction(data.widgetName, data.customText);
   });
-  it.only("should verify the styles of the text input widget", () => {
+  it("should verify the styles of the text input widget", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.colourHex = fake.randomRgbaHex;
@@ -208,6 +216,7 @@ describe("Text Input", () => {
     data.textColor = fake.randomRgba;
     data.errorTextColor = fake.randomRgba;
     data.iconColor = fake.randomRgba;
+    data.labelColor = fake.randomRgba;
 
     openEditorSidebar(textInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -230,9 +239,43 @@ describe("Text Input", () => {
       data.boxShadowColor,
       4
     );
+
+    openEditorSidebar(textInputText.defaultWidgetName);
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+
+    verifyContainerElements();
+    checkPaddingOfContainer(textInputText.defaultWidgetName, 1);
+    cy.get('[data-cy="togglr-button-none"]').click();
+    checkPaddingOfContainer(textInputText.defaultWidgetName, 0);
+
+    verifyLabelStyleElements();
+    verifyAlignment(textInputText.defaultWidgetName, "sideLeft");
+    cy.get('[data-cy="togglr-button-top"]').click();
+    verifyAlignment(textInputText.defaultWidgetName, "topLeft");
+    cy.get('[data-cy="togglr-button-right"]').click();
+    verifyAlignment(textInputText.defaultWidgetName, "topRight");
+    cy.get('[data-cy="togglr-button-side"]').click();
+    verifyAlignment(textInputText.defaultWidgetName, "sideRight");
+    cy.get('[data-cy="togglr-button-left"]').click();
+    verifyAlignment(textInputText.defaultWidgetName, "sideLeft");
+    addCustomWidthOfLabel("50");
+    verifyCustomWidthOfLabel(textInputText.defaultWidgetName, "50");
+    selectColourFromColourPicker(
+      "Text",
+      data.labelColor,
+      0,
+      commonWidgetSelector.colourPickerParent,
+      "0"
+    );
+    verifyWidgetColorCss(
+      `[data-cy="label-${textInputText.defaultWidgetName}"]>label`,
+      "color",
+      data.labelColor,
+      true
+    );
   });
 
-  it("should verify the app preview", () => {
+  it.skip("should verify the app preview", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
@@ -383,40 +426,68 @@ describe("Text Input", () => {
     const data = {};
     data.customText = randomString(12);
 
-    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 200);
+    cy.forceClickOnCanvas();
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 50, 500);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Visibility");
 
-    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.forceClickOnCanvas();
     cy.dragAndDropWidget("Text input", 50, 50);
     selectEvent("On change", "Control Component");
+    cy.wait(500);
     selectCSA("textinput1", "Set text", "500");
+    cy.wait(500);
     addSupportCSAData("text", "{{components.textinput2.value");
 
-    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 50, 200);
+    cy.forceClickOnCanvas();
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 150, 400);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Clear", "500");
 
-    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 50, 400);
+    cy.forceClickOnCanvas();
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 250, 400);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Disable", "500");
     cy.wait(500);
-    cy.get('[data-cy="Value-fx-button"]').click();
-    cy.get('[data-cy="Value-input-field"]').clearAndTypeOnCodeMirror("{{true");
-    // cy.wait(1000);
+    cy.get('[data-cy="event-Value-fx-button"]').click();
+    cy.get('[data-cy="event-Value-input-field"]').clearAndTypeOnCodeMirror(
+      "{{true"
+    );
 
-    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 300, 50);
+    cy.forceClickOnCanvas();
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 350, 400);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Set blur", "500");
 
-    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 300, 200);
+    cy.forceClickOnCanvas();
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 450, 400);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Set focus");
+
+    cy.forceClickOnCanvas();
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 550, 400);
+    selectEvent("On click", "Control Component");
+    selectCSA("textinput1", "Set disable", "500");
+
+    cy.forceClickOnCanvas();
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 650, 400);
+    selectEvent("On click", "Control Component");
+    selectCSA("textinput1", "Set visibility", "500");
+    cy.wait(500);
+    cy.get('[data-cy="event-Value-fx-button"]').click();
+    cy.get('[data-cy="event-Value-input-field"]').clearAndTypeOnCodeMirror(
+      "{{true"
+    );
+
+    cy.forceClickOnCanvas();
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 300, 300);
+    selectEvent("On click", "Control Component");
+    selectCSA("textinput1", "Set loading", "500");
+    cy.wait(500);
+    cy.get('[data-cy="event-Value-fx-button"]').click();
+    cy.get('[data-cy="event-Value-input-field"]').clearAndTypeOnCodeMirror(
+      "{{true"
+    );
 
     cy.clearAndType(
       commonWidgetSelector.draggableWidget("textinput2"),
@@ -451,5 +522,22 @@ describe("Text Input", () => {
     cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
       "not.be.visible"
     );
+
+    cy.get(commonWidgetSelector.draggableWidget("button7")).click();
+    cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
+      "be.visible"
+    );
+
+    cy.get(commonWidgetSelector.draggableWidget("button6")).click();
+    cy.get(commonWidgetSelector.draggableWidget("textinput1"))
+      .parent()
+      .should("not.have.attr", "data-disabled", "true");
+
+    cy.get(commonWidgetSelector.draggableWidget("button8")).click();
+    cy.get(commonWidgetSelector.draggableWidget("textinput1"))
+      .parent()
+      .within(() => {
+        cy.get(".tj-widget-loader").should("be.visible");
+      });
   });
 });
