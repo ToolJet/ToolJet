@@ -888,7 +888,7 @@ export const EventManager = ({
                             enablePreview={true}
                             type={param?.type}
                             fieldMeta={{ options: param?.options }}
-                            cyLabel={param.displayName}
+                            cyLabel={`event-${param.displayName}`}
                             component={component}
                           />
                         </div>
@@ -901,6 +901,7 @@ export const EventManager = ({
               <div className="col-3 p-2">{t('editor.inspector.eventManager.debounce', 'Debounce')}</div>
               <div className="col-9" data-cy="debounce-input-field">
                 <CodeHinter
+                  cyLabel={`debounce`}
                   theme={darkMode ? 'monokai' : 'default'}
                   initialValue={event.debounce}
                   onChange={(value) => handlerChanged(index, 'debounce', value)}

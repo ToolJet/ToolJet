@@ -409,6 +409,7 @@ export const DropDown = function DropDown({
         data-cy={dataCy}
       >
         <div
+          data-cy={`label-${String(component.name).toLowerCase()}`}
           className={`my-auto text-truncate`}
           style={{
             alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
