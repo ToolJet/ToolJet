@@ -302,7 +302,14 @@
 }
 
 
-
-
-
+.code-hinter-preview-card-body::-webkit-scrollbar {
+    width: 4px !important; /* for vertical scrollbars */;
+}
   
+.code-hinter-preview-card-body::-webkit-scrollbar-track {
+    margin: 5px !important;
+}
+
+.code-hinter-preview-card-body > .codehinter-popup-icon {
+    left: 2px !important;
+}

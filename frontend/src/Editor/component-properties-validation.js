@@ -91,7 +91,7 @@ export const generateSchemaFromValidationDefinition = (definition, recursionDept
   return definition.optional ? optional(schema) : schema;
 };
 
-export const validate = (value, schema, _defaultValue) => {
+export const validate = (value, schema, _defaultValue, codePreviewValidator = false) => {
   let valid = true;
   const errors = [];
   let newValue = undefined;
@@ -101,7 +101,14 @@ export const validate = (value, schema, _defaultValue) => {
   } catch (structError) {
     valid = false;
     if (structError.type === 'type') errors.push(structError.message);
-    else errors.push(`Expected a value of type ${structError.type}, but received ${JSON.stringify(structError.value)}`);
+    else {
+      let errMsg = `Expected a value of type ${structError.type}, but received`;
+      errMsg = codePreviewValidator
+        ? errMsg + ` ${typeof structError.value}`
+        : errMsg + ` ${JSON.stringify(structError.value)}`;
+
+      errors.push(errMsg);
+    }
   }
 
   return [valid, errors, newValue];

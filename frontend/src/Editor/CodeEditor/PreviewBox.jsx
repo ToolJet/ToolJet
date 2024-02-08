@@ -4,7 +4,7 @@ import { EditorContext } from '../Context/EditorContextWrapper';
 import CodeHinter from '.';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';
-import { isEmpty } from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { handleCircularStructureToJSON, hasCircularDependency } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -57,7 +57,7 @@ export const PreviewBox = ({
   useEffect(() => {
     if (error) {
       setErrorStateActive(true);
-      setErrorMessage(error);
+      setErrorMessage(error.message);
     } else {
       setErrorStateActive(false);
       setErrorMessage(null);
@@ -66,7 +66,7 @@ export const PreviewBox = ({
   }, [error]);
 
   useEffect(() => {
-    const [valid, error, newValue, resolvedValue] = resolveReferences(
+    const [valid, _error, newValue, resolvedValue] = resolveReferences(
       currentValue,
       validationSchema,
       customVariables,
@@ -88,10 +88,22 @@ export const PreviewBox = ({
       });
       setError(null);
     } else if (!valid && !newValue && !resolvedValue) {
-      const err = !error ? `Invalid value for ${validationSchema?.schema?.type}` : `${error}`;
-      setError(err);
+      const err = !error ? `Invalid value for ${validationSchema?.schema?.type}` : `${_error}`;
+      setError({ message: err, value: resolvedValue, type: 'Invalid' });
     } else {
-      setError(error);
+      const jsErrorType = _error?.includes('ReferenceError')
+        ? 'ReferenceError'
+        : _error?.includes('TypeError')
+        ? 'TypeError'
+        : _error?.includes('SyntaxError')
+        ? 'SyntaxError'
+        : 'Invalid';
+
+      setError({
+        message: _error,
+        value: jsErrorType === 'Invalid' ? JSON.stringify(resolvedValue) : resolvedValue,
+        type: jsErrorType,
+      });
       setCoersionData(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,7 +124,7 @@ export const PreviewBox = ({
   );
 };
 
-const RenderResolvedValue = ({ error, currentValue, previewType, resolvedValue, coersionData, withValidation }) => {
+const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, withValidation }) => {
   const previewValueType =
     withValidation || (coersionData && coersionData?.typeBeforeCoercion)
       ? `${coersionData?.typeBeforeCoercion} ${
@@ -127,23 +139,23 @@ const RenderResolvedValue = ({ error, currentValue, previewType, resolvedValue, 
   return (
     <div class={`d-flex flex-column align-content-between flex-wrap`}>
       <div class="p-2">
-        <span class={`badge text-capitalize font-500 ${cls}`}> {previewValueType}</span>
+        <span class={`badge text-capitalize font-500 ${cls}`}> {error ? error.type : previewValueType}</span>
       </div>
       <div class="p-2 pt-0">
-        <PreviewBox.CodeBlock code={error ? currentValue : previewContent} />
+        <PreviewBox.CodeBlock code={error ? error.value : previewContent} />
       </div>
     </div>
   );
 };
 
 const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsidePreview, ...restProps }) => {
-  const { validationSchema, isWorkspaceVariable, errorStateActive, ref } = restProps;
+  const { validationSchema, isWorkspaceVariable, errorStateActive } = restProps;
 
   const [errorMessage, setErrorMessage] = useState('');
 
   const typeofError = getCurrentNodeType(errorMessage);
 
-  const errorMsg = typeofError === 'Array' ? errorMessage[0] : JSON.stringify(errorMessage);
+  const errorMsg = typeofError === 'Array' ? errorMessage[0] : errorMessage;
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -151,12 +163,16 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
     <Popover
       bsPrefix="codehinter-preview-popover"
       id="popover-basic"
-      className={`${darkMode && 'dark-theme'} shadow`}
-      style={{ width: '250px', maxWidth: '350px' }}
+      className={`${darkMode && 'dark-theme'}`}
+      style={{ width: '250px', maxWidth: '350px', marginRight: 10 }}
       onMouseEnter={() => setCursorInsidePreview(true)}
       onMouseLeave={() => setCursorInsidePreview(false)}
     >
-      <Popover.Body>
+      <Popover.Body
+        style={{
+          border: '1px solid var(--slate6)',
+        }}
+      >
         <div>
           {errorStateActive && (
             <div className="mb-2">
@@ -169,7 +185,7 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
                 imgWidth={18}
               >
                 <div className="d-flex align-items-center">
-                  <div class="">{errorMsg}</div>
+                  <div class="">{errorMsg !== 'null' ? errorMsg : 'Invalid'}</div>
                 </div>
               </Alert>
             </div>
@@ -210,7 +226,7 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
             }}
           >
             <Card.Body
-              className="p-1"
+              className="p-1 code-hinter-preview-card-body"
               style={{
                 minHeight: '60px',
                 maxHeight: '100px',
@@ -234,11 +250,11 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
 };
 
 const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
-  let preview = code.trim();
-  const shouldTrim = code.length > 10;
+  let preview = code && code.trim ? code?.trim() : `${code}`;
+  const shouldTrim = preview.length > 10;
 
   if (isExpectValue && shouldTrim) {
-    preview = code.substring(0, 10) + '...' + code.substring(code.length - 2, code.length);
+    preview = preview.substring(0, 10) + '...' + preview.substring(preview.length - 2, preview.length);
   }
 
   let prettyPrintedJson = null;

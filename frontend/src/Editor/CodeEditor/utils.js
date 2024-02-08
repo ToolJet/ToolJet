@@ -320,5 +320,5 @@ export const validateComponentProperty = (resolvedValue, validation) => {
     ? any()
     : generateSchemaFromValidationDefinition(validationDefinition);
 
-  return validate(resolvedValue, schema, defaultValue);
+  return validate(resolvedValue, schema, defaultValue, true);
 };

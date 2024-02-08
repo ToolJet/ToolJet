@@ -23,7 +23,18 @@ const Container = ({ children, cls = '', useDarkMode }) => {
 
 const Message = ({ children }) => {
   return (
-    <div data-cy={`alert-info-text`} style={{ fontWeight: 400, width: '100%' }} className="mx-2">
+    <div
+      data-cy={`alert-info-text`}
+      style={{
+        fontWeight: 400,
+        width: '100%',
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word',
+        overflowWrap: 'break-word',
+        display: 'block',
+      }}
+      className="mx-2"
+    >
       {children}
     </div>
   );
