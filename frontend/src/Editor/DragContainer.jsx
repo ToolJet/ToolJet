@@ -6,7 +6,7 @@ import './DragContainer.css';
 import _, { isEmpty, debounce } from 'lodash';
 import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
-import { useGridStore } from '@/_stores/gridStore';
+import { useGridStore, useIsGroupHandleHoverd } from '@/_stores/gridStore';
 
 export default function DragContainer({
   widgets,
@@ -24,11 +24,13 @@ export default function DragContainer({
   const lastDraggedEventsRef = useRef(null);
   const boxes = Object.keys(widgets).map((key) => ({ ...widgets[key], id: key }));
   console.log('boxes===>', boxes);
+  const isGroupHandleHoverd = useIsGroupHandleHoverd();
   const configHandleForMultiple = (id) => {
     return (
       <div
         className={'multiple-components-config-handle'}
         onMouseUpCapture={() => {
+          console.log('components>>>onMouseDownCapture');
           if (lastDraggedEventsRef.current) {
             const preant = boxes.find((box) => (box.id = lastDraggedEventsRef.current?.events?.[0]?.target?.id))
               ?.component?.parent;
@@ -41,14 +43,15 @@ export default function DragContainer({
               }))
             );
           }
-          if (useGridStore.getState().isGroundHandleHoverd) {
-            useGridStore.getState().actions.setIsGroundHandleHoverd(false);
+          if (useGridStore.getState().isGroupHandleHoverd) {
+            useGridStore.getState().actions.setIsGroupHandleHoverd(false);
           }
         }}
         onMouseDownCapture={() => {
+          console.log('components>>>onMouseDownCapture');
           lastDraggedEventsRef.current = null;
-          if (!useGridStore.getState().isGroundHandleHoverd) {
-            useGridStore.getState().actions.setIsGroundHandleHoverd(true);
+          if (!useGridStore.getState().isGroupHandleHoverd) {
+            useGridStore.getState().actions.setIsGroupHandleHoverd(true);
           }
         }}
       >
@@ -355,9 +358,7 @@ export default function DragContainer({
       <Moveable
         dragTargetSelf={true}
         dragTarget={
-          useGridStore.getState().isGroundHandleHoverd
-            ? document.getElementById('multiple-components-config-handle')
-            : undefined
+          isGroupHandleHoverd ? document.getElementById('multiple-components-config-handle') : undefined
           // `.widget-${hoveredComponent}`
         }
         ref={moveableRef}
