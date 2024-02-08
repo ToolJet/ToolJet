@@ -33,18 +33,19 @@ const Table = ({ collapseSidebar }) => {
     columns,
     selectedTable,
     selectedTableData,
-    setSelectedTableData,
     setColumns,
-    setTotalRecords,
+    queryFilters,
     setQueryFilters,
+    sortFilters,
     setSortFilters,
     resetAll,
     pageSize,
     pageCount,
+    handleRefetchQuery,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
-  const [loading, setLoading] = useState(false);
+  const [loading, _setLoading] = useState(false);
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [editColumnHeader, setEditColumnHeader] = useState({
@@ -142,23 +143,6 @@ const Table = ({ collapseSidebar }) => {
     }
   };
 
-  const fetchTableData = (queryParams = '', pagesize = 50, pagecount = 1) => {
-    const defaultQueryParams = `limit=${pagesize}&offset=${(pagecount - 1) * pagesize}&order=id.desc`;
-    let params = queryParams ? queryParams : defaultQueryParams;
-    setLoading(true);
-
-    tooljetDatabaseService.findOne(organizationId, selectedTable.id, params).then(({ headers, data = [], error }) => {
-      setLoading(false);
-      if (error) {
-        toast.error(error?.message ?? `Error fetching table "${selectedTable.table_name}" data`);
-        return;
-      }
-      const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
-      setTotalRecords(totalContentRangeRecords);
-      setSelectedTableData(data);
-    });
-  };
-
   const onSelectedTableChange = () => {
     resetAll();
     setSortFilters({});
@@ -223,6 +207,16 @@ const Table = ({ collapseSidebar }) => {
   const handleOnCloseEditMenu = () => {
     setNullValue(false);
     setDefaultValue(false);
+  };
+
+  const resetCellAndRowSelection = () => {
+    setSelectedRowIds({});
+    setCellClick({
+      rowIndex: null,
+      cellIndex: null,
+      editable: false,
+      errorState: false,
+    });
   };
 
   // Allowlist keys for entering on text field to enable edit mode
@@ -360,6 +354,7 @@ const Table = ({ collapseSidebar }) => {
         document.removeEventListener('keydown', handleKeyDown);
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cellClick, editPopover, isCellUpdateInProgress]);
 
   useEffect(() => {
@@ -388,6 +383,7 @@ const Table = ({ collapseSidebar }) => {
     return () => {
       document.removeEventListener('click', handleCellOutsideClick);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDeleteRow = async () => {
@@ -410,7 +406,7 @@ const Table = ({ collapseSidebar }) => {
         }
 
         toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable.table_name}"`);
-        fetchTableData();
+        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
         setSelectedRowIds({});
       } else {
         toast.error('Something went wrong - Record Id is incorrect');
@@ -494,21 +490,7 @@ const Table = ({ collapseSidebar }) => {
       return;
     }
 
-    const limit = pageSize;
-    const pageRange = `${(pageCount - 1) * pageSize + 1}`;
-    tooljetDatabaseService
-      .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}&offset=${pageRange - 1}`)
-      .then(({ headers, data = [], error }) => {
-        if (error) {
-          toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
-          return;
-        }
-        if (Array.isArray(data) && data?.length > 0) {
-          const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
-          setTotalRecords(totalContentRangeRecords);
-          setSelectedTableData(data);
-        }
-      });
+    handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
     setEditPopover(false);
     handleOnCloseEditMenu();
     setCellClick((prev) => ({
@@ -576,7 +558,9 @@ const Table = ({ collapseSidebar }) => {
   };
 
   const handleCellClick = (e, cellIndex, rowIndex, cellVal) => {
-    if (['table-editable-parent-cell', 'tjdb-td-wrapper', 'table-cell'].includes(e.target.classList.value)) {
+    if (
+      ['table-editable-parent-cell', 'tjdb-td-wrapper', 'table-cell', 'cell-text'].includes(e.target.classList.value)
+    ) {
       setSelectedRowIds({});
       setCellVal(cellVal);
       setCellClick((prevState) => ({
@@ -589,6 +573,7 @@ const Table = ({ collapseSidebar }) => {
       cellVal === null ? setNullValue(true) : setNullValue(false);
       setEditPopover(false);
     }
+    e.stopPropagation();
   };
 
   const closeEditPopover = (previousValue) => {
@@ -659,7 +644,6 @@ const Table = ({ collapseSidebar }) => {
                       }
                       checked={Object.keys(selectedRowIds).length === rows.length && rows.length}
                       onChange={() => toggleSelectOrDeSelectAllRows(rows.length)}
-                      // For indeterminate & Checked - bg color will be blue
                       style={{
                         backgroundColor: `${
                           (Object.keys(selectedRowIds).length > 0 &&
@@ -743,7 +727,10 @@ const Table = ({ collapseSidebar }) => {
                   </th>
                 ))}
                 <th
-                  onClick={() => setIsCreateColumnDrawerOpen(true)}
+                  onClick={() => {
+                    resetCellAndRowSelection();
+                    setIsCreateColumnDrawerOpen(true);
+                  }}
                   className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
                 >
                   <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
@@ -826,7 +813,6 @@ const Table = ({ collapseSidebar }) => {
                           <td
                             {...cell.getCellProps()}
                             key={`cell.value-${index}`}
-                            title={index === 0 ? 'Cannot edit primary key values' : cell.value || ''}
                             className={cx(
                               `${
                                 editColumnHeader?.clickedColumn === index &&
@@ -855,148 +841,169 @@ const Table = ({ collapseSidebar }) => {
                             {...cell.getCellProps()}
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
-                            <div
-                              className={cx('tjdb-td-wrapper', {
-                                'tjdb-selected-cell':
+                            <ToolTip
+                              message={index === 0 ? 'Cannot edit primary key values' : cell.value || ''}
+                              placement="bottom"
+                              delay={{ show: 0, hide: 0 }}
+                              show={
+                                !(
                                   cellClick.rowIndex === rIndex &&
                                   cellClick.cellIndex === index &&
-                                  cellClick.editable === true &&
-                                  !isCellUpdateInProgress,
-                                'tjdb-cell-error':
-                                  cellClick.rowIndex === rIndex &&
-                                  cellClick.cellIndex === index &&
-                                  cellClick.errorState === true,
-                              })}
+                                  cellClick.editable
+                                ) &&
+                                cell.value !== null &&
+                                cell.column.dataType !== 'boolean'
+                              }
                             >
-                              {cellClick.editable && cellClick.rowIndex === rIndex && cellClick.cellIndex === index ? (
-                                <CellEditMenu
-                                  show={index === 0 ? false : editPopover}
-                                  close={() => closeEditPopover(cell.value)}
-                                  columnDetails={headerGroups[0].headers[index]}
-                                  saveFunction={(newValue) => {
-                                    handleToggleCellEdit(newValue, row.values.id, index, rIndex, false, cell.value);
-                                  }}
-                                  setCellValue={setCellVal}
-                                  cellValue={cellVal}
-                                  previousCellValue={cell.value}
-                                  setDefaultValue={setDefaultValue}
-                                  defaultValue={defaultValue}
-                                  setNullValue={setNullValue}
-                                  nullValue={nullValue}
-                                  isBoolean={cell.column?.dataType === 'boolean' ? true : false}
-                                  darkMode={darkMode}
+                              <div className="tjdb-column-select-border">
+                                <div
+                                  className={cx('tjdb-td-wrapper', {
+                                    'tjdb-selected-cell':
+                                      cellClick.rowIndex === rIndex &&
+                                      cellClick.cellIndex === index &&
+                                      cellClick.editable === true &&
+                                      !isCellUpdateInProgress,
+                                    'tjdb-cell-error':
+                                      cellClick.rowIndex === rIndex &&
+                                      cellClick.cellIndex === index &&
+                                      cellClick.errorState === true,
+                                  })}
                                 >
-                                  <div
-                                    className="input-cell-parent"
-                                    onClick={() => {
-                                      if (index !== 0) setEditPopover(true);
-                                    }}
-                                  >
-                                    {cellVal === null ? (
-                                      <span className="cell-text-null-input">Null</span>
-                                    ) : cell.column?.dataType === 'boolean' ? (
+                                  {cellClick.editable &&
+                                  cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index ? (
+                                    <CellEditMenu
+                                      show={index === 0 ? false : editPopover}
+                                      close={() => closeEditPopover(cell.value)}
+                                      columnDetails={headerGroups[0].headers[index]}
+                                      saveFunction={(newValue) => {
+                                        handleToggleCellEdit(newValue, row.values.id, index, rIndex, false, cell.value);
+                                      }}
+                                      setCellValue={setCellVal}
+                                      cellValue={cellVal}
+                                      previousCellValue={cell.value}
+                                      setDefaultValue={setDefaultValue}
+                                      defaultValue={defaultValue}
+                                      setNullValue={setNullValue}
+                                      nullValue={nullValue}
+                                      isBoolean={cell.column?.dataType === 'boolean' ? true : false}
+                                      darkMode={darkMode}
+                                    >
                                       <div
-                                        className="row"
-                                        style={{ marginLeft: '0px' }}
+                                        className="input-cell-parent"
                                         onClick={() => {
                                           if (index !== 0) setEditPopover(true);
                                         }}
                                       >
-                                        <div className="col-1 p-0">
-                                          <label className={`form-switch`}>
-                                            <input
-                                              autoComplete="off"
-                                              id="edit-input-blur"
-                                              className="form-check-input fs-12"
-                                              type="checkbox"
-                                              checked={editPopover ? cellVal : cell.value}
-                                              onChange={() => {
-                                                if (!editPopover && index !== 0)
-                                                  handleToggleCellEdit(
-                                                    cell.value,
-                                                    row.values.id,
-                                                    index,
-                                                    rIndex,
-                                                    true,
-                                                    cell.value
-                                                  );
-                                              }}
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                setCellClick((prev) => ({
-                                                  ...prev,
-                                                  editable: false,
-                                                }));
-                                              }}
-                                            />
-                                          </label>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <input
-                                        autoComplete="off"
-                                        className="form-control fs-12"
-                                        id="edit-input-blur"
-                                        value={cellVal === null ? '' : cellVal}
-                                        onChange={(e) => {
-                                          if (index !== 0) setCellVal(e.target.value);
-                                        }}
-                                        onFocus={() => {
-                                          if (index !== 0) setEditPopover(true);
-                                        }}
-                                        disabled={
-                                          defaultValue === true || nullValue === true || index === 0 ? true : false
-                                        }
-                                      />
-                                    )}
-                                  </div>
-                                </CellEditMenu>
-                              ) : (
-                                <>
-                                  {cell.value === null ? (
-                                    <span className="cell-text-null">Null</span>
-                                  ) : cell.column.dataType === 'boolean' ? (
-                                    <div className="row" style={{ width: '33px' }}>
-                                      <div className="col-1">
-                                        <label className={`form-switch`}>
-                                          <input
-                                            className="form-check-input"
-                                            type="checkbox"
-                                            checked={cell.value}
-                                            onChange={() => {
-                                              if (index !== 0) {
-                                                handleToggleCellEdit(
-                                                  cell.value,
-                                                  row.values.id,
-                                                  index,
-                                                  rIndex,
-                                                  true,
-                                                  cell.value
-                                                );
-                                              }
+                                        {cellVal === null ? (
+                                          <span className="cell-text-null-input">Null</span>
+                                        ) : cell.column?.dataType === 'boolean' ? (
+                                          <div
+                                            className="row"
+                                            style={{ marginLeft: '0px' }}
+                                            onClick={() => {
+                                              if (index !== 0) setEditPopover(true);
                                             }}
+                                          >
+                                            <div className="col-1 p-0">
+                                              <label className={`form-switch`}>
+                                                <input
+                                                  autoComplete="off"
+                                                  id="edit-input-blur"
+                                                  className="form-check-input fs-12"
+                                                  type="checkbox"
+                                                  checked={editPopover ? cellVal : cell.value}
+                                                  onChange={() => {
+                                                    if (!editPopover && index !== 0)
+                                                      handleToggleCellEdit(
+                                                        cell.value,
+                                                        row.values.id,
+                                                        index,
+                                                        rIndex,
+                                                        true,
+                                                        cell.value
+                                                      );
+                                                  }}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setCellClick((prev) => ({
+                                                      ...prev,
+                                                      editable: false,
+                                                    }));
+                                                  }}
+                                                />
+                                              </label>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <input
+                                            autoComplete="off"
+                                            className="form-control fs-12 text-truncate"
+                                            id="edit-input-blur"
+                                            value={cellVal === null ? '' : cellVal}
+                                            onChange={(e) => {
+                                              if (index !== 0) setCellVal(e.target.value);
+                                            }}
+                                            onFocus={() => {
+                                              if (index !== 0) setEditPopover(true);
+                                            }}
+                                            disabled={
+                                              defaultValue === true || nullValue === true || index === 0 ? true : false
+                                            }
                                           />
-                                        </label>
+                                        )}
                                       </div>
-                                    </div>
+                                    </CellEditMenu>
                                   ) : (
-                                    <>{isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}</>
+                                    <>
+                                      {cell.value === null ? (
+                                        <span className="cell-text-null">Null</span>
+                                      ) : cell.column.dataType === 'boolean' ? (
+                                        <div className="row" style={{ width: '33px' }}>
+                                          <div className="col-1">
+                                            <label className={`form-switch`}>
+                                              <input
+                                                className="form-check-input"
+                                                type="checkbox"
+                                                checked={cell.value}
+                                                onChange={() => {
+                                                  if (index !== 0) {
+                                                    handleToggleCellEdit(
+                                                      cell.value,
+                                                      row.values.id,
+                                                      index,
+                                                      rIndex,
+                                                      true,
+                                                      cell.value
+                                                    );
+                                                  }
+                                                }}
+                                              />
+                                            </label>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="cell-text">
+                                          {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                                        </div>
+                                      )}
+                                    </>
                                   )}
-                                </>
-                              )}
-                              {cellClick.cellIndex !== 0 &&
-                              cellClick.rowIndex === rIndex &&
-                              cellClick.cellIndex === index &&
-                              isCellUpdateInProgress ? (
-                                <div>
-                                  <progress
-                                    className="progress progress-sm tjdb-cell-save-progress"
-                                    value={progress}
-                                    max="100"
-                                  />
+                                  {cellClick.cellIndex !== 0 &&
+                                  cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index &&
+                                  isCellUpdateInProgress ? (
+                                    <div>
+                                      <progress
+                                        className="progress progress-sm tjdb-cell-save-progress"
+                                        value={progress}
+                                        max="100"
+                                      />
+                                    </div>
+                                  ) : null}
                                 </div>
-                              ) : null}
-                            </div>
+                              </div>
+                            </ToolTip>
                           </td>
                         );
                       })}
@@ -1006,7 +1013,10 @@ const Table = ({ collapseSidebar }) => {
               })
             )}
             <div
-              onClick={() => setIsCreateRowDrawerOpen(true)}
+              onClick={() => {
+                resetCellAndRowSelection();
+                setIsCreateRowDrawerOpen(true);
+              }}
               className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
               style={{
                 zIndex: 3,

@@ -262,7 +262,10 @@ const Header = ({
                         fontWeight: 500,
                       }}
                     >
-                      <span>{Object.keys(selectedRowIds).length} record selected</span>
+                      <span>
+                        {Object.keys(selectedRowIds).length}{' '}
+                        {Object.keys(selectedRowIds).length > 1 ? 'records' : 'record'} selected
+                      </span>
                     </div>
                   )}
                 </div>
