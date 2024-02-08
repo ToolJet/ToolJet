@@ -66,6 +66,8 @@ jobs:
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
 
       - name: Set up database
         run: |
@@ -178,6 +180,8 @@ jobs:
           echo "SUB_PATH=/apps/tooljet/" >> .env
           echo "NODE_ENV=production" >> .env
           echo "SERVE_CLIENT=true" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
