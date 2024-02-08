@@ -204,7 +204,7 @@ export default function generateColumnsData({
                     defaultValue={cellValue}
                     onFocus={(e) => e.stopPropagation()}
                   />
-                  <div className="invalid-feedback">{validationError}</div>
+                  <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );
             }
@@ -247,7 +247,6 @@ export default function generateColumnsData({
               });
 
               const { isValid, validationError } = validationData;
-              console.log('validationData', column.minValue, column.maxValue, validationData);
               const cellStyles = {
                 color: textColor ?? '',
               };
@@ -283,7 +282,7 @@ export default function generateColumnsData({
                     className={`table-column-type-input-element ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
-                  <div className="invalid-feedback">{validationError}</div>
+                  <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );
             }
@@ -352,7 +351,7 @@ export default function generateColumnsData({
                     defaultValue={cellValue}
                     onFocus={(e) => e.stopPropagation()}
                   ></textarea>
-                  <div className="invalid-feedback">{validationError}</div>
+                  <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );
             }
