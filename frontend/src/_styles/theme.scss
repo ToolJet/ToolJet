@@ -8699,6 +8699,7 @@ tbody {
   p {
     font-weight: 500 !important;
     margin-left: 5px;
+    color: var(--slate11);
   }
 
   span {
@@ -8710,6 +8711,7 @@ tbody {
 .workspace-user-status {
   margin-right: 22px;
   margin-left: 5px;
+  color: var(--slate12);
 }
 
 .worskpace-setting-table-gap {
@@ -9557,6 +9559,13 @@ tbody {
           background-color: var(--slate3);
         }
 
+        input {
+          color: var(--slate11);
+          &:focus {
+            background: unset !important
+          }
+        }
+
         .item-renderer {
           align-items: center;
 
@@ -9579,6 +9588,11 @@ tbody {
   .rmsc .dropdown-container:focus-within {
     border: 1px solid var(--indigo9) !important;
     box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+  }
+
+  input {
+    color: var(--slate12);
+    background-color: unset !important;
   }
 
   .dropdown-heading-value {
@@ -12147,6 +12161,7 @@ tbody {
     padding: 5px 8px;
     border-radius: 6px;
     background-color: var(--slate3);
+    color: var(--slate11);
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
