@@ -235,7 +235,7 @@ export const TextInput = function TextInput({
           whiteSpace: 'nowrap',
         }}
       >
-        {label && width > 0 && (
+        {label && (width > 0 || auto) && (
           <label
             ref={labelRef}
             style={{

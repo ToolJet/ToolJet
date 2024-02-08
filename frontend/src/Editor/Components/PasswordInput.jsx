@@ -226,7 +226,7 @@ export const PasswordInput = function PasswordInput({
           position: 'relative',
         }}
       >
-        {label && width > 0 && (
+        {label && (width > 0 || auto) && (
           <label
             ref={labelRef}
             style={{
