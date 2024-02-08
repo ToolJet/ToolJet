@@ -94,7 +94,7 @@ export const DraggableBox = React.memo(
       shallow
     );
     const currentState = useCurrentState();
-    const [calculatedHeight, setCalculatedHeight] = useState(layoutData?.height); // height for layouting with top and side values
+    const [boxHeight, setboxHeight] = useState(layoutData?.height); // height for layouting with top and side values
 
     const resizerStyles = {
       topRight: {
@@ -224,7 +224,6 @@ export const DraggableBox = React.memo(
       width: 445,
       height: 500,
     };
-
     const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
     const gridWidth = canvasWidth / NO_OF_GRIDS;
     const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
@@ -249,8 +248,8 @@ export const DraggableBox = React.memo(
     }
 
     const adjustHeightBasedOnAlignment = (increase) => {
-      if (increase) return setCalculatedHeight(layoutData?.height + 20);
-      else return setCalculatedHeight(layoutData?.height);
+      if (increase) return setboxHeight(layoutData?.height + 20);
+      else return setboxHeight(layoutData?.height);
     };
     return (
       <div
@@ -288,7 +287,7 @@ export const DraggableBox = React.memo(
               dragGrid={[gridWidth, 10]}
               size={{
                 width: width,
-                height: calculatedHeight,
+                height: isVerticalResizingAllowed() ? layoutData.height : boxHeight,
               }}
               position={{
                 x: layoutData ? (layoutData.left * canvasWidth) / 100 : 0,
