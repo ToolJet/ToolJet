@@ -38,6 +38,9 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
                   setSelectedTableData(data);
                 }
               });
+
+            const tableElement = document.querySelector('.tj-db-table');
+            if (tableElement) tableElement.scrollTop = 0;
             setIsCreateRowDrawerOpen(false);
           }}
           onClose={() => setIsCreateRowDrawerOpen(false)}
