@@ -114,7 +114,7 @@ export default function generateColumnsData({
       sortType,
       columnVisibility: column?.columnVisibility ?? true,
       horizontalAlignment: column?.horizontalAlignment ?? 'left',
-      Cell: function ({ cell, isEditable, newRowsChangeSet = null, horizontalAlignment }) {
+      Cell: function ({ cell, isEditable, newRowsChangeSet = null, horizontalAlignment, cellTextColor = '' }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
@@ -302,9 +302,10 @@ export default function generateColumnsData({
             return (
               <textarea
                 rows="1"
-                className={`form-control-plaintext text-container ${
-                  darkMode ? 'text-light textarea-dark-theme' : 'text-muted'
-                }`}
+                className={`form-control-plaintext text-container ${darkMode ? ' textarea-dark-theme' : ''}`}
+                style={{
+                  color: cellTextColor ? cellTextColor : 'inherit',
+                }}
                 readOnly={!isEditable}
                 onBlur={(e) => {
                   if (isEditable && e.target.defaultValue !== e.target.value) {

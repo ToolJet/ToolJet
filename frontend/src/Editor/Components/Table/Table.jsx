@@ -1447,6 +1447,7 @@ export function Table({
                                 actionButtonsArray,
                                 isEditable,
                                 horizontalAlignment,
+                                cellTextColor,
                               })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
