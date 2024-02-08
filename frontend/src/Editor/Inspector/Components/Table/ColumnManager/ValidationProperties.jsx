@@ -23,31 +23,31 @@ export const ValidationProperties = ({
         const properties = [];
         if (column.columnType !== 'text') {
           properties.push({ property: 'regex', dateCy: 'input-and-label-regex', label: 'Regex' });
-        } else {
-          properties.push(
-            [
-              {
-                property: 'minLength',
-                dateCy: 'input-and-label-min-length',
-                label: 'Min length',
-                placeholder: 'Enter min length',
-              },
-              {
-                property: 'maxLength',
-                dateCy: 'input-and-label-max-length',
-                label: 'Max length',
-                placeholder: 'Enter max length',
-              },
-            ],
-
-            {
-              property: 'customRule',
-              dateCy: 'input-and-label-custom-rule',
-              label: 'Custom rule',
-              placeholder: 'eg. {{ 1 < 2 }}',
-            }
-          );
         }
+        properties.push(
+          [
+            {
+              property: 'minLength',
+              dateCy: 'input-and-label-min-length',
+              label: 'Min length',
+              placeholder: 'Enter min length',
+            },
+            {
+              property: 'maxLength',
+              dateCy: 'input-and-label-max-length',
+              label: 'Max length',
+              placeholder: 'Enter max length',
+            },
+          ],
+
+          {
+            property: 'customRule',
+            dateCy: 'input-and-label-custom-rule',
+            label: 'Custom rule',
+            placeholder: 'eg. {{ 1 < 2 }}',
+          }
+        );
+
         return properties;
       }
       case 'number':
