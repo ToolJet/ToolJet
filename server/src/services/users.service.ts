@@ -200,7 +200,6 @@ export class UsersService {
       if (removeGroups.includes('all_users')) {
         throw new BadRequestException('Cannot remove user from default group.');
       }
-
       await dbTransactionWrap(async (manager: EntityManager) => {
         const groupPermissions = await manager.find(GroupPermission, {
           group: In(removeGroups),
