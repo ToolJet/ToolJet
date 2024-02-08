@@ -95,6 +95,7 @@ export const Icon = ({ value, onChange, onVisibilityChange, component }) => {
                 <div className="d-flex align-items-center" role="button">
                   <div className="" style={{ marginRight: '2px' }}>
                     <IconElement
+                      data-cy={`icon-on-side-panel`}
                       color={`${darkMode ? '#fff' : '#000'}`}
                       stroke={1.5}
                       strokeLinejoin="miter"
