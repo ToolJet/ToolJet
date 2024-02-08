@@ -558,7 +558,9 @@ const Table = ({ collapseSidebar }) => {
   };
 
   const handleCellClick = (e, cellIndex, rowIndex, cellVal) => {
-    if (['table-editable-parent-cell', 'tjdb-td-wrapper', 'table-cell'].includes(e.target.classList.value)) {
+    if (
+      ['table-editable-parent-cell', 'tjdb-td-wrapper', 'table-cell', 'cell-text'].includes(e.target.classList.value)
+    ) {
       setSelectedRowIds({});
       setCellVal(cellVal);
       setCellClick((prevState) => ({
@@ -981,7 +983,7 @@ const Table = ({ collapseSidebar }) => {
                                           </div>
                                         </div>
                                       ) : (
-                                        <div className="table-cell">
+                                        <div className="cell-text">
                                           {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
                                         </div>
                                       )}

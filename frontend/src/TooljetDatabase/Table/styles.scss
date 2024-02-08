@@ -152,6 +152,7 @@
 .input-cell-parent {
 
   position: relative !important;
+  background-color: transparent;
 
   .cell-text-null-input {
     background-color: var(--slate3) !important;
@@ -186,6 +187,7 @@
 
 .tj-db-table {
   scroll-behavior: smooth;
+
   .table-cell {
     &:not(.table-cell-selected):hover {
       background: var(--Slate-03, #F1F3F5) !important;
@@ -216,5 +218,11 @@
         background: #1D252F !important;
       }
     }
+  }
+
+  .cell-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
