@@ -549,6 +549,9 @@ export const SubContainer = ({
   }
 
   function paramUpdated(id, param, value) {
+    if (id === 'resizingComponentId') {
+      return;
+    }
     if (Object.keys(value).length > 0) {
       setBoxes((boxes) => {
         return update(boxes, {
