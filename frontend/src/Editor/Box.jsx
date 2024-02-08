@@ -197,7 +197,6 @@ export const Box = memo(
 
     let styles = {
       height: '100%',
-      padding: validatedStyles?.padding === 'none' ? '0px' : '1px',
     };
 
     if (inCanvas) {

@@ -395,11 +395,9 @@ export const DropDown = function DropDown({
       <div
         className="dropdown-widget g-0"
         style={{
-          // height: _height,
           display: visibility ? 'flex' : 'none',
           flexDirection: alignment === 'top' ? 'column' : direction === 'alignRight' ? 'row-reverse' : 'row',
-          // Below the top-bottom padding is 1px instead of 2px because 1px is already applied in Box, same case for left and right
-          padding: padding === 'default' ? '1px 3px' : '',
+          padding: padding === 'default' ? '2px 3px' : '',
         }}
         onMouseDown={(event) => {
           onComponentClick(id, component, event);
