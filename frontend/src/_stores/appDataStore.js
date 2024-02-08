@@ -29,6 +29,7 @@ const initialState = {
   eventsUpdatedLoader: false,
   eventsCreatedLoader: false,
   actionsUpdatedLoader: false,
+  eventToDeleteLoaderIndex: null,
 };
 
 export const useAppDataStore = create(
@@ -120,6 +121,8 @@ export const useAppDataStore = create(
 
           const response = await appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId);
           useAppDataStore.getState().actions.setIsSaving(false);
+
+          set({ eventToDeleteLoaderIndex: null });
           if (response?.affected === 1) {
             updatedEvents.splice(
               updatedEvents.findIndex((e) => e.id === eventId),
@@ -139,6 +142,7 @@ export const useAppDataStore = create(
         setAppId: (appId) => set(() => ({ appId })),
         setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),
         setMetadata: (metadata) => set(() => ({ metadata })),
+        setEventToDeleteLoaderIndex: (index) => set(() => ({ eventToDeleteLoaderIndex: index })),
       },
     }),
     { name: 'App Data Store' }

@@ -51,6 +51,8 @@ export const EventManager = ({
     eventsUpdatedLoader,
     eventsCreatedLoader,
     actionsUpdatedLoader,
+    eventToDeleteLoaderIndex,
+    setEventToDeleteLoaderIndex,
   } = useAppDataStore((state) => ({
     appId: state.appId,
     apps: state.apps,
@@ -58,6 +60,8 @@ export const EventManager = ({
     eventsUpdatedLoader: state.eventsUpdatedLoader,
     eventsCreatedLoader: state.eventsCreatedLoader,
     actionsUpdatedLoader: state.actionsUpdatedLoader,
+    eventToDeleteLoaderIndex: state.eventToDeleteLoaderIndex,
+    setEventToDeleteLoaderIndex: state.actions.setEventToDeleteLoaderIndex,
   }));
 
   const { handleYmapEventUpdates } = useContext(EditorContext) || {};
@@ -311,7 +315,7 @@ export const EventManager = ({
     const eventsHandler = _.cloneDeep(events);
 
     const eventId = eventsHandler[index].id;
-
+    setEventToDeleteLoaderIndex(index);
     deleteAppVersionEventHandler(eventId);
   }
 
@@ -995,6 +999,9 @@ export const EventManager = ({
                               darkMode={darkMode}
                               actionsUpdatedLoader={index === focusedEventIndex ? actionsUpdatedLoader : false}
                               eventsUpdatedLoader={index === focusedEventIndex ? eventsUpdatedLoader : false}
+                              eventsDeletedLoader={
+                                index === eventToDeleteLoaderIndex ? !!eventToDeleteLoaderIndex : false
+                              }
                             />
                           </div>
                         </OverlayTrigger>
