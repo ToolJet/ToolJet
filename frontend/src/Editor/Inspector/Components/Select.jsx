@@ -249,11 +249,12 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     return (
       <Popover id="popover-basic" className={`${darkMode && 'dark-theme'}`} style={{ minWidth: '248px' }}>
         <Popover.Body>
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
-            <label data-cy={`label-column-name`} className="form-label">
+          <div className="field mb-2" data-cy={`input-and-label-option-label`}>
+            <label data-cy={`label-option-label`} className="form-label">
               {'Option label'}
             </label>
             <CodeHinter
+              cyLabel={`option-label`}
               currentState={currentState}
               initialValue={item.label}
               theme={darkMode ? 'monokai' : 'default'}
@@ -263,11 +264,12 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleLabelChange(value, index)}
             />
           </div>
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
-            <label data-cy={`label-column-name`} className="form-label">
+          <div className="field mb-2" data-cy={`input-and-label-option-value`}>
+            <label data-cy={`label-option-value`} className="form-label">
               {'Option value'}
             </label>
             <CodeHinter
+              cyLabel={`option-value`}
               currentState={currentState}
               initialValue={item.value}
               theme={darkMode ? 'monokai' : 'default'}
@@ -277,7 +279,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleValueChange(value, index)}
             />
           </div>
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
+          <div className="field mb-2">
             <CodeHinter
               currentState={currentState}
               initialValue={markedAsDefault === item.value}
@@ -290,7 +292,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleMarkedAsDefaultChange(value, index)}
             />
           </div>
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
+          <div className="field mb-2">
             <CodeHinter
               currentState={currentState}
               initialValue={item.visible !== false}
@@ -303,7 +305,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleVisibilityChange(value, index)}
             />
           </div>
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
+          <div className="field mb-2">
             <CodeHinter
               currentState={currentState}
               initialValue={item.isDisabled}
@@ -357,13 +359,23 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                                 {...restProps}
                               >
                                 <div className="row">
-                                  <div className="col-auto d-flex align-items-center">
+                                  <div
+                                    className="col-auto d-flex align-items-center"
+                                    data-cy={`options-${String(item.label).toLowerCase()}-draghandle`}
+                                  >
                                     <SortableList.DragHandle show />
                                   </div>
-                                  <div className="col text-truncate cursor-pointer" style={{ paddingLeft: '8px' }}>
+                                  <div
+                                    className="col text-truncate cursor-pointer"
+                                    style={{ paddingLeft: '8px' }}
+                                    data-cy={`options-label-${String(item.label).toLowerCase()}`}
+                                  >
                                     {item.label}
                                   </div>
-                                  <div className="col-auto">
+                                  <div
+                                    className="col-auto"
+                                    data-cy={`options-${String(item.label).toLowerCase()}-delete-icon`}
+                                  >
                                     <span
                                       onClick={() => {
                                         handleDeleteOption(index);
