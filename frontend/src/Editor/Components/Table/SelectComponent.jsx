@@ -70,7 +70,7 @@ export const SelectComponent = ({
 };
 
 export const CustomMenuList = ({ selectProps, ...props }) => {
-  const { onInputChange, inputValue, onMenuInputFocus, isDarkMode, optionLoadingState } = selectProps;
+  const { onInputChange, inputValue, onMenuInputFocus, isDarkMode, optionLoadingState, setInputValue } = selectProps;
   if (optionLoadingState) {
     return (
       <div className={classNames('table-select-custom-menu-list', { 'theme-dark dark-theme': isDarkMode })}>
@@ -114,6 +114,12 @@ export const CustomMenuList = ({ selectProps, ...props }) => {
           placeholder="Search"
           className="table-select-column-type-search-box"
         />
+        <span
+          style={{ padding: '0px 2px', border: '1px solid #C1C8CD', cursor: 'pointer' }}
+          onClick={() => setInputValue('')}
+        >
+          <SolidIcon width="14" name="cross" />
+        </span>
       </div>
       <MenuList {...props} selectProps={selectProps} />
     </div>

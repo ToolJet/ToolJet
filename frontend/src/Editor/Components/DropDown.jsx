@@ -197,7 +197,7 @@ export const DropDown = function DropDown({
       setCurrentValue(findDefaultItem(schema));
     } else setCurrentValue(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced]);
+  }, [advanced, value, JSON.stringify(schema)]);
 
   useEffect(() => {
     if (alignment == 'top' && label) adjustHeightBasedOnAlignment(true);
@@ -480,6 +480,7 @@ export const DropDown = function DropDown({
             }}
             inputValue={inputValue}
             optionLoadingState={properties.loadingState}
+            setInputValue={setInputValue}
           />
         </div>
       </div>
