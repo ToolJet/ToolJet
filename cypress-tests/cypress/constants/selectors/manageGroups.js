@@ -13,6 +13,7 @@ export const groupsSelector = {
   userGroup: "[data-cy=user-groups]",
   appsLink: "[data-cy=apps-link]",
   usersLink: "[data-cy=users-link]",
+  tableslink: "[data-cy=tables-link]",
   permissionsLink: "[data-cy=permissions-link]",
   searchBox: '[data-cy="select-search"]',
   appSearchBox: "[data-cy=select-search]>>>>>.dropdown-heading-value > .gray",
@@ -65,6 +66,19 @@ export const groupsSelector = {
     return `[data-cy="${cyParamName(groupname)}-title"]`;
   },
   userRow: (email) => {
-    return `[data-cy="${cyParamName(email)}-user-row"]`
-  }
+    return `[data-cy="${cyParamName(email)}-user-row"]`;
+  },
+  groupOptionIcon: (groupName) => {
+    return `[data-cy="${cyParamName(groupName)}-list-item"] > :nth-child(2) > .tj-base-btn`
+  },
+  duplicateOption: '[data-cy="duplicate-group-card-option"]',
+  deleteGroupOption: '[data-cy="delete-group-card-option"]',
+  usersCheckInput: '[data-cy="users-check-input"]',
+  permissionCheckInput: '[data-cy="permissions-check-input"]',
+  appsCheckInput: '[data-cy="apps-check-input"]',
+  confimButton: '[data-cy="confim-button"]',
+  duplicatedGroupLink: (groupName) => {
+    return `[data-cy="${cyParamName(groupName)}_copy-list-item"]`
+  },
+
 };
