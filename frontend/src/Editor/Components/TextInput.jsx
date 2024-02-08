@@ -247,9 +247,11 @@ export const TextInput = function TextInput({
               display: 'flex',
               fontWeight: 500,
               justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
+              fontSize: '12px',
             }}
           >
             <span
+              data-cy={`label-${String(label)}`}
               style={{
                 overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
                 textOverflow: 'ellipsis', // Display ellipsis for overflowed content
@@ -264,6 +266,7 @@ export const TextInput = function TextInput({
         )}
         {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
           <IconElement
+            data-cy={'text-input-icon'}
             style={{
               width: '16px',
               height: '16px',

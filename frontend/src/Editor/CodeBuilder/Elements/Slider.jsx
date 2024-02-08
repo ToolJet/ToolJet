@@ -26,7 +26,13 @@ function Slider1({ value, onChange, disabled }) {
 
   return (
     <div className="d-flex flex-column " style={{ width: '142px', position: 'relative' }}>
-      <CustomInput disabled={disabled} value={sliderValue} staticText="% of the field" onInputChange={onInputChange} />
+      <CustomInput
+        disabled={disabled}
+        value={sliderValue}
+        staticText="% of the field"
+        onInputChange={onInputChange}
+        dataCy={`width`}
+      />
 
       <div style={{ position: 'absolute', top: '34px' }}>
         <Slider.Root
