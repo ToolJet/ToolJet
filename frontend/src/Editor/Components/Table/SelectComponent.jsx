@@ -75,7 +75,7 @@ export const CustomMenuList = ({ selectProps, ...props }) => {
     return (
       <div className={classNames('table-select-custom-menu-list', { 'theme-dark dark-theme': isDarkMode })}>
         <div style={{ minHeight: '224px' }} className={'d-flex align-items-center justify-content-center'}>
-          <Spinner style={{ width: '36px', height: '36px', color: 'var(--indigo9)' }} />,
+          <Spinner style={{ width: '36px', height: '36px', color: 'var(--indigo9)' }} />
         </div>
       </div>
     );
