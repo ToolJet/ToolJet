@@ -57,6 +57,7 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'workflowsdefault',
 ];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
+const NewRevampedComponents = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'DropDown'];
 
 @Injectable()
 export class AppImportExportService {
@@ -565,6 +566,31 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
+  // This is to migrate few properties from styles to properties as per new designs
+  migrateVisibilityDisabledStylesToProperties(component: Component, componentTypes: string[]) {
+    const properties = component.properties;
+    const styles = component.styles;
+    const general = component.general;
+
+    if (componentTypes.includes(component.type)) {
+      if (styles.visibility) {
+        properties.visibility = styles.visibility;
+        delete styles.visibility;
+      }
+
+      if (styles.disabledState) {
+        properties.disabledState = styles.disabledState;
+        delete styles.disabledState;
+      }
+
+      if (general?.tooltip) {
+        properties.tooltip = general?.tooltip;
+        delete general?.tooltip;
+      }
+    }
+    return { properties, styles, general };
+  }
+
   async setupAppVersionAssociations(
     manager: EntityManager,
     importingAppVersions: AppVersion[],
@@ -728,14 +754,18 @@ export class AppImportExportService {
 
             parentId = newComponentIdsMap[parentId];
           }
-
           if (!skipComponent) {
+            const { properties, styles, general } = this.migrateVisibilityDisabledStylesToProperties(
+              component,
+              NewRevampedComponents
+            );
             newComponent.id = newComponentIdsMap[component.id];
             newComponent.name = component.name;
             newComponent.type = component.type;
-            newComponent.properties = component.properties;
-            newComponent.styles = component.styles;
+            newComponent.properties = properties;
+            newComponent.styles = styles;
             newComponent.generalStyles = component.generalStyles;
+            newComponent.general = general;
             newComponent.displayPreferences = component.displayPreferences;
             newComponent.validation = component.validation;
             newComponent.parent = component.parent ? parentId : null;
@@ -1717,13 +1747,17 @@ function transformComponentData(
     }
 
     if (!skipComponent) {
+      const { properties, styles, general } = this.migrateVisibilityDisabledStylesToProperties(
+        componentData.definition,
+        NewRevampedComponents
+      );
       transformedComponent.id = uuid();
       transformedComponent.name = componentData.name;
       transformedComponent.type = componentData.component;
-      transformedComponent.properties = componentData.definition.properties || {};
-      transformedComponent.styles = componentData.definition.styles || {};
+      transformedComponent.properties = properties || {};
+      transformedComponent.styles = styles || {};
       transformedComponent.validation = componentData.definition.validation || {};
-      transformedComponent.general = componentData.definition.general || {};
+      transformedComponent.general = general || {};
       transformedComponent.generalStyles = componentData.definition.generalStyles || {};
       transformedComponent.displayPreferences = componentData.definition.others || {};
       transformedComponent.parent = component.parent ? parentId : null;
