@@ -1,7 +1,7 @@
 import { Component } from 'src/entities/component.entity';
 import { In, MigrationInterface, QueryRunner } from 'typeorm';
 
-export class TextInputMaxHeight1701335703893 implements MigrationInterface {
+export class InputDefaultProperties1701335703893 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput'];
     const entityManager = queryRunner.manager;
@@ -17,6 +17,11 @@ export class TextInputMaxHeight1701335703893 implements MigrationInterface {
       // Check if properties.label is not present, then assign it as null
       if (properties.label == undefined || null) {
         properties.label = '';
+      }
+      if (component !== 'NumberInput') {
+        if (properties.value == undefined || null) {
+          properties.value = '';
+        }
       }
 
       // Update the component in the database with the modified properties
