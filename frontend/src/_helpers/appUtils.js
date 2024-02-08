@@ -11,7 +11,7 @@ import {
   isQueryRunnable,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
-import _ from 'lodash';
+import _, { isArray } from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
@@ -338,7 +338,7 @@ export async function runTransformation(
 }
 
 export async function executeActionsForEventId(_ref, eventId, events = [], mode, customVariables) {
-  if (!events || events.length === 0) return;
+  if (!events || !isArray(events) || events.length === 0) return;
   const filteredEvents = events?.filter((event) => event?.event.eventId === eventId)?.sort((a, b) => a.index - b.index);
 
   for (const event of filteredEvents) {
@@ -1251,7 +1251,7 @@ export function setTablePageIndex(tableId, index) {
     return Promise.resolve();
   }
 
-  const table = Object.entries(getCurrentState().components).filter((entry) => entry[1].id === tableId)[0][1];
+  const table = Object.entries(getCurrentState().components).filter((entry) => entry?.[1]?.id === tableId)?.[0]?.[1];
   const newPageIndex = resolveReferences(index, getCurrentState());
   table.setPage(newPageIndex ?? 1);
   return Promise.resolve();
