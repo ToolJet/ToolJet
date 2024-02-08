@@ -10072,6 +10072,10 @@ tbody {
 
         .disable {
           color: var(--slate7);
+
+          &.dark-theme {
+          color:  var(--slate11) ;
+          }
         }
 
         &__danger {
