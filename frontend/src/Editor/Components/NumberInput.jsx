@@ -267,7 +267,7 @@ export const NumberInput = function NumberInput({
          ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
          ${visibility || 'invisible'}`}
           style={{
-            padding: padding === 'default' ? '2px' : '',
+            padding: padding === 'default' ? '2px 3px' : '',
             position: 'relative',
             width: '100%',
             display: !visibility ? 'none' : 'flex',

@@ -230,7 +230,7 @@ export const TextInput = function TextInput({
       ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
       ${visibility || 'invisible'}`}
         style={{
-          padding: padding === 'default' ? '2px' : '',
+          padding: padding === 'default' ? '2px 3px' : '',
           position: 'relative',
           whiteSpace: 'nowrap',
         }}
