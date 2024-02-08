@@ -387,6 +387,22 @@ Cypress.Commands.add(
   }
 );
 
+Cypress.Commands.add("releaseApp", () => {
+  if (Cypress.env("environment") !== "Community") {
+    cy.get(commonEeSelectors.promoteButton).click();
+    cy.get(commonEeSelectors.promoteButton).eq(1).click();
+    cy.waitForAppLoad();
+    cy.wait(3000);
+    cy.get(commonEeSelectors.promoteButton).click();
+    cy.get(commonEeSelectors.promoteButton).eq(1).click();
+    cy.waitForAppLoad();
+    cy.wait(3000);
+  }
+  cy.get(commonSelectors.releaseButton).click();
+  cy.get(commonSelectors.yesButton).click();
+  cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
+  cy.wait(1000);
+  
 Cypress.Commands.add("backToApps", () => {
   cy.get(commonSelectors.editorPageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
@@ -433,6 +449,7 @@ Cypress.Commands.add(
     cy.get(selector).should("have.css", property).and("eq", expectedValue);
   }
 );
+
 Cypress.Commands.add("skipWalkthrough", () => {
   cy.window({ log: false }).then((win) => {
     win.localStorage.setItem("walkthroughCompleted", "true");
