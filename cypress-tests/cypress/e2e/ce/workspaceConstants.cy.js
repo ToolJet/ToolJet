@@ -34,6 +34,7 @@ describe("Workspace constants", () => {
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
         cy.intercept("GET", "/api/library_apps").as("homePage");
+        cy.skipWalkthrough();
     });
     it("Verify workspace constants UI and CRUD operations", () => {
         cy.get('[data-cy="icon-workspace-constants"]').click();
