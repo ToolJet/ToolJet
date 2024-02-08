@@ -92,7 +92,7 @@ export default function DragContainer({
     events: {},
     mouseEnter(e) {
       const controlBoxes = document.getElementsByClassName('moveable-control-box');
-      console.log('MouseCustomAble ENTER', e);
+      console.log('MouseCustomAble ENTER', e._dragTarget.id);
       for (const element of controlBoxes) {
         element.classList.remove('moveable-control-box-d-block');
       }
@@ -100,7 +100,7 @@ export default function DragContainer({
       e.controlBox.classList.add('moveable-control-box-d-block');
     },
     mouseLeave(e) {
-      console.log('MouseCustomAble LEAVE', e);
+      console.log('MouseCustomAble LEAVE', e._dragTarget.id);
       e.props.target.classList.remove('hovered');
       e.controlBox.classList.remove('moveable-control-box-d-block');
     },
@@ -536,17 +536,34 @@ export default function DragContainer({
             ev.target.style.width = `${ev.width}px`;
             ev.target.style.height = `${ev.height}px`;
             ev.target.style.transform = ev.drag.transform;
+            // newBoxs.push({
+            //   id: ev.target.id,
+            //   height: ev.height,
+            //   width: ev.width,
+            //   x: ev.drag.translate[0],
+            //   y: ev.drag.translate[1],
+            // });
+          });
+          // onResizeStop(newBoxs);
+        }}
+        onResizeGroupEnd={({ events }) => {
+          console.log('onResizeGroup---', events);
+          const newBoxs = [];
+          events.forEach((ev) => {
+            console.log('resizeevents', events);
+            ev.target.style.width = `${ev.lastEvent.width}px`;
+            ev.target.style.height = `${ev.lastEvent.height}px`;
+            ev.target.style.transform = ev.lastEvent.drag.transform;
             newBoxs.push({
               id: ev.target.id,
-              height: ev.height,
-              width: ev.width,
-              x: ev.drag.translate[0],
-              y: ev.drag.translate[1],
+              height: ev.lastEvent.height,
+              width: ev.lastEvent.width,
+              x: ev.lastEvent.drag.translate[0],
+              y: ev.lastEvent.drag.translate[1],
             });
           });
           onResizeStop(newBoxs);
         }}
-        onResizeGroupEnd={({ events }) => console.log('here--- onResizeGroupEnd')}
         checkInput
         onDragStart={(e) => {
           console.log('On-drag start => ', e?.moveable?.getControlBoxElement());
