@@ -529,6 +529,9 @@ export const Container = ({
 
   const paramUpdated = useCallback(
     (id, param, value, opts = {}) => {
+      if (id === 'resizedComponentId') {
+        return;
+      }
       if (Object.keys(value)?.length > 0) {
         setBoxes((boxes) =>
           update(boxes, {
