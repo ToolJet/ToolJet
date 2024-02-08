@@ -3,15 +3,21 @@ import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import FolderList from '@/_ui/FolderList/FolderList';
 
-export const ViewerSidebarNavigation = ({ isMobileDevice, pages, currentPageId, switchPage, darkMode }) => {
+const APP_HEADER_HEIGHT = 47;
+
+export const ViewerSidebarNavigation = ({ isMobileDevice, pages, currentPageId, switchPage, darkMode, showHeader }) => {
   if (isMobileDevice) {
     return null;
   }
   return (
     <div
-      className={`navigation-area`}
+      className={`navigation-area overflow-y-auto`}
       style={{
         width: 200,
+        position: 'fixed',
+        height: `calc(100% - ${showHeader ? APP_HEADER_HEIGHT : 0}px)`,
+        top: showHeader ? '47px' : '0px',
+        bottom: '0px',
       }}
     >
       <div className="page-handler-wrapper">

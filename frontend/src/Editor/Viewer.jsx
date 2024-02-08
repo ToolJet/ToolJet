@@ -651,6 +651,7 @@ class ViewerComponent extends React.Component {
                   <div className="areas d-flex flex-rows">
                     {appDefinition?.showViewerNavigation && (
                       <ViewerSidebarNavigation
+                        showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
                         isMobileDevice={this.props.currentLayout === 'mobile'}
                         canvasBackgroundColor={this.computeCanvasBackgroundColor()}
                         pages={pages}
@@ -661,7 +662,13 @@ class ViewerComponent extends React.Component {
                     )}
                     <div
                       className="flex-grow-1 d-flex justify-content-center"
-                      style={{ backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset' }}
+                      style={{
+                        backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',
+                        marginLeft:
+                          appDefinition?.showViewerNavigation && this.props.currentLayout !== 'mobile'
+                            ? '200px'
+                            : 'auto',
+                      }}
                     >
                       <div
                         className="canvas-area"
