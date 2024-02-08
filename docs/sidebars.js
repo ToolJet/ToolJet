@@ -10,26 +10,7 @@
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   docs: [
-    {
-      'type': 'category',
-      'label': 'Getting Started',
-      'items': [
-        'getting-started/platform-overview',
-        'getting-started/quickstart-guide',
-      ],
-    },
-    {
-      'type': 'category',
-      'label': 'ToolJet Concepts',
-      'items': [
-        'tooljet-concepts/what-are-components',
-        'tooljet-concepts/what-are-datasources',
-        'tooljet-concepts/what-are-queries',
-        'tooljet-concepts/what-are-events',
-        'tooljet-concepts/how-to-access-values',
-        'tooljet-concepts/permissions',
-      ],
-    },
+    'getting-started',
     {
       'type': 'category',
       'label': 'Setup',
@@ -231,7 +212,6 @@ const sidebars = {
         'tutorial/keyboard-shortcuts',
       ],
     },
-
     {
       'type': 'category',
       'label': 'Workflows',
@@ -322,7 +302,6 @@ const sidebars = {
         'tutorial/versioning-and-release',
       ],
     },
-    'gitsync',
     {
       'type': 'category',
       'label': 'Marketplace',
@@ -385,7 +364,6 @@ const sidebars = {
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
         'how-to/loading-image-pdf-from-db',
-        'how-to/use-events-on-chart',
       ],
     },
     {

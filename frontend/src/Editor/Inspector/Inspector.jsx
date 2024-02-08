@@ -3,7 +3,7 @@ import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
-import { renderElement, renderCustomStyles } from './Utils';
+import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
 import { ConfirmDialog } from '@/_components';
@@ -83,8 +83,6 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Datepicker'];
-
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -312,15 +310,7 @@ export const Inspector = ({
   );
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${isVersionReleased && 'disabled'}`}>
-      <div
-        className={
-          component.component.component !== 'TextInput' &&
-          component.component.component !== 'PasswordInput' &&
-          component.component.component !== 'NumberInput' &&
-          component.component.component !== 'Datepicker' &&
-          'p-3'
-        }
-      >
+      <div className="p-3">
         <Inspector.RenderStyleOptions
           componentMeta={componentMeta}
           component={component}
@@ -330,7 +320,7 @@ export const Inspector = ({
           allComponents={allComponents}
         />
       </div>
-      {!shouldAddBoxShadow.includes(component.component.component) && buildGeneralStyle()}
+      {buildGeneralStyle()}
     </div>
   );
 
@@ -352,7 +342,7 @@ export const Inspector = ({
     <div className="inspector">
       <ConfirmDialog
         show={showWidgetDeleteConfirmation}
-        message={'Are you sure you want to delete this component?'}
+        message={'Widget will be deleted, do you want to continue?'}
         onConfirm={() => {
           setSelectedComponents(EMPTY_ARRAY);
           removeComponent(component.id);
@@ -363,11 +353,7 @@ export const Inspector = ({
       <div>
         <div className="row inspector-component-title-input-holder">
           <div className="col-1" onClick={() => setSelectedComponents(EMPTY_ARRAY)}>
-            <span
-              data-cy={`inspector-close-icon`}
-              className="cursor-pointer d-flex align-items-center "
-              style={{ height: '28px', width: '28px' }}
-            >
+            <span data-cy={`inspector-close-icon`} className="cursor-pointer">
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
           </div>
@@ -384,7 +370,7 @@ export const Inspector = ({
               />
             </div>
           </div>
-          <div className="col-2" data-cy={'component-inspector-options'}>
+          <div className="col-2">
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-end'}
@@ -395,7 +381,6 @@ export const Inspector = ({
                   <Popover.Body bsPrefix="list-item-popover-body">
                     {INSPECTOR_HEADER_OPTIONS.map((option) => (
                       <div
-                        data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
                         className="list-item-popover-option"
                         key={option?.value}
                         onClick={(e) => {
@@ -469,41 +454,10 @@ const widgetsWithStyleConditions = {
     ],
   },
 };
-const styleGroupedComponentTypes = ['TextInput', 'NumberInput', 'PasswordInput' || 'Datepicker'];
 
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
-  // Initialize an object to group properties by "accordian"
-  const groupedProperties = {};
-  if (
-    component.component.component === 'TextInput' ||
-    component.component.component === 'PasswordInput' ||
-    component.component.component === 'NumberInput' ||
-    component.component.component === 'Datepicker'
-  ) {
-    // Iterate over the properties in componentMeta.styles
-    for (const key in componentMeta.styles) {
-      const property = componentMeta.styles[key];
-      const accordian = property.accordian;
-
-      // Check if the "accordian" key exists in groupedProperties
-      if (!groupedProperties[accordian]) {
-        groupedProperties[accordian] = {}; // Create an empty object for the "accordian" key if it doesn't exist
-      }
-
-      // Add the property to the corresponding "accordian" object
-      groupedProperties[accordian][key] = property;
-    }
-  }
-
-  return Object.keys(
-    component.component.component === 'TextInput' ||
-      component.component.component === 'PasswordInput' ||
-      component.component.component === 'NumberInput' ||
-      component.component.component === 'Datepicker'
-      ? groupedProperties
-      : componentMeta.styles
-  ).map((style) => {
-    const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
+  return Object.keys(componentMeta.styles).map((style) => {
+    const conditionWidget = widgetsWithStyleConditions[component?.component?.component] ?? null;
     const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
 
     if (conditionWidget && conditionWidget.conditions.find((condition) => condition.conditionStyles.includes(style))) {
@@ -523,43 +477,16 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
       );
     }
 
-    const items = [];
-
-    if (
-      component.component.component === 'TextInput' ||
-      component.component.component === 'PasswordInput' ||
-      component.component.component === 'NumberInput' ||
-      component.component.component === 'Datepicker'
-    ) {
-      items.push({
-        title: `${style}`,
-        children: Object.entries(groupedProperties[style]).map(([key, value]) => ({
-          ...renderCustomStyles(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            key,
-            'styles',
-            currentState,
-            allComponents,
-            value.accordian
-          ),
-        })),
-      });
-      return <Accordion key={style} items={items} />;
-    } else {
-      return renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        style,
-        'styles',
-        currentState,
-        allComponents
-      );
-    }
+    return renderElement(
+      component,
+      componentMeta,
+      paramUpdated,
+      dataQueries,
+      style,
+      'styles',
+      currentState,
+      allComponents
+    );
   });
 };
 

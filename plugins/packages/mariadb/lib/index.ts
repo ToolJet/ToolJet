@@ -2,7 +2,6 @@ import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@to
 import { SourceOptions, QueryOptions } from './types';
 const mariadb = require('mariadb');
 export default class Mariadb implements QueryService {
-  private defaultConnectionLimit = '5';
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     let result = {};
     const mariadbClient = await this.getConnection(sourceOptions);
@@ -19,31 +18,23 @@ export default class Mariadb implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    try {
-      const conn = await this.getConnection(sourceOptions);
-      const rows = await conn.query('SELECT 1 as val');
+    const conn = await this.getConnection(sourceOptions);
+    const rows = await conn.query('SELECT 1 as val');
 
-      if (!rows) {
-        throw new Error('Connection test returned no results');
-      }
-      return {
-        status: 'ok',
-      };
-    } catch (error) {
-      throw new QueryError('Connection test failed', error.message, {});
+    if (!rows) {
+      throw new Error('Error');
     }
+    return {
+      status: 'ok',
+    };
   }
 
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const connectionLimit =
-      sourceOptions.connectionLimit && sourceOptions.connectionLimit !== ''
-        ? sourceOptions.connectionLimit
-        : this.defaultConnectionLimit;
     const poolConfig = {
       host: sourceOptions.host,
       user: sourceOptions.user,
       password: sourceOptions.password,
-      connectionLimit: connectionLimit,
+      connectionLimit: sourceOptions.connectionLimit,
       port: sourceOptions.port,
       database: sourceOptions.database,
     };
@@ -60,17 +51,9 @@ export default class Mariadb implements QueryService {
 
     if (sourceOptions.ssl_enabled) poolConfig['ssl'] = sslObject;
 
-    try {
-      const mariadbPool = await mariadb.createPool(poolConfig);
-      mariadbPool.on('error', (error) => {
-        console.error(error);
-      });
+    const mariadbPool = mariadb.createPool(poolConfig);
 
-      return mariadbPool.getConnection();
-    } catch (error) {
-      console.error('Error while establishing database connection:', error.message);
-      throw new QueryError('Database connection failed', error.message, {});
-    }
+    return mariadbPool.getConnection();
   }
 
   private toJson(data) {

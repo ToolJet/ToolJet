@@ -24,6 +24,33 @@ const resizerClasses = {
   topLeft: 'top-left',
 };
 
+const resizerStyles = {
+  topRight: {
+    width: '8px',
+    height: '8px',
+    right: '-4px',
+    top: '-4px',
+  },
+  bottomRight: {
+    width: '8px',
+    height: '8px',
+    right: '-4px',
+    bottom: '-4px',
+  },
+  bottomLeft: {
+    width: '8px',
+    height: '8px',
+    left: '-4px',
+    bottom: '-4px',
+  },
+  topLeft: {
+    width: '8px',
+    height: '8px',
+    left: '-4px',
+    top: '-4px',
+  },
+};
+
 function computeWidth(currentLayoutOptions) {
   return `${currentLayoutOptions?.width}%`;
 }
@@ -94,66 +121,6 @@ export const DraggableBox = React.memo(
       shallow
     );
     const currentState = useCurrentState();
-    const [calculatedHeight, setCalculatedHeight] = useState(layoutData?.height);
-
-    const resizerStyles = {
-      topRight: {
-        width: '8px',
-        height: '8px',
-        right: '-4px',
-        top: '-4px',
-      },
-      bottomRight: {
-        width: '8px',
-        height: '8px',
-        right: '-4px',
-        bottom: '-4px',
-      },
-      right: {
-        position: 'absolute',
-        height: '20px',
-        width: '5px',
-        right: '-3px',
-        background: '#4368E3',
-        borderRadius: '8px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        display:
-          (mode === 'edit' && !readOnly && mouseOver) || isResizing || isDragging2 || isSelectedComponent
-            ? isVerticalResizingAllowed()
-              ? 'none'
-              : 'block'
-            : 'none',
-      },
-      left: {
-        position: 'absolute',
-        height: '20px',
-        width: '5px',
-        left: '-3px',
-        background: '#4368E3',
-        borderRadius: '8px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        display:
-          (mode === 'edit' && !readOnly && mouseOver) || isResizing || isDragging2 || isSelectedComponent
-            ? isVerticalResizingAllowed()
-              ? 'none'
-              : 'block'
-            : 'none',
-      },
-      bottomLeft: {
-        width: '8px',
-        height: '8px',
-        left: '-4px',
-        bottom: '-4px',
-      },
-      topLeft: {
-        width: '8px',
-        height: '8px',
-        left: '-4px',
-        top: '-4px',
-      },
-    };
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({
         type: ItemTypes.BOX,
@@ -236,22 +203,7 @@ export const DraggableBox = React.memo(
       if (selectionInProgress) return;
       setHoveredComponent(id);
     };
-    function isVerticalResizingAllowed() {
-      // Return true if vertical resizing is allowed, false otherwise
-      return (
-        mode === 'edit' &&
-        component.component !== 'TextInput' &&
-        component.component !== 'PasswordInput' &&
-        component.component !== 'NumberInput' &&
-        component.component !== 'Datepicker' &&
-        !readOnly
-      );
-    }
 
-    const adjustHeightBasedOnAlignment = (increase) => {
-      if (increase) return setCalculatedHeight(layoutData?.height + 20);
-      else return setCalculatedHeight(layoutData?.height);
-    };
     return (
       <div
         className={
@@ -288,7 +240,7 @@ export const DraggableBox = React.memo(
               dragGrid={[gridWidth, 10]}
               size={{
                 width: width,
-                height: calculatedHeight,
+                height: layoutData.height,
               }}
               position={{
                 x: layoutData ? (layoutData.left * canvasWidth) / 100 : 0,
@@ -308,16 +260,7 @@ export const DraggableBox = React.memo(
               }}
               resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
               resizeHandleStyles={resizerStyles}
-              enableResizing={{
-                top: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
-                right: mode == 'edit' && !readOnly && true,
-                bottom: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
-                left: mode == 'edit' && !readOnly && true,
-                topRight: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
-                bottomRight: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
-                bottomLeft: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
-                topLeft: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
-              }}
+              enableResizing={mode === 'edit' && !readOnly}
               disableDragging={mode !== 'edit' || readOnly}
               onDragStop={(e, direction) => {
                 setDragging(false);
@@ -358,7 +301,7 @@ export const DraggableBox = React.memo(
                     component={component}
                     id={id}
                     width={width}
-                    height={layoutData.height}
+                    height={layoutData.height - 4}
                     mode={mode}
                     changeCanDrag={changeCanDrag}
                     inCanvas={inCanvas}
@@ -377,8 +320,6 @@ export const DraggableBox = React.memo(
                     allComponents={allComponents}
                     sideBarDebugger={sideBarDebugger}
                     childComponents={childComponents}
-                    isResizing={isResizing}
-                    adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
                   />
                 </Sentry.ErrorBoundary>
               </div>

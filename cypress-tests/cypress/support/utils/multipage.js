@@ -1,5 +1,4 @@
 import { multipageSelector } from "Selectors/multipage";
-import { commonSelectors } from "../../constants/selectors/common";
 
 export const searchPage = (pageName) => {
   cy.get('[title="Search"]').click();
@@ -22,17 +21,10 @@ export const modifyPageHandle = (pageName, handle) => {
 };
 
 export const detetePage = (pageName) => {
-  cy.get(`[data-cy="pages-name-${pageName.toLowerCase()}"]`)
-    .click()
-    .parent()
-    .find(multipageSelector.pageMenuIcon)
-    .click();
+  cy.get(`[data-cy="pages-name-${pageName.toLowerCase()}"]`).click();
+  cy.get(multipageSelector.pageMenuIcon).click();
   cy.get(multipageSelector.deletePageOptionButton).click();
   cy.get(multipageSelector.modalConfirmButton).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    `${pageName} page deleted.`
-  );
   cy.notVisible(`[data-cy="pages-name-${pageName.toLowerCase()}"]`);
 };
 
@@ -80,13 +72,4 @@ export const hideOrUnhidePageMenu = () => {
   cy.get(multipageSelector.sidebarPageButton).click();
   cy.get(multipageSelector.pagesMenuIcon).click();
   cy.get(multipageSelector.disableMenuToggle).click();
-};
-
-export const disableOrEnablePage = (pageName, option = "disable") => {
-  cy.get(`[data-cy="pages-name-${pageName.toLowerCase()}"]`)
-    .click()
-    .parent()
-    .find(multipageSelector.pageMenuIcon)
-    .click();
-  cy.get(`[data-cy="${option}-option-button"]`).click();
 };

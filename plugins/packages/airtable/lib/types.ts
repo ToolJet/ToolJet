@@ -1,8 +1,4 @@
-export type SourceOptions = {
-  api_key?: string;
-  personal_access_token?: string;
-};
-
+export type SourceOptions = { api_key: string };
 export type QueryOptions = {
   operation: string;
   base_id: string;

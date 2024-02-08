@@ -20,7 +20,6 @@ export class LibraryAppCreationService {
     importDto.organization_id = currentUser.organizationId;
     importDto.app = templateDefinition.app || templateDefinition.appV2;
     importDto.tooljet_database = templateDefinition.tooljet_database;
-    importDto.tooljet_version = templateDefinition.tooljet_version;
 
     if (this.isVersionGreaterThanOrEqual(templateDefinition.tooljet_version, '2.16.0')) {
       importDto.app[0].appName = appName;

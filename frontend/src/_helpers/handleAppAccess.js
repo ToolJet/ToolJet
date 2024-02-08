@@ -6,8 +6,8 @@ import _ from 'lodash';
 import queryString from 'query-string';
 import { ERROR_TYPES } from './constants';
 
-/*  appId, versionId are only for old preview URLs */
-export const handleAppAccess = async (componentType, slug, version_id) => {
+/*  appId, versionId are olny for old preview URLs */
+export const handleAppAccess = (componentType, slug, version_id) => {
   const previewQueryParams = getPreviewQueryParams();
   const isOldLocalPreview = version_id ? true : false;
   const isLocalPreview = !_.isEmpty(previewQueryParams);
@@ -26,12 +26,9 @@ export const handleAppAccess = async (componentType, slug, version_id) => {
     });
   } else {
     /* Released app link [launch/sharable link] */
-    try {
-      return await appsService.validateReleasedApp(slug);
-    } catch (errorResponse) {
-      const editPermission = errorResponse?.error?.editPermission;
-      handleError(componentType, errorResponse, redirectPath, editPermission, slug);
-    }
+    return appsService.validateReleasedApp(slug).catch((error) => {
+      handleError(componentType, error, redirectPath);
+    });
   }
 };
 
@@ -48,7 +45,7 @@ const switchOrganization = (componentType, orgId, redirectPath) => {
   );
 };
 
-const handleError = (componentType, error, redirectPath, editPermission, appSlug = null) => {
+const handleError = (componentType, error, redirectPath) => {
   try {
     if (error?.data) {
       const statusCode = error.data?.statusCode;
@@ -73,11 +70,7 @@ const handleError = (componentType, error, redirectPath, editPermission, appSlug
         }
         case 501: {
           /* Restrict the users from accessing the sharable app url if the app is not released */
-          if (editPermission === true && appSlug) {
-            redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, { appSlug });
-          } else {
-            redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
-          }
+          redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
           return;
         }
         case 404: {

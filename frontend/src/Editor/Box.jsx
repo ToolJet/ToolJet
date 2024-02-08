@@ -11,7 +11,7 @@ import { Tabs } from './Components/Tabs';
 import { RichTextEditor } from './Components/RichTextEditor';
 import { DropDown } from './Components/DropDown';
 import { Checkbox } from './Components/Checkbox';
-import { Datepicker } from './Components/Datepicker/Datepicker';
+import { Datepicker } from './Components/Datepicker';
 import { DaterangePicker } from './Components/DaterangePicker';
 import { Multiselect } from './Components/Multiselect';
 import { Modal } from './Components/Modal';
@@ -68,8 +68,9 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
+import WidgetIcon from '@/../assets/images/icons/widgets';
 
-export const AllComponents = {
+const AllComponents = {
   Button,
   Image,
   Text,
@@ -148,16 +149,14 @@ export const Box = memo(
     sideBarDebugger,
     readOnly,
     childComponents,
-    isResizing,
-    adjustHeightBasedOnAlignment,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
+
     let styles = {
       height: '100%',
-      // paddingRight: '1px',
-      // paddingLeft: '1px',
+      padding: '1px',
     };
 
     if (inCanvas) {
@@ -280,7 +279,6 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
-    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Datepicker'];
 
     return (
       <OverlayTrigger
@@ -322,12 +320,7 @@ export const Box = memo(
               canvasWidth={canvasWidth}
               properties={validatedProperties}
               exposedVariables={exposedVariables}
-              styles={{
-                ...validatedStyles,
-                ...(!shouldAddBoxShadow.includes(component.component)
-                  ? { boxShadow: validatedGeneralStyles?.boxShadow }
-                  : {}),
-              }}
+              styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
               setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
               setExposedVariables={(variableSet) =>
                 onComponentOptionsChanged(component, Object.entries(variableSet), id)
@@ -345,8 +338,6 @@ export const Box = memo(
               resetComponent={() => setResetStatus(true)}
               childComponents={childComponents}
               dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
-              isResizing={isResizing}
-              adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
             ></ComponentToRender>
           ) : (
             <></>

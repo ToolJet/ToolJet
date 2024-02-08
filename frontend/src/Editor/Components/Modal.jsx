@@ -158,7 +158,7 @@ export const Modal = function Modal({
   useEffect(() => {
     if (closeOnClickingOutside) {
       const handleClickOutside = (event) => {
-        const modalRef = parentRef?.current?.parentElement?.parentElement?.parentElement;
+        const modalRef = parentRef.current.parentElement.parentElement.parentElement;
 
         if (modalRef && modalRef === event.target) {
           hideModal();

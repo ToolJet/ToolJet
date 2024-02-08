@@ -10,56 +10,52 @@ import _ from 'lodash';
 
 export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) => {
   const [isCreating, setIsCreating] = useState(false);
-  const [name, setName] = useState({ value: '', error: '' });
-  const [slug, setSlug] = useState({ value: '', error: '' });
+  const [fields, setFields] = useState({ name: { value: '', error: '' }, slug: { value: null, error: '' } });
   const [slugProgress, setSlugProgress] = useState(false);
   const [workspaceNameProgress, setWorkspaceNameProgress] = useState(false);
-  const [isNameDisabled, setNameDisabled] = useState(false);
-  const [isSlugDisabled, setSlugDisabled] = useState(false);
+  const [isDisabled, setDisabled] = useState(true);
   const { t } = useTranslation();
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(
-    () => {
-      setName({
-        value: currentValue?.name,
-      });
-      setSlug({
-        value: currentValue?.slug,
-      });
-    },
+    () =>
+      setFields({
+        name: {
+          value: currentValue?.name,
+        },
+        slug: {
+          value: currentValue?.slug,
+        },
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentValue]
   );
 
   const editOrganization = () => {
     let emptyError = false;
-
-    [name, slug].map((field, index) => {
-      if (!field?.value?.trim()) {
-        index === 0
-          ? setName({
-              ...name,
-              error: `Workspace name can't be empty`,
-            })
-          : setSlug({ ...slug, error: `Workspace slug can't be empty` });
+    const fieldsTemp = fields;
+    Object.keys(fields).map((key) => {
+      if (!fields?.[key]?.value?.trim()) {
+        fieldsTemp[key] = {
+          error: `Workspace ${key} can't be empty`,
+        };
         emptyError = true;
       }
     });
-    const errorFound = !_.isEmpty(name.error) || !_.isEmpty(slug.error);
+    setFields({ ...fields, ...fieldsTemp });
 
-    if (!emptyError && !errorFound) {
+    if (!emptyError && !Object.keys(fields).find((key) => !_.isEmpty(fields[key].error))) {
       setIsCreating(true);
       const data = {
-        ...(name?.value && name?.value !== currentValue?.name && { name: name.value.trim() }),
-        ...(slug?.value && slug?.value !== currentValue?.slug && { slug: slug.value.trim() }),
+        ...(fields?.name?.value && fields?.name?.value !== currentValue?.name && { name: fields.name.value.trim() }),
+        ...(fields?.slug?.value && fields?.slug?.value !== currentValue?.slug && { slug: fields.slug.value.trim() }),
       };
       organizationService.editOrganization(data).then(
         () => {
           toast.success('Workspace updated');
           setIsCreating(false);
           setShowEditOrg(false);
-          const newPath = appendWorkspaceId(slug.value, location.pathname, true);
+          const newPath = appendWorkspaceId(fields['slug'].value, location.pathname, true);
           window.history.replaceState(null, null, newPath);
           window.location.reload();
         },
@@ -75,18 +71,13 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     const trimmedValue = value?.trim();
     const prevValue = field === 'name' ? currentValue?.name : currentValue?.slug;
     //reset fields
-    if (field === 'slug') {
-      setSlug({
-        ...slug,
+    setFields({
+      ...fields,
+      [field]: {
+        ...fields[field],
         error: null,
-      });
-    }
-    if (field === 'name') {
-      setName({
-        ...name,
-        error: null,
-      });
-    }
+      },
+    });
     let error = validateName(
       value,
       `Workspace ${field}`,
@@ -112,32 +103,32 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
       }
     }
 
+    setFields({
+      ...fields,
+      [field]: {
+        value,
+        error: error?.errorMsg,
+      },
+    });
+
     /* Checking for if the user entered the same value or not */
     let isValueTheSame = false;
     if (error?.status) {
       if (field === 'name') {
-        isValueTheSame = trimmedValue === currentValue?.name && slug?.value === currentValue?.slug;
+        isValueTheSame = trimmedValue === currentValue?.name && fields?.slug?.value === currentValue?.slug;
       } else {
-        isValueTheSame = trimmedValue === currentValue?.slug && name?.value === currentValue?.name;
+        isValueTheSame = trimmedValue === currentValue?.slug && fields?.name?.value === currentValue?.name;
       }
     }
 
-    const disabled = isValueTheSame || !error?.status;
-    const updatedValue = {
-      value,
-      error: error?.errorMsg,
-    };
+    /* recheck if the rest of fields are valid or not */
+    const otherInputErrors = Object.keys(fields).find(
+      (key) => (key !== field && !_.isEmpty(fields[key].error)) || (key !== field && _.isEmpty(fields[key].value))
+    );
 
-    if (field === 'slug') {
-      setSlug(updatedValue);
-      setSlugDisabled(disabled);
-      setSlugProgress(false);
-    }
-    if (field === 'name') {
-      setName(updatedValue);
-      setNameDisabled(disabled);
-      setWorkspaceNameProgress(false);
-    }
+    setDisabled(isValueTheSame || !error?.status || otherInputErrors);
+    field === 'slug' && setSlugProgress(false);
+    field === 'name' && setWorkspaceNameProgress(false);
     return;
   };
 
@@ -149,31 +140,16 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
   };
 
   const closeModal = () => {
-    setName({ value: currentValue?.name, error: '' });
-    setSlug({ value: currentValue?.slug, error: '' });
+    setFields({ name: { value: currentValue?.name, error: '' }, slug: { value: currentValue?.slug, error: '' } });
     setShowEditOrg(false);
-    setSlugDisabled(false);
-    setNameDisabled(false);
+    setDisabled(true);
   };
 
-  const delayedSlugChange = _.debounce(async (value) => {
-    setSlugProgress(true);
-    await handleInputChange(value, 'slug');
+  const delayedFieldChange = _.debounce(async (value, field) => {
+    field === 'name' && setWorkspaceNameProgress(true);
+    field === 'slug' && setSlugProgress(true);
+    await handleInputChange(value, field);
   }, 500);
-
-  const delayedNameChange = _.debounce(async (value) => {
-    setWorkspaceNameProgress(true);
-    await handleInputChange(value, 'name');
-  }, 500);
-
-  const userHasntChangeAnythingYet = name?.value === currentValue?.name && slug?.value === currentValue?.slug;
-  const baseConditions =
-    isCreating ||
-    (name?.value !== currentValue?.name && isNameDisabled) ||
-    (slug?.value !== currentValue?.slug && isSlugDisabled) ||
-    slugProgress ||
-    workspaceNameProgress;
-  const isDisabled = userHasntChangeAnythingYet || baseConditions;
 
   return (
     <AlertDialog
@@ -189,20 +165,20 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               type="text"
               onChange={async (e) => {
                 e.persist();
-                await delayedNameChange(e.target.value);
+                await delayedFieldChange(e.target.value, 'name');
               }}
               onKeyDown={handleKeyDown}
-              className={`form-control ${name?.error ? 'is-invalid' : 'is-valid'}`}
+              className={`form-control ${fields['name']?.error ? 'is-invalid' : 'is-valid'}`}
               placeholder={t('header.organization.workspaceName', 'Workspace name')}
               disabled={isCreating}
               maxLength={50}
-              defaultValue={name?.value}
+              defaultValue={fields['name']?.value}
               data-cy="workspace-name-input-field"
               autoFocus
             />
-            {name?.error ? (
+            {fields['name']?.error ? (
               <label className="label tj-input-error" data-cy="workspace-error-label">
-                {name?.error || ''}
+                {fields['name']?.error || ''}
               </label>
             ) : (
               <label className="label label-info" data-cy="workspace-name-info-label">
@@ -216,20 +192,20 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             <label data-cy="slug-input-label">Unique workspace slug</label>
             <input
               type="text"
-              className={`form-control ${slug?.error ? 'is-invalid' : 'is-valid'}`}
+              className={`form-control ${fields['slug']?.error ? 'is-invalid' : 'is-valid'}`}
               placeholder={t('header.organization.workspaceSlug', 'Unique workspace slug')}
               disabled={isCreating}
               maxLength={50}
               onChange={async (e) => {
                 e.persist();
-                await delayedSlugChange(e.target.value);
+                await delayedFieldChange(e.target.value, 'slug');
               }}
               onKeyDown={handleKeyDown}
-              defaultValue={slug?.value}
+              defaultValue={fields['slug']?.value}
               data-cy="workspace-slug-input-field"
               autoFocusfields
             />
-            {!slugProgress && slug?.value !== currentValue?.slug && !slug.error && (
+            {!slugProgress && fields?.['slug']?.value !== currentValue?.slug && !fields['slug'].error && (
               <div className="icon-container">
                 <svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -241,11 +217,11 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
                 </svg>
               </div>
             )}
-            {slug?.error ? (
+            {fields['slug']?.error ? (
               <label className="label tj-input-error" data-cy="input-label-error">
-                {slug?.error || ''}
+                {fields['slug']?.error || ''}
               </label>
-            ) : slug?.value !== currentValue?.slug && !slugProgress ? (
+            ) : fields?.['slug']?.value !== currentValue?.slug && !slugProgress ? (
               <label className="label label-success" data-cy="sucess-label">{`Slug accepted!`}</label>
             ) : (
               <label
@@ -260,7 +236,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             <label data-cy="workspace-link-label">Workspace link</label>
             <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`} data-cy="slug-field">
               {!slugProgress ? (
-                `${getHostURL()}/${slug?.value || '<workspace-slug>'}`
+                `${getHostURL()}/${fields['slug']?.value || '<workspace-slug>'}`
               ) : (
                 <div className="d-flex gap-2">
                   <div class="spinner-border text-secondary workspace-spinner" role="status">
@@ -271,7 +247,10 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               )}
             </div>
             <label className="label label-success label-updated" data-cy="slug-success-label">
-              {!slugProgress && slug.value && !slug.error && slug?.value !== currentValue?.slug
+              {!slugProgress &&
+              fields['slug'].value &&
+              !fields['slug'].error &&
+              fields?.['slug']?.value !== currentValue?.slug
                 ? `Link updated successfully!`
                 : ''}
             </label>
@@ -282,7 +261,12 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             <ButtonSolid variant="secondary" onClick={closeModal} className="cancel-btn" data-cy="cancel-button">
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
-            <ButtonSolid isLoading={isCreating} disabled={isDisabled} onClick={editOrganization} data-cy="save-button">
+            <ButtonSolid
+              isLoading={isCreating}
+              disabled={isCreating || isDisabled || slugProgress || workspaceNameProgress}
+              onClick={editOrganization}
+              data-cy="save-button"
+            >
               {t('globals.save', 'Save')}
             </ButtonSolid>
           </div>

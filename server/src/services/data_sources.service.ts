@@ -305,12 +305,11 @@ export class DataSourcesService {
 
     const parsedOptions = JSON.parse(JSON.stringify(options));
 
-    // need to match if currentOption is a contant, {{constants.psql_db}
-    const constantMatcher = /{{constants\..+?}}/g;
-
     for (const key of Object.keys(parsedOptions)) {
       const currentOption = parsedOptions[key]?.['value'];
       const variablesMatcher = /(%%.+?%%)/g;
+      // need to match if currentOption is a contant, {{constants.psql_db}
+      const constantMatcher = /{{constants\..+?}}/g;
       const variableMatched = variablesMatcher.exec(currentOption);
 
       if (variableMatched) {
@@ -329,15 +328,7 @@ export class DataSourcesService {
       for (const key of Object.keys(parsedOptions)) {
         const credentialId = parsedOptions[key]?.['credential_id'];
         if (credentialId) {
-          const encryptedKeyValue = await this.credentialsService.getValue(credentialId);
-
-          //check if encrypted key value is a constant
-          if (constantMatcher.test(encryptedKeyValue)) {
-            const resolved = await this.resolveConstants(encryptedKeyValue, organization_id, environment_id);
-            sourceOptions[key] = resolved;
-          } else {
-            sourceOptions[key] = encryptedKeyValue;
-          }
+          sourceOptions[key] = await this.credentialsService.getValue(credentialId);
         } else {
           sourceOptions[key] = parsedOptions[key]['value'];
         }

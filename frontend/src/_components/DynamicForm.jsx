@@ -108,10 +108,10 @@ const DynamicForm = ({
 
       Object.keys(fields).length > 0 &&
         Object.keys(fields).map((key) => {
-          const { type, encrypted, key: propertyKey } = fields[key];
-          if ((type === 'password' || encrypted) && !(propertyKey in computedProps)) {
+          const { type, encrypted } = fields[key];
+          if ((type === 'password' || encrypted) && !(key in computedProps)) {
             //Editable encrypted fields only if datasource doesn't exists
-            encrpytedFieldsProps[propertyKey] = {
+            encrpytedFieldsProps[key] = {
               disabled: !!selectedDataSource?.id,
             };
           }
@@ -182,7 +182,6 @@ const DynamicForm = ({
     ignoreBraces = false,
     className,
     controller,
-    encrypted,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -192,14 +191,12 @@ const DynamicForm = ({
     switch (type) {
       case 'password':
       case 'text':
-      case 'textarea': {
-        const useEncrypted =
-          (options?.[key]?.encrypted !== undefined ? options?.[key].encrypted : encrypted) || type === 'password';
+      case 'textarea':
         return {
           type,
-          placeholder: useEncrypted ? '**************' : description,
+          placeholder: options?.[key]?.encrypted ? '**************' : description,
           className: `form-control${handleToggle(controller)}`,
-          value: options?.[key]?.value || '',
+          value: options?.[key]?.value,
           ...(type === 'textarea' && { rows: rows }),
           ...(helpText && { helpText }),
           onChange: (e) => optionchanged(key, e.target.value, true), //shouldNotAutoSave is true because autosave should occur during onBlur, not after each character change (in optionchanged).
@@ -207,9 +204,7 @@ const DynamicForm = ({
           isGDS,
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
-          encrypted: useEncrypted,
         };
-      }
       case 'toggle':
         return {
           defaultChecked: options?.[key],
@@ -226,7 +221,6 @@ const DynamicForm = ({
           useMenuPortal: queryName ? true : false,
           styles: computeSelectStyles ? computeSelectStyles('100%') : {},
           useCustomStyles: computeSelectStyles ? true : false,
-          encrypted: options?.[key]?.encrypted,
         };
 
       case 'checkbox-group':
@@ -254,7 +248,6 @@ const DynamicForm = ({
           currentState,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
-          encrypted: options?.[key]?.encrypted,
         };
       }
       case 'react-component-oauth-authentication':
@@ -282,9 +275,6 @@ const DynamicForm = ({
           multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           optionchanged,
           workspaceConstants: currentOrgEnvironmentConstants,
-          options,
-          optionsChanged,
-          selectedDataSource,
         };
       case 'react-component-google-sheets':
       case 'react-component-slack':
@@ -296,7 +286,6 @@ const DynamicForm = ({
           isSaving,
           selectedDataSource,
           workspaceConstants: currentOrgEnvironmentConstants,
-          optionsChanged,
         };
       case 'tooljetdb-operations':
         return {
@@ -375,12 +364,7 @@ const DynamicForm = ({
         //Send old field value if editing mode disabled for encrypted fields
         const newOptions = { ...options };
         const oldFieldValue = selectedDataSource?.['options']?.[field];
-        if (oldFieldValue) {
-          optionsChanged({ ...newOptions, [field]: oldFieldValue });
-        } else {
-          delete newOptions[field];
-          optionsChanged({ ...newOptions });
-        }
+        optionsChanged({ ...newOptions, [field]: oldFieldValue });
       }
       setComputedProps({
         ...computedProps,
@@ -394,7 +378,7 @@ const DynamicForm = ({
     return (
       <div className={`${isHorizontalLayout ? '' : 'row'}`}>
         {Object.keys(obj).map((key) => {
-          const { label, type, encrypted, className, key: propertyKey } = obj[key];
+          const { label, type, encrypted, className } = obj[key];
           const Element = getElement(type);
           const isSpecificComponent = ['tooljetdb-operations'].includes(type);
 
@@ -431,9 +415,9 @@ const DynamicForm = ({
                         variant="tertiary"
                         target="_blank"
                         rel="noreferrer"
-                        onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
+                        onClick={(event) => handleEncryptedFieldsToggle(event, key)}
                       >
-                        {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
+                        {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}
                       </ButtonSolid>
                     </div>
                   )}
@@ -460,7 +444,7 @@ const DynamicForm = ({
               >
                 <Element
                   {...getElementProps(obj[key])}
-                  {...computedProps[propertyKey]}
+                  {...computedProps[key]}
                   data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
                   //to be removed after whole ui is same
                   isHorizontalLayout={isHorizontalLayout}

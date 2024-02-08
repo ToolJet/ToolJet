@@ -69,10 +69,9 @@ describe("RunJS", () => {
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
     resizeQueryPanel("80");
-    deleteDownloadsFolder();
   });
 
-  it.only("should verify basic runjs", () => {
+  it("should verify basic runjs", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -92,6 +91,7 @@ describe("RunJS", () => {
 
   it("should verify actions", () => {
     const data = {};
+    deleteDownloadsFolder();
     data.customText = randomString(12);
 
     selectQueryFromLandingPage("runjs", "JavaScript");
@@ -146,7 +146,7 @@ describe("RunJS", () => {
     cy.url().should("contain", "/home");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Modal", 200, 300);
+    cy.dragAndDropWidget("Modal");
     cy.waitForAutoSave();
     addInputOnQueryField("runjs", "actions.showModal('modal1');");
     query("run");

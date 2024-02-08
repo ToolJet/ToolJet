@@ -100,20 +100,17 @@ describe("Redirection error pages", () => {
         cy.visit(`http://localhost:8082/applications/${data.slug}`);
         cy.get(commonSelectors.modalHeader).verifyVisibleElement(
             "have.text",
-            "App URL Unavailable"
+            "URL unavailable"
         );
         cy.get(commonSelectors.modalDescription).verifyVisibleElement(
             "have.text",
-            'The app URL is currently unavailable because the app has not been released. Please either release it or contact admin for access.'
+            "This URL is not accessible because it has not been released yet. Please either release it or contact admin for access."
         );
-        cy.get('[data-cy="open-app-button"]').verifyVisibleElement("have.text", "Open app")
-
         cy.get(commonSelectors.backToHomeButton).verifyVisibleElement(
             "have.text",
             "Back to home page"
         );
-
-        cy.url().should("eq", `http://localhost:8082/error/url-unavailable?appSlug=${data.slug}`);
+        cy.url().should("eq", "http://localhost:8082/error/url-unavailable");
         cy.get(commonSelectors.backToHomeButton).click();
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
 
@@ -130,8 +127,6 @@ describe("Redirection error pages", () => {
             "have.text",
             "You don’t have access to this app. Kindly contact admin to know more."
         );
-        // cy.get('[data-cy="open-app-button"]').verifyVisibleElement("have.text", "Open app")
-
         cy.get(commonSelectors.backToHomeButton).verifyVisibleElement(
             "have.text",
             "Back to home page"
@@ -162,17 +157,17 @@ describe("Redirection error pages", () => {
         cy.visit(`http://localhost:8082/applications/${data.slug}`);
         cy.get(commonSelectors.modalHeader).verifyVisibleElement(
             "have.text",
-            "App URL Unavailable"
+            "URL unavailable"
         );
         cy.get(commonSelectors.modalDescription).verifyVisibleElement(
             "have.text",
-            'The app URL is currently unavailable because the app has not been released. Please either release it or contact admin for access.'
+            "This URL is not accessible because it has not been released yet. Please either release it or contact admin for access."
         );
         cy.get(commonSelectors.backToHomeButton).verifyVisibleElement(
             "have.text",
             "Back to home page"
         );
-        cy.url().should("eq", `http://localhost:8082/error/url-unavailable?appSlug=${data.slug}`);
+        cy.url().should("eq", "http://localhost:8082/error/url-unavailable");
         cy.get(commonSelectors.backToHomeButton).click();
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
     });

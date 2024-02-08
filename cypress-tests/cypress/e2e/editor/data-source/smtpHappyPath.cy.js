@@ -22,11 +22,11 @@ describe("Data source SMTP", () => {
     closeDSModal();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources()
+      postgreSqlText.allDataSources
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase()
+      postgreSqlText.allDatabase
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -109,7 +109,7 @@ describe("Data source SMTP", () => {
 
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "**************",
+      "Enter password",
       Cypress.env("smtp_password")
     );
 

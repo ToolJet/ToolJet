@@ -1,14 +1,13 @@
 import React from 'react';
 
-const CheveronUp = ({ fill = '#C1C8CD', width = '24', className = '', viewBox = '0 0 24 24', style, height }) => (
+const CheveronUp = ({ fill = '#C1C8CD', width = '24', className = '', viewBox = '0 0 24 24' }) => (
   <svg
     className={className}
     width={width}
-    height={height}
+    height={width}
     viewBox={viewBox}
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    style={style}
   >
     <path
       fillRule="evenodd"

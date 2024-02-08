@@ -42,7 +42,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
           </div>
         );
       })}
-      <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(options)}>
+      <ButtonSolid variant="ghostBlue" size="sm" onClick={addNewKeyValuePair}>
         <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
         &nbsp;&nbsp; Add header
       </ButtonSolid>

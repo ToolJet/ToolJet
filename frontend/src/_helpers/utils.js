@@ -342,7 +342,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const minValue = validationObject?.minValue?.value;
   const maxValue = validationObject?.maxValue?.value;
   const customRule = validationObject?.customRule?.value;
-  const mandatory = validationObject?.mandatory?.value;
+
   const validationRegex = resolveWidgetFieldValue(regex, currentState, '', customResolveObjects);
   const re = new RegExp(validationRegex, 'g');
 
@@ -373,7 +373,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMinValue = resolveWidgetFieldValue(minValue, currentState, undefined, customResolveObjects);
   if (resolvedMinValue !== undefined) {
-    if (widgetValue === undefined || widgetValue < parseFloat(resolvedMinValue)) {
+    if (widgetValue === undefined || widgetValue < parseInt(resolvedMinValue)) {
       return {
         isValid: false,
         validationError: `Minimum value is ${resolvedMinValue}`,
@@ -383,7 +383,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMaxValue = resolveWidgetFieldValue(maxValue, currentState, undefined, customResolveObjects);
   if (resolvedMaxValue !== undefined) {
-    if (widgetValue === undefined || widgetValue > parseFloat(resolvedMaxValue)) {
+    if (widgetValue === undefined || widgetValue > parseInt(resolvedMaxValue)) {
       return {
         isValid: false,
         validationError: `Maximum value is ${resolvedMaxValue}`,
@@ -396,13 +396,6 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     return { isValid: false, validationError: resolvedCustomRule };
   }
 
-  const resolvedMandatory = resolveWidgetFieldValue(mandatory, currentState, false, customResolveObjects);
-
-  if (resolvedMandatory == true) {
-    if (!widgetValue) {
-      return { isValid: false, validationError: `Field cannot be empty` };
-    }
-  }
   return {
     isValid,
     validationError,

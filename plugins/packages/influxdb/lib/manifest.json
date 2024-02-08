@@ -29,11 +29,11 @@
       "value": ""
     },
     "protocol": {
-      "value": "http"
+      "type": "HTTP"
     }
   },
   "properties": {
-    "api_token": {
+    "api_key": {
       "label": "API token",
       "key": "api_token",
       "type": "password",

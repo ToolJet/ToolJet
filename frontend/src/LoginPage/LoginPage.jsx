@@ -139,11 +139,9 @@ class LoginPageComponent extends React.Component {
   setRedirectUrlToCookie() {
     // Page is loaded inside an iframe
     const iframe = window !== window.top;
-    const redirectPath = getRedirectTo(
-      iframe ? new URL(window.location.href).searchParams : new URL(location.href).searchParams
-    );
 
     if (iframe) {
+      const redirectPath = getRedirectTo();
       window.parent.postMessage(
         {
           type: 'redirectTo',
@@ -154,6 +152,9 @@ class LoginPageComponent extends React.Component {
         '*'
       );
     }
+
+    const params = iframe ? new URL(window.location.href).searchParams : new URL(location.href).searchParams;
+    const redirectPath = params.get('redirectTo');
 
     authenticationService.saveLoginOrganizationId(this.organizationId);
     authenticationService.saveLoginOrganizationSlug(this.organizationSlug);

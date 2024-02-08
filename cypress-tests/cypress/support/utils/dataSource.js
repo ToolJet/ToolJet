@@ -72,44 +72,33 @@ export const closeDSModal = () => {
   });
 };
 
-export const addQueryN = (queryName, query, dbName) => {
+export const addQuery = (queryName, query, dbName) => {
   cy.get("body").then(($body) => {
     if ($body.find('[data-cy="gds-querymanager-search-bar"]').length > 0) {
       cy.clearAndType('[data-cy="gds-querymanager-search-bar"]', `${dbName}`);
     }
   });
-  cy.intercept("POST", "http://localhost:3000/api/data_queries").as(
-    "createQuery"
-  );
 
   cy.get(`[data-cy="${dbName}-add-query-card"] > .text-truncate`).click();
   cy.get('[data-cy="query-rename-input"]').clear().type(queryName);
-  cy.forceClickOnCanvas();
 
-  cy.wait("@createQuery").then((interception) => {
-    const dataQueryId = interception.response.body.id;
-    cy.visit("/my-workspace");
-    cy.addQueryApi(queryName, query, dataQueryId);
-    cy.openApp();
-  });
+  cy.get(dataSourceSelector.queryInputField)
+    .realMouseDown({ position: "center" })
+    .realType(" ");
+  cy.get(dataSourceSelector.queryInputField).clearAndTypeOnCodeMirror(query);
+  cy.get(dataSourceSelector.queryCreateAndRunButton).click();
 };
 
-export const addQuery = (queryName, query, dbName) => {
-  cy.get('[data-cy="show-ds-popover-button"]').click();
+export const addQueryN = (queryName, query, dbName) => {
   cy.get(".css-1rrkggf-Input").type(`${dbName}`);
-  cy.intercept("POST", "http://localhost:3000/api/data_queries").as(
-    "createQuery"
-  );
   cy.contains(`[id*="react-select-"]`, dbName).click();
-
   cy.get('[data-cy="query-rename-input"]').clear().type(queryName);
 
-  cy.wait("@createQuery").then((interception) => {
-    const dataQueryId = interception.response.body.id;
-    cy.visit("/my-workspace");
-    cy.addQueryApi(queryName, query, dataQueryId);
-    cy.openApp();
-  });
+  cy.get(dataSourceSelector.queryInputField)
+    .realMouseDown({ position: "center" })
+    .realType(" ");
+  cy.get(dataSourceSelector.queryInputField).clearAndTypeOnCodeMirror(query);
+  cy.get(dataSourceSelector.queryCreateAndRunButton).click();
 };
 
 export const verifyValueOnInspector = (queryName, value) => {
