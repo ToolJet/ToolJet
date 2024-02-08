@@ -130,9 +130,14 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
 
   const renderButtons = () => {
     if (selectedQuery === null || showCreateQuery) return;
+    const { isLoading } = queries[selectedQuery?.name] ?? false;
     return (
       <>
-        <PreviewButton onClick={previewButtonOnClick} buttonLoadingState={buttonLoadingState} />
+        <PreviewButton
+          onClick={previewButtonOnClick}
+          buttonLoadingState={buttonLoadingState}
+          isRunButtonLoading={isLoading}
+        />
         {renderRunButton()}
       </>
     );
@@ -207,14 +212,14 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
   );
 });
 
-const PreviewButton = ({ buttonLoadingState, onClick }) => {
+const PreviewButton = ({ buttonLoadingState, onClick, isRunButtonLoading }) => {
   const previewLoading = usePreviewLoading();
   const { t } = useTranslation();
 
   return (
     <button
       onClick={onClick}
-      className={`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`}
+      className={`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading && !isRunButtonLoading)}`}
       data-cy={'query-preview-button'}
     >
       <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
