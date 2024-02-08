@@ -418,6 +418,7 @@ export const DropDown = function DropDown({
         >
           <label style={labelStyles} className="font-size-12 font-weight-500 py-0 my-0 d-flex">
             <span
+              data-cy={`dropdown-label-${component.name.toLowerCase()}`}
               style={{
                 overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
                 textOverflow: 'ellipsis', // Display ellipsis for overflowed content
@@ -430,7 +431,7 @@ export const DropDown = function DropDown({
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         </div>
-        <div className="w-100 px-0 h-100" ref={ref}>
+        <div className="w-100 px-0 h-100" ref={ref} data-cy={`dropdown-input-${component.name.toLowerCase()}`}>
           <Select
             ref={selectref}
             isDisabled={isDropdownDisabled}
@@ -484,6 +485,7 @@ export const DropDown = function DropDown({
         </div>
       </div>
       <div
+        data-cy={`${component.name.toLowerCase()}-invalid-feedback`}
         className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
         style={{
           color: errTextColor,
