@@ -388,6 +388,46 @@ Cypress.Commands.add(
   }
 );
 
+Cypress.Commands.add("backToApps", () => {
+  cy.get(commonSelectors.editorPageLogo).click();
+  cy.get(commonSelectors.backToAppOption).click();
+});
+
+Cypress.Commands.add("removeAssignedApps", () => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `DELETE FROM app_group_permissions;`,
+  });
+});
+
+
+Cypress.Commands.add('saveFromIntercept', (interceptAlias, property, envVariable) => {
+  cy.get(interceptAlias).its('response.body').then((responseBody) => {
+    Cypress.env(envVariable, responseBody[property]);
+  });
+});
+
+Cypress.Commands.add("verifyLabel", (labelName) => {
+  cy.get(commonSelectors.label(`${labelName}`)).verifyVisibleElement(
+    "have.text",
+    labelName
+  );
+});
+
+Cypress.Commands.add(
+  "visitSlug",
+  ({ actualUrl, currentUrl = "http://localhost:8082/error/unknown" }) => {
+    cy.visit(actualUrl);
+    cy.wait(3000);
+
+    cy.url().then((url) => {
+      if (url === currentUrl) {
+        cy.visit(actualUrl);
+      }
+    });
+  }
+);
+
 Cypress.Commands.add(
   "verifyCssProperty",
   (selector, property, expectedValue) => {

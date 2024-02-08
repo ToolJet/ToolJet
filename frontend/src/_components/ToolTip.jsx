@@ -8,14 +8,20 @@ export function ToolTip({
   children,
   placement = 'top',
   trigger = ['hover', 'focus'],
-  delay = { show: 800, hide: 100 },
+  delay = { show: 50, hide: 100 },
   show = true,
+  tooltipClassName = '',
 }) {
   if (!show) {
     return children;
   }
   return (
-    <OverlayTrigger trigger={trigger} placement={placement} delay={delay} overlay={<Tooltip>{message}</Tooltip>}>
+    <OverlayTrigger
+      trigger={trigger}
+      placement={placement}
+      delay={delay}
+      overlay={<Tooltip className={tooltipClassName}>{message}</Tooltip>}
+    >
       {children}
     </OverlayTrigger>
   );

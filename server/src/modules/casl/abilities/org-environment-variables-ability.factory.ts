@@ -4,7 +4,11 @@ import { Injectable } from '@nestjs/common';
 import { UsersService } from 'src/services/users.service';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 
-type Actions = 'createOrgEnvironmentVariable' | 'updateOrgEnvironmentVariable' | 'deleteOrgEnvironmentVariable';
+type Actions =
+  | 'createOrgEnvironmentVariable'
+  | 'updateOrgEnvironmentVariable'
+  | 'deleteOrgEnvironmentVariable'
+  | 'fetchEnvironments';
 
 type Subjects = InferSubjects<typeof User | typeof OrgEnvironmentVariable> | 'all';
 
@@ -21,6 +25,7 @@ export class OrgEnvironmentVariablesAbilityFactory {
 
     if (await this.usersService.userCan(user, 'create', 'OrgEnvironmentVariable')) {
       can('createOrgEnvironmentVariable', OrgEnvironmentVariable);
+      can('fetchEnvironments', OrgEnvironmentVariable);
     }
 
     if (await this.usersService.userCan(user, 'update', 'OrgEnvironmentVariable')) {

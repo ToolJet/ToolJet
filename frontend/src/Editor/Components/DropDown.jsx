@@ -315,7 +315,6 @@ export const DropDown = function DropDown({
             ? '#F1F3F5'
             : fieldBackgroundColor,
         '&:hover': {
-          backgroundColor: 'var(--tj-text-input-widget-hover) !important',
           borderColor: '#6A727C',
         },
       };

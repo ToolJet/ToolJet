@@ -53,9 +53,13 @@ export const Code = ({
       } else {
         return '{{true}}';
       }
-    } else {
-      return '';
     }
+    if (param === 'selectRowOnCellEdit') {
+      const selectRowOnCellEdit =
+        component?.component?.definition?.properties?.selectRowOnCellEdit?.value ?? '{{true}}';
+      return selectRowOnCellEdit;
+    }
+    return '';
   };
 
   let initialValue = !_.isEmpty(definition) ? definition.value : getDefinitionForNewProps(param.name);

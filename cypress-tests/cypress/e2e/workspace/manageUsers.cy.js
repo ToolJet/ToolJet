@@ -9,10 +9,9 @@ import { dashboardSelector } from "Selectors/dashboard";
 import { updateWorkspaceName } from "Support/utils/userPermissions";
 import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
+import { addNewUser } from "../../support/utils/onboarding";
 
 const data = {};
-data.firstName = fake.firstName;
-data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 
 describe("Manage Users", () => {
@@ -25,6 +24,8 @@ describe("Manage Users", () => {
     userId,
     url = "";
   it("Should verify the Manage users page", () => {
+    data.firstName = fake.firstName;
+    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     common.navigateToManageUsers();
 
     users.manageUsersElements();
@@ -73,10 +74,15 @@ describe("Manage Users", () => {
   });
 
   it("Should verify the confirm invite page and new user account", () => {
+    data.firstName = fake.firstName;
+    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+    cy.removeAssignedApps();
+
     common.navigateToManageUsers();
     users.fillUserInviteForm(data.firstName, data.email);
     cy.get(usersSelector.buttonInviteUsers).click();
-    users.fetchAndVisitInviteLink(data.email)
+    cy.wait(2000);
+    users.fetchAndVisitInviteLink(data.email);
     users.confirmInviteElements();
 
     cy.clearAndType(commonSelectors.passwordInputField, "pass");
@@ -102,14 +108,18 @@ describe("Manage Users", () => {
   });
 
   it("Should verify the user archive functionality", () => {
-    common.navigateToManageUsers();
+    data.firstName = fake.firstName;
+    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
 
+    addNewUser(data.firstName, data.email);
+    cy.logoutApi();
+
+    cy.defaultWorkspaceLogin();
+    common.navigateToManageUsers();
     common.searchUser(data.email);
-    cy.contains("td", data.email)
-      .parent()
-      .within(() => {
-        cy.get("td button").click();
-      });
+    cy.wait(1000);
+    cy.get(usersSelector.userActionButton).click();
+    cy.get('[data-cy="archive-button"]').click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       usersText.archivedToast
@@ -135,11 +145,9 @@ describe("Manage Users", () => {
     cy.defaultWorkspaceLogin();
     common.navigateToManageUsers();
     common.searchUser(data.email);
-    cy.contains("td", data.email)
-      .parent()
-      .within(() => {
-        cy.get("td button").click();
-      });
+    cy.wait(1000);
+    cy.get(usersSelector.userActionButton).click();
+    cy.get('[data-cy="archive-button"]').click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       usersText.unarchivedToast
@@ -205,23 +213,26 @@ describe("Manage Users", () => {
 
     users.fillUserInviteForm(data.firstName, data.email);
     cy.wait(1500);
-    cy.get(".dropdown-heading-value > .gray").dblclick();
+    cy.get(".css-1c6ox7i-Input").dblclick();
     cy.get("body").then(($body) => {
-      if (!$body.find(".search > input").length > 0) {
-        cy.get(".dropdown-heading-value > .gray").click();
+      if (!$body.find(".css-1c6ox7i-Input").length > 0) {
+        cy.get(".css-1c6ox7i-Input").click();
       }
     });
-    cy.clearAndType(".search > input", "Test");
-    cy.get(".no-options").verifyVisibleElement("have.text", "No options");
-    users.selectUserGroup("Admin");
-    cy.get(".dropdown-heading-value > span").verifyVisibleElement(
+    cy.get(".css-1c6ox7i-Input>").type("Test");
+    cy.get(".css-1wlit7h-NoOptionsMessage").verifyVisibleElement(
       "have.text",
-      "Admin"
+      "No groups found"
     );
     cy.get(commonSelectors.cancelButton).click();
 
     cy.get(usersSelector.buttonAddUsers).click();
-    cy.get(".dropdown-heading-value > .gray").verifyVisibleElement(
+    users.selectUserGroup("Admin");
+    cy.get(".selected-value").verifyVisibleElement("have.text", "Admin");
+    cy.get(commonSelectors.cancelButton).click();
+
+    cy.get(usersSelector.buttonAddUsers).click();
+    cy.get(".css-1jqq78o-placeholder").should(
       "have.text",
       "Select groups to add for this user"
     );
@@ -264,5 +275,79 @@ describe("Manage Users", () => {
     cy.get(groupsSelector.groupLink(data.groupName)).click();
     cy.get(groupsSelector.usersLink).click();
     cy.get(groupsSelector.userRow(data.email)).should("be.visible");
+  });
+
+  it("Should verify the edit user feature", () => {
+    data.firstName = fake.firstName;
+    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+
+    addNewUser(data.firstName, data.email);
+    cy.logoutApi();
+
+    cy.defaultWorkspaceLogin();
+    common.navigateToManageUsers();
+    common.searchUser(data.email);
+    cy.get(usersSelector.userActionButton).click();
+    cy.get(usersSelector.editUserDetailsButton).verifyVisibleElement(
+      "have.text",
+      "Edit user details"
+    );
+    cy.get('[data-cy="archive-button"]').verifyVisibleElement(
+      "have.text",
+      "Archive user"
+    );
+
+    cy.get(usersSelector.editUserDetailsButton).click();
+    cy.get(usersSelector.addUsersCardTitle).verifyVisibleElement(
+      "have.text",
+      "Edit user details"
+    );
+    cy.get(commonSelectors.labelFullNameInput).verifyVisibleElement(
+      "have.text",
+      "Name"
+    );
+    cy.get(commonSelectors.inputFieldFullName).verifyVisibleElement(
+      "have.value",
+      data.firstName
+    );
+    cy.get(commonSelectors.labelEmailInput).verifyVisibleElement(
+      "have.text",
+      "Email address"
+    );
+    cy.get(commonSelectors.inputFieldEmailAddress).verifyVisibleElement(
+      "have.value",
+      data.email
+    );
+    cy.get(commonSelectors.groupInputFieldLabel).verifyVisibleElement(
+      "have.text",
+      "User groups"
+    );
+    cy.get(".css-3w2yfm-ValueContainer").should("be.visible");
+    cy.get(commonSelectors.cancelButton).verifyVisibleElement(
+      "have.text",
+      "Cancel"
+    );
+    cy.get(usersSelector.buttonInviteUsers).verifyVisibleElement(
+      "have.text",
+      "Update"
+    );
+    cy.get(".css-3w2yfm-ValueContainer").click();
+    cy.get(".css-1c6ox7i-Input").type("Admin");
+    cy.get(".form-check-input").check();
+    cy.get(commonSelectors.cancelButton).click();
+
+    cy.get(usersSelector.userActionButton).click();
+    cy.get(usersSelector.editUserDetailsButton).click();
+    cy.get(".css-3w2yfm-ValueContainer").click();
+    cy.get(".css-1c6ox7i-Input").type("Admin");
+    cy.get(".form-check-input").check();
+    cy.get(usersSelector.buttonInviteUsers).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "User has been updated"
+    );
+
+    common.searchUser(data.email);
+    cy.get(usersSelector.groupChip).eq(1).should("have.text", "Admin");
   });
 });

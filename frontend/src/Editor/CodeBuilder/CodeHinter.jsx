@@ -35,6 +35,7 @@ import cx from 'classnames';
 import { Alert } from '@/_ui/Alert/Alert';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import ClientServerSwitch from './Elements/ClientServerSwitch';
+import { CodeHinterContext } from './CodeHinterContext';
 import Switch from './Elements/Switch';
 import Checkbox from './Elements/Checkbox';
 import Slider from './Elements/Slider';
@@ -97,6 +98,8 @@ export function CodeHinter({
   inspectorTab,
   staticText,
 }) {
+  const context = useContext(CodeHinterContext);
+
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
     lineNumbers: lineNumbers ?? false,
@@ -110,7 +113,8 @@ export function CodeHinter({
     placeholder,
   };
   const currentState = useCurrentState();
-  const [realState, setRealState] = useState(currentState);
+  const [realState, setRealState] = useState({ ...currentState, ..._currentState, ...context });
+
   const [currentValue, setCurrentValue] = useState('');
 
   const [prevCurrentValue, setPrevCurrentValue] = useState(null);
@@ -191,13 +195,10 @@ export function CodeHinter({
   }, []);
 
   useEffect(() => {
-    if (_currentState) {
-      setRealState(_currentState);
-    } else {
-      setRealState(currentState);
-    }
+    const newState = { ...currentState, ..._currentState, ...context };
+    setRealState(newState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ currentState, _currentState })]);
+  }, [JSON.stringify([currentState.components, _currentState, context])]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -218,38 +219,43 @@ export function CodeHinter({
     };
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
-  useEffect(() => {
+  const updatePreview = () => {
     let globalPreviewCopy = null;
     let globalErrorCopy = null;
-    if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
-      const [preview, error] = getPreviewAndErrorFromValue(currentValue);
-      // checking type error if any in run time
-      const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
+    const [preview, error] = getPreviewAndErrorFromValue(currentValue);
+    setPrevCurrentValue(currentValue);
 
-      setPrevCurrentValue(currentValue);
-      if (error || !_valid || typeof preview === 'function') {
-        globalPreviewCopy = null;
-        globalErrorCopy = error || errorMessages?.[errorMessages?.length - 1];
-        setResolvingError(error || errorMessages?.[errorMessages?.length - 1]);
-        setResolvedValue(null);
-      } else {
-        globalPreviewCopy = preview;
-        globalErrorCopy = null;
-        setResolvingError(null);
-        setResolvedValue(preview);
-      }
+    const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
+
+    setPrevCurrentValue(currentValue);
+    if (error || !_valid || typeof preview === 'function') {
+      globalPreviewCopy = null;
+      globalErrorCopy = error || errorMessages?.[errorMessages?.length - 1];
+      setResolvingError(error || errorMessages?.[errorMessages?.length - 1]);
+      setResolvedValue(null);
+    } else {
+      globalPreviewCopy = preview;
+      globalErrorCopy = null;
+      setResolvingError(null);
+      setResolvedValue(preview);
     }
 
+    return [globalPreviewCopy, globalErrorCopy];
+  };
+
+  useEffect(() => {
+    let [globalPreviewCopy, globalErrorCopy] = enablePreview ? updatePreview() : [null, null];
+
     return () => {
-      if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
+      if (enablePreview) {
         setPrevCurrentValue(null);
         setResolvedValue(globalPreviewCopy);
         setResolvingError(globalErrorCopy);
       }
     };
-  }, [JSON.stringify({ currentValue, realState, isFocused })]);
+  }, [JSON.stringify({ currentValue, realState, isFocused, context })]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [JSON.stringify({ currentValue, realState, isFocused })]);
+  // }, [JSON.stringify({ currentValue, realState, isFocused, context })]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
     if (editor.getValue()?.trim() !== currentValue) {
@@ -440,6 +446,11 @@ export function CodeHinter({
     }
   };
 
+  const onFocusHandler = () => {
+    setFocused(true);
+    updatePreview();
+  };
+
   return (
     <div
       ref={wrapperRef}
@@ -553,7 +564,7 @@ export function CodeHinter({
                     realState={realState}
                     scrollbarStyle={null}
                     height={'100%'}
-                    onFocus={() => setFocused(true)}
+                    onFocus={onFocusHandler}
                     onBlur={(editor, e) => {
                       e?.stopPropagation();
                       const value = editor?.getValue()?.trimEnd();
