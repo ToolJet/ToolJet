@@ -9,7 +9,6 @@ import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
 import { Link } from '../Link';
 import moment from 'moment';
-import { SelectComponent } from '../SelectComponent';
 
 export default function generateColumnsData({
   columnProperties,
@@ -319,7 +318,7 @@ export default function generateColumnsData({
 
             return (
               <div className="h-100 d-flex align-items-center">
-                <SelectComponent
+                <SelectSearch
                   options={columnOptions.selectOptions}
                   value={cellValue}
                   search={true}
@@ -329,9 +328,7 @@ export default function generateColumnsData({
                   fuzzySearch
                   placeholder={t('globals.select', 'Select') + '...'}
                   disabled={!isEditable}
-                  className="select-search table-select-search"
-                  styles={{ background: 'inherit', border: 'none' }}
-                  darkMode={darkMode}
+                  className="select-search"
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>
