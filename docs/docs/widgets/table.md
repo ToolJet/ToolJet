@@ -4,7 +4,7 @@ title: Table
 ---
 # Table
 
-Tables can be used for both displaying and editing data. You can use the table widget to display data from a database or API. You can also use the table widget to edit data and save it back to the database or API.
+Tables can be used for both displaying and editing data. You can use the table component to display data from a database or API. You can also use the table component to edit data and save it back to the database or API.
 
 ## Table UI
 
@@ -16,7 +16,7 @@ Tables can be used for both displaying and editing data. You can use the table w
 
 ### Filter data
 
-The table data can be filtered using this option. You have the option to choose from various filters, such as:
+The table data can be filtered using the Filter data option on its top-left. You have the option to choose from various filters, such as:
 
 - **contains**
 - **does not contain**
@@ -31,7 +31,7 @@ The table data can be filtered using this option. You have the option to choose 
 - **less than**
 - **less than or equal to**
 
-You have the option to **[hide the filter button](/docs/widgets/table#show-filter-button)** in the table properties.
+You also have the option to **[hide the filter button](/docs/widgets/table#show-filter-button)** in the table properties.
 
 ### Search
 
@@ -43,11 +43,11 @@ You can use the `Tab` key to navigate through cells on the table.
 
 ### Pagination
 
-The table component supports both **[client-side pagination](/docs/widgets/table#client-side-pagination)** and **[server-side pagination](/docs/widgets/table#server-side-pagination)**. The `<<` and `>>` button skips to the first and last page respectively. The `<` and `>` button skips to the previous and next page respectively. You can also **[hide the pagination buttons](/docs/widgets/table#show-pagination-buttons)** in the table properties.
+The table component supports both **[client-side pagination](/docs/widgets/table#client-side-pagination)** and **[server-side pagination](/docs/widgets/table#server-side-pagination)**. The `<<` and `>>` button skips to the first and last page respectively. The `<` and `>` button takes the user to the previous and next page respectively. You can also **[hide the pagination buttons](/docs/widgets/table#show-pagination-buttons)** in the table properties.
 
 ### Add new rows
 
-Upon clicking this button, a popup modal will show, providing users with the ability to insert new rows. Initially, the modal will contain a single row, with columns mirroring those found in the table. If users input data into this row, it will be stored within the **[`newRows` variable](/docs/widgets/table#exposed-variables)** associated with the table. Clicking on the **Discard** button will clear the data within this variable. However, if the users close the popup without any action (neither saving nor discarding), the data will persist, accompanied by a green indicator on the **Add new row** button. The table incorporates an **[Add new rows event handler](/docs//widgets/table#add-new-rows)**, which can be employed to execute queries that store the data into the datasource upon clicking the **Save** button.
+Upon clicking this button, a popup modal will show, providing users with the ability to insert new rows. Initially, the modal will contain a single row, with columns mirroring those found in the table. If users input data into this row, it will be stored within the **[`newRows` variable](/docs/widgets/table#exposed-variables)** associated with the table. Clicking on the **Discard** button will clear the data within this variable. However, if the users close the popup without any action (neither saving nor discarding), the data will persist, accompanied by a green indicator on the **Add new row** button. The table incorporates an **[Add new rows event handler](/docs//widgets/table#add-new-rows)**, which can be employed to execute queries that store the data into the data source upon clicking the **Save** button.
 
 :::info
 At present, it is not possible to include columns of type Image when adding a new row to the table.
@@ -80,7 +80,7 @@ You can sort the table data in ascending or descending order by clicking on the 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/tabledata1.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/tabledata1.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 <br/>
@@ -141,7 +141,7 @@ Whenever data is loaded into a table, the columns are automatically generated. Y
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/columnsnew.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/columnsnew.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -167,7 +167,7 @@ The **column data** field expects a JSON value:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/dynamicnew.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/dynamicnew.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -197,7 +197,7 @@ This column type is automatically selected by default when a column is added or 
 | Column name | Specify the name to be displayed on the table column header |
 | Overflow | Manage the handling of content that exceeds the cell dimensions. `Wrap` wraps the content onto the next line within the cell, `Scroll` enables scrolling for content that exceeds the cell, and `Hide` conceals content that goes beyond the cell boundary. |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, we can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Text color | Modify the color of the text in the column. You can use a hex color code or color name. The value can be dynamically assigned using JS. Refer to the [how-to guide](/docs/how-to/access-cellvalue-rowdata). |
 | Cell background color | Adjust the background color of the cell in the column. You can utilize a hex color code or color name. The value can be dynamically assigned using JS. |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -211,14 +211,14 @@ Selecting the column type as **Number** will only load numerical data in the col
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, we can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. |
 | Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
 | Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/numbernew.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/numbernew.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -230,7 +230,7 @@ The **Badge** column type is utilized to exhibit labels on the columns using the
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, we can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the badge as an array |
 | Labels | Provide the labels for the values in the badge as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -238,7 +238,7 @@ The **Badge** column type is utilized to exhibit labels on the columns using the
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/badgenew.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/badgenew.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -250,7 +250,7 @@ Similar to the **Badge** column type, the **Multiple Badges** type is used to di
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, we can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the multiple badges as an array |
 | Labels | Provide the labels for the values in the multiple badges as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -258,7 +258,7 @@ Similar to the **Badge** column type, the **Multiple Badges** type is used to di
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/multibadgetype.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/multibadgetype.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -270,13 +270,13 @@ The **Tags** column type is utilized to display tags within the column cells usi
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, we can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
 | Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/tagtype.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/tagtype.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -288,7 +288,7 @@ The **Dropdown** column type is used to display a dropdown in the column cells u
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, we can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the dropdown as an array |
 | Labels | Provide the labels for the values in the dropdown as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -296,7 +296,7 @@ The **Dropdown** column type is used to display a dropdown in the column cells u
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/droptype.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/droptype.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -308,7 +308,7 @@ The **Radio** column type is used to show radio buttons in the column cells usin
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, we can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the radio as an array |
 | Labels | Provide the labels for the values in the radio as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -316,7 +316,7 @@ The **Radio** column type is used to show radio buttons in the column cells usin
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/radiotype.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/radiotype.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -328,7 +328,7 @@ The **Multiselect** column type is used to show a multiselect dropdown in the co
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, we can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the multiselect as an array |
 | Labels | Provide the labels for the values in the multiselect as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -336,7 +336,7 @@ The **Multiselect** column type is used to show a multiselect dropdown in the co
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/multiselecttype.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/multiselecttype.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -348,7 +348,7 @@ The **Toggle Switch** column type is used to display a toggle switch in the colu
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, we can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Active color | Set the color of the toggle switch when it is active using this property. |
 | + Add Event Handler | Add an event handler to perform actions whenever the toggle switch is turned on or off. |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -356,7 +356,7 @@ The **Toggle Switch** column type is used to display a toggle switch in the colu
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/toggletype.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/toggletype.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -379,7 +379,7 @@ The **Date Picker** column type is used to display a date picker in the column c
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/datetype.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/datetype.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -400,7 +400,7 @@ The **Image** column type is used to display images in the column cells using th
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/imagetype.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/imagetype.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -421,7 +421,7 @@ For more information on using cellValue and rowData, refer to the **[how-to guid
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/linkupd.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/linkupd.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -431,7 +431,7 @@ You can add a new column to the table by clicking on the **+ Add Column** button
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/addcolumn.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/addcolumn.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -441,7 +441,7 @@ Hover on the column under the columns section and click on the three dots icon, 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/deletecolumn.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/deletecolumn.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -504,28 +504,28 @@ If the data of a cell is changed, "save changes" button will be shown at the bot
 
 ## Validation
 
-Under column properties, expand the detailed view of a column type to access a toggle button called `make editable`. You can toggle it `ON` to apply the validations for each column respectively using the following.
+Under column properties, expand the detailed view of a column type to access a toggle button called `make editable`. You can toggle it `ON` to apply the validations. Validations will be different for different column types. For instance, the a column with `string` type will have the following validations.
 
 ### Regex
+Use this field to enter a Regular Expression that will validate the content.
 
-Use this field to enter a Regular Expression that will validate the password constraints.
 ### Min length
 
-Enter the number for a minimum length of password allowed.
+Enter the number for a minimum length of characters allowed.
 
 ### Max length
 
-Enter the number for the maximum length of password allowed.
+Enter the number for the maximum length of characters allowed.
 
-### Custom validation
+### Custom rule
 
-If the condition is true, the validation passes, otherwise return a string that should be displayed as the error message. For example: `{{components.passwordInput1.value === 'something' ? true: 'value should be something'}}`
+If the condition is true, the validation passes, otherwise return a string that should be displayed as the error message. For example: `{{components.table1.selectedRow.id==1&&"This row can't be deleted"}}`
 
 ## Action buttons
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/actionnew.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/actionnew.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -554,7 +554,7 @@ Action buttons will be displayed as the last column of the table. The styles of 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/newevents.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/newevents.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -602,7 +602,7 @@ This event is triggered when the **Save** button is clicked from the **Add new r
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/rowselection.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/rowselection.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -638,7 +638,7 @@ Please ensure that the value provided in the object corresponds to a valid id in
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/searchsort.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/searchsort.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -671,7 +671,7 @@ When Server-side filter is enabled, applying filters will not automatically filt
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/paginationnew.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/paginationnew.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -696,7 +696,7 @@ Check this how-to guide to learn more about [server-side pagination](/docs/how-t
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/additionalactions.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/additionalactions.png" alt="ToolJet - Component Reference - Table" />
 
 </div>
 
@@ -735,8 +735,8 @@ It's enabled by default. Table footer will show two update buttons **Save change
 | **Action button radius** | This field can be used to give a radius to all action buttons. The default value is `0` |
 | **Table type** | Select a type of table from the dropdown: Bordered, Regular, or Striped. |
 | **Cell size** |  This decides the size of table cells. You can choose between a `Condensed` size for table cells or a `Regular` size |
-| **Visibility** | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}`. |
-| **Disable** | Toggle on to lock the widget. You can programmatically change its value by clicking on the `Fx` button next to it, if set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| **Visibility** | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
+| **Disable** | Toggle on to lock the widget. You can programmatically change its value by clicking on the `Fx` button next to it, if set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 | **Border radius** | Use this property to modify the border radius of the button. |
 
 :::info
@@ -745,10 +745,10 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 ## Exposed variables
 
-| variable      | description |
+| Variable      | Description |
 | :---------- | :---------- |
-| **currentData**      | Data that is currently being displayed by the table ( including edits if any ) |
-| **currentPageData**  | Data that is displayed on the current page if pagination is enabled ( including edits if any )      |
+| **currentData**      | Data that is currently being displayed by the table (including edits if any ) |
+| **currentPageData**  | Data that is displayed on the current page if pagination is enabled (including edits if any)      |
 | **pageIndex** | Index of the current page, starting from 1
 | **changeSet** | Object with row number as the key and object of edited fields and their values as the value |
 | **dataUpdates** | Just like changeSet but includes the data of the entire row |
@@ -762,11 +762,15 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 Following actions of color picker component can be controlled using the component specific actions(CSA):
 
-| Actions     | Description |
-| :----------- | :----------- |
-| **setPage** | Set the page on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.setPage(2)` |
-| **selectRow** | Select the row on the table using via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.selectRow('id','11')` |
-| **deselectRow** | Deselect the row on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.deselectRow()` |
-| **discardChanges** | Discard the changes from the table when a cell is edited via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.discardChanges()` |
-| **discardNewlyAddedRows** | Discard the newly added rows from the add new row popup on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.discardNewlyAddedRows()` |
-| **downloadTableData** | Retrieve the data from the table in the PDF, CSV, or Excel sheet by using a component-specific action within an event handler. Furthermore, you have the choice to utilize a RunJS query to execute component-specific actions. For downloading the table data as a PDF, you can use the following code: `await components.table1.downloadTableData('pdf')`. Similarly, for downloading as a CSV: `await components.table1.downloadTableData('csv')`, and for downloading as an Excel sheet: `await components.table1.downloadTableData('xlsx')`. |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| setPage()      | Sets the page on the table.   | Employ a RunJS query (for e.g.,  <br/> `await components.table1.setPage(2)`) <br/> or trigger it using an event. |
+| selectRow()    | Selects a row on the table | Employ a RunJS query (for e.g.,  <br/> `await components.table1.selectRow('id','11')`) <br/> or trigger it using an event. |
+| deselectRow()  | Deselects a row on the table. | Employ a RunJS query (for e.g.,  <br/> `await components.table1.deselectRow()`)  <br/> or trigger it using an event. |
+| selectAllRows()| Selects all rows on the table.            | Employ a RunJS query (for e.g.,  <br/> `await components.table1.selectAllRows()`) <br/> or trigger it using an event. |
+| deselectAllRows() | Deselects all rows on the table| Employ a RunJS query (for e.g.,  <br/> `await components.table1.deselectAllRows()`) <br/> or trigger it using an event. |
+| discardChanges()  | Discards the changes from the table when a cell is edited. | Employ a RunJS query (for e.g., <br/> `await components.table1.discardChanges()`) <br/> or trigger it using an event. |
+| discardNewlyAddedRows() | Discards the newly added rows from the add new row popup on the table. | Employ a RunJS query (for e.g., <br/> `await components.table1.discardNewlyAddedRows()`) <br/> or trigger it using an event. |
+| downloadTableData() | Retrieves the data from the table in the PDF, CSV, or Excel sheet. | Employ a RunJS query (for e.g., <br/> `await components.table1.downloadTableData('pdf')`) <br/> or trigger it using an event. |
+| setFilters() | Applies filters to the table data. | Employ a RunJS query (for e.g., <br/> `await components.table1.setFilters ([{column:'name',condition:'contains',value: 'Sarah'}])`) <br/> or trigger it using an event. |
+| clearFilters() | Removes all applied filters from the table. | Employ a RunJS query (for e.g., <br/> `await components.table1.clearFilters()`) <br/> or trigger it using an event. |

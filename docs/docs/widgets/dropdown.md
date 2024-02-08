@@ -4,13 +4,13 @@ title: Dropdown
 ---
 # Dropdown
 
-The Dropdown component can be used to collect user input from a list of options.
+The Dropdown component can be used to collect user input from a list of options. This document goes through all the properties related to the dropdown component.
 
 ## Data
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
 |:---------------|:-------------------------------------------------|:-----------------------------|
-| Label         | Text to display as the label for the field.           | String (e.g., "Country").         |
-| Placeholder   | A hint displayed to guide the user on what to enter.  | String (e.g., "Choose an option").          |
+| Label         | Text to display as the label for the field.           | String (e.g., `Country`).         |
+| Placeholder   | A hint displayed to guide the user on what to enter.  | String (e.g., `Choose an option`).          |
 
 ## Options
 Allows you to add options to the dropdown field. You can click on `Add new option` and add options manually or enable `Dynamic options` and enter the options using code. 
@@ -21,10 +21,10 @@ Allows you to add options to the dropdown field. You can click on `Add new optio
 Triggers when an option is selected.
 
 **On focus** <br/>
-Triggers whenever the user clicks inside the text input component.
+Triggers whenever the user clicks inside the component.
 
 **On blur** <br/>
-Triggers whenever the user clicks outside the text input component.
+Triggers whenever the user clicks outside the component.
 
 **On search text changed** <br/>
 Triggers when search text changes.
@@ -37,8 +37,8 @@ Check [Action Reference](/docs/category/actions-reference) docs to get detailed 
 
 | <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
 |:---------------|:-------------------------------------------------|:-----------------------------|
-| Custom Validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.dropdown.value<5&&"Value needs to be more than 5"}}`).           |
-| Mandatory Field    | Displays a 'Field cannot be empty' message if no option is selected. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Custom validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.dropdown.value<5&&"Value needs to be more than 5"}}`).           |
+| Make this field mandatory    | Displays a 'Field cannot be empty' message if no option is selected. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 
 
 ## Additional Actions
@@ -68,20 +68,19 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 
 | <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:---------------|:------------|:---------------|
-| Text color     | Sets the color of the component's label. | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Text     | Sets the color of the component's label. | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
 | Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on `fx` to input code that programmatically returns an alignment value - `side` or `top`. |
-| Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in fx for a numeric value return. |
+| Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in `fx` that returns a numeric value. |
 
 ## Field
 
 | <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
 | Background        | Sets the background color of the component.                                                   | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Border color    | Sets the border color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Text color      | Sets the text color of the text entered in the component.                                     | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Error text color| Sets the text color of validation message that displays.                                      | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility and select which icon you want to display                                     |
-| Icon color      | Sets the icon color of the component.                                                         | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Border     | Sets the border color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Text       | Sets the text color of the text entered in the component.                                     | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Error text | Sets the text color of validation message that displays.                                      | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility, select icon and icon color         |
 | Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value.           |
 | Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties.                                            |
 
@@ -89,7 +88,7 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 ## Container
 
 **Padding** <br/>
-Allows you to pick between `Default` or none as the padding setting for the component.
+Allows you to maintain a standard padding by enabling the `Default` option.
 
 :::info
 Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
@@ -100,13 +99,17 @@ Check the **component specific actions** available for this component **[here](/
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 |: ---------- | :---------- | :------------ |
-| value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.textinput1.value}}`). |
-| isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isValid}}`). |
-| isMandatory | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isMandatory}}`). |
-| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isLoading}}`). |
-| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isVisible}}`). |
-| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isDisabled}}`). |
-
+| label               | Holds the label name of the dropdown.                                                                 | Accessible dynamically with JS (for e.g., `{{components.dropdown1.label}}`).                                          |
+| optionLabels        | Holds the option labels for the values of the dropdown in array form.                                 | Accessible dynamically with JS (for e.g., `{{components.dropdown1.optionLabels}}` or <br/>`{{components.dropdown1.optionLabels[0]}}` for a specific label). |
+| value               | Holds the value entered by the user in the component.                                                 | Accessible dynamically with JS (for e.g., `{{components.dropdown1.value}}`).                                          |
+| selectedOptionLabel | Holds the label of the selected option in the dropdown components.                                    | Accessible dynamically with JS (for e.g., `{{components.dropdown1.selectedOptionLabel}}`).                            |
+| searchText          | This variable is initially empty and holds the value whenever the user searches on the dropdown.      | Accessible dynamically with JS (for e.g., `{{components.dropdown1.searchText}}`).                                     |
+| options          | Shows all the options in the dropdown as key-value pairs.      | Accessible dynamically with JS (for e.g., `{{components.dropdown1.options}}`).                                     |
+| isValid             | Indicates if the input meets validation criteria.                                                     | Accessible dynamically with JS (for e.g., `{{components.dropdown1.isValid}}`).                                        |
+| isMandatory         | Indicates if the field is required.                                                                   | Accessible dynamically with JS (for e.g., `{{components.dropdown1.isMandatory}}`).                                    |
+| isLoading           | Indicates if the component is loading.                                                                | Accessible dynamically with JS (for e.g., `{{components.dropdown1.isLoading}}`).                                      |
+| isVisible           | Indicates if the component is visible.                                                                | Accessible dynamically with JS (for e.g., `{{components.dropdown1.isVisible}}`).                                      |
+| isDisabled          | Indicates if the component is disabled.                                                               | Accessible dynamically with JS (for e.g., `{{components.dropdown1.isDisabled}}`).                                     |
 
 ## Component specific actions (CSA)
 
@@ -115,10 +118,8 @@ Following actions of component can be controlled using the component specific ac
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"160px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
-| setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setText('this is input text')`). |
-| clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.clear()`). |
-| setFocus()     | Sets the focus of the cursor on the input field.   | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setFocus()`). |
-| setBlur()      | Removes the focus of the cursor from the input field. | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setBlur()`). |
-| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setVisibility(false)`). |
-| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setLoading(true)`). |
-| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.textinput1.setDisable(true)`). |
+| clear()        | Clears the selected option.      | Employ a RunJS query (for e.g.,  <br/> `await components.dropdown1.clear()`) or trigger it using an event. |
+| selectOption()        | Selects an option.      | Employ a RunJS query (for e.g.,  <br/> `await components.dropdown1.clear()`) or trigger it using an event. |
+| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.dropdown1.setVisibility(false)`) or trigger it using an event. |
+| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.dropdown1.setLoading(true)`) or trigger it using an event. |
+| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.dropdown1.setDisable(true)`) or trigger it using an event. |

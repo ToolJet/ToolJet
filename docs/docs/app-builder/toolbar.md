@@ -5,12 +5,6 @@ title: Topbar
 
 Topbar is present at the top of the app-builder, and is used to configure the app settings.
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/topbarnew.png" alt="App Builder: Topbar"/>
-
-</div>
-
 ### App name
 
 The App name can be modified by selecting the application name located on the left side of the topbar.

@@ -5,177 +5,142 @@ title: Run Actions from RunJS query
 
 # Run `Actions` from RunJS query
 
-Now you can trigger all the `actions` available in ToolJet from within the `RunJS` query. This guide includes the syntax for each action along with the example.
+You can trigger all the `actions` available in ToolJet from within the `RunJS` query. This guide includes the syntax for each action along with an example.
 
 ### Run Query
 
-**Syntax:**
+To trigger a query, you can use the below functions:
 
 ```js
 queries.queryName.run()
 ```
 or
 ```js
-await actions.runQuery('queryName') 
+await actions.runQuery('<queryName>') 
 ```
 
-**Example:** In the screenshot below, we are triggering the two different queries `customers` and `getData` using the two different syntax available for `Run Query` action.
+In the screenshot below, we are triggering two different queries using two different syntax available for `Run Query` action.
 
 <div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Run Actions from RunJS query](/img/how-to/run-actions-from-runjs/runquery.png)
-
+    <img style={{ border:'0'}} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/runquery-v2.png" alt="Run Query" />
 </div>
 
 ### Get Query Data
 
-To obtain the latest data returned by a specific query, you can use the below functions. 
+In the previous section, we saw how we can trigger queries. Once the queries are triggered, if you want to immediately use the data returned by the query inside the RunJS query, you can use the `getData()`, `getRawData()` and `getLoadingState()` functions:
 
 #### Retrieve the latest data of a query:
 ```js
-let value = queries.<queryName>.getData();
-return value;
-```
+let response = await queries.getSalesData.run(); 
+// replace getSalesData with your query name
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/get-query-data.png" alt="Get Latest Query Data" />
-</div>
+let value = queries.getSalesData.getData(); 
+// replace getSalesData with your query name
+```
 
 #### Retrieve the latest raw data of a query:
 ```js
-let value = queries.<queryName>.getRawData();
-return value;
-```
+let response = await queries.getCustomerData.run(); 
+//replace getCustomerData with your query name
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0'}} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/get-raw-query-data.png" alt="Get Raw Query Data" />
-</div>
+let value = queries.getCustomerData.getRawData(); 
+// replace getCustomerData your with query name
+```
 
 #### Retreive the loading state of a query:
 ```js
-let value = queries.<queryName>.getLoadingState();
-return value;
+let response = await queries.getTodos.run()
+//replace getTodos with your query name
+
+let value = queries.getTodos.getLoadingState();
+//replace getTodos with your query name
 ```
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0'}} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/get-loading-state.png" alt="Get Loading State" />
-</div>
 
 ### Set Variables
 
-**Syntax:**
+To create a variable, you can use the below function:
 
 ```javascript
-actions.setVariable(variableName, variableValue)
+actions.setVariable('<variableName>', `<variableValue>`)
 ```
-
-**Example:** In the screenshot below, we are setting the two variables `test` and `test2`. `test` variable includes a numerical value so we haven't wrapped it inside the quotes but the variable `test2` is a string so we have wrapped it in quotes.
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Run Actions from RunJS query](/img/how-to/run-actions-from-runjs/setvariable.png)
-
-</div>
 
 ### Unset Variable
 
-**Syntax:**
+To delete a created variable, you can use the below function:
 
 ```javascript
-actions.unSetVariable(variableName)
+actions.unSetVariable('<variableName>')
 ```
 
-**Example:** In the screenshot below, we are unsetting the variable `test2` that we created in the previous step.
+### Get Variables
 
-<div style={{textAlign: 'center'}}>
+To access variables through immediately after setting them in a RunJS query, you can use the below `getVariable` and `getPageVariable` functions:
 
-![ToolJet - How To - Run Actions from RunJS query](/img/how-to/run-actions-from-runjs/unsetvariable.png)
+#### Retrieve the current value of a variable: 
+```js
+actions.setVariable('mode','dark');
+//replace mode with your desired variable name
 
-</div>
+return actions.getVariable('mode');
+```
+
+#### Retrieve the current value of a page-specific variable:
+```js
+actions.setPageVariable('number',1);
+//replace number with your desired variable name
+
+return actions.getPageVariable('number');
+```
 
 ### Logout
 
-**Syntax:**
+To log out the current logged-in user from the ToolJet, use the below function:
 
 ```javascript
 actions.logout()
 ```
 
-**Example:** Triggering `actions.logout()` will log out the current logged in user from the ToolJet and will redirect to sign in page.
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Run Actions from RunJS query](/img/how-to/run-actions-from-runjs/logout.png)
-
-</div>
 
 ### Show Modal
 
-**Syntax:**
+To open a modal using RunJS query, use the below function:
 
 ```javascript
-actions.showModal('modalName')
+actions.showModal('<modalName>')
 ```
-
-**Example:** In the screenshot below, there is a modal on the canvas (renamed it to `formModal` from `modal1`) and we are using RunJS query to show the modal.
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Run Actions from RunJS query](/img/how-to/run-actions-from-runjs/showmodal.png)
-
-</div>
 
 ### Close Modal
 
-**Syntax:**
+To close a modal using RunJS query, use the below function:
 
 ```javascript
-actions.closeModal('modalName')
+actions.closeModal('<modalName>')
 ```
 
-**Example:** In the screenshot below, we have used RunJS query to close the modal that we showed up in previous step.
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Run Actions from RunJS query](/img/how-to/run-actions-from-runjs/closemodal.png)
-
-</div>
-
 ### Set Local Storage
-
-**Syntax:**
+Set a value in local storage using the below code:
 
 ```javascript
 actions.setLocalStorage('key','value')
 ```
 
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Run Actions from RunJS query](/img/how-to/run-actions-from-runjs/setlocalstorage.png)
-
-</div>
 
 ### Copy to Clipboard
 
-**Syntax:**
+Use the below code to copy content to the clipboard:
 
 ```javascript
-actions.copyToClipboard('contentToCopy')
+actions.copyToClipboard('<contentToCopy>')
 ```
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Run Actions from RunJS query](/img/how-to/run-actions-from-runjs/copytoclipboard.png)
-
-</div>
 
 ### Generate File
 
-**Syntax:**
+The below action can be used to generate a file.
 
 ```js
-actions.generateFile('fileName', 'fileType', 'data')
+actions.generateFile('<fileName>', '<fileType>', '<data>')
 ```
-`fileName` is the name that you want to give the file(string), `fileType` can be `csv`, `plaintext`, or `pdf` and the `data` is the data that you want to store in the file.
+`fileName` is the name that you want to give the file(string), `fileType` can be **csv**, **plaintext**, or **pdf** and `data` is the data that you want to store in the file.
 
 Example for generating CSV file:
 ```js
@@ -190,49 +155,36 @@ Example for generating PDF file:
 actions.generateFile('Pdffile1', 'pdf', '{{components.table1.currentPageData}}') // generate a text file named Pdffile1 with the data from the current page of table
 ```
 
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Run Actions from RunJS query](/img/how-to/run-actions-from-runjs/generatefile.png)
-
-</div>
-
 ### Go to App
 
-**Syntax:**
+You can switch to a different application using the below action:
 
 ```javascript
 actions.goToApp('slug',queryparams) 
 ```
 
-- `slug` can be found in URL of the released app after the `application/`, or in the `Share` modal
-- `queryparams` can be provided like this `[{"key":"value"}, {"key2":"value2"}]`
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Run Actions from RunJS query](/img/how-to/run-actions-from-runjs/gotoapp1.png)
-
-</div>
+- `slug` can be found in URL of the released app after `application/` or in the share modal that opens up when you click on the `Share` button on the top-right of the app-builder
+- `queryparams` can be provided in this format - `[{"key":"value"}, {"key2":"value2"}]`
 
 ### Show Alert
 
-**Syntax:**
+To show an alert using RunJS query, use the below code:
 
-```javascript
-actions.showAlert(alert type , message ) // alert types are info, success, warning, and danger
+```js
+actions.showAlert('<alert type>' , '<message>' ) 
+```
 
-ex:
+Available alert types are `info`, `success`, `warning`, and `danger`.
+
+Example:
+```js
 actions.showAlert('error' , 'This is an error' )
 ```
 
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Run Actions from RunJS query](/img/how-to/run-actions-from-runjs/showalert.png)
-
-</div>
 
 ## Run multiple actions from runjs query
 
-To run multiple actions from a runjs query, you'll have to use **async-await** in the function.
+To run multiple actions from a RunJS query, you'll have to use **async-await** in the function.
 
 Here is a example code snippet for running the queries and showing alert after specific intervals. Check the complete guide on running queries at specified intervals **[here](/docs/how-to/run-query-at-specified-intervals)**.
 
@@ -244,32 +196,4 @@ async function countdown(){
   await actions.showAlert('info','This is an information')
 }
 ```
-
-## Get Variables
-
-To access variables through actions, you can use the below functions.
-
-#### Retrieve the current value of a variable: 
-```js
-let value = actions.getVariable('<variableName>');
-return value;
-```
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBotton:'15px' }} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/get-variable.png" alt="Get Variable Action" />
-</div>
-
-#### Retrieve the current value of a page-specific variable:
-```js
-let value = actions.getPageVariable('<pageVariableName>');
-return value;
-```
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/get-page-variable.png" alt="Get Page Variable Action" />
-</div>
-
-
-
-
-
 
