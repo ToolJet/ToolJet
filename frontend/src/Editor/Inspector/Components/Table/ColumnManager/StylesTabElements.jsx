@@ -1,13 +1,14 @@
 import React from 'react';
 import SelectSearch from 'react-select-search';
 import { useTranslation } from 'react-i18next';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
-import { Color } from '../../Elements/Color';
+import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
+import { Color } from '../../../Elements/Color';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import AlignLeft from '@/_ui/Icon/solidIcons/AlignLeft';
 import AlignCenter from '@/_ui/Icon/solidIcons/AlignCenter';
 import AlignRight from '@/_ui/Icon/solidIcons/AlignRight';
+
 export const StylesTabElements = ({
   column,
   index,
@@ -19,7 +20,6 @@ export const StylesTabElements = ({
   component,
 }) => {
   const { t } = useTranslation();
-
   return (
     <>
       <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch">
@@ -160,6 +160,7 @@ export const StylesTabElements = ({
           </div>
         </div>
       )}
+
       {['string', 'default', undefined, 'number', 'boolean', 'select'].includes(column.columnType) && (
         <>
           {column.columnType !== 'boolean' && (

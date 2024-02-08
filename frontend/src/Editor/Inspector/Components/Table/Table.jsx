@@ -17,7 +17,7 @@ import List from '@/ToolJetUI/List/List';
 import { capitalize, has } from 'lodash';
 import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
-import { ColumnPopoverContent } from './ColumnPopover';
+import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { useAppDataStore } from '@/_stores/appDataStore';
 class TableComponent extends React.Component {
   constructor(props) {
