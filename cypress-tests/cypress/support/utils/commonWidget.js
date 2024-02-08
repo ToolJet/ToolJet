@@ -125,9 +125,14 @@ export const selectColourFromColourPicker = (
   paramName,
   colour,
   index = 0,
-  parent = commonWidgetSelector.colourPickerParent
+  parent = commonWidgetSelector.colourPickerParent,
+  hasIndex = false
 ) => {
-  cy.get(commonWidgetSelector.stylePicker(paramName)).last().click();
+  if (hasIndex === false) {
+    cy.get(commonWidgetSelector.stylePicker(paramName)).last().click();
+  } else {
+    cy.get(commonWidgetSelector.stylePicker(paramName)).eq(hasIndex).click();
+  }
   cy.get(parent)
     .eq(index)
     .then(() => {
@@ -220,8 +225,8 @@ export const verifyAndModifyStylePickerFx = (
   cy.get(commonWidgetSelector.stylePickerValue(paramName))
     .should("be.visible")
     .verifyVisibleElement("have.text", defaultValue);
-  cy.get(commonWidgetSelector.parameterFxButton(paramName, " > svg")).click();
-
+  cy.get('[data-cy="box-shadow-picker"]').realHover();
+  cy.get(commonWidgetSelector.parameterFxButton(paramName)).click();
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
     cy.get(".CodeMirror-line")
       .should("be.visible")
@@ -320,7 +325,9 @@ export const verifyStylesGeneralAccordion = (
   );
   cy.get(
     commonWidgetSelector.parameterFxButton(commonWidgetText.parameterBoxShadow)
-  ).click();
+  )
+    .realHover()
+    .click();
 
   cy.get(
     commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
@@ -407,4 +414,29 @@ export const addValueOnInput = (property, value) => {
     .clear()
     .click()
     .type(`${value}`);
+};
+
+export const verifyContainerElements = () => {
+  cy.get('[data-cy="widget-accordion-container"]').verifyVisibleElement(
+    "have.text",
+    "container"
+  );
+  cy.get('[data-cy="label-padding"]').verifyVisibleElement(
+    "have.text",
+    "Padding"
+  );
+  cy.get('[data-cy="togglr-button-default"]').verifyVisibleElement(
+    "have.text",
+    "Default"
+  );
+  cy.get('[data-cy="togglr-button-none"]').verifyVisibleElement(
+    "have.text",
+    "None"
+  );
+};
+
+export const checkPaddingOfContainer = (widgetName, value, mode = "Box") => {
+  cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .parents(`[role=${mode}]`)
+    .should("have.css", "padding", `${value}px`);
 };
