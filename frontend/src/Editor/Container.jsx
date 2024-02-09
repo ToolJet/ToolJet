@@ -861,6 +861,11 @@ export const Container = ({
           })
             .filter(([, box]) => isEmpty(box?.component?.parent))
             .map(([id, box]) => {
+              const canShowInCurrentLayout =
+                box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+              if (box.parent || !resolveReferences(canShowInCurrentLayout, currentState)) {
+                return '';
+              }
               return (
                 <WidgetWrapper
                   isResizing={resizedComponentId === id}
