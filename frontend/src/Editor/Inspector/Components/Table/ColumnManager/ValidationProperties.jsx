@@ -70,9 +70,14 @@ export const ValidationProperties = ({
       case 'select':
         return [{ property: 'customRule', dateCy: 'input-and-label-custom-rule', label: 'Custom rule' }];
       default:
+        return [];
     }
   };
   const validationsList = getValidationList(columnType);
+
+  if (validationsList.length < 1) {
+    return '';
+  }
 
   return (
     <div className="optional-properties-when-editable-true">
