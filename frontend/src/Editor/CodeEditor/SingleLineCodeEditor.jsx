@@ -156,6 +156,7 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = React.useCallback(() => {
+    setFirstTimeFocus(false);
     if (ignoreValidation) {
       return onBlurUpdate(currentValue);
     }
