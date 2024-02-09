@@ -37,7 +37,9 @@ import {
 import {
   randomString,
   verifyControlComponentAction,
-} from "Support/utils/textInput";
+  addCSA,
+  verifyCSA,
+} from "Support/utils/editor/textInput";
 import { buttonText } from "Texts/button";
 import { commonWidgetText, customValidation, widgetValue } from "Texts/common";
 import { textInputText } from "Texts/textInput";
@@ -275,7 +277,7 @@ describe("Text Input", () => {
     );
   });
 
-  it.skip("should verify the app preview", () => {
+  it("should verify the app preview", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
@@ -422,122 +424,14 @@ describe("Text Input", () => {
     );
   });
 
-  it("should verify CSA", () => {
+  it.only("should verify CSA", () => {
     const data = {};
     data.customText = randomString(12);
 
-    cy.forceClickOnCanvas();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 50, 500);
-    selectEvent("On click", "Control Component");
-    selectCSA("textinput1", "Visibility");
+    addCSA(data);
+    verifyCSA(data);
 
-    cy.forceClickOnCanvas();
-    cy.dragAndDropWidget("Text input", 50, 50);
-    selectEvent("On change", "Control Component");
-    cy.wait(500);
-    selectCSA("textinput1", "Set text", "500");
-    cy.wait(500);
-    addSupportCSAData("text", "{{components.textinput2.value");
-
-    cy.forceClickOnCanvas();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 150, 400);
-    selectEvent("On click", "Control Component");
-    selectCSA("textinput1", "Clear", "500");
-
-    cy.forceClickOnCanvas();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 250, 400);
-    selectEvent("On click", "Control Component");
-    selectCSA("textinput1", "Disable", "500");
-    cy.wait(500);
-    cy.get('[data-cy="event-Value-fx-button"]').click();
-    cy.get('[data-cy="event-Value-input-field"]').clearAndTypeOnCodeMirror(
-      "{{true"
-    );
-
-    cy.forceClickOnCanvas();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 350, 400);
-    selectEvent("On click", "Control Component");
-    selectCSA("textinput1", "Set blur", "500");
-
-    cy.forceClickOnCanvas();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 450, 400);
-    selectEvent("On click", "Control Component");
-    selectCSA("textinput1", "Set focus");
-
-    cy.forceClickOnCanvas();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 550, 400);
-    selectEvent("On click", "Control Component");
-    selectCSA("textinput1", "Set disable", "500");
-
-    cy.forceClickOnCanvas();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 650, 400);
-    selectEvent("On click", "Control Component");
-    selectCSA("textinput1", "Set visibility", "500");
-    cy.wait(500);
-    cy.get('[data-cy="event-Value-fx-button"]').click();
-    cy.get('[data-cy="event-Value-input-field"]').clearAndTypeOnCodeMirror(
-      "{{true"
-    );
-
-    cy.forceClickOnCanvas();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 300, 300);
-    selectEvent("On click", "Control Component");
-    selectCSA("textinput1", "Set loading", "500");
-    cy.wait(500);
-    cy.get('[data-cy="event-Value-fx-button"]').click();
-    cy.get('[data-cy="event-Value-input-field"]').clearAndTypeOnCodeMirror(
-      "{{true"
-    );
-
-    cy.clearAndType(
-      commonWidgetSelector.draggableWidget("textinput2"),
-      data.customText
-    );
-    cy.get(
-      commonWidgetSelector.draggableWidget("textinput1")
-    ).verifyVisibleElement("have.value", data.customText);
-
-    cy.get(commonWidgetSelector.draggableWidget("button2")).click();
-    cy.get(
-      commonWidgetSelector.draggableWidget("textinput1")
-    ).verifyVisibleElement("have.value", "");
-
-    cy.get(commonWidgetSelector.draggableWidget("button5")).click();
-    cy.realType(data.customText);
-    cy.get(
-      commonWidgetSelector.draggableWidget("textinput1")
-    ).verifyVisibleElement("have.value", data.customText);
-    cy.get(commonWidgetSelector.draggableWidget("button4")).click();
-    cy.realType("not working");
-    cy.get(
-      commonWidgetSelector.draggableWidget("textinput1")
-    ).verifyVisibleElement("have.value", data.customText);
-
-    cy.get(commonWidgetSelector.draggableWidget("button3")).click();
-    cy.get(commonWidgetSelector.draggableWidget("textinput1"))
-      .parent()
-      .should("have.attr", "data-disabled", "true");
-
-    cy.get(commonWidgetSelector.draggableWidget("button1")).click();
-    cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
-      "not.be.visible"
-    );
-
-    cy.get(commonWidgetSelector.draggableWidget("button7")).click();
-    cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
-      "be.visible"
-    );
-
-    cy.get(commonWidgetSelector.draggableWidget("button6")).click();
-    cy.get(commonWidgetSelector.draggableWidget("textinput1"))
-      .parent()
-      .should("not.have.attr", "data-disabled", "true");
-
-    cy.get(commonWidgetSelector.draggableWidget("button8")).click();
-    cy.get(commonWidgetSelector.draggableWidget("textinput1"))
-      .parent()
-      .within(() => {
-        cy.get(".tj-widget-loader").should("be.visible");
-      });
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    verifyCSA(data);
   });
 });
