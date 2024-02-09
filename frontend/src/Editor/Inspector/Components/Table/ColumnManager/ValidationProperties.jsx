@@ -82,11 +82,6 @@ export const ValidationProperties = ({
     }
   };
   const validationsList = getValidationList(columnType);
-  const shouldRenderValidationsList = Array.isArray(validationsList) && validationsList.length >= 1;
-
-  if (!shouldRenderValidationsList) {
-    return '';
-  }
 
   if (validationsList.length < 1) {
     return '';
