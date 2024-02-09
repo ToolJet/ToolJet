@@ -126,7 +126,19 @@ export const PreviewBox = ({
   );
 };
 
-const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, withValidation, darkMode }) => {
+const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, withValidation }) => {
+  const computeCoersionPreview = (resolvedValue, coersionData) => {
+    if (coersionData?.typeBeforeCoercion === 'array') {
+      return '[...]' + coersionData?.coercionPreview;
+    }
+
+    if (coersionData?.typeBeforeCoercion === 'object') {
+      return '{...}' + coersionData?.coercionPreview;
+    }
+
+    return resolvedValue + coersionData?.coercionPreview;
+  };
+
   const previewValueType =
     withValidation || (coersionData && coersionData?.typeBeforeCoercion)
       ? `${coersionData?.typeBeforeCoercion} ${
@@ -134,7 +146,7 @@ const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, 
         }`
       : previewType;
 
-  const previewContent = !withValidation ? resolvedValue : resolvedValue + coersionData?.coercionPreview;
+  const previewContent = !withValidation ? resolvedValue : computeCoersionPreview(resolvedValue, coersionData);
 
   const cls = error ? 'bg-red-lt' : 'bg-green-lt';
 
@@ -150,7 +162,7 @@ const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, 
 };
 
 const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsidePreview, ...restProps }) => {
-  const { validationSchema, isWorkspaceVariable, errorStateActive } = restProps;
+  const { validationSchema, isWorkspaceVariable, errorStateActive, previewPlacement } = restProps;
 
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -247,7 +259,7 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
   );
 
   return (
-    <OverlayTrigger trigger="click" show={enablePreview && isFocused} placement="left-start" overlay={popover}>
+    <OverlayTrigger trigger="click" show={enablePreview && isFocused} placement={previewPlacement} overlay={popover}>
       {children}
     </OverlayTrigger>
   );
@@ -255,19 +267,27 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
 
 const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
   let preview = code && code.trim ? code?.trim() : `${code}`;
-  const shouldTrim = preview.length > 15;
 
+  const shouldTrim = preview.length > 15;
   let showJSONTree = false;
 
   if (isExpectValue && shouldTrim) {
     preview = preview.substring(0, 15) + '...' + preview.substring(preview.length - 2, preview.length);
   }
 
-  let prettyPrintedJson = null;
+  let prettyPrintedJson = preview;
 
   try {
     prettyPrintedJson = JSON.parse(preview);
-    showJSONTree = true;
+
+    const typeOfValue = typeof prettyPrintedJson;
+
+    if (typeOfValue === 'object' || typeOfValue === 'array') {
+      showJSONTree = true;
+    } else {
+      prettyPrintedJson = preview;
+      showJSONTree = false;
+    }
   } catch (e) {
     prettyPrintedJson = preview;
     showJSONTree = false;
