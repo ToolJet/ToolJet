@@ -9,7 +9,7 @@ const initialState = {
   resizingComponentId: null,
   draggingComponentId: null,
   dragTarget: null,
-  isGroundHandleHoverd: false,
+  isGroupHandleHoverd: false,
   idGroupDragged: false,
 };
 
@@ -24,7 +24,7 @@ export const useGridStore = create(
         setResizingComponentId: (id) => set({ resizingComponentId: id }),
         setDraggingComponentId: (id) => set({ draggingComponentId: id }),
         setDragTarget: (dragTarget) => set({ dragTarget }),
-        setIsGroundHandleHoverd: (isGroundHandleHoverd) => set({ isGroundHandleHoverd }),
+        setIsGroupHandleHoverd: (isGroupHandleHoverd) => set({ isGroupHandleHoverd }),
         setIdGroupDragged: (idGroupDragged) => set({ idGroupDragged }),
       },
     }),
@@ -38,3 +38,4 @@ export const useDraggedSubContainer = () => useGridStore((state) => state.dragge
 export const useGridStoreActions = () => useGridStore((state) => state.actions, shallow);
 export const useDragTarget = () => useGridStore((state) => state.dragTarget, shallow);
 export const useResizingComponentId = () => useGridStore((state) => state.resizingComponentId, shallow);
+export const useIsGroupHandleHoverd = () => useGridStore((state) => state.isGroupHandleHoverd, shallow);

@@ -30,10 +30,9 @@ export default function DragContainer({
       <div
         className={'multiple-components-config-handle'}
         onMouseUpCapture={() => {
-          console.log('components>>>onMouseDownCapture');
           if (lastDraggedEventsRef.current) {
-            const preant = boxes.find((box) => (box.id = lastDraggedEventsRef.current?.events?.[0]?.target?.id))
-              ?.component?.parent;
+            const preant = boxes.find((box) => box.id == lastDraggedEventsRef.current.events[0].target.id)?.component
+              ?.parent;
             onDrag(
               lastDraggedEventsRef.current.events.map((ev) => ({
                 id: ev.target.id,
@@ -214,7 +213,9 @@ export default function DragContainer({
         return component.id;
       })
     );
+    console.log('selectedComponentsId->', selectedComponentsId);
     const selectedBoxs = boxes.filter((box) => selectedComponentsId.has(box.id));
+    console.log('selectedComponentsId->selectedBoxs', selectedBoxs);
     const parentId = selectedBoxs.find((comp) => comp.component.parent)?.component?.parent;
 
     // Get all elements with the old class name
@@ -223,26 +224,33 @@ export default function DragContainer({
     for (var i = 0; i < elements.length; i++) {
       elements[i].className = 'moveable-control-box modal-moveable rCS1w3zcxh';
     }
-    if (parentId) {
-      // eslint-disable-next-line no-undef
-      const childMoveableRef = childMoveableRefs.current[parentId];
-      const controlBoxes = childMoveableRef?.moveable?.getMoveables();
-      if (controlBoxes) {
-        for (const element of controlBoxes) {
-          if (selectedComponentsId.has(element?.props?.target?.id)) {
-            element?.controlBox?.classList.add('selected-component', `sc-${element?.props?.target?.id}`);
-          }
+    // if (parentId) {
+    //   // eslint-disable-next-line no-undef
+    //   const childMoveableRef = childMoveableRefs.current[parentId];
+    //   const controlBoxes = childMoveableRef?.moveable?.getMoveables();
+    //   if (controlBoxes) {
+    //     for (const element of controlBoxes) {
+    //       if (selectedComponentsId.has(element?.props?.target?.id)) {
+    //         element?.controlBox?.classList.add('selected-component', `sc-${element?.props?.target?.id}`);
+    //       }
+    //     }
+    //   }
+    // } else {
+    //   const controlBoxes = moveableRef?.current?.moveable?.getMoveables();
+    //   if (controlBoxes) {
+    //     for (const element of controlBoxes) {
+    //       if (selectedComponentsId.has(element?.props?.target?.id)) {
+    //         element?.controlBox?.classList.add('selected-component', `sc-${element?.props?.target?.id}`);
+    //       }
+    //     }
+    //     // }
+    //   }
+    const controlBoxes = moveableRef?.current?.moveable?.getMoveables();
+    if (controlBoxes) {
+      for (const element of controlBoxes) {
+        if (selectedComponentsId.has(element?.props?.target?.id)) {
+          element?.controlBox?.classList.add('selected-component', `sc-${element?.props?.target?.id}`);
         }
-      }
-    } else {
-      const controlBoxes = moveableRef?.current?.moveable?.getMoveables();
-      if (controlBoxes) {
-        for (const element of controlBoxes) {
-          if (selectedComponentsId.has(element?.props?.target?.id)) {
-            element?.controlBox?.classList.add('selected-component', `sc-${element?.props?.target?.id}`);
-          }
-        }
-        // }
       }
     }
   };
@@ -364,12 +372,15 @@ export default function DragContainer({
         ref={moveableRef}
         ables={[MouseCustomAble, DimensionViewable]}
         props={{
-          mouseTest: selectedComponents.length < 2,
-          dimensionViewable: selectedComponents.length > 1,
+          mouseTest: groupedTargets.length < 2,
+          dimensionViewable: groupedTargets.length > 1,
         }}
         flushSync={flushSync}
         // target={groupedTargets?.[0] ? groupedTargets?.[0] : `.ele-${draggedTarget ? draggedTarget : hoveredComponent}`}
-        target={groupedTargets?.length > 1 ? groupedTargets : '.target'}
+        target={
+          // groupedTargets?.length > 1 ? groupedTargets : groupedTargets?.length === 1 ? groupedTargets[0] : '.target'
+          groupedTargets?.length > 1 ? groupedTargets : '.target'
+        }
         origin={false}
         individualGroupable={groupedTargets.length <= 1}
         draggable={true}
@@ -848,7 +859,7 @@ function extractWidgetClassOnHover(element) {
   return widgetClass.replace('widget-', '');
 }
 
-function findHighestLevelofSelection(selectedComponents) {
+export function findHighestLevelofSelection(selectedComponents) {
   let result = [...selectedComponents];
   if (selectedComponents.some((widget) => !widget?.component?.parent)) {
     result = selectedComponents.filter((widget) => !widget?.component?.parent);

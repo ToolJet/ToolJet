@@ -15,6 +15,7 @@ import { shallow } from 'zustand/shallow';
 import { useNoOfGrid, useGridStore } from '@/_stores/gridStore';
 import WidgetBox from './WidgetBox';
 import * as Sentry from '@sentry/react';
+import { findHighestLevelofSelection } from './DragContainer';
 
 // const noOfGrid = 43;
 
@@ -117,7 +118,7 @@ export const DraggableBox = React.memo(
         selectionInProgress: state?.selectionInProgress,
         isSelectedComponent:
           mode === 'edit' ? state?.selectedComponents?.some((component) => component?.id === id) : false,
-        isMultipleComponentsSelected: state?.selectedComponents?.length > 1 ? true : false,
+        isMultipleComponentsSelected: findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false,
         autoComputeLayout: state?.appDefinition?.pages?.[state?.currentPageId]?.autoComputeLayout,
       }),
       shallow
