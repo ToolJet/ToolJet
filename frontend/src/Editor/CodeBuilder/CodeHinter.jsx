@@ -432,20 +432,6 @@ export function CodeHinter({
       return fxBtn();
     }
   };
-
-  const getExclusiveElementProps = () => {
-    if (component.component.component === 'TextInput') {
-      return {
-        disabled: component?.component?.definition?.styles?.auto?.value,
-      };
-    }
-    if (component.component.component === 'DropDown') {
-      return {
-        disabled: component?.component?.definition?.styles?.labelAutoWidth?.value,
-      };
-    }
-  };
-
   const onFocusHandler = () => {
     setFocused(true);
     updatePreview();
@@ -509,7 +495,6 @@ export function CodeHinter({
                 isIcon={isIcon}
                 staticText={staticText}
                 component={component}
-                {...getExclusiveElementProps()}
               />
             )}
           </div>

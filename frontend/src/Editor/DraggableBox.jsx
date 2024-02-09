@@ -243,7 +243,6 @@ export const DraggableBox = React.memo(
         component.component !== 'TextInput' &&
         component.component !== 'PasswordInput' &&
         component.component !== 'NumberInput' &&
-        component.component !== 'DropDown' &&
         !readOnly
       );
     }

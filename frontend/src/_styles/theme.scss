@@ -12098,6 +12098,10 @@ tbody {
   padding: 4px 10px;
 }
 
+.custom-gap-2 {
+  gap: 2px
+}
+
 .custom-gap-4 {
   gap: 4px;
 }
@@ -12339,11 +12343,6 @@ tbody {
 input[type=number] {
   -moz-appearance: textfield;
 }
-}
-
-.inspector-select-option-btn {
-  padding: 0px 2px;
-  border: 1px solid #E54D2E !important
 }
 
 .inspector-color-input-popover {
