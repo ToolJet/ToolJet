@@ -18,6 +18,7 @@ export const getPrivateRoute = (page, params = {}) => {
     data_sources: '/data-sources',
     audit_logs: '/audit-logs',
     workflows: '/workflows',
+    workspace_constants: '/workspace-constants',
   };
 
   let url = routes[page];

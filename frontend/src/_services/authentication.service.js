@@ -117,17 +117,17 @@ function deleteLoginOrganizationSlug() {
   eraseCookie('login-workspace-slug');
 }
 
-async function getOrganizationConfigs(organizationId, organizationSlug) {
+async function getOrganizationConfigs(organizationId) {
   const requestOptions = {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   };
   try {
     const { actions } = useWhiteLabellingStore.getState();
-    if (organizationId || organizationSlug) {
-      await actions.fetchWhiteLabelDetails(organizationId, organizationSlug);
+    if (organizationId) {
+      await actions.fetchWhiteLabelDetails(organizationId);
     }
-    const organizationPath = organizationId || organizationSlug ? `${organizationId || organizationSlug}/` : '';
+    const organizationPath = organizationId ? `${organizationId}/` : '';
     const response = await fetch(`${config.apiUrl}/organizations/${organizationPath}public-configs`, requestOptions);
     const configs = await handleResponse(response);
     return configs?.sso_configs;

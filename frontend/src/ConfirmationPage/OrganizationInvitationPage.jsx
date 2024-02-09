@@ -41,13 +41,13 @@ class OrganizationInvitationPageComponent extends React.Component {
     if (this.organizationId) {
       authenticationService.saveLoginOrganizationId(this.organizationId);
       this.organizationId &&
-        authenticationService.getOrganizationConfigs(this.organizationId, null).then(
+        authenticationService.getOrganizationConfigs(this.organizationId).then(
           (configs) => {
             this.setState({ isGettingConfigs: false, configs });
             const { whiteLabelText, whiteLabelFavicon } = useWhiteLabellingStore.getState();
             this.setState({ whiteLabelFavicon: whiteLabelFavicon });
             this.setState({ whiteLabelText: whiteLabelText });
-            setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
+            setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, this.props?.location);
           },
           () => {
             this.setState({ isGettingConfigs: false });

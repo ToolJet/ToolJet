@@ -8,7 +8,6 @@ import { licenseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { LoadingScreen } from './LoadingScreen';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
-import { setFaviconAndTitle } from '@/_helpers/utils';
 
 const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
   const [license, setLicense] = useState(null);
@@ -64,7 +63,6 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
   };
 
   useEffect(() => {
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
     fetchLicenseSettings();
     if (state?.updated) {
       toast.success('Subscription key updated successfully. Start using premium features now!', {

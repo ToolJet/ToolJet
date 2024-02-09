@@ -4,13 +4,12 @@ import { usersText } from "Texts/manageUsers";
 import * as common from "Support/utils/common";
 import {
   userSignUp,
-  resetAllowPersonalWorkspace,
-  addNewUser,
+  allowPersonalWorkspace,
+  openInstanceSettings,
+  openUserActionMenu,
+  addNewUserEE,
 } from "Support/utils/eeCommon";
-import {
-  addNewUserMW,
-  updateWorkspaceName,
-} from "Support/utils/userPermissions";
+import { updateWorkspaceName } from "Support/utils/userPermissions";
 import { usersSelector } from "Selectors/manageUsers";
 import {
   commonEeSelectors,
@@ -19,13 +18,13 @@ import {
 import { commonEeText, instanceSettingsText } from "Texts/eeCommon";
 import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
+import { addNewUser } from "Support/utils/onboarding";
 
 let invitationToken,
   organizationId,
   url = "";
 const data = {};
-data.firstName = fake.firstName;
-data.email = fake.email.toLowerCase();
+
 data.appName = `${fake.companyName} App`;
 data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.workspaceName = `${fake.companyName}-workspace`;
@@ -38,11 +37,10 @@ describe(
     },
   },
   () => {
-
     it("Verify elements of the instance settings page", () => {
       cy.defaultWorkspaceLogin();
-      resetAllowPersonalWorkspace();
-      cy.get(commonEeSelectors.instanceSettingIcon).click();
+      allowPersonalWorkspace();
+      openInstanceSettings();
       cy.get(instanceSettingsSelector.allUsersTab).realClick();
       cy.get(commonEeSelectors.pageTitle).verifyVisibleElement(
         "have.text",
@@ -103,16 +101,22 @@ describe(
       ).verifyVisibleElement("have.text", instanceSettingsText.superAdminType);
       cy.get(
         instanceSettingsSelector.userStatus("The developer")
-      ).verifyVisibleElement("have.text", usersText.activeStatus);
+      ).verifyVisibleElement("have.text", "active");
       cy.get(instanceSettingsSelector.viewButton("The developer")).should(
         ($el) => {
           expect($el.contents().first().text().trim()).to.eq("View (");
         }
       );
 
-      cy.get(
-        instanceSettingsSelector.editButton("The developer")
-      ).verifyVisibleElement("have.text", "Edit");
+      openUserActionMenu("dev@tooljet.io");
+      cy.get('[data-cy="edit-user-details-button"]').verifyVisibleElement(
+        "have.text",
+        "Edit user details"
+      );
+      cy.get('[data-cy="archive-button"]').verifyVisibleElement(
+        "have.text",
+        "Archive user"
+      );
 
       cy.get(instanceSettingsSelector.viewButton("The developer")).click();
       cy.get(commonEeSelectors.modalTitle).verifyVisibleElement(
@@ -130,10 +134,7 @@ describe(
       cy.get(
         instanceSettingsSelector.viewModalStatusColumnHeader
       ).verifyVisibleElement("have.text", "Status");
-      cy.get(instanceSettingsSelector.archiveAllButton).verifyVisibleElement(
-        "have.text",
-        instanceSettingsText.archiveAllButton
-      );
+
       cy.get(
         instanceSettingsSelector.viewModalRow(commonEeText.defaultWorkspace)
       )
@@ -148,10 +149,7 @@ describe(
       )
         .parent()
         .within(() => {
-          cy.get("td small").verifyVisibleElement(
-            "have.text",
-            usersText.activeStatus
-          );
+          cy.get("td small").verifyVisibleElement("have.text", "Active");
           cy.get(
             instanceSettingsSelector.userStatusChangeButton
           ).verifyVisibleElement(
@@ -161,16 +159,21 @@ describe(
         });
 
       cy.get(commonEeSelectors.modalCloseButton).click();
-      cy.get(instanceSettingsSelector.editButton("The developer")).click();
+      openUserActionMenu("dev@tooljet.io");
+      cy.get('[data-cy="edit-user-details-button"]').click();
 
       cy.get(commonEeSelectors.modalTitle).verifyVisibleElement(
         "have.text",
         instanceSettingsText.editModalTitle
       );
-      cy.get("form > :nth-child(1)").verifyVisibleElement(
-        "have.text",
-        "The Developer (dev@tooljet.io)"
+      cy.verifyLabel("Name");
+      cy.get('[data-cy="input-field-full-name"]').verifyVisibleElement(
+        "have.value",
+        "The Developer"
       );
+      cy.get('[data-cy="input-field-email"]');
+      cy.verifyLabel("Email address");
+
       cy.get(
         instanceSettingsSelector.superAdminToggleLabel
       ).verifyVisibleElement(
@@ -182,9 +185,9 @@ describe(
         "have.text",
         commonEeText.cancelButton
       );
-      cy.get(commonEeSelectors.saveButton).verifyVisibleElement(
+      cy.get('[data-cy="update-button"]').verifyVisibleElement(
         "have.text",
-        instanceSettingsText.saveButton
+        "Update"
       );
       cy.get(commonEeSelectors.modalCloseButton).should("be.visible").click();
 
@@ -253,18 +256,22 @@ describe(
     });
 
     it("Verify invite user, Archive, Archive All functionality", () => {
+      data.firstName = fake.firstName;
+      data.email = fake.email.toLowerCase();
+
       cy.defaultWorkspaceLogin();
-      resetAllowPersonalWorkspace();
+      allowPersonalWorkspace();
       cy.intercept("GET", "/api/folders?searchKey=&type=front-end").as(
         "homePage"
       );
-      addNewUserMW(data.firstName, data.email);
+      addNewUser(data.firstName, data.email);
       cy.logoutApi();
 
       cy.defaultWorkspaceLogin();
 
-      cy.get(commonEeSelectors.instanceSettingIcon).click();
+      openInstanceSettings();
       cy.clearAndType(commonSelectors.inputUserSearch, data.email);
+
       cy.get(
         instanceSettingsSelector.userName(data.firstName)
       ).verifyVisibleElement("have.text", data.firstName);
@@ -276,7 +283,7 @@ describe(
       ).verifyVisibleElement("have.text", "workspace");
       cy.get(
         instanceSettingsSelector.userStatus(data.firstName)
-      ).verifyVisibleElement("have.text", usersText.activeStatus);
+      ).verifyVisibleElement("have.text", "active");
 
       cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
 
@@ -288,10 +295,7 @@ describe(
       )
         .parent()
         .within(() => {
-          cy.get("td small").verifyVisibleElement(
-            "have.text",
-            usersText.activeStatus
-          );
+          cy.get("td small").verifyVisibleElement("have.text", "Active");
         });
       cy.get(commonEeSelectors.modalCloseButton).click();
 
@@ -310,7 +314,7 @@ describe(
 
       common.logout();
       cy.defaultWorkspaceLogin();
-      cy.get(commonEeSelectors.instanceSettingIcon).click();
+      openInstanceSettings();
       cy.clearAndType(commonSelectors.inputUserSearch, data.email);
       cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
 
@@ -320,6 +324,7 @@ describe(
         .parent()
         .within(() => {
           cy.get(instanceSettingsSelector.userStatusChangeButton).click();
+          cy.wait(1000);
           cy.get(
             instanceSettingsSelector.userStatusChangeButton
           ).verifyVisibleElement("have.text", "Unarchive");
@@ -337,13 +342,14 @@ describe(
 
       common.logout();
       cy.defaultWorkspaceLogin();
-      cy.get(commonEeSelectors.instanceSettingIcon).click();
+      openInstanceSettings();
       cy.clearAndType(commonSelectors.inputUserSearch, data.email);
       cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
       cy.get(instanceSettingsSelector.viewModalRow(data.email))
         .parent()
         .within(() => {
           cy.get(instanceSettingsSelector.userStatusChangeButton).click();
+          cy.wait(1000);
           cy.get(
             instanceSettingsSelector.userStatusChangeButton
           ).verifyVisibleElement("have.text", "Unarchive");
@@ -364,11 +370,35 @@ describe(
       cy.apiLogin();
       cy.visit("/my-workspace");
       cy.wait(500);
-      cy.get(commonEeSelectors.instanceSettingIcon).click();
+      openInstanceSettings();
       cy.clearAndType(commonSelectors.inputUserSearch, data.email);
       cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
-      cy.get(instanceSettingsSelector.archiveAllButton).click();
       cy.get(commonEeSelectors.modalCloseButton).click();
+
+      cy.get('[data-cy="user-actions-button"]').click();
+      cy.get('[data-cy="archive-button"]').click();
+
+      cy.get('[data-cy="modal-title"] :eq(1)').verifyVisibleElement(
+        "have.text",
+        "Archive user"
+      );
+      cy.get('[data-cy="user-email"]').verifyVisibleElement(
+        "have.text",
+        data.email
+      );
+      cy.get('[data-cy="modal-close-button"]').should("be.visible");
+      cy.get('[data-cy="modal-message"]').verifyVisibleElement(
+        "have.text",
+        "Archiving the user will restrict their access to all their workspaces and exclude them from the count of users covered by your plan. Are you sure you want to continue?"
+      );
+      cy.get('[data-cy="cancel-button"]').verifyVisibleElement(
+        "have.text",
+        "Cancel"
+      );
+      cy.get('[data-cy="confirm-button"]')
+        .verifyVisibleElement("have.text", "Archive")
+        .click();
+
       cy.wait(1000);
       cy.get(
         instanceSettingsSelector.userStatus(data.firstName)
@@ -381,13 +411,13 @@ describe(
       cy.get(commonSelectors.signInButton).click();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        "The user has been archived, please contact the administrator to activate the account"
+        "You have been archived from this instance. Contact super admin to know more."
       );
     });
 
     it("Verify user sign up, archive and unarchive functionality", () => {
       cy.defaultWorkspaceLogin();
-      resetAllowPersonalWorkspace();
+      allowPersonalWorkspace();
       data.firstName = fake.firstName;
       data.email = fake.email.toLowerCase();
       data.workspaceName = `${fake.companyName}-workspace`;
@@ -400,7 +430,7 @@ describe(
       common.logout();
 
       cy.defaultWorkspaceLogin();
-      cy.get(commonEeSelectors.instanceSettingIcon).click();
+      openInstanceSettings();
       cy.clearAndType(commonSelectors.inputUserSearch, data.email);
       cy.get(
         instanceSettingsSelector.userName(data.firstName)
@@ -413,7 +443,7 @@ describe(
       ).verifyVisibleElement("have.text", "workspace");
       cy.get(
         instanceSettingsSelector.userStatus(data.firstName)
-      ).verifyVisibleElement("have.text", usersText.activeStatus);
+      ).verifyVisibleElement("have.text", "active");
 
       cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
       cy.get(instanceSettingsSelector.userStatusChangeButton).click();
@@ -425,7 +455,7 @@ describe(
       cy.logoutApi();
 
       cy.defaultWorkspaceLogin();
-      cy.get(commonEeSelectors.instanceSettingIcon).click();
+      openInstanceSettings();
       cy.get(instanceSettingsSelector.manageInstanceSettings).click();
       cy.get(instanceSettingsSelector.allowWorkspaceToggle)
         .eq(0)
@@ -451,7 +481,7 @@ describe(
       );
 
       cy.defaultWorkspaceLogin();
-      cy.get(commonEeSelectors.instanceSettingIcon).click();
+      openInstanceSettings();
       cy.clearAndType(commonSelectors.inputUserSearch, data.email);
       cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
       cy.get(instanceSettingsSelector.userStatusChangeButton).click();
@@ -482,12 +512,13 @@ describe(
     });
 
     it("Verify instance settings functionality", () => {
-      cy.defaultWorkspaceLogin();
-      resetAllowPersonalWorkspace();
       data.firstName = fake.firstName;
       data.email = fake.email.toLowerCase();
 
-      cy.get(commonEeSelectors.instanceSettingIcon).click();
+      cy.defaultWorkspaceLogin();
+      allowPersonalWorkspace();
+
+      openInstanceSettings();
       cy.get(instanceSettingsSelector.manageInstanceSettings).click();
 
       cy.get(instanceSettingsSelector.allowWorkspaceToggle)
@@ -509,14 +540,14 @@ describe(
       cy.get(commonSelectors.createAnAccountLink).should("not.exist");
 
       cy.defaultWorkspaceLogin();
-      addNewUser(data.firstName, data.email);
+      addNewUserEE(data.firstName, data.email);
       cy.get(commonSelectors.workspaceName).click();
       cy.contains(data.email).should("not.exist");
       cy.get(".add-new-workspace-icon-wrap").should("not.exist");
       cy.logoutApi();
 
       cy.defaultWorkspaceLogin();
-      cy.get(commonEeSelectors.instanceSettingIcon).click();
+      openInstanceSettings();
       cy.clearAndType(commonSelectors.inputUserSearch, data.email);
       cy.get(
         instanceSettingsSelector.userName(data.firstName)
@@ -529,7 +560,7 @@ describe(
       ).verifyVisibleElement("have.text", "workspace");
       cy.get(
         instanceSettingsSelector.userStatus(data.firstName)
-      ).verifyVisibleElement("have.text", usersText.activeStatus);
+      ).verifyVisibleElement("have.text", "active");
 
       cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
       cy.get(
@@ -540,17 +571,14 @@ describe(
       )
         .parent()
         .within(() => {
-          cy.get("td small").verifyVisibleElement(
-            "have.text",
-            usersText.activeStatus
-          );
+          cy.get("td small").verifyVisibleElement("have.text", "Active");
         });
       cy.get(commonEeSelectors.modalCloseButton).click();
     });
 
     it("Verify superadmin privilages", () => {
       cy.defaultWorkspaceLogin();
-      resetAllowPersonalWorkspace();
+      allowPersonalWorkspace();
       data.firstName = fake.firstName;
       data.email = fake.email.toLowerCase();
       data.workspaceName = `${fake.companyName}-workspace`;
@@ -561,11 +589,12 @@ describe(
       common.logout();
 
       cy.defaultWorkspaceLogin();
-      cy.get(commonEeSelectors.instanceSettingIcon).click();
-      cy.clearAndType(commonSelectors.inputUserSearch, data.email);
-      cy.get(instanceSettingsSelector.editButton(data.firstName)).click();
+      openInstanceSettings();
+      openUserActionMenu(data.email);
+      cy.get('[data-cy="edit-user-details-button"]').click();
       cy.get(instanceSettingsSelector.superAdminToggle).check();
-      cy.get(commonEeSelectors.saveButton).click();
+      cy.get('[data-cy="update-button"]').click();
+      cy.wait(1000);
       cy.logoutApi();
 
       cy.login(data.email, "password");

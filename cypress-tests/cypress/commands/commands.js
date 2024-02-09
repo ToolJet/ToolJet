@@ -256,7 +256,6 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
 });
 
 Cypress.Commands.add("skipEditorPopover", () => {
-  // cy.get(".text-muted");
   cy.wait(1000);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip", { timeout: 2000 })) {
@@ -397,4 +396,22 @@ Cypress.Commands.add("verifyLabel", (labelName) => {
 
 Cypress.Commands.add('verifyLabel', (labelName) => {
   cy.get(commonSelectors.label(`${labelName}`)).verifyVisibleElement('have.text', labelName)
-})
+});
+
+Cypress.Commands.add("backToApps", () => {
+  cy.get(commonSelectors.editorPageLogo).click();
+  cy.get(commonSelectors.backToAppOption).click();
+});
+
+Cypress.Commands.add("removeAssignedApps", () => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `DELETE FROM app_group_permissions;`,
+  });
+});
+
+Cypress.Commands.add("skipWalkthrough", () => {
+  cy.window({ log: false }).then((win) => {
+    win.localStorage.setItem("walkthroughCompleted", "true");
+  });
+});

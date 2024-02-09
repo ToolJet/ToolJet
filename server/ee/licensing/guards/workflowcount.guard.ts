@@ -18,7 +18,7 @@ export class WorkflowCountGuard implements CanActivate {
     // If it's not workflow creation - Don't execute further
     if (request.body?.type !== 'workflow') return true;
 
-    if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID))) {
+    if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID, request?.headers['tj-workspace-id'] ?? ''))) {
       throw new HttpException('Workflows are available only in paid plans', 451);
     }
 

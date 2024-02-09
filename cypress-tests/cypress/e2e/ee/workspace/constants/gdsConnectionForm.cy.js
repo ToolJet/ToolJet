@@ -14,10 +14,7 @@ import {
     editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
 
-import {
-    addQuery,
-    selectDatasource,
-} from "Support/utils/dataSource";
+import { addQuery, selectDatasource } from "Support/utils/dataSource";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 
@@ -48,7 +45,7 @@ describe("Workspace constants", () => {
             ]
         );
         cy.visit("/");
-        common.navigateToworkspaceConstants();
+        cy.get('[data-cy="icon-workspace-constants"]').click();
         AddNewconstants(data.constantsName, "development_multi_env");
         AddNewconstants(
             `${data.constantsName}_password`,
@@ -239,60 +236,60 @@ describe("Workspace constants", () => {
         editAndVerifyWidgetName(data.widgetName);
         cy.waitForAutoSave();
 
-        verifyAndModifyParameter("Text", `{{queries.table_preview.data[0].env`);
+        verifyAndModifyParameter("Text", `{{queries.table_preview.data[0].envname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "Development");
+        ).verifyVisibleElement("have.text", "development");
 
         cy.openInCurrentTab(commonWidgetSelector.previewButton);
         cy.wait(4000);
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "Development");
+        ).verifyVisibleElement("have.text", "development");
 
         cy.go("back");
         cy.waitForAppLoad();
         cy.wait(3000);
-        promoteApp()
+        promoteApp();
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "Staging");
+        ).verifyVisibleElement("have.text", "staging");
 
         cy.openInCurrentTab(commonWidgetSelector.previewButton);
         cy.wait(4000);
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "Staging");
+        ).verifyVisibleElement("have.text", "staging");
 
         cy.go("back");
         cy.waitForAppLoad();
         cy.wait(3000);
-        promoteApp()
+        promoteApp();
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "Production");
+        ).verifyVisibleElement("have.text", "production");
 
         cy.openInCurrentTab(commonWidgetSelector.previewButton);
         cy.wait(4000);
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "Production");
+        ).verifyVisibleElement("have.text", "production");
 
         cy.go("back");
         cy.waitForAppLoad();
         cy.wait(3000);
-        releaseApp()
+        releaseApp();
 
-        launchApp()
+        launchApp();
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "Production");
+        ).verifyVisibleElement("have.text", "production");
     });
 });

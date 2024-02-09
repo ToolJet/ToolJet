@@ -27,7 +27,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -76,6 +76,7 @@ class ViewerComponent extends React.Component {
     if (links.length === 0) {
       const link = document.createElement('link');
       link.rel = 'icon';
+      link.type = 'image/svg+xml';
       document.getElementsByTagName('head')[0].appendChild(link);
       links = [link];
     }
@@ -341,7 +342,7 @@ class ViewerComponent extends React.Component {
       this.setState({ organizationId: data?.organizationId });
       await this.updateWhiteLabels(data?.organizationId);
       const isAppPublic = data?.is_public;
-
+      const preview = !!queryString.parse(this.props?.location?.search)?.version;
       if (authentication_failed && !isAppPublic) {
         return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
       }
@@ -349,7 +350,11 @@ class ViewerComponent extends React.Component {
       this.setStateForApp(data, true);
       this.setState({ appId: data.id });
       this.setStateForContainer(data);
-      this.setWindowTitle(data.name);
+      fetchAndSetWindowTitle({
+        page: pageTitles.VIEWER,
+        appName: data.name,
+        preview,
+      });
     } catch (error) {
       this.setState({
         isLoading: false,
@@ -527,10 +532,6 @@ class ViewerComponent extends React.Component {
     return canvasBoundingRect?.width;
   };
 
-  setWindowTitle(name) {
-    document.title = name ?? 'My App';
-  }
-
   computeCanvasBackgroundColor = () => {
     const bgColor =
       (this.state.appDefinition.globalSettings?.backgroundFxQuery ||
@@ -636,7 +637,7 @@ class ViewerComponent extends React.Component {
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
     const canvasMaxWidth = this.computeCanvasMaxWidth();
-     const pages =
+    const pages =
       Object.entries(_.cloneDeep(appDefinition)?.pages)
         .map(([id, page]) => ({ id, ...page }))
         .sort((a, b) => a.index - b.index) || [];

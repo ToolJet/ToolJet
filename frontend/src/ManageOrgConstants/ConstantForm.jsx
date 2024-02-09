@@ -145,9 +145,6 @@ const ConstantForm = ({
             <div className="d-flex mb-3">
               <div
                 className="col tj-app-input"
-                style={{
-                  marginRight: '10px',
-                }}
                 onMouseEnter={() => setIsOpen(true)}
                 onMouseLeave={() => setIsOpen(false)}
               >

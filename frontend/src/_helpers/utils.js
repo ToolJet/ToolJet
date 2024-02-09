@@ -595,13 +595,31 @@ export const retrieveWhiteLabelText = async (organizationId = null) => {
   return whiteLabelText;
 };
 
-export const setFaviconAndTitle = (whiteLabelFavicon, whiteLabelText, page = 'Dashboard') => {
+export const pageTitles = {
+  INSTANCE_SETTINGS: 'Settings',
+  WORKSPACE_SETTINGS: 'Workspace settings',
+  INTEGRATIONS: 'Marketplace',
+  WORKFLOWS: 'Workflows',
+  DATABASE: 'Database',
+  DATA_SOURCES: 'Data sources',
+  AUDIT_LOGS: 'Audit logs',
+  ACCOUNT_SETTINGS: 'Profile settings',
+  SETTINGS: 'Profile settings',
+  EDITOR: 'Editor',
+  WORKFLOW_EDITOR: 'workflowEditor',
+  VIEWER: 'Viewer',
+  DASHBOARD: 'Dashboard',
+  WORKSPACE_CONSTANTS: 'Workspace constants',
+};
+
+// to set favicon and title from router for individual pages
+export const setFaviconAndTitle = (whiteLabelFavicon, whiteLabelText, location) => {
   // Set favicon
   let links = document.querySelectorAll("link[rel='icon']");
   if (links.length === 0) {
     const link = document.createElement('link');
     link.rel = 'icon';
-    link.type = 'image/png';
+    link.type = 'image/svg+xml';
     document.getElementsByTagName('head')[0].appendChild(link);
     links = [link];
   }
@@ -609,7 +627,62 @@ export const setFaviconAndTitle = (whiteLabelFavicon, whiteLabelText, page = 'Da
     link.href = `${whiteLabelFavicon || defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON}`;
   });
   // Set title
-  document.title = `${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT} - ${page}`;
+  const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
+  const pathToTitle = {
+    'instance-settings': pageTitles.INSTANCE_SETTINGS,
+    'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
+    integrations: pageTitles.INTEGRATIONS,
+    workflows: pageTitles.WORKFLOWS,
+    'data-sources': pageTitles.DATA_SOURCES,
+    'audit-logs': pageTitles.AUDIT_LOGS,
+    'account-settings': pageTitles.ACCOUNT_SETTINGS,
+    settings: pageTitles.INSTANCE_SETTINGS,
+    login: '',
+    'forgot-password': '',
+    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
+    setup: '',
+  };
+  const pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path));
+  const pageTitle = pathToTitle[pageTitleKey];
+  if (pageTitleKey && !isEditorOrViewerGoingToRender) {
+    document.title = pageTitle
+      ? `${pageTitle} | ${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`
+      : `${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
+  }
+};
+
+export const fetchAndSetWindowTitle = async (pageDetails) => {
+  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
+  let whiteLabelText;
+
+  // Only fetch white labeling details if they haven't been fetched yet
+  if (!isWhiteLabelDetailsFetched) {
+    try {
+      await actions.fetchWhiteLabelDetails();
+    } catch (error) {
+      console.error('Unable to update white label settings', error);
+    }
+  }
+  whiteLabelText = useWhiteLabellingStore.getState().whiteLabelText;
+  let pageTitleKey = pageDetails?.page || '';
+  let pageTitle = '';
+  switch (pageTitleKey) {
+    case pageTitles.VIEWER: {
+      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
+      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
+      break;
+    }
+    case pageTitles.EDITOR:
+    case pageTitles.WORKFLOW_EDITOR: {
+      pageTitle = pageDetails?.appName || 'My App';
+      break;
+    }
+    default: {
+      pageTitle = pageTitleKey;
+      break;
+    }
+  }
+  document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
 };
 
 export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
@@ -1132,5 +1205,23 @@ export const determineJustifyContentValue = (value) => {
       return 'center';
     default:
       return 'start';
+  }
+};
+
+export const USER_DRAWER_MODES = {
+  EDIT: 'EDIT',
+  CREATE: 'CREATE',
+};
+
+export const humanizeifDefaultGroupName = (groupName) => {
+  switch (groupName) {
+    case 'all_users':
+      return 'All users';
+
+    case 'admin':
+      return 'Admin';
+
+    default:
+      return groupName;
   }
 };

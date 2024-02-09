@@ -255,7 +255,7 @@ class RawManageOrgVarsComponent extends React.Component {
 
   goToOrgConstantsDashboard = () => {
     const { workspaceId, navigate } = this.props;
-    navigate(`/${workspaceId}/workspace-settings/workspace-constants`);
+    navigate(`/${workspaceId}/workspace-constants`);
   };
 
   render() {

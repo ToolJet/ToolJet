@@ -7,10 +7,10 @@ export const whiteLabellingService = {
   update,
 };
 
-function get(key, organizationId, organizationSlug) {
+function get(key, organizationId) {
   const headers = authHeader();
   const workspaceId = headers['tj-workspace-id'];
-  if (!organizationId && !workspaceId && !organizationSlug) {
+  if (!organizationId && !workspaceId) {
     const defaultSettings = Object.keys(whiteLabellingOptions).reduce((settings, optionKey) => {
       const defaultKey = optionKey;
       settings[whiteLabellingOptions[optionKey]] = defaultWhiteLabellingSettings[defaultKey];
@@ -19,16 +19,9 @@ function get(key, organizationId, organizationSlug) {
     return Promise.resolve(defaultSettings);
   }
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  let url;
-  if (organizationSlug) {
-    url = key
-      ? `${config.apiUrl}/white-labelling/by-slug/${organizationSlug}?key=${encodeURIComponent(key)}`
-      : `${config.apiUrl}/white-labelling/by-slug/${organizationSlug}`;
-  } else {
-    url = key
-      ? `${config.apiUrl}/white-labelling/${workspaceId || organizationId}?key=${encodeURIComponent(key)}`
-      : `${config.apiUrl}/white-labelling/${workspaceId || organizationId}`;
-  }
+  const url = key
+    ? `${config.apiUrl}/white-labelling/${workspaceId || organizationId}?key=${encodeURIComponent(key)}`
+    : `${config.apiUrl}/white-labelling/${workspaceId || organizationId}`;
   return fetch(url, requestOptions).then(handleResponseWithoutValidation);
 }
 

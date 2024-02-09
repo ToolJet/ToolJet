@@ -48,7 +48,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { retrieveWhiteLabelText, getWorkspaceId } from '@/_helpers/utils';
+import { retrieveWhiteLabelText, getWorkspaceId, pageTitles, fetchAndSetWindowTitle } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -70,29 +70,11 @@ import { diff } from 'deep-object-diff';
 import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import { getQueryParams } from '@/_helpers/routes';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
 
 setAutoFreeze(false);
 enablePatches();
-
-async function setWindowTitle(name) {
-  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
-  let whiteLabelText;
-
-  // Only fetch white labeling details if they haven't been fetched yet
-  if (!isWhiteLabelDetailsFetched) {
-    try {
-      await actions.fetchWhiteLabelDetails();
-    } catch (error) {
-      console.error('Unable to update white label settings', error);
-    }
-  }
-
-  whiteLabelText = useWhiteLabellingStore.getState().whiteLabelText;
-  document.title = name ? `${name} - ${whiteLabelText}` : `My App - ${whiteLabelText}`;
-}
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
@@ -269,7 +251,7 @@ const EditorComponent = (props) => {
 
     // 6. Unsubscribe from the observable when the component is unmounted
     return () => {
-      document.title = 'Tooljet - Dashboard';
+      document.title = 'Dashboard | ToolJet';
       socket && socket?.close();
       subscription.unsubscribe();
       if (featureAccess?.multiPlayerEdit) props?.provider?.disconnect();
@@ -603,7 +585,7 @@ const EditorComponent = (props) => {
 
   const onNameChanged = (newName) => {
     updateState({ appName: newName });
-    setWindowTitle(newName);
+    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: newName });
   };
 
   const onZoomChanged = (zoom) => {
@@ -734,6 +716,7 @@ const EditorComponent = (props) => {
   };
 
   const fetchEnvironments = () => {
+    const appId = props?.id;
     appEnvironmentService.getAllEnvironments(appId).then((data) => {
       const envArray = data?.environments;
 
@@ -748,7 +731,7 @@ const EditorComponent = (props) => {
     environmentSwitch = false,
     selectedEnvironmentId = null
   ) => {
-    setWindowTitle(data.name);
+    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
 
     if (!environmentSwitch && (!releasedVersionId || !versionSwitched)) {

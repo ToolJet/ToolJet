@@ -41,12 +41,11 @@ function getAppVersionData(appId, versionId) {
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function create(appId, versionName, versionFromId) {
-  const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
+function create(appId, versionName, versionFromId, currentEnvironmentId) {
   const body = {
     versionName,
     versionFromId,
-    environmentId: currentEnvironmentObj[appId],
+    environmentId: currentEnvironmentId,
   };
 
   const requestOptions = {

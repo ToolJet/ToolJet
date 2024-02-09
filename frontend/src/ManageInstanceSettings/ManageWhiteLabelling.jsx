@@ -8,8 +8,6 @@ import Skeleton from 'react-loading-skeleton';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _ from 'lodash';
 import { LicenseBannerCloud } from '@/LicenseBannerCloud';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
-import { setFaviconAndTitle } from '@/_helpers/utils';
 class ManageWhiteLabellingComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -26,8 +24,6 @@ class ManageWhiteLabellingComponent extends React.Component {
   }
 
   componentDidMount() {
-    const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText);
     this.fetchFeatureAccess();
     this.fetchSettings();
   }

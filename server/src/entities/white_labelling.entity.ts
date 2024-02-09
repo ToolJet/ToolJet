@@ -6,21 +6,20 @@ import {
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
-  Unique,
 } from 'typeorm';
 import { Organization } from './organization.entity';
 
 @Entity('white_labelling')
-@Unique(['organizationId'])
+// @Unique(['organization_id']) - uncomment in next release
 export class WhiteLabelling {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'organizationId' })
+  @Column({ name: 'organization_id' })
   organizationId: string;
 
   @OneToOne(() => Organization, (organization) => organization.whiteLabelling)
-  @JoinColumn({ name: 'organizationId' })
+  @JoinColumn({ name: 'organization_id' })
   organization: Organization;
 
   @Column({ type: 'varchar', length: 255 })
@@ -32,10 +31,15 @@ export class WhiteLabelling {
   @Column({ type: 'varchar', length: 255 })
   favicon: string;
 
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)' })
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)', name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)', onUpdate: 'CURRENT_TIMESTAMP(6)' })
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
+    name: 'updated_at',
+  })
   updatedAt: Date;
 
   @Column({

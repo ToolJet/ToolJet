@@ -134,14 +134,6 @@ export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
 };
 
 
-
-
-
-
-
-
-
-
 export const verifyValueOnInspector = (queryName, value) => {
   cy.get('[data-cy="inspector-node-queries"]')
     .parent()

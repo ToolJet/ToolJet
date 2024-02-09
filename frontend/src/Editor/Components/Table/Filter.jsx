@@ -189,7 +189,6 @@ export function Filter(props) {
                   placeholder="value"
                   className="form-control"
                   onChange={(e) => filterValueChanged(index, e.target.value)}
-
                 />
               )}
             </div>
