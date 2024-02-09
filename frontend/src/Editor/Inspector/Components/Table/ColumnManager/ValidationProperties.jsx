@@ -88,6 +88,10 @@ export const ValidationProperties = ({
     return '';
   }
 
+  if (validationsList.length < 1) {
+    return '';
+  }
+
   return (
     <div className="optional-properties-when-editable-true">
       <div data-cy={`header-validation`} className="validation-text tj-text tj-text-xsm font-weight-500">
