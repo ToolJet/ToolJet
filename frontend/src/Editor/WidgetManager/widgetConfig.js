@@ -3106,7 +3106,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        textFormat: { value: 'plainText' },
+        textFormat: { value: 'html' },
         text: { value: 'Hello World👋' },
         loadingState: { value: `{{false}}` },
         disabledState: { value: '{{false}}' },
