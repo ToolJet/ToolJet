@@ -49,6 +49,8 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
+type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput';
+
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
   'runjsdefault',
@@ -57,7 +59,7 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'workflowsdefault',
 ];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
-const NewRevampedComponents = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'DropDown'];
+const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput'];
 
 @Injectable()
 export class AppImportExportService {
@@ -566,28 +568,45 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
-  // This is to migrate few properties from styles to properties as per new designs
-  migrateVisibilityDisabledStylesToProperties(component: Component, componentTypes: string[]) {
+  /**
+   * Moves a specific property from a nested object to the component properties.
+   * @param {Component} component - The component object containing properties, styles, and general information.
+   * @param {string} propertyKey - The key of the property to move.
+   * @param {string} objKey - The key of the nested object from which to move the property.
+   */
+  moveComponentProperties(component: Component, propertyKey: string, objKey: string) {
+    // Retrieve the nested object using the specified key
+    const obj = component?.[objKey];
+    // Retrieve the component properties
+    const properties = component.properties;
+
+    // Check if the specified property exists in the nested object
+    if (obj?.[propertyKey]) {
+      // Move the property to the component properties
+      properties[propertyKey] = obj?.[propertyKey];
+      // Remove the property from the nested object
+      delete obj?.[propertyKey];
+    }
+  }
+
+  /**
+   * Migrates styles to properties of the component based on the specified component types.
+   * @param {Component} component - The component object containing properties, styles, and general information.
+   * @param {NewRevampedComponent[]} componentTypes - An array of component types for which to perform property migration.
+   * @returns {object} An object containing the modified properties, styles, and general information.
+   */
+  migrateProperties(component: Component, componentTypes: NewRevampedComponent[]) {
     const properties = component.properties;
     const styles = component.styles;
     const general = component.general;
 
-    if (componentTypes.includes(component.type)) {
-      if (styles.visibility) {
-        properties.visibility = styles.visibility;
-        delete styles.visibility;
-      }
-
-      if (styles.disabledState) {
-        properties.disabledState = styles.disabledState;
-        delete styles.disabledState;
-      }
-
-      if (general?.tooltip) {
-        properties.tooltip = general?.tooltip;
-        delete general?.tooltip;
-      }
+    // Check if the component type is included in the specified component types
+    if (componentTypes.includes(component.type as NewRevampedComponent)) {
+      this.moveComponentProperties(component, 'visibility', 'styles');
+      this.moveComponentProperties(component, 'disabledState', 'styles');
+      this.moveComponentProperties(component, 'tooltip', 'general');
     }
+
     return { properties, styles, general };
   }
 
@@ -755,10 +774,7 @@ export class AppImportExportService {
             parentId = newComponentIdsMap[parentId];
           }
           if (!skipComponent) {
-            const { properties, styles, general } = this.migrateVisibilityDisabledStylesToProperties(
-              component,
-              NewRevampedComponents
-            );
+            const { properties, styles, general } = this.migrateProperties(component, NewRevampedComponents);
             newComponent.id = newComponentIdsMap[component.id];
             newComponent.name = component.name;
             newComponent.type = component.type;
@@ -1747,10 +1763,7 @@ function transformComponentData(
     }
 
     if (!skipComponent) {
-      const { properties, styles, general } = this.migrateVisibilityDisabledStylesToProperties(
-        componentData.definition,
-        NewRevampedComponents
-      );
+      const { properties, styles, general } = this.migrateProperties(componentData.definition, NewRevampedComponents);
       transformedComponent.id = uuid();
       transformedComponent.name = componentData.name;
       transformedComponent.type = componentData.component;
