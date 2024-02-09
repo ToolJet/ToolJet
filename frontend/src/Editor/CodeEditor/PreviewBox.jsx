@@ -127,7 +127,11 @@ export const PreviewBox = ({
 };
 
 const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, withValidation }) => {
+  console.log('---arpit:: check => ', { coersionData });
+
   const computeCoersionPreview = (resolvedValue, coersionData) => {
+    if (coersionData?.typeBeforeCoercion === coersionData?.typeAfterCoercion) return resolvedValue;
+
     if (coersionData?.typeBeforeCoercion === 'array') {
       return '[...]' + coersionData?.coercionPreview;
     }
