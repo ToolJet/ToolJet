@@ -223,6 +223,7 @@ export const TextInput = function TextInput({
   const renderInput = () => (
     <>
       <div
+        data-cy={`label-${String(component.name).toLowerCase()}`}
         data-disabled={disable || loading}
         className={`text-input  d-flex  ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
           direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
@@ -251,7 +252,6 @@ export const TextInput = function TextInput({
             }}
           >
             <span
-              data-cy={`label-${String(label)}`}
               style={{
                 overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
                 textOverflow: 'ellipsis', // Display ellipsis for overflowed content

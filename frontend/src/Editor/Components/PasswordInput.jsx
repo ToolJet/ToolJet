@@ -215,6 +215,7 @@ export const PasswordInput = function PasswordInput({
   const renderInput = () => (
     <>
       <div
+        data-cy={`label-${String(component.name).toLowerCase()}`}
         data-disabled={disable || loading}
         className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
           direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
