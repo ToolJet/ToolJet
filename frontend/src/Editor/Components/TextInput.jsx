@@ -4,6 +4,8 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { ToolTip } from '@/_components/ToolTip';
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
+const tinycolor = require('tinycolor2');
+import Label from '@/_ui/Label';
 
 export const TextInput = function TextInput({
   height,
@@ -59,17 +61,17 @@ export const TextInput = function TextInput({
       ? '#3E63DD'
       : ['#D7DBDF'].includes(borderColor)
       ? darkMode
-        ? '#4C5155'
-        : '#D7DBDF'
+        ? '#6D757D7A'
+        : '#6A727C47'
       : borderColor,
+    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    boxShadow:
-      boxShadow !== '0px 0px 0px 0px #00000040' ? boxShadow : isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
+    boxShadow: boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
-        ? '3px 5px 3px 29px'
-        : '3px 5px 3px 28px'
-      : '3px 5px 3px 5px',
+        ? '8px 10px 8px 29px'
+        : '8px 10px 8px 28px'
+      : '8px 10px 8px 10px',
   };
   const loaderStyle = {
     right:
@@ -230,40 +232,23 @@ export const TextInput = function TextInput({
       ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
       ${visibility || 'invisible'}`}
         style={{
-          padding: padding === 'default' ? '2px 3px' : '',
+          padding: padding === 'default' ? '2px' : '',
           position: 'relative',
           whiteSpace: 'nowrap',
+          overflow: 'hidden',
         }}
       >
-        {label && (width > 0 || auto) && (
-          <label
-            ref={labelRef}
-            style={{
-              color: darkMode && color === '#11181C' ? '#fff' : color,
-              width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${width}%` : '100%',
-              maxWidth: auto && defaultAlignment === 'side' ? '70%' : '100%',
-              marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '9px' : '',
-              marginLeft: label?.length > 0 && direction === 'right' && defaultAlignment === 'side' ? '9px' : '',
-              display: 'flex',
-              fontWeight: 500,
-              justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
-              fontSize: '12px',
-            }}
-          >
-            <span
-              data-cy={`label-${String(label)}`}
-              style={{
-                overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
-                textOverflow: 'ellipsis', // Display ellipsis for overflowed content
-                whiteSpace: 'nowrap',
-                display: 'block',
-              }}
-            >
-              {label}
-            </span>
-            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
-          </label>
-        )}
+        <Label
+          label={label}
+          width={width}
+          labelRef={labelRef}
+          darkMode={darkMode}
+          color={color}
+          defaultAlignment={defaultAlignment}
+          direction={direction}
+          auto={auto}
+          isMandatory={isMandatory}
+        />
         {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
           <IconElement
             data-cy={'text-input-icon'}
@@ -335,7 +320,10 @@ export const TextInput = function TextInput({
         <div
           className="tj-text-sm"
           data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-          style={{ color: errTextColor, textAlign: direction == 'left' && 'end' }}
+          style={{
+            color: errTextColor,
+            textAlign: direction == 'left' && 'end',
+          }}
         >
           {showValidationError && validationError}
         </div>

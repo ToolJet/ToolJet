@@ -7,6 +7,7 @@ import CheckMark from '@/_ui/Icon/solidIcons/CheckMark';
 import { CustomMenuList } from './Table/SelectComponent';
 import { Spinner } from 'react-bootstrap';
 import { useEditorStore } from '@/_stores/editorStore';
+const tinycolor = require('tinycolor2');
 
 const { ValueContainer, SingleValue, Placeholder, DropdownIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -305,8 +306,8 @@ export const DropDown = function DropDown({
           ? '#3E63DD'
           : ['#D7DBDF'].includes(fieldBorderColor)
           ? darkMode
-            ? '#4C5155'
-            : '#D7DBDF'
+            ? '#6D757D7A'
+            : '#6A727C47'
           : fieldBorderColor,
         backgroundColor:
           darkMode && ['#fff'].includes(fieldBackgroundColor)
@@ -315,7 +316,7 @@ export const DropDown = function DropDown({
             ? '#F1F3F5'
             : fieldBackgroundColor,
         '&:hover': {
-          borderColor: '#6A727C',
+          borderColor: tinycolor(fieldBorderColor).darken(8).toString(),
         },
       };
     },
@@ -412,6 +413,7 @@ export const DropDown = function DropDown({
             alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
             width: alignment === 'top' || labelAutoWidth ? 'auto' : `${labelWidth}%`,
             maxWidth: alignment === 'top' || labelAutoWidth ? '100%' : `${labelWidth}%`,
+            height: '20px',
           }}
         >
           <label style={labelStyles} className="font-size-12 font-weight-500 py-0 my-0 d-flex">

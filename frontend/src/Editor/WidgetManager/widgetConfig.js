@@ -1696,7 +1696,7 @@ export const widgets = [
       events: [],
       styles: {
         textColor: { value: '#11181C' },
-        borderColor: { value: '#D7DBDF' },
+        borderColor: { value: '#6A727C47' },
         errTextColor: { value: '#DB4324' },
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
@@ -1978,7 +1978,7 @@ export const widgets = [
       styles: {
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
-        borderColor: { value: '#D7DBDF' },
+        borderColor: { value: '#6A727C47' },
         errTextColor: { value: '#DB4324' },
         textColor: { value: '#232e3c' },
         iconColor: { value: '#C1C8CD' },
@@ -2256,7 +2256,7 @@ export const widgets = [
       styles: {
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
-        borderColor: { value: '#D7DBDF' },
+        borderColor: { value: '#6A727C47' },
         errTextColor: { value: '#DB4324' },
         textColor: { value: '#11181C' },
         iconColor: { value: '#C1C8CD' },
@@ -3684,7 +3684,7 @@ export const widgets = [
         fieldBorderRadius: { value: '6' },
         justifyContent: { value: 'left' },
         selectedTextColor: { value: '#11181C' },
-        fieldBorderColor: { value: '#D7DBDF' },
+        fieldBorderColor: { value: '#6A727C47' },
         errTextColor: { value: '#DB4324' },
         fieldBackgroundColor: { value: '#fff' },
         direction: { value: 'alignLeft' },

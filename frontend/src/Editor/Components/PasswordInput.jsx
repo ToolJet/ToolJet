@@ -47,11 +47,12 @@ export const PasswordInput = function PasswordInput({
   const [showValidationError, setShowValidationError] = useState(false);
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
-  const [elementWidth, setElementWidth] = useState(0);
+  const [labelWidth, setLabelWidth] = useState(0);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const [iconVisibility, setIconVisibility] = useState(false);
   const [loading, setLoading] = useState(loadingState);
   const [isFocused, setIsFocused] = useState(false);
+  const tinycolor = require('tinycolor2');
 
   const computedStyles = {
     height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height - 4 : height,
@@ -61,22 +62,22 @@ export const PasswordInput = function PasswordInput({
       ? '#3E63DD'
       : ['#D7DBDF'].includes(borderColor)
       ? darkMode
-        ? '#4C5155'
-        : '#D7DBDF'
+        ? '#6D757D7A'
+        : '#6A727C47'
       : borderColor,
-    backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    boxShadow:
-      boxShadow !== '0px 0px 0px 0px #00000040' ? boxShadow : isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
+    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(8).toString(),
+    backgroundColor: darkMode && ['#fff', '#ffffff'].includes(backgroundColor) ? '#313538' : backgroundColor,
+    boxShadow: boxShadow,
     padding: styles.iconVisibility
       ? padding == 'default'
-        ? '3px 24px 3px 29px'
-        : '3px 24px 3px 27px'
-      : '3px 24px 3px 10px',
+        ? '8px 24px 8px 29px'
+        : '8px 24px 8px 27px'
+      : '8px 24px 8px 10px',
   };
   const loaderStyle = {
     right:
       direction === 'right' && defaultAlignment === 'side'
-        ? `${elementWidth + 5}px`
+        ? `${labelWidth + 5}px`
         : padding == 'default'
         ? '12px'
         : '10px',
@@ -91,8 +92,8 @@ export const PasswordInput = function PasswordInput({
   useEffect(() => {
     if (labelRef.current) {
       const width = labelRef.current.offsetWidth;
-      padding == 'default' ? setElementWidth(width + 17) : setElementWidth(width + 15);
-    } else padding == 'default' ? setElementWidth(7) : setElementWidth(5);
+      padding == 'default' ? setLabelWidth(width + 17) : setLabelWidth(width + 15);
+    } else padding == 'default' ? setLabelWidth(7) : setLabelWidth(5);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -107,6 +108,7 @@ export const PasswordInput = function PasswordInput({
     direction,
     alignment,
     isMandatory,
+    labelRef,
   ]);
 
   useEffect(() => {
@@ -222,8 +224,9 @@ export const PasswordInput = function PasswordInput({
       ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
       ${visibility || 'invisible'}`}
         style={{
-          padding: padding === 'default' ? '2px 3px' : '',
+          padding: padding === 'default' ? '2px' : '',
           position: 'relative',
+          overflow: 'hidden',
         }}
       >
         {label && (width > 0 || auto) && (
@@ -239,6 +242,7 @@ export const PasswordInput = function PasswordInput({
               fontWeight: 500,
               justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
               fontSize: '12px',
+              height: '20px',
             }}
           >
             <span
@@ -268,7 +272,7 @@ export const PasswordInput = function PasswordInput({
                   ? padding == 'default'
                     ? '13px'
                     : '10px'
-                  : `${elementWidth + 5}px`,
+                  : `${labelWidth + 5}px`,
               position: 'absolute',
               top: `${
                 defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
@@ -297,7 +301,7 @@ export const PasswordInput = function PasswordInput({
                   ? padding == 'none'
                     ? `11px`
                     : '13px'
-                  : `${elementWidth + 5}px`,
+                  : `${labelWidth + 5}px`,
               top: alignment == 'side' ? '50%' : label?.length > 0 && width > 0 ? `calc(50% + 10px)` : '50%',
               transform: ' translateY(-50%)',
               display: 'flex',
@@ -350,7 +354,10 @@ export const PasswordInput = function PasswordInput({
         <div
           className="tj-text-sm"
           data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-          style={{ color: errTextColor, textAlign: direction === 'left' && 'end' }}
+          style={{
+            color: errTextColor,
+            textAlign: direction === 'left' && 'end',
+          }}
         >
           {showValidationError && validationError}
         </div>

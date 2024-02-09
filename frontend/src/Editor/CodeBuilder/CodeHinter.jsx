@@ -434,7 +434,11 @@ export function CodeHinter({
   };
 
   const getExclusiveElementProps = () => {
-    if (component.component.component === 'TextInput') {
+    if (
+      component.component.component === 'TextInput' ||
+      component.component.component === 'PasswordInput' ||
+      component.component.component === 'NumberInput'
+    ) {
       return {
         disabled: component?.component?.definition?.styles?.auto?.value,
       };
