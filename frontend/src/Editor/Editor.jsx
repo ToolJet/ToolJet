@@ -1922,7 +1922,7 @@ const EditorComponent = (props) => {
               id="main-editor-canvas"
             >
               <div
-                className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
+                className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'} page-container`}
                 style={{
                   transform: `scale(${zoomLevel})`,
                   borderLeft:

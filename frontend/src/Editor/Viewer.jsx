@@ -732,7 +732,7 @@ class ViewerComponent extends React.Component {
                       background: this.computeCanvasBackgroundColor() || (!this.props.darkMode ? '#EBEBEF' : '#2E3035'),
                     }}
                   >
-                    <div className={`areas d-flex flex-rows app-${this.state.appId}`}>
+                    <div className={`areas d-flex flex-rows app-${this.props.id}`}>
                       {appDefinition?.showViewerNavigation && (
                         <ViewerNavigation
                           isMobileDevice={this.props.currentLayout === 'mobile'}

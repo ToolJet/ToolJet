@@ -33,6 +33,7 @@ describe("Global Datasource Manager", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     cy.viewport(1200, 1300);
+    cy.skipWalkthrough();
   });
 
   it("Should verify the global data source manager UI", () => {
