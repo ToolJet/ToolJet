@@ -410,6 +410,20 @@ Cypress.Commands.add("removeAssignedApps", () => {
   });
 });
 
+
+Cypress.Commands.add('saveFromIntercept', (interceptAlias, property, envVariable) => {
+  cy.get(interceptAlias).its('response.body').then((responseBody) => {
+    Cypress.env(envVariable, responseBody[property]);
+  });
+});
+
+Cypress.Commands.add("verifyLabel", (labelName) => {
+  cy.get(commonSelectors.label(`${labelName}`)).verifyVisibleElement(
+    "have.text",
+    labelName
+  );
+});
+
 Cypress.Commands.add("skipWalkthrough", () => {
   cy.window({ log: false }).then((win) => {
     win.localStorage.setItem("walkthroughCompleted", "true");

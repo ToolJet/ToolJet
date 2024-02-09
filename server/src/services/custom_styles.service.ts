@@ -32,15 +32,17 @@ export class CustomStylesService {
     This is a failsafe to prevent the controller from failing if the user saved invalid CSS. 
     TODO: This code will need to be refactored once CSS validation is added for the create API.
      */
+    const styles = (stylesObject.styles || '').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+
     try {
       const processor = postcss([parentSelector({ selector: '.page-container' })]);
 
-      const { css } = await processor.process(stylesObject.styles);
+      const { css } = await processor.process(styles);
 
-      return { ...stylesObject, css };
+      return { ...stylesObject, styles, css };
     } catch (error) {
       console.error(error);
     }
-    return;
+    return { ...stylesObject, styles };
   }
 }

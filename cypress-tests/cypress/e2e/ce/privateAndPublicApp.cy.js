@@ -22,6 +22,7 @@ describe(
     beforeEach(() => {
       cy.defaultWorkspaceLogin();
       cy.removeAssignedApps();
+      cy.skipWalkthrough();
     });
 
     it("Verify private and public app share funtionality", () => {

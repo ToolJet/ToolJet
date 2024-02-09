@@ -372,8 +372,11 @@ class ManageGroupPermissionsComponent extends React.Component {
               isLoading={isDuplicatingGroup}
               cancelDisabled={isDuplicatingGroup}
               darkMode={this.props.darkMode}
+              data-cy="modal-title"
             >
-              <div className="tj-text">Duplicate the following parts of the group</div>
+              <div className="tj-text" data-cy="modal-message">
+                Duplicate the following parts of the group
+              </div>
               <div className="group-duplcate-modal-body">
                 <div className="row check-row">
                   <div className="col-1 ">
@@ -389,10 +392,13 @@ class ManageGroupPermissionsComponent extends React.Component {
                           },
                         }));
                       }}
+                      data-cy="users-check-input"
                     />
                   </div>
                   <div className="col-11">
-                    <div className="tj-text ">Users</div>
+                    <div className="tj-text " data-cy="users-label">
+                      Users
+                    </div>
                   </div>
                 </div>
                 <div className="row check-row">
@@ -409,10 +415,13 @@ class ManageGroupPermissionsComponent extends React.Component {
                           },
                         }));
                       }}
+                      data-cy="permissions-check-input"
                     />
                   </div>
                   <div className="col-11">
-                    <div className="tj-text ">Permissions</div>
+                    <div className="tj-text " data-cy="permissions-label">
+                      Permissions
+                    </div>
                   </div>
                 </div>
                 <div className="row check-row">
@@ -429,10 +438,13 @@ class ManageGroupPermissionsComponent extends React.Component {
                           },
                         }));
                       }}
+                      data-cy="apps-check-input"
                     />
                   </div>
                   <div className="col-11">
-                    <div className="tj-text ">Apps</div>
+                    <div className="tj-text " data-cy="apps-label">
+                      Apps
+                    </div>
                   </div>
                 </div>
                 <div className="row check-row">

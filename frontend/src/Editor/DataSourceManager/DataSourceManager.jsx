@@ -207,6 +207,7 @@ class DataSourceManagerComponent extends React.Component {
   createDataSource = () => {
     const { appId, options, selectedDataSource, selectedDataSourcePluginId, dataSourceMeta, dataSourceSchema } =
       this.state;
+    const OAuthDs = ['slack', 'zendesk', 'googlesheets'];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -225,6 +226,10 @@ class DataSourceManagerComponent extends React.Component {
         ...(!options[key]?.value && { credential_id: options[key]?.credential_id }),
       };
     });
+    if (OAuthDs.includes(kind)) {
+      const value = localStorage.getItem('OAuthCode');
+      parsedOptions.push({ key: 'code', value, encrypted: false });
+    }
     if (name.trim() !== '') {
       let service = scope === 'global' ? globalDatasourceService : datasourceService;
       if (selectedDataSource.id) {

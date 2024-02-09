@@ -732,6 +732,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
       'onSelectionChange',
       'onSelect',
       'onClick',
+      'onDoubleClick',
       'onHover',
       'onFileSelected',
       'onFileLoaded',
