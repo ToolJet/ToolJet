@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown';
+import './text.scss';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -138,16 +139,15 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
       }}
       onClick={handleClick}
     >
-      {!isLoading &&
-        (textFormat === 'markdown' ? (
-          <div style={commonStyles}>
-            <Markdown>{text}</Markdown>
-          </div>
-        ) : (
-          <div style={commonStyles}>
+      {!isLoading && (
+        <div style={commonStyles}>
+          {textFormat === 'plainText' && <div>{text}</div>}
+          {textFormat === 'markdown' && <Markdown className={'reactMarkdown'}>{text}</Markdown>}
+          {(textFormat === 'html' || !textFormat) && (
             <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text || '') }} />
-          </div>
-        ))}
+          )}
+        </div>
+      )}
       {isLoading && (
         <div style={{ width: '100%', height: '100%' }} className="d-flex align-items-center justify-content-center">
           <center>
