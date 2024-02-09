@@ -21,6 +21,7 @@
     "@sentry/tracing": "^7.60.0",
     "@sentry/webpack-plugin": "^2.5.0",
     "@tabler/icons-react": "^2.4.0",
+    "@textea/json-viewer": "^3.3.2",
     "@tooljet/plugins": "../plugins",
     "@uiw/codemirror-theme-github": "^4.21.21",
     "@uiw/codemirror-theme-okaidia": "^4.21.21",

@@ -8,8 +8,7 @@ import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 import OpenApi from '@/_ui/OpenAPI';
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
-// import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
-import NewCodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/Editor/CodeEditor';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
@@ -149,7 +148,7 @@ const DynamicForm = ({
       case 'react-component-slack':
         return Slack;
       case 'codehinter':
-        return NewCodeHinter;
+        return CodeHinter;
       case 'react-component-openapi-validator':
         return OpenApi;
       case 'react-component-zendesk':

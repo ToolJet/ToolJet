@@ -9,6 +9,8 @@ import { handleCircularStructureToJSON, hasCircularDependency } from '@/_helpers
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import Card from 'react-bootstrap/Card';
+// eslint-disable-next-line import/no-unresolved
+import { JsonViewer } from '@textea/json-viewer';
 
 export const PreviewBox = ({
   currentValue,
@@ -124,7 +126,7 @@ export const PreviewBox = ({
   );
 };
 
-const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, withValidation }) => {
+const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, withValidation, darkMode }) => {
   const previewValueType =
     withValidation || (coersionData && coersionData?.typeBeforeCoercion)
       ? `${coersionData?.typeBeforeCoercion} ${
@@ -141,9 +143,8 @@ const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, 
       <div class="p-2">
         <span class={`badge text-capitalize font-500 ${cls}`}> {error ? error.type : previewValueType}</span>
       </div>
-      <div class="p-2 pt-0">
-        <PreviewBox.CodeBlock code={error ? error.value : previewContent} />
-      </div>
+
+      <PreviewBox.CodeBlock code={error ? error.value : previewContent} />
     </div>
   );
 };
@@ -164,7 +165,7 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
       bsPrefix="codehinter-preview-popover"
       id="popover-basic"
       className={`${darkMode && 'dark-theme'}`}
-      style={{ width: '250px', maxWidth: '350px', marginRight: 10 }}
+      style={{ width: '250px', maxWidth: '350px', marginRight: 10, zIndex: 111 }}
       onMouseEnter={() => setCursorInsidePreview(true)}
       onMouseLeave={() => setCursorInsidePreview(false)}
     >
@@ -190,29 +191,32 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
               </Alert>
             </div>
           )}
-          <div className="mb-1">
-            <span>Expected</span>
-          </div>
-          <Card className={darkMode && 'bg-slate2'}>
-            <Card.Body
-              className="p-1"
-              style={{
-                minHeight: '60px',
-                maxHeight: '100px',
-              }}
-            >
-              <div class="d-flex flex-column align-content-between flex-wrap p-0">
-                <div class="p-2">
-                  <span class="badge bg-light-gray font-500 mute-text text-capitalize">
-                    {validationSchema?.schema?.type}
-                  </span>
-                </div>
-                <div class="p-2 pt-0">
-                  <PreviewBox.CodeBlock code={validationSchema?.expectedValue} isExpectValue={true} />
-                </div>
+          {!isEmpty(validationSchema) && (
+            <>
+              <div className="mb-1">
+                <span>Expected</span>
               </div>
-            </Card.Body>
-          </Card>
+              <Card className={darkMode && 'bg-slate2'}>
+                <Card.Body
+                  className="p-1"
+                  style={{
+                    minHeight: '60px',
+                    maxHeight: '100px',
+                  }}
+                >
+                  <div class="d-flex flex-column align-content-between flex-wrap p-0">
+                    <div class="p-2">
+                      <span class="badge bg-light-gray font-500 mute-text text-capitalize">
+                        {validationSchema?.schema?.type}
+                      </span>
+                    </div>
+
+                    <PreviewBox.CodeBlock code={validationSchema?.expectedValue} isExpectValue={true} />
+                  </div>
+                </Card.Body>
+              </Card>
+            </>
+          )}
         </div>
         <div className="mt-2">
           <div className="mb-1">
@@ -229,7 +233,7 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
               className="p-1 code-hinter-preview-card-body"
               style={{
                 minHeight: '60px',
-                maxHeight: '100px',
+                maxHeight: '240px',
                 overflowY: 'auto',
               }}
             >
@@ -251,41 +255,65 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
 
 const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
   let preview = code && code.trim ? code?.trim() : `${code}`;
-  const shouldTrim = preview.length > 10;
+  const shouldTrim = preview.length > 15;
+
+  let showJSONTree = false;
 
   if (isExpectValue && shouldTrim) {
-    preview = preview.substring(0, 10) + '...' + preview.substring(preview.length - 2, preview.length);
+    preview = preview.substring(0, 15) + '...' + preview.substring(preview.length - 2, preview.length);
   }
 
   let prettyPrintedJson = null;
 
   try {
-    prettyPrintedJson = JSON.stringify(JSON.parse(preview), null, 2);
+    prettyPrintedJson = JSON.parse(preview);
+    showJSONTree = true;
   } catch (e) {
     prettyPrintedJson = preview;
+    showJSONTree = false;
+  }
+
+  if (showJSONTree) {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+
+    return (
+      <div className="preview-json">
+        <JsonViewer
+          value={prettyPrintedJson}
+          displayDataTypes={false}
+          displaySize={false}
+          displayObjectSize={false}
+          enableClipboard={false}
+          rootName={false}
+          theme={darkMode ? 'dark' : 'light'}
+        />
+      </div>
+    );
   }
 
   return (
-    <pre
-      className="text-secondary"
-      style={{
-        whiteSpace: 'pre-wrap',
-        wordBreak: 'break-word',
-        overflowWrap: 'break-word',
-        display: 'block',
-        background: 'transparent',
-        border: 'none',
-        lineHeight: '1.5',
-        maxHeight: 'none',
-        overflow: 'auto',
-        width: '100%',
-        fontSize: '12px',
-        overflowY: 'auto',
-        padding: '0',
-      }}
-    >
-      {prettyPrintedJson}
-    </pre>
+    <div class="p-2 pt-0">
+      <pre
+        className="text-secondary"
+        style={{
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+          overflowWrap: 'break-word',
+          display: 'block',
+          background: 'transparent',
+          border: 'none',
+          lineHeight: '1.5',
+          maxHeight: 'none',
+          overflow: 'auto',
+          width: '100%',
+          fontSize: '12px',
+          overflowY: 'auto',
+          padding: '0',
+        }}
+      >
+        {prettyPrintedJson}
+      </pre>
+    </div>
   );
 };
 
