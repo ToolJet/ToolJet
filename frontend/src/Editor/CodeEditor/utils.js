@@ -175,6 +175,40 @@ function resolveCode(code, state, customObjects = {}, withError = true, reserved
   return result;
 }
 
+function getDynamicVariables(text) {
+  /* eslint-disable no-useless-escape */
+  const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
+  return matchedParams;
+}
+const resolveMultiDynamicReferences = (code, lookupTable) => {
+  let resolvedValue = code;
+
+  const allDynamicVariables = getDynamicVariables(code);
+
+  if (allDynamicVariables) {
+    allDynamicVariables.forEach((variable) => {
+      const variableToResolve = variable.replace(/{{|}}/g, '').trim();
+
+      const { toResolveReference } = inferJSExpAndReferences(variableToResolve, lookupTable.hints);
+
+      if (toResolveReference && lookupTable.hints.has(toResolveReference)) {
+        const idToLookUp = lookupTable.hints.get(variableToResolve);
+        const res = lookupTable.resolvedRefs.get(idToLookUp);
+
+        resolvedValue = resolvedValue.replace(variable, res);
+      } else {
+        const [resolvedCode] = resolveCode(variableToResolve, lookupTable, {}, true, [], true);
+
+        resolvedValue = resolvedCode;
+      }
+    });
+  }
+
+  console.log('---arpit dynamic variables---', { resolvedValue });
+
+  return resolvedValue;
+};
+
 export const resolveReferences = (query, validationSchema, customResolvers = {}, fxActive = false) => {
   if (!query || typeof query !== 'string') return [false, null, null];
 
@@ -197,27 +231,32 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
     return [valid, errors, newValue, resolvedValue];
   }
 
-  const value = !fxActive ? query?.replace(/{{|}}/g, '').trim() : query;
+  const hasMultiDynamicVariables = getDynamicVariables(query);
 
   const { lookupTable } = useResolveStore.getState();
-
-  const { toResolveReference, jsExpression, jsExpMatch } = inferJSExpAndReferences(value, lookupTable.hints);
-
-  if (!jsExpMatch && toResolveReference && lookupTable.hints.has(toResolveReference)) {
-    const idToLookUp = lookupTable.hints.get(toResolveReference);
-    resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);
-
-    if (jsExpression) {
-      let jscode = value.replace(toResolveReference, resolvedValue);
-      jscode = value.replace(toResolveReference, `'${resolvedValue}'`);
-
-      resolvedValue = resolveCode(jscode, currentState, customResolvers);
-    }
+  if ((isEmpty(validationSchema) && hasMultiDynamicVariables) || hasMultiDynamicVariables?.length > 1) {
+    resolvedValue = resolveMultiDynamicReferences(query, lookupTable);
   } else {
-    const [resolvedCode, errorRef] = resolveCode(value, currentState, customResolvers, true, [], true);
+    const value = !fxActive ? query?.replace(/{{|}}/g, '').trim() : query;
 
-    resolvedValue = resolvedCode;
-    error = errorRef || null;
+    const { toResolveReference, jsExpression, jsExpMatch } = inferJSExpAndReferences(value, lookupTable.hints);
+
+    if (!jsExpMatch && toResolveReference && lookupTable.hints.has(toResolveReference)) {
+      const idToLookUp = lookupTable.hints.get(toResolveReference);
+      resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);
+
+      if (jsExpression) {
+        let jscode = value.replace(toResolveReference, resolvedValue);
+        jscode = value.replace(toResolveReference, `'${resolvedValue}'`);
+
+        resolvedValue = resolveCode(jscode, currentState, customResolvers);
+      }
+    } else {
+      const [resolvedCode, errorRef] = resolveCode(value, currentState, customResolvers, true, [], true);
+
+      resolvedValue = resolvedCode;
+      error = errorRef || null;
+    }
   }
 
   if (!validationSchema || isEmpty(validationSchema)) {
