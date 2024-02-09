@@ -246,6 +246,7 @@ describe("Manage Users", () => {
       "All users",
       "Admin"
     );
+
     common.navigateToManageGroups();
     cy.get(groupsSelector.groupLink("Admin")).click();
     cy.get(groupsSelector.usersLink).click();
@@ -323,7 +324,7 @@ describe("Manage Users", () => {
       "have.text",
       "User groups"
     );
-    cy.get(".css-3w2yfm-ValueContainer").should("be.visible");
+    cy.get('[data-cy="user-group-select"]>>>>>').should("be.visible");
     cy.get(commonSelectors.cancelButton).verifyVisibleElement(
       "have.text",
       "Cancel"
@@ -332,15 +333,15 @@ describe("Manage Users", () => {
       "have.text",
       "Update"
     );
-    cy.get(".css-3w2yfm-ValueContainer").click();
-    cy.get(".css-1c6ox7i-Input").type("Admin");
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(2).click();
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(2).type("Admin");
     cy.get(".form-check-input").check();
     cy.get(commonSelectors.cancelButton).click();
 
-    cy.get(usersSelector.userActionButton).click();
+    cy.get('[data-cy="user-actions-button"]').click();
     cy.get(usersSelector.editUserDetailsButton).click();
-    cy.get(".css-3w2yfm-ValueContainer").click();
-    cy.get(".css-1c6ox7i-Input").type("Admin");
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(2).click();
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(2).type("Admin");
     cy.get(".form-check-input").check();
     cy.get(usersSelector.buttonInviteUsers).click();
     cy.verifyToastMessage(

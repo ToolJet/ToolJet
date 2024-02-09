@@ -206,7 +206,7 @@ describe("Global Datasource Manager", () => {
 
         addQuery(
             "table_preview",
-            `SELECT * FROM Persons;`,
+            `SELECT * FROM persons;`,
             `cypress-${data.ds1}-postgresql`
         );
 
@@ -228,7 +228,7 @@ describe("Global Datasource Manager", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text1)
-        ).verifyVisibleElement("have.text", "four");
+        ).verifyVisibleElement("have.text", "Jane");
 
         cy.get('[data-cy="show-ds-popover-button"]').click();
         cy.get(".p-2 > .tj-base-btn")
@@ -298,14 +298,17 @@ describe("Global Datasource Manager", () => {
         cy.openApp();
         addQuery(
             "table_preview",
-            `SELECT * FROM Persons;`,
+            `SELECT * FROM persons;`,
             `cypress-${data.ds1}-postgresql`
+        );
+        cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
+            "have.text",
+            "table_preview "
         );
 
         cy.dragAndDropWidget("Text", 100, 250);
         editAndVerifyWidgetName(data.text1);
         cy.waitForAutoSave();
-
         verifyAndModifyParameter(
             "Text",
             `{{queries.table_preview.data[1].firstname`
@@ -326,7 +329,7 @@ describe("Global Datasource Manager", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text1)
-        ).verifyVisibleElement("have.text", "four");
+        ).verifyVisibleElement("have.text", "Jane");
 
         addQueryAndOpenEditor(
             "student_data",
@@ -345,14 +348,14 @@ describe("Global Datasource Manager", () => {
         editAndVerifyWidgetName(data.text2);
         cy.waitForAutoSave();
 
-        verifyAndModifyParameter("Text", `{{queries.student_data.data[1].name`);
+        verifyAndModifyParameter("Text", `{{queries.student_data.data[3].firstname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.wait(1000);
         cy.get(
             commonWidgetSelector.draggableWidget(data.text2)
-        ).verifyVisibleElement("have.text", "ricky");
+        ).verifyVisibleElement("have.text", "David");
 
         cy.get(".p-2 > .tj-base-btn").should("not.exist");
     });
@@ -399,7 +402,7 @@ describe("Global Datasource Manager", () => {
 
         addQueryAndOpenEditor(
             "table_preview",
-            `SELECT * FROM Persons;`,
+            `SELECT * FROM persons;`,
             `cypress-${data.ds1}-postgresql`,
             data.appName
         );
@@ -422,6 +425,6 @@ describe("Global Datasource Manager", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text1)
-        ).verifyVisibleElement("have.text", "four");
+        ).verifyVisibleElement("have.text", "Jane");
     });
 });

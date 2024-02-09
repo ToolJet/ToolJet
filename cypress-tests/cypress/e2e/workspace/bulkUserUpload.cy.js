@@ -32,7 +32,6 @@ describe("Bulk user upload", () => {
 
   it("Verfiy bulk user upload invalid files", () => {
     data.firstName = fake.firstName;
-    data.email = fake.email.toLowerCase();
     data.workspaceName = data.firstName.toLowerCase();
 
     cy.apiLogin()
@@ -121,9 +120,7 @@ describe("Bulk user upload", () => {
 
   it("Verify bulk user upload functionality", () => {
     data.firstName = fake.firstName;
-    data.email = fake.email.toLowerCase();
     data.workspaceName = data.firstName.toLowerCase();
-
     cy.apiLogin()
     cy.apiCreateWorkspace(data.firstName, data.workspaceName);
     cy.visit(`${data.workspaceName}`)

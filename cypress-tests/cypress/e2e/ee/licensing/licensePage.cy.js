@@ -308,7 +308,7 @@ describe("", () => {
             groupsSelector.createNewGroupButton,
             "Custom groups can only be created in paid plans"
         );
-        navigateToManageSSO();
+        cy.get(commonSelectors.manageSSOOption).click();
         verifyTooltipDisabled(
             '[data-cy="openid-connect-list-item"]',
             "OpenID Connect is available only\n        in paid plans"
