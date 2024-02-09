@@ -15,8 +15,9 @@ export const ServerDataStates = {
 };
 
 const staticDataSources = [
-  { kind: 'restapi', id: 'null', name: 'restapi' },
-  { kind: 'runjs', id: 'runjs', name: 'runjs' },
+  { kind: 'restapi', id: 'null', name: 'restapi', type: 'static' },
+  { kind: 'runjs', id: 'null', name: 'runjs', type: 'static' },
+  { kind: 'tooljetdb', id: 'null', name: 'tooljetdb', type: 'static' },
 ];
 
 export const initialState = ({ appId, appVersionId }) => ({

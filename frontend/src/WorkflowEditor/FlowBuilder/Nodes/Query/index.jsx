@@ -74,12 +74,13 @@ export default function QueryNode(props) {
 
   const dataSourceOptions = editorSession.dataSources.map((source) => ({
     label: source.name,
-    value: source.id,
+    value: source.name,
     kind: source.kind,
+    type: source.type,
   }));
 
   const selectedOption =
-    queryData.kind === 'runjs' || queryData.kind === 'restapi'
+    queryData.kind === 'runjs' || queryData.kind === 'restapi' || queryData.kind === 'tooljetdb'
       ? find(dataSourceOptions, { kind: queryData.kind })
       : find(dataSourceOptions, { value: queryData.data_source_id });
 

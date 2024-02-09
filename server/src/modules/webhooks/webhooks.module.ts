@@ -32,6 +32,9 @@ import { WorkflowExecutionsService } from '@services/workflow_executions.service
 import { WorkflowWebhooksController } from '@controllers/workflow_webhooks.controller';
 import { WorkflowWebhooksListener } from '../../listeners/workflow_webhooks.listener';
 import { WorkflowWebhooksService } from '@services/workflow_webhooks.service';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
+import { TooljetDbService } from '@services/tooljet_db.service';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 @Module({
   imports: [
@@ -75,6 +78,9 @@ import { WorkflowWebhooksService } from '@services/workflow_webhooks.service';
     WorkflowExecutionsService,
     WorkflowWebhooksListener,
     WorkflowWebhooksService,
+    TooljetDbOperationsService,
+    TooljetDbService,
+    PostgrestProxyService,
   ],
   controllers: [WorkflowExecutionsController, WorkflowWebhooksController],
 })

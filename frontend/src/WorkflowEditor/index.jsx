@@ -57,7 +57,7 @@ function WorkflowEditor(props) {
       .getApp(editorSession.app.id)
       .then((appData) => {
         const versionId = appData.editing_version.id;
-        const organizationId = appData.organizationId;
+        const organizationId = appData.organization_id;
         const name = appData.name;
         const isMaintenanceOn = appData.is_maintenance_on;
         const workflowEnabled = appData.workflow_enabled;
