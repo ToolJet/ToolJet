@@ -202,7 +202,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
   const { lookupTable } = useResolveStore.getState();
 
   const { toResolveReference, jsExpression, jsExpMatch } = inferJSExpAndReferences(value, lookupTable.hints);
-  //{{JSON.stringify(queries)}}
+
   if (!jsExpMatch && toResolveReference && lookupTable.hints.has(toResolveReference)) {
     const idToLookUp = lookupTable.hints.get(toResolveReference);
     resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);

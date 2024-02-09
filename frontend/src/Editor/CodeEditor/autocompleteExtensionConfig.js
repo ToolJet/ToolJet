@@ -80,29 +80,6 @@ export const generateHints = (hints) => {
       type: type === 'js_method' ? 'js_methods' : type?.toLowerCase(),
       section: type === 'js_method' ? { name: 'JS methods', rank: 2 } : { name: 'Suggestions', rank: 1 },
       detail: type === 'js_method' ? 'method' : type?.toLowerCase() || '',
-      apply: (view, completion, from, to) => {
-        const doc = view.state.doc;
-
-        const { from: start, to: end } = doc.lineAt(from);
-
-        const word = doc.sliceString(start, end);
-
-        const pickedCompletionConfig = {
-          from: from,
-          to: to,
-          insert: completion.label,
-        };
-
-        if (completion.type === 'js_methods') {
-          const lastDotPosition = word.lastIndexOf('.') + 1;
-
-          pickedCompletionConfig.from = lastDotPosition;
-        }
-
-        view.dispatch({
-          changes: pickedCompletionConfig,
-        });
-      },
     };
   });
 

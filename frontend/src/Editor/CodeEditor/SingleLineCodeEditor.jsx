@@ -61,6 +61,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
 
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
+
   return (
     <div
       ref={wrapperRef}
@@ -123,6 +124,7 @@ const EditorInput = ({
   fxActive,
   lang,
   isFocused,
+  componentId,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
@@ -177,6 +179,7 @@ const EditorInput = ({
     'border-danger': error,
     focused: isFocused,
     'focus-box-shadow-active': firstTimeFocus,
+    'widget-code-editor': componentId,
   });
 
   const currentEditorHeightRef = useRef(null);
