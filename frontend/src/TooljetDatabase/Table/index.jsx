@@ -844,7 +844,7 @@ const Table = ({ collapseSidebar }) => {
                             <ToolTip
                               message={index === 0 ? 'Cannot edit primary key values' : cell.value || ''}
                               placement="bottom"
-                              delay={{ show: 0, hide: 0 }}
+                              delay={{ show: 200, hide: 0 }}
                               show={
                                 !(
                                   cellClick.rowIndex === rIndex &&
@@ -852,7 +852,8 @@ const Table = ({ collapseSidebar }) => {
                                   cellClick.editable
                                 ) &&
                                 cell.value !== null &&
-                                cell.column.dataType !== 'boolean'
+                                cell.column.dataType !== 'boolean' &&
+                                cell.value !== ''
                               }
                             >
                               <div className="tjdb-column-select-border">
