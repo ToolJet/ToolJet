@@ -70,7 +70,6 @@ export const ValidationProperties = ({
       case 'select':
         return [{ property: 'customRule', dateCy: 'input-and-label-custom-rule', label: 'Custom rule' }];
       default:
-        break;
     }
   };
   const validationsList = getValidationList(columnType);

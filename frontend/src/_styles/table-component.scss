@@ -115,11 +115,14 @@
   }
 
   td.regular {
-    min-height: 46px;
+    max-height: 46px;
+    height:46px;
   }
 
   td.condensed {
-    min-height: 36px;
+    max-height: 36px;
+    height:36px;
+
   }
 
   .has-dropdown,
@@ -135,9 +138,12 @@
     margin: 0;
   }
 
+  .overflow-x-hidden{
+    overflow-x: hidden !important;
+  }
   .wrap-wrapper {
     white-space: normal !important;
-    word-break: break-all;
+    word-break: break-word;
   }
 
   .scroll-wrapper {
