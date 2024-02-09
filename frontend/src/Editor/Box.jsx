@@ -279,7 +279,7 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
-    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'DropDown'];
+    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
     return (
       <OverlayTrigger
