@@ -5,8 +5,8 @@ import Select, { components } from 'react-select';
 import * as Icons from '@tabler/icons-react';
 import CheckMark from '@/_ui/Icon/solidIcons/CheckMark';
 import { CustomMenuList } from './Table/SelectComponent';
-import { Spinner } from 'react-bootstrap';
 import { useEditorStore } from '@/_stores/editorStore';
+import Loader from '@/ToolJetUI/Loader/Loader';
 
 const { ValueContainer, SingleValue, Placeholder, DropdownIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -462,9 +462,7 @@ export const DropDown = function DropDown({
               MenuList: CustomMenuList,
               ValueContainer: CustomValueContainer,
               Option,
-              LoadingIndicator: () => (
-                <Spinner style={{ width: '16px', height: '16px', color: 'var(--indigo9)', marginRight: '5px' }} />
-              ),
+              LoadingIndicator: () => <Loader width={16} style={{ right: '16px' }} />,
               DropdownIndicator: isDropdownLoading ? () => null : DropdownIndicator,
             }}
             isClearable

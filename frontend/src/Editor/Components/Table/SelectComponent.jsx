@@ -4,7 +4,7 @@ import { components } from 'react-select';
 import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import classNames from 'classnames';
-import { Spinner } from 'react-bootstrap';
+import Loader from '@/ToolJetUI/Loader/Loader';
 
 const { MenuList, ValueContainer, SingleValue, Placeholder } = components;
 export const SelectComponent = ({
@@ -75,7 +75,7 @@ export const CustomMenuList = ({ selectProps, ...props }) => {
     return (
       <div className={classNames('table-select-custom-menu-list', { 'theme-dark dark-theme': isDarkMode })}>
         <div style={{ minHeight: '224px' }} className={'d-flex align-items-center justify-content-center'}>
-          <Spinner style={{ width: '36px', height: '36px', color: 'var(--indigo9)' }} />
+          <Loader width={32} />
         </div>
       </div>
     );
