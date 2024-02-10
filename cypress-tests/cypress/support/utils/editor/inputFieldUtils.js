@@ -91,14 +91,16 @@ export const addAllInputFieldColors = (data) => {
   selectColourFromColourPicker("Text", data.textColor);
   selectColourFromColourPicker("Error text", data.errorTextColor);
   selectColourFromColourPicker("", data.iconColor);
+  cy.forceClickOnCanvas();
+  openEditorSidebar(textInputText.defaultWidgetName);
+  cy.get('[data-cy="make-this-field-mandatory-toggle-button"]').click();
+  cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 };
 
 export const verifyInputFieldColors = (selectorInput, data) => {
   verifyWidgetColorCss(selectorInput, "color", data.textColor);
   verifyWidgetColorCss(selectorInput, "border-color", data.borderColor);
   verifyWidgetColorCss(selectorInput, "background-color", data.bgColor);
-  openEditorSidebar(textInputText.defaultWidgetName);
-  cy.get('[data-cy="make-this-field-mandatory-toggle-button"]').click();
   cy.get(commonWidgetSelector.draggableWidget("textinput1")).clear();
   cy.forceClickOnCanvas();
   cy.verifyCssProperty(

@@ -332,6 +332,28 @@ describe("Text Input", () => {
       data.labelColor,
       true
     );
+
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    verifyWidgetColorCss(
+      `[data-cy="label-${textInputText.defaultWidgetName}"]>label`,
+      "color",
+      data.labelColor,
+      true
+    );
+
+    verifyAlignment(textInputText.defaultWidgetName, "sideLeft");
+    verifyCustomWidthOfLabel(textInputText.defaultWidgetName, "50");
+    verifyInputFieldColors("textinput1", data);
+
+    verifyBoxShadowCss(
+      textInputText.defaultWidgetName,
+      data.boxShadowColor,
+      data.boxShadowParam
+    );
+
+    cy.get(
+      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
+    ).should("have.css", "border-radius", "20px");
   });
 
   it("should verify the app preview", () => {
