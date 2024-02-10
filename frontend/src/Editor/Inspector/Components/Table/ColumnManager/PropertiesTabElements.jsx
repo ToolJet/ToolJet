@@ -1,13 +1,12 @@
 import React from 'react';
 import { resolveReferences } from '@/_helpers/utils';
-import SelectSearch from 'react-select-search';
 import { useTranslation } from 'react-i18next';
 import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
 import { EventManager } from '../../../EventManager';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import { OptionsList } from '../SelectOptionsList/OptionsList';
 import { ValidationProperties } from './ValidationProperties';
-
+import { Select } from '@/Editor/CodeBuilder/Elements/Select';
 export const PropertiesTabElements = ({
   column,
   index,
@@ -30,34 +29,32 @@ export const PropertiesTabElements = ({
         <label data-cy={`label-column-type`} className="form-label">
           {t('widget.Table.columnType', 'Column type')}
         </label>
-        <SelectSearch
-          className={`${darkMode ? 'select-search' : 'select-search'}`}
-          options={[
-            { name: 'Default', value: 'default' },
-            { name: 'String', value: 'string' },
-            { name: 'Number', value: 'number' },
-            { name: 'Text', value: 'text' },
-            { name: 'Badge', value: 'badge' },
-            { name: 'Multiple badges', value: 'badges' },
-            { name: 'Tags', value: 'tags' },
-            { name: 'Dropdown', value: 'dropdown' },
-            { name: 'Link', value: 'link' },
-            { name: 'Radio', value: 'radio' },
-            { name: 'Multiselect', value: 'multiselect' },
-            { name: 'Toggle switch', value: 'toggle' },
-            { name: 'Date Picker', value: 'datepicker' },
-            { name: 'Image', value: 'image' },
-            { name: 'Boolean', value: 'boolean' },
-            { name: 'Select', value: 'select' },
-          ]}
-          value={column.columnType}
-          search={true}
-          closeOnSelect={true}
+        <Select
+          meta={{
+            options: [
+              { name: 'Default', value: 'default' },
+              { name: 'String', value: 'string' },
+              { name: 'Number', value: 'number' },
+              { name: 'Text', value: 'text' },
+              { name: 'Badge', value: 'badge' },
+              { name: 'Multiple badges', value: 'badges' },
+              { name: 'Tags', value: 'tags' },
+              { name: 'Dropdown', value: 'dropdown' },
+              { name: 'Link', value: 'link' },
+              { name: 'Radio', value: 'radio' },
+              { name: 'Multiselect', value: 'multiselect' },
+              { name: 'Toggle switch', value: 'toggle' },
+              { name: 'Date Picker', value: 'datepicker' },
+              { name: 'Image', value: 'image' },
+              { name: 'Boolean', value: 'boolean' },
+              { name: 'Select', value: 'select' },
+            ],
+          }}
           onChange={(value) => {
             onColumnItemChange(index, 'columnType', value);
           }}
-          fuzzySearch
-          placeholder={t('globals.select', 'Select') + '...'}
+          value={column.columnType}
+          width={'100%'}
         />
       </div>
       <div className="field" data-cy={`input-and-label-column-name`}>
@@ -206,34 +203,30 @@ export const PropertiesTabElements = ({
             Parse in timezone
           </label>
           <div data-cy={`input-parse-timezone`} className="field mb-2">
-            <SelectSearch
-              className={'select-search'}
-              options={timeZoneOptions}
-              value={column.timeZoneValue}
-              search={true}
-              closeOnSelect={true}
+            <Select
+              meta={{
+                options: timeZoneOptions,
+              }}
               onChange={(value) => {
                 onColumnItemChange(index, 'timeZoneValue', value);
               }}
-              fuzzySearch
-              placeholder="Select.."
+              value={column.timeZoneValue}
+              width={'100%'}
             />
           </div>
           <label data-cy={`label-display-time-zone`} className="form-label">
             Display in timezone
           </label>
           <div ata-cy={`input-display-time-zone`} className="field mb-2">
-            <SelectSearch
-              className={'select-search'}
-              options={timeZoneOptions}
-              value={column.timeZoneDisplay}
-              search={true}
-              closeOnSelect={true}
+            <Select
+              meta={{
+                options: timeZoneOptions,
+              }}
               onChange={(value) => {
                 onColumnItemChange(index, 'timeZoneDisplay', value);
               }}
-              fuzzySearch
-              placeholder="Select.."
+              value={column.timeZoneDisplay}
+              width={'100%'}
             />
           </div>
           <div className="field mb-2">
