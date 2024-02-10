@@ -65,21 +65,21 @@ describe("Text Input", () => {
 
     openEditorSidebar(textInputText.defaultWidgetName);
     closeAccordions([
-      "Properties",
+      "Data",
       "Validation",
       "Additional Actions",
       "Devices",
       "Events",
     ]);
     editAndVerifyWidgetName(data.widgetName, [
-      "Properties",
+      "Data",
       "Validation",
       "Additional Actions",
       "Devices",
       "Events",
     ]);
-    openAccordion(commonWidgetText.accordionProperties, [
-      "Properties",
+    openAccordion("Data", [
+      "Data",
       "Validation",
       "Additional Actions",
       "Devices",
@@ -100,8 +100,8 @@ describe("Text Input", () => {
 
     data.customText = fake.randomSentence;
     openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionProperties, [
-      "Properties",
+    openAccordion("Data", [
+      "Data",
       "Validation",
       "Additional Actions",
       "Devices",
@@ -118,7 +118,7 @@ describe("Text Input", () => {
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionEvents, ["Validation", "Devices"]);
-    addDefaultEventHandler(widgetValue(data.widgetName));
+    addDefaultEventHandler(data.customText);
     cy.get(commonWidgetSelector.eventSelection).type("On Enter Pressed{Enter}");
 
     cy.clearAndType(
@@ -157,12 +157,11 @@ describe("Text Input", () => {
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
     cy.get(
       commonWidgetSelector.parameterInputField(commonWidgetText.labelMinLength)
-    ).clearCodeMirror();
-
+    ).clearAndTypeOnCodeMirror("0");
     cy.forceClickOnCanvas();
     cy.clearAndType(
       commonWidgetSelector.draggableWidget(data.widgetName),
-      data.customText
+      data.customText.toUpperCase().replaceAll(" ", "").replaceAll(".", "")
     );
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(data.widgetName)
@@ -175,19 +174,14 @@ describe("Text Input", () => {
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(data.widgetName)
     ).verifyVisibleElement("have.text", data.customText);
-
-    cy.get(
-      commonWidgetSelector.accordion(commonWidgetText.accordionProperties)
-    ).click();
+    cy.forceClickOnCanvas();
+    openEditorSidebar(data.widgetName);
     cy.get(
       commonWidgetSelector.accordion(commonWidgetText.accordionValidation)
     ).click();
     addAndVerifyAdditionalActions(data.widgetName, data.tooltipText);
 
     openEditorSidebar(data.widgetName);
-    cy.get(
-      commonWidgetSelector.accordion(commonWidgetText.accordionProperties)
-    ).click();
     cy.get(
       commonWidgetSelector.accordion(commonWidgetText.accordionValidation)
     ).click();
@@ -200,14 +194,77 @@ describe("Text Input", () => {
       )
     ).click();
 
+    openEditorSidebar(data.widgetName);
+    openAccordion("Validation", [
+      "Data",
+      "Validation",
+      "Additional Actions",
+      "Devices",
+      "Events",
+    ]);
+    cy.get(
+      commonWidgetSelector.parameterInputField(commonWidgetText.labelMinLength)
+    ).clearAndTypeOnCodeMirror("5");
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
+    openEditorSidebar(data.widgetName);
+
     cy.get(commonWidgetSelector.widgetDocumentationLink).should(
       "have.text",
       textInputText.textInputDocumentationLink
     );
-    data.customText = fake.firstName;
-    verifyControlComponentAction(data.widgetName, data.customText);
+
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
+      .invoke("attr", "placeholder")
+      .should("contain", data.customText);
+
+    cy.clearAndType(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      `${data.customText}{Enter}`
+    );
+    cy.verifyToastMessage(commonSelectors.toastMessage, data.customText);
+    cy.forceClickOnCanvas();
+
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
+
+    cy.clearAndType(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.customText
+    );
+    cy.forceClickOnCanvas();
+    cy.get(
+      commonWidgetSelector.validationFeedbackMessage(data.widgetName)
+    ).verifyVisibleElement("have.text", commonWidgetText.regexValidationError);
+
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
+
+    cy.forceClickOnCanvas();
+    cy.get(
+      commonWidgetSelector.validationFeedbackMessage(data.widgetName)
+    ).verifyVisibleElement(
+      "have.text",
+      commonWidgetText.minLengthValidationError("5")
+    );
+    cy.clearAndType(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.customText.toUpperCase().replaceAll(" ", "").replaceAll(".", "")
+    );
+    cy.get(
+      commonWidgetSelector.validationFeedbackMessage(data.widgetName)
+    ).verifyVisibleElement(
+      "have.text",
+      commonWidgetText.maxLengthValidationError(data.maximumLength)
+    );
+    cy.forceClickOnCanvas();
+    verifyTooltip(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.tooltipText
+    );
   });
-  it("should verify the styles of the text input widget", () => {
+
+  it.only("should verify the styles of the text input widget", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.colourHex = fake.randomRgbaHex;
@@ -227,7 +284,7 @@ describe("Text Input", () => {
     cy.clearAndType('[data-cy="border-radius-input"]', "20");
     cy.get('[data-cy="icon-visibility-button"]').click();
 
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.forceClickOnCanvas();
     cy.get(
       commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
     ).should("have.css", "border-radius", "20px");
@@ -424,7 +481,7 @@ describe("Text Input", () => {
     );
   });
 
-  it.only("should verify CSA", () => {
+  it("should verify CSA", () => {
     const data = {};
     data.customText = randomString(12);
 

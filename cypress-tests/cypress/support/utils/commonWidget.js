@@ -80,7 +80,7 @@ export const editAndVerifyWidgetName = (
 ) => {
   closeAccordions(accordion);
   cy.clearAndType(commonWidgetSelector.WidgetNameInputField, name);
-  cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+  cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({ force: true });
 
   cy.get(commonWidgetSelector.draggableWidget(name)).trigger("mouseover");
   cy.get(commonWidgetSelector.widgetConfigHandle(name))
