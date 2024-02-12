@@ -365,7 +365,9 @@ const Table = ({ collapseSidebar }) => {
     if (
       !event.target.closest('.table-cell-click') &&
       !event.target.closest('.table-editable-parent-cell') &&
-      !event.target.closest('.popover-body')
+      !event.target.closest('.popover-body') &&
+      !event.target.closest('.cell-text') &&
+      !event.target.closest('.tjdb-td-wrapper')
     ) {
       setCellClick((prevState) => ({
         ...prevState,
@@ -376,6 +378,7 @@ const Table = ({ collapseSidebar }) => {
       }));
       handleOnCloseEditMenu();
     }
+    event.stopPropagation();
   };
 
   useEffect(() => {
@@ -573,7 +576,6 @@ const Table = ({ collapseSidebar }) => {
       cellVal === null ? setNullValue(true) : setNullValue(false);
       setEditPopover(false);
     }
-    e.stopPropagation();
   };
 
   const closeEditPopover = (previousValue) => {
