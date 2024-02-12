@@ -3,6 +3,7 @@ import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
+import { useGridStore } from '@/_stores/gridStore';
 var tinycolor = require('tinycolor2');
 
 export const Modal = function Modal({
@@ -53,6 +54,13 @@ export const Modal = function Modal({
     if (!showModal && mode === 'edit') {
       controlBoxRef.current?.classList?.remove('modal-moveable');
       controlBoxRef.current = null;
+    }
+    if (showModal) {
+      useGridStore.getState().actions.setOpenModalWidgetId(id);
+    } else {
+      if (useGridStore.getState().openModalWidgetId === id) {
+        useGridStore.getState().actions.setOpenModalWidgetId(null);
+      }
     }
   }, [showModal]);
   /**** End - Logic to reset the zIndex of modal control box ****/
