@@ -276,6 +276,7 @@ describe("Text Input", () => {
     data.errorTextColor = fake.randomRgba;
     data.iconColor = fake.randomRgba;
     data.labelColor = fake.randomRgba;
+    ata.widgetName = textInputText.defaultWidgetName;
 
     openEditorSidebar(textInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -361,6 +362,7 @@ describe("Text Input", () => {
   it("should verify CSA", () => {
     const data = {};
     data.customText = randomString(12);
+    data.widgetName = textInputText.defaultWidgetName;
 
     addCSA(data);
     verifyCSA(data);

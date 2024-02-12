@@ -92,7 +92,7 @@ export const addAllInputFieldColors = (data) => {
   selectColourFromColourPicker("Error text", data.errorTextColor);
   selectColourFromColourPicker("", data.iconColor);
   cy.forceClickOnCanvas();
-  openEditorSidebar(textInputText.defaultWidgetName);
+  openEditorSidebar(data.widgetName);
   cy.get('[data-cy="make-this-field-mandatory-toggle-button"]').click();
   cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 };
@@ -101,17 +101,17 @@ export const verifyInputFieldColors = (selectorInput, data) => {
   verifyWidgetColorCss(selectorInput, "color", data.textColor);
   verifyWidgetColorCss(selectorInput, "border-color", data.borderColor);
   verifyWidgetColorCss(selectorInput, "background-color", data.bgColor);
-  cy.get(commonWidgetSelector.draggableWidget("textinput1")).clear();
+  cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
   cy.forceClickOnCanvas();
   cy.verifyCssProperty(
-    '[data-cy="textinput1-invalid-feedback"]',
+    `[data-cy="${data.widgetName}-invalid-feedback"]`,
     "color",
     `rgba(${data.errorTextColor[0]}, ${data.errorTextColor[1]}, ${
       data.errorTextColor[2]
     }, ${data.errorTextColor[3] / 100})`
   );
 
-  cy.get(commonWidgetSelector.draggableWidget("textinput1"))
+  cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
     .siblings("svg")
     .should(
       "have.css",
