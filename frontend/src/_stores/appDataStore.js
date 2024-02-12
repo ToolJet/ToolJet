@@ -3,6 +3,10 @@ import { create, zustandDevTools } from './utils';
 import { shallow } from 'zustand/shallow';
 import { useResolveStore } from './resolverStore';
 import { useEditorStore } from './editorStore';
+import { useDataQueriesStore } from './dataQueriesStore';
+import _ from 'lodash';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 function dfs(node, oldRef, newRef) {
   if (typeof node === 'object') {
@@ -155,8 +159,9 @@ const itemToObserve = 'appDiffOptions';
 useAppDataStore.subscribe(
   (state) => {
     const isComponentNameUpdated = state[itemToObserve]?.componentNameUpdated;
+    const { appDefinition, currentPageId, isUpdatingEditorStateInProcess } = useEditorStore.getState();
 
-    if (isComponentNameUpdated) {
+    if (isComponentNameUpdated && !isUpdatingEditorStateInProcess) {
       const components = JSON.parse(JSON.stringify(state.components));
       const updatedNames = [];
 
@@ -184,7 +189,8 @@ useAppDataStore.subscribe(
         });
       });
 
-      const { appDefinition, currentPageId } = useEditorStore.getState();
+      // const dataQueries = useDataQueriesStore((state) => state.dataQueries, shallow);
+      // console.log('---arpit name changed of component', { isUpdatingEditorStateInProcess });
 
       const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
@@ -193,13 +199,18 @@ useAppDataStore.subscribe(
       components.forEach((component) => {
         componentsFromAppDef[component.id].component.definition = component.definition;
       });
-
       newAppDefinition.pages[currentPageId].components = componentsFromAppDef;
+
+      const diffPatches = diff(appDefinition, newAppDefinition);
+
+      useAppDataStore.getState().actions.updateState({
+        appDiffOptions: { componentDefinitionChanged: true },
+        appDefinitionDiff: diffPatches,
+      });
 
       useEditorStore.getState().actions.updateEditorState({
         appDefinition: newAppDefinition,
-        isLoading: false,
-        isUpdatingEditorStateInProcess: false,
+        isUpdatingEditorStateInProcess: true,
       });
     }
   },

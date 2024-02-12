@@ -16,6 +16,10 @@ class ReferencesBiMap {
     this._reverseMap.set(lookupId, value);
   }
 
+  has(key) {
+    return this._map.get(key);
+  }
+
   get(key) {
     const lookupid = this._map.get(key);
 
@@ -82,7 +86,7 @@ export const useResolveStore = create(
         components.forEach((component) => {
           // check if the component is already in the mapper with component id
 
-          if (!referenceMapper.get(component.id)) {
+          if (!referenceMapper.has(component.id)) {
             referenceMapper.set(component.id, component.name);
           }
         });

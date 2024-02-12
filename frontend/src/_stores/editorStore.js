@@ -115,21 +115,24 @@ useEditorStore.subscribe(
       const prevComponents = useAppDataStore.getState().components;
 
       const diff = _.differenceWith(finalComponentsArray, prevComponents, _.isEqual);
+
       if (diff.length === 0) return;
 
       useAppDataStore.getState().actions.setComponents(finalComponentsArray);
 
       const existingReferences = useResolveStore.getState().referenceMapper;
 
-      const newComponents = diff.map((component) => {
-        if (!existingReferences.get(component.id)) {
-          return {
-            id: component.id,
-            name: component.name,
-            definition: component.definition,
-          };
-        }
-      });
+      const newComponents = diff
+        .map((component) => {
+          if (!existingReferences.get(component.id)) {
+            return {
+              id: component.id,
+              name: component.name,
+              definition: component.definition,
+            };
+          }
+        })
+        .filter((c) => c !== undefined);
 
       useResolveStore.getState().actions.addComponentsToMapper(newComponents);
     }
