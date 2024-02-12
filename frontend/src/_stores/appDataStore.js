@@ -219,6 +219,8 @@ useAppDataStore.subscribe(
 
       useEditorStore.getState().actions.updateEditorState({
         appDefinition: newAppDefinition,
+        isLoading: false,
+        isUpdatingEditorStateInProcess: false,
       });
     }
   },
