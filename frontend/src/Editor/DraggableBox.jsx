@@ -196,7 +196,6 @@ export const DraggableBox = React.memo(
       }
     }, [isDragging2]);
 
-
     const style = {
       display: 'inline-block',
       alignItems: 'center',
@@ -243,7 +242,6 @@ export const DraggableBox = React.memo(
         component.component !== 'TextInput' &&
         component.component !== 'PasswordInput' &&
         component.component !== 'NumberInput' &&
-        component.component !== 'DropDown' &&
         !readOnly
       );
     }

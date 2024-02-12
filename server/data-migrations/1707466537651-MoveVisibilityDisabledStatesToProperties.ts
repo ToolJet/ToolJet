@@ -1,11 +1,10 @@
 import { Component } from 'src/entities/component.entity';
 import { processDataInBatches } from 'src/helpers/utils.helper';
-import { EntityManager, In, MigrationInterface, QueryRunner } from 'typeorm';
+import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
-export class MoveVisibilityDisabledStatesToProperties1706080528992 implements MigrationInterface {
-
+export class MoveVisibilityDisabledStatesToProperties1707466537651 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'Text', 'DropDown'];
+    const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'Text'];
     const batchSize = 100;
     const entityManager = queryRunner.manager;
 
@@ -49,8 +48,7 @@ export class MoveVisibilityDisabledStatesToProperties1706080528992 implements Mi
 
       await entityManager.update(Component, component.id, { properties, styles, general });
     }
-
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> { }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }

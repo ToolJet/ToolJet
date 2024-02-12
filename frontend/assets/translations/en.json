@@ -507,9 +507,9 @@
         "commonProperties": {
             "visibility": "Visibility",
             "disable": "Disable",
-            "borderRadius": "Border Radius",
+            "borderRadius": "Border radius",
             "transformation": "Transformation",
-            "boxShadow": "Box Shadow",
+            "boxShadow": "Box shadow",
             "tooltip": "Tooltip",
             "showOnDesktop": "Show on desktop",
             "showOnMobile": "Show on mobile",

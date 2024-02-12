@@ -278,7 +278,7 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
-    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'DropDown'];
+    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
     return (
       <OverlayTrigger
@@ -310,7 +310,7 @@ export const Box = memo(
           style={{
             ...styles,
             backgroundColor,
-            padding:validatedStyles?.padding=='default'?'2px 4px' :'0px 2px'
+            padding: validatedStyles?.padding == 'default' ? '2px 4px' : '0px 2px',
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >
