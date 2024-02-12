@@ -7,6 +7,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components/ToolTip';
 import DisablePasswordLoginModal from './DisablePasswordLoginModal';
 import { authenticationService, organizationService } from '@/_services';
+import SSOConfiguration from './SsoConfiguration';
 
 class OrganizationLogin extends React.Component {
   constructor(props) {
@@ -18,6 +19,8 @@ class OrganizationLogin extends React.Component {
       initialOptions: {},
       hasChanges: false,
       isAnySSOEnabled: false,
+      ssoOptions: [],
+      defaultSSO: false,
     };
     this.copyFunction = this.copyFunction.bind(this);
   }
@@ -38,6 +41,7 @@ class OrganizationLogin extends React.Component {
   async setInstanceLoginConfigs(passwordLogin) {
     const organizationSettings = await this.fetchSSOSettings();
     const ssoConfigs = organizationSettings?.sso_configs;
+    console.log(organizationSettings, ssoConfigs, 'see');
     const isAnySSOEnabled = ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) || false;
     this.setState({ isAnySSOEnabled: isAnySSOEnabled });
     const passwordLoginEnabled = passwordLogin || ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
@@ -49,6 +53,8 @@ class OrganizationLogin extends React.Component {
     this.setState({
       options: { ...initialOptions },
       initialOptions: { ...initialOptions },
+      ssoOptions: [...ssoConfigs],
+      defaultSSO: organizationService?.inherit_s_s_o,
     });
   }
 
@@ -157,7 +163,14 @@ class OrganizationLogin extends React.Component {
 
   render() {
     const { t, darkMode } = this.props;
-    const { options, isSaving, showDisablingPasswordConfirmation, isAnySSOEnabled } = this.state;
+    const { options, isSaving, showDisablingPasswordConfirmation, isAnySSOEnabled, ssoOptions, defaultSSO } = this.state;
+    const flexContainerStyle = {
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: '140px',
+    };
 
     return (
       <div className="wrapper workspace-settings-page animation-fade">
@@ -169,7 +182,8 @@ class OrganizationLogin extends React.Component {
                   {t('header.organization.menus.manageSSO.workspaceLogin.title', 'Workspace login')}
                 </div>
               </div>
-              <div className="card-body">
+              <div className="card-body" style={flexContainerStyle}>
+              <div style={{ width: '50%' }}>
                 <form noValidate className="sso-form-wrap" style={{ width: '472px' }}>
                   <div className="form-group tj-app-input">
                     <label className="form-label bold-text" data-cy="allowed-domain-label">
@@ -265,6 +279,14 @@ class OrganizationLogin extends React.Component {
                     </div>
                   </div>
                 </form>
+                </div>
+                <div style={{ width: '50%' }}>
+                  <SSOConfiguration
+                    isAnySSOEnabled={isAnySSOEnabled}
+                    ssoOptions={ssoOptions}
+                    defaultSSO={defaultSSO}
+                  />
+                </div>
               </div>
               <div className="card-footer">
                 <ButtonSolid

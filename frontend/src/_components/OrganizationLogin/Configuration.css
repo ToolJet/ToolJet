@@ -1,0 +1,134 @@
+/* SSOConfiguration.css */
+
+.sso-configuration {
+    display: flex;
+    flex-direction: column;
+    margin-left: 20px; /* Adjust the margin as needed */
+  }
+  
+  .sso-header {
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+  }
+  
+  .sso-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9; /* Light grey background */
+    border: 1px solid #e1e1e1; /* Grey border */
+    border-radius: 8px;
+  }
+  
+  .sso-option-label {
+    font-weight: 400;
+  }
+  
+  /* Toggle switch styles */
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 30px; /* Reduced width */
+    height: 17px; /* Reduced height */
+  }
+  
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 17px; /* Make it round */
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 13px; /* Reduced height */
+    width: 13px; /* Reduced width */
+    left: 2px; /* Adjusted for new size */
+    bottom: 2px; /* Adjusted for new size */
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%; /* Make it round */
+  }
+  
+  input:checked + .slider {
+    background-color: var(--indigo9);
+  }
+  
+  input:focus + .slider {
+    box-shadow: 0 0 1px var(--indigo9);
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(13px); /* Adjusted for new size */
+  }
+  
+  /* Rounded sliders */
+  .slider.round {
+    border-radius: 17px;
+  }
+  
+  .slider.round:before {
+    border-radius: 50%;
+  }
+
+  .sso-note {
+    font-size: 0.75rem; /* Smaller font size for the note */
+    color: #6c757d; /* A standard color for notes or help text */
+    margin-top: 5px; /* Space between the toggle and the note */
+    margin-left: 5px; /* Align with the toggle if needed */
+  }
+  
+  /* Style for the custom dropdown toggle */
+.dropdown-toggle-no-caret {
+    background: none!important;
+    border: none!important;
+    box-shadow: none!important;
+  }
+  
+  /* Ensure the dropdown toggle doesn't have the default arrow */
+  .dropdown-toggle-no-caret::after {
+    display: none;
+  }
+  
+  /* Style for the dropdown menu */
+  .dropdown-menu {
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da; /* Light grey border */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Adds a slight shadow to dropdown for depth */
+  }
+  
+  /* Style for dropdown items */
+  .dropdown-item {
+    padding: 0.5rem 1rem; /* Adjust padding */
+    color: #212529; /* Default text color */
+  }
+  
+  .dropdown-item:hover, .dropdown-item:focus {
+    background-color: #f8f9fa; /* Light grey background on hover/focus */
+    color: #212529; /* Text color for hover/focus state */
+  }
+  
+  /* Custom icon styles */
+  .solid-icon {
+    color: darkgrey; /* Change as per the color you want */
+    cursor: pointer; /* Change cursor on hover over the icon */
+  }
+
+  .dropdown-item.disabled {
+    color: darkgrey;
+    cursor: not-allowed;
+  }

@@ -1,0 +1,249 @@
+import React, { useState, useEffect } from 'react';
+import Modal from '@/HomePage/Modal';
+import { useTranslation } from 'react-i18next';
+import { organizationService } from '@/_services';
+import { toast } from 'react-hot-toast';
+import { copyToClipboard } from '@/_helpers/appUtils';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+
+export function GithubSSOModal({ settings, onClose, changeStatus }) {
+  const [showModal, setShowModal] = useState(false);
+  const [ssoSettings, setSettings] = useState(settings);
+  const [enabled, setEnabled] = useState(settings?.enabled || false);
+  const [isSaving, setSaving] = useState(false);
+  const [configId, setConfigId] = useState(settings?.id);
+  const [clientId, setClientId] = useState(settings?.configs?.client_id || '');
+  const [hostName, setHostName] = useState(settings?.configs?.host_name || '');
+  const [clientSecret, setClientSecret] = useState(settings?.configs?.client_secret || '');
+  const [hasChanges, setHasChanges] = useState(false);
+  const { t } = useTranslation(); 
+
+  useEffect(() => {
+    setSettings(settings);
+    setEnabled(settings?.enabled || false);
+    setClientId(settings?.configs?.client_id || '');
+    setHostName(settings?.configs?.host_name || '');
+    setClientSecret(settings?.configs?.client_secret || '')
+    setShowModal(true);
+
+    setHasChanges(false);
+  }, [settings]);
+
+  const handleClientIdChange = (newClientId) => {
+    setClientId(newClientId);
+    const changesMade = newClientId !== settings?.configs?.client_id;
+    setHasChanges(changesMade);
+  };
+
+  const handleHostNameChange = (newHostName) => {
+    setHostName(newHostName);
+    const changesMade = newHostName !== settings?.configs?.host_name;
+    setHasChanges(changesMade);
+  };
+
+  const handleClientSecretChange = (newClientSecret) => {
+    setClientSecret(newClientSecret);
+    const changesMade = newClientSecret !== settings?.configs?.client_secret;
+    setHasChanges(changesMade);
+  };
+
+  const onToggleChange = () => {
+    const newEnabledStatus = !enabled;
+    setEnabled(newEnabledStatus);
+    changeStatus('git');
+  };
+
+  const reset = () => {
+    setClientId(settings?.configs?.client_id || '');
+    setClientSecret(settings?.configs?.client_secret || '');
+    setHostName(settings?.configs?.host_name || '');
+    setHasChanges(false);
+  };
+
+  const copyFunction = (input) => {
+    let text = document.getElementById(input).innerHTML;
+    copyToClipboard(text);
+  };
+
+  const saveSettings = () => {
+    setSaving(true);
+    organizationService.editOrganizationConfigs({ type: 'git', configs: { clientId, clientSecret, hostName } }).then(
+      (data) => {
+        setSaving(false);
+        data.id && setConfigId(data.id);
+        toast.success('updated SSO configurations', {
+          position: 'top-center',
+        });
+      },
+      () => {
+        setSaving(false);
+        toast.error('Error while saving SSO configurations', {
+          position: 'top-center',
+        });
+      }
+    );
+    setHasChanges(false);
+  };
+
+  // GitHeader Component
+function GithubHeader() {
+    const { t } = useTranslation();
+    return (
+          <div className="d-flex justify-content-between title-with-toggle" style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+            marginBottom: '0px',
+            height: '42px'
+          }}>
+            <div>
+            <label className="switch">
+              <input 
+                type="checkbox" 
+                checked={enabled}
+                onChange={onToggleChange}
+              />
+              <span className="slider round"></span>
+            </label>
+                <span className="sso-type-header" data-cy="card-title" style={{ marginBottom: '0px', fontWeight: '500' }}>
+                  {t('header.organization.menus.manageSSO.github.title', 'Github')}
+                </span>
+            </div>
+            <div className="card-title" style={{marginBottom: '0px'}}>
+              <span className={`tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`} data-cy="status-label">
+                {enabled ? t('header.organization.menus.manageSSO.github.enabled', 'Enabled') : t('header.organization.menus.manageSSO.github.disabled', 'Disabled')}
+              </span>
+            </div>
+          </div>
+    );
+  }
+
+// GitFooter Component
+function GithubFooter() {
+    const { t } = useTranslation();
+    return (
+      <div className="form-footer sso-card-footer" style={{display: 'flex',
+        gap: '10px',
+        marginTop: '0.5rem'}}>
+        <ButtonSolid onClick={reset} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
+          {t('globals.cancel', 'Cancel')}
+        </ButtonSolid>
+        <ButtonSolid
+          disabled={!hasChanges || isSaving}
+          isLoading={isSaving}
+          onClick={saveSettings}
+          data-cy="save-button"
+          variant="primary"
+          className="sso-footer-save-btn"
+          leftIcon="floppydisk"
+          fill="#fff"
+          iconWidth="20"
+        >
+          {t('globals.savechanges', 'Save changes')}
+        </ButtonSolid>
+      </div>
+    );
+  }
+
+  const renderModalTitle = () => {
+        return <GithubHeader />;
+    }
+
+  const renderFooterContent = () => {
+      return <GithubFooter />;
+  };
+
+  return (
+    <div>
+      {showModal && (
+        <Modal
+          show={showModal}
+          closeModal={onClose}
+          title={renderModalTitle()}
+          footerContent={renderFooterContent()}
+          customClassName="modal-custom-height"
+          size='lg'
+          closeButton={false}
+        >
+          {
+      <div className="sso-card-wrapper">
+        <div className="card-body">
+        <form noValidate className="sso-form-wrap">
+          <div className="form-group mb-3">
+            <label className="form-label" data-cy="host-name-label">
+              {t('header.organization.menus.manageSSO.github.hostName', 'Host Name')}
+            </label>
+            <div className="tj-app-input">
+              <input
+                type="text"
+                className="form-control"
+                placeholder={t('header.organization.menus.manageSSO.github.enterHostName', 'Enter Host Name')}
+                value={hostName}
+                onChange={(e) => handleHostNameChange(e.target.value)}
+                data-cy="host-name-input"
+              />
+            </div>
+            <div>
+              <div data-cy="git-sso-help-text" className=" tj-text-xxsm git-sso-help-text">
+                {t('header.organization.menus.manageSSO.github.requiredGithub', 'Required if GitHub is self hosted')}
+              </div>
+            </div>
+          </div>
+          <div className="form-group mb-3">
+            <label className="form-label" data-cy="client-id-label">
+              {t('header.organization.menus.manageSSO.github.clientId', ' Client Id')}
+            </label>
+            <div className="tj-app-input">
+              <input
+                type="text"
+                className="form-control"
+                placeholder={t('header.organization.menus.manageSSO.github.enterClientId', 'Enter Client Id')}
+                value={clientId}
+                onChange={(e) => handleClientIdChange(e.target.value)}
+                data-cy="client-id-input"
+              />
+            </div>
+          </div>
+          <div className="form-group mb-3">
+            <label className="form-label" data-cy="client-secret-label">
+              {t('header.organization.menus.manageSSO.github.clientSecret', 'Client Secret')}
+              <small className="git- mx-2" data-cy="encripted-label">
+                <SolidIcon name="lock" width="16" />
+                {t('header.organization.menus.manageSSO.github.encrypted', 'Encrypted')}
+              </small>
+            </label>
+            <div className="tj-app-input">
+              <input
+                type="text"
+                className="form-control"
+                placeholder={t('header.organization.menus.manageSSO.github.enterClientSecret', 'Enter Client Secret')}
+                value={clientSecret}
+                onChange={(e) => handleClientSecretChange(e.target.value)}
+                data-cy="client-secret-input"
+              />
+            </div>
+          </div>
+          {configId && (
+            <div className="form-group mb-3">
+              <label className="form-label" data-cy="redirect-url-label">
+                {t('header.organization.menus.manageSSO.github.redirectUrl', 'Redirect URL')}
+              </label>
+              <div className="d-flex justify-content-between form-control align-items-center">
+                <p data-cy="redirect-url" id="redirect-url">{`${window.public_config?.TOOLJET_HOST}${
+                  window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+                }sso/git/${configId}`}</p>
+                <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
+              </div>
+            </div>
+          )}
+        </form>
+      </div>
+      </div>
+    }
+        </Modal>
+      )}
+    </div>
+  );
+};
