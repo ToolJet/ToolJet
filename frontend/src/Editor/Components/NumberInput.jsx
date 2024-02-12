@@ -192,7 +192,7 @@ export const NumberInput = function NumberInput({
     height:
       height == 40
         ? padding == "default"
-          ? "36px"
+          ? "38px"
           : "40px"
         : padding == "default"
         ? height - 4

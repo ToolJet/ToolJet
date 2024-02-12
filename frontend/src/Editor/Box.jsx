@@ -197,6 +197,7 @@ export const Box = memo(
 
     let styles = {
       height: '100%',
+      padding: '1px',
     };
 
     if (inCanvas) {
@@ -310,7 +311,7 @@ export const Box = memo(
           style={{
             ...styles,
             backgroundColor,
-            padding: validatedStyles?.padding == 'default' ? '2px 4px' : '0px',
+            padding: validatedStyles?.padding ? validatedStyles?.padding=='default' ? '1px' : '0px':'1px',
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >
