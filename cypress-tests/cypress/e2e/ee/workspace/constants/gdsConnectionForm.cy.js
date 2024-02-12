@@ -45,7 +45,7 @@ describe("Workspace constants", () => {
             ]
         );
         cy.visit("/");
-        cy.get('[data-cy="icon-workspace-constants"]').click();
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
         AddNewconstants(data.constantsName, "development_multi_env");
         AddNewconstants(
             `${data.constantsName}_password`,
