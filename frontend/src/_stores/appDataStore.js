@@ -1,6 +1,27 @@
 import { appVersionService } from '@/_services';
 import { create, zustandDevTools } from './utils';
 import { shallow } from 'zustand/shallow';
+import { useResolveStore } from './resolverStore';
+import { useEditorStore } from './editorStore';
+
+function dfs(node, oldRef, newRef) {
+  if (typeof node === 'object') {
+    for (let key in node) {
+      const value = node[key];
+      if (typeof value === 'string' && value.startsWith('{{') && value.endsWith('}}')) {
+        const referenceExists = value.includes(oldRef);
+
+        if (referenceExists) {
+          node[key] = value.replace(oldRef, newRef);
+        }
+      } else if (typeof value === 'object') {
+        dfs(value, oldRef, newRef); // Recursive exploration
+      }
+    }
+  }
+
+  return node;
+}
 
 const initialState = {
   editingVersion: null,
@@ -122,10 +143,65 @@ export const useAppDataStore = create(
         setIsSaving: (isSaving) => set(() => ({ isSaving })),
         setAppId: (appId) => set(() => ({ appId })),
         setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),
+        setComponents: (components) => set(() => ({ components })),
       },
     }),
     { name: 'App Data Store' }
   )
+);
+
+const itemToObserve = 'appDiffOptions';
+
+useAppDataStore.subscribe(
+  (state) => {
+    const isComponentNameUpdated = state[itemToObserve]?.componentNameUpdated;
+
+    if (isComponentNameUpdated) {
+      const components = JSON.parse(JSON.stringify(state.components));
+      const updatedNames = [];
+
+      const referenceManager = useResolveStore.getState().referenceMapper;
+
+      components.forEach((component) => {
+        const existingName = referenceManager.get(component.id);
+
+        if (existingName === component.name) {
+          return;
+        }
+
+        referenceManager.update(component.id, component.name);
+
+        updatedNames.push({
+          id: component.id,
+          name: existingName,
+          newName: component.name,
+        });
+      });
+
+      updatedNames.forEach((component) => {
+        components.forEach((c) => {
+          c.definition = dfs(c.definition, component.name, component.newName);
+        });
+      });
+
+      const { appDefinition, currentPageId } = useEditorStore.getState();
+
+      const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
+      const componentsFromAppDef = newAppDefinition.pages[currentPageId].components;
+
+      components.forEach((component) => {
+        componentsFromAppDef[component.id].component.definition = component.definition;
+      });
+
+      newAppDefinition.pages[currentPageId].components = componentsFromAppDef;
+
+      useEditorStore.getState().actions.updateEditorState({
+        appDefinition: newAppDefinition,
+      });
+    }
+  },
+  (state) => [state[itemToObserve]]
 );
 
 export const useEditingVersion = () => useAppDataStore((state) => state.editingVersion, shallow);
