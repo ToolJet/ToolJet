@@ -166,9 +166,7 @@ export const NumberInput = function NumberInput({
   useEffect(() => {
     if (labelRef.current) {
       const absolutewidth = labelRef.current.getBoundingClientRect().width;
-      padding == "default"
-        ? setLabelWidth(absolutewidth)
-        : setLabelWidth(absolutewidth);
+      setLabelWidth(absolutewidth);
     } else setLabelWidth(0);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -217,11 +215,7 @@ export const NumberInput = function NumberInput({
         : backgroundColor,
 
     boxShadow: boxShadow,
-    padding: styles.iconVisibility
-      ? padding == "default"
-        ? "8px 10px 8px 29px"
-        : "8px 10px 8px 29px"
-      : "8px 10px 8px 10px",
+    padding: styles.iconVisibility ? "8px 10px 8px 29px" : "8px 10px 8px 10px",
     flex: padding !== "none" && 1,
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -309,8 +303,6 @@ export const NumberInput = function NumberInput({
       ((label?.length > 0 && width > 0) ||
         (auto && width == 0 && label && label?.length != 0))
         ? `${labelWidth + 23 + 20}px` // 23 px usual + 20 for number input arrows
-        : padding == "default"
-        ? "31px"
         : "31px",
     top: `${
       defaultAlignment === "top"
@@ -378,13 +370,9 @@ export const NumberInput = function NumberInput({
                   height: "16px",
                   left:
                     direction === "right"
-                      ? padding == "default"
-                        ? "11px"
-                        : "11px"
+                      ? "11px"
                       : defaultAlignment === "top"
-                      ? padding == "default"
-                        ? "11px"
-                        : "11px"
+                      ? "11px"
                       : (label?.length > 0 && width > 0) ||
                         (auto && width == 0 && label && label?.length != 0)
                       ? `${labelWidth + 23}px`
@@ -458,21 +446,13 @@ export const NumberInput = function NumberInput({
                       defaultAlignment === "top" &&
                       label?.length > 0 &&
                       width > 0
-                        ? padding == "default"
-                          ? "21px"
-                          : "21px"
-                        : padding == "default"
-                        ? "1px"
+                        ? "21px"
                         : "1px",
                     right:
                       labelWidth == 0
-                        ? padding == "default"
-                          ? "1px"
-                          : "1px"
+                        ? "1px"
                         : alignment == "side" && direction === "right"
                         ? `${labelWidth + 13}px`
-                        : padding == "default"
-                        ? "1px"
                         : "1px",
                     borderLeft: darkMode
                       ? "1px solid #313538"
@@ -494,15 +474,11 @@ export const NumberInput = function NumberInput({
                   style={{
                     right:
                       labelWidth == 0
-                        ? padding == "default"
-                          ? "1px"
-                          : "1px"
+                        ? "1px"
                         : alignment == "side" && direction === "right"
                         ? `${labelWidth + 13}px`
-                        : padding == "default"
-                        ? "1px"
                         : "1px",
-                    bottom: padding == "default" ? "1px" : "1px",
+                    bottom: "1px",
                     borderLeft: darkMode
                       ? "1px solid #313538"
                       : "1px solid #D7D7D7",

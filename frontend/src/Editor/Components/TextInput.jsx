@@ -86,11 +86,7 @@ export const TextInput = function TextInput({
         ? "#313538"
         : backgroundColor,
     boxShadow: boxShadow,
-    padding: styles.iconVisibility
-      ? padding == "default"
-        ? "8px 10px 8px 29px"
-        : "8px 10px 8px 29px"
-      : "8px 10px 8px 10px",
+    padding: styles.iconVisibility ? "8px 10px 8px 29px" : "8px 10px 8px 10px",
     flex: padding !== "none" && 1,
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -102,8 +98,6 @@ export const TextInput = function TextInput({
       ((label?.length > 0 && width > 0) ||
         (auto && width == 0 && label && label?.length != 0))
         ? `${labelWidth + 23}px`
-        : padding == "default"
-        ? "11px"
         : "11px",
     top: `${
       defaultAlignment === "top"
@@ -122,9 +116,7 @@ export const TextInput = function TextInput({
   useEffect(() => {
     if (labelRef.current) {
       const absolutewidth = labelRef.current.getBoundingClientRect().width;
-      padding == "default"
-        ? setLabelWidth(absolutewidth)
-        : setLabelWidth(absolutewidth);
+      setLabelWidth(absolutewidth);
     } else setLabelWidth(0);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -312,13 +304,9 @@ export const TextInput = function TextInput({
                 height: "16px",
                 left:
                   direction === "right"
-                    ? padding == "default"
-                      ? "11px"
-                      : "11px"
+                    ? "11px"
                     : defaultAlignment === "top"
-                    ? padding == "default"
-                      ? "11px"
-                      : "11px"
+                    ? "11px"
                     : (label?.length > 0 && width > 0) ||
                       (auto && width == 0 && label && label?.length != 0)
                     ? `${labelWidth + 23}px`
