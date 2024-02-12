@@ -27,6 +27,7 @@ export const TextInput = function TextInput({
 
   const { loadingState, tooltip, disabledState, label, placeholder } =
     properties;
+
   const {
     padding,
     borderRadius,
@@ -59,6 +60,8 @@ export const TextInput = function TextInput({
   const [loading, setLoading] = useState(loadingState);
   const [isFocused, setIsFocused] = useState(false);
   const _width = (width / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
+
+  console.log("padding----", padding);
 
   const computedStyles = {
     height:
