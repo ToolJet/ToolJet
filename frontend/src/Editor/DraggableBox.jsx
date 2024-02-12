@@ -138,6 +138,7 @@ export const DraggableBox = React.memo(
               ? 'none'
               : 'block'
             : 'none',
+        zIndex: 5,
       };
       resizerStyles.left = {
         position: 'absolute',
@@ -154,6 +155,7 @@ export const DraggableBox = React.memo(
               ? 'none'
               : 'block'
             : 'none',
+        zIndex: 5,
       };
     }
     const [{ isDragging }, drag, preview] = useDrag(

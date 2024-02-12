@@ -11,7 +11,6 @@ const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'NumberInput', 'PasswordIn
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
   TextInput: 'Data',
-  DropDown: 'Data',
   PasswordInput: 'Data',
   NumberInput: 'Data',
 };
