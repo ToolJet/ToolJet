@@ -170,6 +170,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
               );
+            if (value?.styles?.errTextColor)
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['errTextColor']['value'] =
+                value?.styles?.errTextColor;
 
             if (value?.validation?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] =

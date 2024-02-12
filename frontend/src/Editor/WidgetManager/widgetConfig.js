@@ -1605,6 +1605,13 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      errTextColor: {
+        type: 'color',
+        displayName: 'Error Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     exposedVariables: {
       value: '',
@@ -1629,6 +1636,7 @@ export const widgets = [
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{4}}' },
         backgroundColor: { value: '#ffffff' },
+        errTextColor: { value: '#d63939' },
       },
     },
   },
