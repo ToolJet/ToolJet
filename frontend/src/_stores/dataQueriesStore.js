@@ -390,6 +390,45 @@ export const useDataQueriesStore = create(
             };
           });
         },
+
+        updateBulkQueryOptions: (queryOptions, appVersionId) => {
+          useAppDataStore.getState().actions.setIsSaving(true);
+          set({ isUpdatingQueryInProcess: true });
+
+          dataqueryService
+            .bulkUpdateQueryOptions(queryOptions, appVersionId)
+            .then((data) => {
+              localStorage.removeItem('transformation');
+              const { actions, selectedQuery } = useQueryPanelStore.getState();
+
+              const prevSelectedQuery = selectedQuery;
+              actions.setSelectedQuery(null);
+
+              set((state) => ({
+                dataQueries: state.dataQueries.map((query) => {
+                  const updatedQuery = data.find((q) => q.id === query.id);
+
+                  if (updatedQuery) {
+                    return { ...query, options: updatedQuery.options, updated_at: updatedQuery.updated_at };
+                  }
+                  return query;
+                }),
+
+                isUpdatingQueryInProcess: false,
+              }));
+
+              if (prevSelectedQuery?.id) {
+                actions.setSelectedQuery(prevSelectedQuery.id);
+              }
+            })
+
+            .catch(() => {
+              set({ isUpdatingQueryInProcess: false });
+            })
+            .finally(() => {
+              useAppDataStore.getState().actions.setIsSaving(false);
+            });
+        },
       },
     }),
     { name: 'Data Queries Store' }
