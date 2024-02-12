@@ -11,6 +11,7 @@ const initialState = {
   dragTarget: null,
   isGroupHandleHoverd: false,
   idGroupDragged: false,
+  openModalWidgetId: null,
 };
 
 export const useGridStore = create(
@@ -26,6 +27,7 @@ export const useGridStore = create(
         setDragTarget: (dragTarget) => set({ dragTarget }),
         setIsGroupHandleHoverd: (isGroupHandleHoverd) => set({ isGroupHandleHoverd }),
         setIdGroupDragged: (idGroupDragged) => set({ idGroupDragged }),
+        setOpenModalWidgetId: (openModalWidgetId) => set({ openModalWidgetId }),
       },
     }),
     { name: 'Grid Store' }
@@ -39,3 +41,4 @@ export const useGridStoreActions = () => useGridStore((state) => state.actions, 
 export const useDragTarget = () => useGridStore((state) => state.dragTarget, shallow);
 export const useResizingComponentId = () => useGridStore((state) => state.resizingComponentId, shallow);
 export const useIsGroupHandleHoverd = () => useGridStore((state) => state.isGroupHandleHoverd, shallow);
+export const useOpenModalWidgetId = () => useGridStore((state) => state.openModalWidgetId, shallow);

@@ -23,6 +23,7 @@ import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import cx from 'classnames';
+import { useGridStore, useOpenModalWidgetId } from '@/_stores/gridStore';
 
 const dropAnimation = {
   sideEffects: defaultDropAnimationSideEffects({
@@ -72,8 +73,12 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, mode, id }) 
     if (!showModal && mode === 'edit') {
       controlBoxRef.current?.classList?.remove('modal-moveable');
       controlBoxRef.current = null;
+      if (useGridStore.getState().openModalWidgetId === id) {
+        useGridStore.getState().actions.setOpenModalWidgetId(null);
+      }
     }
     if (showModal) {
+      useGridStore.getState().actions.setOpenModalWidgetId(id);
       /**** Start - Logic to reduce the zIndex of modal control box ****/
       controlBoxRef.current = document.querySelector(`.selected-component.sc-${id}`)?.parentElement;
       if (mode === 'edit' && controlBoxRef.current) {

@@ -6,7 +6,7 @@ import './DragContainer.css';
 import _, { isEmpty, debounce } from 'lodash';
 import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
-import { useGridStore, useIsGroupHandleHoverd } from '@/_stores/gridStore';
+import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
 
 export default function DragContainer({
   widgets,
@@ -25,6 +25,8 @@ export default function DragContainer({
   const boxes = Object.keys(widgets).map((key) => ({ ...widgets[key], id: key }));
   console.log('boxes===>', boxes);
   const isGroupHandleHoverd = useIsGroupHandleHoverd();
+  const openModalWidgetId = useOpenModalWidgetId();
+  console.log('openModalWidgetId--->', openModalWidgetId);
   const configHandleForMultiple = (id) => {
     return (
       <div
@@ -193,20 +195,43 @@ export default function DragContainer({
     setTimeout(reloadGrid, 100);
   }, [currentLayout]);
 
+  useEffect(() => {
+    const controlBoxes = document.querySelectorAll('.moveable-control-box[target-id]');
+    controlBoxes.forEach((box) => {
+      box.style.display = '';
+    });
+    console.log('openModalWidgetId', openModalWidgetId, selectedComponents);
+    if (openModalWidgetId) {
+      const children = findChildrenAndGrandchildren(openModalWidgetId, boxes);
+      const controlBoxes = document.querySelectorAll('.moveable-control-box[target-id]');
+      const childElems = children.map((childId) => ({ ...widgets[childId], id: childId }));
+      console.log(childElems);
+      console.log('controlBoxes', controlBoxes, children);
+      controlBoxes.forEach((box) => {
+        const id = box.getAttribute('target-id');
+        if (!children.includes(id)) {
+          box.style.display = 'none';
+        }
+      });
+    }
+  }, [openModalWidgetId, selectedComponents]);
+
   const reloadGrid = async () => {
     if (moveableRef.current) {
       moveableRef.current.updateRect();
       moveableRef.current.updateTarget();
       moveableRef.current.updateSelectors();
     }
-    for (let refObj of Object.values(childMoveableRefs.current)) {
-      if (refObj) {
-        console.log('refObj -->', refObj);
-        refObj.updateRect();
-        refObj.updateTarget();
-        refObj.updateSelectors();
-      }
-    }
+    console.log('moveableRef-->', moveableRef.current?.moveable?.moveables);
+    Array.isArray(moveableRef.current?.moveable?.moveables) &&
+      moveableRef.current?.moveable?.moveables.forEach((moveable) => {
+        const {
+          props: { target },
+          controlBox,
+        } = moveable;
+        console.log('moveableRef--> 2', target, controlBox);
+        controlBox.setAttribute('target-id', target.id);
+      });
 
     const selectedComponentsId = new Set(
       selectedComponents.map((component) => {
@@ -301,7 +326,7 @@ export default function DragContainer({
 
   useEffect(() => {
     reloadGrid();
-  }, [selectedComponents]);
+  }, [selectedComponents, openModalWidgetId]);
 
   console.log('groupedTargets-->', selectedComponents, groupedTargets);
   console.log(
@@ -888,4 +913,37 @@ async function runAsync(fn) {
   // setImmediate(() => {
   fn();
   // });
+}
+
+function findChildrenAndGrandchildren(parentId, widgets) {
+  if (isEmpty(widgets)) {
+    return [];
+  }
+  console.log('findChildrenAndGrandchildren', parentId, widgets);
+  const type = widgets.find(({ id }) => id === parentId)?.component?.component;
+  let pid = parentId;
+  console.log(
+    'findChildrenAndGrandchildren ->type',
+    type,
+    widgets.find(({ id }) => id === parentId)
+  );
+  if (type === 'Kanban') {
+    pid = pid + '-modal';
+  }
+  console.log(
+    'findChildrenAndGrandchildren => pid',
+    pid,
+    widgets.map((w) => w?.component?.parent)
+  );
+  const children = widgets.filter((widget) => widget?.component?.parent === pid);
+  let result = [];
+  for (const child of children) {
+    result.push(child.id);
+    result = result.concat(...findChildrenAndGrandchildren(child.id));
+  }
+  console.log(
+    'findChildrenAndGrandchildren => result',
+    widgets.filter((r) => result.includes(r.id))
+  );
+  return result;
 }
