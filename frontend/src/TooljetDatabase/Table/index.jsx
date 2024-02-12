@@ -488,6 +488,7 @@ const Table = ({ collapseSidebar }) => {
           errorState: false,
         }));
         setCellVal(oldValue);
+        oldValue === null ? setNullValue(true) : setNullValue(false);
         document.getElementById('edit-input-blur').blur();
       }, 3000);
       return;
