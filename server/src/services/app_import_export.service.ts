@@ -605,6 +605,10 @@ export class AppImportExportService {
       this.moveComponentProperties(component, 'visibility', 'styles');
       this.moveComponentProperties(component, 'disabledState', 'styles');
       this.moveComponentProperties(component, 'tooltip', 'general');
+
+      if (component.type === 'TextInput' || component.type === 'PasswordInput' || component.type === 'NumberInput') {
+        component.properties.label = '';
+      }
     }
 
     return { properties, styles, general };
