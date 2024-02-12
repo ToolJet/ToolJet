@@ -310,6 +310,7 @@ export const Box = memo(
           style={{
             ...styles,
             backgroundColor,
+            padding:validatedStyles?.padding=='default'?'2px 4px' :'0px 2px'
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >

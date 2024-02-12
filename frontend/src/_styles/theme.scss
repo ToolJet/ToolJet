@@ -736,6 +736,7 @@ button {
           linear-gradient(to bottom,
             rgba(194, 191, 191, 0.2) 1px,
             transparent 1px);
+
       }
 
       .canvas-area {
@@ -12291,6 +12292,9 @@ tbody {
   border: 1px solid var(--tj-text-input-widget-border-default);
   background-color: var(--tj-text-input-widget-field-default);
   width: 100%;
+  padding: 0px;
+  z-index: 2;
+
 
   &:hover:not(:focus) {
     border: 1px solid var(--tblr-input-border-color-darker) !important;
@@ -12301,14 +12305,13 @@ tbody {
   }
 
   &:focus {
-    // box-shadow: 0px 0px 0px 4px #DFE3E6 !important;
     outline: none !important;
     border: 1px solid var(--tj-text-input-widget-border-clicked);
 
   }
 
   &:active {
-    border: 1px solid var(--tj-text-input-widget-border-clicked) !important;
+    // border: 1px solid var(--tj-text-input-widget-border-clicked) !important;
     outline: none !important;
   }
 

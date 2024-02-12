@@ -41,6 +41,7 @@ export const TextInput = function TextInput({
     auto,
     errTextColor,
     iconColor,
+    accentColor,
   } = styles;
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [value, setValue] = useState(properties.value);
@@ -71,7 +72,7 @@ export const TextInput = function TextInput({
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === "#11181C" ? "#ECEDEE" : textColor,
     borderColor: isFocused
-      ? "#3E63DD"
+      ? accentColor
       : ["#D7DBDF"].includes(borderColor)
       ? darkMode
         ? "#6D757D7A"
@@ -98,23 +99,23 @@ export const TextInput = function TextInput({
     right:
       direction === "right" &&
       defaultAlignment === "side" &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0))
+      ((label?.length > 0 && width > 0) ||
+        (auto && width == 0 && label && label?.length != 0))
         ? `${labelWidth + 23}px`
         : padding == "default"
         ? "11px"
         : "11px",
-
-    // top: `${defaultAlignment === 'top' ? '53%' : ''}`,
-    // transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
     top: `${
       defaultAlignment === "top"
-        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0)) &&
+        ? ((label?.length > 0 && width > 0) ||
+            (auto && width == 0 && label && label?.length != 0)) &&
           "calc(50% + 10px)"
         : ""
     }`,
     transform:
       defaultAlignment === "top" &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0)) &&
+      ((label?.length > 0 && width > 0) ||
+        (auto && width == 0 && label && label?.length != 0)) &&
       " translateY(-50%)",
     zIndex: 3,
   };
@@ -215,7 +216,8 @@ export const TextInput = function TextInput({
   useEffect(() => {
     if (
       alignment == "top" &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0))
+      ((label?.length > 0 && width > 0) ||
+        (auto && width == 0 && label && label?.length != 0))
     )
       adjustHeightBasedOnAlignment(true);
     else adjustHeightBasedOnAlignment(false);
@@ -265,14 +267,15 @@ export const TextInput = function TextInput({
     setExposedVariable("isDisabled", disable);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
-  
+
   const renderInput = () => (
     <>
       <div
         data-disabled={disable || loading}
         className={`text-input  d-flex  ${
           defaultAlignment === "top" &&
-          ((width != 0 && label?.length != 0) || (auto && width == 0 && label&& label?.length != 0))
+          ((width != 0 && label?.length != 0) ||
+            (auto && width == 0 && label && label?.length != 0))
             ? "flex-column"
             : "align-items-center "
         }  ${
@@ -283,64 +286,23 @@ export const TextInput = function TextInput({
       ${direction === "right" && defaultAlignment === "top" ? "text-right" : ""}
       ${visibility || "invisible"}`}
         style={{
-          // padding: padding === 'default' ? '2px' : '',
           position: "relative",
           whiteSpace: "nowrap",
-          overflow: "hidden",
           width: "100%",
         }}
       >
-        {label && (width > 0 || auto) && (
-          <label
-            ref={labelRef}
-            style={{
-              color: darkMode && color === "#11181C" ? "#fff" : color,
-              width:
-                label?.length === 0
-                  ? "0%"
-                  : auto
-                  ? "auto"
-                  : defaultAlignment === "side"
-                  ? `${_width}%`
-                  : "100%",
-              maxWidth: defaultAlignment === "side" ? "70%" : "100%",
-              marginRight:
-                label?.length > 0 &&
-                direction === "left" &&
-                defaultAlignment === "side"
-                  ? "12px"
-                  : "",
-              marginLeft:
-                label?.length > 0 &&
-                direction === "right" &&
-                defaultAlignment === "side"
-                  ? "12px"
-                  : "",
-              display: "flex",
-              fontWeight: 500,
-              justifyContent: direction == "right" ? "flex-end" : "flex-start",
-              fontSize: "12px",
-              height: defaultAlignment === "top" && "20px",
-              // flex: '1',
-              // whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-            }}
-          >
-            <p
-              style={{
-                position: "relative", // Ensure the parent element is positioned relatively
-                overflow: label?.length > 18 && "hidden", // Hide any content that overflows the box
-                textOverflow: "ellipsis", // Display ellipsis for overflowed content
-                whiteSpace: "nowrap",
-                display: "block",
-                margin: "0px",
-                // flex: "1",
-              }}
-            >
-              {label}
-              {isMandatory && <span style={{ color: "#DB4324" }}>*</span>}
-            </p>
-          </label>
-        )}
+        <Label
+          label={label}
+          width={width}
+          labelRef={labelRef}
+          darkMode={darkMode}
+          color={color}
+          defaultAlignment={defaultAlignment}
+          direction={direction}
+          auto={auto}
+          isMandatory={isMandatory}
+          _width={_width}
+        />
         {component?.definition?.styles?.iconVisibility?.value &&
           !isResizing && (
             <IconElement
@@ -357,14 +319,16 @@ export const TextInput = function TextInput({
                     ? padding == "default"
                       ? "11px"
                       : "11px"
-                    : (label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0)
+                    : (label?.length > 0 && width > 0) ||
+                      (auto && width == 0 && label && label?.length != 0)
                     ? `${labelWidth + 23}px`
                     : "11px", //23 ::  is 10 px inside the input + 1 px border + 12px margin right
                 position: "absolute",
                 top: `${
                   defaultAlignment === "side"
                     ? "50%"
-                    : (label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0)
+                    : (label?.length > 0 && width > 0) ||
+                      (auto && width == 0 && label && label?.length != 0)
                     ? "calc(50% + 10px)"
                     : "50%"
                 }`,
@@ -376,6 +340,7 @@ export const TextInput = function TextInput({
             />
           )}
         <input
+          data-cy={`label-${String(component.name).toLowerCase()}`}
           ref={textInputRef}
           className={`tj-text-input-widget ${
             !isValid && showValidationError ? "is-invalid" : ""

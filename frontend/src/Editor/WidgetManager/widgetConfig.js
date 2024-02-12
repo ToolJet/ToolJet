@@ -1563,10 +1563,15 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
-
       borderColor: {
         type: 'color',
         displayName: 'Border',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      accentColor: {
+        type: 'color',
+        displayName: 'Accent',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -1697,6 +1702,7 @@ export const widgets = [
       styles: {
         textColor: { value: '#11181C' },
         borderColor: { value: '#6A727C47' },
+        accentColor: { value: '#4368E3' },
         errTextColor: { value: '#DB4324' },
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
@@ -1841,10 +1847,15 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
-
       borderColor: {
         type: 'color',
         displayName: 'Border',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      accentColor: {
+        type: 'color',
+        displayName: 'Accent',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -1979,6 +1990,7 @@ export const widgets = [
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
         borderColor: { value: '#6A727C47' },
+        accentColor: { value: '#4368E3' },
         errTextColor: { value: '#DB4324' },
         textColor: { value: '#232e3c' },
         iconColor: { value: '#C1C8CD' },
@@ -2132,7 +2144,12 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
-
+      accentColor: {
+        type: 'color',
+        displayName: 'Accent',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
       borderColor: {
         type: 'color',
         displayName: 'Border',
@@ -2257,6 +2274,7 @@ export const widgets = [
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
         borderColor: { value: '#6A727C47' },
+        accentColor: { value: '#4368E3' },
         errTextColor: { value: '#DB4324' },
         textColor: { value: '#11181C' },
         iconColor: { value: '#C1C8CD' },

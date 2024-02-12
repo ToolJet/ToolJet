@@ -7,6 +7,7 @@ import Loader from "@/ToolJetUI/Loader/Loader";
 import { resolveReferences } from "@/_helpers/utils";
 import { useCurrentState } from "@/_stores/currentStateStore";
 const tinycolor = require("tinycolor2");
+import Label from "@/_ui/Label";
 
 export const NumberInput = function NumberInput({
   height,
@@ -37,6 +38,7 @@ export const NumberInput = function NumberInput({
     auto,
     errTextColor,
     iconColor,
+    accentColor,
   } = styles;
 
   const textColor =
@@ -169,7 +171,6 @@ export const NumberInput = function NumberInput({
         : setLabelWidth(absolutewidth);
     } else setLabelWidth(0);
 
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isResizing,
@@ -201,7 +202,7 @@ export const NumberInput = function NumberInput({
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === "#11181C" ? "#ECEDEE" : textColor,
     borderColor: isFocused
-      ? "#3E63DD"
+      ? accentColor
       : ["#D7DBDF"].includes(borderColor)
       ? darkMode
         ? "#6D757D7A"
@@ -298,41 +299,30 @@ export const NumberInput = function NumberInput({
       setValue("");
       setExposedVariable("value", "").then(fireEvent("onChange"));
     });
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // const loaderStyle = {
-  //   right:
-  //     alignment == "top"
-  //       ? `33px`
-  //       : direction == "left"
-  //       ? `33px`
-  //       : `${labelWidth + 35}px`,
-  //   top: alignment == "side" ? "" : `51%`,
-  //   transform: alignment == "top" && label?.length == 0 && "translateY(-50%)",
-  //   zIndex:3
-  // };
+
   const loaderStyle = {
     right:
       direction === "right" &&
       defaultAlignment === "side" &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0))
-        ? `${labelWidth+23+20}px` //
+      ((label?.length > 0 && width > 0) ||
+        (auto && width == 0 && label && label?.length != 0))
+        ? `${labelWidth + 23 + 20}px` // 23 px usual + 20 for number input arrows
         : padding == "default"
         ? "31px"
         : "31px",
-
-    // top: `${defaultAlignment === 'top' ? '53%' : ''}`,
-    // transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
     top: `${
       defaultAlignment === "top"
-        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0)) &&
+        ? ((label?.length > 0 && width > 0) ||
+            (auto && width == 0 && label && label?.length != 0)) &&
           "calc(50% + 10px)"
         : ""
     }`,
     transform:
       defaultAlignment === "top" &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0)) &&
+      ((label?.length > 0 && width > 0) ||
+        (auto && width == 0 && label && label?.length != 0)) &&
       " translateY(-50%)",
     zIndex: 3,
   };
@@ -341,6 +331,7 @@ export const NumberInput = function NumberInput({
     return (
       <>
         <div
+          data-cy={`label-${String(component.name).toLowerCase()}`}
           data-disabled={disable || loading}
           className={`text-input  d-flex  ${
             defaultAlignment === "top" &&
@@ -364,61 +355,20 @@ export const NumberInput = function NumberInput({
             width: "100%",
             display: !visibility ? "none" : "flex",
             whiteSpace: "nowrap",
-            overflow: "hidden",
           }}
         >
-          {label && (width > 0 || auto) && (
-            <label
-              ref={labelRef}
-              style={{
-                color: darkMode && color === "#11181C" ? "#fff" : color,
-                width:
-                  label?.length === 0
-                    ? "0%"
-                    : auto
-                    ? "auto"
-                    : defaultAlignment === "side"
-                    ? `${_width}%`
-                    : "100%",
-                maxWidth: defaultAlignment === "side" ? "70%" : "100%",
-                marginRight:
-                  label?.length > 0 &&
-                  direction === "left" &&
-                  defaultAlignment === "side"
-                    ? "12px"
-                    : "",
-                marginLeft:
-                  label?.length > 0 &&
-                  direction === "right" &&
-                  defaultAlignment === "side"
-                    ? "12px"
-                    : "",
-                display: "flex",
-                fontWeight: 500,
-                justifyContent:
-                  direction == "right" ? "flex-end" : "flex-start",
-                fontSize: "12px",
-                height: defaultAlignment === "top" && "20px",
-                // flex: '1',
-                // whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-              }}
-            >
-              <p
-                style={{
-                  position: "relative", // Ensure the parent element is positioned relatively
-                  overflow: label?.length > 18 && "hidden", // Hide any content that overflows the box
-                  textOverflow: "ellipsis", // Display ellipsis for overflowed content
-                  whiteSpace: "nowrap",
-                  display: "block",
-                  margin: "0px",
-                  // flex: "1",
-                }}
-              >
-                {label}
-                {isMandatory && <span style={{ color: "#DB4324" }}>*</span>}
-              </p>
-            </label>
-          )}
+          <Label
+            label={label}
+            width={width}
+            labelRef={labelRef}
+            darkMode={darkMode}
+            color={color}
+            defaultAlignment={defaultAlignment}
+            direction={direction}
+            auto={auto}
+            isMandatory={isMandatory}
+            _width={_width}
+          />
           {component?.definition?.styles?.iconVisibility?.value &&
             !isResizing && (
               <IconElement
