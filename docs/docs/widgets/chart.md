@@ -4,127 +4,73 @@ title: Chart
 ---
 # Chart
 
-Chart widget takes the chart type, data and styles to draw charts using Plotly.js.
+The Chart component allows you to visualize your data. In this document, we'll go through all the configuration options for the **Chart** component.  
 
-## How To Use Chart Widget
+## Title
 
-<iframe height="500" src="https://www.youtube.com/embed/F3OALU_B5PE" title="Chart Widget" frameborder="0" allowfullscreen width="100%"></iframe>
+Under the `Title` property, you can enter a title that displays at the top of the chart component.
 
-## Chart types
-### Line charts
+## Plotly JSON Chart Schema
 
-**Data requirements:** The data needs to be an array of objects and each object should have `x` and `y` keys.
-
-**Example:**
-```json
-[
-  { "x": "Jan", "y": 100},
-  { "x": "Feb", "y": 80},
-  { "x": "Mar", "y": 40},
-  { "x": "Apr", "y": 100},
-  { "x": "May", "y": 80},
-  { "x": "Jun", "y": 40}
-]
-```
-
-The chart will look like this:
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/chart/linec.png" alt="ToolJet - Widget Reference - Chart" />
-
-</div>
-
-### Bar charts
-
-**Data requirements:** The data needs to be an array of objects and each object should have `x` and `y` keys.
-
-**Example:**
-
-```json
-[
-  { "x": "Jan", "y": 100},
-  { "x": "Feb", "y": 80},
-  { "x": "Mar", "y": 40},
-  { "x": "Apr", "y": 100},
-  { "x": "May", "y": 80},
-  { "x": "Jun", "y": 40},
-  { "x": "Jul", "y": 100},
-  { "x": "Aug", "y": 80},
-  { "x": "Sep", "y": 40}
-]
-```
-
-The chart will look like this:
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/chart/barc.png" alt="ToolJet - Widget Reference - Chart" />
-
-</div>
-
-### Pie charts
-
-**Data requirements:** The data needs to be an array of objects and each object should have `label` and `value` keys.
-
-**Example:**
-
-```json
-[
-  { "x": "Jan", "y": 100},
-  { "x": "Feb", "y": 80},
-  { "x": "Mar", "y": 40},
-  { "x": "Apr", "y": 100},
-  { "x": "May", "y": 80},
-  { "x": "Jun", "y": 40}
-]
-```
-
-The chart will look like this:
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/chart/piec.png" alt="ToolJet - Widget Reference - Chart" />
-
-</div>
+You can use the toggle to enable or disable `Use Ploty JSON Schema`. Additional, you can enable or disable it dynamically configure the value by clicking on `fx` and entering a logical expression.
 
 ## Properties
 
+#### Chart type
+You can select the type from the dropdown options or dynamically configure the value by clicking on `fx` and entering a logical expression that returns `line`, `pie` or `bar`.
+
+## Chart data
+The data needs to be in JSON format and should have `x` and `y` keys. The component supports string and object JSON data types. 
+
+**Example:**
+```json
+[
+  { "x": "Jan", "y": 100},
+  { "x": "Feb", "y": 80},
+  { "x": "Mar", "y": 40},
+  { "x": "Apr", "y": 100},
+  { "x": "May", "y": 80},
+  { "x": "Jun", "y": 40}
+]
+```
+
+## Marker Color
+Available for line and bar charts, `Marker Color` defines the color of the line or bars on the chart.
+
+## Options
+| <div style={{ width:"100px"}}> Option </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:------------------|:------------|:------------------------------|
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Show axis      | Hides or displays the axes on the chart. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Show grid lines      | Hides or displays the grid lines on the chart. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+
+## Events
+
+**On data point click** <br/>
+Triggers whenever the user clicks on data points.
+
+**On double click** <br/>
+Triggers whenever the user double clicks on the chart area.
+
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
 :::
 
-### Title
+## Devices
 
-This field is used to add a title to your selected chart.
+**Show on desktop**
 
-### Plotly JSON Chart Schema
+Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
 
-You have the option to plot a chart using JSON data in the chart component. This JSON data contains information about the chart type, chart data, and more. You can find details about the JSON properties [here](https://plotly.com/javascript/reference/).
+**Show on mobile**
 
-To work with the JSON data, you need to enable the **Plotly JSON chart schema** toggle in the properties section. Once enabled, you can provide the JSON data in the **JSON description** field.
+Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
 
-The resulting chart will be generated based on the provided JSON data, allowing you to customize the chart's appearance and functionality.
+## Plotly Configuration
 
-<div style={{textAlign: 'center'}}>
+You can refer to the **[Ploty's documentation](https://plotly.com/chart-studio-help/json-chart-schema/)** for information on Ploty's JSON Chart Schema.
 
-<img className="screenshot-full" src="/img/widgets/chart/pfjson.png" alt="ToolJet - Widget Reference - Chart" />
-
-</div>
-
-You can refer to the [JSON Chart Schema](https://plotly.com/chart-studio-help/json-chart-schema/) for more information on constructing the JSON data structure.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/chart/jsonschema.png" alt="ToolJet - Widget Reference - Chart" />
-
-</div>
-
-:::tip Using events on chart
-Currently, the chart component does not support events. However, you can use the Custom Component using Plotly and add events to it. Check out the [How to use events on chart](/docs/how-to/use-events-on-chart) to learn more.
-:::
-
-### Bar Mode
+#### Bar Mode
 
 The **Bar Mode** option allows you to customize the layout and display style specifically for bar charts. This option becomes available when the **Plotly JSON chart schema** toggle is enabled and a JSON schema specific to bar charts is provided. This option provide different modes for organizing and presenting bars within the chart.
 
@@ -146,42 +92,42 @@ It offers four different modes:
 
 </div>
 
-### Using Plotly JSON chart schema
+### Examples of Plotly JSON chart schema
 
 In the **JSON description**, the value needs to be the `data` array with x and y axis values and at the end we need to specify the `type`. let's take a look at the examples for different chart types.
 #### Line
 
 ```bash
   {
-                "data": [
-                    {
-                        "x": [
-                            "Jan",
-                            "Feb",
-                            "Mar"
-                        ],
-                        "y": [
-                            100,
-                            80,
-                            40
-                        ],
-                        "type": "line"
-                    },
-                    {
-                        "x": [
-                            "Jan",
-                            "Feb",
-                            "Mar"
-                        ],
-                        "y": [
-                            300,
-                            30,
-                            20
-                        ],
-                        "type": "line"
-                    }
-                ]
-            }
+    "data": [
+        {
+            "x": [
+                "Jan",
+                "Feb",
+                "Mar"
+            ],
+            "y": [
+                100,
+                80,
+                40
+            ],
+            "type": "line"
+        },
+        {
+            "x": [
+                "Jan",
+                "Feb",
+                "Mar"
+            ],
+            "y": [
+                300,
+                30,
+                20
+            ],
+            "type": "line"
+        }
+    ]
+}
 ```
 
 <div style={{textAlign: 'center'}}>
@@ -340,84 +286,33 @@ In the **JSON description**, the value needs to be the `data` array with x and y
 
 </div>
 
-#### Few more exmaples:
-
-**Link to JSON description:** https://raw.githubusercontent.com/plotly/plotly.js/master/test/image/mocks/0.json
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/chart/plotly/chart1.png" alt="ToolJet - Widget Reference - Chart" />
-
-</div>
-
-**Link to JSON description:** https://raw.githubusercontent.com/plotly/plotly.js/master/test/image/mocks/12.json
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/chart/plotly/chart2.png" alt="ToolJet - Widget Reference - Chart" />
-
-</div>
-
 :::tip
 Check the **[Plotly documentation](https://plotly.com/chart-studio-help/json-chart-schema/#more-examples)** to explore the all type of charts available.
 :::
 
-## Marker color
 
-Modify the color of marker using the color picker or by providing a `HEX color code`.
+---
+# Styles
 
-## Options
-### Loading state
-
-Toggle `on` the switch to display a loader on the widget. You can also programmatically define it's value by clicking on `Fx`, acceptable values are - `{{true}}` and `{{false}}`.
-
-### Show Axes
-
-Enable or disable the `x` and `y` axes on the chart through this property. You can also programmatically define it's value by clicking on `Fx`, acceptable values are - `{{true}}` and `{{false}}`.
-
-### Show grid lines
-
-Toggle `on` or `off` to show or hide the grid lines on the chart. You can also programmatically define it's value by clicking on `Fx`, acceptable values are - `{{true}}` and `{{false}}`.
-
-## Layout
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/chart/layout.png" alt="ToolJet - Widget Reference - Chart" />
-
-</div>
-
-### Show on desktop
-
-Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
-### Show on mobile
-
-Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
-
-## Styles
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/chart/styles.png" alt="ToolJet - Widget Reference - Chart" />
-
-</div>
-
-### Padding
-
-Define a space between the widget element and the widget border using `Padding` property. Use any numerical value between `1` to `100`.
-
-### Visibility
-
-Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`.
-
-### Disable
-
-This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`.
+| <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background color       | Sets the background color of the component.                                                   | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Paddings       | Sets the padding of the component.                                                   | Enter a numeric value. (for e.g., `22`)    |
+| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value.           |
+| Visibility   | Sets the visibility of the component.                                                  | Enable/disable using the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|
+| Disables   | Allows you to enable/disable a component. The component is not interactive when it is disabled.                                                  | Enable/disable using the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|
 
 
 ## Exposed variables
 
-There are currently no exposed variables for the component.
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+|: ---------- | :---------- | :------------ |
+| chartTitle       | Holds the title of the chart component. | Accessible dynamically with JS (for e.g., `{{components.chart1.chartTitle}}`). |
+| xAxisTitle         | Contains the title for the X-axis of the chart.        | Accessible dynamically with JS (for e.g., `{{components.chart1.xAxisTitle}}`). |
+| yAxisTitle         | Contains the title for the Y-axis of the chart.        | Accessible dynamically with JS (for e.g., `{{components.chart1.yAxisTitle}}`). |
+| clickedDataPoints  | Stores details about the data points that were clicked.| Accessible dynamically with JS (for e.g., `{{components.chart1.clickedDataPoints}}`). Each data point includes `xAxisLabel`, `yAxisLabel`, `dataLabel`, `dataValue`, and `dataPercent`. |
+
+
 
 ## Component specific actions (CSA)
 

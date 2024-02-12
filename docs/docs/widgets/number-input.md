@@ -4,7 +4,7 @@ title: Number Input
 ---
 # Number Input
 
-The Number Input component allows users to enter numbers. It can be used as a standalone component or in form fields. In this document, we'll go through all the configuration options for the **Number Input** component. 
+The Number Input component allows users to enter numeric values. It can be used as a standalone component or in form fields. In this document, we'll go through all the configuration options for the **Number Input** component. 
 
 ## Properties
 
@@ -17,21 +17,46 @@ The Number Input component allows users to enter numbers. It can be used as a st
 
 ## Events
 
-**On change** <br/>
-Triggers whenever the user types something in the input field.
-
-**On focus** <br/>
-Triggers whenever the user clicks inside the input field.
-
-**On blur** <br/>
-Triggers whenever the user clicks outside the input field.
-
-**On enter pressed** <br/>
-Triggers whenever the user presses the enter button on keyboard after entering some text on input component.
+| Event            | Description         |
+|------------------|---------------------|
+| **On change**    | Triggers whenever the user types something in the input field.                                   |
+| **On focus**     | Triggers whenever the user clicks inside the input field.                                        |
+| **On blur**      | Triggers whenever the user clicks outside the input field.                                       |
+| **On enter pressed** | Triggers whenever the user presses the enter button on the keyboard after entering some text in the input component. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
 :::
+
+## Component specific actions (CSA)
+
+Following actions of component can be controlled using the component specific actions(CSA):
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setText('this is input text')`) or trigger it using an event. |
+| clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.clear()`) or trigger it using an event. |
+| setFocus()     | Sets the focus of the cursor on the input field.   | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setFocus()`) or trigger it using an event. |
+| setBlur()      | Removes the focus of the cursor from the input field. | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setBlur()`) or trigger it using an event. |
+| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setVisibility(false)`) or trigger it using an event. |
+| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setLoading(true)`) or trigger it using an event. |
+| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.numberinput1.setDisable(true)`) or trigger it using an event. |
+
+:::info
+Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
+:::
+
+## Exposed Variables
+
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+|: ---------- | :---------- | :------------ |
+| value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.value}}`). |
+| label       | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.label}}`). |
+| isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isValid}}`). |
+| isMandatory | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isMandatory}}`). |
+| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isLoading}}`). |
+| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isVisible}}`). |
+| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isDisabled}}`). |
 
 ## Validation
 
@@ -94,34 +119,9 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 **Padding** <br/>
 Allows you to maintain a standard padding by enabling the `Default` option.
 
-:::info
-Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
-:::
 
 
-## Exposed Variables
-
-| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-|: ---------- | :---------- | :------------ |
-| value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.value}}`). |
-| label       | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.label}}`). |
-| isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isValid}}`). |
-| isMandatory | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isMandatory}}`). |
-| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isLoading}}`). |
-| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isVisible}}`). |
-| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isDisabled}}`). |
 
 
-## Component specific actions (CSA)
 
-Following actions of component can be controlled using the component specific actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-| :------------ | :---------- | :------------ |
-| setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setText('this is input text')`) or trigger it using an event. |
-| clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.clear()`) or trigger it using an event. |
-| setFocus()     | Sets the focus of the cursor on the input field.   | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setFocus()`) or trigger it using an event. |
-| setBlur()      | Removes the focus of the cursor from the input field. | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setBlur()`) or trigger it using an event. |
-| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setVisibility(false)`) or trigger it using an event. |
-| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setLoading(true)`) or trigger it using an event. |
-| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.numberinput1.setDisable(true)`) or trigger it using an event. |

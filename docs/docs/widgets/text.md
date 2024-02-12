@@ -18,15 +18,39 @@ Allows you to define the type of text. There are three types:
 
 ## Events
 
-**On click** <br/>
-Triggers whenever the user types clicks on the text field.
-
-**On hover** <br/>
-Triggers whenever the user hovers over the component.
+| Event     | Description                                          |
+|-----------|------------------------------------------------------|
+| On click  | Triggers whenever the user clicks on the text field. |
+| On hover  | Triggers whenever the user hovers over the component.|
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
 :::
+
+## Component Specific Actions (CSA)
+
+Following actions of the **Text** component can be controlled using Component-Specific Actions(CSA):
+
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.text1.setText('this is input text')`) or trigger it using an event. |
+| clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.text1.clear()`) or trigger it using an event. |
+| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.text1.setVisibility(false)`) or trigger it using an event. |
+| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.text1.setLoading(true)`) or trigger it using an event. |
+| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.text1.setDisable(true)`) or trigger it using an event. |
+
+:::info
+Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
+:::
+
+## Exposed Variables
+
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+|: ---------- | :---------- | :------------ |
+| text       | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.text1.text}}`). |
+| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.text1.isLoading}}`). |
+| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.text1.isVisible}}`). |
+| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.text1.isDisabled}}`). |
 
 ## Additional Actions
 
@@ -74,24 +98,3 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 | Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties.                                            
 | Padding      | Adds padding to the component | Select `None` for no padding and `Default` for standard padding.      
 
-## Exposed Variables
-
-| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-|: ---------- | :---------- | :------------ |
-| text       | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.text1.text}}`). |
-| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.text1.isLoading}}`). |
-| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.text1.isVisible}}`). |
-| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.text1.isDisabled}}`). |
-
-
-## Component Specific Actions (CSA)
-
-Following actions of the **Text** component can be controlled using Component-Specific Actions(CSA):
-
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-| :------------ | :---------- | :------------ |
-| setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.text1.setText('this is input text')`) or trigger it using an event. |
-| clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.text1.clear()`) or trigger it using an event. |
-| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.text1.setVisibility(false)`) or trigger it using an event. |
-| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.text1.setLoading(true)`) or trigger it using an event. |
-| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.text1.setDisable(true)`) or trigger it using an event. |

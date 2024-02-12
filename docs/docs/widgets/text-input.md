@@ -13,24 +13,48 @@ The Text Input component allows users to enter a single line of text. It can be 
 | Placeholder   | A hint displayed to guide the user on what to enter.  | String (e.g., `John Doe`).          |
 | Default Value | The default value that the component will hold when the app is loaded. | String (e.g., `Default Text`). |
 
-
 ## Events
 
-**On change** <br/>
-Triggers whenever the user types something on the text input.
-
-**On enter pressed** <br/>
-Triggers whenever the user presses the enter button on keyboard after entering some text on text input component.
-
-**On focus** <br/>
-Triggers whenever the user clicks inside the text input field.
-
-**On blur** <br/>
-Triggers whenever the user clicks outside the text input field.
+| Event            | Description  | 
+|:-----------------|:---------------------------------------------|
+| **On change**    | Triggers whenever the user types something in the text input.                                 |
+| **On enter pressed** | Triggers whenever the user presses the enter key on the keyboard after entering text in the text input component. |
+| **On focus**     | Triggers whenever the user clicks inside the text input field.                                |
+| **On blur**      | Triggers whenever the user clicks outside the text input field.                               |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
 :::
+
+## Component specific actions (CSA)
+
+Following actions of component can be controlled using the component specific actions(CSA):
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setText('this is input text')`) or trigger it using an event. |
+| clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.clear()`) or trigger it using an event. |
+| setFocus()     | Sets the focus of the cursor on the input field.   | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setFocus()`) or trigger it using an event. |
+| setBlur()      | Removes the focus of the cursor from the input field. | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setBlur()`) or trigger it using an event. |
+| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setVisibility(false)`) or trigger it using an event. |
+| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setLoading(true)`) or trigger it using an event. |
+| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.textinput1.setDisable(true)`) or trigger it using an event. |
+
+:::info
+Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
+:::
+
+## Exposed Variables
+
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+|: ---------- | :---------- | :------------ |
+| value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.textinput1.value}}`). |
+| label       | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.textinput1.label}}`). |
+| isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isValid}}`). |
+| isMandatory | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isMandatory}}`). |
+| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isLoading}}`). |
+| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isVisible}}`). |
+| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isDisabled}}`). |
 
 ## Validation
 
@@ -41,8 +65,6 @@ Check [Action Reference](/docs/category/actions-reference) docs to get detailed 
 | Min Length         | Sets the minimum number of characters allowed.                | Integer (e.g., `6` for a minimum of 6 characters). |
 | Max Length         | Sets the maximum number of characters allowed.                | Integer (e.g., `12` for a maximum of 12 characters).|
 | Custom Validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.textinput1.value<5&&"Value needs to be more than 5"}}`).           |
-
-
 
 ## Additional Actions
 
@@ -93,35 +115,5 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 **Padding** <br/>
 Allows you to maintain a standard padding by enabling the `Default` option.
 
-:::info
-Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
-:::
 
 
-## Exposed Variables
-
-| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-|: ---------- | :---------- | :------------ |
-| value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.textinput1.value}}`). |
-| label       | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.textinput1.label}}`). |
-| isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isValid}}`). |
-| isMandatory | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isMandatory}}`). |
-| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isLoading}}`). |
-| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isVisible}}`). |
-| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isDisabled}}`). |
-
-
-## Component specific actions (CSA)
-
-Following actions of component can be controlled using the component specific actions(CSA):
-
-
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-| :------------ | :---------- | :------------ |
-| setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setText('this is input text')`) or trigger it using an event. |
-| clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.clear()`) or trigger it using an event. |
-| setFocus()     | Sets the focus of the cursor on the input field.   | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setFocus()`) or trigger it using an event. |
-| setBlur()      | Removes the focus of the cursor from the input field. | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setBlur()`) or trigger it using an event. |
-| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setVisibility(false)`) or trigger it using an event. |
-| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setLoading(true)`) or trigger it using an event. |
-| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.textinput1.setDisable(true)`) or trigger it using an event. |

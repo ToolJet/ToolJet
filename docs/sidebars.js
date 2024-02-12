@@ -28,6 +28,7 @@ const sidebars = {
         'tooljet-concepts/inspector',
         'tooljet-concepts/what-are-events',
         'tooljet-concepts/actions',
+        'tooljet-concepts/variables',
         'tooljet-concepts/how-to-access-values',
         'tooljet-concepts/component-specific-actions',
         'tooljet-concepts/exposed-variables',
@@ -71,17 +72,6 @@ const sidebars = {
       'label': 'App Builder',
       'items': [
         'app-builder/overview',
-        'app-builder/topbar',
-        'app-builder/share',
-        'app-builder/canvas',
-        'app-builder/left-sidebar',
-        'app-builder/components-library',
-        'app-builder/query-panel',
-        'tutorial/pages',
-        'app-builder/preview',
-        'app-builder/customstyles',
-        'tutorial/keyboard-shortcuts',
-        'app-builder/importing-exporting-applications',
         {
           'type': 'category',
           'label': 'Components Catalog',
@@ -178,19 +168,22 @@ const sidebars = {
             },
           ],
         },
+        'app-builder/components-library',
+        'app-builder/query-panel',
+        'tutorial/pages',
+        'app-builder/topbar',
+        'app-builder/left-sidebar',
+        'app-builder/canvas',
+        'app-builder/preview',
+        'app-builder/share',
+        'app-builder/customstyles',
+        'app-builder/importing-exporting-applications',
+        'tutorial/keyboard-shortcuts',
       ],
     },
     {
       'type': 'category',
       'label': 'How To',
-      'link': {
-        'type': 'generated-index',
-        'title': 'How To Guides',
-        'description': 'How To Guides for all the things ToolJet',
-        'keywords': [
-          'how to',
-        ]
-      },
       'items': [
         'how-to/use-custom-parameters',
         'how-to/setup-rsyslog',
@@ -221,7 +214,7 @@ const sidebars = {
     },
     {
       'type': 'category',
-      'label': 'Datasource Catalog',
+      'label': 'Data Sources',
       'items': [
         'data-sources/overview',
         {

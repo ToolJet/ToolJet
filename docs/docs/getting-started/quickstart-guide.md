@@ -6,7 +6,7 @@ title: Quickstart Guide
 <!-- <div style={{paddingTop:'24px', paddingBottom:'24px'}}> -->
 
 
-This Quickstart Guide will show you how to create an employee directory application in minutes using ToolJet. This app will let you track and update employee information with a beautiful user interface. Here are the step-by-step instructions:
+This tutorial will show you how to create an employee directory application in minutes using ToolJet. This app will let you track and update employee information with a beautiful user interface. Here are the step-by-step instructions:
 
 **[1. Create Your First Application](#1-create-your-first-application)**  <br/>
 **[2. Create Employee Database](#2-create-employee-database)**  <br/>
@@ -119,7 +119,7 @@ Click on the Preview button to see a preview of the fetched data.
 
 ### 4. List Employees
 
-Now, we need to bind the data returned by the `getEmployees` query above with the Table created in Step 1. Click on the Table component to open its configuration panel on the right. Under the `Data` property, paste the below code:
+Now, we need to bind the data returned by the `getEmployees` query above with the Table created in Step 1. Click on the Table component to open its properties panel on the right. Under the `Data` property, paste the below code:
 
 ```js
 {{queries.getEmployees.data}}
@@ -162,7 +162,7 @@ Next step is to create a way to add data for new employees.
 Frame all the remaining keys in the same format.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{padding: '10px', marginBottom:'15px', borderRadius: '6px' }} className="screenshot-full" src="/img/quickstart-guide/add-employee-query-v2.png" alt="Add Employee Query" />
+    <img style={{ marginBottom:'15px', borderRadius: '6px' }} className="screenshot-full" src="/img/quickstart-guide/add-employee-query-v2.png" alt="Add Employee Query" />
 </div>
 
 Let's continue working on this query. The data needs to reload once this query runs since we want the Table component to be populated with the updated data. Follow the below steps to run the `getEmployees` query after the `addEmployee` query is completed. 
@@ -172,13 +172,13 @@ Let's continue working on this query. The data needs to reload once this query r
 - Select `getEmployees` as Query.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{padding: '10px', marginBottom:'15px', borderRadius: '6px'}} className="screenshot-full" src="/img/quickstart-guide/reload-data-v2.png" alt="Reload Table Data" />
+    <img style={{ marginBottom:'15px', borderRadius: '6px'}} className="screenshot-full" src="/img/quickstart-guide/reload-data-v2.png" alt="Reload Table Data" />
 </div>
 
 We are now ready with a query that will allow us to add new employee data. Let's link this query to a button.
 
 In the bottom-right corner of the Table component, there is a `+`/Add new row button. Follow the below steps to run the `addEmployee` query on click of the `+`/Add new row button: 
-- Click on the Table component, go to Events in configuration panel and add a New event handler.
+- Click on the Table component, go to Events in properties panel and add a New event handler.
 - Choose Add new rows as Event, Run Query as Action.
 - Select `addEmployee` as the Query.
 
@@ -227,7 +227,7 @@ The preview, release and share buttons are on the top-right of the App-Builder.
     <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/quickstart-guide/preview-share-v2.png" alt="Preview And Share" />
 </div>
 
-Congratulations! You've successfully built an employee directory application and, in the process, covered the fundamentals of ToolJet. 
+Congratulations on completing the tutorial! You've successfully built an employee directory application and, in the process, covered the fundamentals of ToolJet. 
 
 To learn more about how ToolJet works, explore the subjects covered in **[ToolJet Concepts](/docs/tooljet-concepts/what-are-components)**.
 
