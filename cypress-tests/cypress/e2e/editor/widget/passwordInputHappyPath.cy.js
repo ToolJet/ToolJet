@@ -2,48 +2,39 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   addDefaultEventHandler,
+  checkPaddingOfContainer,
   closeAccordions,
   editAndVerifyWidgetName,
   openAccordion,
   openEditorSidebar,
   randomNumber,
+  selectColourFromColourPicker,
   verifyAndModifyParameter,
   verifyBoxShadowCss,
   verifyComponentValueFromInspector,
+  verifyContainerElements,
   verifyLayout,
-  verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
   verifyTooltip,
-  verifyContainerElements,
-  checkPaddingOfContainer,
-  selectColourFromColourPicker,
   verifyWidgetColorCss,
 } from "Support/utils/commonWidget";
-import { passwordInputText } from "Texts/passwordInput";
 import {
   addAllInputFieldColors,
   addAndVerifyAdditionalActions,
+  addCustomWidthOfLabel,
   addValidations,
+  verifyAlignment,
+  verifyCustomWidthOfLabel,
   verifyInputFieldColors,
   verifyLabelStyleElements,
-  verifyAlignment,
-  addCustomWidthOfLabel,
-  verifyCustomWidthOfLabel,
 } from "Support/utils/editor/inputFieldUtils";
 import {
-  addSupportCSAData,
-  selectCSA,
-  selectEvent,
-} from "Support/utils/events";
-import {
-  randomString,
-  verifyControlComponentAction,
   addCSA,
+  randomString,
   verifyCSA,
 } from "Support/utils/editor/passwordNumberInput.js";
-import { buttonText } from "Texts/button";
-import { commonWidgetText, customValidation, widgetValue } from "Texts/common";
-import { textInputText } from "Texts/textInput";
+import { commonWidgetText } from "Texts/common";
+import { passwordInputText } from "Texts/passwordInput";
 
 describe("Password Input", () => {
   beforeEach(() => {
@@ -360,7 +351,7 @@ describe("Password Input", () => {
 
   it.skip("should verify the app preview", () => {});
 
-  it.only("should verify CSA", () => {
+  it("should verify CSA", () => {
     const data = {};
     data.widgetName = passwordInputText.defaultWidgetName;
     data.customText = randomString(12);

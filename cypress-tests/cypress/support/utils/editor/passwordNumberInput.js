@@ -55,12 +55,14 @@ export const verifyCSA = (data) => {
   ).verifyVisibleElement("have.value", "");
 
   cy.get(commonWidgetSelector.draggableWidget("button5")).click();
-  cy.realType(data.customText);
+  cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
+    .should("have.focus")
+    .realType(String(data.customText));
   cy.get(
     commonWidgetSelector.draggableWidget(data.widgetName)
   ).verifyVisibleElement("have.value", data.customText);
   cy.get(commonWidgetSelector.draggableWidget("button4")).click();
-  cy.realType("not working");
+  cy.realType("not working123");
   cy.get(
     commonWidgetSelector.draggableWidget(data.widgetName)
   ).verifyVisibleElement("have.value", data.customText);

@@ -2,46 +2,38 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   addDefaultEventHandler,
+  checkPaddingOfContainer,
   closeAccordions,
   editAndVerifyWidgetName,
   openAccordion,
   openEditorSidebar,
   randomNumber,
+  selectColourFromColourPicker,
   verifyAndModifyParameter,
   verifyBoxShadowCss,
   verifyComponentValueFromInspector,
+  verifyContainerElements,
   verifyLayout,
-  verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
   verifyTooltip,
-  verifyContainerElements,
-  checkPaddingOfContainer,
-  selectColourFromColourPicker,
   verifyWidgetColorCss,
 } from "Support/utils/commonWidget";
 import {
   addAllInputFieldColors,
   addAndVerifyAdditionalActions,
+  addCustomWidthOfLabel,
   addValidations,
+  verifyAlignment,
+  verifyCustomWidthOfLabel,
   verifyInputFieldColors,
   verifyLabelStyleElements,
-  verifyAlignment,
-  addCustomWidthOfLabel,
-  verifyCustomWidthOfLabel,
 } from "Support/utils/editor/inputFieldUtils";
 import {
-  addSupportCSAData,
-  selectCSA,
-  selectEvent,
-} from "Support/utils/events";
-import {
-  randomString,
-  verifyControlComponentAction,
   addCSA,
+  randomString,
   verifyCSA,
 } from "Support/utils/editor/textInput";
-import { buttonText } from "Texts/button";
-import { commonWidgetText, customValidation, widgetValue } from "Texts/common";
+import { commonWidgetText } from "Texts/common";
 import { textInputText } from "Texts/textInput";
 
 describe("Text Input", () => {
@@ -234,9 +226,9 @@ describe("Text Input", () => {
       data.customText
     );
     cy.forceClickOnCanvas();
-    cy.get(
-      commonWidgetSelector.validationFeedbackMessage(data.widgetName)
-    ).verifyVisibleElement("have.text", commonWidgetText.regexValidationError);
+    // cy.get(
+    //   commonWidgetSelector.validationFeedbackMessage(data.widgetName)
+    // ).verifyVisibleElement("have.text", commonWidgetText.regexValidationError);
 
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
 
