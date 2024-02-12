@@ -98,7 +98,7 @@ export const TextInput = function TextInput({
     right:
       direction === "right" &&
       defaultAlignment === "side" &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0))
+      ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0))
         ? `${labelWidth + 23}px`
         : padding == "default"
         ? "11px"
@@ -108,25 +108,19 @@ export const TextInput = function TextInput({
     // transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
     top: `${
       defaultAlignment === "top"
-        ? ((label?.length > 0 && width > 0) || (auto && width == 0)) &&
+        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0)) &&
           "calc(50% + 10px)"
         : ""
     }`,
     transform:
       defaultAlignment === "top" &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0)) &&
+      ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0)) &&
       " translateY(-50%)",
-    transform:
-      alignment == "top" &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0)) &&
-      "translateY(-50%)",
     zIndex: 3,
-    background: "red",
   };
   useEffect(() => {
     if (labelRef.current) {
       const absolutewidth = labelRef.current.getBoundingClientRect().width;
-      console.log("label---w", absolutewidth);
       padding == "default"
         ? setLabelWidth(absolutewidth)
         : setLabelWidth(absolutewidth);
@@ -221,7 +215,7 @@ export const TextInput = function TextInput({
   useEffect(() => {
     if (
       alignment == "top" &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0))
+      ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0))
     )
       adjustHeightBasedOnAlignment(true);
     else adjustHeightBasedOnAlignment(false);
@@ -271,18 +265,14 @@ export const TextInput = function TextInput({
     setExposedVariable("isDisabled", disable);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
-
-  useEffect(() => {
-    console.log("label---", labelWidth);
-  }, [labelWidth]);
-
+  
   const renderInput = () => (
     <>
       <div
         data-disabled={disable || loading}
         className={`text-input  d-flex  ${
           defaultAlignment === "top" &&
-          ((width != 0 && label?.length != 0) || (auto && width == 0))
+          ((width != 0 && label?.length != 0) || (auto && width == 0 && label&& label?.length != 0))
             ? "flex-column"
             : "align-items-center "
         }  ${
@@ -367,21 +357,20 @@ export const TextInput = function TextInput({
                     ? padding == "default"
                       ? "11px"
                       : "11px"
-                    : (label?.length > 0 && width > 0) || (auto && width == 0)
+                    : (label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0)
                     ? `${labelWidth + 23}px`
                     : "11px", //23 ::  is 10 px inside the input + 1 px border + 12px margin right
                 position: "absolute",
                 top: `${
                   defaultAlignment === "side"
                     ? "50%"
-                    : (label?.length > 0 && width > 0) || (auto && width == 0)
+                    : (label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0)
                     ? "calc(50% + 10px)"
                     : "50%"
                 }`,
                 transform: " translateY(-50%)",
                 color: iconColor,
                 zIndex: 3,
-                background: "red",
               }}
               stroke={1.5}
             />

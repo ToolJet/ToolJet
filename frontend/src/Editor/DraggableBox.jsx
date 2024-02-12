@@ -196,13 +196,11 @@ export const DraggableBox = React.memo(
       }
     }, [isDragging2]);
 
-    const componentSetWithPadding = ['TextInput', 'PasswordInput', 'NumberInput'];
 
     const style = {
       display: 'inline-block',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: componentSetWithPadding.includes(component.component) ? '0px 2px' : '0px',
     };
 
     let _refProps = {};

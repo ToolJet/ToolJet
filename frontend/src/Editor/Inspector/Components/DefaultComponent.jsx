@@ -12,6 +12,8 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
   TextInput: 'Data',
   DropDown: 'Data',
+  PasswordInput: 'Data',
+  NumberInput: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {

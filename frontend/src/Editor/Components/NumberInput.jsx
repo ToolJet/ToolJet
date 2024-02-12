@@ -1,12 +1,12 @@
-import React, { useRef, useEffect, useState } from 'react';
-import './numberinput.scss';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { ToolTip } from '@/_components/ToolTip';
-import * as Icons from '@tabler/icons-react';
-import Loader from '@/ToolJetUI/Loader/Loader';
-import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
-const tinycolor = require('tinycolor2');
+import React, { useRef, useEffect, useState } from "react";
+import "./numberinput.scss";
+import SolidIcon from "@/_ui/Icon/SolidIcons";
+import { ToolTip } from "@/_components/ToolTip";
+import * as Icons from "@tabler/icons-react";
+import Loader from "@/ToolJetUI/Loader/Loader";
+import { resolveReferences } from "@/_helpers/utils";
+import { useCurrentState } from "@/_stores/currentStateStore";
+const tinycolor = require("tinycolor2");
 
 export const NumberInput = function NumberInput({
   height,
@@ -22,7 +22,8 @@ export const NumberInput = function NumberInput({
   adjustHeightBasedOnAlignment,
   currentLayout,
 }) {
-  const { loadingState, tooltip, disabledState, label, placeholder } = properties;
+  const { loadingState, tooltip, disabledState, label, placeholder } =
+    properties;
   const {
     padding,
     borderRadius,
@@ -38,15 +39,32 @@ export const NumberInput = function NumberInput({
     iconColor,
   } = styles;
 
-  const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
-  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState) ?? false;
-  const minValue = resolveReferences(component?.definition?.validation?.minValue?.value, currentState) ?? null;
-  const maxValue = resolveReferences(component?.definition?.validation?.maxValue?.value, currentState) ?? null;
+  const textColor =
+    darkMode && ["#232e3c", "#000000ff"].includes(styles.textColor)
+      ? "#fff"
+      : styles.textColor;
+  const isMandatory =
+    resolveReferences(
+      component?.definition?.validation?.mandatory?.value,
+      currentState
+    ) ?? false;
+  const minValue =
+    resolveReferences(
+      component?.definition?.validation?.minValue?.value,
+      currentState
+    ) ?? null;
+  const maxValue =
+    resolveReferences(
+      component?.definition?.validation?.maxValue?.value,
+      currentState
+    ) ?? null;
 
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(loadingState);
   const [showValidationError, setShowValidationError] = useState(false);
-  const [value, setValue] = React.useState(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
+  const [value, setValue] = React.useState(
+    Number(parseFloat(properties.value).toFixed(properties.decimalPlaces))
+  );
   const { isValid, validationError } = validate(value);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -54,17 +72,22 @@ export const NumberInput = function NumberInput({
   const currentState = useCurrentState();
   const [disable, setDisable] = useState(disabledState || loadingState);
   const labelRef = useRef();
+  const _width = (width / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
 
   useEffect(() => {
-    setExposedVariable('label', label);
+    setExposedVariable("label", label);
   }, [label]);
 
   useEffect(() => {
-    if (alignment == 'top' && label?.length > 0) {
+    if (
+      alignment == "top" &&
+      ((label?.length > 0 && width > 0) ||
+        (auto && width == 0 && label && label?.length != 0))
+    )
       adjustHeightBasedOnAlignment(true);
-    } else adjustHeightBasedOnAlignment(false);
+    else adjustHeightBasedOnAlignment(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length, currentLayout]);
+  }, [alignment, label?.length, currentLayout, width, auto]);
 
   useEffect(() => {
     setValue(Number(parseFloat(value).toFixed(properties.decimalPlaces)));
@@ -72,73 +95,80 @@ export const NumberInput = function NumberInput({
   }, [properties.decimalPlaces]);
 
   useEffect(() => {
-    setValue(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
+    setValue(
+      Number(parseFloat(properties.value).toFixed(properties.decimalPlaces))
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
   const handleBlur = (e) => {
-    setValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
+    setValue(
+      Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces))
+    );
     setShowValidationError(true);
     e.stopPropagation();
-    fireEvent('onBlur');
+    fireEvent("onBlur");
     setIsFocused(false);
   };
 
   useEffect(() => {
     if (!isNaN(value)) {
-      setExposedVariable('value', value);
+      setExposedVariable("value", value);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   useEffect(() => {
-    setExposedVariable('isMandatory', isMandatory);
+    setExposedVariable("isMandatory", isMandatory);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMandatory]);
 
   useEffect(() => {
-    setExposedVariable('isLoading', loading);
+    setExposedVariable("isLoading", loading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
   useEffect(() => {
-    setExposedVariable('setLoading', async function (loading) {
+    setExposedVariable("setLoading", async function (loading) {
       setLoading(loading);
-      setExposedVariable('isLoading', loading);
+      setExposedVariable("isLoading", loading);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.loadingState]);
 
   useEffect(() => {
-    setExposedVariable('isVisible', visibility);
+    setExposedVariable("isVisible", visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility]);
 
   useEffect(() => {
-    setExposedVariable('setVisibility', async function (state) {
+    setExposedVariable("setVisibility", async function (state) {
       setVisibility(state);
-      setExposedVariable('isVisible', state);
+      setExposedVariable("isVisible", state);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
   useEffect(() => {
-    setExposedVariable('setDisable', async function (disable) {
+    setExposedVariable("setDisable", async function (disable) {
       setDisable(disable);
-      setExposedVariable('isDisabled', disable);
+      setExposedVariable("isDisabled", disable);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
 
   useEffect(() => {
-    setExposedVariable('isDisabled', disable);
+    setExposedVariable("isDisabled", disable);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
   useEffect(() => {
     if (labelRef.current) {
-      const width = labelRef.current.offsetWidth;
-      padding == 'default' ? setLabelWidth(width + 7) : setLabelWidth(width + 5);
+      const absolutewidth = labelRef.current.getBoundingClientRect().width;
+      padding == "default"
+        ? setLabelWidth(absolutewidth)
+        : setLabelWidth(absolutewidth);
     } else setLabelWidth(0);
+
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -147,7 +177,7 @@ export const NumberInput = function NumberInput({
     auto,
     defaultAlignment,
     component?.definition?.styles?.iconVisibility?.value,
-    label?.length,
+    labelRef?.current?.getBoundingClientRect()?.width,
     isMandatory,
     padding,
     direction,
@@ -155,48 +185,67 @@ export const NumberInput = function NumberInput({
   ]);
 
   useEffect(() => {
-    setExposedVariable('isValid', isValid);
+    setExposedVariable("isValid", isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
   const computedStyles = {
-    height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height - 4 : height,
+    height:
+      height == 40
+        ? padding == "default"
+          ? "36px"
+          : "40px"
+        : padding == "default"
+        ? height - 4
+        : height,
     borderRadius: `${borderRadius}px`,
-    color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
+    color: darkMode && textColor === "#11181C" ? "#ECEDEE" : textColor,
     borderColor: isFocused
-      ? '#3E63DD'
-      : ['#D7DBDF'].includes(borderColor)
+      ? "#3E63DD"
+      : ["#D7DBDF"].includes(borderColor)
       ? darkMode
-        ? '#6D757D7A'
-        : '#6A727C47'
+        ? "#6D757D7A"
+        : "#6A727C47"
       : borderColor,
-    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(8).toString(),
+    "--tblr-input-border-color-darker": tinycolor(borderColor)
+      .darken(24)
+      .toString(),
     backgroundColor:
-      darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
+      darkMode && ["#ffffff", "#ffffffff", "#fff"].includes(backgroundColor)
+        ? "#313538"
+        : backgroundColor,
+
     boxShadow: boxShadow,
     padding: styles.iconVisibility
-      ? padding == 'default'
-        ? '8px 10px 8px 29px'
-        : '8px 10px 8px 29px'
-      : '8px 10px 8px 10px',
+      ? padding == "default"
+        ? "8px 10px 8px 29px"
+        : "8px 10px 8px 29px"
+      : "8px 10px 8px 10px",
+    flex: padding !== "none" && 1,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   };
 
-  const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const defaultAlignment =
+    alignment === "side" || alignment === "top" ? alignment : "side";
   const [labelWidth, setLabelWidth] = useState(0);
 
   const iconName = styles.icon; // Replace with the name of the icon you want
   // eslint-disable-next-line import/namespace
-  const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
+  const IconElement =
+    Icons[iconName] == undefined ? Icons["IconHome2"] : Icons[iconName];
   // eslint-disable-next-line import/namespace
 
   const handleChange = (e) => {
     setValue(Number(parseFloat(e.target.value)));
-    if (e.target.value == '') {
+    if (e.target.value == "") {
       setValue(null);
-      setExposedVariable('value', null).then(fireEvent('onChange'));
+      setExposedVariable("value", null).then(fireEvent("onChange"));
     }
     if (!isNaN(Number(parseFloat(e.target.value)))) {
-      setExposedVariable('value', Number(parseFloat(e.target.value))).then(fireEvent('onChange'));
+      setExposedVariable("value", Number(parseFloat(e.target.value))).then(
+        fireEvent("onChange")
+      );
     }
   };
   useEffect(() => {
@@ -204,7 +253,8 @@ export const NumberInput = function NumberInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
   useEffect(() => {
-    visibility !== properties.visibility && setVisibility(properties.visibility);
+    visibility !== properties.visibility &&
+      setVisibility(properties.visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
   useEffect(() => {
@@ -218,7 +268,7 @@ export const NumberInput = function NumberInput({
     const newValue = (value || 0) + 1;
     setValue(newValue);
     if (!isNaN(newValue)) {
-      setExposedVariable('value', newValue).then(fireEvent('onChange'));
+      setExposedVariable("value", newValue).then(fireEvent("onChange"));
     }
   };
   const handleDecrement = (e) => {
@@ -226,119 +276,194 @@ export const NumberInput = function NumberInput({
     const newValue = (value || 0) - 1;
     setValue(newValue);
     if (!isNaN(newValue)) {
-      setExposedVariable('value', newValue).then(fireEvent('onChange'));
+      setExposedVariable("value", newValue).then(fireEvent("onChange"));
     }
   };
   useEffect(() => {
-    setExposedVariable('setFocus', async function () {
+    setExposedVariable("setFocus", async function () {
       inputRef.current.focus();
     });
-    setExposedVariable('setBlur', async function () {
+    setExposedVariable("setBlur", async function () {
       inputRef.current.blur();
     });
-    setExposedVariable('setText', async function (text) {
+    setExposedVariable("setText", async function (text) {
       if (text) {
         const newValue = Number(parseFloat(text));
         setValue(newValue);
-        setExposedVariable('value', text).then(fireEvent('onChange'));
+        setExposedVariable("value", text).then(fireEvent("onChange"));
       }
     });
 
-    setExposedVariable('clear', async function () {
-      setValue('');
-      setExposedVariable('value', '').then(fireEvent('onChange'));
+    setExposedVariable("clear", async function () {
+      setValue("");
+      setExposedVariable("value", "").then(fireEvent("onChange"));
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // const loaderStyle = {
+  //   right:
+  //     alignment == "top"
+  //       ? `33px`
+  //       : direction == "left"
+  //       ? `33px`
+  //       : `${labelWidth + 35}px`,
+  //   top: alignment == "side" ? "" : `51%`,
+  //   transform: alignment == "top" && label?.length == 0 && "translateY(-50%)",
+  //   zIndex:3
+  // };
+  const loaderStyle = {
+    right:
+      direction === "right" &&
+      defaultAlignment === "side" &&
+      ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0))
+        ? `${labelWidth+23+20}px` //
+        : padding == "default"
+        ? "31px"
+        : "31px",
+
+    // top: `${defaultAlignment === 'top' ? '53%' : ''}`,
+    // transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
+    top: `${
+      defaultAlignment === "top"
+        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0)) &&
+          "calc(50% + 10px)"
+        : ""
+    }`,
+    transform:
+      defaultAlignment === "top" &&
+      ((label?.length > 0 && width > 0) || (auto && width == 0 && label&& label?.length != 0)) &&
+      " translateY(-50%)",
+    zIndex: 3,
+  };
 
   const renderInput = () => {
-    const loaderStyle = {
-      right: alignment == 'top' ? `33px` : direction == 'left' ? `33px` : `${labelWidth + 35}px`,
-      top: alignment == 'side' ? '' : `53%`,
-      transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
-    };
-
     return (
       <>
         <div
           data-disabled={disable || loading}
-          className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
-            direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
+          className={`text-input  d-flex  ${
+            defaultAlignment === "top" &&
+            ((width != 0 && label && label?.length != 0) ||
+              (auto && width == 0 && label && label?.length != 0))
+              ? "flex-column"
+              : "align-items-center "
+          }  ${
+            direction === "right" && defaultAlignment === "side"
+              ? "flex-row-reverse"
+              : ""
           }
-         ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
-         ${visibility || 'invisible'}`}
+         ${
+           direction === "right" && defaultAlignment === "top"
+             ? "text-right"
+             : ""
+         }
+         ${visibility || "invisible"}`}
           style={{
-            padding: padding === 'default' ? '2px' : '',
-            position: 'relative',
-            width: '100%',
-            display: !visibility ? 'none' : 'flex',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
+            position: "relative",
+            width: "100%",
+            display: !visibility ? "none" : "flex",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
           }}
         >
           {label && (width > 0 || auto) && (
             <label
               ref={labelRef}
               style={{
-                color: darkMode && color === '#11181C' ? '#fff' : color,
-                width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${width}%` : '100%',
-                maxWidth: auto && defaultAlignment === 'side' ? '70%' : '100%',
-                marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '9px' : '',
-                marginLeft: label?.length > 0 && direction === 'right' && defaultAlignment === 'side' ? '9px' : '',
-                display: 'flex',
+                color: darkMode && color === "#11181C" ? "#fff" : color,
+                width:
+                  label?.length === 0
+                    ? "0%"
+                    : auto
+                    ? "auto"
+                    : defaultAlignment === "side"
+                    ? `${_width}%`
+                    : "100%",
+                maxWidth: defaultAlignment === "side" ? "70%" : "100%",
+                marginRight:
+                  label?.length > 0 &&
+                  direction === "left" &&
+                  defaultAlignment === "side"
+                    ? "12px"
+                    : "",
+                marginLeft:
+                  label?.length > 0 &&
+                  direction === "right" &&
+                  defaultAlignment === "side"
+                    ? "12px"
+                    : "",
+                display: "flex",
                 fontWeight: 500,
-                justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
-                fontSize: '12px',
-                height: '20px',
+                justifyContent:
+                  direction == "right" ? "flex-end" : "flex-start",
+                fontSize: "12px",
+                height: defaultAlignment === "top" && "20px",
+                // flex: '1',
+                // whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
               }}
             >
-              <span
+              <p
                 style={{
-                  overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
-                  textOverflow: 'ellipsis', // Display ellipsis for overflowed content
-                  whiteSpace: 'nowrap',
-                  display: 'block',
+                  position: "relative", // Ensure the parent element is positioned relatively
+                  overflow: label?.length > 18 && "hidden", // Hide any content that overflows the box
+                  textOverflow: "ellipsis", // Display ellipsis for overflowed content
+                  whiteSpace: "nowrap",
+                  display: "block",
+                  margin: "0px",
+                  // flex: "1",
                 }}
               >
                 {label}
-              </span>
-              <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
+                {isMandatory && <span style={{ color: "#DB4324" }}>*</span>}
+              </p>
             </label>
           )}
-          {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
-            <IconElement
-              style={{
-                width: '16px',
-                height: '16px',
-
-                left:
-                  direction === 'right'
-                    ? padding == 'default'
-                      ? '13px'
-                      : '11px'
-                    : defaultAlignment === 'top'
-                    ? padding == 'default'
-                      ? '13px'
-                      : '11px'
-                    : `${labelWidth + 15}px`,
-                position: 'absolute',
-                top: `${
-                  defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
-                }`,
-                transform: ' translateY(-50%)',
-                color: iconColor,
-              }}
-              stroke={1.5}
-            />
-          )}
+          {component?.definition?.styles?.iconVisibility?.value &&
+            !isResizing && (
+              <IconElement
+                data-cy={"text-input-icon"}
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  left:
+                    direction === "right"
+                      ? padding == "default"
+                        ? "11px"
+                        : "11px"
+                      : defaultAlignment === "top"
+                      ? padding == "default"
+                        ? "11px"
+                        : "11px"
+                      : (label?.length > 0 && width > 0) ||
+                        (auto && width == 0 && label && label?.length != 0)
+                      ? `${labelWidth + 23}px`
+                      : "11px", //23 ::  is 10 px inside the input + 1 px border + 12px margin right
+                  position: "absolute",
+                  top: `${
+                    defaultAlignment === "side"
+                      ? "50%"
+                      : (label?.length > 0 && width > 0) ||
+                        (auto && width == 0 && label && label?.length != 0)
+                      ? "calc(50% + 10px)"
+                      : "50%"
+                  }`,
+                  transform: " translateY(-50%)",
+                  color: iconColor,
+                  zIndex: 3,
+                }}
+                stroke={1.5}
+              />
+            )}
           <input
             ref={inputRef}
             disabled={disable || loading}
             onChange={handleChange}
             onBlur={handleBlur}
             type="number"
-            className={`${!isValid && showValidationError ? 'is-invalid' : ''} input-number  tj-text-input-widget`}
+            className={`${
+              !isValid && showValidationError ? "is-invalid" : ""
+            } input-number  tj-text-input-widget`}
             placeholder={placeholder}
             style={computedStyles}
             value={value}
@@ -346,17 +471,17 @@ export const NumberInput = function NumberInput({
             min={minValue}
             max={maxValue}
             onKeyUp={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === "Enter") {
                 setValue(e.target.value);
-                setExposedVariable('value', e.target.value);
-                fireEvent('onEnterPressed');
+                setExposedVariable("value", e.target.value);
+                fireEvent("onEnterPressed");
               }
             }}
             onFocus={(e) => {
               setIsFocused(true);
               e.stopPropagation();
               setTimeout(() => {
-                fireEvent('onFocus');
+                fireEvent("onFocus");
               }, 0);
             }}
           />
@@ -364,33 +489,50 @@ export const NumberInput = function NumberInput({
             <>
               <div onClick={(e) => handleIncrement(e)}>
                 <SolidIcon
-                  width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  width={
+                    padding == "default"
+                      ? `${height / 2 - 1}px`
+                      : `${height / 2 + 1}px`
+                  }
                   height={`${
-                    height == 40 ? (padding == 'default' ? 18 : 20) : padding == 'default' ? height / 2 - 3 : height / 2
+                    height == 40
+                      ? padding == "default"
+                        ? 18
+                        : 20
+                      : padding == "default"
+                      ? height / 2 - 3
+                      : height / 2
                   }px`}
                   style={{
                     top:
-                      defaultAlignment === 'top' && label?.length > 0 && width > 0
-                        ? padding == 'default'
-                          ? '23px'
-                          : '21px'
-                        : padding == 'default'
-                        ? '3px'
-                        : '1px',
+                      defaultAlignment === "top" &&
+                      label?.length > 0 &&
+                      width > 0
+                        ? padding == "default"
+                          ? "21px"
+                          : "21px"
+                        : padding == "default"
+                        ? "1px"
+                        : "1px",
                     right:
                       labelWidth == 0
-                        ? padding == 'default'
-                          ? '3px'
-                          : '0px'
-                        : alignment == 'side' && direction === 'right'
-                        ? `${labelWidth + 5}px`
-                        : padding == 'default'
-                        ? '3px'
-                        : '1px',
-                    borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                    borderBottom: darkMode ? '.5px solid #313538' : '0.5px solid #D7D7D7',
+                        ? padding == "default"
+                          ? "1px"
+                          : "1px"
+                        : alignment == "side" && direction === "right"
+                        ? `${labelWidth + 13}px`
+                        : padding == "default"
+                        ? "1px"
+                        : "1px",
+                    borderLeft: darkMode
+                      ? "1px solid #313538"
+                      : "1px solid #D7D7D7",
+                    borderBottom: darkMode
+                      ? ".5px solid #313538"
+                      : "0.5px solid #D7D7D7",
                     borderTopRightRadius: borderRadius - 1,
-                    backgroundColor: !darkMode ? 'white' : 'black',
+                    backgroundColor: !darkMode ? "white" : "black",
+                    zIndex: 3,
                   }}
                   className="numberinput-up-arrow arrow"
                   name="cheveronup"
@@ -402,23 +544,38 @@ export const NumberInput = function NumberInput({
                   style={{
                     right:
                       labelWidth == 0
-                        ? padding == 'default'
-                          ? '3px'
-                          : '0px'
-                        : alignment == 'side' && direction === 'right'
-                        ? `${labelWidth + 5}px`
-                        : padding == 'default'
-                        ? '3px'
-                        : '1px',
-                    bottom: padding == 'default' ? '3px' : '1px',
-                    borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                    borderTop: darkMode ? '0.5px solid #313538' : '0.5px solid #D7D7D7',
+                        ? padding == "default"
+                          ? "1px"
+                          : "1px"
+                        : alignment == "side" && direction === "right"
+                        ? `${labelWidth + 13}px`
+                        : padding == "default"
+                        ? "1px"
+                        : "1px",
+                    bottom: padding == "default" ? "1px" : "1px",
+                    borderLeft: darkMode
+                      ? "1px solid #313538"
+                      : "1px solid #D7D7D7",
+                    borderTop: darkMode
+                      ? "0.5px solid #313538"
+                      : "0.5px solid #D7D7D7",
                     borderBottomRightRadius: borderRadius - 1,
-                    backgroundColor: !darkMode ? 'white' : 'black',
+                    backgroundColor: !darkMode ? "white" : "black",
+                    zIndex: 3,
                   }}
-                  width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  width={
+                    padding == "default"
+                      ? `${height / 2 - 1}px`
+                      : `${height / 2 + 1}px`
+                  }
                   height={`${
-                    height == 40 ? (padding == 'default' ? 18 : 20) : padding == 'default' ? height / 2 - 3 : height / 2
+                    height == 40
+                      ? padding == "default"
+                        ? 18
+                        : 20
+                      : padding == "default"
+                      ? height / 2 - 3
+                      : height / 2
                   }px`}
                   className="numberinput-down-arrow arrow"
                   name="cheverondown"
@@ -435,7 +592,7 @@ export const NumberInput = function NumberInput({
             data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
             style={{
               color: errTextColor,
-              textAlign: direction == 'left' && 'end',
+              textAlign: direction == "left" && "end",
             }}
           >
             {showValidationError && validationError}
