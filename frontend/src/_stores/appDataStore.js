@@ -19,7 +19,7 @@ function dfs(node, oldRef, newRef) {
           node[key] = value.replace(oldRef, newRef);
         }
       } else if (typeof value === 'object') {
-        dfs(value, oldRef, newRef); // Recursive exploration
+        dfs(value, oldRef, newRef);
       }
     }
   }
@@ -181,9 +181,11 @@ useAppDataStore.subscribe(
   (state) => {
     const isComponentNameUpdated = state[itemToObserve]?.componentNameUpdated;
     const { appDefinition, currentPageId, isUpdatingEditorStateInProcess } = useEditorStore.getState();
+    const { dataQueries } = useDataQueriesStore.getState();
 
     if (isComponentNameUpdated && !isUpdatingEditorStateInProcess) {
       const components = JSON.parse(JSON.stringify(state.components));
+      const _dataQueries = JSON.parse(JSON.stringify(dataQueries));
       const updatedNames = [];
 
       const referenceManager = useResolveStore.getState().referenceMapper;
@@ -208,10 +210,11 @@ useAppDataStore.subscribe(
         components.forEach((c) => {
           c.definition = dfs(c.definition, component.name, component.newName);
         });
-      });
 
-      // const dataQueries = useDataQueriesStore((state) => state.dataQueries, shallow);
-      // console.log('---arpit name changed of component', { isUpdatingEditorStateInProcess });
+        _dataQueries.forEach((query) => {
+          query.options = dfs(query.options, component.name, component.newName);
+        });
+      });
 
       const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
@@ -224,6 +227,13 @@ useAppDataStore.subscribe(
 
       const diffPatches = diff(appDefinition, newAppDefinition);
 
+      const queriesToUpdate = _.differenceWith(_dataQueries, dataQueries, _.isEqual).map((q) => {
+        return {
+          id: q.id,
+          options: q.options,
+        };
+      });
+
       useAppDataStore.getState().actions.updateState({
         appDiffOptions: { componentDefinitionChanged: true },
         appDefinitionDiff: diffPatches,
@@ -233,6 +243,8 @@ useAppDataStore.subscribe(
         appDefinition: newAppDefinition,
         isUpdatingEditorStateInProcess: true,
       });
+
+      useDataQueriesStore.getState().actions.updateBulkQueryOptions(queriesToUpdate, state.currentVersionId);
     }
   },
   (state) => [state[itemToObserve]]

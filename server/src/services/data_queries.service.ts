@@ -17,6 +17,7 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import allPlugins from '@tooljet/plugins/dist/server';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { IUpdatingReferencesOptions } from '@dto/data-query.dto';
 
 @Injectable()
 export class DataQueriesService {
@@ -100,6 +101,24 @@ export class DataQueriesService {
     });
 
     return dataQuery;
+  }
+
+  async bulkUpdateQueryOptions(dataQueriesOptions: IUpdatingReferencesOptions[]) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      for (const { id, options } of dataQueriesOptions) {
+        await manager.save(DataQuery, {
+          id,
+          options,
+          updatedAt: new Date(),
+        });
+      }
+
+      return await manager
+        .createQueryBuilder(DataQuery, 'data_query')
+        .select(['id', 'options', 'updated_at'])
+        .where('data_query.id IN (:...ids)', { ids: dataQueriesOptions.map((query) => query.id) })
+        .execute();
+    });
   }
 
   async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id, environmentId = undefined) {
