@@ -166,6 +166,7 @@ const PageHandleField = ({ page, updatePageHandle }) => {
 
 const Field = ({ id, text, iconSrc, customClass = '', closeMenu, disabled = false, callback = () => null }) => {
   const handleOnClick = (e) => {
+    e.preventDefault();
     e.stopPropagation();
     closeMenu();
     callback(id);

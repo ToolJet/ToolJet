@@ -25,7 +25,6 @@ export default function AppCard({
   canUpdateApp,
   currentFolder,
   appType,
-  basicPlan = false,
 }) {
   const canUpdate = canUpdateApp(app);
   const [hoverRef, isHovered] = useHover();
@@ -78,21 +77,15 @@ export default function AppCard({
             ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
             : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
         }
-        show={!basicPlan}
       >
         <button
           type="button"
           className={cx(
             ` launch-button tj-text-xsm ${
-              app?.current_version_id === null || app?.is_maintenance_on || basicPlan
-                ? 'tj-disabled-btn '
-                : 'tj-tertiary-btn'
+              app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
             }`
           )}
           onClick={() => {
-            if (basicPlan) {
-              return;
-            }
             if (app?.current_version_id) {
               window.open(urlJoin(window.public_config?.TOOLJET_HOST, getSubpath() ?? '', `/applications/${app.slug}`));
             } else {
@@ -120,7 +113,7 @@ export default function AppCard({
   const editButtonStyle = appType === 'workflow' ? { width: '100%' } : {};
 
   return (
-    <div className="card homepage-app-card animation-fade">
+    <div className="card homepage-app-card">
       <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
@@ -145,6 +138,7 @@ export default function AppCard({
                   darkMode={darkMode}
                   currentFolder={currentFolder}
                   appType={appType}
+                  appCreationMode={app?.creation_mode || app?.creationMode}
                 />
               )}
             </div>

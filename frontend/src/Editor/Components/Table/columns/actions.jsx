@@ -1,6 +1,13 @@
 import React from 'react';
 
-const generateActionsData = ({ actions: actionItems, columnSizes, defaultColumn, fireEvent, setExposedVariables }) => {
+const generateActionsData = ({
+  actions: actionItems,
+  columnSizes,
+  defaultColumn,
+  fireEvent,
+  setExposedVariables,
+  tableActionEvents,
+}) => {
   const leftActions = (actions = actionItems) => actions.filter((action) => action.position === 'left');
   const rightActions = (actions = actionItems) =>
     actions.filter((action) => [undefined, 'right'].includes(action.position));
@@ -27,12 +34,12 @@ const generateActionsData = ({ actions: actionItems, columnSizes, defaultColumn,
                     setExposedVariables({
                       selectedRowId: cell.row.id,
                       selectedRow: cell.row.original,
-                    }).then(() => {
-                      fireEvent('onTableActionButtonClicked', {
-                        data: cell.row.original,
-                        rowId: cell.row.id,
-                        action,
-                      });
+                    });
+                    fireEvent('onTableActionButtonClicked', {
+                      data: cell.row.original,
+                      rowId: cell.row.id,
+                      action,
+                      tableActionEvents,
                     });
                   }}
                   disabled={action.isDisabled}
@@ -67,12 +74,12 @@ const generateActionsData = ({ actions: actionItems, columnSizes, defaultColumn,
                     setExposedVariables({
                       selectedRowId: cell.row.id,
                       selectedRow: cell.row.original,
-                    }).then(() => {
-                      fireEvent('onTableActionButtonClicked', {
-                        data: cell.row.original,
-                        rowId: cell.row.id,
-                        action,
-                      });
+                    });
+                    fireEvent('onTableActionButtonClicked', {
+                      data: cell.row.original,
+                      rowId: cell.row.id,
+                      action,
+                      tableActionEvents,
                     });
                   }}
                   disabled={action.isDisabled}

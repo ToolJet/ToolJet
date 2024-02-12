@@ -6,13 +6,7 @@ export const licenseService = {
   update,
   getFeatureAccess,
   getDomainsList,
-  getLicenseStatus,
 };
-
-function getLicenseStatus() {
-  const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/license/status`, requestOptions).then(handleResponse);
-}
 
 function get() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };

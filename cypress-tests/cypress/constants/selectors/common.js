@@ -59,7 +59,6 @@ export const commonSelectors = {
   filterButton: '[data-cy="filter-button"]',
   copyIcon: '[data-cy="copy-icon"]',
   addWorkspaceButton: '[data-cy="add-new-workspace-link"]',
-  workspaceNameInput: '[data-cy="workspace-name-input-field"]',
   createWorkspaceButton: '[data-cy="create-workspace-button"]',
   workspaceLoginUrl: "[data-cy=workspace-login-url]",
   workspaceName: '[data-cy="workspace-name"]',
@@ -166,6 +165,7 @@ export const commonSelectors = {
   emptyAppCreateButton: "[data-cy='button-new-app-from-scratch']",
   globalDataSourceIcon: '[data-cy="icon-global-datasources"]',
   addNewDataSourceButton: '[data-cy="add-new-data-source-button"]',
+  saveButton: '[data-cy="save-button"]',
 
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
@@ -225,7 +225,35 @@ export const commonSelectors = {
   nameErrorText: '[data-cy="name-error-text"]',
   valueErrorText: '[data-cy="value-error-text"]',
   releaseButton: '[data-cy="button-release"]',
-  warningText: '[data-cy="warning-text"]'
+  warningText: '[data-cy="warning-text"]',
+  leftSideBarSettingsButton: '[data-cy="left-sidebar-settings-button"]',
+  modalHeader: '[data-cy="modal-header"]',
+  modalDescription: '[data-cy="modal-description"]',
+  backToHomeButton: '[data-cy="back-to-home-button"]',
+  createAppTitle: '[data-cy="create-app-title"]',
+  appNameLabel: '[data-cy="app-name-label"]',
+  appNameInput: '[data-cy="app-name-input"]',
+  appNameInfoLabel: '[data-cy="app-name-info-label"]',
+  createAppButton: '[data-cy="+-create-app"]',
+  renameApptitle: '[data-cy="rename-app-title"]',
+  renameAppButton: '[data-cy="rename-app"]',
+  cloneAppTitle: '[data-cy="clone-app-title"]',
+  cloneAppButton: '[data-cy="clone-app"]',
+  appNameErrorLabel: '[data-cy="app-name-error-label"]',
+  importAppTitle: '[data-cy="import-app-title"]',
+  importAppButton: '[data-cy="import-app"]',
+  chooseFromTemplateButton: '[data-cy="choose-from-template-button"]',
+  CreateAppFromTemplateButton: '[data-cy="create-new-app-from-template-title"]',
+  listItem: (ItemName) => {
+    return `[data-cy="${cyParamName(ItemName)}-list-item"]`;
+  },
+  label: (labelName) => {
+    return `[data-cy="${labelName
+      .replace(/\s+|(?<=[\w-])\s+(?=\w)|[^\w\s]/g, "-")
+      .toLowerCase()}-label"]`;
+  },
+  linkReadDocumentation: '[data-cy="link-read-documentation"]',
+
 };
 
 export const commonWidgetSelector = {
@@ -340,4 +368,11 @@ export const commonWidgetSelector = {
   modalCloseButton: '[data-cy="modal-close-button"]',
   iframeLinkLabel: '[data-cy="iframe-link-label"]',
   ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
+  appSlugLabel: '[data-cy="app-slug-label"]',
+  appSlugInput: '[data-cy="app-slug-input-field"]',
+  appSlugInfoLabel: '[data-cy="app-slug-info-label"]',
+  appLinkLabel: '[data-cy="app-link-label"]',
+  appLinkField: '[data-cy="app-link-field"]',
+  appSlugErrorLabel: '[data-cy="app-slug-error-label"]',
+  appLinkSucessLabel: '[data-cy="app-link-success-label"]',
 };

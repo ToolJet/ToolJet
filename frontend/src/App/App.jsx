@@ -22,6 +22,7 @@ import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { GlobalDatasources } from '@/GlobalDatasources';
+import { GitSyncConfig } from '@/GitSyncComponent/GitSyncConfig';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
@@ -128,6 +129,7 @@ class AppComponent extends React.Component {
 
   render() {
     const { updateAvailable, darkMode } = this.state;
+
     let toastOptions = {
       style: {
         wordBreak: 'break-all',
@@ -221,6 +223,15 @@ class AppComponent extends React.Component {
               />
               <Route
                 exact
+                path="/applications/:slug/versions/:versionId/environments/:environmentId/:pageHandle?"
+                element={
+                  <PrivateRoute>
+                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
                 path="/oauth2/authorize"
                 element={
                   <PrivateRoute>
@@ -239,16 +250,39 @@ class AppComponent extends React.Component {
               >
                 <Route
                   path="users"
-                  element={<ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                  element={
+                    <AdminRoute>
+                      <ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
                 />
                 <Route
                   path="groups"
-                  element={<ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                  element={
+                    <AdminRoute>
+                      <ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
                 />
-                <Route path="sso" element={<ManageSSO switchDarkMode={this.switchDarkMode} darkMode={darkMode} />} />
+                <Route
+                  path="sso"
+                  element={
+                    <AdminRoute>
+                      <ManageSSO switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
                 <Route
                   path="workspace-variables"
                   element={<ManageOrgVars switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="configure-git"
+                  element={
+                    <AdminRoute>
+                      <GitSyncConfig switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
                 />
                 <Route
                   path="workspace-constants"
@@ -262,7 +296,11 @@ class AppComponent extends React.Component {
                 />
                 <Route
                   path="custom-styles"
-                  element={<CustomStylesEditor switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                  element={
+                    <AdminRoute>
+                      <CustomStylesEditor switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
                 />
               </Route>
               <Route

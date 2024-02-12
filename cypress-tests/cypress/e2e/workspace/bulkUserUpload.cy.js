@@ -131,26 +131,26 @@ describe("Bulk user upload", () => {
     cy.get(usersSelector.uploadedFileData).should("contain", "invite_users");
     cy.get(commonSelectors.cancelButton).click();
 
-    // cy.get(usersSelector.buttonAddUsers).click();
-    // cy.get(usersSelector.buttonUploadCsvFile).click();
-    // cy.get(usersSelector.inputFieldBulkUpload).selectFile(invite_users, {
-    //   force: true,
-    // });
-    // cy.get(usersSelector.buttonUploadUsers).click();
-    // cy.wait(1000);
-    // cy.get(".go2072408551")
-    //   .should("be.visible")
-    //   .and("have.text", "250 users are being added");
-    // cy.wait(1000);
-    // common.searchUser("test12@gmail.com");
-    // cy.contains("td", "test12@gmail.com")
-    //   .parent()
-    //   .within(() => {
-    //     cy.get("td small").should("have.text", "invited");
-    //   });
-    // common.navigateToManageGroups();
-    // cy.get(groupsSelector.groupLink("Admin")).click();
-    // cy.get(groupsSelector.usersLink).click();
-    // cy.contains("test12@gmail.com").should("be.visible");
+    cy.get(usersSelector.buttonAddUsers).click();
+    cy.get(usersSelector.buttonUploadCsvFile).click();
+    cy.get(usersSelector.inputFieldBulkUpload).selectFile(invite_users, {
+      force: true,
+    });
+    cy.get(usersSelector.buttonUploadUsers).click();
+    cy.wait(1000);
+    cy.get(".go2072408551")
+      .should("be.visible")
+      .and("have.text", "250 users are being added");
+    cy.wait(1000);
+    common.searchUser("test12@gmail.com");
+    cy.contains("td", "test12@gmail.com")
+      .parent()
+      .within(() => {
+        cy.get("td small").should("have.text", "invited");
+      });
+    common.navigateToManageGroups();
+    cy.get(groupsSelector.groupLink("Admin")).click();
+    cy.get(groupsSelector.usersLink).click();
+    cy.contains("test12@gmail.com").should("be.visible");
   });
 });

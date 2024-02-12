@@ -23,6 +23,7 @@ export interface Terms {
     whiteLabelling?: boolean;
     multiEnvironment?: boolean;
     multiPlayerEdit?: boolean;
+    gitSync?: boolean;
     comments?: boolean;
   };
   type?: LICENSE_TYPE;
@@ -34,5 +35,18 @@ export interface Terms {
     generatedFrom?: 'API';
     customerId?: string;
     createdBy?: string;
+  };
+  workflows?: {
+    execution_timeout?: number;
+    workspace: {
+      total?: number;
+      daily_executions?: number;
+      monthly_executions?: number;
+    };
+    instance: {
+      total?: number;
+      daily_executions?: number;
+      monthly_executions?: number;
+    };
   };
 }

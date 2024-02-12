@@ -39,7 +39,11 @@ const Limits = () => {
   ) : (
     <>
       <nav className="nav nav-tabs groups-sub-header-wrap">
-        <a onClick={() => setCurrentTab('apps')} className={cx('nav-item nav-link', { active: currentTab === 'apps' })}>
+        <a
+          onClick={() => setCurrentTab('apps')}
+          className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
+          data-cy="apps-sub-tab"
+        >
           <SolidIcon
             className="manage-group-tab-icons"
             fill={currentTab === 'apps' ? '#3E63DD' : '#C1C8CD'}
@@ -52,7 +56,7 @@ const Limits = () => {
         <a
           onClick={() => setCurrentTab('workspaces')}
           className={cx('nav-item nav-link', { active: currentTab === 'workspaces' })}
-          data-cy="users-link"
+          data-cy="workspaces-sub-tab"
         >
           <SolidIcon
             name="workspace"
@@ -66,7 +70,7 @@ const Limits = () => {
         <a
           onClick={() => setCurrentTab('users')}
           className={cx('nav-item nav-link', { active: currentTab === 'users' })}
-          data-cy="permissions-link"
+          data-cy="users-sub-tab"
         >
           <SolidIcon
             className="manage-group-tab-icons"
@@ -80,7 +84,7 @@ const Limits = () => {
           <a
             onClick={() => setCurrentTab('tables')}
             className={cx('nav-item nav-link', { active: currentTab === 'tables' })}
-            data-cy="tables-link"
+            data-cy="tables-sub-tab"
           >
             <SolidIcon
               name="table"
@@ -99,7 +103,12 @@ const Limits = () => {
             <div className="limits-content mt-3">
               {limitsData.map((limit) => (
                 <div key={limit?.label} className="d-flex align-items-center metric">
-                  <div className="tj-text-sm">Number of {limit?.label}</div>
+                  <div
+                    className="tj-text-sm"
+                    data-cy={`number-of-${limit?.label.toLowerCase().replace(/\s+/g, '-')}-label`}
+                  >
+                    Number of {limit?.label}
+                  </div>
                   <div className="input-wrapper">
                     <input
                       readOnly
@@ -108,9 +117,12 @@ const Limits = () => {
                         'error-border': !limit?.canAddUnlimited && limit?.current > limit?.total,
                       })}
                       value={limit?.canAddUnlimited ? 'Unlimited' : `${limit?.current}/${limit?.total}`}
+                      data-cy={`${limit?.label.toLowerCase().replace(/\s+/g, '-')}-field`}
                     />
                     {!limit?.canAddUnlimited && limit?.current > limit?.total && (
-                      <div className="error-text">Exceeding Limit</div>
+                      <div className="error-text" data-cy="error-label">
+                        Exceeding Limit
+                      </div>
                     )}
                   </div>
                 </div>

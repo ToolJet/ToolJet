@@ -11,7 +11,7 @@ function InfoOrErrorBox({ active, message, isError, isWarning, darkMode, additio
     width: '200px',
     height: '32px',
     borderRadius: '6px',
-    border: `1px solid ${darkMode ? 'var(--dark-border-color, #2D3748)' : 'var(--light-border-color, #FFF0EE)'}`,
+    border: `1px solid ${darkMode ? 'var(--dark-border-color, #2D3748)' : 'var(--light-border-color, #E0E0E0)'}`,
     background: darkMode ? 'var(--dark-bg-01, #1E293B)' : 'var(--base-white-00, #FFF)',
     boxShadow: '0px 1px 2px 0px rgba(16, 24, 40, 0.05)',
     color: color,

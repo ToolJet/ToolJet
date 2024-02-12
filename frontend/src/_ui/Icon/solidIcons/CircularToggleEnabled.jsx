@@ -8,6 +8,7 @@ const CircularToggleEnabled = ({ fill = '#3E63DD', width = '24', className = '',
     viewBox={viewBox}
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
+    data-cy="circular-toggle-enabled-icon"
   >
     <circle cx="9.41406" cy="9" r="9" fill={fill} />
     <path

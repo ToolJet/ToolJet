@@ -24,15 +24,13 @@ data.dsEdit = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("User permissions", () => {
   beforeEach(() => {
-    cy.apiLogin();
-    cy.visit("/my-workspace");
+    cy.defaultWorkspaceLogin()
     resetDsPermissions();
     deleteAssignedDatasources();
     cy.viewport(1200, 1300);
   });
   before(() => {
-    cy.apiLogin();
-    cy.visit("/my-workspace");
+    cy.defaultWorkspaceLogin()
     addNewUserMW(data.firstName, data.email);
     cy.logoutApi();
   });
@@ -59,8 +57,7 @@ describe("User permissions", () => {
     cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
 
     cy.logoutApi();
-    cy.apiLogin();
-    cy.visit("/my-workspace");
+    cy.defaultWorkspaceLogin()
     common.navigateToManageGroups();
     cy.get(eeGroupsSelector.datasourceLink).click();
     cy.wait(500);
@@ -95,8 +92,8 @@ describe("User permissions", () => {
     );
 
     cy.logoutApi();
-    cy.apiLogin();
-    cy.visit("/my-workspace");
+    cy.defaultWorkspaceLogin()
+
     common.navigateToManageGroups();
     cy.get(eeGroupsSelector.datasourceLink).click();
     cy.get(

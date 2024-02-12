@@ -8,20 +8,28 @@ import { dashboardSelector } from "Selectors/dashboard";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
 
-describe("dashboard", () => {
-  before(() => {
+describe("dashboard", {
+  retries: {
+    runMode: 2,
+  },
+}, () => {
+  const selector =
+    Cypress.env("environment") === "Enterprise"
+      ? commonEeSelectors.instanceSettingIcon
+      : commonEeSelectors.settingsIcon;
+
+
+  it("should verify the elements on empty dashboard", () => {
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=&type=front-end", {
       fixture: "intercept/emptyDashboard.json",
     }).as("emptyDashboard");
-    cy.intercept("GET", "/api/folders?searchKey=&type=front-end", { folders: [] }).as(
-      "folders"
-    );
+    cy.intercept("GET", "/api/folders?searchKey=&type=front-end", {
+      folders: [],
+    }).as("folders");
     login();
     cy.wait("@emptyDashboard");
     cy.wait("@folders");
-  });
 
-  it("should verify the elements on empty dashboard", () => {
     cy.get(commonSelectors.homePageLogo).should("be.visible");
     cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
@@ -92,7 +100,7 @@ describe("dashboard", () => {
     });
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      dashboardText.dashboardAppsHeaderLabel
+      " All apps"
     );
 
     cy.get(dashboardSelector.versionLabel).should("be.visible");
@@ -121,9 +129,9 @@ describe("dashboard", () => {
     cy.reload();
     verifyTooltip('[data-cy="icon-dashboard"]', "Dashboard");
     verifyTooltip('[data-cy="icon-database"]', "Database");
-    verifyTooltip(commonSelectors.globalDataSourceIcon, "Data Sources");
+    verifyTooltip(commonSelectors.globalDataSourceIcon, "Data sources");
     verifyTooltip(commonSelectors.workspaceSettingsIcon, "Workspace settings");
-    verifyTooltip(commonEeSelectors.instanceSettingIcon, "Settings");
+    verifyTooltip(selector, "Settings");
     verifyTooltip(commonEeSelectors.auditLogIcon, "Audit logs");
     verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");
     verifyTooltip(dashboardSelector.modeToggle, "Mode");

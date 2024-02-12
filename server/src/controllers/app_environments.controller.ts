@@ -32,7 +32,7 @@ export class AppEnvironmentsController {
       organizationId = req.headers['tj-workspace-id'];
     }
     // TODO: add fetchEnvironments privilege
-    const environment = await this.appEnvironmentServices.get(organizationId);
+    const environment = await this.appEnvironmentServices.get(organizationId, null, false, null, true);
     return decamelizeKeys({ environment });
   }
 

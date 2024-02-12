@@ -189,6 +189,13 @@
             }
         }
     }
+
+    .empty-ds-container {
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%, 0);
+        top: 30%;
+    }
 }
 
 .datasources-info {
@@ -255,10 +262,56 @@
                 font-size: 14px;
                 font-weight: 500;
             }
+
+            &:disabled {
+                background: var(--slate6) !important;
+                color: var(--slate9) !important;
+            }
         }
     }
 }
 
 .delete-modal {
     z-index: 1060 !important;
+}
+
+.data-source-loader-container {
+    width: 80%;
+    margin: auto;
+
+    .react-loading-skeleton {
+        border-radius: 6px;
+        background-color: var(--slate3);
+    }
+
+    .label-loader {
+        height: 16px;
+        width: 20%;
+        margin-bottom: 5px;
+    }
+
+    .input-loader {
+        height: 32px;
+        margin-bottom: 15px;
+    }
+}
+
+.add-plugins-container {
+    padding: 10px 0px;
+    margin: auto;
+    width: 28%;
+    height: 300px;
+    text-align: center;
+
+    .warning-container {
+        padding: 5px;
+        background-color: var(--slate3);
+        width: 50px;
+        height: 50px;
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        border-radius: 6px;
+        margin: auto;
+    }
 }

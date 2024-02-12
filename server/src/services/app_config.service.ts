@@ -38,6 +38,7 @@ export class AppConfigService {
       'ENABLE_TOOLJET_DB',
       'LANGUAGE',
       'ENABLE_PRIVATE_APP_EMBED',
+      'DISABLE_WEBHOOKS',
     ];
   }
 

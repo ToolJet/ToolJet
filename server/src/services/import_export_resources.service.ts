@@ -45,7 +45,7 @@ export class ImportExportResourcesService {
     return resourcesExport;
   }
 
-  async import(user: User, importResourcesDto: ImportResourcesDto, cloning = false) {
+  async import(user: User, importResourcesDto: ImportResourcesDto, cloning = false, isGitApp = false) {
     const tableNameMapping = {};
     const imports = { app: [], tooljet_database: [] };
 
@@ -70,8 +70,12 @@ export class ImportExportResourcesService {
           appImportDto.appName,
           {
             tooljet_database: tableNameMapping,
-          }
+          },
+          isGitApp,
+          importResourcesDto.tooljet_version,
+          cloning
         );
+
         imports.app.push({ id: createdApp.id, name: createdApp.name });
 
         await this.auditLoggerService.perform({

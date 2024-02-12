@@ -1,5 +1,6 @@
 import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs/common';
 
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ormconfig, tooljetDbOrmconfig } from '../ormconfig';
@@ -11,6 +12,7 @@ import { SeedsService } from '@services/seeds.service';
 import { LoggerModule } from 'nestjs-pino';
 import { SentryModule } from './modules/observability/sentry/sentry.module';
 import * as Sentry from '@sentry/node';
+import { WinstonModule } from 'nest-winston';
 
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -50,15 +52,34 @@ import { WorkerModule } from './modules/worker.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LicenseModule } from './modules/license/license.module';
 import { CustomStylesModule } from './modules/custom_styles/custom_styles.module';
+import { AppGitModule } from './modules/app_git/app_git.module';
 import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
+import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { logfileTransportConfig, logFormat } from './helpers/logger.helper';
 
 const imports = [
+  EventEmitterModule.forRoot({
+    wildcard: false,
+    newListener: false,
+    removeListener: false,
+    maxListeners: 5,
+    verboseMemoryLeak: true,
+    ignoreErrors: false,
+  }),
   ScheduleModule.forRoot(),
   BullModule.forRoot({
     redis: {
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT) || 6379,
     },
+  }),
+  WinstonModule.forRootAsync({
+    useFactory: () => ({
+      format: logFormat,
+      transports: process.env.LOG_FILE_PATH ? [logfileTransportConfig(process.env.LOG_FILE_PATH, process.pid)] : [],
+      exitOnError: false,
+    }),
+    inject: [],
   }),
   ConfigModule.forRoot({
     isGlobal: true,
@@ -73,7 +94,6 @@ const imports = [
           development: 'debug',
           test: 'error',
         };
-
         return logLevel[process.env.NODE_ENV] || 'info';
       })(),
       autoLogging: {
@@ -90,6 +110,7 @@ const imports = [
       redact: ['req.headers.authorization'],
     },
   }),
+
   TypeOrmModule.forRoot(ormconfig),
   RequestContextModule,
   AppConfigModule,
@@ -120,6 +141,7 @@ const imports = [
   CopilotModule,
   CustomStylesModule,
   WorkerModule,
+  AppGitModule,
   OrganizationConstantModule,
 ];
 
@@ -150,6 +172,10 @@ if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
 if (process.env.ENABLE_TOOLJET_DB === 'true') {
   imports.unshift(TooljetDbModule);
   imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig));
+}
+
+if (process.env.DISABLE_WEBHOOKS !== 'true') {
+  imports.unshift(WebhooksModule);
 }
 
 @Module({

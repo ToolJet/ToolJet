@@ -92,6 +92,7 @@ describe('apps controller', () => {
             .set('Cookie', userData['tokenCookie'])
             .send({
               name: appName,
+              type: 'app',
             });
 
           expect(response.statusCode).toBe(403);
@@ -103,6 +104,7 @@ describe('apps controller', () => {
           .set('Cookie', adminUserData['tokenCookie'])
           .send({
             name: appName,
+            type: 'app',
           });
 
         expect(response.statusCode).toBe(201);
@@ -131,6 +133,7 @@ describe('apps controller', () => {
         .set('Cookie', loggedUser.tokenCookie)
         .send({
           name: appName,
+          type: 'app',
         });
 
       expect(response.statusCode).toBe(201);
@@ -168,7 +171,11 @@ describe('apps controller', () => {
       const response = await request(app.getHttpServer())
         .post(`/api/apps`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie);
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({
+          name: 'My app',
+          type: 'app',
+        });
 
       expect(response.statusCode).toBe(201);
       expect(response.body.name).toContain('My app');
@@ -579,7 +586,7 @@ describe('apps controller', () => {
     });
   });
 
-  describe('POST /api/apps/:id/clone', () => {
+  describe('POST /api/v2/resources/clone', () => {
     it('should be able to clone the app if user group is admin', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -614,15 +621,21 @@ describe('apps controller', () => {
 
       await createApplicationVersion(app, application);
 
+      const payload = {
+        app: [{ id: application.id, name: `${application.name}_Copy` }],
+        organization_id: application.organizationId,
+      };
+
       let response = await request(app.getHttpServer())
-        .post(`/api/apps/${application.id}/clone`)
+        .post('/api/v2/resources/clone')
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
-        .send({ name: 'App to clone_Copy' });
+        .send(payload);
 
       expect(response.statusCode).toBe(201);
+      expect(response.body.success).toBe(true);
 
-      const appId = response.body.id;
+      const appId = response.body['imports']['app'][0]['id'];
       const clonedApplication = await App.findOneOrFail({ where: { id: appId } });
       expect(clonedApplication.name).toContain('App to clone');
 
@@ -642,18 +655,18 @@ describe('apps controller', () => {
       expect(auditLog.createdAt).toBeDefined();
 
       response = await request(app.getHttpServer())
-        .post(`/api/apps/${application.id}/clone`)
+        .post('/api/v2/resources/clone')
         .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Cookie', developerUserData['tokenCookie'])
-        .send({ name: 'App to clone_Copy' });
+        .send(payload);
 
       expect(response.statusCode).toBe(403);
 
       response = await request(app.getHttpServer())
-        .post(`/api/apps/${application.id}/clone`)
+        .post('/api/v2/resources/clone')
         .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
         .set('Cookie', viewerUserData['tokenCookie'])
-        .send({ name: 'App to clone_Copy' });
+        .send(payload);
 
       expect(response.statusCode).toBe(403);
 
@@ -688,13 +701,15 @@ describe('apps controller', () => {
       const response = await request(app.getHttpServer())
         .post(`/api/apps/${application.id}/clone`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie);
-
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({
+          name: 'App to clone_',
+        });
       expect(response.statusCode).toBe(201);
 
       const appId = response.body.id;
       const clonedApplication = await App.findOneOrFail({ where: { id: appId } });
-      expect(clonedApplication.name).toContain('App to clone');
+      expect(clonedApplication.name).toContain('App to clone_');
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
@@ -2734,7 +2749,10 @@ describe('apps controller', () => {
         .post('/api/apps/import')
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
-        .send({ name: 'Imported App' });
+        .send({
+          name: 'Imported App',
+          app: application,
+        });
 
       expect(response.statusCode).toBe(201);
 

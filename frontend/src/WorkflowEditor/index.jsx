@@ -6,6 +6,7 @@ import {
   appVersionService,
   workflowExecutionsService,
   dataqueryService,
+  appEnvironmentService,
 } from '@/_services';
 import { reducer, initialState, Modes, ServerDataStates } from './reducer/reducer';
 import FlowBuilder from './FlowBuilder';
@@ -34,6 +35,14 @@ function WorkflowEditor(props) {
 
   const editorSessionActions = generateActions(dispatch);
 
+  const fetchEnvironments = () => {
+    const appId = editorSession?.app?.id;
+    appEnvironmentService.getAllEnvironments(appId).then((data) => {
+      const envArray = data?.environments;
+      editorSessionActions.setEnvironments(envArray);
+    });
+  };
+
   const fetchExecutionHistory = (versionId) => {
     editorSessionActions.setExecutionHistoryLoadingStatus(ServerDataStates.Fetching);
     workflowExecutionsService.all(versionId).then((executions) => {
@@ -48,17 +57,24 @@ function WorkflowEditor(props) {
       .getApp(editorSession.app.id)
       .then((appData) => {
         const versionId = appData.editing_version.id;
-        const organizationId = appData.organizationId;
+        const organizationId = appData.organization_id;
         const name = appData.name;
         const isMaintenanceOn = appData.is_maintenance_on;
+        const workflowEnabled = appData.workflow_enabled;
+        const workflowToken = appData.workflow_api_token;
+        console.log('appData', appData);
         // TODO: could we map all app data setup in action/reducer?
         editorSessionActions.setAppVersionId(versionId);
         editorSessionActions.setAppName(name);
         editorSessionActions.setMaintenanceStatus(isMaintenanceOn);
+        editorSessionActions.toggleWebhookEnable(workflowEnabled);
+        editorSessionActions.setWorkflowApiToken(workflowToken);
         document.title = `${name} - ToolJet`;
 
         if (appData.definition) {
-          editorSessionActions.updateFlow({ edges: appData.definition.edges, nodes: appData.definition.nodes });
+          const bodyParameters = appData.definition?.webhookParams;
+          editorSessionActions.updateFlow({ edges: appData.definition?.edges, nodes: appData.definition?.nodes });
+          editorSessionActions.getParameterValue(bodyParameters);
           // editorSessionActions.setQueries(appData.definition.queries);
         }
         return { definition: appData.definition, queriesData: appData.data_queries, versionId, organizationId };
@@ -78,7 +94,7 @@ function WorkflowEditor(props) {
       .then(({ definition, queriesData, versionId }) => {
         const queries = queriesData.map((query) => ({
           ...query,
-          idOnDefinition: find(definition.queries, { id: query.id })?.idOnDefinition,
+          idOnDefinition: find(definition?.queries, { id: query.id })?.idOnDefinition,
         }));
         editorSessionActions.setQueries(queries);
         editorSessionActions.setBootupComplete(true);
@@ -87,6 +103,8 @@ function WorkflowEditor(props) {
       .then(({ versionId }) => {
         fetchExecutionHistory(versionId);
       });
+
+    fetchEnvironments();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -118,6 +136,7 @@ function WorkflowEditor(props) {
         definition: {
           ...editorSession.app.flow,
           queries: editorSession.queries.map((query) => ({ idOnDefinition: query.idOnDefinition, id: query.id })),
+          webhookParams: [...editorSession.parameters],
         },
       })
       .then(() => {
@@ -133,9 +152,10 @@ function WorkflowEditor(props) {
   }, [
     // eslint-disable-next-line react-hooks/exhaustive-deps
     JSON.stringify({
-      nodeData: editorSession.app?.flow.nodes.map((node) => [node.data, node.position]),
-      edgeData: editorSession.app?.flow.edges.map((edge) => [edge.source, edge.target]),
+      nodeData: editorSession?.app?.flow?.nodes?.map((node) => [node?.data, node?.position]),
+      edgeData: editorSession?.app?.flow?.edges?.map((edge) => [edge?.source, edge?.target]),
       queries: editorSession.queries,
+      webhookParams: editorSession.parameters,
     }),
   ]);
 
@@ -154,6 +174,11 @@ function WorkflowEditor(props) {
       .then(() => editorSessionActions.setAppSavingStatus(false));
   };
 
+  const fillDoubleQuotes =
+    editorSession?.testParameters && editorSession?.testParameters.length > 0
+      ? editorSession.testParameters.replace(/'/g, '"')
+      : null;
+
   const executeWorkflow = async () => {
     editorSessionActions.clearLogsConsole();
     editorSessionActions.setMode(Modes.Running);
@@ -161,7 +186,8 @@ function WorkflowEditor(props) {
 
     try {
       const { workflowExecution: execution, _result } = await workflowExecutionsService.create(
-        editorSession.app.versionId
+        editorSession.app.versionId,
+        JSON.parse(fillDoubleQuotes)
       );
 
       editorSessionActions.setExecutionId(execution.id);

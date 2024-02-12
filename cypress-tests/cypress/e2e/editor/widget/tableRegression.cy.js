@@ -262,7 +262,7 @@ describe("Table", () => {
 
     cy.get('[data-cy="label-action-button-text"]').verifyVisibleElement(
       "have.text",
-      "Button Text"
+      "Button text"
     );
     cy.get('[data-cy="action-button-text-input-field"]').type(
       "{selectAll}{backspace}FakeName1"
@@ -273,8 +273,12 @@ describe("Table", () => {
     );
     cy.get('[data-cy="label-action-button-position"]').verifyVisibleElement(
       "have.text",
-      "Button Position"
+      "Button position"
     ); // dropdown_type
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
+    openEditorSidebar(data.widgetName);
+    cy.get('[data-cy="pages-name-fakename1"]').click();
 
     cy.get('[data-cy="rightActions-cell-2"]')
       .eq(0)
@@ -291,6 +295,9 @@ describe("Table", () => {
     );
 
     cy.get('[data-cy="add-event-handler"]').eq(1).click();
+    cy.waitForAutoSave();
+    openEditorSidebar(data.widgetName);
+    cy.get('[data-cy="pages-name-fakename1"]').click();
     cy.get('[data-cy="leftActions-cell-0"]').eq(0).find("button").click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Hello world!");
     openEditorSidebar(data.widgetName);
@@ -344,7 +351,7 @@ describe("Table", () => {
     cy.get('[data-index="0"]>.select-search-option:eq(1)').realClick();
     verifyAndEnterColumnOptionInput("key", "name");
     verifyAndEnterColumnOptionInput("Text color", "red");
-    verifyAndEnterColumnOptionInput("Cell Background Color", "yellow");
+    verifyAndEnterColumnOptionInput("Cell background color", "yellow");
     cy.get(
       '[data-cy="input-and-label-cell-background-color"] > .form-label'
     ).click();
@@ -640,7 +647,7 @@ describe("Table", () => {
 
     // cy.get("[data-cy='border-radius-fx-button']:eq(1)").click();
     verifyAndModifyParameter(
-      "Action Button Radius",
+      "Action button radius",
       commonWidgetText.borderRadiusInput
     );
 
@@ -661,7 +668,7 @@ describe("Table", () => {
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
     verifyAndModifyParameter(
-      "Border Radius",
+      "Border radius",
       commonWidgetText.borderRadiusInput
     );
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
@@ -837,7 +844,7 @@ describe("Table", () => {
     // cy.get('[data-cy="show-search-box-toggle-button"]').click();
 
     // verifyAndModifyToggleFx("Server-side search", " ", true);
-    verifyAndModifyToggleFx("Loading State", "{{false}}", true);
+    verifyAndModifyToggleFx("Loading state", "{{false}}", true);
   });
 
   it("should verify download", () => {
@@ -1098,6 +1105,7 @@ describe("Table", () => {
     verifyNodeData(tableText.defaultWidgetName, "Object", "22 entries ");
     cy.wait(1000);
     openNode(tableText.defaultWidgetName, 0, 1);
+    // openNode(tableText.defaultWidgetName, 0, 1);
     verifyNodeData("newRows", "Array", "1 item ");
     openNode("newRows");
     verifyNodeData("0", "Object", "3 entries ");

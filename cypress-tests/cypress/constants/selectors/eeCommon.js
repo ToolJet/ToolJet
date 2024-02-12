@@ -12,6 +12,11 @@ export const commonEeSelectors = {
   cardTitle: '[data-cy="card-title"]',
   AddQueryButton: '[data-cy="show-ds-popover-button"]',
   promoteButton: '[data-cy="promote-button"]',
+  settingsIcon: '[data-cy="icon-settings"]',
+  gitSyncIcon: '[data-cy="git-sync-icon"]',
+  confirmButton: '[data-cy="confirm-button"]',
+  importFromGit: '[data-cy="import-from-git-button"]'
+
 };
 
 export const ssoEeSelector = {
@@ -50,9 +55,7 @@ export const ssoEeSelector = {
   baseDnInput: '[data-cy="base-dn-input"]',
   sslToggleInput: '[data-cy="ssl-toggle-input"]',
   ldapSSOText: '[data-cy="ldap-sso-text"]',
-  userNameInputLabel: '[data-cy="user-name-input-label"]'
-
-
+  userNameInputLabel: '[data-cy="user-name-input-label"]',
 };
 
 export const eeGroupsSelector = {
@@ -121,5 +124,47 @@ export const multiEnvSelector = {
   toLabel: '[data-cy="to-label"]',
   currEnvName: '[data-cy="current-env-name"]',
   targetEnvName: '[data-cy="target-env-name"]',
+  stagingLabel: '[data-cy="staging-label"]',
+  productionLabel: '[data-cy="production-label"]',
+};
+
+export const whiteLabellingSelectors = {
+  whiteLabelList: '[data-cy="white-labelling-list-item"]',
+  appLogoLabel: '[data-cy="app-logo-label"]',
+  appLogoInput: '[data-cy="input-field-app-logo"]',
+  appLogoHelpText: '[data-cy="app-logo-help-text"]',
+  pageTitleLabel: '[data-cy="page-title-label"]',
+  pageTitleInput: '[data-cy="input-field-page-title"]',
+  pageTitleHelpText: '[data-cy="page-title-help-text"]',
+  favIconLabel: '[data-cy="fav-icon-label"]',
+  favIconInput: '[data-cy="input-field-fav-icon"]',
+  favIconHelpText: '[data-cy="fav-icon-help-text"]',
+};
+
+export const gitSyncSelector = {
+  gitCommitInput: '[data-cy="git-commit-input"]',
+  commitHelperText: '[data-cy="commit-helper-text"]',
+  gitRepoInput: '[data-cy="git-repo-input"]',
+  commitMessageInput: '[data-cy="commit-message-input"]',
+  lastCommitInput: '[data-cy="las-commit-message"]',
+  lastCommitVersion: '[data-cy="last-commit-version"]',
+  autherInfo: '[data-cy="auther-info"]',
+  commitButton: '[data-cy="commit-button"]',
+  gitSyncToggleInput: '[data-cy="git-sync-toggle-input"]',
+  gitSyncApphelperText: '[data-cy="sync-app-helper-text"]',
+  connectRepoButton: '[data-cy="connect-repo-button"]',
+  toggleMessage: '[data-cy="toggle-message"]',
+  sshInput: '[data-cy="git-ssh-input"]',
+  generateSshButton: '[data-cy="generate-ssh-key-button"',
+  sshInputHelperText: '[data-cy="git-ssh-input-helper-text"]',
+  configDeleteButton: '[data-cy="button-config-delete"]',
+  testConnectionButton: '[data-cy="test-connection-button"]',
+  sshKey: '[data-cy="ssh-key"]',
+  deployKeyHelperText: '[data-cy="deploy-key-helper-text"]',
+  gitRepoLink: '[data-cy="git-repo-link"]',
+  appNameField: '[data-cy="app-name-field"]',
+  gitRepoInfo: '[data-cy="git-repo-info"]',
+  pullButton: '[data-cy="pull-button"]'
+
 
 }

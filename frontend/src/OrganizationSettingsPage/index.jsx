@@ -25,31 +25,29 @@ export function OrganizationSettings(props) {
     'Groups',
     'SSO',
     'Workspace variables',
-    'Workspace constants',
     'Copilot',
     'Custom styles',
+    'Workspace constants',
+    'Configure git',
   ];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
-      case 'Users':
       case 'users':
         return 'Users & permissions';
-      case 'Groups':
       case 'groups':
         return 'Groups';
-      case 'SSO':
       case 'sso':
         return 'SSO';
-      case 'Workspace variables':
       case 'workspace-variables':
         return 'Workspace variables';
-      case 'Copilot':
       case 'copilot':
         return 'Copilot';
       case 'custom-styles':
         return 'Custom styles';
       case 'workspace-constants':
         return 'Workspace constants';
+      case 'configure-git':
+        return 'Configure git';
       default:
         return groupName;
     }

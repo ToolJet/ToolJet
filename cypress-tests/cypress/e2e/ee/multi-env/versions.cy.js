@@ -25,6 +25,7 @@ import {
     navigateToAppEditor,
 } from "Support/utils/common";
 import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
+import { promoteApp, releaseApp } from "Support/utils/multiEnv";
 
 import {
     verifyComponent,
@@ -47,7 +48,7 @@ describe("App Version Functionality", () => {
         cy.dragAndDropWidget("Text", 50, 50);
         cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
         navigateToCreateNewVersionModal((currentVersion = "v1"));
-        cy.wait(500)
+        cy.wait(500);
         verifyElementsOfCreateNewVersionModal((currentVersion = ["v1"]));
 
         navigateToEditVersionModal((currentVersion = "v1"));
@@ -70,23 +71,20 @@ describe("App Version Functionality", () => {
         navigateToCreateNewVersionModal((currentVersion = "v1"));
         createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));
         verifyComponent("toggleswitch1");
-        cy.wait(2000)
+        cy.wait(2000);
         deleteComponentAndVerify("toggleswitch1");
 
-        cy.dragAndDropWidget('button');
+        cy.dragAndDropWidget("button");
         verifyComponent("button1");
         navigateToCreateNewVersionModal((currentVersion = "v2"));
         createNewVersion((newVersion = ["v3"]), (versionFrom = "v2"));
         verifyComponent("button1");
 
-        cy.get(commonEeSelectors.promoteButton).click();
-        cy.get(commonEeSelectors.promoteButton).eq(1).click();
-        cy.waitForAppLoad();
-        cy.wait(1500);
+        promoteApp();
 
         verifyComponent("button1");
         cy.get('[data-cy="list-current-env-name"]').click();
-        cy.get(multiEnvSelector.envNameList).eq(0).click()
+        cy.get(multiEnvSelector.envNameList).eq(0).click();
 
         navigateToCreateNewVersionModal((currentVersion = "v3"));
         createNewVersion((newVersion = ["v4"]), (versionFrom = "v1"));
@@ -107,31 +105,28 @@ describe("App Version Functionality", () => {
         cy.waitForAppLoad();
         cy.wait(1500);
         cy.get('[data-cy="list-current-env-name"]').click();
-        cy.get(multiEnvSelector.envNameList).eq(1).click()
+        cy.get(multiEnvSelector.envNameList).eq(1).click();
 
-        cy.get(commonEeSelectors.promoteButton).click();
-        cy.get(commonEeSelectors.promoteButton).eq(1).click();
-        cy.waitForAppLoad();
-        cy.wait(1500);
+        promoteApp();
 
         releasedVersionAndVerify((currentVersion = "v3"));
         cy.url().then((url) => {
-            const parts = url.split('/');
+            const parts = url.split("/");
             const value = parts[parts.length - 1];
             cy.log(`Extracted value: ${value}`);
             cy.get(commonSelectors.editorPageLogo).click();
-            cy.wait(1000)
+            cy.wait(1000);
 
-            cy.visit(`/applications/${value}`)
+            cy.visit(`/applications/${value}`);
             cy.wait(3000);
         });
 
         verifyComponent("button1");
         cy.go("back");
-        cy.wait(3000)
+        cy.wait(3000);
         navigateToAppEditor(data.appName);
         cy.get('[data-cy="list-current-env-name"]').click();
-        cy.get(multiEnvSelector.envNameList).eq(0).click()
+        cy.get(multiEnvSelector.envNameList).eq(0).click();
         navigateToCreateNewVersionModal((currentVersion = "v3"));
         createNewVersion((newVersion = ["v6"]), (versionFrom = "v3"));
 

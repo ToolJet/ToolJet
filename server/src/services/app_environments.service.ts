@@ -17,14 +17,40 @@ export class AppEnvironmentService {
     organizationId: string,
     id?: string,
     priorityCheck = false,
-    manager?: EntityManager
+    manager?: EntityManager,
+    licenseCheck = false
   ): Promise<AppEnvironment> {
+    const isMultiEnvironmentEnabled = licenseCheck
+      ? await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT)
+      : false;
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const condition: FindOneOptions<AppEnvironment> = {
-        where: { organizationId, ...(id ? { id } : !priorityCheck && { isDefault: true }) },
+        where: {
+          organizationId,
+          ...(id
+            ? { id }
+            : licenseCheck && !isMultiEnvironmentEnabled
+            ? { priority: 1 }
+            : !priorityCheck
+            ? { isDefault: true }
+            : {}),
+        },
         ...(priorityCheck && { order: { priority: 'ASC' } }),
       };
       return await manager.findOneOrFail(AppEnvironment, condition);
+    }, manager);
+  }
+
+  getByPriority(organizationId: string, ASC = true, manager?: EntityManager): Promise<AppEnvironment> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const condition: FindOneOptions<AppEnvironment> = {
+        where: {
+          organizationId,
+        },
+        order: { priority: ASC ? 'ASC' : 'DESC' },
+      };
+      return manager.findOneOrFail(AppEnvironment, condition);
     }, manager);
   }
 
@@ -32,7 +58,7 @@ export class AppEnvironmentService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       if (!environmentId) {
-        envId = (await this.get(organizationId, null, false, manager)).id;
+        envId = (await this.get(organizationId, null, false, manager, true))?.id;
       }
       return await manager.findOneOrFail(DataSourceOptions, { where: { environmentId: envId, dataSourceId } });
     });
@@ -131,6 +157,7 @@ export class AppEnvironmentService {
         order: {
           createdAt: 'DESC',
         },
+        select: ['id', 'name', 'appId'],
       });
     });
   }
@@ -255,7 +282,7 @@ export class AppEnvironmentService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       if (!environmentId) {
-        envId = (await this.get(organizationId, environmentId, false, manager)).id;
+        envId = (await this.get(organizationId, environmentId, false, manager, true)).id;
       }
 
       const constantId = (await manager.findOne(OrganizationConstant, { where: { constantName, organizationId } })).id;

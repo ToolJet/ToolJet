@@ -20,7 +20,7 @@ export const useDataSourcesStore = create(
     (set, get) => ({
       ...initialState,
       actions: {
-        //DON'T REMOVE environmentId WHILE RESOLVING CONFLICTS !!!
+        //!DON'T REMOVE environmentId WHILE RESOLVING CONFLICTS !!!
         fetchDataSources: (appId, environmentId) => {
           set({ loadingDataSources: true });
           datasourceService.getAll(appId, environmentId).then((data) => {

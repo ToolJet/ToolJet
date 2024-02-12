@@ -16,7 +16,6 @@ import {
   editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
 
-
 describe("Multi env", () => {
   const data = {};
   data.appName = `${fake.companyName} App`;
@@ -71,6 +70,8 @@ describe("Multi env", () => {
       "https://reqres.in/api/users?page=1"
     );
     cy.get(dataSourceSelector.buttonSave).click();
+    cy.wait(2000);
+
     cy.get(commonSelectors.dashboardIcon).click();
 
     cy.openApp();
@@ -84,6 +85,7 @@ describe("Multi env", () => {
     cy.waitForAutoSave();
 
     verifyAndModifyParameter("Text", `{{queries.restapi1.data.data[0].email`);
+    cy.wait(1000);
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
@@ -139,6 +141,7 @@ describe("Multi env", () => {
       "https://reqres.in/api/users?page=2"
     );
     cy.get(dataSourceSelector.buttonSave).click();
+    cy.wait(2000);
 
     cy.get(commonSelectors.dashboardIcon).click();
     navigateToAppEditor(data.appName);
@@ -194,6 +197,7 @@ describe("Multi env", () => {
       "https://reqres.in/api/users?page=1"
     );
     cy.get(dataSourceSelector.buttonSave).click();
+    cy.wait(2000);
 
     cy.get(commonSelectors.dashboardIcon).click();
     navigateToAppEditor(data.appName);

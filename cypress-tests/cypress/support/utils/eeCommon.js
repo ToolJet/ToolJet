@@ -2,22 +2,26 @@ import {
   commonEeSelectors,
   ssoEeSelector,
   instanceSettingsSelector,
-  multiEnvSelector
+  multiEnvSelector,
 } from "Selectors/eeCommon";
 import { ssoEeText } from "Texts/eeCommon";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import * as common from "Support/utils/common";
 import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 import { eeGroupsSelector } from "Selectors/eeCommon";
 import { eeGroupsText } from "Texts/eeCommon";
-import { verifyOnboardingQuestions } from "Support/utils/onboarding";
+import {
+  verifyOnboardingQuestions,
+  verifyCloudOnboardingQuestions,
+} from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
+import { promoteApp, releaseApp } from "Support/utils/multiEnv";
 
 export const oidcSSOPageElements = () => {
   cy.get(ssoEeSelector.oidcToggle).then(($el) => {
@@ -29,7 +33,7 @@ export const oidcSSOPageElements = () => {
       cy.get(ssoEeSelector.oidcToggle).uncheck();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast('OpenID')
+        ssoText.toggleUpdateToast("OpenID")
       );
       cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -38,7 +42,7 @@ export const oidcSSOPageElements = () => {
       cy.get(ssoEeSelector.oidcToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast('OpenID')
+        ssoText.toggleUpdateToast("OpenID")
       );
       cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -52,7 +56,7 @@ export const oidcSSOPageElements = () => {
       cy.get(ssoEeSelector.oidcToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast('OpenID')
+        ssoText.toggleUpdateToast("OpenID")
       );
       cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -61,7 +65,7 @@ export const oidcSSOPageElements = () => {
       cy.get(ssoEeSelector.oidcToggle).uncheck();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast('OpenID')
+        ssoText.toggleUpdateToast("OpenID")
       );
       cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -86,7 +90,7 @@ export const oidcSSOPageElements = () => {
     cy.get(commonEeSelectors.saveButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      ssoText.toggleUpdateToast('OpenID')
+      ssoText.toggleUpdateToast("OpenID")
     );
     cy.get(ssoEeSelector.nameInput).should("have.value", ssoEeText.testName);
     cy.get(ssoEeSelector.clientIdInput).should(
@@ -138,6 +142,11 @@ export const deleteAssignedDatasources = () => {
 };
 
 export const userSignUp = (fullName, email, workspaceName) => {
+  const verificationFunction =
+    Cypress.env("environment") === "Enterprise"
+      ? verifyOnboardingQuestions
+      : verifyCloudOnboardingQuestions;
+
   let invitationLink = "";
   cy.visit("/");
   cy.wait(500);
@@ -156,26 +165,32 @@ export const userSignUp = (fullName, email, workspaceName) => {
     cy.visit(invitationLink);
     cy.get(commonSelectors.setUpToolJetButton).click();
     cy.wait(4000);
-  });
-  cy.get("body").then(($el) => {
-    if (!$el.text().includes(dashboardText.emptyPageHeader)) {
-      verifyOnboardingQuestions(fullName, workspaceName);
-    }
+
+    verificationFunction(fullName, workspaceName);
   });
 };
 
+// export const resetAllowPersonalWorkspace = () => {
+//   cy.get(commonEeSelectors.instanceSettingIcon).click();
+//   cy.get(instanceSettingsSelector.manageInstanceSettings).click();
+//   cy.get(instanceSettingsSelector.allowWorkspaceToggle)
+//     .eq(0)
+//     .then(($el) => {
+//       if (!$el.is(":checked")) {
+//         cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).check();
+//         cy.get(commonEeSelectors.saveButton).click();
+//         cy.verifyToastMessage(
+//           commonSelectors.toastMessage,
+//           "Instance settings have been updated"
+//         );
+//       }
+//     });
+// };
+
 export const resetAllowPersonalWorkspace = () => {
-  cy.get(commonEeSelectors.instanceSettingIcon).click();
-  cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-  cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).then(($el) => {
-    if (!$el.is(":checked")) {
-      cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).check();
-      cy.get(commonEeSelectors.saveButton).click();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        "Instance settings have been updated"
-      );
-    }
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: "UPDATE instance_settings SET value = 'true' WHERE key = 'ALLOW_PERSONAL_WORKSPACE';",
   });
 };
 
@@ -217,16 +232,18 @@ export const defaultWorkspace = () => {
 export const trunOffAllowPersonalWorkspace = () => {
   cy.get(commonEeSelectors.instanceSettingIcon).click();
   cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-  cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).then(($el) => {
-    if ($el.is(":checked")) {
-      cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).uncheck();
-      cy.get(commonEeSelectors.saveButton).click();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        "Instance settings have been updated"
-      );
-    }
-  });
+  cy.get(instanceSettingsSelector.allowWorkspaceToggle)
+    .eq(0)
+    .then(($el) => {
+      if ($el.is(":checked")) {
+        cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).uncheck();
+        cy.get(commonEeSelectors.saveButton).click();
+        cy.verifyToastMessage(
+          commonSelectors.toastMessage,
+          "Instance settings have been updated"
+        );
+      }
+    });
 };
 
 export const verifySSOSignUpPageElements = () => {
@@ -248,9 +265,10 @@ export const verifySSOSignUpPageElements = () => {
     commonText.emailInputLabel
   );
   cy.get(commonSelectors.invitedUserEmail).should("be.visible");
-  cy.get(commonSelectors.acceptInviteButton)
-    .verifyVisibleElement("have.text", commonText.acceptInviteButton)
-
+  cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
+    "have.text",
+    commonText.acceptInviteButton
+  );
 
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -286,8 +304,10 @@ export const VerifyWorkspaceInvitePageElements = () => {
     commonText.emailInputLabel
   );
   cy.get(commonSelectors.invitedUserEmail).should("be.visible");
-  cy.get(commonSelectors.acceptInviteButton)
-    .verifyVisibleElement("have.text", commonText.acceptInviteButton)
+  cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
+    "have.text",
+    commonText.acceptInviteButton
+  );
 
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -400,14 +420,13 @@ export const AddDataSourceToGroup = (groupName, dsName) => {
   );
 };
 
-
 export const enableToggle = (toggleSelector) => {
   cy.get(toggleSelector).then(($el) => {
     if (!$el.is(":checked")) {
       cy.get(toggleSelector).check();
     }
   });
-}
+};
 
 export const disableToggle = (toggleSelector) => {
   cy.get(toggleSelector).then(($el) => {
@@ -415,22 +434,38 @@ export const disableToggle = (toggleSelector) => {
       cy.get(toggleSelector).uncheck();
     }
   });
-}
+};
 
 export const verifyPromoteModalUI = (versionName, currEnv, targetEnv) => {
-  cy.get(commonEeSelectors.promoteButton).verifyVisibleElement("have.text", ' Promote ').click()
-  cy.get(commonEeSelectors.modalTitle).verifyVisibleElement("have.text", `Promote ${versionName}`)
-  cy.get(commonSelectors.closeButton).should('be.visible')
-  cy.get(multiEnvSelector.fromLabel).verifyVisibleElement("have.text", "FROM")
-  cy.get(multiEnvSelector.toLabel).verifyVisibleElement("have.text", "TO")
-  cy.get(multiEnvSelector.currEnvName).verifyVisibleElement("have.text", currEnv)
-  cy.get('[data-cy="target-env-name"]').verifyVisibleElement("have.text", targetEnv)
-  cy.get('[data-cy="cancel-button"]').verifyVisibleElement("have.text", "Cancel")
-  cy.get(commonEeSelectors.promoteButton).eq(1).verifyVisibleElement("have.text", "Promote ")
-}
+  cy.get(commonEeSelectors.promoteButton)
+    .verifyVisibleElement("have.text", " Promote ")
+    .click();
+  cy.get(commonEeSelectors.modalTitle).verifyVisibleElement(
+    "have.text",
+    `Promote ${versionName}`
+  );
+  cy.get(commonSelectors.closeButton).should("be.visible");
+  cy.get(multiEnvSelector.fromLabel).verifyVisibleElement("have.text", "FROM");
+  cy.get(multiEnvSelector.toLabel).verifyVisibleElement("have.text", "TO");
+  cy.get(multiEnvSelector.currEnvName).verifyVisibleElement(
+    "have.text",
+    currEnv
+  );
+  cy.get('[data-cy="target-env-name"]').verifyVisibleElement(
+    "have.text",
+    targetEnv
+  );
+  cy.get('[data-cy="cancel-button"]').verifyVisibleElement(
+    "have.text",
+    "Cancel"
+  );
+  cy.get(commonEeSelectors.promoteButton)
+    .eq(1)
+    .verifyVisibleElement("have.text", "Promote ");
+};
 
 export const resetPassword = (email) => {
-  cy.visit('/')
+  cy.visit("/");
   cy.get(commonSelectors.forgotPasswordLink).click();
   cy.clearAndType(commonSelectors.emailInputField, email);
   cy.get(commonSelectors.resetPasswordLinkButton).click();
@@ -442,11 +477,122 @@ export const resetPassword = (email) => {
     const passwordResetLink = `/reset-password/${resp.rows[0].forgot_password_token}`;
     cy.visit(passwordResetLink);
   });
-  cy.wait(500)
+  cy.wait(500);
 
   cy.clearAndType(commonSelectors.newPasswordInputField, "Password");
   cy.clearAndType(commonSelectors.confirmPasswordInputField, "Password");
-  cy.wait(4000)
+  cy.wait(4000);
   cy.get(commonSelectors.resetPasswordButton).click();
-  cy.get(commonSelectors.backToLoginButton).click()
-}
+  cy.get(commonSelectors.backToLoginButton).click();
+};
+
+export const verifyTooltipDisabled = (selector, message) => {
+  cy.get(selector)
+    .trigger("mouseover", { force: true })
+    .then(() => {
+      cy.get(".tooltip-inner").last().should("have.text", message);
+    });
+};
+
+export const createAnAppWithSlug = (appName, slug) => {
+  cy.apiCreateApp(appName);
+  cy.openApp();
+  cy.dragAndDropWidget("Table", 250, 250);
+  promoteApp();
+  promoteApp();
+  releaseApp();
+  cy.get(commonWidgetSelector.shareAppButton).click();
+  cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
+  cy.wait(2000);
+  cy.get(commonWidgetSelector.modalCloseButton).click();
+};
+
+export const updateLicense = (key) => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `update instance_settings set value='${key}', updated_at= NOW() where key='LICENSE_KEY';`,
+  });
+};
+
+// export const insertGitSyncSSHSecondKey = (workspaceId) => {
+//   const pvtKey =
+//     "-----BEGIN PRIVATE KEY-----\n" +
+//     "MC4CAQAwBQYDK2VwBCIEIArTDR1KzuLCjXQSNlk76Hj6TmcfqMfK0GwuHjdtal2o\n" +
+//     "-----END PRIVATE KEY-----";
+//   cy.task("updateId", {
+//     dbconfig: Cypress.env("app_db"),
+//     sql: `INSERT INTO organization_git_sync(
+//        organization_id, git_url, is_enabled, is_finalized, ssh_private_key, ssh_public_key)
+//       VALUES ('${workspaceId}', 'git@github.com:ajith-k-v/test.git', true, true, '${pvtKey}', 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFVfSwzw8zz0UlrhNFCLF3AXEtt6vqBuPCUcxEVNt9g (unnamed)');`,
+//   });
+// };
+
+export const insertGitSyncSSHSecondKey = (workspaceId) => {
+  const pvtKey =
+    "-----BEGIN PRIVATE KEY-----\n" +
+    "MC4CAQAwBQYDK2VwBCIEIArTDR1KzuLCjXQSNlk76Hj6TmcfqMfK0GwuHjdtal2o\n" +
+    "-----END PRIVATE KEY-----";
+
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `
+      DELETE FROM organization_git_sync
+      WHERE ssh_public_key = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFVfSwzw8zz0UlrhNFCLF3AXEtt6vqBuPCUcxEVNt9g (unnamed)';
+
+      INSERT INTO organization_git_sync (
+        organization_id, git_url, is_enabled, is_finalized, ssh_private_key, ssh_public_key
+      )
+      SELECT '${workspaceId}', 'git@github.com:ajith-k-v/test.git', true, true, '${pvtKey}', 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFVfSwzw8zz0UlrhNFCLF3AXEtt6vqBuPCUcxEVNt9g (unnamed)'
+      WHERE NOT EXISTS (
+        SELECT 1 FROM organization_git_sync
+        WHERE organization_id = '${workspaceId}'
+      );
+    `,
+  });
+};
+
+export const insertGitSyncSSHKey = (workspaceId) => {
+  const pvtKey =
+    "-----BEGIN PRIVATE KEY-----\n" +
+    "MC4CAQAwBQYDK2VwBCIEIFGXNAirYFsVnYzHaj6jvt4o7C0eNwCHMVO0Gaw+ir/X\n" +
+    "-----END PRIVATE KEY-----";
+
+
+
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `
+      INSERT INTO organization_git_sync (
+        organization_id, git_url, is_enabled, is_finalized, ssh_private_key, ssh_public_key
+      )
+      SELECT '${workspaceId}', 'git@github.com:ajith-k-v/test.git', true, true, '${pvtKey}', 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOgxYAo7Z6rYgm/JBFUgb4onp0GD/jRFQ1ORBLmNxBsa (unnamed)'
+      WHERE NOT EXISTS (
+        SELECT 1 FROM organization_git_sync WHERE organization_id = '${workspaceId}'
+      );
+    `,
+  });
+};
+
+
+// export const insertGitSyncSSHKey = (workspaceId) => {
+//   const pvtKey =
+//     "-----BEGIN PRIVATE KEY-----\n" +
+//     "MC4CAQAwBQYDK2VwBCIEIFGXNAirYFsVnYzHaj6jvt4o7C0eNwCHMVO0Gaw+ir/X\n" +
+//     "-----END PRIVATE KEY-----";
+
+//   cy.task("updateId", {
+//     dbconfig: Cypress.env("app_db"),
+//     sql: `
+//       DELETE FROM organization_git_sync
+//       WHERE ssh_public_key = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOgxYAo7Z6rYgm/JBFUgb4onp0GD/jRFQ1ORBLmNxBsa (unnamed)';
+
+//       INSERT INTO organization_git_sync (
+//         organization_id, git_url, is_enabled, is_finalized, ssh_private_key, ssh_public_key
+//       )
+//       SELECT '${workspaceId}', 'git@github.com:ajith-k-v/test.git', true, true, '${pvtKey}', 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOgxYAo7Z6rYgm/JBFUgb4onp0GD/jRFQ1ORBLmNxBsa (unnamed)'
+//       WHERE NOT EXISTS (
+//         SELECT 1 FROM organization_git_sync WHERE organization_id = '${workspaceId}'
+//       );
+//     `,
+//   });
+// };

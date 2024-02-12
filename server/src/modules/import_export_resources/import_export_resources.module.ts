@@ -26,6 +26,7 @@ import { User } from 'src/entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { File } from 'src/entities/file.entity';
 import { AuditLoggerService } from '@services/audit_logger.service';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
 import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 const imports = [
@@ -55,6 +56,7 @@ if (process.env.ENABLE_TOOLJET_DB === 'true') {
     UsersService,
     FilesService,
     AuditLoggerService,
+    TooljetDbOperationsService,
     PostgrestProxyService,
   ],
   exports: [ImportExportResourcesService],

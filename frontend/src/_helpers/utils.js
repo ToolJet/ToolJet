@@ -9,6 +9,7 @@ import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
@@ -90,7 +91,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
       );
     } catch (err) {
       error = err;
-      console.log('eval_error', err);
+      // console.log('eval_error', err);
     }
   }
 
@@ -586,10 +587,11 @@ export const retrieveWhiteLabelText = () => {
 };
 
 export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
-  const currentPageId = _ref.state.currentPageId;
-  const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
-    ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
+  const currentPageId = _ref.currentPageId;
+  const currentComponents = _ref.appDefinition?.pages[currentPageId]?.components
+    ? Object.entries(_ref.appDefinition.pages[currentPageId]?.components)
     : {};
+
   const runQuery = (queryName = '', parameters) => {
     const query = useDataQueriesStore.getState().dataQueries.find((query) => {
       const isFound = query.name === queryName;
@@ -759,7 +761,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
         });
       return Promise.resolve();
     }
-    const pages = _ref.state.appDefinition.pages;
+    const pages = _ref.appDefinition.pages;
     const pageId = Object.keys(pages).find((key) => pages[key].handle === pageHandle);
 
     if (!pageId) {
@@ -1066,10 +1068,11 @@ export const defaultAppEnvironments = [
   { name: 'production', isDefault: true, priority: 3 },
 ];
 
-export const executeWorkflow = async (self, workflowId, _blocking = false, params = {}) => {
-  const appId = self?.state?.appId;
-  const resolvedParams = resolveReferences(params, self.state.currentState, {}, {});
-  const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams, appId);
+export const executeWorkflow = async (self, workflowId, _blocking = false, params = {}, appEnvId) => {
+  const { appId } = useAppDataStore.getState();
+  const currentState = getCurrentState();
+  const resolvedParams = resolveReferences(params, currentState, {}, {});
+  const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
   return { data: executionResponse.result };
 };
 

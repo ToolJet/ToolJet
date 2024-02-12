@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { EntityManager, MoreThan, Repository } from 'typeorm';
@@ -30,7 +36,15 @@ import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { v4 as uuidv4 } from 'uuid';
+import { Page } from 'src/entities/page.entity';
+import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
+import { Layout } from 'src/entities/layout.entity';
 
+import { Component } from 'src/entities/component.entity';
+import { EventHandler } from 'src/entities/event_handler.entity';
+
+const uuid = require('uuid');
 @Injectable()
 export class AppsService {
   constructor(
@@ -59,6 +73,12 @@ export class AppsService {
       where: {
         slug,
       },
+    });
+  }
+
+  async findByAppName(name: string, organizationId: string): Promise<App> {
+    return this.appsRepository.findOne({
+      where: { name, organizationId },
     });
   }
 
@@ -124,11 +144,35 @@ export class AppsService {
             organizationId: user.organizationId,
             userId: user.id,
             isMaintenanceOn: type === 'workflow' ? true : false,
+            ...(type === 'workflow' && { workflowApiToken: uuidv4() }),
           })
         );
 
         //create default app version
-        await this.createVersion(user, app, 'v1', null, null, manager);
+        const appVersion = await this.createVersion(user, app, 'v1', null, null, manager);
+
+        const defaultHomePage = await manager.save(
+          manager.create(Page, {
+            name: 'Home',
+            handle: 'home',
+            appVersionId: appVersion.id,
+            index: 1,
+          })
+        );
+
+        // Set default values for app version
+        appVersion.showViewerNavigation = true;
+        appVersion.homePageId = defaultHomePage.id;
+        appVersion.globalSettings = {
+          hideHeader: false,
+          appInMaintenance: false,
+          canvasMaxWidth: 100,
+          canvasMaxWidthType: '%',
+          canvasMaxHeight: 2400,
+          canvasBackgroundColor: '#edeff5',
+          backgroundFxQuery: '',
+        };
+        await manager.save(appVersion);
 
         await manager.save(
           manager.create(AppUser, {
@@ -234,11 +278,12 @@ export class AppsService {
     return result;
   }
 
-  async update(appId: string, appUpdateDto: AppUpdateDto, manager?: EntityManager) {
+  async update(app: App, appUpdateDto: AppUpdateDto, organizationId?: string, manager?: EntityManager) {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
     const { name, slug, icon } = appUpdateDto;
+    const { id: appId, currentVersionId: lastReleasedVersion } = app;
 
     const updatableParams = {
       name,
@@ -256,7 +301,7 @@ export class AppsService {
         //check if the app version is eligible for release
         const currentEnvironment: AppEnvironment = await manager
           .createQueryBuilder(AppEnvironment, 'app_environments')
-          .select(['app_environments.id', 'app_environments.isDefault'])
+          .select(['app_environments.id', 'app_environments.isDefault', 'app_environments.priority'])
           .innerJoinAndSelect(
             'app_versions',
             'app_versions',
@@ -267,8 +312,48 @@ export class AppsService {
           })
           .getOne();
 
-        if (!currentEnvironment?.isDefault) {
+        const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+        /* 
+        Allow version release only if the environment is on 
+        production with a valid license or 
+        expired license and development environment (priority no.1) (CE rollback) 
+        */
+
+        if (isMultiEnvironmentEnabled && !currentEnvironment?.isDefault) {
           throw new BadRequestException('You can only release when the version is promoted to production');
+        }
+
+        let promotedFromQuery: string;
+        if (!isMultiEnvironmentEnabled) {
+          if (!currentEnvironment.isDefault) {
+            /* For basic plan users, Promote to the production environment first then release it */
+            const productionEnv = await this.appEnvironmentService.get(organizationId, null, false, manager);
+            await manager.update(AppVersion, currentVersionId, {
+              currentEnvironmentId: productionEnv.id,
+              promotedFrom: currentEnvironment.id,
+            });
+          }
+
+          /* demote the last released environment back to the promoted_from (if not null) */
+          if (lastReleasedVersion) {
+            promotedFromQuery = `
+            UPDATE app_versions
+            SET current_environment_id = promoted_from
+            WHERE promoted_from IS NOT NULL
+            AND id = $1;`;
+          }
+        } else {
+          if (lastReleasedVersion) {
+            promotedFromQuery = `
+            UPDATE app_versions
+            SET promoted_from = NULL
+            WHERE promoted_from IS NOT NULL
+            AND id = $1;`;
+          }
+        }
+
+        if (promotedFromQuery) {
+          await manager.query(promotedFromQuery, [lastReleasedVersion]);
         }
       }
       return await catchDbException(async () => {
@@ -383,9 +468,235 @@ export class AppsService {
         })
       );
 
-      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom, organizationId, app.type);
+      if (versionFrom) {
+        (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
+          (appVersion.globalSettings = versionFrom.globalSettings),
+          await manager.save(appVersion);
+
+        const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
+          manager,
+          appVersion,
+          versionFrom,
+          organizationId
+        );
+
+        const { oldComponentToNewComponentMapping, oldPageToNewPageMapping } =
+          await this.createNewPagesAndComponentsForVersion(manager, appVersion, versionFrom.id, versionFrom.homePageId);
+
+        await this.updateEventActionsForNewVersionWithNewMappingIds(
+          manager,
+          appVersion.id,
+          oldDataQueryToNewMapping,
+          oldComponentToNewComponentMapping,
+          oldPageToNewPageMapping
+        );
+      }
+
       return appVersion;
     }, manager);
+  }
+
+  async updateEventActionsForNewVersionWithNewMappingIds(
+    manager: EntityManager,
+    versionId: string,
+    oldDataQueryToNewMapping: Record<string, unknown>,
+    oldComponentToNewComponentMapping: Record<string, unknown>,
+    oldPageToNewPageMapping: Record<string, unknown>
+  ) {
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionId },
+    });
+
+    for (const event of allEvents) {
+      const eventDefinition = event.event;
+
+      if (eventDefinition?.actionId === 'run-query') {
+        eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
+      }
+
+      if (eventDefinition?.actionId === 'control-component') {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
+      if (eventDefinition?.actionId === 'switch-page') {
+        eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
+      }
+
+      if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'close-modal') {
+        eventDefinition.modal = oldComponentToNewComponentMapping[eventDefinition.modal];
+      }
+
+      event.event = eventDefinition;
+
+      await manager.save(event);
+    }
+  }
+
+  async createNewPagesAndComponentsForVersion(
+    manager: EntityManager,
+    appVersion: AppVersion,
+    versionFromId: string,
+    prevHomePagePage: string
+  ) {
+    const pages = await manager
+      .createQueryBuilder(Page, 'page')
+      .leftJoinAndSelect('page.components', 'component')
+      .leftJoinAndSelect('component.layouts', 'layout')
+      .where('page.appVersionId = :appVersionId', { appVersionId: versionFromId })
+      .getMany();
+
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionFromId },
+    });
+
+    let homePageId = prevHomePagePage;
+
+    const newComponents = [];
+    const newComponentLayouts = [];
+    const oldComponentToNewComponentMapping = {};
+    const oldPageToNewPageMapping = {};
+
+    const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+      if (componentParentId) {
+        const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+        const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+        if (parentComponent) {
+          return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+        }
+      }
+
+      return false;
+    };
+
+    const isChildOfKanbanModal = (componentParentId: string, allComponents = []) => {
+      if (!componentParentId.includes('modal')) return false;
+
+      if (componentParentId) {
+        const parentId = componentParentId.split('-').slice(0, -1).join('-');
+        const isParentKandban = allComponents.find((comp) => comp.id === parentId)?.type === 'Kanban';
+
+        return isParentKandban;
+      }
+    };
+
+    for (const page of pages) {
+      const savedPage = await manager.save(
+        manager.create(Page, {
+          name: page.name,
+          handle: page.handle,
+          index: page.index,
+          disabled: page.disabled,
+          hidden: page.hidden,
+          appVersionId: appVersion.id,
+        })
+      );
+      oldPageToNewPageMapping[page.id] = savedPage.id;
+      if (page.id === prevHomePagePage) {
+        homePageId = savedPage.id;
+      }
+
+      const pageEvents = allEvents.filter((event) => event.sourceId === page.id);
+
+      pageEvents.forEach(async (event, index) => {
+        const newEvent = new EventHandler();
+
+        newEvent.id = uuid.v4();
+        newEvent.name = event.name;
+        newEvent.sourceId = savedPage.id;
+        newEvent.target = event.target;
+        newEvent.event = event.event;
+        newEvent.index = event.index ?? index;
+        newEvent.appVersionId = appVersion.id;
+
+        await manager.save(newEvent);
+      });
+
+      page.components.forEach(async (component) => {
+        const newComponent = new Component();
+        const componentEvents = allEvents.filter((event) => event.sourceId === component.id);
+
+        newComponent.id = uuid.v4();
+
+        oldComponentToNewComponentMapping[component.id] = newComponent.id;
+
+        newComponent.name = component.name;
+        newComponent.type = component.type;
+        newComponent.pageId = savedPage.id;
+        newComponent.properties = component.properties;
+        newComponent.styles = component.styles;
+        newComponent.validation = component.validation;
+        newComponent.general = component.general;
+        newComponent.generalStyles = component.generalStyles;
+        newComponent.displayPreferences = component.displayPreferences;
+        newComponent.parent = component.parent;
+        newComponent.page = savedPage;
+
+        newComponents.push(newComponent);
+
+        component.layouts.forEach((layout) => {
+          const newLayout = new Layout();
+          newLayout.id = uuid.v4();
+          newLayout.type = layout.type;
+          newLayout.top = layout.top;
+          newLayout.left = layout.left;
+          newLayout.width = layout.width;
+          newLayout.height = layout.height;
+          newLayout.componentId = layout.componentId;
+
+          newLayout.component = newComponent;
+
+          newComponentLayouts.push(newLayout);
+        });
+
+        componentEvents.forEach(async (event, index) => {
+          const newEvent = new EventHandler();
+
+          newEvent.id = uuid.v4();
+          newEvent.name = event.name;
+          newEvent.sourceId = newComponent.id;
+          newEvent.target = event.target;
+          newEvent.event = event.event;
+          newEvent.index = event.index ?? index;
+          newEvent.appVersionId = appVersion.id;
+
+          await manager.save(newEvent);
+        });
+      });
+
+      newComponents.forEach((component) => {
+        let parentId = component.parent ? component.parent : null;
+
+        if (!parentId) return;
+
+        const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
+
+        if (isParentTabOrCalendar) {
+          const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const mappedParentId = oldComponentToNewComponentMapping[_parentId];
+
+          parentId = `${mappedParentId}-${childTabId}`;
+        } else if (isChildOfKanbanModal(component.parent, page.components)) {
+          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const mappedParentId = oldComponentToNewComponentMapping[_parentId];
+
+          parentId = `${mappedParentId}-modal`;
+        } else {
+          parentId = oldComponentToNewComponentMapping[parentId];
+        }
+
+        component.parent = parentId;
+      });
+
+      await manager.save(newComponents);
+      await manager.save(newComponentLayouts);
+    }
+
+    await manager.update(AppVersion, { id: appVersion.id }, { homePageId });
+
+    return { oldComponentToNewComponentMapping, oldPageToNewPageMapping };
   }
 
   async deleteVersion(app: App, version: AppVersion): Promise<void> {
@@ -405,8 +716,7 @@ export class AppsService {
     manager: EntityManager,
     appVersion: AppVersion,
     versionFrom: AppVersion,
-    organizationId: string,
-    appType: string
+    organizationId: string
   ) {
     const oldDataQueryToNewMapping = {};
 
@@ -435,38 +745,61 @@ export class AppsService {
         .where('data_query.appVersionId = :appVersionId', { appVersionId: versionFrom?.id })
         .andWhere('dataSource.scope = :scope', { scope: DataSourceScopes.GLOBAL })
         .getMany();
-      const dataSources = versionFrom?.dataSources;
+      const dataSources = versionFrom?.dataSources; //Local data sources
+      const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
+
       const dataSourceMapping = {};
       const newDataQueries = [];
+      const allEvents = await manager.find(EventHandler, {
+        where: { appVersionId: versionFrom?.id, target: 'data_query' },
+      });
 
-      if (dataSources?.length) {
-        for (const dataSource of dataSources) {
-          const dataSourceParams: Partial<DataSource> = {
-            name: dataSource.name,
-            kind: dataSource.kind,
-            type: dataSource.type,
-            appVersionId: appVersion.id,
-          };
-          const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
-          dataSourceMapping[dataSource.id] = newDataSource.id;
-
-          const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
-
-          for (const dataQuery of dataQueries) {
-            const dataQueryParams = {
-              name: dataQuery.name,
-              options: dataQuery.options,
-              dataSourceId: newDataSource.id,
+      if (dataSources?.length > 0 || globalDataSources?.length > 0) {
+        if (dataSources?.length > 0) {
+          for (const dataSource of dataSources) {
+            const dataSourceParams: Partial<DataSource> = {
+              name: dataSource.name,
+              kind: dataSource.kind,
+              type: dataSource.type,
               appVersionId: appVersion.id,
             };
+            const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
+            dataSourceMapping[dataSource.id] = newDataSource.id;
 
-            const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
-            oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
-            newDataQueries.push(newQuery);
+            const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
+
+            for (const dataQuery of dataQueries) {
+              const dataQueryParams = {
+                name: dataQuery.name,
+                options: dataQuery.options,
+                dataSourceId: newDataSource.id,
+                appVersionId: appVersion.id,
+              };
+              const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+
+              const dataQueryEvents = allEvents.filter((event) => event.sourceId === dataQuery.id);
+
+              dataQueryEvents.forEach(async (event, index) => {
+                const newEvent = new EventHandler();
+
+                newEvent.id = uuid.v4();
+                newEvent.name = event.name;
+                newEvent.sourceId = newQuery.id;
+                newEvent.target = event.target;
+                newEvent.event = event.event;
+                newEvent.index = event.index ?? index;
+                newEvent.appVersionId = appVersion.id;
+
+                await manager.save(newEvent);
+              });
+
+              oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
+              newDataQueries.push(newQuery);
+            }
           }
         }
 
-        if (globalQueries?.length) {
+        if (globalQueries?.length > 0) {
           for (const globalQuery of globalQueries) {
             const dataQueryParams = {
               name: globalQuery.name,
@@ -476,6 +809,21 @@ export class AppsService {
             };
 
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+            const dataQueryEvents = allEvents.filter((event) => event.sourceId === globalQuery.id);
+
+            dataQueryEvents.forEach(async (event, index) => {
+              const newEvent = new EventHandler();
+
+              newEvent.id = uuid.v4();
+              newEvent.name = event.name;
+              newEvent.sourceId = newQuery.id;
+              newEvent.target = event.target;
+              newEvent.event = event.event;
+              newEvent.index = event.index ?? index;
+              newEvent.appVersionId = appVersion.id;
+
+              await manager.save(newEvent);
+            });
             oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
           }
@@ -487,6 +835,7 @@ export class AppsService {
             oldDataQueryToNewMapping
           );
           newQuery.options = newOptions;
+
           await manager.save(newQuery);
         }
 
@@ -517,6 +866,8 @@ export class AppsService {
         }
       }
     }
+
+    return oldDataQueryToNewMapping;
   }
 
   async createNewQueriesForWorkflowVersion(
@@ -644,7 +995,7 @@ export class AppsService {
     }
   }
 
-  async updateVersion(version: AppVersion, body: VersionEditDto, organizationId: string) {
+  async updateWorflowVersion(version: AppVersion, body: VersionEditDto, organizationId: string) {
     const { name, currentEnvironmentId, definition } = body;
     let currentEnvironment: AppEnvironment;
 
@@ -696,13 +1047,112 @@ export class AppsService {
           organizationId,
         },
       });
-      if (environments > 1 && currentEnvironment.priority !== 1) {
+      if (environments > 1 && currentEnvironment.priority !== 1 && !body?.is_user_switched_version) {
         throw new BadRequestException('You cannot update a promoted version');
       }
       editableParams['definition'] = definition;
     }
 
     editableParams['updatedAt'] = new Date();
+
+    return await this.appVersionsRepository.update(version.id, editableParams);
+  }
+
+  async updateVersion(version: AppVersion, body: VersionEditDto, organizationId: string) {
+    const { name, currentEnvironmentId } = body;
+    let currentEnvironment: AppEnvironment;
+
+    if (version.id === version.app.currentVersionId && !body?.is_user_switched_version)
+      throw new BadRequestException('You cannot update a released version');
+
+    if (currentEnvironmentId) {
+      currentEnvironment = await AppEnvironment.findOne({
+        where: { id: version.currentEnvironmentId },
+      });
+    }
+
+    const editableParams = {};
+    if (name) {
+      //means user is trying to update the name
+      const versionNameExists = await this.appVersionsRepository.findOne({
+        where: { name, appId: version.appId },
+      });
+
+      if (versionNameExists) {
+        throw new BadRequestException('Version name already exists.');
+      }
+      editableParams['name'] = name;
+    }
+
+    //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
+    if (currentEnvironmentId) {
+      if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+        throw new BadRequestException('You do not have permissions to perform this action');
+      }
+
+      if (version.currentEnvironmentId !== currentEnvironmentId) {
+        throw new NotAcceptableException();
+      }
+      const nextEnvironment = await AppEnvironment.findOne({
+        select: ['id'],
+        where: {
+          priority: MoreThan(currentEnvironment.priority),
+          organizationId,
+        },
+        order: { priority: 'ASC' },
+      });
+
+      const environments = await AppEnvironment.count({
+        where: {
+          organizationId,
+        },
+      });
+      if (
+        environments > 1 &&
+        currentEnvironment.priority < nextEnvironment.priority &&
+        !body?.is_user_switched_version
+      ) {
+        throw new BadRequestException('You cannot update a promoted version');
+      }
+
+      editableParams['currentEnvironmentId'] = nextEnvironment.id;
+    }
+
+    editableParams['updatedAt'] = new Date();
+
+    if (version.promotedFrom) {
+      /* 
+      should make this field null. 
+      otherwise unreleased versions will demote back to promoted_from when the user go back to base plan again. 
+      (this query will only run one time after the user buys a paid plan)
+      */
+      editableParams['promotedFrom'] = null;
+    }
+
+    return await this.appVersionsRepository.update(version.id, editableParams);
+  }
+
+  async updateAppVersion(version: AppVersion, body: AppVersionUpdateDto) {
+    const editableParams = {};
+
+    const { globalSettings, homePageId } = await this.appVersionsRepository.findOne({
+      where: { id: version.id },
+    });
+
+    if (body?.homePageId && homePageId !== body.homePageId) {
+      editableParams['homePageId'] = body.homePageId;
+    }
+
+    if (body?.globalSettings) {
+      editableParams['globalSettings'] = {
+        ...globalSettings,
+        ...body.globalSettings,
+      };
+    }
+
+    if (typeof body?.showViewerNavigation === 'boolean') {
+      editableParams['showViewerNavigation'] = body.showViewerNavigation;
+    }
 
     return await this.appVersionsRepository.update(version.id, editableParams);
   }
@@ -720,7 +1170,11 @@ export class AppsService {
   }
 
   async appsCount() {
-    return await this.appsRepository.count();
+    return await this.appsRepository.count({
+      where: {
+        type: 'front-end',
+      },
+    });
   }
 
   async getAppsLimit() {
@@ -753,13 +1207,24 @@ export class AppsService {
 
   async validateVersionEnvironment(
     environmentName: string,
+    environmentId: string,
     currentEnvIdOfVersion: string,
     organizationId: string
-  ): Promise<string> {
-    const environment: AppEnvironment = await this.appEnvironmentService.getEnvironmentByName(
-      environmentName,
-      organizationId
-    );
+  ): Promise<AppEnvironment> {
+    const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+    if (environmentName && !isMultiEnvironmentEnabled) {
+      throw new ForbiddenException('URL is not accessible. Multi-environment is not enabled');
+    }
+
+    const processEnvironmentName = environmentName
+      ? environmentName
+      : !isMultiEnvironmentEnabled
+      ? 'development'
+      : null;
+
+    const environment: AppEnvironment = environmentId
+      ? await this.appEnvironmentService.get(organizationId, environmentId)
+      : await this.appEnvironmentService.getEnvironmentByName(processEnvironmentName, organizationId);
     if (!environment) {
       throw new NotFoundException("Couldn't found environment in the organization");
     }
@@ -769,7 +1234,7 @@ export class AppsService {
       currentEnvIdOfVersion
     );
     if (environment.priority <= currentEnvOfVersion.priority) {
-      return environment.id;
+      return environment;
     } else {
       throw new NotAcceptableException('Version is not promoted to the environment yet.');
     }
@@ -784,11 +1249,61 @@ export class AppsService {
         .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
         .getMany();
 
-      const uniqTableIds = [...new Set(tooljetDbDataQueries.map((dq) => dq.options['table_id']))];
+      const uniqTableIds = new Set();
+      tooljetDbDataQueries.forEach((dq) => {
+        if (dq.options?.operation === 'join_tables') {
+          const joinOptions = dq.options?.join_table?.joins ?? [];
+          (joinOptions || []).forEach((join) => {
+            const { table, conditions } = join;
+            if (table) uniqTableIds.add(table);
+            conditions?.conditionsList?.forEach((condition) => {
+              const { leftField, rightField } = condition;
+              if (leftField?.table) {
+                uniqTableIds.add(leftField?.table);
+              }
+              if (rightField?.table) {
+                uniqTableIds.add(rightField?.table);
+              }
+            });
+          });
+        }
+        if (dq.options.table_id) uniqTableIds.add(dq.options.table_id);
+      });
 
-      return uniqTableIds.map((table_id) => {
+      return [...uniqTableIds].map((table_id) => {
         return { table_id };
       });
     });
+  }
+
+  async workflowsCount(workspaceId) {
+    return await this.appsRepository.count({
+      where: {
+        type: 'workflow',
+        ...(workspaceId && { organizationId: workspaceId }),
+      },
+    });
+  }
+
+  async getWorkflowLimit(params: { limitFor: string; workspaceId?: string }) {
+    if (params.limitFor === 'workspace' && !params.workspaceId)
+      throw new BadRequestException(`workspaceId is doesn't exist`);
+
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.WORKFLOWS, LICENSE_FIELD.STATUS]);
+    const totalCount =
+      params.limitFor === 'workspace'
+        ? licenseTerms[LICENSE_FIELD.WORKFLOWS].workspace.total
+        : licenseTerms[LICENSE_FIELD.WORKFLOWS].instance.total;
+
+    return {
+      appsCount: generatePayloadForLimits(
+        totalCount !== LICENSE_LIMIT.UNLIMITED
+          ? await this.workflowsCount(params.limitFor === 'workspace' ? params?.workspaceId ?? '' : '')
+          : 0,
+        totalCount,
+        licenseTerms[LICENSE_FIELD.STATUS],
+        LICENSE_LIMITS_LABEL.WORKFLOWS
+      ),
+    };
   }
 }

@@ -9,12 +9,12 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 export const AppVersionsManager = function ({
   appId,
-  releasedVersionId,
   setAppDefinitionFromVersion,
   onVersionDelete,
   currentEnvironment,
   environments,
   setCurrentEnvironment,
+  appCreationMode,
 }) {
   const [appVersions, setAppVersions] = useState([]);
   const [appVersionStatus, setGetAppVersionStatus] = useState('');
@@ -24,9 +24,10 @@ export const AppVersionsManager = function ({
     showModal: false,
   });
 
-  const { editingVersion } = useAppVersionStore(
+  const { editingVersion, releasedVersionId } = useAppVersionStore(
     (state) => ({
       editingVersion: state.editingVersion,
+      releasedVersionId: state.releasedVersionId,
     }),
     shallow
   );
@@ -52,6 +53,7 @@ export const AppVersionsManager = function ({
     const currentPromotedEnvironment = currentEnvironmentId
       ? environments.find((env) => env.id === currentEnvironmentId)
       : environments.find((env) => env.name === 'development');
+
     if (currentPromotedEnvironment.name === 'production' || currentPromotedEnvironment.name === 'staging') {
       // we don't want to allow editing of production and staging environments
       // so let's freeze the editor
@@ -73,7 +75,7 @@ export const AppVersionsManager = function ({
         }
         // if current selected version is not present in the current environment, then select the first version
         if (!data.appVersions.find((version) => version.id === editingVersion.id)) {
-          selectVersion(data.appVersions[0].id);
+          selectVersion(data.appVersions[0].id, true);
         }
       })
       .catch((error) => {
@@ -88,11 +90,16 @@ export const AppVersionsManager = function ({
     }
   }, [currentEnvironment, appId]);
 
-  const selectVersion = (id) => {
-    appVersionService
-      .getOne(appId, id)
+  const selectVersion = (id, isCurrentVersionNotUpgradedYet = false, isUserSwitchedVersion = false) => {
+    return appVersionService
+      .getAppVersionData(appId, id)
       .then((data) => {
-        setAppDefinitionFromVersion(data, true, shouldFreezeEditor(data.currentEnvironmentId));
+        setAppDefinitionFromVersion(
+          data,
+          isUserSwitchedVersion,
+          isCurrentVersionNotUpgradedYet,
+          currentEnvironment?.id
+        );
       })
       .catch((error) => {
         toast.error(error);
@@ -183,6 +190,13 @@ export const AppVersionsManager = function ({
     deleteVersion,
     deleteAppVersion,
     resetDeleteModal,
+    appCreationMode,
+  };
+
+  const handleOnSelectVersion = (id) => {
+    if (editingVersion.id === id) return;
+
+    return selectVersion(id, false, true);
   };
 
   return (
@@ -191,11 +205,11 @@ export const AppVersionsManager = function ({
         isLoading={appVersionStatus === 'loading'}
         options={options}
         value={editingVersion.id}
-        onChange={(id) => selectVersion(id)}
+        onChange={(id) => handleOnSelectVersion(id)}
         {...customSelectProps}
         className={` ${darkMode && 'dark-theme'}`}
         currentEnvironment={currentEnvironment}
-        onSelectVersion={selectVersion}
+        onSelectVersion={handleOnSelectVersion}
       />
     </div>
   );

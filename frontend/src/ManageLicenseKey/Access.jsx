@@ -10,6 +10,7 @@ const FeatureLabels = {
   saml: 'SAML',
   customStyling: 'Custom styles',
   multiEnvironment: 'Multi-Environment',
+  gitSync: 'GitSync',
 };
 
 const Access = () => {
@@ -35,12 +36,14 @@ const Access = () => {
     <LoadingScreen />
   ) : (
     <div className="metrics-wrapper">
-      <div className="access-content">
+      <div className="access-content" data-cy="access-content">
         {features
           ?.filter((feature) => Object.keys(FeatureLabels).indexOf(feature?.key) !== -1)
           .map((feature, index) => (
             <label key={index} className="form-switch d-flex align-items-center metric">
-              <span className="form-check-label">{feature?.label}</span>
+              <span className="form-check-label" data-cy={`${feature?.label.toLowerCase().replace(/\s+/g, '-')}-label`}>
+                {feature?.label}
+              </span>
               <SolidIcon name={!feature?.value ? 'circularToggleDisabled' : 'circularToggleEnabled'} />
             </label>
           ))}

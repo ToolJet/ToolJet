@@ -264,16 +264,16 @@ class ManageAllUsersComponent extends React.Component {
                 <div className="user-limits d-flex">
                   {!userLimits?.usersCount?.canAddUnlimited && userLimits?.usersCount && (
                     <div className="limit">
-                      <div>TOTAL USERS</div>
-                      <div className="count">
+                      <div data-cy="total-user-limit-label">TOTAL USERS</div>
+                      <div className="count" data-cy="total-user-limit-count">
                         {userLimits?.usersCount?.current}/{userLimits?.usersCount?.total}
                       </div>
                     </div>
                   )}
                   {!userLimits?.editorsCount?.canAddUnlimited && userLimits?.editorsCount && (
                     <div className="limit">
-                      <div>BUILDERS</div>
-                      <div className="count">
+                      <div data-cy="total-builder-limit-label">BUILDERS</div>
+                      <div className="count" data-cy="total-user-limit-count">
                         {userLimits?.editorsCount?.current}/{userLimits?.editorsCount?.total}
                       </div>
                     </div>

@@ -35,7 +35,7 @@ import {
 describe("List view widget", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
     cy.viewport(1200, 1200);
     cy.dragAndDropWidget("List View", 50, 500);
@@ -85,7 +85,11 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
-    cy.wait(2500);
+    cy.get(
+      `${commonWidgetSelector.draggableWidget(commonWidgetText.text1)}:eq(0)`,
+      { timeout: 10000 }
+    );
+    cy.wait(1000);
 
     cy.get(
       `${commonWidgetSelector.draggableWidget(commonWidgetText.text1)}:eq(0)`
@@ -131,7 +135,10 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
-    cy.wait(2500);
+    cy.get(`${commonWidgetSelector.draggableWidget(data.widgetName)}:eq(0)`, {
+      timeout: 10000,
+    });
+    cy.wait(1000);
 
     cy.get(`${commonWidgetSelector.draggableWidget(data.widgetName)}:eq(0)`)
       .realHover()
@@ -164,6 +171,8 @@ describe("List view widget", () => {
       )
     );
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get(`[data-cy=${data.widgetName.toLowerCase()}-row-1]`).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, data.marks[1]);
 
@@ -184,6 +193,7 @@ describe("List view widget", () => {
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
       "not.exist"
     );
+    cy.wait(500);
 
     // verifyAndModifyToggleFx(
     //   commonWidgetText.parameterShowOnMobile,
@@ -297,8 +307,11 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
-    cy.wait(3500);
-
+    cy.get(`${commonWidgetSelector.draggableWidget(data.widgetName)}:eq(0)`, {
+      timeout: 10000,
+    });
+    cy.wait(1000);
+    cy.log("1234567890");
     cy.get(
       `${commonWidgetSelector.draggableWidget(commonWidgetText.text1)}:eq(0)`
     ).click();
@@ -324,7 +337,7 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
-    cy.wait(2500);
+    cy.wait(3500);
 
     cy.get(
       `${commonWidgetSelector.draggableWidget(data.widgetName)}:eq(0)`
@@ -347,7 +360,7 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
-    cy.wait(2500);
+    cy.wait(3500);
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionGenaral);

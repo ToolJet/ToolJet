@@ -1,47 +1,25 @@
-ToolJet is an **open-source low-code framework** to build and deploy internal tools with minimal engineering effort. ToolJet's drag and drop frontend builder allows you to create complex, responsive frontends within minutes. Additionally, you can integrate various data sources, including databases like PostgreSQL, MongoDB, and Elasticsearch; API endpoints with OpenAPI spec and OAuth2 support; SaaS tools such as Stripe, Slack, Google Sheets, Airtable, and Notion; as well as object storage services like S3, GCS, and Minio, to fetch and write data.
+ToolJet is an **open-source low-code framework** to build and deploy internal tools with minimal engineering effort. ToolJet's drag-and-drop frontend builder allows you to create complex, responsive frontends within minutes. Additionally, you can integrate various data sources, including databases like PostgreSQL, MongoDB, and Elasticsearch; API endpoints with OpenAPI spec and OAuth2 support; SaaS tools such as Stripe, Slack, Google Sheets, Airtable, and Notion; as well as object storage services like S3, GCS, and Minio, to fetch and write data.
 
-⭐ If you find ToolJet useful, please consider giving us a star on GitHub! Your support helps us continue to innovate and deliver exciting features.
+ :star: If you find ToolJet useful, please consider giving us a star on GitHub! Your support helps us continue to innovate and deliver exciting features.
 
 ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/tooljet/tooljet-ce)
-![GitHub contributors](https://img.shields.io/github/contributors/tooljet/tooljet)
-[![GitHub issues](https://img.shields.io/github/issues/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/issues)
-[![GitHub stars](https://img.shields.io/github/stars/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/stargazers)
-![GitHub closed issues](https://img.shields.io/github/issues-closed/tooljet/tooljet)
-![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/tooljet/tooljet)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/tooljet/tooljet)
+![Number of GitHub contributors](https://img.shields.io/github/contributors/tooljet/tooljet)
+[![Number of GitHub issues that are open](https://img.shields.io/github/issues/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/issues)
+[![Number of GitHub stars](https://img.shields.io/github/stars/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/stargazers)
+![Number of GitHub closed issues](https://img.shields.io/github/issues-closed/tooljet/tooljet)
+![Number of GitHub pull requests that are open](https://img.shields.io/github/issues-pr-raw/tooljet/tooljet)
+![GitHub release; latest by date](https://img.shields.io/github/v/release/tooljet/tooljet)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/tooljet/tooljet)
-[![GitHub license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet)
-[![Twitter Follow](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
+[![GitHub license which is APGL license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet)
+[![Follow us on X, formerly Twitter](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
 <p align="center">
-    <img src="https://user-images.githubusercontent.com/7828962/211444352-4d6d2e4a-13c9-4980-9e16-4aed4af9811b.png"/>
+    <img src="https://user-images.githubusercontent.com/7828962/211444352-4d6d2e4a-13c9-4980-9e16-4aed4af9811b.png" alt="Tooljet dashboard showing inventory and orders"/>
 </p>
 
 <p align="center">
-  <kbd>
-    <img src="https://user-images.githubusercontent.com/7828962/202402863-2851a072-9dca-4b8b-9473-0d044373928b.png"/>
-
-  </kbd>
+    <img src="https://github.com/ToolJet/ToolJet/assets/25361949/0e711f3a-edb7-496b-8833-107de3826933"/>
 </p>
-
-<p align="center">
-  <kbd>
-<img src="https://user-images.githubusercontent.com/7828962/211364385-10714e24-f1ac-4e72-a2a1-ec7dc2d412ab.png"/>
-  </kbd>
-</p>
-
-<p align="center">
-  <kbd>
-<img src="https://user-images.githubusercontent.com/7828962/202402422-8f1df2a4-5c07-4125-9c2e-5450b90f464c.png"/>
-  </kbd>
-</p>
-
-<p align="center">
-  <kbd>
-<img src="https://user-images.githubusercontent.com/7828962/202402574-7cd7c606-d751-4de1-ba56-abbedba54b13.png"/>
-  </kbd>
-</p>
-
 
 ## All features
 
@@ -58,8 +36,8 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 - **Run JS & Python code:** Execute custom JavaScript and Python snippets.
 - **Granular access control:** Set permissions at both group and app levels.
 - **Low-code:** Use JS code almost anywhere within the builder, such as setting text color based on status with 
-`status === 'success' ? 'green' : 'red`.
-- **No-code query editors:** Query Editors available for all supported data sources.
+`status === 'success' ? 'green' : 'red'`.
+- **No-code query editors:** Query Editors are available for all supported data sources.
 - **Join and transform data:** Transform query results using JavaScript or Python code.
 - **Secure:** All the credentials are securely encrypted using `aes-256-gcm`.
 - **Data Privacy:** ToolJet serves solely as a proxy and does not store data.
@@ -70,7 +48,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 ## Quickstart
 The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/setup/).
 
-You can deploy ToolJet on Heroku using one-click-deployment.
+You can deploy ToolJet on Heroku and DigitalOcean using one-click-deployment.
 
 <p align="center">
   <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height=32></a>
@@ -103,7 +81,7 @@ Documentation is available at https://docs.tooljet.com.
 - [Component Reference](https://docs.tooljet.com/docs/widgets/button)
 
 ## Self-hosted
-You can use ToolJet Cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, Heroku and more.
+You can use ToolJet Cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, Heroku, and more.
 
 | Provider  | Documentation |
 | :------------- | :------------- |
@@ -132,10 +110,10 @@ For general help using ToolJet, please refer to the official [documentation](htt
 
 - [Slack](https://tooljet.com/slack) - Discussions with the community and the team.
 - [GitHub](https://github.com/ToolJet/ToolJet/issues) - For bug reports and feature requests.
-- [Twitter](https://twitter.com/ToolJet) - Get the product updates easily.
+- [𝕏 (Twitter)](https://twitter.com/ToolJet) - Get the product updates quickly.
 
 ## Roadmap
-Check out our [roadmap](https://github.com/ToolJet/ToolJet/projects/2) to stay updated on recently released features and to learn about what's coming next.
+Check out our [roadmap](https://github.com/ToolJet/ToolJet/projects/2) to stay updated on recently released features and learn about what's coming next.
 
 ## Branching model
 We use the git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
@@ -150,4 +128,4 @@ Kindly read our [Contributing Guide](CONTRIBUTING.md) to familiarize yourself wi
 </a>
 
 ## License
-ToolJet © 2022, ToolJet Solutions Inc - Released under the GNU Affero General Public License v3.0.
+ToolJet © 2023, ToolJet Solutions Inc - Released under the GNU Affero General Public License v3.0.

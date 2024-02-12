@@ -38,10 +38,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18.3.0
+      - name: Use Node.js 18.18.2
         uses: actions/setup-node@v3
         with:
-          node-version: 18.3.0
+          node-version: 18.18.2
 
       - name: Cache node modules
         uses: actions/cache@v3
@@ -55,6 +55,16 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
+
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools
 
       - run: npm run build
 
@@ -68,10 +78,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18.3.0
+      - name: Use Node.js 18.18.2
         uses: actions/setup-node@v3
         with:
-          node-version: 18.3.0
+          node-version: 18.18.2
 
       - name: Cache node modules
         uses: actions/cache@v3
@@ -86,6 +96,16 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools
+
       - run: npm run build:plugins
       - run: npm --prefix frontend ci && npm --prefix server ci && npm --prefix plugins ci
       - run: npm --prefix server run lint && npm --prefix frontend run lint && npm --prefix plugins run lint
@@ -94,7 +114,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30 # Set a timeout of 30 minutes
     needs: build
-    container: node:18.3.0-buster
+    container: node:18.18.2-bullseye
     services:
       postgres:
         image: postgres
@@ -120,7 +140,7 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-      - run: apt update && apt install -y postgresql
+      - run: apt update && apt install -y postgresql-client
       - run: npm --prefix plugins ci
       - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
       - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
@@ -133,7 +153,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30 # Set a timeout of 30 minutes
     needs: build
-    container: node:18.3.0-buster
+    container: node:18.18.2-bullseye
     services:
       postgres:
         image: postgres
@@ -159,7 +179,7 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-      - run: apt update && apt install -y postgresql
+      - run: apt update && apt install -y postgresql-client
       - run: npm --prefix plugins ci
       - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
       - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server

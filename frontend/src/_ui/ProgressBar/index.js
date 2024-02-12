@@ -9,7 +9,7 @@ const ProgressBar = ({ value, max, classes, parentStyles }) => {
 
   return (
     <div style={{ ...parentStyles }} className={`progress-bar ${classes}`}>
-      <div className="progress" style={gradientStyle}></div>
+      <div className="progress" style={gradientStyle} data-cy="progress-bar"></div>
     </div>
   );
 };

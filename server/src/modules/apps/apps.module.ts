@@ -3,8 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { App } from '../../entities/app.entity';
 import { File } from '../../entities/file.entity';
 import { AppsController } from '../../controllers/apps.controller';
+import { AppsControllerV2 } from '../../controllers/apps.controller.v2';
 import { AppsService } from '../../services/apps.service';
-import { WorkflowExecutionsController } from '../../controllers/workflow_executions_controller';
 import { AppVersion } from '../../../src/entities/app_version.entity';
 import { DataQuery } from '../../../src/entities/data_query.entity';
 import { CaslModule } from '../casl/casl.module';
@@ -43,6 +43,24 @@ import { WorkflowExecutionEdge } from 'src/entities/workflow_execution_edge.enti
 import { BullModule } from '@nestjs/bull';
 import { DataQueriesService } from '@services/data_queries.service';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
+import { GitSyncService } from '@services/git_sync.service';
+import { AppGitSync } from 'src/entities/app_git_sync.entity';
+import { OrganizationGitSync } from 'src/entities/organization_git_sync.entity';
+
+import { Component } from 'src/entities/component.entity';
+import { Page } from 'src/entities/page.entity';
+import { EventHandler } from 'src/entities/event_handler.entity';
+import { Layout } from 'src/entities/layout.entity';
+
+import { ComponentsService } from '@services/components.service';
+import { PageService } from '@services/page.service';
+import { EventsService } from '@services/events_handler.service';
+import { WorkflowExecutionsController } from '@controllers/workflow_executions_controller';
+import { ImportExportResourcesService } from '@services/import_export_resources.service';
+import { TooljetDbImportExportService } from '@services/tooljet_db_import_export_service';
+import { TooljetDbService } from '@services/tooljet_db.service';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 @Module({
   imports: [
@@ -69,6 +87,12 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
       WorkflowExecutionNode,
       WorkflowExecutionEdge,
       OrgEnvironmentVariable,
+      AppGitSync,
+      OrganizationGitSync,
+      Component,
+      Page,
+      EventHandler,
+      Layout,
     ]),
     CaslModule,
     BullModule.registerQueue({
@@ -91,7 +115,22 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
     AppEnvironmentService,
     WorkflowExecutionsService,
     DataQueriesService,
+    ComponentsService,
+    GitSyncService,
+    PageService,
+    EventsService,
+    TooljetDbService,
+    ImportExportResourcesService,
+    TooljetDbImportExportService,
+    TooljetDbOperationsService,
+    PostgrestProxyService,
   ],
-  controllers: [AppsController, AppUsersController, AppsImportExportController, WorkflowExecutionsController],
+  controllers: [
+    AppsController,
+    AppsControllerV2,
+    AppUsersController,
+    AppsImportExportController,
+    WorkflowExecutionsController,
+  ],
 })
 export class AppsModule {}

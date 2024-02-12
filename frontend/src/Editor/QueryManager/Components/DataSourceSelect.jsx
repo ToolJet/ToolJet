@@ -14,7 +14,7 @@ import { Tooltip } from 'react-tooltip';
 import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
 import { canCreateDataSource } from '@/_helpers';
 
-function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
+function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSources, onNewNode, defaultDataSources }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const [userDefinedSources, setUserDefinedSources] = useState([...dataSources, ...globalDataSources]);
@@ -51,14 +51,16 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSources]);
 
+  const availableDataSources = workflowDataSources ? workflowDataSources : userDefinedSources;
+
   useEffect(() => {
     setUserDefinedSourcesOpts(
-      Object.entries(groupBy(userDefinedSources, 'kind')).map(([kind, sources], index) => ({
+      Object.entries(groupBy(availableDataSources, 'kind')).map(([kind, sources], index) => ({
         label: (
           <div>
             {index === 0 && (
               <div className="color-slate9 mb-2 pb-1" style={{ fontWeight: 500, marginTop: '-8px' }}>
-                Data Sources
+                Data sources
               </div>
             )}
             <DataSourceIcon source={sources?.[0]} height={16} />
@@ -71,6 +73,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
               className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
               data-tooltip-id="tooltip-for-add-query-dd-option"
               data-tooltip-content={source.name}
+              data-cy={`ds-${source.name.toLowerCase()}`}
             >
               {source.name}
               <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
@@ -88,7 +91,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   const DataSourceOptions = [
     {
       label: (
-        <span className="color-slate9" style={{ fontWeight: 500 }}>
+        <span data-cy="ds-section-header-default" className="color-slate9" style={{ fontWeight: 500 }}>
           Defaults
         </span>
       ),
@@ -97,7 +100,10 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
         ...staticDataSources.map((source) => ({
           label: (
             <div>
-              <DataSourceIcon source={source} height={16} /> <span className="ms-1 small">{source.name}</span>
+              <DataSourceIcon source={source} height={16} />{' '}
+              <span data-cy={`ds-${source.name.toLowerCase()}`} className="ms-1 small">
+                {source.name}
+              </span>
             </div>
           ),
           value: source.id,
@@ -108,6 +114,31 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
     ...userDefinedSourcesOpts,
   ];
 
+  const dataSourcesAvailable = [
+    {
+      label: (
+        <div>
+          <span className="color-slate9" style={{ fontWeight: 500 }}>
+            Defaults
+          </span>
+        </div>
+      ),
+      isDisabled: true,
+      options: defaultDataSources?.map((source) => ({
+        label: (
+          <div>
+            <DataSourceIcon source={source} height={16} /> <span className="ms-1 small">{source.kind}</span>
+          </div>
+        ),
+        value: source.name,
+        source,
+      })),
+    },
+    ...userDefinedSourcesOpts,
+  ];
+
+  const dataSourceList = workflowDataSources && workflowDataSources ? dataSourcesAvailable : DataSourceOptions;
+
   const handleKeyDown = (event) => {
     if (event.key === 'Escape') {
       closePopup();
@@ -117,7 +148,13 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   return (
     <div>
       <Select
-        onChange={({ source } = {}) => handleChangeDataSource(source)}
+        onChange={({ source } = {}) =>
+          source?.id !== 'if' && workflowDataSources
+            ? onNewNode(source.kind, source.id, source.plugin_id)
+            : source && source?.id === 'if'
+            ? onNewNode('if')
+            : handleChangeDataSource(source)
+        }
         classNames={{
           menu: () => 'tj-scrollbar',
         }}
@@ -200,7 +237,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
           }),
         }}
         placeholder="Search"
-        options={DataSourceOptions}
+        options={dataSourceList}
         isDisabled={isDisabled}
         menuIsOpen
         maxMenuHeight={400}
@@ -250,7 +287,7 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
       {canCreateDataSource() && (
         <div className="p-2 mt-2 border-slate3-top">
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={handleAddClick}>
-            + Add new data source
+            + Add new Data source
           </ButtonSolid>
         </div>
       )}

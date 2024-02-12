@@ -48,12 +48,12 @@ describe("dashboard", () => {
       installed_version: "2.9.2",
       version_ignored: false,
     }).as("version");
-    login();
+    cy.defaultWorkspaceLogin();
     cy.wait("@emptyDashboard");
     cy.wait("@folders");
     cy.wait("@version");
     // deleteDownloadsFolder();
-    cy.visitTheWorkspace('My workspace')
+    cy.visit('/my-workspace')
 
   });
 
@@ -128,7 +128,7 @@ describe("dashboard", () => {
     });
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      dashboardText.dashboardAppsHeaderLabel
+      " All apps"
     );
 
     cy.get(dashboardSelector.versionLabel).verifyVisibleElement(
@@ -159,7 +159,7 @@ describe("dashboard", () => {
     cy.reload();
     verifyTooltip(commonSelectors.dashboardIcon, "Dashboard");
     verifyTooltip(commonSelectors.databaseIcon, "Database");
-    verifyTooltip(commonSelectors.globalDataSourceIcon, "Data Sources");
+    verifyTooltip(commonSelectors.globalDataSourceIcon, "Data sources");
     verifyTooltip(commonSelectors.workspaceSettingsIcon, "Workspace settings");
     verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");
     verifyTooltip(dashboardSelector.modeToggle, "Mode");
@@ -190,6 +190,7 @@ describe("dashboard", () => {
           });
       });
 
+    cy.wait(1000);
     viewAppCardOptions(data.appName);
     cy.get(
       commonSelectors.appCardOptions(commonText.changeIconOption)
@@ -273,7 +274,7 @@ describe("dashboard", () => {
 
     viewAppCardOptions(data.appName);
     cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
-    cy.get('[data-cy="Clone app"]').click();
+    cy.get('[data-cy="clone-app"]').click();
     cy.get('.go3958317564').should('be.visible').and('have.text', dashboardText.appClonedToast)
     cy.wait(3000);
     cy.renameApp(data.cloneAppName);
@@ -329,7 +330,7 @@ describe("dashboard", () => {
   });
   it("Should verify the app CRUD operation", () => {
     data.appName = `${fake.companyName}-App`;
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
     cy.dragAndDropWidget("Button", 450, 450);
 
@@ -354,7 +355,7 @@ describe("dashboard", () => {
   });
   it("Should verify the folder CRUD operation", () => {
     data.appName = `${fake.companyName}-App`;
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
     cy.dragAndDropWidget("Button", 100, 100);
 

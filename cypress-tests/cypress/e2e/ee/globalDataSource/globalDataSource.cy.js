@@ -10,9 +10,9 @@ import {
     closeDSModal,
     deleteDatasource,
     addQuery,
-    addQueryN,
+    addQueryAndOpenEditor,
     verifyValueOnInspector,
-    resizeQueryPanel
+    resizeQueryPanel,
 } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
@@ -29,30 +29,28 @@ import {
 
 import { AddDataSourceToGroup } from "Support/utils/eeCommon";
 
+import {
+    verifyAndModifyParameter,
+    editAndVerifyWidgetName,
+} from "Support/utils/commonWidget";
+
+import {
+    addDsToGroup,
+    createGroupAddAppAndUserToGroup,
+} from "Support/utils/manageGroups";
+
 const data = {};
-data.userName1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
-data.userEmail1 = fake.email.toLowerCase();
-data.ds1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-data.ds2 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-data.ds3 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-data.appName = `${fake.companyName}-App`;
 
 describe("Global Datasource Manager", () => {
     beforeEach(() => {
-        cy.apiLogin();
-        cy.visit('/my-workspace')
+        cy.defaultWorkspaceLogin();
         cy.viewport(1200, 1300);
-    });
-
-    before(() => {
-        cy.apiLogin();
-        cy.apiCreateApp(data.appName);
-        cy.visit('/my-workspace')
-        addNewUserMW(data.userName1, data.userEmail1);
-        cy.logoutApi();
+        cy.wait(1000);
     });
 
     it("Should verify the global data source manager UI", () => {
+        data.ds1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
         cy.get(commonSelectors.globalDataSourceIcon).click();
         cy.get(commonSelectors.pageSectionHeader).verifyVisibleElement(
             "have.text",
@@ -72,52 +70,43 @@ describe("Global Datasource Manager", () => {
         );
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            "Databases"
+            " Databases"
         );
         cy.get(dataSourceSelector.querySearchBar)
             .invoke("attr", "placeholder")
-            .should("eq", "Search Databases");
+            .should("eq", "Search  data sources");
 
         cy.get(dataSourceSelector.apiLabelAndCount)
             .verifyVisibleElement("have.text", dataSourceText.allApis)
             .click();
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            "APIs"
+            " APIs"
         );
-        cy.get(dataSourceSelector.querySearchBar)
-            .invoke("attr", "placeholder")
-            .should("eq", "Search APIs");
 
         cy.get(dataSourceSelector.cloudStorageLabelAndCount)
             .verifyVisibleElement("have.text", dataSourceText.allCloudStorage)
             .click();
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            "Cloud Storage"
+            " Cloud Storages"
         );
-        cy.get(dataSourceSelector.querySearchBar)
-            .invoke("attr", "placeholder")
-            .should("eq", "Search Cloud Storage");
 
         cy.get(dataSourceSelector.pluginsLabelAndCount)
             .verifyVisibleElement("have.text", dataSourceText.pluginsLabelAndCount)
             .click();
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            "Plugins"
+            " Plugins"
         );
-        cy.get(dataSourceSelector.querySearchBar)
-            .invoke("attr", "placeholder")
-            .should("eq", "Search Plugins");
 
         cy.get('[data-cy="added-ds-label"]').should(($el) => {
-            expect($el.contents().first().text().trim()).to.eq("Data Sources Added");
+            expect($el.contents().first().text().trim()).to.eq("Data sources added");
         });
         cy.get(dataSourceSelector.addedDsSearchIcon).should("be.visible").click();
         cy.get(dataSourceSelector.AddedDsSearchBar)
             .invoke("attr", "placeholder")
-            .should("eq", "Search for Data Sources");
+            .should("eq", "Search for Data sources");
 
         selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.ds1);
         cy.clearAndType(
@@ -148,9 +137,9 @@ describe("Global Datasource Manager", () => {
         cy.get(commonSelectors.yesButton).click();
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            "Databases"
+            " Databases"
         );
-        cy.wait(200)
+        cy.wait(200);
         cy.get(`[data-cy="cypress-${data.ds1}-postgresql-button"]`).realClick();
         cy.clearAndType(
             dataSourceSelector.dsNameInputField,
@@ -162,7 +151,7 @@ describe("Global Datasource Manager", () => {
         cy.get(commonSelectors.appCreateButton).should("be.visible");
         cy.get(commonSelectors.globalDataSourceIcon).click();
         cy.get(dataSourceSelector.databaseLabelAndCount).click();
-        cy.wait(500)
+        cy.wait(500);
         cy.get(`[data-cy="cypress-${data.ds1}-postgresql-button"]`).realClick();
         cy.clearAndType(
             dataSourceSelector.dsNameInputField,
@@ -182,6 +171,17 @@ describe("Global Datasource Manager", () => {
         deleteDatasource(`cypress-${data.ds1}-postgresql1`);
     });
     it("Should verify the Datasource connection and query creation using global data source", () => {
+        data.userName1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.userEmail1 = fake.email.toLowerCase();
+        data.appName = `${fake.companyName}-App`;
+        data.ds1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.text1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
+        addNewUserMW(data.userName1, data.userEmail1);
+        cy.logoutApi();
+
+        cy.defaultWorkspaceLogin();
+        cy.apiCreateApp(data.appName);
         selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.ds1);
 
         cy.clearAndType(
@@ -199,13 +199,9 @@ describe("Global Datasource Manager", () => {
             },
             ".form-switch"
         );
+        cy.wait(1000);
 
-        cy.get(commonSelectors.globalDataSourceIcon).click();
-        cy.get(commonSelectors.dashboardIcon).click();
-        navigateToAppEditor(data.appName);
-
-        pinInspector();
-        // cy.get(".tooltip-inner").invoke("hide");
+        cy.openApp();
 
         addQuery(
             "table_preview",
@@ -218,18 +214,50 @@ describe("Global Datasource Manager", () => {
             "table_preview "
         );
 
-        cy.wait(500);
+        cy.dragAndDropWidget("Text", 100, 250);
+        editAndVerifyWidgetName(data.text1);
+        cy.waitForAutoSave();
+
+        verifyAndModifyParameter(
+            "Text",
+            `{{queries.table_preview.data[1].firstname`
+        );
+        cy.forceClickOnCanvas();
+        cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        pinInspector();
-        verifyValueOnInspector('table_preview', "7 items ")
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.text1)
+        ).verifyVisibleElement("have.text", "four");
 
         cy.get('[data-cy="show-ds-popover-button"]').click();
         cy.get(".p-2 > .tj-base-btn")
             .should("be.visible")
-            .and("have.text", "+ Add new data source");
+            .and("have.text", "+ Add new Data source");
         cy.get(".p-2 > .tj-base-btn").click();
 
-        selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.ds2);
+        cy.get('[data-cy="databases-datasource-button"]').should("be.visible");
+    });
+    it("Should validate the user's global data source permissions on apps created by admin", () => {
+        data.userName1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.userEmail1 = fake.email.toLowerCase();
+        data.appName = `${fake.companyName}-App`;
+        data.ds1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.ds2 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.text1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.text2 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.groupName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
+        addNewUserMW(data.userName1, data.userEmail1);
+        cy.logoutApi();
+
+        cy.defaultWorkspaceLogin();
+
+        selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.ds1);
+        cy.clearAndType(
+            dataSourceSelector.dsNameInputField,
+            `cypress-${data.ds1}-postgresql`
+        );
+
         fillConnectionForm(
             {
                 Host: Cypress.env("pg_host"),
@@ -240,46 +268,70 @@ describe("Global Datasource Manager", () => {
             },
             ".form-switch"
         );
-    });
-    it("Should validate the user's global data source permissions on apps created by admin", () => {
-        navigateToManageGroups();
-        cy.get(groupsSelector.appSearchBox).click();
-        cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
-        cy.get(groupsSelector.selectAddButton).click();
-        cy.contains("tr", data.appName)
-            .parent()
-            .within(() => {
-                cy.get("td input").eq(1).check();
-            });
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "App permissions updated"
+        cy.wait(1000);
+
+        selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.ds2);
+        cy.clearAndType(
+            dataSourceSelector.dsNameInputField,
+            `cypress-${data.ds2}-postgresql`
         );
 
-        AddDataSourceToGroup("All users", `cypress-${data.ds1}-postgresql`);
-        AddDataSourceToGroup("All users", `cypress-${data.ds2}-postgresql`);
+        fillConnectionForm(
+            {
+                Host: Cypress.env("pg_host"),
+                Port: "5432",
+                "Database Name": Cypress.env("pg_user"),
+                Username: Cypress.env("pg_user"),
+                Password: Cypress.env("pg_password"),
+            },
+            ".form-switch"
+        );
+        cy.wait(1000);
+
+        cy.apiCreateApp(data.appName);
+        navigateToManageGroups();
+        createGroupAddAppAndUserToGroup(data.groupName, data.userEmail1);
+        addDsToGroup(data.groupName, `cypress-${data.ds1}-postgresql`);
+        addDsToGroup(data.groupName, `cypress-${data.ds2}-postgresql`);
+
+        cy.openApp();
+        addQuery(
+            "table_preview",
+            `SELECT * FROM Persons;`,
+            `cypress-${data.ds1}-postgresql`
+        );
+
+        cy.dragAndDropWidget("Text", 100, 250);
+        editAndVerifyWidgetName(data.text1);
+        cy.waitForAutoSave();
+
+        verifyAndModifyParameter(
+            "Text",
+            `{{queries.table_preview.data[1].firstname`
+        );
+        cy.forceClickOnCanvas();
+        cy.waitForAutoSave();
 
         cy.logoutApi();
         cy.apiLogin(data.userEmail1, "password");
-        cy.visit('/my-workspace')
+        cy.visit("/my-workspace");
 
         navigateToAppEditor(data.appName);
         cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
             "have.text",
             "table_preview "
         );
-        cy.wait(500);
+
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.text1)
+        ).verifyVisibleElement("have.text", "four");
 
-        pinInspector();
-        verifyValueOnInspector('table_preview', "7 items ")
-
-        cy.get('[data-cy="show-ds-popover-button"]').click();
-        cy.wait(2000)
-        addQueryN(
+        addQueryAndOpenEditor(
             "student_data",
             `SELECT * FROM student_data;`,
-            `cypress-${data.ds2}-postgresql`
+            `cypress-${data.ds2}-postgresql`,
+            data.appName
         );
 
         cy.get('[data-cy="list-query-student_data"]').verifyVisibleElement(
@@ -287,17 +339,33 @@ describe("Global Datasource Manager", () => {
             "student_data "
         );
         cy.wait(500);
+
+        cy.dragAndDropWidget("Text", 300, 250);
+        editAndVerifyWidgetName(data.text2);
+        cy.waitForAutoSave();
+
+        verifyAndModifyParameter("Text", `{{queries.student_data.data[1].name`);
+        cy.forceClickOnCanvas();
+        cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        verifyValueOnInspector('table_preview', "8 items ")
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.text2)
+        ).verifyVisibleElement("have.text", "ricky");
 
         cy.get(".p-2 > .tj-base-btn").should("not.exist");
     });
     it("Should verify the query creation and scope changing functionality.", () => {
+        data.userName1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.userEmail1 = fake.email.toLowerCase();
         data.appName = `${fake.companyName}-App`;
-        selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.ds3);
+        data.ds1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.text1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.groupName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
+        selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.ds1);
         cy.clearAndType(
             dataSourceSelector.dsNameInputField,
-            `cypress-${data.ds3}-postgresql`
+            `cypress-${data.ds1}-postgresql`
         );
 
         fillConnectionForm(
@@ -311,6 +379,7 @@ describe("Global Datasource Manager", () => {
             ".form-switch"
         );
 
+        cy.wait(1000);
         navigateToManageGroups();
         cy.get(groupsSelector.permissionsLink).click();
         cy.get(groupsSelector.appsCreateCheck).then(($el) => {
@@ -318,19 +387,19 @@ describe("Global Datasource Manager", () => {
                 cy.get(groupsSelector.appsCreateCheck).check();
             }
         });
-        AddDataSourceToGroup("All users", `cypress-${data.ds3}-postgresql`);
+
+        AddDataSourceToGroup("All users", `cypress-${data.ds1}-postgresql`);
 
         cy.logoutApi();
-        cy.apiLogin(data.userEmail1, "password");
+        cy.apiLogin("test@tooljet.com", "password");
         cy.apiCreateApp(data.appName);
         cy.openApp();
 
-        resizeQueryPanel("80");
-        cy.wait(2000);
-        addQuery(
+        addQueryAndOpenEditor(
             "table_preview",
             `SELECT * FROM Persons;`,
-            `cypress-${data.ds3}-postgresql`
+            `cypress-${data.ds1}-postgresql`,
+            data.appName
         );
 
         cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
@@ -338,24 +407,19 @@ describe("Global Datasource Manager", () => {
             "table_preview "
         );
 
-        cy.wait(500);
-        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.dragAndDropWidget("Text", 100, 250);
+        editAndVerifyWidgetName(data.text1);
+        cy.waitForAutoSave();
 
-        pinInspector();
-        cy.get("body").then(($body) => {
-            if ($body.find(".tooltip-inner").length > 0) {
-                cy.get(".tooltip-inner").invoke("hide");
-            }
-        });
-        cy.get('[data-cy="inspector-node-queries"]')
-            .parent()
-            .within(() => {
-                cy.get("span").first().scrollIntoView().contains("queries").click();
-            });
-        cy.get('[data-cy="inspector-node-table_preview"] > .node-key').click();
-        cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(
-            "have.text",
-            "7 items "
+        verifyAndModifyParameter(
+            "Text",
+            `{{queries.table_preview.data[1].firstname`
         );
+        cy.forceClickOnCanvas();
+        cy.waitForAutoSave();
+        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.text1)
+        ).verifyVisibleElement("have.text", "four");
     });
 });

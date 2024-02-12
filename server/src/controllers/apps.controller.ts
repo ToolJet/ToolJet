@@ -12,6 +12,7 @@ import {
   BadRequestException,
   UseInterceptors,
   NotFoundException,
+  Headers,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
@@ -32,7 +33,10 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
+import { WorkflowCountGuard } from '@ee/licensing/guards/workflowcount.guard';
+import { GitSyncService } from '@services/git_sync.service';
 import { AppCloneDto } from '@dto/app-clone.dto';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Controller('apps')
 export class AppsController {
@@ -40,7 +44,8 @@ export class AppsController {
     private appsService: AppsService,
     private foldersService: FoldersService,
     private appsAbilityFactory: AppsAbilityFactory,
-    private auditLoggerService: AuditLoggerService
+    private auditLoggerService: AuditLoggerService,
+    private gitSyncService: GitSyncService
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -49,7 +54,19 @@ export class AppsController {
     return await this.appsService.getAppsLimit();
   }
 
-  @UseGuards(JwtAuthGuard, AppCountGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('workflowlimit/:limitFor')
+  async getWorkflowLimit(@Headers() headers: any, @Param('limitFor') limitFor: string) {
+    // limitFor - instance | workspace
+    const params = {
+      limitFor: limitFor,
+      ...(headers['tj-workspace-id'] && { workspaceId: headers['tj-workspace-id'] }),
+    };
+
+    return await this.appsService.getWorkflowLimit(params);
+  }
+
+  @UseGuards(JwtAuthGuard, AppCountGuard, WorkflowCountGuard)
   @Post()
   async create(@User() user, @Body() appCreateDto: AppCreateDto) {
     const ability = await this.appsAbilityFactory.appsActions(user);
@@ -66,7 +83,7 @@ export class AppsController {
       appUpdateDto.name = name;
       appUpdateDto.slug = app.id;
       appUpdateDto.icon = icon;
-      await this.appsService.update(app.id, appUpdateDto, manager);
+      await this.appsService.update(app, appUpdateDto, null, manager);
 
       await this.auditLoggerService.perform({
         userId: user.id,
@@ -88,7 +105,9 @@ export class AppsController {
     @Param('slug') appSlug: string,
     @Query('access_type') accessType: string,
     @Query('version_name') versionName: string,
-    @Query('environment_name') environmentName: string
+    @Query('environment_name') environmentName: string,
+    @Query('version_id') versionId: string,
+    @Query('environment_id') envId: string
   ) {
     const app: App = await this.appsService.findAppWithIdOrSlug(appSlug);
 
@@ -116,7 +135,7 @@ export class AppsController {
       type,
     };
     /* If the request comes from preview which needs version id */
-    if (versionName && environmentName) {
+    if (versionName || environmentName || (versionId && envId)) {
       if (!ability.can('fetchVersions', app)) {
         throw new ForbiddenException(
           JSON.stringify({
@@ -125,17 +144,23 @@ export class AppsController {
         );
       }
 
-      const version = await this.appsService.findVersionFromName(versionName, id);
+      /* Adding backward compatibility for old URLs */
+      const version = versionId
+        ? await this.appsService.findVersion(versionId)
+        : await this.appsService.findVersionFromName(versionName, id);
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
       }
-      const environmentId = await this.appsService.validateVersionEnvironment(
+      const environment = await this.appsService.validateVersionEnvironment(
         environmentName,
+        envId,
         version.currentEnvironmentId,
         user.organizationId
       );
+      if (versionId) response['versionName'] = version.name;
+      if (envId) response['environmentName'] = environment.name;
       response['versionId'] = version.id;
-      response['environmentId'] = environmentId;
+      response['environmentId'] = environment.id;
     }
     return response;
   }
@@ -182,6 +207,7 @@ export class AppsController {
   @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
   @Get('validate-released-app-access/:slug')
   async releasedAppAccess(@User() user, @AppDecorator() app: App) {
+    let editPermission = false;
     if (user) {
       const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
@@ -192,6 +218,17 @@ export class AppsController {
           })
         );
       }
+
+      editPermission = ability.can('editApp', app);
+    }
+
+    if (!app.currentVersionId) {
+      const errorResponse = {
+        statusCode: HttpStatus.NOT_IMPLEMENTED,
+        error: 'App is not released yet',
+        message: { error: 'App is not released yet', editPermission: editPermission },
+      };
+      throw new HttpException(errorResponse, HttpStatus.NOT_IMPLEMENTED);
     }
 
     const { id, slug } = app;
@@ -246,17 +283,19 @@ export class AppsController {
   @UseInterceptors(ValidAppInterceptor)
   @Put(':id')
   async update(@User() user, @AppDecorator() app: App, @Body('app') appUpdateDto: AppUpdateDto) {
+    const { id: userId, organizationId } = user;
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
-
+    const { name } = appUpdateDto;
     if (!ability.can('updateParams', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.update(app.id, appUpdateDto);
+    const result = await this.appsService.update(app, appUpdateDto, organizationId);
+    if (name && app.creationMode != 'GIT' && name != app.name) this.gitSyncService.renameAppOrVersion(user, app.id);
 
     await this.auditLoggerService.perform({
-      userId: user.id,
-      organizationId: user.organizationId,
+      userId,
+      organizationId,
       resourceId: app.id,
       resourceType: ResourceTypes.APP,
       resourceName: app.name,
@@ -463,7 +502,16 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.appsService.updateVersion(version, versionEditDto, app.organizationId);
+    if (app.type === 'workflow') {
+      await this.appsService.updateWorflowVersion(version, versionEditDto, app.organizationId);
+    } else {
+      await this.appsService.updateVersion(version, versionEditDto, app.organizationId);
+      const { name } = versionEditDto;
+      console.log(`Rename is goign to work for ${name} and to change ${version.name} `);
+      if (name && app.creationMode != 'GIT' && name != version.name)
+        this.gitSyncService.renameAppOrVersion(user, app.id, true);
+    }
+
     return;
   }
 
@@ -504,7 +552,7 @@ export class AppsController {
 
     const appUpdateDto = new AppUpdateDto();
     appUpdateDto.icon = icon;
-    const appUser = await this.appsService.update(app.id, appUpdateDto);
+    const appUser = await this.appsService.update(app, appUpdateDto);
     return decamelizeKeys(appUser);
   }
 

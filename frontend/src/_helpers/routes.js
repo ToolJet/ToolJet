@@ -126,12 +126,14 @@ export const getWorkspaceIdOrSlugFromURL = () => {
 };
 
 export const excludeWorkspaceIdFromURL = (pathname) => {
+  const subPath = getSubpath();
+  const tempPathname = subPath ? pathname.replace(subPath, '') : pathname;
   if (
     !['/instance-settings', '/integrations', '/applications/', '/switch-workspace'].find((path) =>
-      pathname.startsWith(path)
+      tempPathname.startsWith(path)
     )
   ) {
-    pathname = getSubpath() ? pathname.replace(getSubpath(), '') : pathname;
+    pathname = tempPathname;
     const paths = pathname?.split('/').filter((path) => path !== '');
     paths.shift();
     const newPath = paths.join('/');
@@ -167,9 +169,12 @@ export const getRedirectURL = (path) => {
   return redirectLoc;
 };
 
-export const getRedirectTo = () => {
-  const params = new URL(window.location.href).searchParams;
-  return params.get('redirectTo') || '/';
+export const getRedirectTo = (paramObj) => {
+  const params = paramObj || new URL(window.location.href).searchParams;
+  let combined = Array.from(params.entries())
+    .map((param) => param.join('='))
+    .join('&');
+  return params.get('redirectTo') ? combined.replace('redirectTo=', '') : '/';
 };
 
 export const getPreviewQueryParams = () => {
@@ -180,14 +185,21 @@ export const getPreviewQueryParams = () => {
   };
 };
 
-export const getRedirectToWithParams = () => {
+export const getRedirectToWithParams = (shouldAddCustomParams = false) => {
   const pathname = getPathname(null, true);
-  const queryParams = pathname.includes('/applications/') ? getPreviewQueryParams() : {};
-  const query = !_.isEmpty(queryParams) ? queryString.stringify(queryParams) : '';
-  return `${pathname}${!_.isEmpty(query) ? `?${query}` : ''}`;
+  let query = pathname.includes('/applications/') ? constructQueryParamsInOrder(shouldAddCustomParams) : '';
+  return `${pathname}${query}`;
 };
 
 export const redirectToErrorPage = (errType, queryParams) => {
   const query = !_.isEmpty(queryParams) ? queryString.stringify(queryParams) : '';
   window.location = `${getHostURL()}/error/${errType}${!_.isEmpty(query) ? `?${query}` : ''}`;
+};
+
+/* TODO-reuse: Somewhere in the code we used same logic to construct preview params */
+const constructQueryParamsInOrder = (shouldAddCustomParams = false) => {
+  const { version, ...rest } = getQueryParams();
+  const queryStr = shouldAddCustomParams && !_.isEmpty(rest) ? queryString.stringify(rest) : '';
+  const previewParams = `${version ? `?version=${version}` : ''}`;
+  return `${previewParams}${queryStr ? `${previewParams ? '&' : '?'}${queryStr}` : ''}`;
 };

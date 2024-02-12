@@ -14,11 +14,13 @@ import {
   AfterInsert,
   getRepository,
   getManager,
+  OneToOne,
 } from 'typeorm';
 import { User } from './user.entity';
 import { AppVersion } from './app_version.entity';
 import { GroupPermission } from './group_permission.entity';
 import { AppGroupPermission } from './app_group_permission.entity';
+import { AppGitSync } from './app_git_sync.entity';
 
 @Entity({ name: 'apps' })
 export class App extends BaseEntity {
@@ -52,8 +54,23 @@ export class App extends BaseEntity {
   @Column({ name: 'user_id' })
   userId: string;
 
+  @Column({ name: 'workflow_api_token' })
+  workflowApiToken: string;
+
+  @Column({ name: 'workflow_enabled', default: false })
+  workflowEnabled: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
+
+  @Column({
+    type: 'enum',
+    enumName: 'app_creation_mode',
+    name: 'creation_mode',
+    enum: ['GIT', 'DEFAULT'],
+    default: 'DEFAULT',
+  })
+  creationMode: string;
 
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
@@ -79,6 +96,10 @@ export class App extends BaseEntity {
   })
   groupPermissions: GroupPermission[];
 
+  @OneToOne(() => AppGitSync, (appGitSync) => appGitSync.app, { onDelete: 'CASCADE' })
+  appGitSync: AppGitSync;
+
+  @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, { onDelete: 'CASCADE' })
   @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, {
     onDelete: 'CASCADE',
   })

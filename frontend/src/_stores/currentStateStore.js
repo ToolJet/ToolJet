@@ -31,10 +31,10 @@ export const useCurrentStateStore = create(
       ...initialState,
       actions: {
         setCurrentState: (currentState) => {
-          set({ ...currentState }), false, { type: 'SET_CURRENT_STATE', currentState };
+          set({ ...currentState }, false, { type: 'SET_CURRENT_STATE', currentState });
         },
         setErrors: (error) => {
-          set({ errors: { ...get().errors, ...error } }), false, { type: 'SET_ERRORS', error };
+          set({ errors: { ...get().errors, ...error } }, false, { type: 'SET_ERRORS', error });
         },
       },
     }),
@@ -56,6 +56,7 @@ export const useCurrentState = () =>
       page: state.page,
       succededQuery: state.succededQuery,
       constants: state.constants,
+      layout: state.layout,
     };
   }, shallow);
 

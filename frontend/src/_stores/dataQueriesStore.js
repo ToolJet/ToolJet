@@ -1,14 +1,17 @@
 import { create, zustandDevTools } from './utils';
 import { getDefaultOptions } from './storeHelper';
 import { dataqueryService } from '@/_services';
-import debounce from 'lodash/debounce';
+// import debounce from 'lodash/debounce';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { runQueries } from '@/_helpers/appUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
-import { isEmpty, throttle } from 'lodash';
+import _, { isEmpty, throttle } from 'lodash';
+import { useEditorStore } from './editorStore';
+import { shallow } from 'zustand/shallow';
+import { useCurrentStateStore } from './currentStateStore';
 
 const initialState = {
   dataQueries: [],
@@ -30,15 +33,36 @@ export const useDataQueriesStore = create(
       ...initialState,
       actions: {
         // TODO: Remove editor state while changing currentState
-        fetchDataQueries: async (appId, selectFirstQuery = false, runQueriesOnAppLoad = false, editorRef) => {
+        fetchDataQueries: async (appVersionId, selectFirstQuery = false, runQueriesOnAppLoad = false, ref) => {
           set({ loadingDataQueries: true });
-          const data = await dataqueryService.getAll(appId);
+          const data = await dataqueryService.getAll(appVersionId);
           set((state) => ({
             dataQueries: sortByAttribute(data.data_queries, state.sortBy, state.sortOrder),
             loadingDataQueries: false,
           }));
-          // Runs query on loading application
-          if (runQueriesOnAppLoad) runQueries(data.data_queries, editorRef);
+
+          if (data.data_queries.length !== 0) {
+            const queryConfirmationList = [];
+            const updatedQueries = {};
+            const currentQueries = useCurrentStateStore.getState().queries;
+
+            data.data_queries.forEach(({ id, name, options }) => {
+              updatedQueries[name] = _.merge(currentQueries[name], { id: id });
+              if (options && options?.requestConfirmation && options?.runOnPageLoad) {
+                queryConfirmationList.push({ queryId: id, queryName: name });
+              }
+            });
+
+            if (queryConfirmationList.length !== 0) {
+              useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
+            }
+
+            useCurrentStateStore.getState().actions.setCurrentState({
+              ...useCurrentStateStore.getState(),
+              queries: updatedQueries,
+            });
+          }
+
           // Compute query state to be added in the current state
           const { actions, selectedQuery } = useQueryPanelStore.getState();
           if (selectFirstQuery) {
@@ -47,6 +71,9 @@ export const useDataQueriesStore = create(
             const query = data.data_queries.find((query) => query.id === selectedQuery?.id);
             actions.setSelectedQuery(query?.id);
           }
+
+          // Runs query on loading application
+          if (runQueriesOnAppLoad) runQueries(data.data_queries, ref);
         },
         setDataQueries: (dataQueries) => set({ dataQueries }),
         deleteDataQueries: (queryId) => {
@@ -236,7 +263,7 @@ export const useDataQueriesStore = create(
             newName = queryToClone.name + '_copy' + count.toString();
           }
           queryToClone.name = newName;
-          delete queryToClone.id;
+
           useAppDataStore.getState().actions.setIsSaving(true);
           dataqueryService
             .create(
@@ -254,6 +281,26 @@ export const useDataQueriesStore = create(
                 dataQueries: [{ ...data, data_source_id: queryToClone.data_source_id }, ...state.dataQueries],
               }));
               actions.setSelectedQuery(data.id, { ...data, data_source_id: queryToClone.data_source_id });
+
+              const dataQueryEvents = useAppDataStore
+                .getState()
+                .events?.filter((event) => event.target === 'data_query' && event.sourceId === queryToClone.id);
+
+              if (dataQueryEvents?.length === 0) return;
+
+              return Promise.all(
+                dataQueryEvents.map((event) => {
+                  const newEvent = {
+                    event: {
+                      ...event?.event,
+                    },
+                    eventType: event?.target,
+                    attachedTo: data.id,
+                    index: event?.index,
+                  };
+                  useAppDataStore.getState().actions?.createAppVersionEventHandlers(newEvent);
+                })
+              );
             })
             .catch((error) => {
               console.error('error', error);
@@ -318,7 +365,7 @@ const sortByAttribute = (data, sortBy, order) => {
   }
 };
 
-export const useDataQueries = () => useDataQueriesStore((state) => state.dataQueries);
+export const useDataQueries = () => useDataQueriesStore((state) => state.dataQueries, shallow);
 export const useDataQueriesActions = () => useDataQueriesStore((state) => state.actions);
-export const useQueryCreationLoading = () => useDataQueriesStore((state) => !!state.creatingQueryInProcessId);
-export const useQueryUpdationLoading = () => useDataQueriesStore((state) => state.isUpdatingQueryInProcess);
+export const useQueryCreationLoading = () => useDataQueriesStore((state) => !!state.creatingQueryInProcessId, shallow);
+export const useQueryUpdationLoading = () => useDataQueriesStore((state) => state.isUpdatingQueryInProcess, shallow);

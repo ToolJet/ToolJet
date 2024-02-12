@@ -15,33 +15,55 @@ const Menu = (props) => {
   return (
     <components.Menu {...props}>
       <div>
-        <div
-          className="cursor-pointer"
-          style={{ padding: '8px 12px' }}
-          onClick={() => !props?.selectProps?.value?.isReleasedVersion && props.selectProps.setShowEditAppVersion(true)}
-        >
-          <div className="row" style={{ padding: '8px 12px' }}>
-            <div className="col-10 text-truncate tj-text-xsm color-slate12" data-cy="current-version">
-              {props?.selectProps?.value?.appVersionName}
-            </div>
-            {!props?.selectProps?.value?.isReleasedVersion && (
-              <div className="col-1">
-                <EditWhite />
+        {!props?.selectProps?.value?.isReleasedVersion && (
+          <ToolTip
+            message="Versions created from git cannot be edited"
+            show={props?.selectProps?.appCreationMode === 'GIT'}
+            placement="right"
+          >
+            <div
+              className="cursor-pointer"
+              style={{ padding: '8px 12px' }}
+              onClick={() =>
+                !props?.selectProps?.value?.isReleasedVersion &&
+                props?.selectProps?.appCreationMode !== 'GIT' &&
+                props.selectProps.setShowEditAppVersion(true)
+              }
+            >
+              <div className="row" style={{ padding: '8px 12px' }}>
+                <div className="col-10 text-truncate tj-text-xsm color-slate12" data-cy="current-version">
+                  {props?.selectProps?.value?.appVersionName}
+                </div>
+                <div
+                  className={cx('col-1', { 'disabled-action-tooltip': props?.selectProps?.appCreationMode === 'GIT' })}
+                >
+                  <EditWhite />
+                </div>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          </ToolTip>
+        )}
         <hr className="m-0" />
         <div>{props.children}</div>
-        <ToolTip message="New versions can only be created in development" show={!isEnvDevelopment} placement="right">
+        <ToolTip
+          message={
+            props?.selectProps?.appCreationMode === 'GIT'
+              ? 'New versions cannot be created for git imported apps'
+              : 'New versions can only be created in development'
+          }
+          show={!isEnvDevelopment || props?.selectProps?.appCreationMode === 'GIT'}
+          placement="right"
+        >
           <div
             className="cursor-pointer tj-text-xsm"
             style={{
               padding: '8px 12px',
-              color: `${isEnvDevelopment ? '#3E63DD' : '#C1C8CD'}`,
-              cursor: `${isEnvDevelopment ? 'pointer' : 'none'}`,
+              color: `${isEnvDevelopment && props?.selectProps?.appCreationMode !== 'GIT' ? '#3E63DD' : '#C1C8CD'}`,
+              cursor: `${isEnvDevelopment && props?.selectProps?.appCreationMode !== 'GIT' ? 'pointer' : 'none'}`,
             }}
-            onClick={() => isEnvDevelopment && props.selectProps.setShowCreateAppVersion(true)}
+            onClick={() =>
+              isEnvDevelopment && props?.selectProps?.appCreationMode !== 'GIT' && props?.setShowCreateAppVersion(true)
+            }
             data-cy="create-new-version-button"
           >
             <svg
@@ -57,7 +79,7 @@ const Menu = (props) => {
                 fillRule="evenodd"
                 clipRule="evenodd"
                 d="M17 11C17.4142 11 17.75 11.3358 17.75 11.75V16.25H22.25C22.6642 16.25 23 16.5858 23 17C23 17.4142 22.6642 17.75 22.25 17.75H17.75V22.25C17.75 22.6642 17.4142 23 17 23C16.5858 23 16.25 22.6642 16.25 22.25V17.75H11.75C11.3358 17.75 11 17.4142 11 17C11 16.5858 11.3358 16.25 11.75 16.25H16.25V11.75C16.25 11.3358 16.5858 11 17 11Z"
-                fill={`${isEnvDevelopment ? '#3E63DD' : '#C1C8CD'}`}
+                fill={`${isEnvDevelopment && props?.selectProps?.appCreationMode !== 'GIT' ? '#3E63DD' : '#C1C8CD'}`}
               />
             </svg>
             Create new version
@@ -110,12 +132,15 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
 
   return (
     <>
-      <CreateVersion
-        {...props}
-        showCreateAppVersion={showCreateAppVersion}
-        setShowCreateAppVersion={setShowCreateAppVersion}
-        onSelectVersion={onSelectVersion}
-      />
+      {showCreateAppVersion && (
+        <CreateVersion
+          {...props}
+          showCreateAppVersion={showCreateAppVersion}
+          setShowCreateAppVersion={setShowCreateAppVersion}
+          onSelectVersion={onSelectVersion}
+        />
+      )}
+
       <EditVersion
         {...props}
         showEditAppVersion={showEditAppVersion}
@@ -137,7 +162,16 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
         width={'100%'}
         data-cy={`test-version-selector`}
         hasSearch={false}
-        components={{ Menu: (props) => <Menu {...props} currentEnvironment={currentEnvironment} />, SingleValue }}
+        components={{
+          Menu: (props) => (
+            <Menu
+              {...props}
+              currentEnvironment={currentEnvironment}
+              setShowCreateAppVersion={setShowCreateAppVersion}
+            />
+          ),
+          SingleValue,
+        }}
         setShowEditAppVersion={setShowEditAppVersion}
         setShowCreateAppVersion={setShowCreateAppVersion}
         styles={{ border: 0 }}

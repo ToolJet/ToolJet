@@ -15,8 +15,9 @@ export const ServerDataStates = {
 };
 
 const staticDataSources = [
-  { kind: 'restapi', id: 'null', name: 'REST API' },
-  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
+  { kind: 'restapi', id: 'null', name: 'restapi', type: 'static' },
+  { kind: 'runjs', id: 'null', name: 'runjs', type: 'static' },
+  { kind: 'tooljetdb', id: 'null', name: 'tooljetdb', type: 'static' },
 ];
 
 export const initialState = ({ appId, appVersionId }) => ({
@@ -65,13 +66,21 @@ export const initialState = ({ appId, appVersionId }) => ({
   executionHistoryLoadingStatus: ServerDataStates.NotFetched,
   executionHistory: [],
   leftDrawer: {
-    display: false,
+    display: '',
   },
   logsConsole: {
     logs: [],
     display: false,
     showingHistoricalLogs: false,
   },
+  webhookEnable: {
+    value: false,
+  },
+  parameters: [],
+  bodyParameters: [],
+  testParameters: '',
+  workflowToken: '',
+  currentWebhookEnvironment: 'development',
 });
 
 // case 'SET_APP_NAME': {
@@ -104,6 +113,12 @@ export const reducer = (state = initialState(), { payload, type }) => {
     }
     case 'SET_DATA_SOURCES': {
       return { ...state, dataSources: [...state.dataSources, ...payload.dataSources] };
+    }
+    case 'SET_ENVIRONMENTS': {
+      return { ...state, environments: [...payload.environments] };
+    }
+    case 'GET_WORKFLOW_API_TOKEN': {
+      return { ...state, workflowToken: payload.token };
     }
 
     case 'UPDATE_FLOW': {
@@ -270,6 +285,15 @@ export const reducer = (state = initialState(), { payload, type }) => {
       };
     }
 
+    case 'GET_WEBHOOK_ENV': {
+      const { value } = payload;
+
+      return {
+        ...state,
+        currentWebhookEnvironment: value,
+      };
+    }
+
     case 'UPDATE_QUERY': {
       const { query: newQuery, id } = payload;
       console.log('noop noop', { newQuery });
@@ -378,11 +402,12 @@ export const reducer = (state = initialState(), { payload, type }) => {
     }
 
     case 'TOGGLE_LEFT_DRAWER': {
+      const { displayType } = payload;
       return {
         ...state,
         leftDrawer: {
           ...state.leftDrawer,
-          display: !(state.leftDrawer?.display ?? true),
+          display: displayType ?? '',
         },
       };
     }
@@ -392,7 +417,7 @@ export const reducer = (state = initialState(), { payload, type }) => {
         ...state,
         leftDrawer: {
           ...state.leftDrawer,
-          display: false,
+          display: '',
         },
       };
     }
@@ -443,6 +468,35 @@ export const reducer = (state = initialState(), { payload, type }) => {
           ...state.logsConsole,
           logs: [],
         },
+      };
+    }
+
+    case 'TOGGLE_WEBHOOK_ENABLE': {
+      const { value } = payload;
+      return {
+        ...state,
+        webhookEnable: {
+          ...state.webhookEnable,
+          value,
+        },
+      };
+    }
+
+    case 'GET_PAREMETER_VALUE': {
+      const { value } = payload;
+      const validObjects = value?.filter((item) => item.key.trim() !== '');
+      return {
+        ...state,
+        bodyParameters: value,
+        parameters: validObjects,
+      };
+    }
+
+    case 'GET_TEST_PAREMETER_VALUE': {
+      const { value } = payload;
+      return {
+        ...state,
+        testParameters: value,
       };
     }
 

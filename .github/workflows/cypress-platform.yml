@@ -20,7 +20,25 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 18.3.0
+          node-version: 18.18.2
+
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools
+
+      - name: Install Build Essentials
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+
+      - name: Install Krb5
+        run: sudo apt-get install libkrb5-dev -y
 
       - name: Redis service
         run: |
@@ -78,10 +96,12 @@ jobs:
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
           echo "SSO_OPENID_WELL_KNOWN_URL=http://ec2-54-193-40-51.us-west-1.compute.amazonaws.com:8080/.well-known/openid-configuration" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
 
       - name: Set up database
         run: |
@@ -197,6 +217,7 @@ jobs:
           echo "REDIS_PORT=6379" >> .env
           echo "REDIS_USER=default" >> .env
           echo "REDIS_PASSWORD=" >> .env
+          echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
           echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
