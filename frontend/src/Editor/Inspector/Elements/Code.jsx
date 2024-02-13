@@ -84,8 +84,6 @@ export const Code = ({
 
   const { getDefaultComponentValue } = useResolverStoreActions();
 
-  // getDefaultComponentValue(component?.component?.component);
-
   const defaultValue = paramMeta?.validation ? getDefaultComponentValue(component?.component?.component) : undefined;
 
   if (paramMeta?.validation) {
