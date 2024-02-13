@@ -284,8 +284,6 @@ export const useDataQueriesStore = create(
                   },
                 },
               });
-
-              useEditorStore.getState().actions.setSelectedComponents([]);
             })
             .finally(() => {
               useAppDataStore.getState().actions.setIsSaving(false);

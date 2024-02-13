@@ -40,7 +40,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
 
     setCurrentValue(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [componentName]);
+  }, [componentName, initialValue]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
