@@ -12,7 +12,7 @@ function dfs(node, oldRef, newRef) {
   if (typeof node === 'object') {
     for (let key in node) {
       const value = node[key];
-      if (typeof value === 'string' && value.startsWith('{{') && value.endsWith('}}')) {
+      if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
         const referenceExists = value.includes(oldRef);
 
         if (referenceExists) {
