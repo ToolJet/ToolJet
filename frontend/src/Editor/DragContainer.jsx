@@ -496,7 +496,7 @@ export default function DragContainer({
             });
             document.getElementById('canvas-' + currentWidget.component?.parent)?.classList.remove('show-grid');
             let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
-            const width = Math.round(e.lastEvent.width / _gridWidth) * _gridWidth;
+            let width = Math.round(e.lastEvent.width / _gridWidth) * _gridWidth;
             const height = Math.round(e.lastEvent.height / 10) * 10;
 
             const currentLayout = list.find(({ id }) => id === e.target.id);
@@ -529,6 +529,7 @@ export default function DragContainer({
             }
 
             // e.target.style.transform = e.drag.transform;
+            width = adjustWidth(width, transformX, _gridWidth);
             e.target.style.width = `${width}px`;
             e.target.style.height = `${height}px`;
             e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
@@ -946,4 +947,13 @@ function findChildrenAndGrandchildren(parentId, widgets) {
     widgets.filter((r) => result.includes(r.id))
   );
   return result;
+}
+
+function adjustWidth(width, posX, gridWidth) {
+  posX = Math.round(posX / gridWidth);
+  width = Math.round(width / gridWidth);
+  if (posX + width > 43) {
+    width = 43 - posX;
+  }
+  return width * gridWidth;
 }
