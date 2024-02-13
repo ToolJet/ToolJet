@@ -165,6 +165,7 @@ useAppDataStore.subscribe(
     if (isComponentNameUpdated && !isUpdatingEditorStateInProcess) {
       const components = JSON.parse(JSON.stringify(state.components));
       const _dataQueries = JSON.parse(JSON.stringify(dataQueries));
+      const currentAppEvents = JSON.parse(JSON.stringify(state.events));
       const updatedNames = [];
 
       const referenceManager = useResolveStore.getState().referenceMapper;
@@ -192,6 +193,10 @@ useAppDataStore.subscribe(
 
         _dataQueries.forEach((query) => {
           query.options = dfs(query.options, component.name, component.newName);
+        });
+
+        currentAppEvents.forEach((event) => {
+          event.event = dfs(event.event, component.name, component.newName);
         });
       });
 
@@ -224,6 +229,15 @@ useAppDataStore.subscribe(
       });
 
       useDataQueriesStore.getState().actions.updateBulkQueryOptions(queriesToUpdate, state.currentVersionId);
+
+      const updatedEvents = currentAppEvents.map((event) => {
+        return {
+          event_id: event.id,
+          diff: event,
+        };
+      });
+
+      useAppDataStore.getState().actions.updateAppVersionEventHandlers(updatedEvents, 'update');
     }
   },
   (state) => [state[itemToObserve]]
