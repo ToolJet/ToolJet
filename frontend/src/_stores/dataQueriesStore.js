@@ -284,6 +284,8 @@ export const useDataQueriesStore = create(
                   },
                 },
               });
+
+              useEditorStore.getState().actions.setSelectedComponents([]);
             })
             .finally(() => {
               useAppDataStore.getState().actions.setIsSaving(false);
@@ -314,11 +316,6 @@ export const useDataQueriesStore = create(
               const appDefinition = useEditorStore.getState().appDefinition;
               const currentPageId = useEditorStore.getState().currentPageId;
               const currentVersionId = useAppDataStore.getState().currentVersionId;
-
-              console.log('---arpit components =>', {
-                x: referenceManager.getAll(),
-                updatedNames,
-              });
 
               handleReferenceTransactions(
                 components,
