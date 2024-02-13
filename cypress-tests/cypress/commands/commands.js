@@ -402,7 +402,8 @@ Cypress.Commands.add("releaseApp", () => {
   cy.get(commonSelectors.yesButton).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
   cy.wait(1000);
-  
+});
+
 Cypress.Commands.add("backToApps", () => {
   cy.get(commonSelectors.editorPageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
@@ -415,12 +416,16 @@ Cypress.Commands.add("removeAssignedApps", () => {
   });
 });
 
-
-Cypress.Commands.add('saveFromIntercept', (interceptAlias, property, envVariable) => {
-  cy.get(interceptAlias).its('response.body').then((responseBody) => {
-    Cypress.env(envVariable, responseBody[property]);
-  });
-});
+Cypress.Commands.add(
+  "saveFromIntercept",
+  (interceptAlias, property, envVariable) => {
+    cy.get(interceptAlias)
+      .its("response.body")
+      .then((responseBody) => {
+        Cypress.env(envVariable, responseBody[property]);
+      });
+  }
+);
 
 Cypress.Commands.add("verifyLabel", (labelName) => {
   cy.get(commonSelectors.label(`${labelName}`)).verifyVisibleElement(
