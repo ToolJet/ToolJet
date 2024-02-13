@@ -336,7 +336,7 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     defaultSize: {
-      width: 28.86,
+      width: 29,
       height: 456,
     },
     events: {
@@ -4491,7 +4491,7 @@ export const widgets = [
     description: 'Show key metrics',
     component: 'Statistics',
     defaultSize: {
-      width: 9.2,
+      width: 9,
       height: 152,
     },
     others: {
