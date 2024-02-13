@@ -417,3 +417,23 @@ export function createReferencesLookup(refState) {
 
   return { suggestionList, hintsMap, resolvedRefs };
 }
+
+//* finding references within deeply nested objects using Depth-First Search (DFS) traversal
+export function dfs(node, oldRef, newRef) {
+  if (typeof node === 'object') {
+    for (let key in node) {
+      const value = node[key];
+      if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
+        const referenceExists = value.includes(oldRef);
+
+        if (referenceExists) {
+          node[key] = value.replace(oldRef, newRef);
+        }
+      } else if (typeof value === 'object') {
+        dfs(value, oldRef, newRef);
+      }
+    }
+  }
+
+  return node;
+}

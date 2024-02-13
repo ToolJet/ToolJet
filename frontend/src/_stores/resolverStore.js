@@ -40,6 +40,10 @@ class ReferencesBiMap {
     this._map.delete(key);
     this._reverseMap.delete(value);
   }
+
+  getAll = () => {
+    return Array.from(this._map.values());
+  };
 }
 
 const initialState = {
@@ -89,6 +93,14 @@ export const useResolveStore = create(
           if (!referenceMapper.has(component.id)) {
             referenceMapper.set(component.id, component.name);
           }
+        });
+      },
+
+      removeComponentsFromMapper: (componentIds) => {
+        const { referenceMapper } = get();
+
+        componentIds.forEach((componentId) => {
+          referenceMapper.delete(componentId);
         });
       },
 
