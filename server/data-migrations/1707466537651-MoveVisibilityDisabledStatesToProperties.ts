@@ -1,10 +1,17 @@
-import { Component } from 'src/entities/component.entity';
-import { processDataInBatches } from 'src/helpers/utils.helper';
-import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
+import { Component } from "src/entities/component.entity";
+import { processDataInBatches } from "src/helpers/utils.helper";
+import { EntityManager, MigrationInterface, QueryRunner } from "typeorm";
 
-export class MoveVisibilityDisabledStatesToProperties1707466537651 implements MigrationInterface {
+export class MoveVisibilityDisabledStatesToProperties1707466537651
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'Text'];
+    const componentTypes = [
+      "TextInput",
+      "NumberInput",
+      "PasswordInput",
+      "Text",
+    ];
     const batchSize = 100;
     const entityManager = queryRunner.manager;
 
@@ -14,7 +21,7 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651 implements Mi
         async (entityManager: EntityManager) => {
           return await entityManager.find(Component, {
             where: { type: componentType },
-            order: { createdAt: 'ASC' },
+            order: { createdAt: "ASC" },
           });
         },
         async (entityManager: EntityManager, components: Component[]) => {
@@ -48,17 +55,20 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651 implements Mi
       }
 
       // Label and value
-      if (properties.label == undefined || null) {
-        properties.label = '';
-      }
-      if (component !== 'NumberInput' && component !== 'Text') {
-        if (properties.value == undefined || null) {
-          properties.value = '';
+      if (component.type !== "Text") {
+        if (properties.label == undefined || null) {
+          properties.label = "";
         }
       }
+      if (component.type !== "Text" || component !== "NumberInput") {
+        if (properties.value == undefined || null) {
+          properties.value = "";
+        }
+      }
+      console.log("component---", component);
 
       // Moving 'minValue' from properties to validation
-      if (component !== 'NumberInput') {
+      if (component.type == "NumberInput") {
         if (properties.minValue) {
           validation.minValue = properties.minValue;
           delete properties.minValue; // Removing 'minValue' from properties
