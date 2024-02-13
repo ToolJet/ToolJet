@@ -86,30 +86,32 @@ export const addAndVerifyAdditionalActions = (widgetName, tooltipText) => {
 };
 
 export const addAllInputFieldColors = (data) => {
-  selectColourFromColourPicker("BG color", data.bgColor);
-  selectColourFromColourPicker("Border color", data.borderColor);
-  selectColourFromColourPicker("Text color", data.textColor);
-  selectColourFromColourPicker("Error text color", data.errorTextColor);
-  selectColourFromColourPicker("Icon color", data.iconColor);
+  selectColourFromColourPicker("Background", data.bgColor);
+  selectColourFromColourPicker("Border", data.borderColor);
+  selectColourFromColourPicker("Text", data.textColor);
+  selectColourFromColourPicker("Error text", data.errorTextColor);
+  selectColourFromColourPicker("", data.iconColor);
+  cy.forceClickOnCanvas();
+  openEditorSidebar(data.widgetName);
+  cy.get('[data-cy="make-this-field-mandatory-toggle-button"]').click();
+  cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 };
 
 export const verifyInputFieldColors = (selectorInput, data) => {
   verifyWidgetColorCss(selectorInput, "color", data.textColor);
   verifyWidgetColorCss(selectorInput, "border-color", data.borderColor);
   verifyWidgetColorCss(selectorInput, "background-color", data.bgColor);
-  openEditorSidebar(textInputText.defaultWidgetName);
-  cy.get('[data-cy="make-this-field-mandatory-toggle-button"]').click();
-  cy.get(commonWidgetSelector.draggableWidget("textinput1")).clear();
+  cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
   cy.forceClickOnCanvas();
   cy.verifyCssProperty(
-    '[data-cy="textinput1-invalid-feedback"]',
+    `[data-cy="${data.widgetName}-invalid-feedback"]`,
     "color",
     `rgba(${data.errorTextColor[0]}, ${data.errorTextColor[1]}, ${
       data.errorTextColor[2]
     }, ${data.errorTextColor[3] / 100})`
   );
 
-  cy.get(commonWidgetSelector.draggableWidget("textinput1"))
+  cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
     .siblings("svg")
     .should(
       "have.css",
@@ -118,4 +120,57 @@ export const verifyInputFieldColors = (selectorInput, data) => {
         data.iconColor[3] / 100
       })`
     );
+};
+
+export const verifyLabelStyleElements = () => {
+  cy.get('[data-cy="widget-accordion-label"]').verifyVisibleElement(
+    "have.text",
+    "label"
+  );
+  cy.get('[data-cy="label-alignment"]').verifyVisibleElement(
+    "have.text",
+    "Alignment"
+  );
+  cy.get('[data-cy="label-width"]').verifyVisibleElement("have.text", "Width");
+  cy.get('[data-cy="width-input-field"]')
+    .eq(0)
+    .should("have.value", "33")
+    .siblings("label")
+    .should("have.text", "% of the field");
+  cy.get('[data-cy="auto-width-label"]').verifyVisibleElement(
+    "have.text",
+    "Auto width"
+  );
+};
+
+export const verifyAlignment = (componentName, position, side) => {
+  const alignments = {
+    topLeft: { y: "flex-column", x: "flex-start" },
+    topRight: { y: "flex-column", x: "flex-end" },
+    sideLeft: { y: "align-items-center", x: "flex-start" },
+    sideRight: { y: "align-items-center", x: "flex-end" },
+  };
+
+  const { y, x } = alignments[position];
+
+  cy.get(`[data-cy="label-${componentName.toLowerCase()}"]`)
+    .should("have.class", y)
+    .children("label")
+    .should("have.css", "justify-content", x);
+};
+
+export const verifyCustomWidthOfLabel = (componentName, width) => {
+  cy.get(`[data-cy="label-${componentName.toLowerCase()}"]`)
+    .children("label")
+    .should("have.attr", "style")
+    .and("include", `width: ${width}%`);
+  //
+  // .should("have.css", "width", `${width}%`);
+};
+
+export const addCustomWidthOfLabel = (width) => {
+  cy.get('[data-cy="auto-width-checkbox"]').click();
+  cy.get('[data-cy="width-input-field"]')
+    .eq(0)
+    .type(`{selectAll}{backspace}${width}`, { force: true });
 };
