@@ -280,7 +280,7 @@ export const Box = memo(
         customResolveObjects: customResolvables,
       });
     const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
-    console.log("validatedStyles?.padding---",validatedStyles?.padding);
+    console.log('validatedStyles?.padding---', validatedStyles?.padding);
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
@@ -311,7 +311,7 @@ export const Box = memo(
           style={{
             ...styles,
             backgroundColor,
-            padding: validatedStyles?.padding ? validatedStyles?.padding=='default' ? '1px' : '0px':'1px',
+            padding: validatedStyles?.padding ? (validatedStyles?.padding == 'default' ? '1px' : '0px') : '1px',
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >
