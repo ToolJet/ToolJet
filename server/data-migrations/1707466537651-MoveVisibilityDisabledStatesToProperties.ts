@@ -1,10 +1,17 @@
-import { Component } from 'src/entities/component.entity';
-import { processDataInBatches } from 'src/helpers/utils.helper';
-import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
+import { Component } from "src/entities/component.entity";
+import { processDataInBatches } from "src/helpers/utils.helper";
+import { EntityManager, MigrationInterface, QueryRunner } from "typeorm";
 
-export class MoveVisibilityDisabledStatesToProperties1707466537651 implements MigrationInterface {
+export class MoveVisibilityDisabledStatesToProperties1707466537651
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'Text'];
+    const componentTypes = [
+      "TextInput",
+      "NumberInput",
+      "PasswordInput",
+      "Text",
+    ];
     const batchSize = 100;
     const entityManager = queryRunner.manager;
 
@@ -14,7 +21,7 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651 implements Mi
         async (entityManager: EntityManager) => {
           return await entityManager.find(Component, {
             where: { type: componentType },
-            order: { createdAt: 'ASC' },
+            order: { createdAt: "ASC" },
           });
         },
         async (entityManager: EntityManager, components: Component[]) => {
@@ -46,7 +53,35 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651 implements Mi
         delete general?.tooltip;
       }
 
-      await entityManager.update(Component, component.id, { properties, styles, general });
+      // Label and value 
+      if (properties.label == undefined || null) {
+        properties.label = "";
+      }
+      if (component !== "NumberInput" && component !== "Text") {
+        if (properties.value == undefined || null) {
+          properties.value = "";
+        }
+      }
+
+      // Moving 'minValue' from properties to validation
+      if (component !== "NumberInput") {
+        if (properties.minValue) {
+          validation.minValue = properties.minValue;
+          delete properties.minValue; // Removing 'minValue' from properties
+        }
+
+        if (properties.maxValue) {
+          validation.maxValue = properties.maxValue;
+          delete properties.maxValue; // Removing 'minValue' from properties
+        }
+      }
+
+      await entityManager.update(Component, component.id, {
+        properties,
+        styles,
+        general,
+        validation
+      });
     }
   }
 

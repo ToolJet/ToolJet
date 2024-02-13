@@ -330,7 +330,8 @@ button {
 
   .resizer-select,
   .resizer-active {
-    outline: solid 1px $primary  !important;
+    border: solid 1px $primary  !important;
+
 
     .top-right,
     .top-left,
@@ -554,23 +555,6 @@ button {
 
 
     .inspector {
-      // .inspector-add-button {
-      //   font-size: 14px;
-      //   font-weight: 500;
-      //   padding: 6px 16px;
-      //   color: var(--slate12);
-      //   border: 1px solid var(--slate7);
-      //   $border-radius: 6px;
-      //   background: white;
-      //   width: 100%;
-      // }
-
-      // .inspector-add-button:hover {
-      //   color: $primary;
-      //   background: #eef3f9;
-      //   border-radius: 4px;
-      // }
-
       .form-control-plaintext {
         padding: 0;
         color: var(--slate12);
@@ -744,7 +728,7 @@ button {
         margin: 0px auto;
 
         .resizer {
-          // border: solid 1px red;
+          border: solid 1px transparent;
         }
       }
     }
