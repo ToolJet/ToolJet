@@ -1,12 +1,11 @@
 import { appVersionService } from '@/_services';
-import { create, zustandDevTools, dfs } from './utils';
+import { create, zustandDevTools } from './utils';
 import { shallow } from 'zustand/shallow';
 import { useResolveStore } from './resolverStore';
 import { useEditorStore } from './editorStore';
 import { useDataQueriesStore } from './dataQueriesStore';
 import _ from 'lodash';
-// eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
+import { handleReferenceTransactions } from './handleReferenceTransactions';
 
 const initialState = {
   editingVersion: null,
@@ -170,58 +169,15 @@ useAppDataStore.subscribe(
         });
       });
 
-      updatedNames.forEach((component) => {
-        components.forEach((c) => {
-          c.definition = dfs(c.definition, component.name, component.newName);
-        });
-
-        _dataQueries.forEach((query) => {
-          query.options = dfs(query.options, component.name, component.newName);
-        });
-
-        currentAppEvents.forEach((event) => {
-          event.event = dfs(event.event, component.name, component.newName);
-        });
-      });
-
-      const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-
-      const componentsFromAppDef = newAppDefinition.pages[currentPageId].components;
-
-      components.forEach((component) => {
-        componentsFromAppDef[component.id].component.definition = component.definition;
-      });
-      newAppDefinition.pages[currentPageId].components = componentsFromAppDef;
-
-      const diffPatches = diff(appDefinition, newAppDefinition);
-
-      const queriesToUpdate = _.differenceWith(_dataQueries, dataQueries, _.isEqual).map((q) => {
-        return {
-          id: q.id,
-          options: q.options,
-        };
-      });
-
-      useAppDataStore.getState().actions.updateState({
-        appDiffOptions: { componentDefinitionChanged: true },
-        appDefinitionDiff: diffPatches,
-      });
-
-      useEditorStore.getState().actions.updateEditorState({
-        appDefinition: newAppDefinition,
-        isUpdatingEditorStateInProcess: true,
-      });
-
-      useDataQueriesStore.getState().actions.updateBulkQueryOptions(queriesToUpdate, state.currentVersionId);
-
-      const updatedEvents = currentAppEvents.map((event) => {
-        return {
-          event_id: event.id,
-          diff: event,
-        };
-      });
-
-      useAppDataStore.getState().actions.updateAppVersionEventHandlers(updatedEvents, 'update');
+      handleReferenceTransactions(
+        components,
+        _dataQueries,
+        currentAppEvents,
+        appDefinition,
+        currentPageId,
+        state.currentVersionId,
+        updatedNames
+      );
     }
   },
   (state) => [state[itemToObserve]]
