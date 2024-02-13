@@ -23,6 +23,7 @@ import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import {
   dbTransactionWrap,
+  fullName,
   generateInviteURL,
   generateNextNameAndSlug,
   generateOrgInviteURL,
@@ -42,6 +43,8 @@ import { CookieOptions, Response } from 'express';
 import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
+import { ActivateAccountWithTokenDto } from '@dto/activate-account-with-token.dto';
+import { uuid4 } from '@sentry/utils';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -294,6 +297,72 @@ export class AuthService {
     return {};
   }
 
+  async activateAccountWithToken(activateAccountWithToken: ActivateAccountWithTokenDto, response:any) {
+    const { email, name, password:userPassword, source, organizationToken } = activateAccountWithToken;
+    const signupUser = await this.usersService.findByEmail(email);
+    const invitedUser = await this.organizationUsersService.findByWorkspaceInviteToken(organizationToken);
+
+    // Check if the configs allows user signups
+    if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
+      throw new NotAcceptableException('Signup has been disabled for this workspace. Please contact admin');
+    }
+ 
+    if(!signupUser || invitedUser.email !== signupUser.email){
+      throw new NotAcceptableException('Invalid Email: Please use the email address provided in the invitation.'); 
+    }
+
+    if (signupUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
+      throw new NotAcceptableException('Email already exists');
+    }
+
+    const names = { firstName: '', lastName: '' };
+    if (name) {
+      const [firstName, ...rest] = name.split(' ');
+      names['firstName'] = firstName;
+      if (rest.length != 0) {
+        const lastName = rest.join(' ');
+        names['lastName'] = lastName;
+      }
+    }
+
+    let password = userPassword;
+    if (!password && source === URL_SSO_SOURCE) {
+      /* For SSO we don't need password. let us set uuid as a password. */
+      password = uuid4();
+    }
+
+
+    const lifecycleParams = getUserStatusAndSource(
+      lifecycleEvents.USER_REDEEM,
+      SOURCE.INVITE 
+    );
+
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.usersService.updateUser(
+        signupUser.id,
+        {
+          password,
+          ...(names.firstName && { firstName: names.firstName }),
+          ...(names.lastName && { lastName: names.lastName }),
+          invitationToken: null,
+          ...(password ? { password } : {}),
+          ...lifecycleParams,
+          updatedAt: new Date(),
+        },
+        manager
+      );
+
+          /* 
+     Generate org invite and send back to the client. Let him join to the workspace
+     CASE: user redirected to signup to activate his account with password. 
+     Till now user doesn't have an organization.
+    */
+      const session = await this.generateInviteSignupPayload(response, signupUser, source);      
+      const organizationInviteUrl = generateOrgInviteURL(organizationToken, invitedUser['invitedOrganizationId'], false); 
+      return { ...session, organizationInviteUrl };
+    });
+  }
+
   async forgotPassword(email: string) {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
@@ -452,7 +521,7 @@ export class AuthService {
     });
   }
 
-  async acceptOrganizationInvite(acceptInviteDto: AcceptInviteDto) {
+  async acceptOrganizationInvite(response: Response,loggedInUser:User,acceptInviteDto: AcceptInviteDto) {
     const { token } = acceptInviteDto;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -482,9 +551,9 @@ export class AuthService {
         );
       }
       await this.usersService.updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId }, manager);
-
-      await this.organizationUsersService.activateOrganization(organizationUser, manager);
-      return;
+      const organization = await this.organizationsService.get(organizationUser.organizationId);
+      await this.organizationUsersService.activateOrganization(organizationUser, manager);      
+      return this.generateLoginResultPayload(response, user, organization, null, null, loggedInUser, manager);      
     });
   }
 
@@ -555,18 +624,21 @@ export class AuthService {
     };
   }
 
-  generateSessionPayload(user: User, currentOrganization: Organization) {
+  async generateSessionPayload(user: User, currentOrganization: Organization) {
+    const currentOrganizationId = currentOrganization?.id
+    ? currentOrganization?.id
+    : user?.organizationIds?.includes(user?.defaultOrganizationId)
+    ? user.defaultOrganizationId
+    : user?.organizationIds?.[0];
+    const noWorkspaceAttachedInTheSession = !currentOrganizationId;
     return decamelizeKeys({
       id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      noWorkspaceAttachedInTheSession,
+      currentOrganizationId,
       currentOrganizationSlug: currentOrganization?.slug,
-      currentOrganizationId: currentOrganization?.id
-        ? currentOrganization?.id
-        : user?.organizationIds?.includes(user?.defaultOrganizationId)
-        ? user.defaultOrganizationId
-        : user?.organizationIds?.[0],
     });
   }
 
@@ -622,6 +694,9 @@ export class AuthService {
 
     response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), cookieOptions);
 
+
+    console.log('inside', JWTPayload.sessionId, loggedInUser);
+
     return decamelizeKeys({
       id: user.id,
       email: user.email,
@@ -632,14 +707,72 @@ export class AuthService {
     });
   }
 
-  async validateInvitedUserSession(user:User) {
-    const {invitationToken: accountInviteToken, status} = user;
-    if(accountInviteToken && status === USER_STATUS.INVITED) {
-      throw new NotAcceptableException({
-        accountInviteToken,
-      },'Account creation not completed') 
+  async validateInvitedUserSession(user:User, invitedUser: User, tokens:any) {
+    const { accountToken,organizationToken } =  tokens;
+    const { status:invitedUserStatus, email:invitedUserEmail } = invitedUser;
+		const organizationAndAccountInvite = !!organizationToken && !!accountToken;
+    const accountYetToActive = organizationAndAccountInvite && [USER_STATUS.INVITED, USER_STATUS.VERIFIED].includes(invitedUserStatus as USER_STATUS);
+
+    if(accountYetToActive){
+      const errorResponse = {
+        message: { error: 'Account is not activated yet', isAccountNotActivated: true},
+      };
+      throw new NotAcceptableException(errorResponse) 
     }
-    return this.generateSessionPayload(user, null);
+
+    const activeOrganization = user?.organizationId ? await this.organizationsService.fetchOrganization(user?.organizationId): null;
+    const payload = await this.generateSessionPayload(user, activeOrganization);
+    const invitedOrganization = await this.organizationsService.fetchOrganization(invitedUser['invitedOrganizationId']);
+    return decamelizeKeys({ ...payload, invitedOrganizationName: invitedOrganization.name, name: fullName(user['firstName'], user['lastName']) })
+  }
+
+  async generateInviteSignupPayload(
+    response: Response,
+    user: User,
+    source:string,
+    manager?: EntityManager
+  ): Promise<any> {
+    const request = RequestContext?.currentContext?.req;
+
+    // logged in user and new user are different -> creating session
+    const session: UserSessions = await this.sessionService.createSession(
+      user.id,
+        `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+          request?.headers['user-agent'] || 'unknown'
+        }`,
+        manager
+      );
+    const sessionId = session.id;
+
+    const JWTPayload: JWTPayload = {
+      sessionId: sessionId,
+      username: user.id,
+      sub: user.email,
+      organizationIds: [],
+      isSSOLogin: source === 'sso',
+      isPasswordLogin: source === 'signup',
+    };
+
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      sameSite: 'strict',
+      maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
+    };
+
+    if (this.configService.get<string>('ENABLE_PRIVATE_APP_EMBED') === 'true') {
+      // disable cookie security
+      cookieOptions.sameSite = 'none';
+      cookieOptions.secure = true;
+    }
+
+    response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), cookieOptions);
+
+    return decamelizeKeys({
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    });
   }
 }
 

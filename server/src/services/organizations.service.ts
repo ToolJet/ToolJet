@@ -10,7 +10,7 @@ import {
   cleanObject,
   dbTransactionWrap,
   isPlural,
-  generateNextNameAndSlug,
+  fullName,
 } from 'src/helpers/utils.helper';
 import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
@@ -152,9 +152,9 @@ export class OrganizationsService {
   async fetchOrganization(slug: string): Promise<Organization> {
     let organization: Organization;
     try {
-      organization = await this.organizationsRepository.findOneOrFail({ where: { slug }, select: ['id', 'slug'] });
+      organization = await this.organizationsRepository.findOneOrFail({ where: { slug }, select: ['id', 'slug', 'name'] });
     } catch (error) {
-      organization = await this.organizationsRepository.findOne({ where: { id: slug }, select: ['id', 'slug'] });
+      organization = await this.organizationsRepository.findOne({ where: { id: slug }, select: ['id', 'slug', 'name'] });
     }
     return organization;
   }
@@ -279,7 +279,7 @@ export class OrganizationsService {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName ?? '',
         lastName: orgUser.user.lastName ?? '',
-        name: `${orgUser.user.firstName ?? ''} ${orgUser.user.lastName ?? ''}`,
+        name: fullName(orgUser.user.firstName, orgUser.user.lastName),
         id: orgUser.id,
         userId: orgUser.user.id,
         role: orgUser.role,
@@ -588,8 +588,7 @@ export class OrganizationsService {
       if (user?.status === USER_STATUS.ARCHIVED) {
         throw new BadRequestException(getUserErrorMessages(user.status));
       }
-      let defaultOrganization: Organization,
-        shouldSendWelcomeMail = false;
+      let shouldSendWelcomeMail = false;
 
       if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
         throw new BadRequestException('Duplicate email found. Please provide a unique email address.');
@@ -604,31 +603,20 @@ export class OrganizationsService {
         );
       }
 
-      if (!user) {
-        // User not exist
-        shouldSendWelcomeMail = true;
-        // Create default organization if user not exist
-        const { name, slug } = generateNextNameAndSlug('My workspace');
-        defaultOrganization = await this.create(name, slug, null, manager);
-      } else if (user.invitationToken) {
-        // User not setup
+      if (!user || user.invitationToken) {
+        // User not exist | user isn't activated the accout yet.
         shouldSendWelcomeMail = true;
       }
+
       user = await this.usersService.create(
         userParams,
         currentUser.organizationId,
         ['all_users', ...groups],
         user,
         true,
-        defaultOrganization?.id,
+        null,
         manager
       );
-
-      if (defaultOrganization) {
-        // Setting up default organization
-        await this.organizationUserService.create(user, defaultOrganization, true, manager);
-        await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
-      }
 
       const currentOrganization: Organization = await this.organizationsRepository.findOneOrFail({
         where: { id: currentUser.organizationId },
@@ -641,6 +629,7 @@ export class OrganizationsService {
         manager
       );
 
+      const name = fullName(currentUser.firstName, currentUser.lastName)
       if (shouldSendWelcomeMail) {
         this.emailService
           .sendWelcomeEmail(
@@ -650,7 +639,7 @@ export class OrganizationsService {
             organizationUser.invitationToken,
             organizationUser.organizationId,
             currentOrganization.name,
-            `${currentUser.firstName} ${currentUser.lastName ?? ''}`
+            name
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
       } else {
@@ -658,7 +647,7 @@ export class OrganizationsService {
           .sendOrganizationUserWelcomeEmail(
             user.email,
             user.firstName,
-            `${currentUser.firstName} ${currentUser.lastName ?? ''}`,
+            name,
             `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
             currentOrganization.name
           )

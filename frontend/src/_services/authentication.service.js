@@ -24,6 +24,7 @@ const currentSessionSubject = new BehaviorSubject({
   authentication_failed: null,
   isUserUpdated: false,
   load_app: false, //key is used only in the viewer mode
+  noWorkspaceAttachedInTheSession: false,
 });
 
 export const authenticationService = {
@@ -55,6 +56,8 @@ export const authenticationService = {
   getLoginOrganizationSlug,
   saveLoginOrganizationSlug,
   deleteLoginOrganizationSlug,
+  getInvitedUserSession,
+  activateAccountWithToken,
 };
 
 function login(email, password, organizationId) {
@@ -140,6 +143,18 @@ function signup(email, name, password) {
       return user;
     });
 }
+
+function activateAccountWithToken(email, name, password, organizationToken, source) {
+  const requestOptions = {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, name, password, organizationToken, source }),
+  };
+
+  return fetch(`${config.apiUrl}/activate-account-with-token`, requestOptions).then(handleResponse);
+}
+
 function resendInvite(email) {
   const requestOptions = {
     method: 'POST',
@@ -300,4 +315,10 @@ function authorize() {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/authorize`, requestOptions).then(handleResponseWithoutValidation);
+}
+
+function getInvitedUserSession({ accountToken, organizationToken }) {
+  const body = { organizationToken, ...(accountToken && { accountToken }) };
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/invited-user-session`, requestOptions).then(handleResponseWithoutValidation);
 }

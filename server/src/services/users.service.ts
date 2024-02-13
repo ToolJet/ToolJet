@@ -28,8 +28,8 @@ export class UsersService {
     return this.usersRepository.count();
   }
 
-  async findOne(id: string, selectArray = []): Promise<User> {
-    return this.usersRepository.findOne({ where: { id }, select: [...selectArray] });
+  async findOne(where={}): Promise<User> {
+    return this.usersRepository.findOne({ where });
   }
 
   async findByEmail(
@@ -96,7 +96,7 @@ export class UsersService {
           source,
           status,
           invitationToken: isInvite ? uuid.v4() : null,
-          defaultOrganizationId: defaultOrganizationId || organizationId,
+          defaultOrganizationId: existingUser ?  defaultOrganizationId || organizationId : null,
           createdAt: new Date(),
           updatedAt: new Date(),
         });

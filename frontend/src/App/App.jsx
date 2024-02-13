@@ -4,7 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace } from '@/_helpers/authorizeWorkspace';
 import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
-import { PrivateRoute, AdminRoute } from '@/Routes';
+import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, OrganizationInviteRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
@@ -31,8 +31,6 @@ import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
-import { AppsRoute } from '@/Routes/AppsRoute';
-import { SwitchWorkspaceRoute } from '@/Routes/SwitchWorkspaceRoute';
 
 const AppWrapper = (props) => {
   return (
@@ -154,19 +152,28 @@ class AppComponent extends React.Component {
               <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
               <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
               <Route path="/sso/:origin" exact element={<Oauth />} />
-              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/signup/:organizationId" exact element={<SignupPage />} />
+              <Route path="/signup" exact element={<SignupPage />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
               <Route
                 path="/invitations/:token/workspaces/:organizationToken"
-                element={<VerificationSuccessInfoScreen />}
+                element={
+                  <OrganizationInviteRoute>
+                    <VerificationSuccessInfoScreen />
+                  </OrganizationInviteRoute>
+                }
               />
               <Route path="/confirm" element={<VerificationSuccessInfoScreen />} />
               <Route
                 path="/organization-invitations/:token"
-                element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
+                element={
+                  <OrganizationInviteRoute isOrgazanizationOnlyInvite={true}>
+                    <OrganizationInvitationPage {...this.props} darkMode={darkMode} />
+                  </OrganizationInviteRoute>
+                }
               />
               <Route
                 path="/confirm-invite"

@@ -54,6 +54,10 @@ export const useSessionManagement = (initialState = defaultState) => {
   const handleNewSession = async (newSession) => {
     const { group_permissions, authentication_status, authentication_failed } = newSession;
     const isInvalidSession = authentication_status === false || authentication_failed;
+    if (newSession?.noWorkspaceAttachedInTheSession) {
+      /* No active workspace for the user show error page */
+      navigate('/error/no-active-workspace');
+    }
     if (isInvalidSession) {
       setInvalidSession(true);
       !disableInValidSessionCallback && handleInvalidSession();
@@ -62,7 +66,6 @@ export const useSessionManagement = (initialState = defaultState) => {
       setValidSession(true);
       !disableValidSessionCallback && setLoading(false);
     }
-    console.log('inside', newSession);
     setSession(newSession);
   };
 

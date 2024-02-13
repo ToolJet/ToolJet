@@ -16,9 +16,14 @@ import { ShowLoading } from '@/_components';
 import Spinner from '@/_ui/Spinner';
 import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 import { withRouter } from '@/_hoc/withRouter';
+import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 class SignupPageComponent extends React.Component {
   constructor(props) {
     super(props);
+    /* Need these params to organization signup work */
+    const routeState = this.props?.location?.state;
+    this.organizationToken = routeState?.organizationToken;
+    this.inviteOrganizationId = props.params.organizationId;
 
     this.state = {
       isLoading: false,
@@ -37,7 +42,7 @@ class SignupPageComponent extends React.Component {
   componentDidMount() {
     authenticationService.deleteLoginOrganizationId();
 
-    authenticationService.getOrganizationConfigs().then(
+    authenticationService.getOrganizationConfigs(this.inviteOrganizationId).then(
       (configs) => {
         this.setState({ isGettingConfigs: false, configs });
       },
@@ -73,25 +78,46 @@ class SignupPageComponent extends React.Component {
       return;
     }
 
-    authenticationService.signup(email, name, password).then(
-      () => {
-        // eslint-disable-next-line no-unused-vars
-        const { from } = this.props.location.state || {
-          from: { pathname: '/' },
-        };
-        this.setState({ isLoading: false, signupSuccess: true });
-      },
-      (e) => {
-        toast.error(e?.error || 'Something went wrong!', {
-          position: 'top-center',
+    const organizationToken = this.organizationToken;
+    if (organizationToken) {
+      /* different API */
+      authenticationService
+        .activateAccountWithToken(email, name, password, organizationToken, 'signup')
+        .then((response) => {
+          const { organizationInviteUrl, user: currentUser } = response;
+          updateCurrentSession({
+            noWorkspaceAttachedInTheSession: true,
+            currentUser,
+          });
+          this.props.navigate(organizationInviteUrl);
+        })
+        .catch((e) => {
+          toast.error(e?.error || 'Something went wrong!', {
+            position: 'top-center',
+          });
+          this.setState({ isLoading: false });
         });
-        this.setState({ isLoading: false });
-      }
-    );
+    } else {
+      authenticationService.signup(email, name, password).then(
+        () => {
+          // eslint-disable-next-line no-unused-vars
+          const { from } = this.props.location.state || {
+            from: { pathname: '/' },
+          };
+          this.setState({ isLoading: false, signupSuccess: true });
+        },
+        (e) => {
+          toast.error(e?.error || 'Something went wrong!', {
+            position: 'top-center',
+          });
+          this.setState({ isLoading: false });
+        }
+      );
+    }
   };
 
   isFormSignUpEnabled = () => {
-    return this.state.configs?.form?.enable_sign_up;
+    return this.inviteOrganizationId ? this.state.configs?.form?.enabled : this.state.configs?.form?.enable_sign_up;
   };
 
   render() {
@@ -114,8 +140,9 @@ class SignupPageComponent extends React.Component {
                       className="common-auth-section-header common-auth-signup-section-header"
                       data-cy="signup-section-header"
                     >
-                      {this.props.t('loginSignupPage.joinTooljet', `Join ToolJet`)}
+                      {this.props.t('loginSignupPage.signUp', `Sign up`)}
                     </h2>
+                    <span className="mb-2">{`Sign up to the workspace - ${this.state.configs?.name}`}</span>
                     <div className="signup-page-signin-redirect" data-cy="signin-redirect-text">
                       {this.props.t('loginSignupPage.alreadyHaveAnAccount', `Already have an account? `)} &nbsp;
                       <Link to={'/login'} tabIndex="-1" data-cy="signin-redirect-link">

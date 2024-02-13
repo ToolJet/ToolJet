@@ -4,12 +4,12 @@
 import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { handleAppAccess } from '@/_helpers/handleAppAccess';
 import { getQueryParams } from '@/_helpers/routes';
 import queryString from 'query-string';
 
-export const AppsRoute = ({ children, componentType, navigate }) => {
+export const AppsRoute = ({ children, componentType }) => {
   const params = useParams();
   const location = useLocation();
   const [extraProps, setExtraProps] = useState({});
@@ -19,6 +19,7 @@ export const AppsRoute = ({ children, componentType, navigate }) => {
     disableInValidSessionCallback: componentType !== 'editor',
   });
   const clonedElement = React.cloneElement(children, extraProps);
+  const navigate = useNavigate();
 
   /* 
    any extra logic specifc to the route can be done 

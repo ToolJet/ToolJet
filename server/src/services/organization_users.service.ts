@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
+import { createQueryBuilder, DeepPartial, EntityManager, getRepository, Repository } from 'typeorm';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
@@ -56,11 +56,41 @@ export class OrganizationUsersService {
     return await this.organizationUsersRepository.update(id, { role });
   }
 
-  async findByWorkspaceInviteToken(invitationToken:string) {
-    const organizationUser = await this.organizationUsersRepository.findOneOrFail({ invitationToken }, {
-      select: ['id']
-    });
-    return this.usersService.findOne(organizationUser.id, ['id','email', 'invitationToken', 'status']);
+  async findByWorkspaceInviteToken(invitationToken:string): Promise<any> {
+    const organizationUser = await getRepository(OrganizationUser)
+      .createQueryBuilder('organizationUser')
+      .select([
+      'organizationUser.organizationId',
+      'user.id',
+      'user.email',
+      'user.invitationToken',
+      'user.status',
+      'user.firstName',
+      'user.lastName'
+    ])
+    .innerJoin('organizationUser.user', 'user')
+    .where('organizationUser.invitationToken = :invitationToken', { invitationToken })
+    .getOne();
+
+    const user  = organizationUser?.user;
+    /* Invalid organization token */
+		if(!user){
+      const errorResponse = {
+        message: { error: 'Invalid invitation token. Please ensure that you have a valid invite url', isInvalidInvitationUrl:true },
+      };
+		  throw new BadRequestException(errorResponse);
+		}  
+    user['invitedOrganizationId'] = organizationUser.organizationId;
+    return user;
+  }
+
+  async getActiveWorkspacesCount(userId) {
+    return await this.organizationUsersRepository.count({
+      where: {
+        userId,
+        status: WORKSPACE_USER_STATUS.ACTIVE,
+      }
+    })
   }
 
   async updateOrgUser(organizationUserId: string, updateUserDto) {

@@ -210,10 +210,10 @@ export const generateInviteURL = (
   }${source ? `${organizationId ? '&' : '?'}source=${source}` : ''}`;
 };
 
-export const generateOrgInviteURL = (organizationToken: string, organizationId?: string) => {
+export const generateOrgInviteURL = (organizationToken: string, organizationId?: string, fullUrl=true) => {
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-  return `${host}${subpath ? subpath : '/'}organization-invitations/${organizationToken}${
+  return `${fullUrl ? `${host}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
     organizationId ? `?oid=${organizationId}` : ''
   }`;
 };
@@ -254,3 +254,5 @@ export const getMaxCopyNumber = (existNameList) => {
   const maxNumber = Math.max(...numbers, 0);
   return maxNumber + 1;
 };
+
+export const fullName = (firstName:string, lastName:string) => `${firstName || ''}${lastName ? ` ${lastName}` : ''}`; 
