@@ -65,10 +65,10 @@ export const PasswordInput = function PasswordInput({
 
   const computedStyles = {
     height:
-      height == 40
+      height == 36
         ? padding == "default"
-          ? "38px"
-          : "40px"
+          ? "36px"
+          : "38px"
         : padding == "default"
         ? height - 4
         : height,

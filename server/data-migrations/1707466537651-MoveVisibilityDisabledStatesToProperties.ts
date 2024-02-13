@@ -37,7 +37,8 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651
       const properties = component.properties;
       const styles = component.styles;
       const general = component.general;
-
+      const validation = component.validation;
+      
       if (styles.visibility) {
         properties.visibility = styles.visibility;
         delete styles.visibility;

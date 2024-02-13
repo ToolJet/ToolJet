@@ -190,10 +190,10 @@ export const NumberInput = function NumberInput({
 
   const computedStyles = {
     height:
-      height == 40
+      height == 36
         ? padding == "default"
-          ? "38px"
-          : "40px"
+          ? "36px"
+          : "38px"
         : padding == "default"
         ? height - 4
         : height,

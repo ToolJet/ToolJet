@@ -61,14 +61,13 @@ export const TextInput = function TextInput({
   const [isFocused, setIsFocused] = useState(false);
   const _width = (width / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
 
-  console.log("padding----", padding);
 
   const computedStyles = {
     height:
-      height == 40
+      height == 36
         ? padding == "default"
-          ? "38px"
-          : "40px"
+          ? "36px"
+          : "38px"
         : padding == "default"
         ? height - 4
         : height,
