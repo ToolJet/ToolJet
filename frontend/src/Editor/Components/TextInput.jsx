@@ -95,8 +95,8 @@ export const TextInput = function TextInput({
     zIndex: 3,
   };
   useEffect(() => {
-    if (labelRef.current) {
-      const absolutewidth = labelRef.current.getBoundingClientRect().width;
+    if (labelRef?.current) {
+      const absolutewidth = labelRef?.current?.getBoundingClientRect()?.width;
       setLabelWidth(absolutewidth);
     } else setLabelWidth(0);
 

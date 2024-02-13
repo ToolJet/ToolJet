@@ -139,8 +139,8 @@ export const NumberInput = function NumberInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
   useEffect(() => {
-    if (labelRef.current) {
-      const absolutewidth = labelRef.current.getBoundingClientRect().width;
+    if (labelRef?.current) {
+      const absolutewidth = labelRef?.current?.getBoundingClientRect()?.width;
       setLabelWidth(absolutewidth);
     } else setLabelWidth(0);
 

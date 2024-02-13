@@ -104,8 +104,8 @@ export const PasswordInput = function PasswordInput({
   }, [label]);
 
   useEffect(() => {
-    if (labelRef.current) {
-      const absolutewidth = labelRef.current.getBoundingClientRect().width;
+    if (labelRef?.current) {
+      const absolutewidth = labelRef?.current?.getBoundingClientRect()?.width;
       setLabelWidth(absolutewidth);
     } else setLabelWidth(0);
 

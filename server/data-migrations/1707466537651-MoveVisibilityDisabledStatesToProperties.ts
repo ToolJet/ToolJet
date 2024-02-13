@@ -64,8 +64,12 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651
         if (properties.value == undefined || null) {
           properties.value = "";
         }
+        if (styles.verticalAlignment == undefined || null) {
+          styles.verticalAlignment = "center";
+        }
+
       }
-      console.log("component---", component);
+      console.log("component---", styles);
 
       // Moving 'minValue' from properties to validation
       if (component.type == "NumberInput") {
