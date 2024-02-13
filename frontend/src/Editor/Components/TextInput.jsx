@@ -69,8 +69,8 @@ export const TextInput = function TextInput({
           ? "36px"
           : "38px"
         : padding == "default"
-        ? height - 4
-        : height,
+        ? height
+        : height+2,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === "#11181C" ? "#ECEDEE" : textColor,
     borderColor: isFocused
