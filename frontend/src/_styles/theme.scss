@@ -11519,6 +11519,24 @@ tbody {
     .json-form-wrapper {
       margin-bottom: 4px;
 
+      .text-widget {
+        height: 21px !important;
+
+        div {
+          overflow-y: visible !important;
+        }
+      }
+
+      .text-widget[style*="font-size: 20px;"] {
+        height: 30px !important;
+        background-color: red;
+
+        div {
+          overflow-y: visible !important;
+        }
+      }
+
+
       .widget-button {
         button {
           width: auto !important;
