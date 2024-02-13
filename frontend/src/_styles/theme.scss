@@ -11519,7 +11519,12 @@ tbody {
     .json-form-wrapper {
       margin-bottom: 4px;
 
+      // overrides properties of text widget in custom schema form
       .text-widget {
+        height: 100% !important;
+      }
+
+      .text-widget[style*="font-size: 14px;"] {
         height: 21px !important;
 
         div {
