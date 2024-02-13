@@ -58,6 +58,8 @@ export const authenticationService = {
   deleteLoginOrganizationSlug,
   getInvitedUserSession,
   activateAccountWithToken,
+  setSignupOrganizationId,
+  getSignupOrganizationId,
 };
 
 function login(email, password, organizationId) {
@@ -98,6 +100,14 @@ function saveLoginOrganizationId(organizationId) {
 
 function getLoginOrganizationId() {
   return getCookie('login-workspace');
+}
+
+function setSignupOrganizationId(value) {
+  return setCookie('signup-workspace', value);
+}
+
+function getSignupOrganizationId() {
+  return getCookie('signup-workspace');
 }
 
 function deleteLoginOrganizationId() {
@@ -287,13 +297,13 @@ function logout(avoidRedirection = false) {
     .finally(() => redirectToLoginPage());
 }
 
-function signInViaOAuth(configId, ssoType, ssoResponse) {
+function signInViaOAuth(configId, ssoType, ssoResponse, signupOrganizationId) {
   const organizationId = getLoginOrganizationId();
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ ...ssoResponse, organizationId }),
+    body: JSON.stringify({ ...ssoResponse, organizationId, signupOrganizationId }),
   };
 
   const url = configId ? configId : `common/${ssoType}`;

@@ -17,7 +17,7 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
-import { dbTransactionWrap, generateInviteURL, generateNextNameAndSlug } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, generateInviteURL, generateNextNameAndSlug, generateOrgInviteURL } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
@@ -143,11 +143,13 @@ export class OauthService {
     ssoType?: 'google' | 'git',
     user?: User
   ): Promise<any> {
-    const { organizationId } = ssoResponse;
+    const { organizationId: loginOrganiaztionId, signupOrganizationId } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
+    const organizationId = loginOrganiaztionId || signupOrganizationId;
     const isInstanceSSOLogin = !!(!configId && ssoType && !organizationId);
     const isInstanceSSOOrganizationLogin = !!(!configId && ssoType && organizationId);
+    const isInvitedUserSignUp = !!signupOrganizationId;
 
     if (configId) {
       // SSO under an organization
@@ -304,16 +306,27 @@ export class OauthService {
         );
 
         if (userDetails.invitationToken) {
+          const updatableUserParams = {
+            ...(getUserStatusAndSource(isInvitedUserSignUp ? lifecycleEvents.USER_SSO_ACTIVATE : lifecycleEvents.USER_SSO_VERIFY, sso)),
+            ...(isInvitedUserSignUp ? { invitationToken: null } : {})
+          }
           // User account setup not done, updating source and status
           await this.usersService.updateUser(
             userDetails.id,
-            getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
+            updatableUserParams,
             manager
           );
           // New user created and invited to the organization
           const organizationToken = userDetails.organizationUsers?.find(
             (ou) => ou.organizationId === organization.id
           )?.invitationToken;
+
+          if(isInvitedUserSignUp){
+            /* User is coming from invite flow. */
+            const session = await this.authService.generateInviteSignupPayload(response, userDetails, 'sso');      
+            const organizationInviteUrl = generateOrgInviteURL(organizationToken, organization.id, false); 
+            return { ...session, organizationInviteUrl };
+          }
 
           return decamelizeKeys({
             redirectUrl: generateInviteURL(
@@ -353,4 +366,5 @@ interface SSOResponse {
   token: string;
   state?: string;
   organizationId?: string;
+  signupOrganizationId;
 }

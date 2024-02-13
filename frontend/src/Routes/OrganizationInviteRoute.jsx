@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 import { authorizeUserAndHandleErrors } from '@/_helpers/authorizeWorkspace';
 import { toast } from 'react-hot-toast';
 import { LinkExpiredPage } from '@/ConfirmationPage/LinkExpiredPage';
 
-export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite }) => {
+export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, navigate }) => {
   /* Needed to pass invite token to signup page if the user doesn't exist */
   const [isLoading, setLoading] = useState(true);
   const [invalidLink, setLinkStatus] = useState(false);
@@ -14,7 +14,6 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite }
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const organizationId = queryParams.get('oid');
-  const navigate = useNavigate();
   const organizationToken = params.organizationToken || (isOrgazanizationOnlyInvite ? params.token : null);
   const accountToken = !isOrgazanizationOnlyInvite ? params.token : null;
   const [extraProps, setExtraProps] = useState({});

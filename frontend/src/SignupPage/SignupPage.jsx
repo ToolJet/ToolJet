@@ -16,7 +16,8 @@ import { ShowLoading } from '@/_components';
 import Spinner from '@/_ui/Spinner';
 import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 import { withRouter } from '@/_hoc/withRouter';
-import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import { setCookie } from '@/_helpers';
+import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
 class SignupPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -83,14 +84,7 @@ class SignupPageComponent extends React.Component {
       /* different API */
       authenticationService
         .activateAccountWithToken(email, name, password, organizationToken, 'signup')
-        .then((response) => {
-          const { organizationInviteUrl, user: currentUser } = response;
-          updateCurrentSession({
-            noWorkspaceAttachedInTheSession: true,
-            currentUser,
-          });
-          this.props.navigate(organizationInviteUrl);
-        })
+        .then((response) => onInvitedUserSignUpSuccess(response, this.props.navigate))
         .catch((e) => {
           toast.error(e?.error || 'Something went wrong!', {
             position: 'top-center',
@@ -117,7 +111,13 @@ class SignupPageComponent extends React.Component {
   };
 
   isFormSignUpEnabled = () => {
-    return this.inviteOrganizationId ? this.state.configs?.form?.enabled : this.state.configs?.form?.enable_sign_up;
+    return this.inviteOrganizationId
+      ? this.state.configs?.form?.enabled && this.state.configs?.enable_sign_up
+      : this.state.configs?.form?.enable_sign_up;
+  };
+
+  setSignupOrganizationId = () => {
+    if (this.inviteOrganizationId) setCookie('signupOrganizationId', this.inviteOrganizationId);
   };
 
   render() {
@@ -173,6 +173,7 @@ class SignupPageComponent extends React.Component {
                               configs={this.state.configs?.google?.configs}
                               configId={this.state.configs?.google?.config_id}
                               text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
+                              setSignupOrganizationId={this.setSignupOrganizationId}
                             />
                           </div>
                         )}

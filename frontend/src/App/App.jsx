@@ -150,20 +150,23 @@ class AppComponent extends React.Component {
               <Route path="/login/:organizationId" exact element={<LoginPage />} />
               <Route path="/login" exact element={<LoginPage />} />
               <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
-              <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
-              <Route path="/sso/:origin" exact element={<Oauth />} />
+              <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
+              <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
               <Route path="/signup/:organizationId" exact element={<SignupPage />} />
               <Route path="/signup" exact element={<SignupPage />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
-              <Route path="/invitations/:token/workspaces/:organizationToken" element={<OrganizationInviteRoute />} />
+              <Route
+                path="/invitations/:token/workspaces/:organizationToken"
+                element={<OrganizationInviteRoute {...this.props} />}
+              />
               <Route path="/confirm" element={<VerificationSuccessInfoScreen />} />
               <Route
                 path="/organization-invitations/:token"
                 element={
-                  <OrganizationInviteRoute isOrgazanizationOnlyInvite={true}>
+                  <OrganizationInviteRoute {...this.props} isOrgazanizationOnlyInvite={true}>
                     <OrganizationInvitationPage {...this.props} darkMode={darkMode} />
                   </OrganizationInviteRoute>
                 }

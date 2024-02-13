@@ -6,14 +6,16 @@ import Configs from './Configs/Config.json';
 import { RedirectLoader } from '../_components';
 import { getCookie } from '@/_helpers';
 import { redirectToWorkspace } from '@/_helpers/utils';
+import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
 
-export function Authorize() {
+export function Authorize({ navigate }) {
   const [error, setError] = useState('');
   const router = useRouter();
 
   const organizationId = authenticationService.getLoginOrganizationId();
   const organizationSlug = authenticationService.getLoginOrganizationSlug();
   const redirectUrl = getCookie('redirectPath');
+  const signupOrganizationId = getCookie('signupOrganizationId');
 
   useEffect(() => {
     const errorMessage = router.query.error_description || router.query.error;
@@ -62,8 +64,8 @@ export function Authorize() {
 
   const signIn = (authParams, configs) => {
     authenticationService
-      .signInViaOAuth(router.query.configId, router.query.origin, authParams)
-      .then(({ redirect_url, current_organization_id }) => {
+      .signInViaOAuth(router.query.configId, router.query.origin, authParams, signupOrganizationId)
+      .then(({ redirect_url, current_organization_id, ...restResponse }) => {
         if (redirect_url) {
           window.location.href = redirect_url;
           return;
@@ -72,6 +74,7 @@ export function Authorize() {
         if (current_organization_id) {
           redirectToWorkspace();
         }
+        if (restResponse?.organizationInviteUrl) onInvitedUserSignUpSuccess(restResponse, navigate);
       })
       .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));
   };
