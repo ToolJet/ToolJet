@@ -1,5 +1,5 @@
 import { appVersionService } from '@/_services';
-import { create, zustandDevTools } from './utils';
+import { create, zustandDevTools, dfs } from './utils';
 import { shallow } from 'zustand/shallow';
 import { useResolveStore } from './resolverStore';
 import { useEditorStore } from './editorStore';
@@ -7,25 +7,6 @@ import { useDataQueriesStore } from './dataQueriesStore';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-
-function dfs(node, oldRef, newRef) {
-  if (typeof node === 'object') {
-    for (let key in node) {
-      const value = node[key];
-      if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
-        const referenceExists = value.includes(oldRef);
-
-        if (referenceExists) {
-          node[key] = value.replace(oldRef, newRef);
-        }
-      } else if (typeof value === 'object') {
-        dfs(value, oldRef, newRef);
-      }
-    }
-  }
-
-  return node;
-}
 
 const initialState = {
   editingVersion: null,
@@ -180,6 +161,9 @@ const itemToObserve = 'appDiffOptions';
 useAppDataStore.subscribe(
   (state) => {
     const isComponentNameUpdated = state[itemToObserve]?.componentNameUpdated;
+
+    // console.log('---arpit store =>', { x: state[itemToObserve] });
+
     const { appDefinition, currentPageId, isUpdatingEditorStateInProcess } = useEditorStore.getState();
     const { dataQueries } = useDataQueriesStore.getState();
 

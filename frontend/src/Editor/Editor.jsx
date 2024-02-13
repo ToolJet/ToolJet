@@ -1179,6 +1179,10 @@ const EditorComponent = (props) => {
         componentDefinitionChanged: true,
         componentDeleted: true,
       });
+
+      const deleteFromMap = [componentId, ...childComponents];
+
+      useResolveStore.getState().actions.removeComponentsFromMapper(deleteFromMap);
     } else {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }
