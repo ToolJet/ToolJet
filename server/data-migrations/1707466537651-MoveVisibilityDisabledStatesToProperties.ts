@@ -37,6 +37,7 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651
       const properties = component.properties;
       const styles = component.styles;
       const general = component.general;
+      const generalStyles = component.generalStyles;
       const validation = component.validation;
 
       if (styles.visibility) {
@@ -54,6 +55,11 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651
         delete general?.tooltip;
       }
 
+      if (generalStyles?.boxShadow) {
+        styles.boxShadow = generalStyles?.boxShadow;
+        delete generalStyles?.boxShadow;
+      }
+
       // Label and value
       if (component.type !== "Text") {
         if (properties.label == undefined || null) {
@@ -64,13 +70,14 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651
         if (properties.value == undefined || null) {
           properties.value = "";
         }
-        if (styles.verticalAlignment == 'top') {
-          styles.verticalAlignment = "center";
-        }
-
       }
-      console.log("component---", styles);
-
+ 
+      if(component.type == "Text" ){
+        if (styles.verticalAlignment  == undefined || null) {
+          styles?.verticalAlignment ={value:'center'};
+        }
+      }
+  
       // Moving 'minValue' from properties to validation
       if (component.type == "NumberInput") {
         if (properties.minValue) {
@@ -88,6 +95,7 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651
         properties,
         styles,
         general,
+        generalStyles,
         validation,
       });
     }
