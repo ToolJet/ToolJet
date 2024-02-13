@@ -382,7 +382,7 @@ export const Container = ({
   const onResizeStop = (boxList, id, height, width, x, y) => {
     const newBoxes = boxList.reduce((newBoxList, { id, height, width, x, y, gw }) => {
       const _canvasWidth = gw ? gw * noOfGrids : canvasWidth;
-      const newWidth = (width * noOfGrids) / _canvasWidth;
+      let newWidth = (width * noOfGrids) / _canvasWidth;
       gw = gw ? gw : gridWidth;
       const parent = boxes[id]?.component?.parent;
       if (y < 0) {
@@ -396,6 +396,10 @@ export const Container = ({
         if (height > parentHeight && ['Tabs', 'Listview'].includes(compoenentType)) {
           height = parentHeight;
           y = 0;
+        }
+        let posX = Math.round(x / gw);
+        if (posX + newWidth > 43) {
+          newWidth = 43 - posX;
         }
       }
       return {
