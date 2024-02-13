@@ -36,18 +36,20 @@ export const handleReferenceTransactions = (
 ) => {
   if (updatedEntityNames.length === 0) return;
 
+  const _components = JSON.parse(JSON.stringify(components));
   const _dataQueries = JSON.parse(JSON.stringify(dataQueries));
-  updatedEntityNames.forEach((component) => {
-    components.forEach((c) => {
-      c.definition = dfs(c.definition, component.name, component.newName);
+  const events = JSON.parse(JSON.stringify(currentAppEvents));
+  updatedEntityNames.forEach((entity) => {
+    _components.forEach((c) => {
+      c.definition = dfs(c.definition, entity.name, entity.newName);
     });
 
     _dataQueries.forEach((query) => {
-      query.options = dfs(query.options, component.name, component.newName);
+      query.options = dfs(query.options, entity.name, entity.newName);
     });
 
-    currentAppEvents.forEach((event) => {
-      event.event = dfs(event.event, component.name, component.newName);
+    events.forEach((event) => {
+      event.event = dfs(event.event, entity.name, entity.newName);
     });
   });
 
@@ -55,7 +57,7 @@ export const handleReferenceTransactions = (
 
   const componentsFromAppDef = newAppDefinition.pages[currentPageId].components;
 
-  components.forEach((component) => {
+  _components.forEach((component) => {
     componentsFromAppDef[component.id].component.definition = component.definition;
   });
   newAppDefinition.pages[currentPageId].components = componentsFromAppDef;
@@ -69,24 +71,30 @@ export const handleReferenceTransactions = (
     };
   });
 
-  useAppDataStore.getState().actions.updateState({
-    appDiffOptions: { componentDefinitionChanged: true },
-    appDefinitionDiff: diffPatches,
-  });
+  if (diffPatches) {
+    useAppDataStore.getState().actions.updateState({
+      appDiffOptions: { componentDefinitionChanged: true },
+      appDefinitionDiff: diffPatches,
+    });
 
-  useEditorStore.getState().actions.updateEditorState({
-    appDefinition: newAppDefinition,
-    isUpdatingEditorStateInProcess: true,
-  });
+    useEditorStore.getState().actions.updateEditorState({
+      appDefinition: newAppDefinition,
+      isUpdatingEditorStateInProcess: true,
+    });
+  }
 
-  useDataQueriesStore.getState().actions.updateBulkQueryOptions(queriesToUpdate, currentVersionId);
+  if (queriesToUpdate.length > 0) {
+    useDataQueriesStore.getState().actions.updateBulkQueryOptions(queriesToUpdate, currentVersionId);
+  }
 
-  const updatedEvents = currentAppEvents.map((event) => {
+  const eventsToUpdate = _.differenceWith(events, currentAppEvents, _.isEqual).map((event) => {
     return {
       event_id: event.id,
       diff: event,
     };
   });
 
-  useAppDataStore.getState().actions.updateAppVersionEventHandlers(updatedEvents, 'update');
+  if (eventsToUpdate.length > 0) {
+    useAppDataStore.getState().actions.updateAppVersionEventHandlers(eventsToUpdate, 'update');
+  }
 };

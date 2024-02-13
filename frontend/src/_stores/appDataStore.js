@@ -140,8 +140,6 @@ useAppDataStore.subscribe(
   (state) => {
     const isComponentNameUpdated = state[itemToObserve]?.componentNameUpdated;
 
-    // console.log('---arpit store =>', { x: state[itemToObserve] });
-
     const { appDefinition, currentPageId, isUpdatingEditorStateInProcess } = useEditorStore.getState();
     const { dataQueries } = useDataQueriesStore.getState();
 

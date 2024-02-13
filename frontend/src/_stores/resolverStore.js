@@ -85,22 +85,20 @@ export const useResolveStore = create(
         return componentDefaultValues[componentName];
       },
 
-      addComponentsToMapper: (components) => {
+      addEntitiesToMap: (entities) => {
         const { referenceMapper } = get();
-        components.forEach((component) => {
-          // check if the component is already in the mapper with component id
-
-          if (!referenceMapper.has(component.id)) {
-            referenceMapper.set(component.id, component.name);
+        entities.forEach((entity) => {
+          if (!referenceMapper.has(entity.id)) {
+            referenceMapper.set(entity.id, entity.name);
           }
         });
       },
 
-      removeComponentsFromMapper: (componentIds) => {
+      removeEntitiesFromMap: (entitiesIds) => {
         const { referenceMapper } = get();
 
-        componentIds.forEach((componentId) => {
-          referenceMapper.delete(componentId);
+        entitiesIds.forEach((entityId) => {
+          referenceMapper.delete(entityId);
         });
       },
 

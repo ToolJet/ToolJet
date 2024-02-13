@@ -120,21 +120,20 @@ useEditorStore.subscribe(
 
       useAppDataStore.getState().actions.setComponents(finalComponentsArray);
 
-      const existingReferences = useResolveStore.getState().referenceMapper;
+      const referencesManager = useResolveStore.getState().referenceMapper;
 
       const newComponents = diff
         .map((component) => {
-          if (!existingReferences.get(component.id)) {
+          if (!referencesManager.get(component.id)) {
             return {
               id: component.id,
               name: component.name,
-              definition: component.definition,
             };
           }
         })
         .filter((c) => c !== undefined);
 
-      useResolveStore.getState().actions.addComponentsToMapper(newComponents);
+      useResolveStore.getState().actions.addEntitiesToMap(newComponents);
     }
   },
   (state) => [JSON.stringify(state['appDefinition']), state['currentPageId']]
