@@ -154,7 +154,7 @@ const RowForm = ({ onCreate, onClose }) => {
             <input
               //defaultValue={!isPrimaryKey && defaultValue?.length > 0 ? removeQuotes(defaultValue.split('::')[0]) : ''}
               type="text"
-              value={inputValues[index]?.value}
+              value={inputValues[index]?.value === null ? '' : inputValues[index]?.value}
               onChange={(e) => handleInputChange(index, e.target.value, columnName)}
               disabled={isPrimaryKey || inputValues[index]?.disabled}
               placeholder={isPrimaryKey ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'}
