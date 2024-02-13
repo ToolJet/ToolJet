@@ -13,6 +13,12 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 const uuid = require('uuid');
 
+/* TYPES */
+type InvitedUserType = Partial<User> & {
+  invitedOrganizationId?: string,
+  organizationStatus?: string,
+};
+
 @Injectable()
 export class OrganizationUsersService {
   constructor(
@@ -56,11 +62,13 @@ export class OrganizationUsersService {
     return await this.organizationUsersRepository.update(id, { role });
   }
 
-  async findByWorkspaceInviteToken(invitationToken:string): Promise<any> {
+  async findByWorkspaceInviteToken(invitationToken:string): Promise<InvitedUserType> {
     const organizationUser = await getRepository(OrganizationUser)
       .createQueryBuilder('organizationUser')
       .select([
       'organizationUser.organizationId',
+      'organizationUser.invitationToken',
+      'organizationUser.status',
       'user.id',
       'user.email',
       'user.invitationToken',
@@ -72,7 +80,7 @@ export class OrganizationUsersService {
     .where('organizationUser.invitationToken = :invitationToken', { invitationToken })
     .getOne();
 
-    const user  = organizationUser?.user;
+    const user:InvitedUserType  = organizationUser?.user;
     /* Invalid organization token */
 		if(!user){
       const errorResponse = {
@@ -80,7 +88,8 @@ export class OrganizationUsersService {
       };
 		  throw new BadRequestException(errorResponse);
 		}  
-    user['invitedOrganizationId'] = organizationUser.organizationId;
+    user.invitedOrganizationId = organizationUser.organizationId;
+    user.organizationStatus = organizationUser.status;
     return user;
   }
 

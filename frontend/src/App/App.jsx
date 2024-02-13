@@ -158,14 +158,7 @@ class AppComponent extends React.Component {
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
-              <Route
-                path="/invitations/:token/workspaces/:organizationToken"
-                element={
-                  <OrganizationInviteRoute>
-                    <VerificationSuccessInfoScreen />
-                  </OrganizationInviteRoute>
-                }
-              />
+              <Route path="/invitations/:token/workspaces/:organizationToken" element={<OrganizationInviteRoute />} />
               <Route path="/confirm" element={<VerificationSuccessInfoScreen />} />
               <Route
                 path="/organization-invitations/:token"

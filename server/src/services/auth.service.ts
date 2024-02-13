@@ -707,9 +707,9 @@ export class AuthService {
     });
   }
 
-  async validateInvitedUserSession(user:User, invitedUser: User, tokens:any) {
+  async validateInvitedUserSession(user:User, invitedUser: any, tokens:any) {
     const { accountToken,organizationToken } =  tokens;
-    const { status:invitedUserStatus, email:invitedUserEmail } = invitedUser;
+    const { status:invitedUserStatus, organizationStatus, invitedOrganizationId } = invitedUser;
 		const organizationAndAccountInvite = !!organizationToken && !!accountToken;
     const accountYetToActive = organizationAndAccountInvite && [USER_STATUS.INVITED, USER_STATUS.VERIFIED].includes(invitedUserStatus as USER_STATUS);
 
@@ -720,10 +720,14 @@ export class AuthService {
       throw new NotAcceptableException(errorResponse) 
     }
 
+    /* Send back the organization invite url if the user has old workspace + account invitation URL */
+		const doesUserHaveWorkspaceAndAccountInvite = organizationAndAccountInvite && [USER_STATUS.ACTIVE].includes(invitedUserStatus as USER_STATUS) && organizationStatus === WORKSPACE_USER_STATUS.INVITED;
+    let organizationInviteUrl = doesUserHaveWorkspaceAndAccountInvite ? generateOrgInviteURL(organizationToken, invitedOrganizationId, false) : null; 
+
     const activeOrganization = user?.organizationId ? await this.organizationsService.fetchOrganization(user?.organizationId): null;
     const payload = await this.generateSessionPayload(user, activeOrganization);
     const invitedOrganization = await this.organizationsService.fetchOrganization(invitedUser['invitedOrganizationId']);
-    return decamelizeKeys({ ...payload, invitedOrganizationName: invitedOrganization.name, name: fullName(user['firstName'], user['lastName']) })
+    return decamelizeKeys({ ...payload, invitedOrganizationName: invitedOrganization.name, name: fullName(user['firstName'], user['lastName']), organizationInviteUrl })
   }
 
   async generateInviteSignupPayload(

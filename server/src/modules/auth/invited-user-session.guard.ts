@@ -25,7 +25,7 @@ export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
 		}
 
 		const invitedUser = await this.organizationUsersService.findByWorkspaceInviteToken(workspaceInviteToken); 
-		const {email:invitedUserEmail, status: invitedUserStatus} = invitedUser;
+		const {email:invitedUserEmail, status: invitedUserStatus } = invitedUser;
 		request.invitedUser = invitedUser;
 
 		const isOrganizationOnlyInvite = !!workspaceInviteToken && !request.body.accountToken;

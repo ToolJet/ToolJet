@@ -34,6 +34,7 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite }
         invited_organization_name: invitedOrganizationName,
         email,
         name,
+        organization_invite_url,
       } = invitedUserSession;
       /* 
         We should only run the authorization against the session if the user has active workspace 
@@ -43,8 +44,15 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite }
         email,
         name,
       });
-      if (!noWorkspaceAttachedInTheSession)
-        authorizeUserAndHandleErrors(current_organization_id, current_organization_slug);
+      /* User has active account. but still using the same invite. redirect to the org-invite URL */
+      if (organization_invite_url) navigate(organization_invite_url);
+      if (!noWorkspaceAttachedInTheSession) {
+        authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, () => {
+          setLoading(false);
+        });
+      } else {
+        setLoading(false);
+      }
     } catch (errorObj) {
       const errorStatus = errorObj?.data?.statusCode;
       const errorMessage = errorObj?.error?.error || 'Something went wrong';
@@ -78,6 +86,7 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite }
         }
         case 400: {
           const isInvalidInvitationUrl = errorObj?.error?.isInvalidInvitationUrl;
+          /* Wring invitation URL (invalid tokens) */
           setLinkStatus(isInvalidInvitationUrl);
           break;
         }
@@ -87,7 +96,6 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite }
         }
       }
     }
-    setLoading(false);
   };
 
   const redirectToInstanceLoginPage = () => {
@@ -104,6 +112,6 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite }
 
   if (invalidLink) return <LinkExpiredPage />;
 
-  const clonedElement = React.cloneElement(children, extraProps);
+  const clonedElement = React.cloneElement(children || <></>, extraProps);
   return <RouteLoader isLoading={isLoading}>{clonedElement}</RouteLoader>;
 };

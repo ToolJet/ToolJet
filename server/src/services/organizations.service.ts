@@ -615,7 +615,8 @@ export class OrganizationsService {
         user,
         true,
         null,
-        manager
+        manager,
+        !user,
       );
 
       const currentOrganization: Organization = await this.organizationsRepository.findOneOrFail({
