@@ -503,6 +503,7 @@ const Table = ({ collapseSidebar }) => {
       cellIndex: index,
       errorState: false,
     }));
+    cellValue === null ? setNullValue(true) : setNullValue(false);
     handleProgressAnimation('column edited successfully', true);
     document.getElementById('edit-input-blur').blur();
   };
