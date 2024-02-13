@@ -12,6 +12,8 @@ import _, { isEmpty, throttle } from 'lodash';
 import { useEditorStore } from './editorStore';
 import { shallow } from 'zustand/shallow';
 import { getCurrentState, useCurrentStateStore } from './currentStateStore';
+import { useResolveStore } from './resolverStore';
+import { handleReferenceTransactions } from './handleReferenceTransactions';
 
 const initialState = {
   dataQueries: [],
@@ -36,6 +38,22 @@ export const useDataQueriesStore = create(
         fetchDataQueries: async (appVersionId, selectFirstQuery = false, runQueriesOnAppLoad = false, ref) => {
           set({ loadingDataQueries: true });
           const data = await dataqueryService.getAll(appVersionId);
+
+          const diff = _.differenceWith(data.data_queries, get().dataQueries, _.isEqual);
+          const referencesManager = useResolveStore.getState().referenceMapper;
+          const newQueries = diff
+            .map((dq) => {
+              if (!referencesManager.get(dq.id)) {
+                return {
+                  id: dq.id,
+                  name: dq.name,
+                };
+              }
+            })
+            .filter((c) => c !== undefined);
+
+          useResolveStore.getState().actions.addEntitiesToMap(newQueries);
+
           set((state) => ({
             dataQueries: sortByAttribute(data.data_queries, state.sortBy, state.sortOrder),
             loadingDataQueries: false,
@@ -106,6 +124,10 @@ export const useDataQueriesStore = create(
                   return acc;
                 }, {}),
               });
+
+              const referenceManager = useResolveStore.getState().referenceMapper;
+
+              referenceManager.delete(queryId);
             })
             .catch(() => {
               set({
@@ -206,6 +228,8 @@ export const useDataQueriesStore = create(
                   },
                 },
               });
+
+              useResolveStore.getState().actions.addEntitiesToMap([{ id: data.id, name: data.name }]);
             })
             .catch((error) => {
               set((state) => ({
@@ -261,7 +285,51 @@ export const useDataQueriesStore = create(
                 },
               });
             })
-            .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
+            .finally(() => {
+              useAppDataStore.getState().actions.setIsSaving(false);
+
+              const dataQueries = useDataQueriesStore.getState().dataQueries;
+              const updatedNames = [];
+
+              const referenceManager = useResolveStore.getState().referenceMapper;
+
+              dataQueries.forEach((dataQuery) => {
+                const existingName = referenceManager.get(dataQuery.id);
+
+                if (existingName === dataQuery.name) {
+                  return;
+                }
+
+                referenceManager.update(dataQuery.id, dataQuery.name);
+
+                updatedNames.push({
+                  id: dataQuery.id,
+                  name: existingName,
+                  newName: dataQuery.name,
+                });
+              });
+
+              const components = useAppDataStore.getState().components;
+              const currentAppEvents = useAppDataStore.getState().events;
+              const appDefinition = useEditorStore.getState().appDefinition;
+              const currentPageId = useEditorStore.getState().currentPageId;
+              const currentVersionId = useAppDataStore.getState().currentVersionId;
+
+              console.log('---arpit components =>', {
+                x: referenceManager.getAll(),
+                updatedNames,
+              });
+
+              handleReferenceTransactions(
+                components,
+                dataQueries,
+                currentAppEvents,
+                appDefinition,
+                currentPageId,
+                currentVersionId,
+                updatedNames
+              );
+            });
         },
         changeDataQuery: (newDataSource) => {
           const { selectedQuery } = useQueryPanelStore.getState();

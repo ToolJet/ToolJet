@@ -1182,7 +1182,7 @@ const EditorComponent = (props) => {
 
       const deleteFromMap = [componentId, ...childComponents];
 
-      useResolveStore.getState().actions.removeComponentsFromMapper(deleteFromMap);
+      useResolveStore.getState().actions.removeEntitiesFromMap(deleteFromMap);
     } else {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }
