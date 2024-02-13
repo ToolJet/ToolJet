@@ -64,7 +64,7 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651
         if (properties.value == undefined || null) {
           properties.value = "";
         }
-        if (styles.verticalAlignment == undefined || null) {
+        if (styles.verticalAlignment == 'top') {
           styles.verticalAlignment = "center";
         }
 

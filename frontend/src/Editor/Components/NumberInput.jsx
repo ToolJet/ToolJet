@@ -370,9 +370,7 @@ export const NumberInput = function NumberInput({
               <div onClick={(e) => handleIncrement(e)}>
                 <SolidIcon
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  height={`${
-                    height == 40 ? (padding == 'default' ? 18 : 20) : padding == 'default' ? height / 2 - 3 : height / 2
-                  }px`}
+                  height={`${height / 2}px`}
                   style={{
                     top: defaultAlignment === 'top' && label?.length > 0 && width > 0 ? '21px' : '1px',
                     right:
@@ -409,9 +407,7 @@ export const NumberInput = function NumberInput({
                     zIndex: 3,
                   }}
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  height={`${
-                    height == 40 ? (padding == 'default' ? 18 : 20) : padding == 'default' ? height / 2 - 3 : height / 2
-                  }px`}
+                  height={`${height / 2}px`}
                   className="numberinput-down-arrow arrow"
                   name="cheverondown"
                 ></SolidIcon>
