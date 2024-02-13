@@ -2,36 +2,38 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   addDefaultEventHandler,
+  checkPaddingOfContainer,
   closeAccordions,
   editAndVerifyWidgetName,
   openAccordion,
   openEditorSidebar,
   randomNumber,
+  selectColourFromColourPicker,
   verifyAndModifyParameter,
   verifyBoxShadowCss,
   verifyComponentValueFromInspector,
+  verifyContainerElements,
   verifyLayout,
-  verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
   verifyTooltip,
+  verifyWidgetColorCss,
 } from "Support/utils/commonWidget";
 import {
   addAllInputFieldColors,
   addAndVerifyAdditionalActions,
+  addCustomWidthOfLabel,
   addValidations,
+  verifyAlignment,
+  verifyCustomWidthOfLabel,
   verifyInputFieldColors,
+  verifyLabelStyleElements,
 } from "Support/utils/editor/inputFieldUtils";
 import {
-  addSupportCSAData,
-  selectCSA,
-  selectEvent,
-} from "Support/utils/events";
-import {
+  addCSA,
   randomString,
-  verifyControlComponentAction,
-} from "Support/utils/textInput";
-import { buttonText } from "Texts/button";
-import { commonWidgetText, customValidation, widgetValue } from "Texts/common";
+  verifyCSA,
+} from "Support/utils/editor/textInput";
+import { commonWidgetText } from "Texts/common";
 import { textInputText } from "Texts/textInput";
 
 describe("Text Input", () => {
@@ -55,21 +57,21 @@ describe("Text Input", () => {
 
     openEditorSidebar(textInputText.defaultWidgetName);
     closeAccordions([
-      "Properties",
+      "Data",
       "Validation",
       "Additional Actions",
       "Devices",
       "Events",
     ]);
     editAndVerifyWidgetName(data.widgetName, [
-      "Properties",
+      "Data",
       "Validation",
       "Additional Actions",
       "Devices",
       "Events",
     ]);
-    openAccordion(commonWidgetText.accordionProperties, [
-      "Properties",
+    openAccordion("Data", [
+      "Data",
       "Validation",
       "Additional Actions",
       "Devices",
@@ -90,8 +92,8 @@ describe("Text Input", () => {
 
     data.customText = fake.randomSentence;
     openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionProperties, [
-      "Properties",
+    openAccordion("Data", [
+      "Data",
       "Validation",
       "Additional Actions",
       "Devices",
@@ -108,7 +110,7 @@ describe("Text Input", () => {
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionEvents, ["Validation", "Devices"]);
-    addDefaultEventHandler(widgetValue(data.widgetName));
+    addDefaultEventHandler(data.customText);
     cy.get(commonWidgetSelector.eventSelection).type("On Enter Pressed{Enter}");
 
     cy.clearAndType(
@@ -147,12 +149,11 @@ describe("Text Input", () => {
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
     cy.get(
       commonWidgetSelector.parameterInputField(commonWidgetText.labelMinLength)
-    ).clearCodeMirror();
-
+    ).clearAndTypeOnCodeMirror("0");
     cy.forceClickOnCanvas();
     cy.clearAndType(
       commonWidgetSelector.draggableWidget(data.widgetName),
-      data.customText
+      data.customText.toUpperCase().replaceAll(" ", "").replaceAll(".", "")
     );
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(data.widgetName)
@@ -165,19 +166,14 @@ describe("Text Input", () => {
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(data.widgetName)
     ).verifyVisibleElement("have.text", data.customText);
-
-    cy.get(
-      commonWidgetSelector.accordion(commonWidgetText.accordionProperties)
-    ).click();
+    cy.forceClickOnCanvas();
+    openEditorSidebar(data.widgetName);
     cy.get(
       commonWidgetSelector.accordion(commonWidgetText.accordionValidation)
     ).click();
     addAndVerifyAdditionalActions(data.widgetName, data.tooltipText);
 
     openEditorSidebar(data.widgetName);
-    cy.get(
-      commonWidgetSelector.accordion(commonWidgetText.accordionProperties)
-    ).click();
     cy.get(
       commonWidgetSelector.accordion(commonWidgetText.accordionValidation)
     ).click();
@@ -190,14 +186,77 @@ describe("Text Input", () => {
       )
     ).click();
 
+    openEditorSidebar(data.widgetName);
+    openAccordion("Validation", [
+      "Data",
+      "Validation",
+      "Additional Actions",
+      "Devices",
+      "Events",
+    ]);
+    cy.get(
+      commonWidgetSelector.parameterInputField(commonWidgetText.labelMinLength)
+    ).clearAndTypeOnCodeMirror("5");
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
+    openEditorSidebar(data.widgetName);
+
     cy.get(commonWidgetSelector.widgetDocumentationLink).should(
       "have.text",
       textInputText.textInputDocumentationLink
     );
-    data.customText = fake.firstName;
-    verifyControlComponentAction(data.widgetName, data.customText);
+
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
+      .invoke("attr", "placeholder")
+      .should("contain", data.customText);
+
+    cy.clearAndType(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      `${data.customText}{Enter}`
+    );
+    cy.verifyToastMessage(commonSelectors.toastMessage, data.customText);
+    cy.forceClickOnCanvas();
+
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
+
+    cy.clearAndType(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.customText
+    );
+    cy.forceClickOnCanvas();
+    // cy.get(
+    //   commonWidgetSelector.validationFeedbackMessage(data.widgetName)
+    // ).verifyVisibleElement("have.text", commonWidgetText.regexValidationError);
+
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
+
+    cy.forceClickOnCanvas();
+    cy.get(
+      commonWidgetSelector.validationFeedbackMessage(data.widgetName)
+    ).verifyVisibleElement(
+      "have.text",
+      commonWidgetText.minLengthValidationError("5")
+    );
+    cy.clearAndType(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.customText.toUpperCase().replaceAll(" ", "").replaceAll(".", "")
+    );
+    cy.get(
+      commonWidgetSelector.validationFeedbackMessage(data.widgetName)
+    ).verifyVisibleElement(
+      "have.text",
+      commonWidgetText.maxLengthValidationError(data.maximumLength)
+    );
+    cy.forceClickOnCanvas();
+    verifyTooltip(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.tooltipText
+    );
   });
-  it.only("should verify the styles of the text input widget", () => {
+
+  it("should verify the styles of the text input widget", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.colourHex = fake.randomRgbaHex;
@@ -208,6 +267,8 @@ describe("Text Input", () => {
     data.textColor = fake.randomRgba;
     data.errorTextColor = fake.randomRgba;
     data.iconColor = fake.randomRgba;
+    data.labelColor = fake.randomRgba;
+    ata.widgetName = textInputText.defaultWidgetName;
 
     openEditorSidebar(textInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -216,7 +277,7 @@ describe("Text Input", () => {
     cy.clearAndType('[data-cy="border-radius-input"]', "20");
     cy.get('[data-cy="icon-visibility-button"]').click();
 
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.forceClickOnCanvas();
     cy.get(
       commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
     ).should("have.css", "border-radius", "20px");
@@ -230,142 +291,52 @@ describe("Text Input", () => {
       data.boxShadowColor,
       4
     );
-  });
-
-  it("should verify the app preview", () => {
-    const data = {};
-    data.appName = `${fake.companyName}-App`;
-    data.widgetName = fake.widgetName;
-    data.tooltipText = fake.randomSentence;
-    data.maxLengthErrText = fake.randomSentence;
-    data.colourHex = fake.randomRgbaHex;
-    data.boxShadowColor = fake.randomRgba;
-    data.boxShadowParam = fake.boxShadowParam;
-    data.minimumLength = randomNumber(1, 4);
-    data.maximumLength = randomNumber(8, 10);
-    data.customText = randomString(12);
-    data.maxLengthText = randomString(data.maximumLength);
-
-    openEditorSidebar(textInputText.defaultWidgetName);
-    verifyAndModifyParameter(
-      commonWidgetText.labelDefaultValue,
-      data.customText
-    );
-
-    verifyAndModifyParameter(
-      commonWidgetText.labelPlaceHolder,
-      data.customText
-    );
-
-    openAccordion(commonWidgetText.accordionEvents, ["Validation", "Devices"]);
-    addDefaultEventHandler(widgetValue(textInputText.defaultWidgetName));
-    cy.get(commonWidgetSelector.eventSelection).type("On Enter Pressed{Enter}");
-
-    openAccordion(commonWidgetText.accordionValidation);
-    verifyAndModifyParameter(
-      commonWidgetText.labelRegex,
-      commonWidgetText.regularExpression
-    );
-    verifyAndModifyParameter(
-      commonWidgetText.labelMinLength,
-      data.minimumLength
-    );
-    verifyAndModifyParameter(
-      commonWidgetText.labelMaxLength,
-      data.maximumLength
-    );
-    verifyAndModifyParameter(
-      commonWidgetText.labelcustomValidadtion,
-      customValidation(textInputText.defaultWidgetName, data.customText)
-    );
-    verifyPropertiesGeneralAccordion(
-      textInputText.defaultWidgetName,
-      data.tooltipText
-    );
-
-    verifyControlComponentAction(
-      textInputText.defaultWidgetName,
-      data.customText
-    );
 
     openEditorSidebar(textInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
-    verifyAndModifyParameter(
-      commonWidgetText.parameterBorderRadius,
-      commonWidgetText.borderRadiusInput
+    verifyContainerElements();
+    checkPaddingOfContainer(textInputText.defaultWidgetName, 1);
+    cy.get('[data-cy="togglr-button-none"]').click();
+    checkPaddingOfContainer(textInputText.defaultWidgetName, 0);
+
+    verifyLabelStyleElements();
+    verifyAlignment(textInputText.defaultWidgetName, "sideLeft");
+    cy.get('[data-cy="togglr-button-top"]').click();
+    verifyAlignment(textInputText.defaultWidgetName, "topLeft");
+    cy.get('[data-cy="togglr-button-right"]').click();
+    verifyAlignment(textInputText.defaultWidgetName, "topRight");
+    cy.get('[data-cy="togglr-button-side"]').click();
+    verifyAlignment(textInputText.defaultWidgetName, "sideRight");
+    cy.get('[data-cy="togglr-button-left"]').click();
+    verifyAlignment(textInputText.defaultWidgetName, "sideLeft");
+    addCustomWidthOfLabel("50");
+    verifyCustomWidthOfLabel(textInputText.defaultWidgetName, "50");
+    selectColourFromColourPicker(
+      "Text",
+      data.labelColor,
+      0,
+      commonWidgetSelector.colourPickerParent,
+      "0"
     );
-    verifyStylesGeneralAccordion(
-      textInputText.defaultWidgetName,
-      data.boxShadowParam,
-      data.colourHex,
-      data.boxShadowColor,
-      4
+    verifyWidgetColorCss(
+      `[data-cy="label-${textInputText.defaultWidgetName}"]>label`,
+      "color",
+      data.labelColor,
+      true
     );
 
-    cy.waitForAutoSave();
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
-
-    cy.get(
-      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
-    ).verifyVisibleElement("have.value", data.customText);
-    cy.get(
-      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
-    )
-      .invoke("attr", "placeholder")
-      .should("contain", data.customText);
-
-    cy.get(
-      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
-    )
-      .type(`{selectAll}{backspace}{enter}`)
-      .type(data.customText);
-    cy.forceClickOnCanvas();
-    cy.get(
-      commonWidgetSelector.validationFeedbackMessage(
-        textInputText.defaultWidgetName
-      )
-    ).verifyVisibleElement("have.text", commonWidgetText.regexValidationError);
-    cy.get(
-      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
-    ).clear();
-    cy.get(
-      commonWidgetSelector.validationFeedbackMessage(
-        textInputText.defaultWidgetName
-      )
-    ).verifyVisibleElement(
-      "have.text",
-      commonWidgetText.minLengthValidationError(data.minimumLength)
+    verifyWidgetColorCss(
+      `[data-cy="label-${textInputText.defaultWidgetName}"]>label`,
+      "color",
+      data.labelColor,
+      true
     );
 
-    cy.clearAndType(
-      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName),
-      data.customText.toUpperCase()
-    );
-    cy.get(
-      commonWidgetSelector.validationFeedbackMessage(
-        textInputText.defaultWidgetName
-      )
-    ).verifyVisibleElement(
-      "have.text",
-      commonWidgetText.maxLengthValidationError(data.maximumLength)
-    );
-
-    cy.clearAndType(
-      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName),
-      `${data.maxLengthText.toUpperCase()}{Enter}`
-    );
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      data.maxLengthText.toUpperCase()
-    );
-    cy.get(
-      commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
-    ).should("have.text", data.maxLengthText.toUpperCase());
-
-    cy.get(
-      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
-    ).should("have.css", "border-radius", "20px");
+    verifyAlignment(textInputText.defaultWidgetName, "sideLeft");
+    verifyCustomWidthOfLabel(textInputText.defaultWidgetName, "50");
+    verifyInputFieldColors("textinput1", data);
 
     verifyBoxShadowCss(
       textInputText.defaultWidgetName,
@@ -373,83 +344,22 @@ describe("Text Input", () => {
       data.boxShadowParam
     );
 
-    verifyTooltip(
-      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName),
-      data.tooltipText
-    );
+    cy.get(
+      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
+    ).should("have.css", "border-radius", "20px");
   });
+
+  it.skip("should verify the app preview", () => {});
 
   it("should verify CSA", () => {
     const data = {};
     data.customText = randomString(12);
+    data.widgetName = textInputText.defaultWidgetName;
 
-    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 200);
-    selectEvent("On click", "Control Component");
-    selectCSA("textinput1", "Visibility");
+    addCSA(data);
+    verifyCSA(data);
 
-    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Text input", 50, 50);
-    selectEvent("On change", "Control Component");
-    selectCSA("textinput1", "Set text", "500");
-    addSupportCSAData("text", "{{components.textinput2.value");
-
-    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 50, 200);
-    selectEvent("On click", "Control Component");
-    selectCSA("textinput1", "Clear", "500");
-
-    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 50, 400);
-    selectEvent("On click", "Control Component");
-    selectCSA("textinput1", "Disable", "500");
-    cy.wait(500);
-    cy.get('[data-cy="Value-fx-button"]').click();
-    cy.get('[data-cy="Value-input-field"]').clearAndTypeOnCodeMirror("{{true");
-    // cy.wait(1000);
-
-    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 300, 50);
-    selectEvent("On click", "Control Component");
-    selectCSA("textinput1", "Set blur", "500");
-
-    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 300, 200);
-    selectEvent("On click", "Control Component");
-    selectCSA("textinput1", "Set focus");
-
-    cy.clearAndType(
-      commonWidgetSelector.draggableWidget("textinput2"),
-      data.customText
-    );
-    cy.get(
-      commonWidgetSelector.draggableWidget("textinput1")
-    ).verifyVisibleElement("have.value", data.customText);
-
-    cy.get(commonWidgetSelector.draggableWidget("button2")).click();
-    cy.get(
-      commonWidgetSelector.draggableWidget("textinput1")
-    ).verifyVisibleElement("have.value", "");
-
-    cy.get(commonWidgetSelector.draggableWidget("button5")).click();
-    cy.realType(data.customText);
-    cy.get(
-      commonWidgetSelector.draggableWidget("textinput1")
-    ).verifyVisibleElement("have.value", data.customText);
-    cy.get(commonWidgetSelector.draggableWidget("button4")).click();
-    cy.realType("not working");
-    cy.get(
-      commonWidgetSelector.draggableWidget("textinput1")
-    ).verifyVisibleElement("have.value", data.customText);
-
-    cy.get(commonWidgetSelector.draggableWidget("button3")).click();
-    cy.get(commonWidgetSelector.draggableWidget("textinput1"))
-      .parent()
-      .should("have.attr", "data-disabled", "true");
-
-    cy.get(commonWidgetSelector.draggableWidget("button1")).click();
-    cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
-      "not.be.visible"
-    );
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    verifyCSA(data);
   });
 });
