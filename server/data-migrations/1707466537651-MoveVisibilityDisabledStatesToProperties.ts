@@ -65,6 +65,9 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651
         if (properties.label == undefined || null) {
           properties.label = "";
         }
+        if (styles.borderRadius == undefined || null) {
+          styles.borderRadius = {value: "{{4}}"};
+        }
       }
   
       // Moving 'minValue' from properties to validation
