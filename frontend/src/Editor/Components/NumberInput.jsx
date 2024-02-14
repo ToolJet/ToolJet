@@ -260,7 +260,7 @@ export const NumberInput = function NumberInput({
       direction === 'right' &&
       defaultAlignment === 'side' &&
       ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-        ? `${labelWidth + 23 + 20}px` // 23 px usual + 20 for number input arrows
+        ? `${labelWidth + 11 + 20}px` // 23 px usual + 20 for number input arrows
         : '31px',
     top: `${
       defaultAlignment === 'top'
@@ -281,7 +281,7 @@ export const NumberInput = function NumberInput({
         <div
           data-cy={`label-${String(component.name).toLowerCase()}`}
           data-disabled={disable || loading}
-          className={`text-input  d-flex  ${
+          className={`text-input tj-number-input-widget  d-flex  ${
             defaultAlignment === 'top' &&
             ((width != 0 && label && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
               ? 'flex-column'
@@ -307,6 +307,7 @@ export const NumberInput = function NumberInput({
             auto={auto}
             isMandatory={isMandatory}
             _width={_width}
+            labelWidth={labelWidth}
           />
           {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
             <IconElement
@@ -320,7 +321,7 @@ export const NumberInput = function NumberInput({
                     : defaultAlignment === 'top'
                     ? '11px'
                     : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
-                    ? `${labelWidth + 23}px`
+                    ? `${labelWidth + 11}px`
                     : '11px', //23 ::  is 10 px inside the input + 1 px border + 12px margin right
                 position: 'absolute',
                 top: `${

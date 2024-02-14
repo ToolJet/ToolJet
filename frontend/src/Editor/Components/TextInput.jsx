@@ -80,7 +80,7 @@ export const TextInput = function TextInput({
       direction === 'right' &&
       defaultAlignment === 'side' &&
       ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-        ? `${labelWidth + 23}px`
+        ? `${labelWidth + 11}px`
         : '11px',
     top: `${
       defaultAlignment === 'top'
@@ -277,7 +277,7 @@ export const TextInput = function TextInput({
                   : defaultAlignment === 'top'
                   ? '11px'
                   : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
-                  ? `${labelWidth + 23}px`
+                  ? `${labelWidth + 11}px`
                   : '11px', //23 ::  is 10 px inside the input + 1 px border + 12px margin right
               position: 'absolute',
               top: `${

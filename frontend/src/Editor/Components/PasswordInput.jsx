@@ -83,7 +83,7 @@ export const PasswordInput = function PasswordInput({
       direction === 'right' &&
       defaultAlignment === 'side' &&
       ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-        ? `${labelWidth + 23}px`
+        ? `${labelWidth + 11}px`
         : '11px',
     top: `${
       defaultAlignment === 'top'
@@ -258,7 +258,8 @@ export const PasswordInput = function PasswordInput({
           auto={auto}
           isMandatory={isMandatory}
           _width={_width}
-        />{' '}
+          labelWidth={labelWidth}
+        />
         {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
           <IconElement
             data-cy={'text-input-icon'}
@@ -271,8 +272,8 @@ export const PasswordInput = function PasswordInput({
                   : defaultAlignment === 'top'
                   ? '11px'
                   : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
-                  ? `${labelWidth + 23}px`
-                  : '11px', //23 ::  is 10 px inside the input + 1 px border + 12px margin right
+                  ? `${labelWidth + 11}px`
+                  : '11px', //11 ::  is 10 px inside the input + 1 px border + 12px margin right
               position: 'absolute',
               top: `${
                 defaultAlignment === 'side'
@@ -301,7 +302,7 @@ export const PasswordInput = function PasswordInput({
                 direction === 'right' &&
                 defaultAlignment === 'side' &&
                 ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-                  ? `${labelWidth + 23}px`
+                  ? `${labelWidth + 11}px`
                   : '11px',
               top: `${
                 defaultAlignment === 'top'
