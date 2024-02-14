@@ -97,6 +97,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
   const handleClick = () => {
     fireEvent('onClick');
   };
+
   const computedStyles = {
     height: `${height}px`,
     backgroundColor: darkMode && ['#edeff5'].includes(backgroundColor) ? '#2f3c4c' : backgroundColor,
@@ -140,7 +141,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
       onClick={handleClick}
     >
       {!isLoading && (
-        <div style={commonStyles}>
+        <div style={commonStyles} className="text-widget-section">
           {textFormat === 'plainText' && <div>{text}</div>}
           {textFormat === 'markdown' && <Markdown className={'reactMarkdown'}>{text}</Markdown>}
           {(textFormat === 'html' || !textFormat) && (

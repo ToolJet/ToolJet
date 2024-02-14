@@ -3107,7 +3107,7 @@ export const widgets = [
       },
       properties: {
         textFormat: { value: 'html' },
-        text: { value: 'Hello World👋' },
+        text: { value: `Hello {{globals.currentUser.firstName}}👋` },
         loadingState: { value: `{{false}}` },
         disabledState: { value: '{{false}}' },
         visibility: { value: '{{true}}' },
@@ -3127,7 +3127,7 @@ export const widgets = [
         letterSpacing: { value: 0 },
         wordSpacing: { value: 0 },
         fontVariant: { value: 'normal' },
-        verticalAlignment: { value: 'top' },
+        verticalAlignment: { value: 'center' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
         borderColor: { value: '' },
