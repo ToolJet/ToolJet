@@ -378,7 +378,7 @@ export const NumberInput = function NumberInput({
                       labelWidth == 0
                         ? '1px'
                         : alignment == 'side' && direction === 'right'
-                        ? `${labelWidth + 13}px`
+                        ? `${labelWidth + 1}px`
                         : '1px',
                     borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
                     borderBottom: darkMode ? '.5px solid #313538' : '0.5px solid #D7D7D7',
@@ -398,7 +398,7 @@ export const NumberInput = function NumberInput({
                       labelWidth == 0
                         ? '1px'
                         : alignment == 'side' && direction === 'right'
-                        ? `${labelWidth + 13}px`
+                        ? `${labelWidth + 1}px`
                         : '1px',
                     bottom: '1px',
                     borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
