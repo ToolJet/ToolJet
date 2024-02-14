@@ -98,6 +98,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
   const handleClick = () => {
     fireEvent('onClick');
   };
+
   const computedStyles = {
     height: `${height}px`,
     backgroundColor: darkMode && ['#edeff5'].includes(backgroundColor) ? '#2f3c4c' : backgroundColor,
@@ -127,6 +128,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     flexDirection: 'column',
     justifyContent: VERTICAL_ALIGNMENT_VS_CSS_VALUE[verticalAlignment],
     textAlign,
+    overflowX: isScrollRequired === 'disabled' && 'hidden',
   };
 
   return (
@@ -141,7 +143,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
       onClick={handleClick}
     >
       {!isLoading && (
-        <div style={commonStyles}>
+        <div style={commonStyles} className="text-widget-section">
           {textFormat === 'plainText' && <div>{text}</div>}
           {textFormat === 'markdown' && <Markdown className={'reactMarkdown'}>{text}</Markdown>}
           {(textFormat === 'html' || !textFormat) && (
@@ -156,7 +158,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
       {isLoading === true && (
         <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <center>
-            <Loader width="16" />
+            <Loader width="16" absolute={false} />
           </center>
         </div>
       )}

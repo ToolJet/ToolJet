@@ -3125,7 +3125,7 @@ export const widgets = [
       },
       properties: {
         textFormat: { value: 'html' },
-        text: { value: 'Hello World👋' },
+        text: { value: `Hello {{globals?.currentUser?.firstName}}👋` },
         loadingState: { value: `{{false}}` },
         disabledState: { value: '{{false}}' },
         visibility: { value: '{{true}}' },
