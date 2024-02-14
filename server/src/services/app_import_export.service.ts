@@ -732,7 +732,7 @@ export class AppImportExportService {
             parentId = newComponentIdsMap[parentId];
           }
           if (!skipComponent) {
-            const { properties, styles, general } = migrateProperties(
+            const { properties, styles, general, validation, generalStyles } = migrateProperties(
               component.type as NewRevampedComponent,
               component,
               NewRevampedComponents
@@ -742,10 +742,10 @@ export class AppImportExportService {
             newComponent.type = component.type;
             newComponent.properties = properties;
             newComponent.styles = styles;
-            newComponent.generalStyles = component.generalStyles;
+            newComponent.generalStyles = generalStyles;
             newComponent.general = general;
             newComponent.displayPreferences = component.displayPreferences;
-            newComponent.validation = component.validation;
+            newComponent.validation = validation;
             newComponent.parent = component.parent ? parentId : null;
 
             newComponent.page = pageCreated;
@@ -1677,6 +1677,7 @@ function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
 
 /**
  * Migrates styles to properties of the component based on the specified component types.
+ * @param {NewRevampedComponent} componentType - Component type for which to perform property migration.
  * @param {Component} component - The component object containing properties, styles, and general information.
  * @param {NewRevampedComponent[]} componentTypes - An array of component types for which to perform property migration.
  * @returns {object} An object containing the modified properties, styles, and general information.
@@ -1689,6 +1690,8 @@ function migrateProperties(
   const properties = { ...component.properties };
   const styles = { ...component.styles };
   const general = { ...component.general };
+  const validation = { ...component.validation };
+  const generalStyles = { ...component.generalStyles };
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
     if (styles.visibility) {
@@ -1706,11 +1709,28 @@ function migrateProperties(
       delete general?.tooltip;
     }
 
+    if (generalStyles?.boxShadow) {
+      styles.boxShadow = generalStyles?.boxShadow;
+      delete generalStyles?.boxShadow;
+    }
+
     if (componentType === 'TextInput' || componentType === 'PasswordInput' || componentType === 'NumberInput') {
       properties.label = '';
     }
+
+    if (componentType === 'NumberInput') {
+      if (properties.minValue) {
+        validation.minValue = properties?.minValue;
+        delete properties.minValue;
+      }
+
+      if (properties.maxValue) {
+        validation.maxValue = properties?.maxValue;
+        delete properties.maxValue;
+      }
+    }
   }
-  return { properties, styles, general };
+  return { properties, styles, general, generalStyles, validation };
 }
 
 function transformComponentData(
@@ -1763,7 +1783,7 @@ function transformComponentData(
     }
 
     if (!skipComponent) {
-      const { properties, styles, general } = migrateProperties(
+      const { properties, styles, general, validation, generalStyles } = migrateProperties(
         componentData.component,
         componentData.definition,
         NewRevampedComponents
@@ -1773,9 +1793,9 @@ function transformComponentData(
       transformedComponent.type = componentData.component;
       transformedComponent.properties = properties || {};
       transformedComponent.styles = styles || {};
-      transformedComponent.validation = componentData.definition.validation || {};
+      transformedComponent.validation = validation || {};
       transformedComponent.general = general || {};
-      transformedComponent.generalStyles = componentData.definition.generalStyles || {};
+      transformedComponent.generalStyles = generalStyles || {};
       transformedComponent.displayPreferences = componentData.definition.others || {};
       transformedComponent.parent = component.parent ? parentId : null;
 
