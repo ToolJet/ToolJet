@@ -71,12 +71,6 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651
           properties.value = "";
         }
       }
- 
-      if(component.type == "Text" ){
-        if (styles.verticalAlignment  == undefined || null) {
-          styles?.verticalAlignment ={value:'center'};
-        }
-      }
   
       // Moving 'minValue' from properties to validation
       if (component.type == "NumberInput") {
