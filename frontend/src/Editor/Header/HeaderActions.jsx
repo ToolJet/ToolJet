@@ -1,19 +1,49 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import cx from 'classnames';
 import { Tooltip } from 'react-tooltip';
 import { useEditorStore } from '@/_stores/editorStore';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { currentLayout, toggleCurrentLayout } = useEditorStore(
+  const currentState = useCurrentState();
+  const { currentLayout, toggleCurrentLayout, appDefinition, currentPageId } = useEditorStore(
     (state) => ({
       currentLayout: state.currentLayout,
       toggleCurrentLayout: state.actions.toggleCurrentLayout,
+      appDefinition: state.appDefinition,
+      currentPageId: state.currentPageId,
     }),
     shallow
   );
+  const components = useMemo(
+    () => appDefinition.pages[currentPageId]?.components ?? {},
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(appDefinition), currentPageId]
+  );
+  useEffect(() => {
+    Object.keys(components).map((key) => {
+      const box = components[key];
+      const syncValues = {
+        position: resolveWidgetFieldValue(box?.component.definition.others.positionSync, currentState)?.value,
+        size: resolveWidgetFieldValue(box?.component.definition.others.dimensionSync, currentState)?.value,
+      };
+      if (syncValues.position || syncValues.size) {
+        const oldLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
+        if (syncValues.position) {
+          box.layouts[currentLayout].top = box.layouts[oldLayout].top;
+          box.layouts[currentLayout].left = box.layouts[oldLayout].left;
+        }
+        if (syncValues.size) {
+          box.layouts[currentLayout].width = box.layouts[oldLayout].width;
+          box.layouts[currentLayout].height = box.layouts[oldLayout].height;
+        }
+      }
+    });
+  }, [currentLayout]);
   return (
     <div className="editor-header-actions">
       <div style={{ borderRadius: 6 }}>

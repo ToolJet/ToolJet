@@ -696,7 +696,9 @@
             "setColor": "Set color",
             "structure": "Structure",
             "checkedValues": "Checked values",
-            "expandedValues": "Expanded values"
+            "expandedValues": "Expanded values",
+            "positionSync": "Position sync",
+            "dimensionSync": "Dimension sync"
         },
         "Table": {
             "displayName": "Table",
