@@ -73,7 +73,7 @@ export const PasswordInput = function PasswordInput({
     backgroundColor: darkMode && ['#fff', '#ffffff'].includes(backgroundColor) ? '#313538' : backgroundColor,
     boxShadow: boxShadow,
     padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
-    flex: padding !== 'none' && 1,
+    // flex: padding !== 'none' && 1,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   };
