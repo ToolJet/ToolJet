@@ -81,9 +81,9 @@ export const ValidationProperties = ({
 
   return (
     <div className="optional-properties-when-editable-true">
-      <div data-cy={`header-validation`} className="validation-text tj-text tj-text-xsm font-weight-500">
+      {/* <div data-cy={`header-validation`} className="validation-text tj-text tj-text-xsm font-weight-500">
         {t('widget.Table.validation', 'Validation')}
-      </div>
+      </div> */}
       <div className="d-flex flex-column custom-gap-8">
         {validationsList.map((validation) => {
           if (Array.isArray(validation)) {

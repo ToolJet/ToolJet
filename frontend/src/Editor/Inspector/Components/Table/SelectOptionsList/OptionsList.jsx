@@ -195,7 +195,7 @@ export const OptionsList = ({
   items.push({
     title: 'Options',
     children: (
-      <div>
+      <div className="d-flex custom-gap-7 flex-column">
         <ProgramaticallyHandleProperties
           label="Dynamic option"
           currentState={currentState}

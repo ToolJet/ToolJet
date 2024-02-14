@@ -58,7 +58,7 @@ export const ProgramaticallyHandleProperties = ({
 
   const options = {};
   return (
-    <div className={`mb-2 field ${options.className}`} onClick={(e) => e.stopPropagation()}>
+    <div className={`field ${options.className}`} onClick={(e) => e.stopPropagation()}>
       <CodeHinter
         enablePreview={true}
         initialValue={initialValue}

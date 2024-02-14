@@ -271,59 +271,68 @@ export const PropertiesTabElements = ({
         </div>
       )}
       {column.columnType === 'number' && (
-        <CodeHinter
-          currentState={currentState}
-          initialValue={column?.decimalPlaces}
-          theme={darkMode ? 'monokai' : 'default'}
-          mode="javascript"
-          lineNumbers={false}
-          placeholder={'{{2}}'}
-          onChange={(value) => onColumnItemChange(index, 'decimalPlaces', value)}
-          componentName={getPopoverFieldSource(column.columnType, 'decimalPlaces')}
-          popOverCallback={(showing) => {
-            console.log('arpit ::', { showing });
-            setColumnPopoverRootCloseBlocker('decimalPlaces', showing);
-          }}
-        />
+        <div className="field mb-2">
+          <label className="form-label">{t('widget.Table.decimalPlaces', 'Decimal Places')}</label>
+          <CodeHinter
+            currentState={currentState}
+            initialValue={column?.decimalPlaces}
+            theme={darkMode ? 'monokai' : 'default'}
+            mode="javascript"
+            lineNumbers={false}
+            placeholder={'{{2}}'}
+            onChange={(value) => onColumnItemChange(index, 'decimalPlaces', value)}
+            componentName={getPopoverFieldSource(column.columnType, 'decimalPlaces')}
+            popOverCallback={(showing) => {
+              setColumnPopoverRootCloseBlocker('decimalPlaces', showing);
+            }}
+          />
+        </div>
       )}
       {!['image', 'link'].includes(column.columnType) && (
-        <ProgramaticallyHandleProperties
-          label="make editable"
-          currentState={currentState}
-          index={index}
-          darkMode={darkMode}
-          callbackFunction={onColumnItemChange}
-          property="isEditable"
-          props={column}
-          component={component}
-          paramMeta={{ type: 'toggle', displayName: 'Make editable' }}
-          paramType="properties"
-        />
+        <div className="border" style={{ borderRadius: '6px', overflow: 'hidden' }}>
+          <div style={{ background: 'var(--slate3)', padding: '6px' }}>
+            <ProgramaticallyHandleProperties
+              label="make editable"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="isEditable"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'toggle', displayName: 'Make editable' }}
+              paramType="properties"
+            />
+          </div>
+          {resolveReferences(column?.isEditable, currentState) && (
+            <ValidationProperties
+              column={column}
+              index={index}
+              darkMode={darkMode}
+              currentState={currentState}
+              onColumnItemChange={onColumnItemChange}
+              getPopoverFieldSource={getPopoverFieldSource}
+              setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
+            />
+          )}
+        </div>
       )}
-      {resolveReferences(column?.isEditable, currentState) && (
-        <ValidationProperties
-          column={column}
-          index={index}
-          darkMode={darkMode}
-          currentState={currentState}
-          onColumnItemChange={onColumnItemChange}
-          getPopoverFieldSource={getPopoverFieldSource}
-          setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
-        />
-      )}
-
-      <ProgramaticallyHandleProperties
-        label="Column visibility"
-        currentState={currentState}
-        index={index}
-        darkMode={darkMode}
-        callbackFunction={onColumnItemChange}
-        property="columnVisibility"
-        props={column}
-        component={component}
-        paramMeta={{ type: 'toggle', displayName: 'Column visibility' }}
-        paramType="properties"
-      />
+      <div className="border" style={{ borderRadius: '6px', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--slate3)', padding: '6px' }}>
+          <ProgramaticallyHandleProperties
+            label="Column visibility"
+            currentState={currentState}
+            index={index}
+            darkMode={darkMode}
+            callbackFunction={onColumnItemChange}
+            property="columnVisibility"
+            props={column}
+            component={component}
+            paramMeta={{ type: 'toggle', displayName: 'Column visibility' }}
+            paramType="properties"
+          />
+        </div>
+      </div>
     </>
   );
 };
