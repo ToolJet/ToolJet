@@ -127,6 +127,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     flexDirection: 'column',
     justifyContent: VERTICAL_ALIGNMENT_VS_CSS_VALUE[verticalAlignment],
     textAlign,
+    overflowX: isScrollRequired === 'disabled' && 'hidden',
   };
 
   return (
