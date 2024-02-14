@@ -3,7 +3,7 @@
 .sso-configuration {
     display: flex;
     flex-direction: column;
-    margin-left: 5px; /* Adjust the margin as needed */
+    margin-left: 5px;
   }
   
   .sso-header {
@@ -20,35 +20,34 @@
     padding-top: 6px;
     padding-bottom: 6px;
     margin-bottom: 10px;
-    background-color: #f9f9f9; /* Light grey background */
-    border: 1px solid #e1e1e1; /* Grey border */
+    background-color: #f9f9f9;
+    border: 1px solid #e1e1e1;
     border-radius: 8px;
-    transition: background-color 0.1s; /* Smooth transition for hover effect */
+    transition: background-color 0.1s;
   }
 
   .sso-option:hover {
-    background-color: #eee; /* Dark grey background on hover */
+    background-color: #eee;
   }
 
   .sso-option:active {
-    background-color: #ddd; /* Darker grey when clicked or when dropdown is opened */
+    background-color: #ddd;
 }
 
   .sso-option.clicked,
 .sso-option.clicked:hover {
-    background-color: #ddd; /* Darker grey when clicked or when dropdown is opened */
+    background-color: #ddd;
 }
   
   .sso-option-label {
     font-weight: 400;
   }
   
-  /* Toggle switch styles */
   .switch {
     position: relative;
     display: inline-block;
-    width: 30px; /* Reduced width */
-    height: 17px; /* Reduced height */
+    width: 30px;
+    height: 17px;
   }
   
   .switch input {
@@ -66,19 +65,19 @@
     bottom: 0;
     background-color: #ccc;
     transition: .4s;
-    border-radius: 17px; /* Make it round */
+    border-radius: 17px;
   }
   
   .slider:before {
     position: absolute;
     content: "";
-    height: 13px; /* Reduced height */
-    width: 13px; /* Reduced width */
-    left: 2px; /* Adjusted for new size */
-    bottom: 2px; /* Adjusted for new size */
+    height: 13px;
+    width: 13px;
+    left: 2px;
+    bottom: 2px;
     background-color: white;
     transition: .4s;
-    border-radius: 50%; /* Make it round */
+    border-radius: 50%;
   }
   
   input:checked + .slider {
@@ -90,10 +89,9 @@
   }
   
   input:checked + .slider:before {
-    transform: translateX(13px); /* Adjusted for new size */
+    transform: translateX(13px);
   }
   
-  /* Rounded sliders */
   .slider.round {
     border-radius: 17px;
   }
@@ -103,46 +101,41 @@
   }
 
   .sso-note {
-    font-size: 0.75rem; /* Smaller font size for the note */
-    color: #6c757d; /* A standard color for notes or help text */
-    margin-top: 5px; /* Space between the toggle and the note */
-    margin-left: 5px; /* Align with the toggle if needed */
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 5px;
+    margin-left: 5px;
   }
   
-  /* Style for the custom dropdown toggle */
 .dropdown-toggle-no-caret {
     background: none!important;
     border: none!important;
     box-shadow: none!important;
   }
   
-  /* Ensure the dropdown toggle doesn't have the default arrow */
   .dropdown-toggle-no-caret::after {
     display: none;
   }
   
-  /* Style for the dropdown menu */
   .dropdown-menu {
     border-radius: 0.25rem;
-    border: 1px solid #ced4da; /* Light grey border */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Adds a slight shadow to dropdown for depth */
+    border: 1px solid #ced4da;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
-  /* Style for dropdown items */
   .dropdown-item {
-    padding: 0.5rem 1rem; /* Adjust padding */
-    color: #212529; /* Default text color */
+    padding: 0.5rem 1rem;
+    color: #212529;
   }
   
   .dropdown-item:hover, .dropdown-item:focus {
-    background-color: #f8f9fa; /* Light grey background on hover/focus */
-    color: #212529; /* Text color for hover/focus state */
+    background-color: #f8f9fa;
+    color: #212529;
   }
   
-  /* Custom icon styles */
   .solid-icon {
-    color: darkgrey; /* Change as per the color you want */
-    cursor: pointer; /* Change cursor on hover over the icon */
+    color: darkgrey;
+    cursor: pointer;
   }
 
   .dropdown-item.disabled {
