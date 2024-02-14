@@ -65,10 +65,8 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651
         if (properties.label == undefined || null) {
           properties.label = "";
         }
-      }
-      if (component.type !== "Text" || component !== "NumberInput") {
-        if (properties.value == undefined || null) {
-          properties.value = "";
+        if (styles.borderRadius == undefined || null) {
+          styles.borderRadius = {value: "{{4}}"};
         }
       }
   
