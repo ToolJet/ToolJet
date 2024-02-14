@@ -112,15 +112,6 @@ class ViewerComponent extends React.Component {
       };
     }
 
-    let mobileLayoutHasWidgets = false;
-    const currentComponents = appDefData?.pages?.[appDefData?.homePageId]?.components;
-
-    if (this.props.currentLayout === 'mobile' && currentComponents) {
-      mobileLayoutHasWidgets =
-        Object.keys(currentComponents).filter((componentId) => currentComponents[componentId]['layouts']['mobile'])
-          .length > 0;
-    }
-
     let queryState = {};
     let dataQueries = [];
 
@@ -191,6 +182,7 @@ class ViewerComponent extends React.Component {
       ...variables,
       ...constants,
     });
+    useEditorStore.getState().actions.toggleCurrentLayout(this.props?.currentLayout == 'mobile' ? 'mobile' : 'desktop');
     this.props.updateState({ events: data.events ?? [] });
     this.setState(
       {
@@ -199,7 +191,7 @@ class ViewerComponent extends React.Component {
         canvasWidth:
           this.props.currentLayout === 'desktop'
             ? '100%'
-            : mobileLayoutHasWidgets
+            : this.props?.currentLayout === 'mobile'
             ? `${this.state.deviceWindowWidth}px`
             : '1292px',
         selectedComponent: null,
@@ -525,10 +517,22 @@ class ViewerComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
+    const navigationParams = {
+      env: defaultParams.env,
+      version: defaultParams.version,
+    };
+
+    //! For basic plan, env is undefined so we need to remove it from the url
+    const navigationParamsString = navigationParams.env
+      ? `env=${navigationParams.env}`
+      : '' + navigationParams.version
+      ? `version=${navigationParams.version}`
+      : '';
+
     this.props.navigate(
-      `/applications/${this.state.slug}/${handle}?${
-        !_.isEmpty(defaultParams) ? `version=${defaultParams.version}` : ''
-      }${queryParamsString ? `${!_.isEmpty(defaultParams) ? '&' : ''}${queryParamsString}` : ''}`,
+      `/applications/${this.state.slug}/${handle}?${!_.isEmpty(defaultParams) ? navigationParamsString : ''}${
+        queryParamsString ? `${!_.isEmpty(defaultParams) ? '&' : ''}${queryParamsString}` : ''
+      }`,
       {
         state: {
           isSwitchingPage: true,
