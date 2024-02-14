@@ -126,12 +126,12 @@ When the **Create New Table** button is clicked, a drawer opens up from the righ
 
 | Data type | Description | Example |
 |:--------- |:----------- |:------- |
-| **serial**    | serial is used to generate a sequence of integers which are often used as the Primary key of a table. Whenever a new table is created in the ToolJet database, a column **id** with the serial data type is automatically created as the **primary key** of the table. | Numbers starting from 1, 2, 3, 4, 5, etc. |
-| **varchar**   | varchar data type is used to store characters of indefinite length | Any string value |
-| **int**       | It is a numeric data type used to store whole numbers, that is, numbers without fractional components. | Numbers ranging from -2147483648 to 2147483647 |
-| **bigint**    | bigint is a numeric data type that is used to store whole numbers, that is, numbers without fractional components. | Numbers ranging from -9223372036854775808 to 9223372036854775807 |
-| **float**     | float is also a numeric data type that is used to store inexact, variable-precision values. | Any floating-point number, ex: 3.14 |
-| **boolean**   | boolean data type can hold true, false, and null values. | `true` or `false` |
+| **serial**    | **serial** is used to generate a sequence of integers which are often used as the Primary key of a table. Whenever a new table is created in the ToolJet database, a column **id** with the serial data type is automatically created as the **primary key** of the table. | Numbers starting from 1, 2, 3, 4, 5, etc. |
+| **varchar**   | **varchar** data type is used to store characters of indefinite length | Any string value |
+| **int**       | **Int** is a numeric data type used to store whole numbers, that is, numbers without fractional components. | Numbers ranging from -2147483648 to 2147483647 |
+| **bigint**    | **bigint** is a numeric data type that is used to store whole numbers, that is, numbers without fractional components. | Numbers ranging from -9223372036854775808 to 9223372036854775807 |
+| **float**     | **float** is also a numeric data type that is used to store inexact, variable-precision values. | Any floating-point number, ex: 3.14 |
+| **boolean**   | **boolean** data type can hold true, false, and null values. | `true` or `false` |
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/datatypes.png" alt="ToolJet database" />
