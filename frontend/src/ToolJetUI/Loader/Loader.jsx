@@ -1,11 +1,10 @@
 import React from 'react';
-import './Loader.scss'; // Import a CSS file for styling
 
-const Loader = ({ width, style }) => {
+const Loader = ({ width, style, absolute = true }) => {
   const viewBoxSize = 240; // Increase the viewBox size as needed
 
   return (
-    <div className="tj-widget-loader" style={style}>
+    <div className="tj-widget-loader d-flex" style={{ ...style, position: absolute ? 'absolute' : 'relative' }}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width={width}
