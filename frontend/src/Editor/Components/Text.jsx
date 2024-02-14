@@ -156,7 +156,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
       {isLoading === true && (
         <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <center>
-            <Loader width="16" />
+            <Loader width="16" absolute={false} />
           </center>
         </div>
       )}
