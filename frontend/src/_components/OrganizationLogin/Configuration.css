@@ -1,6 +1,6 @@
 /* SSOConfiguration.css */
 
-.sso-configuration {
+  .sso-configuration {
     display: flex;
     flex-direction: column;
     margin-left: 5px;
@@ -35,12 +35,25 @@
 }
 
   .sso-option.clicked,
-.sso-option.clicked:hover {
+  .sso-option.clicked:hover {
     background-color: #ddd;
 }
   
   .sso-option-label {
     font-weight: 400;
+  }
+
+  .option-icon {
+    visibility: hidden;
+  }
+  
+  /* Show the icon on hover */
+  .sso-option:hover .option-icon {
+    visibility: visible;
+  }
+
+  .sso-option:active .option-icon {
+    visibility: visible;
   }
   
   .switch {
@@ -107,7 +120,7 @@
     margin-left: 5px;
   }
   
-.dropdown-toggle-no-caret {
+  .dropdown-toggle-no-caret {
     background: none!important;
     border: none!important;
     box-shadow: none!important;
@@ -121,6 +134,7 @@
     border-radius: 0.25rem;
     border: 1px solid #ced4da;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 270px !important;
   }
   
   .dropdown-item {
@@ -134,11 +148,11 @@
   }
   
   .solid-icon {
-    color: darkgrey;
+    color: #6c757d;
     cursor: pointer;
   }
 
   .dropdown-item.disabled {
-    color: darkgrey;
+    color: #6c757d !important;
     cursor: not-allowed;
   }

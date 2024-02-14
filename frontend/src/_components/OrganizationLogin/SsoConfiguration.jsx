@@ -9,10 +9,10 @@ import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Color } from '@/Editor/CodeBuilder/Elements/Color';
 
 class SSOConfiguration extends React.Component {
   constructor(props) {
-    console.log(props, 'props');
     super(props);
     this.state = {
       initialState: {},
@@ -21,6 +21,7 @@ class SSOConfiguration extends React.Component {
       ssoOptions: this.props.ssoOptions,
       defaultSSO: this.props.ssoOptions,
       showDropdown: false,
+      enabledWorkspaceSSO: 0,
     };
   }
 
@@ -28,33 +29,17 @@ class SSOConfiguration extends React.Component {
     console.log(`Selected ${eventKey}`);
   };
 
-  CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
-    <span
-      ref={ref}
-      onClick={(e) => {
-        e.preventDefault();
-        onClick(e);
-      }}
-      style={{ cursor: 'pointer' }}
-    >
-      {children}
-    </span>
-  ));
-
   setShowDropdown = (show) => {
     this.setState({ showDropdown: show });
   };
 
   initializeOptionStates = (ssoOptions) => {
-    console.log(ssoOptions, 'kya');
     const initialState = ssoOptions.reduce((acc, option) => {
-      console.log(acc, option, 'kuch');
       return {
         ...acc,
         [`${option.sso}Enabled`]: option.enabled,
       };
     }, {});
-    console.log('Initialized state:', initialState);
     return initialState;
   };
 
@@ -62,14 +47,20 @@ class SSOConfiguration extends React.Component {
     const initialState = this.initializeOptionStates(this.props.ssoOptions);
     this.setState({ ...initialState });
     this.setState({ ssoOptions: this.props.ssoOptions });
-    this.setState({ ssoOptions: this.props.ssoOptions });
   }
 
   componentDidUpdate(prevProps) {
+    // Check if ssoOptions have changed
     if (prevProps.ssoOptions !== this.props.ssoOptions) {
       const initialState = this.initializeOptionStates(this.props.ssoOptions);
-      this.setState({ ...initialState });
-      this.setState({ ssoOptions: this.props.ssoOptions });
+      const enabledSSOCount = this.getCountOfEnabledSSO();
+
+      // Update state in a single call
+      this.setState({
+        ...initialState,
+        ssoOptions: this.props.ssoOptions,
+        enabledWorkspaceSSO: enabledSSOCount,
+      });
     }
   }
 
@@ -98,12 +89,13 @@ class SSOConfiguration extends React.Component {
           }
           return option;
         });
-        console.log(updatedSSOOptions, 'update');
+        const enabledSSOCount = updatedSSOOptions.filter((option) => option.enabled && option.sso !== 'form').length;
         return {
           ssoOptions: updatedSSOOptions,
-          showModal: true,
+          showModal: enabledStatus,
           currentSSO: key,
           [isEnabledKey]: enabledStatus,
+          enabledWorkspaceSSO: enabledSSOCount,
         };
       });
     } catch (error) {
@@ -132,12 +124,16 @@ class SSOConfiguration extends React.Component {
   };
 
   isOptionEnabled = (key) => {
-    const option = this.props.ssoOptions.find((option) => option.key === key);
+    const option = this.state.ssoOptions.find((option) => option.sso === key);
     return option ? option.enabled : false;
   };
 
+  getCountOfEnabledSSO = () => {
+    const enabledOptions = this.props.ssoOptions.filter((option) => option.enabled && option.sso !== 'form');
+    return enabledOptions.length;
+  };
+
   getSSOIcon = (key) => {
-    console.log(key, 'see');
     const iconStyles = { width: '20px', height: '20x' }; // Set your desired icon size
     switch (key) {
       case 'google':
@@ -173,16 +169,14 @@ class SSOConfiguration extends React.Component {
 
   render() {
     const { showModal, currentSSO, defaultSSO, initialState, ssoOptions, showDropdown } = this.state;
-    console.log(ssoOptions, 'here');
-    console.log(this.props.ssoOptions, initialState, 'see 1');
 
     return (
       <div className="sso-configuration">
         <h4>SSO</h4>
-        <div className={`sso-option ${showDropdown ? 'clicked' : ''}`}>
-          <div className="sso-option-label" onClick={() => this.setShowDropdown()}>
-            Default SSO {defaultSSO ? '(2)' : ''}
-          </div>
+        <div
+          className={`sso-option ${showDropdown ? 'clicked' : ''}`}
+          style={{ paddingLeft: '0px', marginBottom: '1px' }}
+        >
           <Dropdown onToggle={() => this.setShowDropdown(!showDropdown)}>
             <Dropdown.Toggle
               variant="transparent"
@@ -195,18 +189,31 @@ class SSOConfiguration extends React.Component {
                 padding: 0,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
               }}
               bsPrefix="no-caret-dropdown-toggle"
             >
-              <SolidIcon name="cheverondown" style={{ cursor: 'pointer' }} />
+              <div
+                className="sso-option-label"
+                style={{
+                  paddingLeft: '12px',
+                  width: '270px',
+                  paddingRight: '220px',
+                  paddingTop: '6px',
+                  paddingBottom: '6px',
+                  height: '34px',
+                }}
+              >
+                Default SSO {defaultSSO ? `(${2 - this.state.enabledWorkspaceSSO})` : ''}
+                <SolidIcon className="option-icon" name={showDropdown ? 'cheveronup' : 'cheverondown'} fill={'grey'} />
+              </div>
             </Dropdown.Toggle>
 
             <Dropdown.Menu style={{ width: '100%' }}>
               <Dropdown.Item
                 eventKey="Google"
                 onSelect={this.handleSelect}
-                disabled={!this.state.defaultSSO} // Disable the item if defaultSSO is false
+                disabled={!(defaultSSO && !this.isOptionEnabled('google'))} // Disable the item if defaultSSO is false
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {this.getSSOIcon('google')}
@@ -216,7 +223,7 @@ class SSOConfiguration extends React.Component {
               <Dropdown.Item
                 eventKey="GitHub"
                 onSelect={this.handleSelect}
-                disabled={!defaultSSO} // Disable the item if defaultSSO is false
+                disabled={!(defaultSSO && !this.isOptionEnabled('git'))} // Disable the item if defaultSSO is false
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {this.getSSOIcon('git')}
