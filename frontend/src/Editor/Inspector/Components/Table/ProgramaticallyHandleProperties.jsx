@@ -28,6 +28,10 @@ export const ProgramaticallyHandleProperties = ({
         return props?.useDynamicOptions;
       case 'makeDefaultOption':
         return props?.[index]?.makeDefaultOption;
+      case 'textColor':
+        return props?.textColorl;
+      case 'cellBackgroundColor':
+        return props?.cellBackgroundColor;
       default:
         return;
     }
@@ -39,6 +43,12 @@ export const ProgramaticallyHandleProperties = ({
     }
     if (property === 'linkTarget') {
       return definitionObj?.value ?? '_blank';
+    }
+    if (property === 'cellBackgroundColor') {
+      return definitionObj?.value ?? '';
+    }
+    if (property === 'textColor') {
+      return definitionObj?.value ?? '#11181C';
     }
     return definitionObj?.value ?? `{{false}}`;
   };
