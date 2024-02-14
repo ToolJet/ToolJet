@@ -25,12 +25,27 @@ function Label({ label, width, labelRef, darkMode, color, defaultAlignment, dire
               display: 'block',
               margin: '0px',
               paddingRight:
-                (label?.length > 0 && defaultAlignment === 'side') || defaultAlignment === 'top' ? '12px' : '',
+                direction == 'right'
+                  ? '6px'
+                  : (label?.length > 0 && defaultAlignment === 'side') || defaultAlignment === 'top'
+                  ? '12px'
+                  : '',
               paddingLeft: label?.length > 0 && defaultAlignment === 'side' && direction != 'left' ? '12px' : '',
             }}
           >
             {label}
-            {isMandatory && <span style={{ color: '#DB4324', position: 'absolute', right: '4px', top: '0px' }}>*</span>}
+            {isMandatory && (
+              <span
+                style={{
+                  color: '#DB4324',
+                  position: 'absolute',
+                  right: direction == 'right' ? '0px' : '4px',
+                  top: '0px',
+                }}
+              >
+                *
+              </span>
+            )}
           </p>
         </label>
       )}
