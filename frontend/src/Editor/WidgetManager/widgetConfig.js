@@ -1563,10 +1563,15 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
-
       borderColor: {
         type: 'color',
         displayName: 'Border',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      accentColor: {
+        type: 'color',
+        displayName: 'Accent',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -1598,7 +1603,7 @@ export const widgets = [
         showLabel: false,
       },
       borderRadius: {
-        type: 'input',
+        type: 'numberInput',
         displayName: 'Border radius',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'field',
@@ -1685,7 +1690,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        value: { value: 'Hello World👋' },
+        value: { value: '' },
         label: { value: 'Label' },
         placeholder: { value: 'Enter your input' },
         visibility: { value: '{{true}}' },
@@ -1696,7 +1701,8 @@ export const widgets = [
       events: [],
       styles: {
         textColor: { value: '#11181C' },
-        borderColor: { value: '#D7DBDF' },
+        borderColor: { value: '#6A727C47' },
+        accentColor: { value: '#4368E3' },
         errTextColor: { value: '#DB4324' },
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
@@ -1841,10 +1847,15 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
-
       borderColor: {
         type: 'color',
         displayName: 'Border',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      accentColor: {
+        type: 'color',
+        displayName: 'Accent',
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
@@ -1876,7 +1887,7 @@ export const widgets = [
         showLabel: false,
       },
       borderRadius: {
-        type: 'input',
+        type: 'numberInput',
         displayName: 'Border radius',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'field',
@@ -1963,7 +1974,7 @@ export const widgets = [
         customRule: { value: null },
       },
       properties: {
-        value: { value: '99' },
+        value: { value: '' },
         label: { value: 'Label' },
         maxValue: { value: '' },
         minValue: { value: '' },
@@ -1978,7 +1989,8 @@ export const widgets = [
       styles: {
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
-        borderColor: { value: '#D7DBDF' },
+        borderColor: { value: '#6A727C47' },
+        accentColor: { value: '#4368E3' },
         errTextColor: { value: '#DB4324' },
         textColor: { value: '#232e3c' },
         iconColor: { value: '#C1C8CD' },
@@ -2132,7 +2144,12 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
-
+      accentColor: {
+        type: 'color',
+        displayName: 'Accent',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
       borderColor: {
         type: 'color',
         displayName: 'Border',
@@ -2167,7 +2184,7 @@ export const widgets = [
         showLabel: false,
       },
       borderRadius: {
-        type: 'input',
+        type: 'numberInput',
         displayName: 'Border radius',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'field',
@@ -2243,7 +2260,7 @@ export const widgets = [
         loadingState: { value: '{{false}}' },
         tooltip: { value: '' },
         label: { value: 'Label' },
-        value: { value: 'Hello world' },
+        value: { value: '' },
       },
       validation: {
         mandatory: { value: false },
@@ -2256,7 +2273,8 @@ export const widgets = [
       styles: {
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
-        borderColor: { value: '#D7DBDF' },
+        borderColor: { value: '#6A727C47' },
+        accentColor: { value: '#4368E3' },
         errTextColor: { value: '#DB4324' },
         textColor: { value: '#11181C' },
         iconColor: { value: '#C1C8CD' },
@@ -3127,7 +3145,7 @@ export const widgets = [
         letterSpacing: { value: 0 },
         wordSpacing: { value: 0 },
         fontVariant: { value: 'normal' },
-        verticalAlignment: { value: 'top' },
+        verticalAlignment: { value: 'center' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
         borderColor: { value: '' },

@@ -11,6 +11,8 @@ const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'NumberInput', 'PasswordIn
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
   TextInput: 'Data',
+  PasswordInput: 'Data',
+  NumberInput: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
