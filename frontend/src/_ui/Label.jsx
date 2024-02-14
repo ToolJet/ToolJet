@@ -9,8 +9,6 @@ function Label({ label, width, labelRef, darkMode, color, defaultAlignment, dire
             color: darkMode && color === '#11181C' ? '#fff' : color,
             width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${_width}%` : '100%',
             maxWidth: defaultAlignment === 'side' ? '70%' : '100%',
-            marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '12px' : '',
-            marginLeft: label?.length > 0 && direction === 'right' && defaultAlignment === 'side' ? '12px' : '',
             display: 'flex',
             fontWeight: 500,
             justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
@@ -21,15 +19,18 @@ function Label({ label, width, labelRef, darkMode, color, defaultAlignment, dire
           <p
             style={{
               position: 'relative',
-              overflow: label?.length > 18 && 'hidden',
+              overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
               display: 'block',
               margin: '0px',
+              paddingRight:
+                (label?.length > 0 && defaultAlignment === 'side') || defaultAlignment === 'top' ? '12px' : '',
+              paddingLeft: label?.length > 0 && defaultAlignment === 'side' && direction != 'left' ? '12px' : '',
             }}
           >
             {label}
-            {isMandatory && <span style={{ color: '#DB4324', position: 'absolute' }}>*</span>}
+            {isMandatory && <span style={{ color: '#DB4324', position: 'absolute', right: '4px', top: '0px' }}>*</span>}
           </p>
         </label>
       )}

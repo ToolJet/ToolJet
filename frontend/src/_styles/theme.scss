@@ -12379,3 +12379,9 @@ tbody {
 .inspector-color-input-popover {
   left: -96px !important;
 }
+
+.tj-number-input-widget {
+  input[type="number"] {
+    -moz-appearance: textfield !important;
+  }
+}
