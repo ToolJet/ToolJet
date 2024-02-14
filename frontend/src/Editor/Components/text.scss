@@ -8,6 +8,7 @@
 
 .text-widget-section {
   scrollbar-color: transparent transparent;
+  scrollbar-width: thin;
   &::-webkit-scrollbar {
     background-color: transparent;
     width: 6px;
