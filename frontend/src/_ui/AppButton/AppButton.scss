@@ -190,11 +190,12 @@
     color: var(--slate12);
     border: none;
     background: transparent;
-
+    // border: 1px solid rgba(255, 255, 255, 0.00) !important;
+    
     &:hover {
         background: var(--slate4, #ECEEF0) !important;
         color: var(--slate11);
-        border: 1px solid rgba(255, 255, 255, 0.00) !important;
+        // border: 1px solid rgba(255, 255, 255, 0.00) !important;
     }
 
     &:focus-visible {
