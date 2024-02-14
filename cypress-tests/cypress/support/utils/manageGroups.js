@@ -281,7 +281,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 
       cy.request({
         method: "PUT",
-        url: `http://localhost:3000/api/group_permissions/${groupId}`,
+        url: `http://localhost:3000/api/group_permissions/${groupId}/app`,
         headers: headers,
         body: { add_apps: [Cypress.env("appId")] },
       }).then((patchResponse) => {
@@ -296,7 +296,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 
         cy.request({
           method: "PUT",
-          url: `http://localhost:3000/api/group_permissions/${groupId}`,
+          url: `http://localhost:3000/api/group_permissions/${groupId}/user`,
           headers: headers,
           body: { add_users: [userId] },
         }).then((patchResponse) => {
@@ -380,9 +380,9 @@ export const verifyGroupCardOptions = (groupName) => {
   );
 };
 
-export const groupPermission = (fieldsToCheckOrUncheck, groupName = "All users", shouldCheck = false,) => {
+export const groupPermission = (fieldsToCheckOrUncheck, groupName, shouldCheck = false,) => {
   navigateToManageGroups();
-  cy.get(groupsSelector.groupLink(groupName))
+  cy.get(groupsSelector.groupLink(groupName)).click()
   cy.get(groupsSelector.permissionsLink).click();
 
   fieldsToCheckOrUncheck.forEach((field) => {

@@ -390,13 +390,12 @@ describe("", () => {
         cy.wait(2000);
         adminExpiredLicenseBanner();
 
-        cy.apiCreateApp(data.appName);
-        cy.openApp();
+        cy.skipWalkthrough();
+        cy.createApp(data.appName);
         cy.get(commonSelectors.releaseButton).verifyVisibleElement(
             "have.text",
             "Release"
         );
-        cy.apiDeleteApp();
 
         cy.visit(`${data.workspaceName}/data-sources`);
 

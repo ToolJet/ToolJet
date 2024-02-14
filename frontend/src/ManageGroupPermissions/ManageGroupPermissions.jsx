@@ -455,10 +455,13 @@ class ManageGroupPermissionsComponent extends React.Component {
                           },
                         }));
                       }}
+                      data-cy="datasources-check-input"
                     />
                   </div>
                   <div className="col-11">
-                    <div className="tj-text ">Datasources</div>
+                    <div className="tj-text " data-cy="datasources-label">
+                      Datasources
+                    </div>
                   </div>
                 </div>
               </div>
