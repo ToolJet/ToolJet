@@ -70,7 +70,7 @@ export class OidcOAuthService {
     let email, name, id_token_decrypted;
     if (id_token) {
       try {
-        const id_token_decrypted = this.#parseJwt(id_token);
+        id_token_decrypted = this.#parseJwt(id_token);
         email = id_token_decrypted?.email;
         name = id_token_decrypted?.name;
       } catch (error) {
