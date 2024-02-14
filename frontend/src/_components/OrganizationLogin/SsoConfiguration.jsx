@@ -6,74 +6,72 @@ import { Git } from '@/ManageSSO/Git';
 import { GoogleSSOModal } from './GoogleSsoModal';
 import { GithubSSOModal } from './GithubSsoModal';
 import { organizationService } from '@/_services';
-import { toast } from 'react-hot-toast'
+import { toast } from 'react-hot-toast';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 class SSOConfiguration extends React.Component {
-    constructor(props) {
-        console.log(props, 'props');
-        super(props);
-        this.state = {
-          initialState: {},
-          showModal: false,
-          currentSSO: '',
-          ssoOptions: this.props.ssoOptions,
-          defaultSSO: this.props.ssoOptions,
-          showDropdown: false
-        };
-    }
+  constructor(props) {
+    console.log(props, 'props');
+    super(props);
+    this.state = {
+      initialState: {},
+      showModal: false,
+      currentSSO: '',
+      ssoOptions: this.props.ssoOptions,
+      defaultSSO: this.props.ssoOptions,
+      showDropdown: false,
+    };
+  }
 
-    handleSelect = (eventKey) => {
-        console.log(`Selected ${eventKey}`);
+  handleSelect = (eventKey) => {
+    console.log(`Selected ${eventKey}`);
+  };
+
+  CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
+    <span
+      ref={ref}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick(e);
+      }}
+      style={{ cursor: 'pointer' }}
+    >
+      {children}
+    </span>
+  ));
+
+  setShowDropdown = (show) => {
+    this.setState({ showDropdown: show });
+  };
+
+  initializeOptionStates = (ssoOptions) => {
+    console.log(ssoOptions, 'kya');
+    const initialState = ssoOptions.reduce((acc, option) => {
+      console.log(acc, option, 'kuch');
+      return {
+        ...acc,
+        [`${option.sso}Enabled`]: option.enabled,
       };
+    }, {});
+    console.log('Initialized state:', initialState);
+    return initialState;
+  };
 
-      CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
-        <span
-          ref={ref}
-          onClick={(e) => {
-            e.preventDefault();
-            onClick(e);
-          }}
-          style={{ cursor: 'pointer' }}
-        >
-          {children}
-        </span>
-      ));
-      
+  componentDidMount() {
+    const initialState = this.initializeOptionStates(this.props.ssoOptions);
+    this.setState({ ...initialState });
+    this.setState({ ssoOptions: this.props.ssoOptions });
+    this.setState({ ssoOptions: this.props.ssoOptions });
+  }
 
-    setShowDropdown = () => {
-        this.setState({showDropdown: true});
+  componentDidUpdate(prevProps) {
+    if (prevProps.ssoOptions !== this.props.ssoOptions) {
+      const initialState = this.initializeOptionStates(this.props.ssoOptions);
+      this.setState({ ...initialState });
+      this.setState({ ssoOptions: this.props.ssoOptions });
     }
-      
-
-    initializeOptionStates = (ssoOptions) => {
-        console.log(ssoOptions, 'kya');
-        const initialState = ssoOptions.reduce((acc, option) => {
-            console.log(acc, option, 'kuch');
-            return {
-                ...acc,
-                [`${option.sso}Enabled`]: option.enabled,
-            };
-        }, {});
-        console.log('Initialized state:', initialState);
-        return initialState;
-    }
-
-    componentDidMount() {
-        const initialState = this.initializeOptionStates(this.props.ssoOptions);
-        this.setState({ ...initialState });
-        this.setState({ ssoOptions: this.props.ssoOptions });
-        this.setState({ ssoOptions: this.props.ssoOptions });
-    }
-
-    componentDidUpdate(prevProps) {
-        if (prevProps.ssoOptions !== this.props.ssoOptions) {
-            const initialState = this.initializeOptionStates(this.props.ssoOptions);
-            this.setState({ ...initialState });
-            this.setState({ ssoOptions: this.props.ssoOptions });
-        }
-    }    
+  }
 
   closeModal = () => {
     this.setState({ showModal: false });
@@ -81,19 +79,18 @@ class SSOConfiguration extends React.Component {
 
   toggleDefaultSSO = () => {
     this.setState({
-      defaultSSO: !this.state.defaultSSO
+      defaultSSO: !this.state.defaultSSO,
     });
-};
-  
+  };
 
   handleToggleSSOOption = async (key) => {
     const isEnabledKey = `${key}Enabled`;
     const enabledStatus = !this.state[isEnabledKey];
-  
+
     try {
       await this.changeStatus(key, enabledStatus);
       toast.success(`${enabledStatus ? 'Enabled' : 'Disabled'} ${key} SSO`, { position: 'top-center' });
-  
+
       this.setState((prevState) => {
         const updatedSSOOptions = prevState.ssoOptions.map((option) => {
           if (option.sso === key) {
@@ -112,15 +109,15 @@ class SSOConfiguration extends React.Component {
     } catch (error) {
       toast.error('Error while updating SSO configuration', { position: 'top-center' });
     }
-  };  
+  };
 
-    changeStatus = async (key, enabledStatus) => {
-        try {
-            const response = await organizationService.editOrganizationConfigs({ type: key, enabled: enabledStatus });
-        } catch (error) {
-            console.error(error);
-        }
-    };
+  changeStatus = async (key, enabledStatus) => {
+    try {
+      const response = await organizationService.editOrganizationConfigs({ type: key, enabled: enabledStatus });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   renderSSOConfigComponent = () => {
     const { currentSSO } = this.state;
@@ -135,16 +132,16 @@ class SSOConfiguration extends React.Component {
   };
 
   isOptionEnabled = (key) => {
-    const option = this.props.ssoOptions.find(option => option.key === key);
+    const option = this.props.ssoOptions.find((option) => option.key === key);
     return option ? option.enabled : false;
-  }
+  };
 
   getSSOIcon = (key) => {
     console.log(key, 'see');
-    const iconStyles = { width:"20px", height:"20x" }; // Set your desired icon size
+    const iconStyles = { width: '20px', height: '20x' }; // Set your desired icon size
     switch (key) {
       case 'google':
-        return <img src="/assets/images/Google.png" alt="Google" style={iconStyles}/>;
+        return <img src="/assets/images/Google.png" alt="Google" style={iconStyles} />;
       case 'git':
         return <img src="/assets/images/Github.png" alt="GitHub" style={iconStyles} />;
       default:
@@ -155,22 +152,24 @@ class SSOConfiguration extends React.Component {
   renderSSOOption = (key, name) => {
     const isEnabledKey = `${key}Enabled`;
     const isEnabled = this.state[isEnabledKey];
-  
+
     return (
       <div className="sso-option" key={key}>
-        <div className="sso-option-label">{this.getSSOIcon(key)}{' '+name}</div>
+        <div className="sso-option-label">
+          {
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {this.getSSOIcon(key)}
+              <span style={{ marginLeft: 8 }}>{name}</span>
+            </div>
+          }
+        </div>
         <label className="switch">
-          <input 
-            type="checkbox" 
-            checked={isEnabled}
-            onChange={() => this.handleToggleSSOOption(key)}
-          />
+          <input type="checkbox" checked={isEnabled} onChange={() => this.handleToggleSSOOption(key)} />
           <span className="slider round"></span>
         </label>
       </div>
     );
-  }
-
+  };
 
   render() {
     const { showModal, currentSSO, defaultSSO, initialState, ssoOptions, showDropdown } = this.state;
@@ -180,40 +179,55 @@ class SSOConfiguration extends React.Component {
     return (
       <div className="sso-configuration">
         <h4>SSO</h4>
-        <div className="sso-option" style={{marginBottom: '0px', justifyContent: 'flex-start'}}>
-            <div className="sso-option-label" onClick={() => this.setShowDropdown()}>
-                Default SSO (2)
-            </div>
-            <Dropdown onToggle={() => this.setShowDropdown(!showDropdown)} >
-                <Dropdown.Toggle variant="transparent" id="dropdown-custom-toggle" style={{ background: 'none', border: 'none', height: '20px', width: '20px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} bsPrefix="no-caret-dropdown-toggle">
-                    <SolidIcon name="cheverondown" style={{ cursor: 'pointer' }} />
-                </Dropdown.Toggle>
+        <div className={`sso-option ${showDropdown ? 'clicked' : ''}`}>
+          <div className="sso-option-label" onClick={() => this.setShowDropdown()}>
+            Default SSO {defaultSSO ? '(2)' : ''}
+          </div>
+          <Dropdown onToggle={() => this.setShowDropdown(!showDropdown)}>
+            <Dropdown.Toggle
+              variant="transparent"
+              id="dropdown-custom-toggle"
+              style={{
+                background: 'none',
+                border: 'none',
+                height: '20px',
+                width: '20px',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              bsPrefix="no-caret-dropdown-toggle"
+            >
+              <SolidIcon name="cheverondown" style={{ cursor: 'pointer' }} />
+            </Dropdown.Toggle>
 
-                <Dropdown.Menu>
-                    <Dropdown.Item 
-                        eventKey="Google" 
-                        onSelect={this.handleSelect}
-                        disabled={!this.state.defaultSSO} // Disable the item if defaultSSO is false
-                    >
-                        {this.getSSOIcon('google')}{' Google'}
-                    </Dropdown.Item>
-                    <Dropdown.Item 
-                        eventKey="GitHub" 
-                        onSelect={this.handleSelect}
-                        disabled={!this.state.defaultSSO} // Disable the item if defaultSSO is false
-                    >
-                        {this.getSSOIcon('git')}{' Github'}
-                    </Dropdown.Item>
-</Dropdown.Menu>
+            <Dropdown.Menu style={{ width: '100%' }}>
+              <Dropdown.Item
+                eventKey="Google"
+                onSelect={this.handleSelect}
+                disabled={!this.state.defaultSSO} // Disable the item if defaultSSO is false
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {this.getSSOIcon('google')}
+                  <span style={{ marginLeft: 8 }}>Google</span>
+                </div>
+              </Dropdown.Item>
+              <Dropdown.Item
+                eventKey="GitHub"
+                onSelect={this.handleSelect}
+                disabled={!defaultSSO} // Disable the item if defaultSSO is false
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {this.getSSOIcon('git')}
+                  <span style={{ marginLeft: 8 }}>Github</span>
+                </div>
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
 
-            </Dropdown>
-
-      <label className="switch" style={{marginLeft: '95px'}}>
-            <input 
-              type="checkbox" 
-              checked={defaultSSO} 
-              onChange={this.toggleDefaultSSO}
-            />
+          <label className="switch" style={{ marginLeft: '95px' }}>
+            <input type="checkbox" checked={defaultSSO} onChange={this.toggleDefaultSSO} />
             <span className="slider round"></span>
           </label>
         </div>
@@ -221,19 +235,19 @@ class SSOConfiguration extends React.Component {
         {this.renderSSOOption('google', 'Google')}
         {this.renderSSOOption('git', 'GitHub')}
         {showModal && currentSSO === 'google' && (
-                    <GoogleSSOModal
-                        settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
-                        onClose={() => this.setState({ showModal: false })}
-                        changeStatus={this.handleToggleSSOOption}
-                    />
-                )}
+          <GoogleSSOModal
+            settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
+            onClose={() => this.setState({ showModal: false })}
+            changeStatus={this.handleToggleSSOOption}
+          />
+        )}
         {showModal && currentSSO === 'git' && (
-                    <GithubSSOModal
-                        settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
-                        onClose={() => this.setState({ showModal: false })}
-                        changeStatus={this.handleToggleSSOOption}
-                    />
-                )}
+          <GithubSSOModal
+            settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
+            onClose={() => this.setState({ showModal: false })}
+            changeStatus={this.handleToggleSSOOption}
+          />
+        )}
       </div>
     );
   }

@@ -3,7 +3,7 @@
 .sso-configuration {
     display: flex;
     flex-direction: column;
-    margin-left: 20px; /* Adjust the margin as needed */
+    margin-left: 5px; /* Adjust the margin as needed */
   }
   
   .sso-header {
@@ -15,12 +15,29 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 5px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 6px;
+    padding-bottom: 6px;
     margin-bottom: 10px;
     background-color: #f9f9f9; /* Light grey background */
     border: 1px solid #e1e1e1; /* Grey border */
     border-radius: 8px;
+    transition: background-color 0.1s; /* Smooth transition for hover effect */
   }
+
+  .sso-option:hover {
+    background-color: #eee; /* Dark grey background on hover */
+  }
+
+  .sso-option:active {
+    background-color: #ddd; /* Darker grey when clicked or when dropdown is opened */
+}
+
+  .sso-option.clicked,
+.sso-option.clicked:hover {
+    background-color: #ddd; /* Darker grey when clicked or when dropdown is opened */
+}
   
   .sso-option-label {
     font-weight: 400;
