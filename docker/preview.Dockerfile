@@ -33,6 +33,12 @@ RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
 FROM debian:11
+
+RUN apt-get update -yq \
+    && apt-get install curl gnupg zip -yq \
+    && apt-get install -yq build-essential \
+    && apt-get clean -y
+
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v10.1.1.20221215 /bin/postgrest /bin
 
