@@ -120,6 +120,9 @@ export const getWorkspaceIdOrSlugFromURL = () => {
 
   const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
   if (['login', 'ldap'].includes(workspaceId)) {
+    if (pathnameArray[pathnameArray.length - 1] === 'super-admin') {
+      return '';
+    }
     return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];
   }
 

@@ -10,6 +10,7 @@ import {
   Query,
   Res,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -37,6 +38,7 @@ import { SessionService } from '@services/session.service';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { OrganizationsService } from '@services/organizations.service';
 import { Organization } from 'src/entities/organization.entity';
+import { isSuperAdmin } from 'src/helpers/utils.helper';
 
 @Controller()
 export class AppController {
@@ -50,6 +52,16 @@ export class AppController {
   @Post('authenticate')
   async login(@Body() appAuthDto: AppAuthenticationDto, @Res({ passthrough: true }) response: Response) {
     return this.authService.login(response, appAuthDto.email, appAuthDto.password);
+  }
+
+  @Post('authenticate/super-admin')
+  async superAdminLogin(@Body() appAuthDto: AppAuthenticationDto, @Res({ passthrough: true }) response: Response) {
+    const user = await this.userService.findByEmail(appAuthDto.email);
+    if (!isSuperAdmin(user)) {
+      throw new UnauthorizedException('Only superadmin can login through this url');
+    }
+    const { email, password } = appAuthDto;
+    return this.authService.login(response, email, password);
   }
 
   @UseGuards(OrganizationAuthGuard)
