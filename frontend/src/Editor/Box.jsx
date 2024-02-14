@@ -197,7 +197,6 @@ export const Box = memo(
 
     let styles = {
       height: '100%',
-      padding: '1px',
     };
 
     if (inCanvas) {
@@ -280,7 +279,6 @@ export const Box = memo(
         customResolveObjects: customResolvables,
       });
     const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
-    console.log('validatedStyles?.padding---', validatedStyles?.padding);
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
