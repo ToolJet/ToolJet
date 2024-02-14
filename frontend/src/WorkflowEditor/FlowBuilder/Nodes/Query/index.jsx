@@ -111,7 +111,7 @@ export default function QueryNode(props) {
   return (
     <div className="query-node">
       <div className="body">
-        <div className="grid">
+        <div className="grid workflows-query-node">
           <div className="row" style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row' }}>
             <div className={`input-icon ${props.darkMode ? 'dark' : ''}`}>
               <DataSourceIcon source={sourceData} />

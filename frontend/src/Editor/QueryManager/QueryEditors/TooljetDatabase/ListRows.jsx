@@ -84,7 +84,7 @@ export const ListRows = React.memo(({ darkMode }) => {
     <div>
       <div className="row my-2 tj-db-field-wrapper">
         <div className="tab-content-wrapper">
-          <div className="d-flex mb-2">
+          <div className="d-flex tooljetdb-worflow-operations mb-2">
             <label className="form-label" data-cy="label-column-filter">
               Filter
             </label>
@@ -121,7 +121,7 @@ export const ListRows = React.memo(({ darkMode }) => {
           </div>
 
           {/* sort */}
-          <div className="fields-container d-flex mb-2">
+          <div className="fields-container tooljetdb-worflow-operations d-flex mb-2">
             <label className="form-label" data-cy="label-column-sort">
               Sort
             </label>
@@ -156,7 +156,7 @@ export const ListRows = React.memo(({ darkMode }) => {
           </div>
 
           {/* Limit */}
-          <div className="field-container d-flex mb-2">
+          <div className="field-container tooljetdb-worflow-operations d-flex mb-2">
             <label className="form-label" data-cy="label-column-limit">
               Limit
             </label>
@@ -172,7 +172,7 @@ export const ListRows = React.memo(({ darkMode }) => {
             </div>
           </div>
           {/* Offset */}
-          <div className="field-container d-flex">
+          <div className="field-container tooljetdb-worflow-operations d-flex">
             <label className="form-label" data-cy="label-column-offset">
               Offset
             </label>
@@ -322,7 +322,7 @@ const RenderFilterFields = ({
             width={'auto'}
           />
         </div>
-        <div className="field col-4">
+        <div className="field col">
           {operator === 'is' ? (
             <Select
               useMenuPortal={true}
@@ -343,7 +343,7 @@ const RenderFilterFields = ({
             />
           )}
         </div>
-        <div className="col-1 cursor-pointer m-1 mr-2">
+        <div className="cursor-pointer m-1" style={{ margin: '4px 4px 4px 8px' }}>
           <svg
             onClick={() => removeFilterConditionPair(id)}
             width="12"

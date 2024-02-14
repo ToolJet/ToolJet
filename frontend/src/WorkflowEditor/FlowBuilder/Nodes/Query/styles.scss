@@ -81,5 +81,22 @@
       gap: 8px;
       margin-bottom: 8px;
     }
+
+    .workflows-query-node{
+      .dynamic-form-row{
+        flex-direction: column !important;
+      .tooljetdb-worflow-operations{
+        flex-direction: column !important;
+      }
+      .tdb-join-filtersection{
+        flex-direction: column !important;
+      }
+      .column-update,.column-create{
+        justify-content: space-between;
+      }
+    }
+    }
+    
   }
+
 }
