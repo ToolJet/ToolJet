@@ -5,15 +5,11 @@ title: Query Panel
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-The Query Panel, located at the bottom of the app-builder, allows you to create and manage queries for interacting with connected **Data sources**. It provides the capability to perform API requests, query **[databases](/docs/data-sources/overview)**, and apply **[transformations](/docs/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**.
+The Query Panel, located at the bottom of the app-builder, allows you to create and manage queries to interact with connected **data sources**. It provides the capability to perform API requests, query **[databases](/docs/data-sources/overview)**, and apply **[transformations](/docs/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**.
 
 The Query Panel consists of two sections:
 - The **[Query Manager](#query-manager)** on the right side, which displays a list of all the created queries.
 - The **[Query Editor](#query-editor)**, used to configure the selected query.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui3/qpanel.png" alt="Query Panel" />
@@ -25,29 +21,17 @@ The Query Panel consists of two sections:
 
 ## Query Manager
 
-Query Manager will list all the queries that has been created in the application. Query Manager helps in managing the queries that have been created, you can **add**, **edit**, **delete**, **duplicate**, **search**, **sort** and **filter** through them.
+The Query Manager on the left lists all the queries that have been created in the application. Query Manager helps in managing the queries that have been created.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/querymanager.png" alt="Query Panel" />
+    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/query-panel-preview-v2.png" alt="Query Panel" />
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Add
+The `+ Add` button on the Query Manager is used to add new queries in the application. When Add button is clicked, a menu will open with a list of options for creating a query from the available data sources.
 
-Add button is used to add new query in the application. When Add button is clicked, a menu will open with a list of options for creating a query from **Default** data sources such as **Rest API**, **ToolJet Database**, **JavaScript Code**, **Python Code** or from connected **Data sources**.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/addquery.gif" alt="Query Panel" />
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### Sort/Filter
-
-On the top of Query Manager, there is button to Sort or Filter queries. The following options are there:
+### Sort and Filter Queries
+On the top of Query Manager, there is button to Sort or Filter queries. The button allows you to select from the following options:
 
 **Filter:**
 - By Data source
@@ -60,59 +44,12 @@ On the top of Query Manager, there is button to Sort or Filter queries. The foll
 - Last modified: oldest first
 - Last modified: newest First
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/sortfilter.gif" alt="Query Panel" />
-</div>
+Next to the filter is the search box that can be used to search for a specific query.
 
-</div>
+### Edit, Copy and Delete Queries 
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### Search 
-
-On the top of the query manager is search box that can be used to search for a specific query.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/search.gif" alt="Query Panel" />
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### Delete
-
-Delete button will delete the selected query, the button will only show up when you hover over the query name. When you click on the delete button, a confirmation dialog will open to confirm the deletion of the query.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/delete.png" alt="Query Panel" />
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### Duplicate
-
-Duplicate button will duplicate the selected query, the button will only show up when you hover over the query name. The duplicate query will be named as `<query name>_copy`.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/duplicate.png" alt="Query Panel" />
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### Rename
-
-Rename button is used to rename the selected query, the button will only show up when you hover over the query name. When you click on the rename button, the query name becomes editable and you can change the name of the query.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/rename.png" alt="Query Panel" />
-</div>
-
-</div>
+On hovering on a query name, you can see the edit, copy and delete buttons. 
+The edit button lets you rename the query, the delete button lets you delete the selected query, and the duplicate button duplicates the selected query.
 
 </div>
 
@@ -133,7 +70,7 @@ The changes made in the query panel will be saved automatically.
 
 ### Query Name
 
-The query name is prominently displayed at the top of the query panel. Click on it to make edits and customize the query name as needed.
+Apart from the query editor, the query name is displayed at the top of the query panel. Click on it to make edits and customize the query name as needed.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui3/queryrename.gif" alt="Query Editor" />
@@ -145,7 +82,7 @@ The query name is prominently displayed at the top of the query panel. Click on 
 
 ### Custom Parameters
 
-Custom query parameters provide a convenient method for introducing custom variables to a query without directly modifying the query parameters themselves. To add parameters, simply click the **+** button beside the Parameters in the top bar of the query editor.
+Custom parameters provide a convenient method for passing variables to a query. To add parameters, simply click the **+** button next to the Parameters label in the top bar of the query editor.
 
 For each parameter, you need to specify:
 - **Name**: The identifier for the parameter.
@@ -189,19 +126,20 @@ The Run button triggers the query, causing it to interact with the application. 
 
 <div style={{paddingTop: '24px', paddingBottom: '24px'}}>
 
-### Query Parameters
+### Query Configuration
 
-Query Parameters are vital values necessary for the server to generate a response. These parameters may include **endpoints**, **methods**, or **operations**, with the specific set varying for each data source.
+Query Configuration allows you to set vital values that are necessary to generate a response from a database. These configurations may include but are not limited to:
+
+- `Data source`: Name of the data source 
+- `Operation`: The kind of operation you want to perform (For e.g., `List collections`,`Find one`, `Find many`,etc.) 
+
+The set of configuration options you get depend on the type of data source. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/params.png" alt="Query Editor" />
 </div>
 
-</div>
-
-<div style={{paddingTop: '24px', paddingBottom: '24px'}}>
-
-#### Data source
+#### Data Source
 
 The primary and default parameter for all queries is **data source**. This option enables the selection of the appropriate data source for your query.
 
@@ -255,6 +193,19 @@ Event handlers can be added to queries for the following events:
 
 - **Query Success**
 - **Query Failure**
+
+Event handlers link actions in your application for smoother operation. Here's an example:
+
+Scenario: You have two queries:
+
+- *getTodos*: Fetches your to-do list.
+- *deleteTodos*: Removes a to-do item.
+- Event Handler:  A Query Success event handler on deleteTodos that runs getTodos after a deletion.
+
+The Result:
+- User deletes a to-do.
+- The event handler refreshes the to-do list.
+- The component displaying the to-do data will be update with the lates data.
 
 :::info
 Learn more about [Event Handlers and Actions](/docs/widgets/overview#component-event-handlers).

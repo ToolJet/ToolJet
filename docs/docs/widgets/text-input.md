@@ -26,7 +26,7 @@ The Text Input component allows users to enter a single line of text. It can be 
 Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
 :::
 
-## Component specific actions (CSA)
+## Component Specific Actions (CSA)
 
 Following actions of component can be controlled using the component specific actions(CSA):
 
@@ -62,9 +62,9 @@ Check the **component specific actions** available for this component **[here](/
 |:---------------|:-------------------------------------------------|:-----------------------------|
 | Make this field mandatory    | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 | Regex              | Regular Expression to validate the input.             | Regular Expression Pattern (e.g., `^\d{3}-\d{2}-\d{4}$`). |
-| Min Length         | Sets the minimum number of characters allowed.                | Integer (e.g., `6` for a minimum of 6 characters). |
-| Max Length         | Sets the maximum number of characters allowed.                | Integer (e.g., `12` for a maximum of 12 characters).|
-| Custom Validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.textinput1.value<5&&"Value needs to be more than 5"}}`).           |
+| Min length         | Sets the minimum number of characters allowed.                | Integer (e.g., `6` for a minimum of 6 characters). |
+| Max length         | Sets the maximum number of characters allowed.                | Integer (e.g., `12` for a maximum of 12 characters).|
+| Custom validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.textinput1.value<5&&"Value needs to be more than 5"}}`).           |
 
 ## Additional Actions
 
@@ -105,9 +105,9 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 | Border    | Sets the border color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
 | Text      | Sets the text color of the text entered in the component.                                     | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
 | Error text | Sets the text color of validation message that displays.                                      | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility, select icon and icon color.                              |
+| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility, select icon and icon color. Alternatively, you can programmatically set it using `fx`.                                     |
 | Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value.           |
-| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties.                                            |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or set it programmatically using `fx`.                                            |
 
 
 ## Container

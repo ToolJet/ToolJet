@@ -75,7 +75,6 @@ Now, create a new table in **[ToolJet’s Database](/docs/tooljet-database/)** t
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-
 ### 3. Integrate Data
 
 To display employees in the application, we first need to fetch data from the database using a query:

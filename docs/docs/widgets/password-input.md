@@ -11,7 +11,7 @@ The Password Input component allows users to enter passwords securely. In this c
 |:---------------|:-------------------------------------------------|:-----------------------------|
 | Label         | Text to display as the label for the field.           | String (e.g., `Enter Your Password`).         |
 | Placeholder   | A hint displayed to guide the user on what to enter.  | String (e.g., `SecurePassword123`).          |
-| Default Value | The default value that the component will hold when the app is loaded. | String (e.g., `Default Text`). |
+| Default value | The default value that the component will hold when the app is loaded. | String (e.g., `Default Text`). |
 
 
 ## Events
@@ -27,13 +27,13 @@ The Password Input component allows users to enter passwords securely. In this c
 Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
 :::
 
-## Component specific actions (CSA)
+## Component Specific Actions (CSA)
 
 Following actions of component can be controlled using the component specific actions(CSA):
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
-| setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.passwordinput1.setText('this is input text')`) or trigger it using an event. |
+| setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.passwordinput1.setText('password123')`) or trigger it using an event. |
 | clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.passwordinput1.clear()`) or trigger it using an event. |
 | setFocus()     | Sets the focus of the cursor on the input field.   | Employ a RunJS query (for e.g.,  <br/> `await components.passwordinput1.setFocus()`) or trigger it using an event. |
 | setBlur()      | Removes the focus of the cursor from the input field. | Employ a RunJS query (for e.g.,  <br/> `await components.passwordinput1.setBlur()`) or trigger it using an event. |
@@ -63,9 +63,9 @@ Check the **component specific actions** available for this component **[here](/
 |:---------------|:-------------------------------------------------|:-----------------------------|
 | Make this field mandatory    | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 | Regex              | Regular Expression to validate the input.             | Regular Expression Pattern (e.g., `^\d{3}-\d{2}-\d{4}$`). |
-| Min Length         | Sets the minimum number of characters allowed.                | Integer (e.g., `6` for a minimum of 6 characters). |
-| Max Length         | Sets the maximum number of characters allowed.                | Integer (e.g., `12` for a maximum of 12 characters).|
-| Custom Validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.passwordinput1.value<5&&"Value needs to be more than 5"}}`).           |
+| Min length         | Sets the minimum number of characters allowed.                | Integer (e.g., `6` for a minimum of 6 characters). |
+| Max length         | Sets the maximum number of characters allowed.                | Integer (e.g., `12` for a maximum of 12 characters).|
+| Custom validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.passwordinput1.value<5&&"Value needs to be more than 5"}}`).           |
 
 
 
@@ -108,9 +108,9 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 | Border     | Sets the border color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
 | Text       | Sets the color of the text entered in the component.                                     | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
 | Error text | Sets the color of validation message that displays.                                      | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility, select icon and icon color.         |
+| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility, select icon and icon color. Alternatively, you can set it programmatically using `fx`.        |
 | Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value.           |
-| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties.                                            |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or set it programmatically using `fx`. |
 
 
 ## Container
