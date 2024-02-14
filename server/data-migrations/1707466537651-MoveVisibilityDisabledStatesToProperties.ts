@@ -66,11 +66,6 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651
           properties.label = "";
         }
       }
-      if (component.type !== "Text" || component !== "NumberInput") {
-        if (properties.value == undefined || null) {
-          properties.value = "";
-        }
-      }
   
       // Moving 'minValue' from properties to validation
       if (component.type == "NumberInput") {
