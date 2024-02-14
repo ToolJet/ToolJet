@@ -49,6 +49,8 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
+type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput';
+
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
   'runjsdefault',
@@ -57,6 +59,7 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'workflowsdefault',
 ];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
+const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput'];
 
 @Injectable()
 export class AppImportExportService {
@@ -565,6 +568,48 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
+  /**
+   * Moves a specific property from a nested object to the component properties.
+   * @param {Component} component - The component object containing properties, styles, and general information.
+   * @param {string} propertyKey - The key of the property to move.
+   * @param {string} objKey - The key of the nested object from which to move the property.
+   */
+  moveComponentProperties(component: Component, propertyKey: string, objKey: string) {
+    // Retrieve the nested object using the specified key
+    const obj = component?.[objKey];
+    // Retrieve the component properties
+    const properties = component.properties;
+
+    // Check if the specified property exists in the nested object
+    if (obj?.[propertyKey]) {
+      // Move the property to the component properties
+      properties[propertyKey] = obj?.[propertyKey];
+      // Remove the property from the nested object
+      delete obj?.[propertyKey];
+    }
+  }
+
+  /**
+   * Migrates styles to properties of the component based on the specified component types.
+   * @param {Component} component - The component object containing properties, styles, and general information.
+   * @param {NewRevampedComponent[]} componentTypes - An array of component types for which to perform property migration.
+   * @returns {object} An object containing the modified properties, styles, and general information.
+   */
+  migrateProperties(component: Component, componentTypes: NewRevampedComponent[]) {
+    const properties = component.properties;
+    const styles = component.styles;
+    const general = component.general;
+
+    // Check if the component type is included in the specified component types
+    if (componentTypes.includes(component.type as NewRevampedComponent)) {
+      this.moveComponentProperties(component, 'visibility', 'styles');
+      this.moveComponentProperties(component, 'disabledState', 'styles');
+      this.moveComponentProperties(component, 'tooltip', 'general');
+    }
+
+    return { properties, styles, general };
+  }
+
   async setupAppVersionAssociations(
     manager: EntityManager,
     importingAppVersions: AppVersion[],
@@ -716,6 +761,11 @@ export class AppImportExportService {
             const mappedParentId = newComponentIdsMap[_parentId];
 
             parentId = `${mappedParentId}-${childTabId}`;
+          } else if (isChildOfKanbanModal(component, pageComponents, parentId, true)) {
+            const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+            const mappedParentId = newComponentIdsMap[_parentId];
+
+            parentId = `${mappedParentId}-modal`;
           } else {
             if (component.parent && !newComponentIdsMap[parentId]) {
               skipComponent = true;
@@ -723,14 +773,15 @@ export class AppImportExportService {
 
             parentId = newComponentIdsMap[parentId];
           }
-
           if (!skipComponent) {
+            const { properties, styles, general } = this.migrateProperties(component, NewRevampedComponents);
             newComponent.id = newComponentIdsMap[component.id];
             newComponent.name = component.name;
             newComponent.type = component.type;
-            newComponent.properties = component.properties;
-            newComponent.styles = component.styles;
+            newComponent.properties = properties;
+            newComponent.styles = styles;
             newComponent.generalStyles = component.generalStyles;
+            newComponent.general = general;
             newComponent.displayPreferences = component.displayPreferences;
             newComponent.validation = component.validation;
             newComponent.parent = component.parent ? parentId : null;
@@ -1699,6 +1750,11 @@ function transformComponentData(
       const mappedParentId = componentsMapping[_parentId];
 
       parentId = `${mappedParentId}-${childTabId}`;
+    } else if (isChildOfKanbanModal(component, allComponents, parentId, true)) {
+      const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+      const mappedParentId = componentsMapping[_parentId];
+
+      parentId = `${mappedParentId}-modal`;
     } else {
       if (component.parent && !componentsMapping[parentId]) {
         skipComponent = true;
@@ -1707,13 +1763,14 @@ function transformComponentData(
     }
 
     if (!skipComponent) {
+      const { properties, styles, general } = this.migrateProperties(componentData.definition, NewRevampedComponents);
       transformedComponent.id = uuid();
       transformedComponent.name = componentData.name;
       transformedComponent.type = componentData.component;
-      transformedComponent.properties = componentData.definition.properties || {};
-      transformedComponent.styles = componentData.definition.styles || {};
+      transformedComponent.properties = properties || {};
+      transformedComponent.styles = styles || {};
       transformedComponent.validation = componentData.definition.validation || {};
-      transformedComponent.general = componentData.definition.general || {};
+      transformedComponent.general = general || {};
       transformedComponent.generalStyles = componentData.definition.generalStyles || {};
       transformedComponent.displayPreferences = componentData.definition.others || {};
       transformedComponent.parent = component.parent ? parentId : null;
@@ -1752,4 +1809,23 @@ const isChildOfTabsOrCalendar = (
   }
 
   return false;
+};
+
+const isChildOfKanbanModal = (
+  component,
+  allComponents = [],
+  componentParentId = undefined,
+  isNormalizedAppDefinitionSchema: boolean
+) => {
+  if (!componentParentId || !componentParentId.includes('modal')) return false;
+
+  const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+  const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+  if (!isNormalizedAppDefinitionSchema) {
+    return parentComponent.component.component === 'Kanban';
+  }
+
+  return parentComponent.type === 'Kanban';
 };
