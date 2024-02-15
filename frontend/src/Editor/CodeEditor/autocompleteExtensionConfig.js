@@ -68,11 +68,11 @@ export const generateHints = (hints) => {
   const suggestions = hints.map(({ hint, type }) => {
     let displayedHint = type === 'js_method' ? `${hint}()` : hint;
 
-    // need to check if the hint is `queries.queryName` and not `queries.queryName.data`
-    // add the `.data` to the hint
-    if (displayedHint.includes('queries') && displayedHint.split('.').length === 2) {
-      displayedHint = `${displayedHint}.data`;
-    }
+    // // need to check if the hint is `queries.queryName` and not `queries.queryName.data`
+    // // add the `.data` to the hint
+    // if (displayedHint.includes('queries') && displayedHint.split('.').length === 2) {
+    //   displayedHint = `${displayedHint}.data`;
+    // }
 
     return {
       displayLabel: hint,
@@ -87,6 +87,8 @@ export const generateHints = (hints) => {
 };
 
 function filterHintsByDepth(input, hints) {
+  if (input === '') return hints;
+
   const inputDepth = input.split('.').length;
   const filteredHints = hints.filter((cm) => {
     const hintParts = cm.hint.split('.');

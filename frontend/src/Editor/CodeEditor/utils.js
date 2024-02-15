@@ -204,8 +204,6 @@ const resolveMultiDynamicReferences = (code, lookupTable) => {
     });
   }
 
-  console.log('---arpit dynamic variables---', { resolvedValue });
-
   return resolvedValue;
 };
 
