@@ -6,7 +6,7 @@ import { useDataQueriesStore } from './dataQueriesStore';
 import { diff } from 'deep-object-diff';
 
 //* finding references within deeply nested objects using Depth-First Search (DFS) traversal
-function dfs(node, oldRef, newRef) {
+export function dfs(node, oldRef, newRef) {
   if (typeof node === 'object') {
     for (let key in node) {
       const value = node[key];
