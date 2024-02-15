@@ -8,14 +8,16 @@ import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 
 export const CustomComponent = (props) => {
-  const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataCy } = props;
+  const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataCy, component } = props;
   const dataQueries = useDataQueries();
 
   const showPlaceholder = useGridStore((state) => {
     const { resizingComponentId, draggingComponentId } = state;
+    console.log('showPlaceholder', { resizingComponentId, draggingComponentId, id });
     if (
       (resizingComponentId === null && draggingComponentId === id) ||
-      (draggingComponentId === null && resizingComponentId === id)
+      (draggingComponentId === null && resizingComponentId === id) ||
+      id === 'resizingComponentId'
     ) {
       return true;
     }
@@ -65,6 +67,7 @@ export const CustomComponent = (props) => {
             const parameters = e.data.parameters ? JSON.parse(e.data.parameters) : {};
             filteredQuery.length === 1 &&
               fireEvent('onTrigger', {
+                component,
                 queryId: filteredQuery[0].id,
                 queryName: filteredQuery[0].name,
                 parameters,
