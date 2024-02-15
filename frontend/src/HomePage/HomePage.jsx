@@ -20,8 +20,9 @@ import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, pageTitles, setWindowTitle } from '@/_helpers/utils';
 import { withRouter } from '@/_hoc/withRouter';
+import FolderFilter from './FolderFilter';
 
 const { iconList, defaultIcon } = configs;
 
@@ -76,6 +77,7 @@ class HomePageComponent extends React.Component {
   }
 
   componentDidMount() {
+    setWindowTitle({ page: pageTitles.DASHBOARD });
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
   }
@@ -834,6 +836,27 @@ class HomePageComponent extends React.Component {
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
                     <div className="liner"></div>
+                    <div className="filter-container">
+                      <span>{currentFolder?.count ?? meta?.total_count} APPS</span>
+                      <div className="d-flex align-items-center">
+                        <div className="mx-2">Filter by</div>
+                        <FolderFilter
+                          disabled={!!appOperations?.isAdding}
+                          options={this.state.folders.map((folder) => {
+                            return {
+                              name: folder.name,
+                              label: folder.name,
+                              value: folder.id,
+                              id: folder.id,
+                              ...folder,
+                            };
+                          })}
+                          onChange={this.folderChanged}
+                          value={currentFolder}
+                          closeMenuOnSelect={true}
+                        />
+                      </div>
+                    </div>
                   </>
                 )}
                 {!isLoading && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
@@ -876,26 +899,31 @@ class HomePageComponent extends React.Component {
                     />
                   ))}
               </div>
-              {this.pageCount() > MAX_APPS_PER_PAGE && (
-                <Footer
-                  currentPage={meta.current_page}
-                  count={this.pageCount()}
-                  itemsPerPage={MAX_APPS_PER_PAGE}
-                  pageChanged={this.pageChanged}
-                  darkMode={this.props.darkMode}
-                  dataLoading={isLoading}
-                />
-              )}
+              <div className="footer-container">
+                {this.pageCount() > MAX_APPS_PER_PAGE && (
+                  <Footer
+                    currentPage={meta.current_page}
+                    count={this.pageCount()}
+                    itemsPerPage={MAX_APPS_PER_PAGE}
+                    pageChanged={this.pageChanged}
+                    darkMode={this.props.darkMode}
+                    dataLoading={isLoading}
+                  />
+                )}
+                <div className="org-selector-mobile">
+                  <OrganizationList />
+                </div>
+              </div>
             </div>
-            <TemplateLibraryModal
-              show={this.state.showTemplateLibraryModal}
-              onHide={() => this.setState({ showTemplateLibraryModal: false })}
-              onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
-              darkMode={this.props.darkMode}
-              openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
-              appCreationDisabled={!this.canCreateApp()}
-            />
           </div>
+          <TemplateLibraryModal
+            show={this.state.showTemplateLibraryModal}
+            onHide={() => this.setState({ showTemplateLibraryModal: false })}
+            onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
+            darkMode={this.props.darkMode}
+            openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
+            appCreationDisabled={!this.canCreateApp()}
+          />
         </div>
       </Layout>
     );

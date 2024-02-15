@@ -9,6 +9,7 @@ import UsersTable from '../../ee/components/UsersPage/UsersTable';
 import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ManageOrgUsersDrawer from './ManageOrgUsersDrawer';
+import { USER_DRAWER_MODES } from '@/_helpers/utils';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -30,6 +31,10 @@ class ManageOrgUsersComponent extends React.Component {
       options: {},
       file: null,
       isInviteUsersDrawerOpen: false,
+      currentEditingUser: null,
+      userDrawerMode: USER_DRAWER_MODES.CREATE,
+      newSelectedGroups: [],
+      existingGroupsToRemove: [],
     };
   }
 
@@ -165,7 +170,8 @@ class ManageOrgUsersComponent extends React.Component {
     });
   };
 
-  createUser = (selectedGroups) => {
+  manageUser = (currentOrgUserId, selectedGroups, groupsToAdd, groupsToRemove) => {
+    const isEditing = this.state.userDrawerMode === USER_DRAWER_MODES.EDIT;
     if (this.handleValidation()) {
       if (!this.state.fields.fullName?.trim()) {
         toast.error('Name should not be empty');
@@ -181,15 +187,28 @@ class ManageOrgUsersComponent extends React.Component {
         creatingUser: true,
       });
 
-      organizationUserService
-        .create(this.state.fields.firstName, this.state.fields.lastName, this.state.fields.email, selectedGroups)
+      const service = isEditing ? organizationUserService.updateOrgUser : organizationUserService.create;
+      const createUserBody = {
+        first_name: this.state.fields.firstName,
+        last_name: this.state.fields.lastName,
+        email: this.state.fields.email,
+        groups: selectedGroups,
+      };
+
+      const updateUserBody = {
+        addGroups: groupsToAdd,
+        removeGroups: groupsToRemove,
+      };
+      service(currentOrgUserId, isEditing ? updateUserBody : createUserBody)
         .then(() => {
-          toast.success('User has been created');
+          toast.success(`User has been ${isEditing ? 'updated' : 'created'}`);
           this.fetchUsers();
           this.setState({
             creatingUser: false,
             fields: fields,
             isInviteUsersDrawerOpen: false,
+            currentEditingUser: null,
+            userDrawerMode: USER_DRAWER_MODES.CREATE,
           });
         })
         .catch(({ error }) => {
@@ -236,11 +255,30 @@ class ManageOrgUsersComponent extends React.Component {
       errors: {},
       file: null,
       fields: {},
+      currentEditingUser: null,
+      userDrawerMode: USER_DRAWER_MODES.CREATE,
     });
   };
 
+  toggleEditUserDrawer = (user) => {
+    this.setState({ currentEditingUser: user, isInviteUsersDrawerOpen: true, userDrawerMode: USER_DRAWER_MODES.EDIT });
+  };
+
+  setUserValues = (user) => {
+    this.setState({ fields: user });
+  };
+
   render() {
-    const { isLoading, uploadingUsers, users, archivingUser, unarchivingUser, meta } = this.state;
+    const {
+      isLoading,
+      uploadingUsers,
+      users,
+      archivingUser,
+      unarchivingUser,
+      meta,
+      currentEditingUser,
+      userDrawerMode,
+    } = this.state;
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper org-users-page animation-fade">
@@ -248,7 +286,7 @@ class ManageOrgUsersComponent extends React.Component {
             <ManageOrgUsersDrawer
               isInviteUsersDrawerOpen={this.state.isInviteUsersDrawerOpen}
               setIsInviteUsersDrawerOpen={this.setIsInviteUsersDrawerOpen}
-              createUser={this.createUser}
+              manageUser={this.manageUser}
               changeNewUserOption={this.changeNewUserOption}
               errors={this.state.errors}
               fields={this.state.fields}
@@ -256,6 +294,10 @@ class ManageOrgUsersComponent extends React.Component {
               uploadingUsers={uploadingUsers}
               onCancel={this.onCancel}
               inviteBulkUsers={this.inviteBulkUsers}
+              userDrawerMode={userDrawerMode}
+              currentEditingUser={currentEditingUser}
+              setUserValues={this.setUserValues}
+              creatingUser={this.state.creatingUser}
             />
           )}
 
@@ -314,6 +356,7 @@ class ManageOrgUsersComponent extends React.Component {
                     pageChanged={this.pageChanged}
                     darkMode={this.props.darkMode}
                     translator={this.props.t}
+                    toggleEditUserDrawer={this.toggleEditUserDrawer}
                   />
                 )}
               </div>
