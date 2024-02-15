@@ -56,7 +56,7 @@ export default function LogoNavDropdown({ darkMode }) {
       placement={'bottom'}
       rootClose={true}
       overlay={getOverlay()}
-      style={{ transform: 'translate(5px, 52px)' }}
+      style={{ transform: 'translate(5px, 52px)', zIndex: '100' }}
     >
       <div className="cursor-pointer">
         <AppLogo isLoadingFromHeader={true} />
