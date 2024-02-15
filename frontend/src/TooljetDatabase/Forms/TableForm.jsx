@@ -71,7 +71,8 @@ const TableForm = ({
   function handleKeyPress(e) {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleCreate(e);
+      if (!isEditMode) handleCreate(e);
+      if (isEditMode && selectedTable.table_name !== tableName) handleEdit();
     }
   }
 

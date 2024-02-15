@@ -365,7 +365,9 @@ const Table = ({ collapseSidebar }) => {
     if (
       !event.target.closest('.table-cell-click') &&
       !event.target.closest('.table-editable-parent-cell') &&
-      !event.target.closest('.popover-body')
+      !event.target.closest('.popover-body') &&
+      !event.target.closest('.cell-text') &&
+      !event.target.closest('.tjdb-td-wrapper')
     ) {
       setCellClick((prevState) => ({
         ...prevState,
@@ -376,6 +378,7 @@ const Table = ({ collapseSidebar }) => {
       }));
       handleOnCloseEditMenu();
     }
+    event.stopPropagation();
   };
 
   useEffect(() => {
@@ -485,6 +488,7 @@ const Table = ({ collapseSidebar }) => {
           errorState: false,
         }));
         setCellVal(oldValue);
+        oldValue === null ? setNullValue(true) : setNullValue(false);
         document.getElementById('edit-input-blur').blur();
       }, 3000);
       return;
@@ -499,6 +503,7 @@ const Table = ({ collapseSidebar }) => {
       cellIndex: index,
       errorState: false,
     }));
+    cellValue === null ? setNullValue(true) : setNullValue(false);
     handleProgressAnimation('column edited successfully', true);
     document.getElementById('edit-input-blur').blur();
   };
@@ -573,7 +578,6 @@ const Table = ({ collapseSidebar }) => {
       cellVal === null ? setNullValue(true) : setNullValue(false);
       setEditPopover(false);
     }
-    e.stopPropagation();
   };
 
   const closeEditPopover = (previousValue) => {
@@ -844,7 +848,7 @@ const Table = ({ collapseSidebar }) => {
                             <ToolTip
                               message={index === 0 ? 'Cannot edit primary key values' : cell.value || ''}
                               placement="bottom"
-                              delay={{ show: 0, hide: 0 }}
+                              delay={{ show: 200, hide: 0 }}
                               show={
                                 !(
                                   cellClick.rowIndex === rIndex &&
@@ -852,7 +856,8 @@ const Table = ({ collapseSidebar }) => {
                                   cellClick.editable
                                 ) &&
                                 cell.value !== null &&
-                                cell.column.dataType !== 'boolean'
+                                cell.column.dataType !== 'boolean' &&
+                                cell.value !== ''
                               }
                             >
                               <div className="tjdb-column-select-border">

@@ -40,7 +40,7 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
             <div className="row">
               <div className="col-9">
                 <p className="tj-text-md font-weight-500" data-cy="dashboard-section-header">
-                  {routes(pathname)}
+                  {pathname}
                 </p>
               </div>
               {enableCollapsibleSidebar && !collapseSidebar && (
