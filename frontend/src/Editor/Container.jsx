@@ -24,7 +24,7 @@ import _, { cloneDeep, isEmpty } from 'lodash';
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
-import { useDraggedSubContainer, useResizingComponentId } from '@/_stores/gridStore';
+import { useDraggedSubContainer, useGridStore, useResizingComponentId } from '@/_stores/gridStore';
 import useConfirm from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/Confirm';
 // eslint-disable-next-line import/no-unresolved
 
@@ -59,7 +59,7 @@ export const Container = ({
   const noOfGrids = 43;
   const [subContainerWidths, setSubContainerWidths] = useState({});
   const draggedSubContainer = useDraggedSubContainer(false);
-  const resizedComponentId = useResizingComponentId();
+  const resizingComponentId = useResizingComponentId();
   // const [dragTarget] = useDragTarget();
 
   const { showComments, currentLayout, selectedComponents } = useEditorStore(
@@ -533,7 +533,7 @@ export const Container = ({
 
   const paramUpdated = useCallback(
     (id, param, value, opts = {}) => {
-      if (id === 'resizedComponentId') {
+      if (id === 'resizingComponentId') {
         return;
       }
       if (Object.keys(value)?.length > 0) {
@@ -861,7 +861,8 @@ export const Container = ({
         <div className="container-fluid rm-container p-0">
           {Object.entries({
             ...boxes,
-            ...(resizedComponentId && boxes[resizedComponentId] && { resizedComponentId: boxes[resizedComponentId] }),
+            ...(resizingComponentId &&
+              boxes[resizingComponentId] && { resizingComponentId: boxes[resizingComponentId] }),
           })
             .filter(([, box]) => isEmpty(box?.component?.parent))
             .map(([id, box]) => {
@@ -872,7 +873,7 @@ export const Container = ({
               }
               return (
                 <WidgetWrapper
-                  isResizing={resizedComponentId === id}
+                  isResizing={resizingComponentId === id}
                   widget={box}
                   key={id}
                   id={id}
@@ -987,7 +988,7 @@ export const Container = ({
 };
 
 const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResizing }) => {
-  const isGhostComponent = id === 'resizedComponentId';
+  const isGhostComponent = id === 'resizingComponentId';
   const {
     component: { parent },
     layouts,
@@ -1043,6 +1044,11 @@ function ContainerWrapper({
   styles,
 }) {
   // const [dragTarget] = useDragTarget();
+  const { resizingComponentId, draggingComponentId } = useGridStore((state) => {
+    const { resizingComponentId, draggingComponentId } = state;
+    return { resizingComponentId, draggingComponentId };
+  }, shallow);
+
   return (
     <div
       {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -1050,7 +1056,7 @@ function ContainerWrapper({
       style={{ ...styles, height: canvasHeight }}
       className={cx('real-canvas', {
         // 'show-grid': isDragging || isResizing || dragTarget === 'canvas',
-        'show-grid': isDragging || isResizing,
+        'show-grid': isDragging || isResizing || !!resizingComponentId || !!draggingComponentId,
       })}
       id="real-canvas"
       data-cy="real-canvas"

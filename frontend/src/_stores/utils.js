@@ -98,7 +98,8 @@ function updateValueInJson(json, path, value) {
 }
 
 export function isParamFromTableColumn(appDiff, definition) {
-  const path = generatePath(appDiff, 'columns') || generatePath(appDiff, 'actions');
+  const path =
+    generatePath(appDiff, 'columns') || generatePath(appDiff, 'actions') || generatePath(appDiff, 'columnSizes');
   if (!path) {
     return false;
   }
