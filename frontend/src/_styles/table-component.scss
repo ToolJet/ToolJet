@@ -786,7 +786,7 @@
   .popover-body{
     display: flex;
     flex-direction: column;
-    padding: 16px 16px 24px 16px!important;
+    padding: 16px !important;
     gap: 16px !important;
     align-self: stretch;
     background-color: var(--slate1) !important;
@@ -833,5 +833,17 @@
   }
   .form-control{
     margin-bottom: 0 !important;
+  }
+}
+.table-select-column-accordian{
+  .accordion-button {
+    padding: 16px 0px !important;
+  }
+  .accordion-body {
+    padding: 0 !important;
+  }
+  .accordian-item{
+    border: solid var(--slate5);
+    border-width: 1px 0px 0px 0px;
   }
 }

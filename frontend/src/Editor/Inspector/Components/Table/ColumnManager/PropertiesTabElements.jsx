@@ -150,19 +150,6 @@ export const PropertiesTabElements = ({
           </div>
         </div>
       )}
-      {column.columnType === 'select' && (
-        <OptionsList
-          column={column}
-          props={props}
-          index={index}
-          darkMode={darkMode}
-          currentState={currentState}
-          getPopoverFieldSource={getPopoverFieldSource}
-          setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
-          component={component}
-          onColumnItemChange={onColumnItemChange}
-        />
-      )}
       {column.columnType === 'datepicker' && (
         <div>
           <label data-cy={`label-date-display-format`} className="form-label">
@@ -333,6 +320,19 @@ export const PropertiesTabElements = ({
           />
         </div>
       </div>
+      {column.columnType === 'select' && (
+        <OptionsList
+          column={column}
+          props={props}
+          index={index}
+          darkMode={darkMode}
+          currentState={currentState}
+          getPopoverFieldSource={getPopoverFieldSource}
+          setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
+          component={component}
+          onColumnItemChange={onColumnItemChange}
+        />
+      )}
     </>
   );
 };

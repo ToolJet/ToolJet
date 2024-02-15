@@ -297,5 +297,5 @@ export const OptionsList = ({
     ),
   });
 
-  return <Accordion items={items} />;
+  return <Accordion items={items} className="table-select-column-accordian" />;
 };
