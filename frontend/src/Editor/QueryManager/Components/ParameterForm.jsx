@@ -56,21 +56,29 @@ const ParameterForm = ({
 
   return (
     <>
-      <Popover.Header className={darkMode && 'dark-theme'} style={{ fontSize: '12px' }}>
-        {isEdit ? 'UPDATE PARAMETER' : 'ADD PARAMETER'}
+      <Popover.Header className={`${darkMode && 'dark-theme'}`}>
+        <p className="tj-text-xsm " style={{ fontWeight: '600' }}>
+          {isEdit ? 'UPDATE PARAMETER' : 'ADD PARAMETER'}
+        </p>
       </Popover.Header>
-      <Popover.Body className={darkMode && 'dark-theme dark-theme'} key={'1'} bsPrefix="popover-body">
+      <Popover.Body
+        className={darkMode && 'dark-theme dark-theme'}
+        key={'1'}
+        bsPrefix="popover-body"
+        style={{ padding: '16px 16px 32px 16px', overflowY: 'auto' }}
+      >
         <Form
           className="container p-0 tj-app-input"
           onSubmit={handleSubmit}
           style={{ paddingRight: '25px !important' }}
         >
-          <Form.Group as={Row} className="mb-2 pr-1">
+          <Form.Group as={Col} style={{ display: 'flex' }} className="mb-2 pr-1">
             <Form.Label column htmlFor="paramName">
               Name
             </Form.Label>
-            <Col sm="12">
+            <Col>
               <Form.Control
+                style={{ height: '32px', width: '177px' }}
                 type="text"
                 aria-describedby="paramName"
                 onChange={(event) => setName(event.target.value)}
@@ -79,9 +87,9 @@ const ParameterForm = ({
               {name && error && <div className="invalid-feedback d-block">{error}</div>}
             </Col>
           </Form.Group>
-          <Form.Group as={Row}>
-            <Form.Label column htmlFor="defaultValue">
-              Default Value
+          <Form.Group as={Col} style={{ display: 'flex' }}>
+            <Form.Label column htmlFor="defaultValue" style={{ marginRight: '0px' }}>
+              Value
               <span className="ms-1">
                 <OverlayTrigger
                   placement="bottom"
@@ -98,15 +106,15 @@ const ParameterForm = ({
                 </OverlayTrigger>
               </span>
             </Form.Label>
-            <Col sm="12">
+            <Col style={{ padding: '0px', width: '177px' }}>
               <div className="d-flex">
-                <div className="w-100">
+                <div className="" style={{ height: '32px', width: '177px' }}>
                   <CodeHinter
                     onChange={(value) => setDefaultValue(value)}
                     theme={darkMode ? 'monokai' : 'default'}
                     currentState={emptyObj.current}
                     usePortalEditor={false}
-                    height={36}
+                    style={{ height: '32px', width: '177px', marginBotto: '16px' }}
                     initialValue={defaultValue}
                     enablePreview={false}
                   />

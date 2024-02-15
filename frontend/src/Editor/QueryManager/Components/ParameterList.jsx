@@ -10,11 +10,11 @@ const ParameterList = ({
   handleParameterRemove,
   currentState,
   darkMode,
+  containerRef,
 }) => {
   const [showMore, setShowMore] = useState(false);
   const [selectedParameter, setSelectedParameter] = useState();
   const [formattedParameters, setFormattedParameters] = useState([]);
-  const containerRef = useRef(null);
   const containerWidth = containerRef.current?.offsetWidth;
 
   useEffect(() => {
@@ -22,10 +22,10 @@ const ParameterList = ({
     const formattedParams = containerWidth
       ? parameters.map((param, index) => {
           const boxWidth = Math.min((param?.name || '').length * 6 + 63 + 8, 178);
-          totalWidth += boxWidth;
+          totalWidth = Math.min(totalWidth + boxWidth, containerWidth);
           return {
             ...param,
-            isVisible: totalWidth <= containerWidth - 57 - 125 - 85,
+            isVisible: totalWidth < containerWidth - 178,
             index,
           };
         })
@@ -54,8 +54,8 @@ const ParameterList = ({
   }, [showMore]);
 
   return (
-    <div className="card-header" ref={containerRef}>
-      Parameters
+    <div className="card-header">
+      <p style={{ marginRight: '4px', margin: '0px' }}>Parameters</p>
       {formattedParameters
         .filter((param) => param.isVisible)
         .map((parameter) => {
@@ -104,7 +104,7 @@ const ParameterList = ({
               <Popover.Body
                 key={'1'}
                 bsPrefix="popover-body"
-                className={`ps-1 pe-1 me-2 py-2 query-manager`}
+                className={`ps-1 pe-1  py-2 query-manager`}
                 style={{ maxWidth: '500px' }}
               >
                 {formattedParameters
@@ -129,8 +129,9 @@ const ParameterList = ({
         <span>
           {formattedParameters.some((param) => !param.isVisible) && (
             <PillButton
-              name={`${formattedParameters.reduce((count, param) => count + (!param.isVisible ? 1 : 0), 0)} More`}
+              name={`+${formattedParameters.reduce((count, param) => count + (!param.isVisible ? 1 : 0), 0)}`}
               onClick={() => setShowMore(true)}
+              className="more-parameters-button"
             />
           )}
         </span>
