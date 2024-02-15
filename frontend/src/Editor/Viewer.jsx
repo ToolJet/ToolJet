@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import {
   // appsService,
   authenticationService,
@@ -607,7 +608,7 @@ class ViewerComponent extends React.Component {
 
     if (this.state.app?.isLoading) {
       return (
-        <div className="tooljet-logo-loader">
+        <div className={cx('tooljet-logo-loader', { 'theme-dark': this.props.darkMode })}>
           <div>
             <div className="loader-logo">
               <ViewerLogoIcon />

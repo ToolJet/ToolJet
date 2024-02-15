@@ -2850,7 +2850,8 @@ hr {
           border-radius: 6px 0px 0px 6px;
           border: 1px solid var(--slate7);
           padding: 10px 12px 10px 12px;
-  
+          background-color: unset;
+          color: var(--slate12);
           
           &:focus {
             border: 1px solid var(--slate8);
@@ -2867,6 +2868,8 @@ hr {
           border-radius: 6px 0px 0px 6px;
           border: 1px solid var(--tomato10);
           padding: 10px 12px 10px 12px;
+          background-color: unset;
+          color: var(--slate12);
           }
 
         .disable-text {
@@ -8663,6 +8666,7 @@ tbody {
 
 .logo-nav-card {
   transform: translate(5px, 50px) !important;
+  z-index: 100;
 }
 
 .theme-dark {
@@ -8990,7 +8994,6 @@ tbody {
   .load {
     display: flex;
     justify-content: center;
-    margin: 200px auto;
   }
 
   .load div {
@@ -11913,6 +11916,10 @@ flex-direction: row;
 
   .empty-state-org-constants {
     padding-top: 5rem;
+
+    .info {
+      color: var(--slate11);
+    }
   }
 
   .workspace-constant-card-body {
@@ -14150,4 +14157,8 @@ flex-direction: row;
       gap: 5px; /* space between icons */
     }
   }
+}
+
+#popover-user-menu {
+  box-shadow: 0px 2px 4px -2px var(--indigo1), 0px 4px 8px -2px var(--indigo1);
 }
