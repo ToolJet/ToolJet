@@ -36,7 +36,7 @@ export default function QueryNode(props) {
   const { editorSession, updateQuery } = useContext(WorkflowEditorContext);
   const { data: nodeData, id } = props;
   const queryData = find(editorSession.queries, { idOnDefinition: nodeData.idOnDefinition });
-  const sourceData = find(editorSession.dataSources, { kind: queryData.kind });
+  const sourceData = find(editorSession.dataSources, { id: queryData.data_source_id });
 
   const QueryBuilder = useMemo(() => allSources[capitalize(queryData.kind)], [queryData.kind]);
   const schema = useMemo(() => staticDataSourceSchemas[queryData.kind], [queryData.kind]);
@@ -74,23 +74,31 @@ export default function QueryNode(props) {
 
   const dataSourceOptions = editorSession.dataSources.map((source) => ({
     label: source.name,
-    value: source.name,
+    value: source.type === 'static' ? source.name : source.id,
     kind: source.kind,
     type: source.type,
   }));
 
   const selectedOption =
-    queryData.kind === 'runjs' || queryData.kind === 'restapi' || queryData.kind === 'tooljetdb'
-      ? find(dataSourceOptions, { kind: queryData.kind })
-      : find(dataSourceOptions, { value: queryData.data_source_id });
+    find(dataSourceOptions, { value: queryData.data_source_id }) ||
+    find(dataSourceOptions, { type: 'static', kind: queryData.kind });
 
   const onQueryTypeChange = (option) => {
-    const dataSource = find(editorSession.dataSources, { name: option.label });
+    const dataSource =
+      option.type === 'static'
+        ? find(editorSession.dataSources, { type: 'static', kind: option.kind })
+        : find(editorSession.dataSources, { id: option.value, kind: option.kind });
+
+    const queryName = generateQueryName(dataSource.kind, editorSession.queries);
     updateQuery(queryData.idOnDefinition, {
-      dataSourceId: dataSource.id,
+      id: queryData.id,
       kind: dataSource.kind,
-      name: generateQueryName(dataSource.kind, editorSession.queries),
+      type: dataSource.type,
+      data_source_id: dataSource.id,
+      name: queryName,
     });
+
+    setQueryName(queryName);
   };
 
   const executionDetails = useMemo(() => {
@@ -131,7 +139,7 @@ export default function QueryNode(props) {
           <div className="row">
             <Select
               value={selectedOption}
-              options={dataSourceOptions}
+              options={dataSourceOptions.filter((ds) => ds.kind == selectedOption.kind)}
               className="datasource-selector nodrag"
               onChange={onQueryTypeChange}
             />
@@ -143,6 +151,7 @@ export default function QueryNode(props) {
               queryName={'workflowNode'}
               options={queryData.options}
               currentState={{}}
+              selectedDataSource={sourceData}
               optionsChanged={(options) => updateQuery(queryData.idOnDefinition, { options })}
               optionchanged={(key, value) =>
                 updateQuery(queryData.idOnDefinition, {
