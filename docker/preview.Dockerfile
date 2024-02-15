@@ -39,6 +39,14 @@ RUN apt-get update -yq \
     && apt-get install -yq build-essential \
     && apt-get clean -y
 
+RUN curl -O https://nodejs.org/dist/v18.18.2/node-v18.18.2-linux-x64.tar.xz \
+    && tar -xf node-v18.18.2-linux-x64.tar.xz \
+    && mv node-v18.18.2-linux-x64 /usr/local/lib/nodejs \
+    && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
+    && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
+    && rm node-v18.18.2-linux-x64.tar.xz
+ENV PATH=/usr/local/lib/nodejs/bin:$PATH    
+
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v10.1.1.20221215 /bin/postgrest /bin
 
