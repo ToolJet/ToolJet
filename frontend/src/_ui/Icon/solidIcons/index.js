@@ -143,11 +143,14 @@ import Save from './Save.jsx';
 import Cross from './Cross.jsx';
 import WorkspaceConstants from './WorkspaceConstants.jsx';
 import ArrowBackDown from './ArrowBackDown.jsx';
+import EditIcon from './EditIcon.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
     case 'addrectangle':
       return <AddRectangle {...props} />;
+    case 'editIcon':
+      return <EditIcon {...props} />;
     case 'alignright':
       return <AlignRight {...props} />;
     case 'apps':

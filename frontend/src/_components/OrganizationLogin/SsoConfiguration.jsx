@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Color } from '@/Editor/CodeBuilder/Elements/Color';
+import EditIcon from '@/_ui/Icon/solidIcons/EditIcon';
 
 class SSOConfiguration extends React.Component {
   constructor(props) {
@@ -63,6 +64,13 @@ class SSOConfiguration extends React.Component {
       });
     }
   }
+
+  openModal = (ssoType) => {
+    this.setState({
+      showModal: true,
+      currentSSO: ssoType,
+    });
+  };
 
   closeModal = () => {
     this.setState({ showModal: false });
@@ -150,16 +158,23 @@ class SSOConfiguration extends React.Component {
     const isEnabled = this.state[isEnabledKey];
 
     return (
-      <div className="sso-option" key={key}>
+      <div className="sso-option" key={key} onClick={() => this.openModal(key)}>
         <div className="sso-option-label">
           {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {this.getSSOIcon(key)}
               <span style={{ marginLeft: 8 }}>{name}</span>
+              {
+                <img
+                  src="/assets/images/EditIcon.png"
+                  className="option-icon"
+                  style={{ width: '14px', height: '14px', marginLeft: '8px' }}
+                />
+              }
             </div>
           }
         </div>
-        <label className="switch">
+        <label className="switch" onClick={(e) => e.stopPropagation()}>
           <input type="checkbox" checked={isEnabled} onChange={() => this.handleToggleSSOOption(key)} />
           <span className="slider round"></span>
         </label>
