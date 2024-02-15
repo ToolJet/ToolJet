@@ -12385,3 +12385,24 @@ tbody {
     -moz-appearance: textfield !important;
   }
 }
+
+
+.jet-listview, .react-draggable, .canvas-container {
+  scrollbar-color: transparent;
+  scrollbar-width: thin;
+  &::-webkit-scrollbar {
+    background-color: transparent;
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+  &:hover{
+    &::-webkit-scrollbar-thumb {
+      background-color: #6a727cbf !important;
+    }
+  }
+}
