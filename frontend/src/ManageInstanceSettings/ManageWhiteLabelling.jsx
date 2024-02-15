@@ -21,6 +21,7 @@ class ManageWhiteLabellingComponent extends React.Component {
       settings: {},
       initialSettings: {},
       hasChanges: false,
+      featureAccess: {},
     };
   }
 
@@ -41,7 +42,7 @@ class ManageWhiteLabellingComponent extends React.Component {
     this.setState({ isLoading: true });
     licenseService.getFeatureAccess().then((data) => {
       this.setDisabledStatus(data);
-      this.setState({ isLoading: false });
+      this.setState({ isLoading: false, featureAccess: data });
     });
   };
 
@@ -127,7 +128,8 @@ class ManageWhiteLabellingComponent extends React.Component {
   };
 
   render() {
-    const { settings, isSaving, disabled, isLoading } = this.state;
+    const { settings, isSaving, disabled, isLoading, featureAccess } = this.state;
+    const isTrial = featureAccess?.licenseStatus?.licenseType === 'trial';
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper instance-settings-page animation-fade">
@@ -144,7 +146,9 @@ class ManageWhiteLabellingComponent extends React.Component {
                         'White labelling'
                       )}
                     </div>
-                    {disabled && <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>}
+                    {(disabled || isTrial) && (
+                      <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>
+                    )}
                   </div>
                 </div>
                 <div className="card-body">

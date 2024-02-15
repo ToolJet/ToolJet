@@ -345,6 +345,8 @@ class ManageGroupPermissionsComponent extends React.Component {
       featureAccess?.licenseStatus?.isLicenseValid &&
       featureAccess?.licenseStatus?.licenseType !== 'basic';
 
+    const isTrial = featureAccess?.licenseStatus?.licenseType === 'trial';
+
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper org-users-page animation-fade">
@@ -514,6 +516,10 @@ class ManageGroupPermissionsComponent extends React.Component {
                 showGroupNameUpdateForm
                   ? this.props.t('header.organization.menus.manageGroups.permissions.updateGroup', 'Update group')
                   : this.props.t('header.organization.menus.manageGroups.permissions.addNewGroup', 'Add new group')
+              }
+              customClassName={'add-new-group-modal'}
+              titleAdornment={
+                isTrial && <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>
               }
             >
               <form

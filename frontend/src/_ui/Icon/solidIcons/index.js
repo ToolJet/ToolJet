@@ -35,6 +35,7 @@ import Diamond from './Diamond.jsx';
 import DownArrow from './DownArrow.jsx';
 import EditRectangle from './EditRectangle.jsx';
 import Enterprise from './Enterprise.jsx';
+import EnterpriseSmall from './EnterpriseSmall.jsx';
 import Eye from './Eye.jsx';
 import Eye1 from './Eye1.jsx';
 import EyeDisable from './EyeDisable.jsx';
@@ -248,6 +249,8 @@ const Icon = (props) => {
       return <Enterprise {...props} />;
     case 'enterpriseGradient':
       return <EnterpriseGradient {...props} />;
+    case 'enterprisesmall':
+      return <EnterpriseSmall {...props} />;
     case 'lockGradient':
       return <LockGradient {...props} />;
     case 'datasourceGradient':

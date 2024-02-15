@@ -20,6 +20,14 @@
         font-size: 14px;
     }
 
+    .env-name {
+        display: flex;
+        align-items: center;
+        svg {
+           margin-left: 10px; 
+        }
+    }
+
 }
 
 

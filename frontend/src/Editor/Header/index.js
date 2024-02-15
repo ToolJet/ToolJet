@@ -194,6 +194,7 @@ export default function EditorHeader({
                       setCurrentEnvironment={setCurrentAppEnvironmentId}
                       setCurrentAppVersionPromoted={setCurrentAppVersionPromoted}
                       licenseValid={licenseValid}
+                      licenseType={featureAccess?.licenseStatus?.licenseType}
                     />
                   )}
                   <div className="navbar-seperator"></div>

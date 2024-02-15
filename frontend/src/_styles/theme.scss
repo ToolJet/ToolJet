@@ -8474,9 +8474,15 @@ tbody {
   padding-left: 20px;
   padding-bottom: 24px;
   border-right: 1px solid var(--slate5);
-  &[data-name="Profile settings"], &[data-name="Audit logs"] {
+  &[data-name="Audit logs"], &[data-name="Workspace constants"], &[data-name="Profile settings"] {
     border-right: none;
     border-bottom: 1px solid var(--slate5);
+    display: flex;
+    align-items: center;
+
+    .paid-feature-banner {
+      margin-left: 15px;
+    }
   }
 }
 
@@ -14155,6 +14161,17 @@ flex-direction: row;
       transform: translateY(-50%);
       align-items: center;
       gap: 5px; /* space between icons */
+    }
+  }
+}
+
+.add-new-group-modal {
+  .modal-title {
+    display: flex;
+    align-items: center;
+
+    .paid-feature-banner {
+      margin-left: 8px;
     }
   }
 }
