@@ -17,7 +17,8 @@ export default function generateActions(dispatch) {
     setEditingActivity: (editingActivity) =>
       dispatch({ type: 'SET_FLOW_BUILDER_EDITING_ACTIVITY', payload: { editingActivity } }),
     setAppSavingStatus: (status) => dispatch({ type: 'SET_APP_SAVING_STATUS', payload: { status } }),
-    addQuery: (query, edit) => dispatch({ type: 'ADD_NEW_QUERY', payload: { query, edit } }),
+    addQuery: (query, isStaticDataSource, edit) =>
+      dispatch({ type: 'ADD_NEW_QUERY', payload: { query, isStaticDataSource, edit } }),
     updateQuery: (id, query) => dispatch({ type: 'UPDATE_QUERY', payload: { id, query } }),
     setQueries: (queries, edit) => dispatch({ type: 'SET_QUERIES', payload: { queries, edit } }),
     setBootupComplete: (status) => dispatch({ type: 'SET_BOOTUP_COMPLETE', payload: { status } }),

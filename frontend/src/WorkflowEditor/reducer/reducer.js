@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { defaultQueryNode, defaultIfConditionNode } from './defaults';
+import { defaultQueryNode, defaultIfConditionNode, query } from './defaults';
 import { find } from 'lodash';
 
 export const Modes = {
@@ -50,7 +50,7 @@ export const initialState = ({ appId, appVersionId }) => ({
   queries: [],
   stateHistory: [],
   stateFuture: [],
-  historyIndex : null,
+  historyIndex: null,
   mode: Modes.Editing,
   editingActivity: { type: 'IDLE' },
   appSavingStatus: {
@@ -105,7 +105,7 @@ export const reducer = (state = initialState(), { payload, type }) => {
       return { ...state, app: { ...state.app, versionId: payload.versionId } };
     }
     case 'SET_APP_NAME': {
-      const {name} = payload
+      const { name } = payload;
       return { ...state, app: { ...state.app, name: name } };
     }
     case 'SET_MAINTENANCE_STATUS': {
@@ -129,18 +129,18 @@ export const reducer = (state = initialState(), { payload, type }) => {
     }
 
     case 'SET_UNDO': {
-      const {previousState} = payload
+      const { previousState } = payload;
       return {
         ...previousState,
-        stateFuture:[state, ...state.stateFuture]
+        stateFuture: [state, ...state.stateFuture],
       };
     }
 
     case 'SET_REDO': {
-      const {nextState} = payload
+      const { nextState } = payload;
       return {
         ...nextState,
-        stateHistory:[...state.stateHistory, state]
+        stateHistory: [...state.stateHistory, state],
       };
     }
 
@@ -238,7 +238,6 @@ export const reducer = (state = initialState(), { payload, type }) => {
 
     case 'REMOVE_EDGE': {
       const { edge: edgeToBeRemoved } = payload;
-      // console.log('yepski', { edgeToBeRemoved, edges: state.app.flow.edges });
       return {
         ...state,
         app: {
@@ -281,7 +280,7 @@ export const reducer = (state = initialState(), { payload, type }) => {
         ...state,
         queries: [...state.queries, query],
         stateHistory: [...state.stateHistory, edit],
-        stateFuture : []
+        stateFuture: [],
       };
     }
 
@@ -296,7 +295,25 @@ export const reducer = (state = initialState(), { payload, type }) => {
 
     case 'UPDATE_QUERY': {
       const { query: newQuery, id } = payload;
-      console.log('noop noop', { newQuery });
+
+      // FIXME: If we revise backend to send both static and global
+      // datasources we can avoid initializing static datasources
+      // in the init state of this reducer. This will simplify mapping
+      // query -> datasource with just datasource id
+      const isStaticDataSource = !!state.queries.find((q) => q.kind === newQuery.kind && q.type === 'static');
+      const addIdForStaticDataSourcesIfNull = (query, dataSources) => {
+        return dataSources.map((ds) => {
+          if (ds.id === 'null' && ds.kind === query.kind) {
+            return { ...ds, id: query.data_source_id };
+          } else {
+            return ds;
+          }
+        });
+      };
+      if (isStaticDataSource) {
+        state.dataSources = addIdForStaticDataSourcesIfNull(newQuery, state.dataSources);
+      }
+
       return {
         ...state,
         queries: state.queries.map((query) => (query.idOnDefinition === id ? { ...query, ...newQuery } : query)),
@@ -307,13 +324,13 @@ export const reducer = (state = initialState(), { payload, type }) => {
       const { queries, edit } = payload;
       const filteredObject = {};
 
-      for(const key in edit){
+      for (const key in edit) {
         if (edit[key] !== undefined) {
           filteredObject[key] = edit[key];
         }
       }
       const newStateHistory = [...state.stateHistory];
-      if(Object.keys(filteredObject).length > 0){
+      if (Object.keys(filteredObject).length > 0) {
         newStateHistory.push(filteredObject);
       }
 
@@ -323,7 +340,6 @@ export const reducer = (state = initialState(), { payload, type }) => {
         stateHistory: newStateHistory,
       };
     }
-    
 
     case 'SET_BOOTUP_COMPLETE': {
       const { status } = payload;
