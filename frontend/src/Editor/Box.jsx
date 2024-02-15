@@ -197,7 +197,6 @@ export const Box = memo(
 
     let styles = {
       height: '100%',
-      padding: validatedStyles?.padding === 'none' ? '0px' : '1px',
     };
 
     if (inCanvas) {
@@ -279,8 +278,7 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
-    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'DropDown'];
-
+    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
@@ -311,6 +309,7 @@ export const Box = memo(
           style={{
             ...styles,
             backgroundColor,
+            padding: validatedStyles?.padding ? (validatedStyles?.padding == 'default' ? '1px' : '0px') : '1px',
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >

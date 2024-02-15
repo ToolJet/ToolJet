@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown';
+import './text.scss';
+import Loader from '@/ToolJetUI/Loader/Loader';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -96,6 +98,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
   const handleClick = () => {
     fireEvent('onClick');
   };
+
   const computedStyles = {
     height: `${height}px`,
     backgroundColor: darkMode && ['#edeff5'].includes(backgroundColor) ? '#2f3c4c' : backgroundColor,
@@ -125,6 +128,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     flexDirection: 'column',
     justifyContent: VERTICAL_ALIGNMENT_VS_CSS_VALUE[verticalAlignment],
     textAlign,
+    overflowX: isScrollRequired === 'disabled' && 'hidden',
   };
 
   return (
@@ -138,20 +142,23 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
       }}
       onClick={handleClick}
     >
-      {!isLoading &&
-        (textFormat === 'markdown' ? (
-          <div style={commonStyles}>
-            <Markdown>{text}</Markdown>
-          </div>
-        ) : (
-          <div style={commonStyles}>
-            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text || '') }} />
-          </div>
-        ))}
-      {isLoading && (
-        <div style={{ width: '100%', height: '100%' }} className="d-flex align-items-center justify-content-center">
+      {!isLoading && (
+        <div style={commonStyles} className="text-widget-section">
+          {textFormat === 'plainText' && <div>{text}</div>}
+          {textFormat === 'markdown' && <Markdown className={'reactMarkdown'}>{text}</Markdown>}
+          {(textFormat === 'html' || !textFormat) && (
+            <div
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(text || ''),
+              }}
+            />
+          )}
+        </div>
+      )}
+      {isLoading === true && (
+        <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <center>
-            <div className="spinner-border" role="status"></div>
+            <Loader width="16" absolute={false} />
           </center>
         </div>
       )}

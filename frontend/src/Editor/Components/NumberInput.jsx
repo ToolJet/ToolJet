@@ -6,6 +6,8 @@ import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
+const tinycolor = require('tinycolor2');
+import Label from '@/_ui/Label';
 
 export const NumberInput = function NumberInput({
   height,
@@ -35,6 +37,7 @@ export const NumberInput = function NumberInput({
     auto,
     errTextColor,
     iconColor,
+    accentColor,
   } = styles;
 
   const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
@@ -53,17 +56,19 @@ export const NumberInput = function NumberInput({
   const currentState = useCurrentState();
   const [disable, setDisable] = useState(disabledState || loadingState);
   const labelRef = useRef();
+  const _width = (width / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
 
   useEffect(() => {
     setExposedVariable('label', label);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label]);
 
   useEffect(() => {
-    if (alignment == 'top' && label?.length > 0) {
+    if (alignment == 'top' && ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)))
       adjustHeightBasedOnAlignment(true);
-    } else adjustHeightBasedOnAlignment(false);
+    else adjustHeightBasedOnAlignment(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length, currentLayout]);
+  }, [alignment, label?.length, currentLayout, width, auto]);
 
   useEffect(() => {
     setValue(Number(parseFloat(value).toFixed(properties.decimalPlaces)));
@@ -134,9 +139,9 @@ export const NumberInput = function NumberInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
   useEffect(() => {
-    if (labelRef.current) {
-      const width = labelRef.current.offsetWidth;
-      padding == 'default' ? setLabelWidth(width + 7) : setLabelWidth(width + 5);
+    if (labelRef?.current) {
+      const absolutewidth = labelRef?.current?.getBoundingClientRect()?.width;
+      setLabelWidth(absolutewidth);
     } else setLabelWidth(0);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -146,7 +151,7 @@ export const NumberInput = function NumberInput({
     auto,
     defaultAlignment,
     component?.definition?.styles?.iconVisibility?.value,
-    label?.length,
+    labelRef?.current?.getBoundingClientRect()?.width,
     isMandatory,
     padding,
     direction,
@@ -159,24 +164,25 @@ export const NumberInput = function NumberInput({
   }, [isValid]);
 
   const computedStyles = {
-    height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height - 4 : height,
+    height: height == 36 ? (padding == 'default' ? '36px' : '38px') : padding == 'default' ? height : height + 2,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: isFocused
-      ? '#3E63DD'
+      ? accentColor
       : ['#D7DBDF'].includes(borderColor)
       ? darkMode
-        ? '#4C5155'
-        : '#D7DBDF'
+        ? '#6D757D7A'
+        : '#6A727C47'
       : borderColor,
-    backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    boxShadow:
-      boxShadow !== '0px 0px 0px 0px #00000040' ? boxShadow : isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
-    padding: styles.iconVisibility
-      ? padding == 'default'
-        ? '3px 5px 3px 29px'
-        : '3px 5px 3px 29px'
-      : '3px 5px 3px 5px',
+    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
+    backgroundColor:
+      darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
+
+    boxShadow: boxShadow,
+    padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
+    // flex: padding !== 'none' && 1,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   };
 
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
@@ -246,84 +252,88 @@ export const NumberInput = function NumberInput({
       setValue('');
       setExposedVariable('value', '').then(fireEvent('onChange'));
     });
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const renderInput = () => {
-    const loaderStyle = {
-      right: alignment == 'top' ? `33px` : direction == 'left' ? `33px` : `${labelWidth + 35}px`,
-      top: alignment == 'side' ? '' : `53%`,
-      transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
-    };
+  const loaderStyle = {
+    right:
+      direction === 'right' &&
+      defaultAlignment === 'side' &&
+      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+        ? `${labelWidth + 11 + 20}px` // 23 px usual + 20 for number input arrows
+        : '31px',
+    top: `${
+      defaultAlignment === 'top'
+        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
+          'calc(50% + 10px)'
+        : ''
+    }`,
+    transform:
+      defaultAlignment === 'top' &&
+      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
+      ' translateY(-50%)',
+    zIndex: 3,
+  };
 
+  const renderInput = () => {
     return (
       <>
         <div
+          data-cy={`label-${String(component.name).toLowerCase()}`}
           data-disabled={disable || loading}
-          className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
-            direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
-          }
+          className={`text-input tj-number-input-widget  d-flex  ${
+            defaultAlignment === 'top' &&
+            ((width != 0 && label && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
+              ? 'flex-column'
+              : 'align-items-center '
+          }  ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
          ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
          ${visibility || 'invisible'}`}
           style={{
-            padding: padding === 'default' ? '2px' : '',
             position: 'relative',
             width: '100%',
             display: !visibility ? 'none' : 'flex',
             whiteSpace: 'nowrap',
           }}
         >
-          {label && width > 0 && (
-            <label
-              ref={labelRef}
-              style={{
-                color: darkMode && color === '#11181C' ? '#fff' : color,
-                width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${width}%` : '100%',
-                maxWidth: auto && defaultAlignment === 'side' ? '70%' : '100%',
-                marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '9px' : '',
-                marginLeft: label?.length > 0 && direction === 'right' && defaultAlignment === 'side' ? '9px' : '',
-                display: 'flex',
-                fontWeight: 500,
-                justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
-                fontSize: '12px',
-              }}
-            >
-              <span
-                style={{
-                  overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
-                  textOverflow: 'ellipsis', // Display ellipsis for overflowed content
-                  whiteSpace: 'nowrap',
-                  display: 'block',
-                }}
-              >
-                {label}
-              </span>
-              <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
-            </label>
-          )}
+          <Label
+            label={label}
+            width={width}
+            labelRef={labelRef}
+            darkMode={darkMode}
+            color={color}
+            defaultAlignment={defaultAlignment}
+            direction={direction}
+            auto={auto}
+            isMandatory={isMandatory}
+            _width={_width}
+            labelWidth={labelWidth}
+          />
           {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
             <IconElement
+              data-cy={'text-input-icon'}
               style={{
                 width: '16px',
                 height: '16px',
-
                 left:
                   direction === 'right'
-                    ? padding == 'default'
-                      ? '13px'
-                      : '11px'
+                    ? '11px'
                     : defaultAlignment === 'top'
-                    ? padding == 'default'
-                      ? '13px'
-                      : '11px'
-                    : `${labelWidth + 15}px`,
+                    ? '11px'
+                    : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
+                    ? `${labelWidth + 11}px`
+                    : '11px', //23 ::  is 10 px inside the input + 1 px border + 12px margin right
                 position: 'absolute',
                 top: `${
-                  defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
+                  defaultAlignment === 'side'
+                    ? '50%'
+                    : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
+                    ? 'calc(50% + 10px)'
+                    : '50%'
                 }`,
                 transform: ' translateY(-50%)',
                 color: iconColor,
+                zIndex: 3,
               }}
               stroke={1.5}
             />
@@ -361,32 +371,20 @@ export const NumberInput = function NumberInput({
               <div onClick={(e) => handleIncrement(e)}>
                 <SolidIcon
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  height={`${
-                    height == 40 ? (padding == 'default' ? 18 : 20) : padding == 'default' ? height / 2 - 3 : height / 2
-                  }px`}
+                  height={`${height / 2}px`}
                   style={{
-                    top:
-                      defaultAlignment === 'top' && label?.length > 0 && width > 0
-                        ? padding == 'default'
-                          ? '23px'
-                          : '21px'
-                        : padding == 'default'
-                        ? '3px'
-                        : '1px',
+                    top: defaultAlignment === 'top' && label?.length > 0 && width > 0 ? '21px' : '1px',
                     right:
                       labelWidth == 0
-                        ? padding == 'default'
-                          ? '3px'
-                          : '0px'
+                        ? '1px'
                         : alignment == 'side' && direction === 'right'
-                        ? `${labelWidth + 5}px`
-                        : padding == 'default'
-                        ? '3px'
+                        ? `${labelWidth + 1}px`
                         : '1px',
                     borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
                     borderBottom: darkMode ? '.5px solid #313538' : '0.5px solid #D7D7D7',
                     borderTopRightRadius: borderRadius - 1,
                     backgroundColor: !darkMode ? 'white' : 'black',
+                    zIndex: 3,
                   }}
                   className="numberinput-up-arrow arrow"
                   name="cheveronup"
@@ -398,24 +396,19 @@ export const NumberInput = function NumberInput({
                   style={{
                     right:
                       labelWidth == 0
-                        ? padding == 'default'
-                          ? '3px'
-                          : '0px'
+                        ? '1px'
                         : alignment == 'side' && direction === 'right'
-                        ? `${labelWidth + 5}px`
-                        : padding == 'default'
-                        ? '3px'
+                        ? `${labelWidth + 1}px`
                         : '1px',
-                    bottom: padding == 'default' ? '3px' : '1px',
+                    bottom: '1px',
                     borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
                     borderTop: darkMode ? '0.5px solid #313538' : '0.5px solid #D7D7D7',
                     borderBottomRightRadius: borderRadius - 1,
                     backgroundColor: !darkMode ? 'white' : 'black',
+                    zIndex: 3,
                   }}
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  height={`${
-                    height == 40 ? (padding == 'default' ? 18 : 20) : padding == 'default' ? height / 2 - 3 : height / 2
-                  }px`}
+                  height={`${height / 2}px`}
                   className="numberinput-down-arrow arrow"
                   name="cheverondown"
                 ></SolidIcon>
@@ -429,7 +422,10 @@ export const NumberInput = function NumberInput({
           <div
             className="tj-text-sm"
             data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-            style={{ color: errTextColor, textAlign: direction == 'left' && 'end' }}
+            style={{
+              color: errTextColor,
+              textAlign: direction == 'left' && 'end',
+            }}
           >
             {showValidationError && validationError}
           </div>

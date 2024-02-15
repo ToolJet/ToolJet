@@ -188,7 +188,7 @@ export const commonWidgetText = {
   accordionEvents: "Events",
   accordionGenaral: "General",
   accordionValidation: "Validation",
-  accordionLayout: "Layout",
+  accordionLayout: "Devices",
   accordionDevices: "Devices",
 
   parameterCustomValidation: "Custom validation",

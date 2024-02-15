@@ -433,19 +433,6 @@ export function CodeHinter({
     }
   };
 
-  const getExclusiveElementProps = () => {
-    if (component.component.component === 'TextInput') {
-      return {
-        disabled: component?.component?.definition?.styles?.auto?.value,
-      };
-    }
-    if (component.component.component === 'DropDown') {
-      return {
-        disabled: component?.component?.definition?.styles?.labelAutoWidth?.value,
-      };
-    }
-  };
-
   const onFocusHandler = () => {
     setFocused(true);
     updatePreview();
@@ -473,7 +460,6 @@ export function CodeHinter({
               labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'label-hinter-margin' : 'mb-0'} ${
                 darkMode && 'color-whitish-darkmode'
               }`}
-              // bold={!AllElements.hasOwnProperty(TypeMapping[type]) ? true : false}
             />
           </div>
         )}
@@ -509,7 +495,6 @@ export function CodeHinter({
                 isIcon={isIcon}
                 staticText={staticText}
                 component={component}
-                {...getExclusiveElementProps()}
               />
             )}
           </div>
