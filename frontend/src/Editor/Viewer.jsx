@@ -113,15 +113,6 @@ class ViewerComponent extends React.Component {
       };
     }
 
-    let mobileLayoutHasWidgets = false;
-
-    if (this.props.currentLayout === 'mobile') {
-      const currentComponents = appDefData.pages[appDefData.homePageId].components;
-      mobileLayoutHasWidgets =
-        Object.keys(currentComponents).filter((componentId) => currentComponents[componentId]['layouts']['mobile'])
-          .length > 0;
-    }
-
     let queryState = {};
     let dataQueries = [];
 
@@ -202,7 +193,7 @@ class ViewerComponent extends React.Component {
       ...variables,
       ...constants,
     });
-    useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
+    useEditorStore.getState().actions.toggleCurrentLayout(this.props?.currentLayout == 'mobile' ? 'mobile' : 'desktop');
     this.props.updateState({ events: data.events ?? [] });
     this.setState(
       {
@@ -211,7 +202,7 @@ class ViewerComponent extends React.Component {
         canvasWidth:
           this.props.currentLayout === 'desktop'
             ? '100%'
-            : mobileLayoutHasWidgets
+            : this.props?.currentLayout === 'mobile'
             ? `${this.state.deviceWindowWidth}px`
             : '1292px',
         selectedComponent: null,
