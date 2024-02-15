@@ -42,7 +42,8 @@ describe("App Export Functionality", () => {
       .should("be.visible")
       .invoke("text")
       .then(() => {
-        cy.get(commonSelectors.editorPageLogo).should("be.visible").click();
+        cy.get(commonSelectors.editorPageLogo).should("be.visible");
+        cy.backToApps();
         cy.get(commonSelectors.appHeaderLable).should("be.visible");
         cy.reload();
         selectAppCardOption(
@@ -99,7 +100,7 @@ describe("App Export Functionality", () => {
       .should("be.visible")
       .invoke("text")
       .then(() => {
-        cy.get(commonSelectors.editorPageLogo).click();
+        cy.backToApps();
         cy.get(commonSelectors.appHeaderLable).should("be.visible");
         selectAppCardOption(
           data.appName1,

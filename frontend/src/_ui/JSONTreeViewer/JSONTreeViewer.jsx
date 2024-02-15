@@ -3,6 +3,7 @@ import React from 'react';
 import { JSONNode } from './JSONNode';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import WidgetIcon from '@/../assets/images/icons/widgets';
+import { ToolTip } from '@/_components/ToolTip';
 
 export class JSONTreeViewer extends React.Component {
   constructor(props) {
@@ -88,7 +89,7 @@ export class JSONTreeViewer extends React.Component {
   };
 
   renderNodeIcons = (node) => {
-    const icon = this.props.iconsList.filter((icon) => icon?.iconName === node)[0];
+    const icon = this.props.iconsList.filter((icon) => icon?.iconName === node && !icon?.isInfoIcon)[0];
     if (icon && icon?.iconPath) {
       return (
         <WidgetIcon
@@ -99,8 +100,40 @@ export class JSONTreeViewer extends React.Component {
       );
     }
     if (icon && icon.jsx) {
+      if (icon?.tooltipMessage) {
+        return (
+          <ToolTip message={icon?.tooltipMessage}>
+            <div>{icon.jsx()}</div>
+          </ToolTip>
+        );
+      }
       return icon.jsx();
     }
+  };
+
+  renderCurrentNodeInfoIcon = (node) => {
+    const icon = this.props.iconsList.filter((icon) => icon?.iconName === node)[0];
+    if (icon?.isInfoIcon) {
+      if (icon && icon?.iconPath) {
+        return (
+          <WidgetIcon
+            name={this.extractComponentName(icon?.iconPath)}
+            fill={this.props.darkMode ? '#3A3F42' : '#D7DBDF'}
+            width="16"
+          />
+        );
+      }
+      if (icon && icon.jsx) {
+        if (icon?.tooltipMessage) {
+          return (
+            <ToolTip message={icon?.tooltipMessage}>
+              <div className="d-flex">{icon.jsx()}</div>
+            </ToolTip>
+          );
+        }
+        return icon.jsx();
+      }
+    } else return null;
   };
 
   updateSelectedNode = (node, path) => {
@@ -236,6 +269,7 @@ export class JSONTreeViewer extends React.Component {
             getAbsoluteNodePath={this.getAbsoluteNodePath}
             fontSize={this.props.fontSize ?? '12px'}
             inspectorTree={this.props.treeType === 'inspector'}
+            renderCurrentNodeInfoIcon={this.renderCurrentNodeInfoIcon}
           />
         </ErrorBoundary>
       </div>

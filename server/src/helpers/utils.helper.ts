@@ -235,3 +235,22 @@ export function extractMajorVersion(version) {
 export function isTooljetVersionWithNormalizedAppDefinitionSchem(version) {
   return semver.satisfies(semver.coerce(version), '>= 2.24.0');
 }
+
+export const getMaxCopyNumber = (existNameList) => {
+  if (existNameList.length == 0) return '';
+  const filteredNames = existNameList.filter((name) => {
+    const parts = name.group.split('_');
+    return !isNaN(parseInt(parts[parts.length - 1]));
+  });
+
+  // Extracting numbers from the filtered names
+  const numbers = filteredNames.map((name) => {
+    const parts = name.group.split('_');
+    return parseInt(parts[parts.length - 1]);
+  });
+
+  // Finding the maximum number
+  // Creating the new name with maxNumber + 1
+  const maxNumber = Math.max(...numbers, 0);
+  return maxNumber + 1;
+};
