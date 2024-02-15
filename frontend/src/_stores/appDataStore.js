@@ -52,11 +52,17 @@ export const useAppDataStore = create(
             useAppDataStore.getState().actions.setIsSaving(true);
             const isComponentCutProcess = get().appDiffOptions?.componentCut === true;
 
+            let updateDiff = appDefinitionDiff.updateDiff;
+
+            if (appDefinitionDiff.operation === 'update') {
+              updateDiff = useResolveStore.getState().actions.findReferences(updateDiff);
+            }
+
             appVersionService
               .autoSaveApp(
                 appId,
                 versionId,
-                appDefinitionDiff.updateDiff,
+                updateDiff,
                 appDefinitionDiff.type,
                 pageId,
                 appDefinitionDiff.operation,

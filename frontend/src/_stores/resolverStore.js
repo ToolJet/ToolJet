@@ -1,7 +1,9 @@
 import { create } from 'zustand';
-import { createReferencesLookup } from './utils';
+import { createReferencesLookup, findAllEntityReferences, findEntityId } from './utils';
 import { createJavaScriptSuggestions } from '../Editor/CodeEditor/utils';
 import { v4 as uuid } from 'uuid';
+import _ from 'lodash';
+import { dfs } from './handleReferenceTransactions';
 
 class ReferencesBiMap {
   constructor() {
@@ -17,7 +19,7 @@ class ReferencesBiMap {
   }
 
   has(key) {
-    return this._map.get(key);
+    return this._map.has(key);
   }
 
   get(key) {
@@ -104,6 +106,49 @@ export const useResolveStore = create(
 
       getReferenceMapper: () => {
         return get().referenceMapper;
+      },
+
+      getEntityId: (entityName) => {
+        const { referenceMapper } = get();
+
+        for (const [key, value] of referenceMapper._map) {
+          if (value === entityName) {
+            return referenceMapper.reverseGet(key);
+          }
+        }
+      },
+
+      findReferences: (obj) => {
+        const entityNameReferences = findAllEntityReferences(obj, []);
+
+        if (entityNameReferences.length === 0) return obj;
+
+        function findEntityIdsFromRefNames(refs) {
+          const entityMap = {};
+          const manager = get().referenceMapper;
+
+          refs.forEach((entityName) => {
+            if (!entityName) return;
+
+            entityMap[entityName] = findEntityId(entityName, manager._map, manager._reverseMap);
+          });
+
+          return entityMap;
+        }
+
+        const entityRefs = findEntityIdsFromRefNames(entityNameReferences);
+
+        if (!_.isEmpty(entityRefs)) {
+          let diffObj = _.cloneDeep(obj);
+
+          for (const [key, value] of Object.entries(entityRefs)) {
+            diffObj = dfs(diffObj, key, value);
+          }
+
+          return diffObj;
+        }
+
+        return obj;
       },
     },
   }),

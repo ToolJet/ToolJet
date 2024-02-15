@@ -427,22 +427,35 @@ export function createReferencesLookup(refState, forQueryParams = false) {
   return { suggestionList, hintsMap, resolvedRefs };
 }
 
-//* finding references within deeply nested objects using Depth-First Search (DFS) traversal
-export function dfs(node, oldRef, newRef) {
+export function findAllEntityReferences(node, allRefs) {
   if (typeof node === 'object') {
     for (let key in node) {
       const value = node[key];
       if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
-        const referenceExists = value.includes(oldRef);
+        const referenceExists = value;
 
         if (referenceExists) {
-          node[key] = value.replace(oldRef, newRef);
+          const ref = value.replace('{{', '').replace('}}', '');
+
+          const entityName = ref.split('.')[1];
+
+          allRefs.push(entityName);
         }
       } else if (typeof value === 'object') {
-        dfs(value, oldRef, newRef);
+        findAllEntityReferences(value, allRefs);
       }
     }
   }
+  return allRefs;
+}
 
-  return node;
+export function findEntityId(entityName, map, reverseMap) {
+  for (const [key, value] of map.entries()) {
+    const lookupid = value;
+    const reverseValue = reverseMap.get(lookupid);
+
+    if (reverseValue === entityName) {
+      return key;
+    }
+  }
 }
