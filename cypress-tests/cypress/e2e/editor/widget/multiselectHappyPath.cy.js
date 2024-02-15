@@ -66,7 +66,9 @@ describe("Multiselect widget", () => {
       "General",
     ]);
     verifyAndModifyParameter(commonWidgetText.parameterLabel, data.label);
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.get(multiselectSelector.multiselectLabel(data.widgetName)).should(
       "have.text",
       data.label
@@ -77,7 +79,9 @@ describe("Multiselect widget", () => {
       commonWidgetText.labelDefaultValue,
       codeMirrorInputLabel("[1,2,3]")
     );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     verifyMultiselectHeader(
       data.widgetName,
       multiselectText.labelAllItemsSelected
@@ -147,7 +151,9 @@ describe("Multiselect widget", () => {
       multiselectText.noEventsMessage
     );
     addDefaultEventHandler(data.alertMessage);
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
 
     selectFromMultiSelect(data.widgetName, ["", "", "true"]);
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
@@ -214,7 +220,9 @@ describe("Multiselect widget", () => {
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput
     );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.get(
       commonWidgetSelector.draggableWidget(multiselectText.defaultWidgetName)
     )

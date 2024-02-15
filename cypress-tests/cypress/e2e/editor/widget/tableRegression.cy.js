@@ -678,7 +678,9 @@ describe("Table", () => {
       commonWidgetText.borderRadiusInput
     );
 
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     openEditorSidebar(tableText.defaultWidgetName);
     openAccordion("Columns");
     deleteAndVerifyColumn("email");
@@ -698,7 +700,9 @@ describe("Table", () => {
       "Border radius",
       commonWidgetText.borderRadiusInput
     );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
 
     cy.get(
       commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)

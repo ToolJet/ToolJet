@@ -163,7 +163,9 @@ describe("List view widget", () => {
         `components.${data.widgetName}.selectedRow.${commonWidgetText.textinput1}.value`
       )
     );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.get(`[data-cy=${data.widgetName.toLowerCase()}-row-1]`).click();
@@ -235,7 +237,9 @@ describe("List view widget", () => {
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput
     );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.get(
       commonWidgetSelector.draggableWidget(listviewText.defaultWidgetName)
     ).should("have.css", "border-radius", "20px");
@@ -381,7 +385,9 @@ describe("List view widget", () => {
       commonWidgetText.borderRadiusInput
     );
 
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.get(
       commonWidgetSelector.draggableWidget(listviewText.defaultWidgetName)
     ).should("have.css", "border-radius", "20px");
