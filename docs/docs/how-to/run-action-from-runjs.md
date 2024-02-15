@@ -9,7 +9,7 @@ ToolJet allows you to execute various [actions](/docs/actions/show-alert) within
 
 ## Run Query Action
 
-**Syntax:**
+To trigger a query, you can use the below functions:
 
 ```js
 queries.queryName.run();
@@ -27,13 +27,15 @@ In the following screenshot, we demonstrate triggering two different queries, `g
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/runqueryn.png" alt="Print data from multiple tabs" />
 </div>
 
-</div>
+In the previous section, we saw how we can trigger queries. Once the queries are triggered, if you want to immediately use the data returned by the query inside the RunJS query, you can use the `getData()`, `getRawData()` and `getLoadingState()` functions:
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Set Variable Action
 
-**Syntax:**
+let value = queries.getSalesData.getData(); 
+// replace getSalesData with your query name
+```
 
 ```javascript
 actions.setVariable(variableName, variableValue);
@@ -47,13 +49,17 @@ In this example, we set two variables, `test` and `test2`. Note that `test` cont
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/setvariablen.png" alt="Print data from multiple tabs" />
 </div>
 
-</div>
+To create a variable, you can use the below function:
+
+```javascript
+actions.setVariable('<variableName>', `<variableValue>`)
+```
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Unset Variable Action
 
-**Syntax:**
+To delete a created variable, you can use the below function:
 
 ```javascript
 actions.unSetVariable(variableName);
@@ -67,13 +73,22 @@ In the following screenshot, we unset the variable `test2` that was created in t
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/unsetvarn.png" alt="Print data from multiple tabs" />
 </div>
 
-</div>
+return actions.getVariable('mode');
+```
+
+#### Retrieve the current value of a page-specific variable:
+```js
+actions.setPageVariable('number',1);
+//replace number with your desired variable name
+
+return actions.getPageVariable('number');
+```
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Logout Action
 
-**Syntax:**
+To log out the current logged-in user from the ToolJet, use the below function:
 
 ```javascript
 actions.logout();
@@ -93,7 +108,7 @@ Executing `actions.logout()` will log out the current user from ToolJet and redi
 
 ## Show Modal Action
 
-**Syntax:**
+To open a modal using RunJS query, use the below function:
 
 ```javascript
 actions.showModal('modalName');
@@ -113,7 +128,7 @@ In this example, a modal named `formModal` is present on the canvas, and we use 
 
 ## Close Modal Action
 
-**Syntax:**
+To close a modal using RunJS query, use the below function:
 
 ```javascript
 actions.closeModal('modalName');
@@ -149,7 +164,7 @@ actions.setLocalStorage('key', 'value');
 
 ## Copy to Clipboard Action
 
-**Syntax:**
+Use the below code to copy content to the clipboard:
 
 ```javascript
 actions.copyToClipboard('contentToCopy');
@@ -165,7 +180,7 @@ actions.copyToClipboard('contentToCopy');
 
 ## Generate File Action
 
-**Syntax:**
+The below action can be used to generate a file.
 
 ```js
 actions.generateFile('fileName', 'fileType', 'data');
@@ -199,7 +214,7 @@ actions.generateFile('Pdffile1', 'pdf', '{{components.table1.currentPageData}}')
 
 ## Go to App Action
 
-**Syntax:**
+You can switch to a different application using the below action:
 
 ```javascript
 actions.goToApp('slug', queryparams)
@@ -219,7 +234,7 @@ actions.goToApp('slug', queryparams)
 
 ## Show Alert Action
 
-**Syntax:**
+To show an alert using RunJS query, use the below code:
 
 ```js
 actions.showAlert(alertType, message); // alert types are info, success, warning, and error
@@ -235,7 +250,6 @@ actions.showAlert('error', 'This is an error')
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/showalertn.png" alt="Print data from multiple tabs" />
 </div>
 
-</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
