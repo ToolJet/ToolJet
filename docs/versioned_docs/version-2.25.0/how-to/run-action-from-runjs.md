@@ -1,6 +1,6 @@
 ---
 id: run-actions-from-runjs
-title: Triggering Actions from RunJS query
+title: Run Actions from RunJS query
 ---
 
 ToolJet allows you to execute various [actions](/docs/actions/show-alert) within RunJS queries. This guide outlines the syntax and examples for each action.
