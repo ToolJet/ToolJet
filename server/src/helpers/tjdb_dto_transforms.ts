@@ -5,7 +5,7 @@ import { ImportTooljetDatabaseDto } from '@dto/import-resources.dto';
 import { isVersionGreaterThanOrEqual } from './utils.helper';
 
 const transformationsByVersion = {
-  '2.29.0': (dto: ImportTooljetDatabaseDto) => {
+  '2.30.0': (dto: ImportTooljetDatabaseDto) => {
     const transformedColumns = dto.schema.columns.map((col) => {
       col.constraints_type = {
         is_primary_key: col.constraint_type === 'PRIMARY KEY',
