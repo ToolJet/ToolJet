@@ -54,7 +54,7 @@ class OrganizationLogin extends React.Component {
       options: { ...initialOptions },
       initialOptions: { ...initialOptions },
       ssoOptions: [...ssoConfigs],
-      defaultSSO: organizationService?.inherit_s_s_o,
+      defaultSSO: organizationSettings?.inherit_s_s_o,
     });
   }
 
@@ -163,7 +163,8 @@ class OrganizationLogin extends React.Component {
 
   render() {
     const { t, darkMode } = this.props;
-    const { options, isSaving, showDisablingPasswordConfirmation, isAnySSOEnabled, ssoOptions, defaultSSO } = this.state;
+    const { options, isSaving, showDisablingPasswordConfirmation, isAnySSOEnabled, ssoOptions, defaultSSO } =
+      this.state;
     const flexContainerStyle = {
       display: 'flex',
       flexDirection: 'row',
@@ -183,109 +184,105 @@ class OrganizationLogin extends React.Component {
                 </div>
               </div>
               <div className="card-body" style={flexContainerStyle}>
-              <div style={{ width: '50%' }}>
-                <form noValidate className="sso-form-wrap" style={{ width: '472px' }}>
-                  <div className="form-group tj-app-input">
-                    <label className="form-label bold-text" data-cy="allowed-domain-label">
-                      {t('header.organization.menus.manageSSO.generalSettings.domain', `Allowed domains`)}
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder={t(`Enter allowed domains`)}
-                      name="domain"
-                      value={options.domain}
-                      onChange={(e) => this.handleInputChange('domain', e)}
-                      data-cy="allowed-domains"
-                    />
-                  </div>
-                  <div className="tj-text-xxsm mb-3">
-                    <div data-cy="allowed-domain-helper-text">
-                      {t(
-                        'header.organization.menus.manageSSO.generalSettings.supportMultidomains',
-                        `Support multiple domain. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
-                      )}
+                <div style={{ width: '50%' }}>
+                  <form noValidate className="sso-form-wrap" style={{ width: '472px' }}>
+                    <div className="form-group tj-app-input">
+                      <label className="form-label bold-text" data-cy="allowed-domain-label">
+                        {t('header.organization.menus.manageSSO.generalSettings.domain', `Allowed domains`)}
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder={t(`Enter allowed domains`)}
+                        name="domain"
+                        value={options.domain}
+                        onChange={(e) => this.handleInputChange('domain', e)}
+                        data-cy="allowed-domains"
+                      />
                     </div>
-                  </div>
-                  <div className="form-group mb-3">
-                    <label className="form-label bold-text" data-cy="workspace-login-url-label">
-                      {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
-                    </label>
-                    <div className="d-flex justify-content-between form-control align-items-center">
-                      <p id="login-url" data-cy="workspace-login-url">
-                        {`${window.public_config?.TOOLJET_HOST}${
-                          window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                        }login/${
-                          authenticationService?.currentSessionValue?.current_organization_slug ||
-                          authenticationService?.currentSessionValue?.current_organization_id
-                        }`}
-                      </p>
-                      <SolidIcon name="copy" width="16" onClick={() => this.copyFunction('login-url')} />
-                    </div>
-                    <div className="mt-1 tj-text-xxsm">
-                      <div data-cy="workspace-login-help-text">
+                    <div className="tj-text-xxsm mb-3">
+                      <div data-cy="allowed-domain-helper-text">
                         {t(
-                          'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
-                          `Use this URL to login directly to this workspace`
+                          'header.organization.menus.manageSSO.generalSettings.supportMultidomains',
+                          `Support multiple domain. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
                         )}
                       </div>
                     </div>
-                  </div>
-                  <div className="form-group mb-3">
-                    <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        onChange={() => this.handleCheckboxChange('enableSignUp')}
-                        checked={options?.enableSignUp === true}
-                        data-cy="enable-sign-up-toggle"
-                      />
-                      <span className="form-check-label bold-text" data-cy="enable-sign-up-label">
-                        {t('header.organization.menus.manageSSO.generalSettings.enableSignup', 'Enable signup')}
-                      </span>
-                    </label>
-                    <div className="help-text danger-text-login">
-                      <div data-cy="enable-sign-up-helper-text">
-                        Users will be able to sign up without being invited
-                      </div>
-                    </div>
-                  </div>
-                  <div className="form-group mb-3">
-                    <ToolTip
-                      message="Password login cannot be disabled unless SSO is configured"
-                      placement="left"
-                      show={!isAnySSOEnabled}
-                    >
-                      <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
-                        <div>
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            onChange={() => this.handleCheckboxChange('passwordLoginEnabled')}
-                            data-cy="password-enable-toggle"
-                            checked={options?.passwordLoginEnabled === true}
-                            disabled={!isAnySSOEnabled}
-                          />
-                          <span className="form-check-label bold-text" data-cy="label-password-login">
-                            Password login
-                          </span>
-                        </div>
+                    <div className="form-group mb-3">
+                      <label className="form-label bold-text" data-cy="workspace-login-url-label">
+                        {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
                       </label>
-                    </ToolTip>
-                    <div className="help-text tj-text-xsm danger-text-login">
-                      <div data-cy="disable-password-helper-text">
-                        Disable password login only if your SSO is configured otherwise you will get locked out
+                      <div className="d-flex justify-content-between form-control align-items-center">
+                        <p id="login-url" data-cy="workspace-login-url">
+                          {`${window.public_config?.TOOLJET_HOST}${
+                            window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+                          }login/${
+                            authenticationService?.currentSessionValue?.current_organization_slug ||
+                            authenticationService?.currentSessionValue?.current_organization_id
+                          }`}
+                        </p>
+                        <SolidIcon name="copy" width="16" onClick={() => this.copyFunction('login-url')} />
+                      </div>
+                      <div className="mt-1 tj-text-xxsm">
+                        <div data-cy="workspace-login-help-text">
+                          {t(
+                            'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
+                            `Use this URL to login directly to this workspace`
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </form>
+                    <div className="form-group mb-3">
+                      <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          onChange={() => this.handleCheckboxChange('enableSignUp')}
+                          checked={options?.enableSignUp === true}
+                          data-cy="enable-sign-up-toggle"
+                        />
+                        <span className="form-check-label bold-text" data-cy="enable-sign-up-label">
+                          {t('header.organization.menus.manageSSO.generalSettings.enableSignup', 'Enable signup')}
+                        </span>
+                      </label>
+                      <div className="help-text danger-text-login">
+                        <div data-cy="enable-sign-up-helper-text">
+                          Users will be able to sign up without being invited
+                        </div>
+                      </div>
+                    </div>
+                    <div className="form-group mb-3">
+                      <ToolTip
+                        message="Password login cannot be disabled unless SSO is configured"
+                        placement="left"
+                        show={!isAnySSOEnabled}
+                      >
+                        <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
+                          <div>
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              onChange={() => this.handleCheckboxChange('passwordLoginEnabled')}
+                              data-cy="password-enable-toggle"
+                              checked={options?.passwordLoginEnabled === true}
+                              disabled={!isAnySSOEnabled}
+                            />
+                            <span className="form-check-label bold-text" data-cy="label-password-login">
+                              Password login
+                            </span>
+                          </div>
+                        </label>
+                      </ToolTip>
+                      <div className="help-text tj-text-xsm danger-text-login">
+                        <div data-cy="disable-password-helper-text">
+                          Disable password login only if your SSO is configured otherwise you will get locked out
+                        </div>
+                      </div>
+                    </div>
+                  </form>
                 </div>
                 <div style={{ width: '50%' }}>
-                  <SSOConfiguration
-                    isAnySSOEnabled={isAnySSOEnabled}
-                    ssoOptions={ssoOptions}
-                    defaultSSO={defaultSSO}
-                  />
+                  <SSOConfiguration isAnySSOEnabled={isAnySSOEnabled} ssoOptions={ssoOptions} defaultSSO={defaultSSO} />
                 </div>
               </div>
               <div className="card-footer">
