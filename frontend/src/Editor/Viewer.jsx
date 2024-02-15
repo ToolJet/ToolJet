@@ -381,6 +381,7 @@ class ViewerComponent extends React.Component {
         if (currentSession?.group_permissions) {
           this.setState({ environmentId });
           useSuperStore.getState().modules[this.context].useAppDataStore.getState().actions.setAppId(appId);
+          useSuperStore.getState().modules[this.context].useEditorStore.getState().actions.loadModules();
 
           const currentUser = currentSession.current_user;
           const userVars = {
@@ -429,10 +430,8 @@ class ViewerComponent extends React.Component {
   componentDidMount() {
     this.setupViewer();
     const isMobileDevice = this.state.deviceWindowWidth < 600;
-    useSuperStore
-      .getState()
-      .modules[this.context].useEditorStore.getState()
-      .actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
+    const editorStoreActions = useSuperStore.getState().modules[this.context].useEditorStore.getState().actions;
+    editorStoreActions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
     window.addEventListener('message', this.handleMessage);
   }
 
@@ -772,6 +771,7 @@ class ViewerComponent extends React.Component {
                                     canvasWidth={this.props.width ? this.props.width : this.getCanvasWidth()}
                                     dataQueries={dataQueries}
                                     currentPageId={this.state.currentPageId}
+                                    customResolvables={this.props.customResolvables}
                                   />
                                 )}
                               </>
@@ -861,6 +861,7 @@ class ViewerComponent extends React.Component {
                                     canvasWidth={this.props.width ? this.props.width : this.getCanvasWidth()}
                                     dataQueries={dataQueries}
                                     currentPageId={this.state.currentPageId}
+                                    customResolvables={this.props.customResolvables}
                                   />
                                 )}
                               </>

@@ -11,6 +11,8 @@ import { EventsService } from './events_handler.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { App } from 'src/entities/app.entity';
+import { find } from 'lodash';
 
 @Injectable()
 export class PageService {
@@ -284,5 +286,19 @@ export class PageService {
     });
 
     return rearrangedPages;
+  }
+
+  async findModuleContainer(app: App): Promise<any> {
+    const version = app.editingVersion;
+    const pages = await this.findPagesForVersion(version.id);
+    const page = pages[0];
+    const components = await this.componentsService.getAllComponents(page.id);
+
+    const moduleContainer = find(
+      Object.values(components),
+      (component) => component?.component?.component === 'ModuleContainer'
+    );
+
+    return moduleContainer;
   }
 }

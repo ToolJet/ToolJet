@@ -37,6 +37,7 @@ import { WorkflowCountGuard } from '@ee/licensing/guards/workflowcount.guard';
 import { GitSyncService } from '@services/git_sync.service';
 import { AppCloneDto } from '@dto/app-clone.dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { PageService } from '@services/page.service';
 
 @Controller('apps')
 export class AppsController {
@@ -45,7 +46,8 @@ export class AppsController {
     private foldersService: FoldersService,
     private appsAbilityFactory: AppsAbilityFactory,
     private auditLoggerService: AuditLoggerService,
-    private gitSyncService: GitSyncService
+    private gitSyncService: GitSyncService,
+    private pagesService: PageService
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -374,6 +376,12 @@ export class AppsController {
       totalFolderCount = await this.foldersService.userAppCount(user, folder, searchKey);
     } else {
       apps = await this.appsService.all(user, page, searchKey, type);
+    }
+
+    if (type === 'module') {
+      for (const app of apps) {
+        app.moduleContainer = await this.pagesService.findModuleContainer(app);
+      }
     }
 
     const totalCount = await this.appsService.count(user, searchKey, type, 'controller');

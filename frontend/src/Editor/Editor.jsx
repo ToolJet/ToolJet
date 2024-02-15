@@ -11,7 +11,7 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import _, { cloneDeep, isEqual, isEmpty, debounce, omit, noop } from 'lodash';
+import _, { cloneDeep, isEqual, isEmpty, debounce, omit, noop, find } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -1843,6 +1843,45 @@ const EditorComponent = (props) => {
 
   const deviceWindowWidth = 450;
 
+  const addProperty = ({ id, name, displayName, type, value }) => {
+    const component = appDefinition.pages[currentPageId].components[id];
+    const propertyMeta = { displayName, type, value };
+
+    const newComponent = {
+      ...component,
+      component: {
+        ...component.component,
+        definition: {
+          ...component.component.definition,
+          properties: {
+            ...component.component.definition.properties,
+            [name]: {
+              value,
+              meta: propertyMeta,
+            },
+          },
+        },
+      },
+    };
+
+    const newDefinition = {
+      ...appDefinition,
+      pages: {
+        ...appDefinition.pages,
+        [currentPageId]: {
+          ...appDefinition.pages[currentPageId],
+          components: {
+            ...appDefinition.pages[currentPageId].components,
+            [id]: newComponent,
+          },
+        },
+      },
+    };
+
+    appDefinitionChanged(newDefinition, { componentDefinitionChanged: true });
+    return;
+  };
+
   if (isLoading) {
     return (
       <div className="apploader">
@@ -2112,6 +2151,7 @@ const EditorComponent = (props) => {
                       darkMode={props.darkMode}
                       pages={getPagesWithIds()}
                       cloneComponents={cloningComponents}
+                      addProperty={addProperty}
                     />
                   </div>
                 }

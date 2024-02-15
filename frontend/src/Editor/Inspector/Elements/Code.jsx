@@ -18,6 +18,7 @@ export const Code = ({
   fxActive,
   component,
   verticalLine,
+  customMeta,
 }) => {
   const currentState = useCurrentState();
 
@@ -50,7 +51,7 @@ export const Code = ({
   };
 
   let initialValue = !_.isEmpty(definition) ? definition.value : getDefinitionForNewProps(param.name);
-  const paramMeta = componentMeta[paramType][param.name];
+  const paramMeta = customMeta ?? componentMeta[paramType][param.name];
   const displayName = paramMeta.displayName || param.name;
 
   /*

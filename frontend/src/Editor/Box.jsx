@@ -242,7 +242,7 @@ export const Box = memo(
 
     useEffect(() => {
       setRenderCount(renderCount + 1);
-      if (renderCount > 10) {
+      if (renderCount > 100) {
         setRenderCount(0);
         const currentTime = new Date();
         const timeDifference = Math.abs(currentTime - renderStartTime);

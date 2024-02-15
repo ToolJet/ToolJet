@@ -51,6 +51,7 @@ export function createEditorStore(moduleName) {
     featureAccess: null,
     moduleName,
     loadedModules: [],
+    modulesLoaded: false,
   };
 
   return create(
@@ -108,10 +109,12 @@ export function createEditorStore(moduleName) {
           });
         },
         loadModules: async () => {
-          // TODO: implement this
           appsService.getAll(0, '', '', 'module').then((data) => {
-            set({ loadedModules: data.apps });
+            set({ loadedModules: data.apps, modulesLoaded: true });
           });
+        },
+        setInputItems: (inputItems) => {
+          set({ inputItems });
         },
       },
     }),

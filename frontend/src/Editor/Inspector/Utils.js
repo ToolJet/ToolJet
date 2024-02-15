@@ -28,13 +28,15 @@ export function renderElement(
   currentState,
   components = {},
   darkMode = false,
-  verticalLine = true
+  verticalLine = true,
+  customMeta
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
-  const meta = componentMeta[paramType][param];
+
+  const meta = customMeta ?? componentMeta[paramType][param];
 
   if (
     componentConfig.component == 'DropDown' ||
@@ -56,7 +58,7 @@ export function renderElement(
 
   return (
     <Code
-      param={{ name: param, ...component.component.properties[param] }}
+      param={{ name: param, ...component.component.properties?.[param] }}
       definition={definition}
       dataQueries={dataQueries}
       onChange={paramUpdated}
@@ -72,6 +74,7 @@ export function renderElement(
       }}
       component={component}
       verticalLine={verticalLine}
+      customMeta={customMeta}
     />
   );
 }

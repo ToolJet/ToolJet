@@ -4,6 +4,7 @@ import { ModuleContext } from '../../_contexts/ModuleContext';
 import { useSuperStore } from '../../_stores/superStore';
 import { v4 as uuidv4 } from 'uuid';
 import { useEditorStore } from '../../_stores/editorStore';
+import { find } from 'lodash';
 
 export const Module = function Module({ component, properties, styles, width, height }) {
   const parentRef = useRef(null);
@@ -38,6 +39,15 @@ export const Module = function Module({ component, properties, styles, width, he
     boxShadow,
   };
 
+  const loadedModules = useEditorStore((state) => state.loadedModules);
+  const moduleContainer = find(loadedModules, { id: moduleAppId })?.module_container ?? {};
+  const inputItems = Object.values(moduleContainer?.component?.definition?.properties?.input_items?.value ?? {});
+
+  const inputResolvables = inputItems.reduce(
+    (resolvables, item) => ({ ...resolvables, [item.name]: properties[item.name] }),
+    {}
+  );
+
   return (
     <div ref={parentRef} styles={computedStyles}>
       {created && (
@@ -49,6 +59,7 @@ export const Module = function Module({ component, properties, styles, width, he
             environmentId={moduleEnvironmentId}
             width={width}
             height={height}
+            customResolvables={{ input: inputResolvables }}
           />
         </ModuleContext.Provider>
       )}

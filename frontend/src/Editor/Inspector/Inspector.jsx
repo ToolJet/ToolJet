@@ -3,6 +3,8 @@ import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
+import { ModuleContainer } from './Components/ModuleContainer';
+import { Module } from './Components/Module';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
@@ -60,6 +62,7 @@ export const Inspector = ({
   removeComponent,
   pages,
   cloneComponents,
+  addProperty,
 }) => {
   const dataQueries = useDataQueries();
 
@@ -306,6 +309,7 @@ export const Inspector = ({
         // apps={apps} !check
         pages={pages}
         allComponents={allComponents}
+        addProperty={addProperty}
       />
     </div>
   );
@@ -542,6 +546,12 @@ const GetAccordion = React.memo(
 
       case 'Form':
         return <Form {...restProps} />;
+
+      case 'ModuleContainer':
+        return <ModuleContainer {...restProps} />;
+
+      case 'Module':
+        return <Module {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

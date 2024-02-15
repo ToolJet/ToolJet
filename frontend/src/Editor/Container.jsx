@@ -48,6 +48,7 @@ export const Container = ({
   handleRedo,
   sideBarDebugger,
   currentPageId,
+  customResolvables,
 }) => {
   // Dont update first time to skip
   // redundant save on app definition load
@@ -152,6 +153,13 @@ export const Container = ({
           ])
       );
 
+      // const inputItems = moduleContainer.component.definition.properties.inputItems.value;
+      // const inputResolvables = inputItems.reduce(
+      //   (resolvables, item) => ({ ...resolvables, [item.name]: item.defaultValue }),
+      //   {}
+      // );
+
+      // setCustomResolvables({ input: inputResolvables });
       setBoxes(newComponents);
     } else {
       setBoxes(components);
@@ -727,6 +735,7 @@ export const Container = ({
               sideBarDebugger={sideBarDebugger}
               childComponents={childComponents[key]}
               containerProps={{ ...containerProps, addDefaultChildren }}
+              customResolvables={customResolvables}
             />
           );
         }
