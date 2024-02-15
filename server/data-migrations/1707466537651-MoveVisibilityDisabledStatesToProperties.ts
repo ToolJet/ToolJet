@@ -1,17 +1,10 @@
-import { Component } from "src/entities/component.entity";
-import { processDataInBatches } from "src/helpers/utils.helper";
-import { EntityManager, MigrationInterface, QueryRunner } from "typeorm";
+import { Component } from 'src/entities/component.entity';
+import { processDataInBatches } from 'src/helpers/utils.helper';
+import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
-export class MoveVisibilityDisabledStatesToProperties1707466537651
-  implements MigrationInterface
-{
+export class MoveVisibilityDisabledStatesToProperties1707466537651 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const componentTypes = [
-      "TextInput",
-      "NumberInput",
-      "PasswordInput",
-      "Text",
-    ];
+    const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'Text'];
     const batchSize = 100;
     const entityManager = queryRunner.manager;
 
@@ -21,7 +14,7 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651
         async (entityManager: EntityManager) => {
           return await entityManager.find(Component, {
             where: { type: componentType },
-            order: { createdAt: "ASC" },
+            order: { createdAt: 'ASC' },
           });
         },
         async (entityManager: EntityManager, components: Component[]) => {
@@ -61,17 +54,17 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651
       }
 
       // Label and value
-      if (component.type !== "Text") {
+      if (component.type !== 'Text') {
         if (properties.label == undefined || null) {
-          properties.label = "";
+          properties.label = '';
         }
         if (styles.borderRadius == undefined || null) {
-          styles.borderRadius = {value: "{{4}}"};
+          styles.borderRadius = { value: '{{4}}' };
         }
       }
-  
+
       // Moving 'minValue' from properties to validation
-      if (component.type == "NumberInput") {
+      if (component.type == 'NumberInput') {
         if (properties.minValue) {
           validation.minValue = properties.minValue;
           delete properties.minValue; // Removing 'minValue' from properties
