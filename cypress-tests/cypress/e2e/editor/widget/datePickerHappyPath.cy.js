@@ -33,7 +33,7 @@ import {
 describe("Date Picker widget", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-datepicker-App`);
     cy.openApp();
     cy.dragAndDropWidget("Date Picker");
   });

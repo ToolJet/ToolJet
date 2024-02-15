@@ -94,6 +94,7 @@ export const verifyComponentValueFromInspector = (
   value,
   openStatus = "closed"
 ) => {
+  cy.wait(3000);
   cy.get(commonWidgetSelector.sidebarinspector).click();
   if (openStatus == "closed") {
     cy.get(commonWidgetSelector.inspectorNodeComponents).click();
@@ -359,7 +360,9 @@ export const addTextWidgetToVerifyValue = (customfunction) => {
   cy.forceClickOnCanvas();
   cy.dragAndDropWidget("Text", 600, 80);
   openEditorSidebar("text1");
-  verifyAndModifyParameter("Text", codeMirrorInputLabel(customfunction));
+  cy.get(
+    '[data-cy="textcomponenttextinput-input-field"] '
+  ).clearAndTypeOnCodeMirror(codeMirrorInputLabel(customfunction));
   cy.forceClickOnCanvas();
   cy.waitForAutoSave();
 };
