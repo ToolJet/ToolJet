@@ -17,14 +17,14 @@ export function GithubSSOModal({ settings, onClose, changeStatus }) {
   const [hostName, setHostName] = useState(settings?.configs?.host_name || '');
   const [clientSecret, setClientSecret] = useState(settings?.configs?.client_secret || '');
   const [hasChanges, setHasChanges] = useState(false);
-  const { t } = useTranslation(); 
+  const { t } = useTranslation();
 
   useEffect(() => {
     setSettings(settings);
     setEnabled(settings?.enabled || false);
     setClientId(settings?.configs?.client_id || '');
     setHostName(settings?.configs?.host_name || '');
-    setClientSecret(settings?.configs?.client_secret || '')
+    setClientSecret(settings?.configs?.client_secret || '');
     setShowModal(true);
 
     setHasChanges(false);
@@ -87,47 +87,46 @@ export function GithubSSOModal({ settings, onClose, changeStatus }) {
   };
 
   // GitHeader Component
-function GithubHeader() {
+  function GithubHeader() {
     const { t } = useTranslation();
     return (
-          <div className="d-flex justify-content-between title-with-toggle" style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-            marginBottom: '0px',
-            height: '42px'
-          }}>
-            <div>
-            <label className="switch">
-              <input 
-                type="checkbox" 
-                checked={enabled}
-                onChange={onToggleChange}
-              />
-              <span className="slider round"></span>
-            </label>
-                <span className="sso-type-header" data-cy="card-title" style={{ marginBottom: '0px', fontWeight: '500' }}>
-                  {t('header.organization.menus.manageSSO.github.title', 'Github')}
-                </span>
-            </div>
-            <div className="card-title" style={{marginBottom: '0px'}}>
-              <span className={`tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`} data-cy="status-label">
-                {enabled ? t('header.organization.menus.manageSSO.github.enabled', 'Enabled') : t('header.organization.menus.manageSSO.github.disabled', 'Disabled')}
-              </span>
-            </div>
-          </div>
+      <div
+        className="d-flex justify-content-between title-with-toggle"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+          marginBottom: '0px',
+          height: '42px',
+        }}
+      >
+        <div>
+          <label className="switch">
+            <input type="checkbox" checked={enabled} onChange={onToggleChange} />
+            <span className="slider round"></span>
+          </label>
+          <span className="sso-type-header" data-cy="card-title" style={{ marginBottom: '0px', fontWeight: '500' }}>
+            {t('header.organization.menus.manageSSO.github.title', 'Github')}
+          </span>
+        </div>
+        <div className="card-title" style={{ marginBottom: '0px' }}>
+          <span className={`tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`} data-cy="status-label">
+            {enabled
+              ? t('header.organization.menus.manageSSO.github.enabled', 'Enabled')
+              : t('header.organization.menus.manageSSO.github.disabled', 'Disabled')}
+          </span>
+        </div>
+      </div>
     );
   }
 
-// GitFooter Component
-function GithubFooter() {
+  // GitFooter Component
+  function GithubFooter() {
     const { t } = useTranslation();
     return (
-      <div className="form-footer sso-card-footer" style={{display: 'flex',
-        gap: '10px',
-        marginTop: '0.5rem'}}>
-        <ButtonSolid onClick={reset} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
+      <div className="form-footer sso-card-footer" style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
+        <ButtonSolid onClick={onClose} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>
         <ButtonSolid
@@ -148,11 +147,11 @@ function GithubFooter() {
   }
 
   const renderModalTitle = () => {
-        return <GithubHeader />;
-    }
+    return <GithubHeader />;
+  };
 
   const renderFooterContent = () => {
-      return <GithubFooter />;
+    return <GithubFooter />;
   };
 
   return (
@@ -164,86 +163,92 @@ function GithubFooter() {
           title={renderModalTitle()}
           footerContent={renderFooterContent()}
           customClassName="modal-custom-height"
-          size='lg'
+          size="lg"
           closeButton={false}
         >
           {
-      <div className="sso-card-wrapper">
-        <div className="card-body">
-        <form noValidate className="sso-form-wrap">
-          <div className="form-group mb-3">
-            <label className="form-label" data-cy="host-name-label">
-              {t('header.organization.menus.manageSSO.github.hostName', 'Host Name')}
-            </label>
-            <div className="tj-app-input">
-              <input
-                type="text"
-                className="form-control"
-                placeholder={t('header.organization.menus.manageSSO.github.enterHostName', 'Enter Host Name')}
-                value={hostName}
-                onChange={(e) => handleHostNameChange(e.target.value)}
-                data-cy="host-name-input"
-              />
-            </div>
-            <div>
-              <div data-cy="git-sso-help-text" className=" tj-text-xxsm git-sso-help-text">
-                {t('header.organization.menus.manageSSO.github.requiredGithub', 'Required if GitHub is self hosted')}
+            <div className="sso-card-wrapper">
+              <div className="card-body">
+                <form noValidate className="sso-form-wrap">
+                  <div className="form-group mb-3">
+                    <label className="form-label" data-cy="host-name-label">
+                      {t('header.organization.menus.manageSSO.github.hostName', 'Host Name')}
+                    </label>
+                    <div className="tj-app-input">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder={t('header.organization.menus.manageSSO.github.enterHostName', 'Enter Host Name')}
+                        value={hostName}
+                        onChange={(e) => handleHostNameChange(e.target.value)}
+                        data-cy="host-name-input"
+                      />
+                    </div>
+                    <div>
+                      <div data-cy="git-sso-help-text" className=" tj-text-xxsm git-sso-help-text">
+                        {t(
+                          'header.organization.menus.manageSSO.github.requiredGithub',
+                          'Required if GitHub is self hosted'
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="form-group mb-3">
+                    <label className="form-label" data-cy="client-id-label">
+                      {t('header.organization.menus.manageSSO.github.clientId', ' Client Id')}
+                    </label>
+                    <div className="tj-app-input">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder={t('header.organization.menus.manageSSO.github.enterClientId', 'Enter Client Id')}
+                        value={clientId}
+                        onChange={(e) => handleClientIdChange(e.target.value)}
+                        data-cy="client-id-input"
+                      />
+                    </div>
+                  </div>
+                  <div className="form-group mb-3">
+                    <label className="form-label" data-cy="client-secret-label">
+                      {t('header.organization.menus.manageSSO.github.clientSecret', 'Client Secret')}
+                      <small className="git- mx-2" data-cy="encripted-label">
+                        <SolidIcon name="lock" width="16" />
+                        {t('header.organization.menus.manageSSO.github.encrypted', 'Encrypted')}
+                      </small>
+                    </label>
+                    <div className="tj-app-input">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder={t(
+                          'header.organization.menus.manageSSO.github.enterClientSecret',
+                          'Enter Client Secret'
+                        )}
+                        value={clientSecret}
+                        onChange={(e) => handleClientSecretChange(e.target.value)}
+                        data-cy="client-secret-input"
+                      />
+                    </div>
+                  </div>
+                  {configId && (
+                    <div className="form-group mb-3">
+                      <label className="form-label" data-cy="redirect-url-label">
+                        {t('header.organization.menus.manageSSO.github.redirectUrl', 'Redirect URL')}
+                      </label>
+                      <div className="d-flex justify-content-between form-control align-items-center">
+                        <p data-cy="redirect-url" id="redirect-url">{`${window.public_config?.TOOLJET_HOST}${
+                          window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+                        }sso/git/${configId}`}</p>
+                        <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
+                      </div>
+                    </div>
+                  )}
+                </form>
               </div>
             </div>
-          </div>
-          <div className="form-group mb-3">
-            <label className="form-label" data-cy="client-id-label">
-              {t('header.organization.menus.manageSSO.github.clientId', ' Client Id')}
-            </label>
-            <div className="tj-app-input">
-              <input
-                type="text"
-                className="form-control"
-                placeholder={t('header.organization.menus.manageSSO.github.enterClientId', 'Enter Client Id')}
-                value={clientId}
-                onChange={(e) => handleClientIdChange(e.target.value)}
-                data-cy="client-id-input"
-              />
-            </div>
-          </div>
-          <div className="form-group mb-3">
-            <label className="form-label" data-cy="client-secret-label">
-              {t('header.organization.menus.manageSSO.github.clientSecret', 'Client Secret')}
-              <small className="git- mx-2" data-cy="encripted-label">
-                <SolidIcon name="lock" width="16" />
-                {t('header.organization.menus.manageSSO.github.encrypted', 'Encrypted')}
-              </small>
-            </label>
-            <div className="tj-app-input">
-              <input
-                type="text"
-                className="form-control"
-                placeholder={t('header.organization.menus.manageSSO.github.enterClientSecret', 'Enter Client Secret')}
-                value={clientSecret}
-                onChange={(e) => handleClientSecretChange(e.target.value)}
-                data-cy="client-secret-input"
-              />
-            </div>
-          </div>
-          {configId && (
-            <div className="form-group mb-3">
-              <label className="form-label" data-cy="redirect-url-label">
-                {t('header.organization.menus.manageSSO.github.redirectUrl', 'Redirect URL')}
-              </label>
-              <div className="d-flex justify-content-between form-control align-items-center">
-                <p data-cy="redirect-url" id="redirect-url">{`${window.public_config?.TOOLJET_HOST}${
-                  window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                }sso/git/${configId}`}</p>
-                <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
-              </div>
-            </div>
-          )}
-        </form>
-      </div>
-      </div>
-    }
+          }
         </Modal>
       )}
     </div>
   );
-};
+}

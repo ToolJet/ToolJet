@@ -108,7 +108,7 @@ export function GoogleSSOModal({ settings, onClose, changeStatus }) {
     const { t } = useTranslation();
     return (
       <div className="form-footer sso-card-footer" style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
-        <ButtonSolid onClick={reset} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
+        <ButtonSolid onClick={onClose} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>
         <ButtonSolid
