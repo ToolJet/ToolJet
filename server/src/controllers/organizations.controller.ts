@@ -139,13 +139,6 @@ export class OrganizationsController {
     return;
   }
 
-  @UseGuards(JwtAuthGuard, SuperAdminGuard)
-  @Patch(':id')
-  async updateById(@Body() organizationUpdateDto: OrganizationUpdateDto, @Param('id') organizationId: string) {
-    await this.organizationsService.updateOrganization(organizationId, organizationUpdateDto);
-    return;
-  }
-
   @UseGuards(JwtAuthGuard, AllowPersonalWorkspaceGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
   @Patch('/name')
@@ -164,6 +157,13 @@ export class OrganizationsController {
   async updateConfigs(@Body() body, @User() user) {
     const result: any = await this.organizationsService.updateOrganizationConfigs(user.organizationId, body);
     return decamelizeKeys({ id: result.id });
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Patch(':id')
+  async updateById(@Body() organizationUpdateDto: OrganizationUpdateDto, @Param('id') organizationId: string) {
+    await this.organizationsService.updateOrganization(organizationId, organizationUpdateDto);
+    return;
   }
 
   @UseGuards(JwtAuthGuard)
