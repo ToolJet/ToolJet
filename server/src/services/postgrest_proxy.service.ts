@@ -12,9 +12,9 @@ import got from 'got';
 export class PostgrestProxyService {
   constructor(private readonly manager: EntityManager, private readonly configService: ConfigService) {}
 
-  // NOTE: This methid forwards request directly to PostgREST Using express middleware
+  // NOTE: This method forwards request directly to PostgREST Using express middleware
   // If additional functionalities from http proxy isn't used, we can deprecate this
-  // and start explicitly making request and handling responses accordingly
+  // and start explicitly making request and handle the responses accordingly
   async proxy(req, res, next) {
     const organizationId = req.headers['tj-workspace-id'] || req.dataQuery?.app?.organizationId;
     req.url = await this.replaceTableNamesAtPlaceholder(req.url, organizationId);
