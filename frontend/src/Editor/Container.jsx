@@ -49,6 +49,8 @@ export const Container = ({
   sideBarDebugger,
   currentPageId,
   customResolvables,
+  outputVariables = {},
+  exposeOutputVariables,
 }) => {
   // Dont update first time to skip
   // redundant save on app definition load
@@ -245,6 +247,11 @@ export const Container = ({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
+
+  useEffect(() => {
+    const resolvedOutputVariables = resolveReferences(outputVariables, currentState, {}, customResolvables);
+    exposeOutputVariables(resolvedOutputVariables);
+  }, [JSON.stringify(currentState)]);
 
   const { draggingState } = useDragLayer((monitor) => {
     if (monitor.isDragging()) {

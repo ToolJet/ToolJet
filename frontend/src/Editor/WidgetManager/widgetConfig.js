@@ -5949,7 +5949,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      inputItems: { type: 'array', displayName: 'Input Items' },
+      inputItems: { type: 'array', displayName: 'Input' },
+      outputItems: { type: 'array', displayName: 'Output' },
     },
     events: {},
     styles: {},
@@ -5962,6 +5963,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       properties: {
         inputItems: { value: [] },
+        outputItems: { value: [] },
       },
       events: [],
       styles: {

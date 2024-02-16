@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useEditorStore } from '../../_stores/editorStore';
 import { find } from 'lodash';
 
-export const Module = function Module({ component, properties, styles, width, height }) {
+export const Module = function Module({ component, properties, styles, width, height, setExposedVariables }) {
   const parentRef = useRef(null);
 
   const [created, setCreated] = useState(false);
@@ -42,11 +42,16 @@ export const Module = function Module({ component, properties, styles, width, he
   const loadedModules = useEditorStore((state) => state.loadedModules);
   const moduleContainer = find(loadedModules, { id: moduleAppId })?.module_container ?? {};
   const inputItems = Object.values(moduleContainer?.component?.definition?.properties?.input_items?.value ?? {});
+  const outputItems = Object.values(moduleContainer?.component?.definition?.properties?.output_items?.value ?? {});
 
   const inputResolvables = inputItems.reduce(
     (resolvables, item) => ({ ...resolvables, [item.name]: properties[item.name] }),
     {}
   );
+
+  const exposeOutputVariables = (outputVariables) => {
+    setExposedVariables(Object.fromEntries(outputVariables.map((variable) => [variable.name, variable.value])));
+  };
 
   return (
     <div ref={parentRef} styles={computedStyles}>
@@ -60,6 +65,8 @@ export const Module = function Module({ component, properties, styles, width, he
             width={width}
             height={height}
             customResolvables={{ input: inputResolvables }}
+            exposeOutputVariables={exposeOutputVariables}
+            outputVariables={outputItems}
           />
         </ModuleContext.Provider>
       )}

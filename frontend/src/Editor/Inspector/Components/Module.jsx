@@ -26,8 +26,8 @@ export const Module = ({
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
 
-  const moduleContainer = useEditorStore((state) => find(state.loadedModules, {id: properties.moduleAppId.value }).module_container);
-  const inputItems = Object.values(moduleContainer.component.definition.properties.input_items.value);
+  const moduleContainer = useEditorStore((state) => find(state.loadedModules, {id: properties.moduleAppId.value }).module_container) ?? {};
+  const inputItems = Object.values(moduleContainer.component.definition.properties?.input_items?.value ?? {});
 
   const { id } = component;
 

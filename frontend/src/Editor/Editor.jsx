@@ -2106,6 +2106,8 @@ const EditorComponent = (props) => {
                           onComponentClick={noop} // Prop is used in Viewer hence using a dummy function to prevent error in editor
                           sideBarDebugger={sideBarDebugger}
                           currentPageId={currentPageId}
+                          exposeOutputVariables={() => {}}
+                          outputVariables={{}}
                         />
                         <CustomDragLayer
                           snapToGrid={true}

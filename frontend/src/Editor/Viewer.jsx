@@ -772,6 +772,8 @@ class ViewerComponent extends React.Component {
                                     dataQueries={dataQueries}
                                     currentPageId={this.state.currentPageId}
                                     customResolvables={this.props.customResolvables}
+                                    exposeOutputVariables={this.props.exposeOutputVariables ?? (() => {})}
+                                    outputVariables={this.props.outputVariables}
                                   />
                                 )}
                               </>
@@ -862,6 +864,8 @@ class ViewerComponent extends React.Component {
                                     dataQueries={dataQueries}
                                     currentPageId={this.state.currentPageId}
                                     customResolvables={this.props.customResolvables}
+                                    exposeOutputVariables={this.props.exposeOutputVariables ?? (() => {})}
+                                    outputVariables={this.props.outputVariables}
                                   />
                                 )}
                               </>
