@@ -123,7 +123,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:80"
+          config: "baseUrl=http://localhost:3000"
           config-file: cypress-marketplace.config.js
 
       - name: Capture Screenshots
