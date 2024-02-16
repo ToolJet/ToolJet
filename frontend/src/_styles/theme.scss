@@ -13729,16 +13729,17 @@ flex-direction: row;
   display: inline-block;
   box-sizing: border-box;
   animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
   }
 
-  @keyframes rotation {
-  0% {
-      transform: rotate(0deg);
-  }
   100% {
-      transform: rotate(360deg);
+    transform: rotate(360deg);
   }
-  }
+}
 
 .add-datasource-btn-workflows{
   width:195px;
@@ -13772,6 +13773,38 @@ flex-direction: row;
   }
 }
 
+
+.canvas-container {
+  scrollbar-color: transparent;
+  scrollbar-width: thin;
+  &::-webkit-scrollbar {
+    background-color: transparent;
+    width: 6px;
+    scrollbar-width: thin;
+  }
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+    scrollbar-width: thin;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+  &:hover{
+    scrollbar-color: #6a727c80;
+    &::-webkit-scrollbar-thumb {
+      background-color: #6a727c80 !important;
+    }
+  }
+}
+
+.jet-listview {
+  &:hover{
+    scrollbar-color: #6a727c80;
+    &::-webkit-scrollbar-thumb {
+      background-color: #6a727c80 !important;
+    }
+  }
+}
 .git-sync-modal,
 .modal-base {
 
