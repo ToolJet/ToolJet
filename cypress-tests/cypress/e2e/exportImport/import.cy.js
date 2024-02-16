@@ -74,6 +74,7 @@ describe("App Import Functionality", () => {
       .and("have.text", importText.appImportedToastMessage);
 
     cy.get(".driver-close-btn").click();
+    cy.wait(500);
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
       "contain.value",
       appData.name.toLowerCase()
