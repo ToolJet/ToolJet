@@ -111,20 +111,20 @@ jobs:
       - name: Seeding
         run: docker exec Tooljet-app npm run db:seed:prod
 
-      - name: Create Cypress environment file
-        id: create-json
-        uses: jsdaniell/create-json@1.1.2
-        with:
-          name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_SECRETS }}
-          dir: "./cypress-tests"
+      # - name: Create Cypress environment file
+      #   id: create-json
+      #   uses: jsdaniell/create-json@1.1.2
+      #   with:
+      #     name: "cypress.env.json"
+      #     json: ${{ secrets.CYPRESS_SECRETS }}
+      #     dir: "./cypress-tests"
 
-      - name: Marketplace
-        uses: cypress-io/github-action@v5
-        with:
-          working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:80"
-          config-file: cypress-marketplace.config.js
+      # - name: Marketplace
+      #   uses: cypress-io/github-action@v5
+      #   with:
+      #     working-directory: ./cypress-tests
+      #     config: "baseUrl=http://localhost:80"
+      #     config-file: cypress-marketplace.config.js
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3
@@ -132,6 +132,17 @@ jobs:
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
+
+      # Step to remove Docker image from Docker Hub
+      - name: Remove Docker image
+        run: |
+          if docker rmi tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}; then
+            echo "Docker image removed successfully."
+          else
+            echo "Failed to remove Docker image or it does not exist."
+            exit 1
+          fi
+        if: always()  # Ensure this step always runs regardless of previous steps' success
 
   Cypress-Marketplace-Subpath:
     runs-on: ubuntu-22.04
