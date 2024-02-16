@@ -12,6 +12,83 @@
 @import "./ui-operations.scss";
 @import 'react-loading-skeleton/dist/skeleton.css';
 @import './table-component.scss';
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    // @apply border-border;
+  }
+
+  body {
+    // @apply bg-background text-foreground;
+  }
+}
 
 /* ibm-plex-sans-100 - latin */
 @font-face {
@@ -1284,7 +1361,7 @@ button {
     height: 80%;
     padding: 0 10px;
     background-color: var(--base) !important;
-  
+
     .container-fluid {
       height: 100%;
       padding: 0;
@@ -6313,6 +6390,7 @@ input.hide-input-arrows {
       background-color: #232e3c;
       border-bottom: 1px solid #324156;
     }
+
     .popover-body {
       background-color: #232e3c;
       border-radius: 6px;
@@ -7236,8 +7314,9 @@ tbody {
 }
 
 .settings-nav-item {
-  height:32px;
+  height: 32px;
   width: 32px;
+
   &.active {
     background-color: var(--indigo4);
   }
@@ -7667,6 +7746,7 @@ tbody {
 
   @media only screen and (max-width: 767px) {
     border-bottom: 1px solid var(--slate5);
+
     .row {
       display: flex;
 
@@ -7674,6 +7754,7 @@ tbody {
         width: unset;
         border-right: none;
       }
+
       .app-header-label {
         display: none;
       }
@@ -7699,7 +7780,9 @@ tbody {
   padding-left: 20px;
   padding-bottom: 24px;
   border-right: 1px solid var(--slate5);
-  &[data-name="Workspace constants"], &[data-name="Profile settings"] {
+
+  &[data-name="Workspace constants"],
+  &[data-name="Profile settings"] {
     border-right: none;
     border-bottom: 1px solid var(--slate5);
   }
@@ -7826,7 +7909,8 @@ tbody {
     position: unset;
     width: 100%;
 
-    .col-4, .col-5 {
+    .col-4,
+    .col-5 {
       display: none;
     }
 
@@ -7854,6 +7938,7 @@ tbody {
     .unstyled-button {
       height: unset;
       width: unset;
+
       img {
         width: 20px;
         height: 20px
@@ -7983,7 +8068,7 @@ tbody {
         .tj-org-select {
           width: 100%;
           padding: 0px 10px;
-          
+
           .react-select__control {
             width: 100%;
           }
@@ -9024,17 +9109,17 @@ tbody {
   width: 880px;
   margin: 0 auto;
 
-  
+
 }
 
 .group-duplcate-modal-body {
-    margin-top: 20px;
+  margin-top: 20px;
 
-    .check-row{
-      margin-left: 5px;
-      margin-bottom: 10px;
-    }
+  .check-row {
+    margin-left: 5px;
+    margin-bottom: 10px;
   }
+}
 
 .groups-main-header-wrap {
   padding: 20px 0px 8px;
@@ -9920,7 +10005,8 @@ tbody {
     display: flex;
   }
 
-  input[name="email"]:disabled, input[name="fullName"]:disabled {
+  input[name="email"]:disabled,
+  input[name="fullName"]:disabled {
     background-color: var(--slate3) !important;
     color: var(--slate9) !important
   }
@@ -9996,21 +10082,21 @@ tbody {
     opacity: 0.7;
   }
 
-  .groups-list-option-button{
-      background-color: var(--base) !important;
-      width: 24px;
-      height: 24px;
-      padding: 7px 0px 7px 0px;
+  .groups-list-option-button {
+    background-color: var(--base) !important;
+    width: 24px;
+    height: 24px;
+    padding: 7px 0px 7px 0px;
 
-      &:focus-visible {
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-      }
+    &:focus-visible {
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
   }
-  
 
-  
+
+
 }
 
 .create-group-modal-footer {
@@ -10033,54 +10119,55 @@ tbody {
 }
 
 .popover-group-menu {
-    border-radius: 4px;
-    width: 190px;
-    box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
-    background: var(--base);
+  border-radius: 4px;
+  width: 190px;
+  box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
+  background: var(--base);
+  color: var(--slate12);
+  border: 1px solid var(--slate3);
+
+  .popover-arrow {
+    display: none;
+  }
+
+  .popover-body {
+    padding: 6px;
     color: var(--slate12);
-    border: 1px solid var(--slate3);
 
-    .popover-arrow {
-      display: none;
-    }
+    .field {
 
-    .popover-body {
-      padding: 6px;
-      color: var(--slate12);
+      width: 100%;
+      margin: 0 0 0 0;
+      height: 36px;
+      justify-content: center;
+      align-items: center;
+      display: flex;
 
-      .field {
-        
+      .option-row {
         width: 100%;
-        margin: 0 0 0 0;
-        height: 36px;
-        justify-content: center;
-        align-items: center; 
+        height: 100%;
+        font-weight: 400;
+        font-size: 12px;
+        justify-content: left;
+        align-items: center;
         display: flex;
-
-        .option-row {
-          width: 100%;
-          height: 100%;
-          font-weight: 400;
-          font-size: 12px;
-          justify-content: left;
-          align-items: center; 
-          display: flex;
-          z-index: 999999999;
-        }
-
-        .disable {
-          color: var(--slate7);
-        }
-
-        &__danger {
-          color: var(--tomato9);
-        }
-        :hover {
-        background-color: var(--slate3);
+        z-index: 999999999;
       }
+
+      .disable {
+        color: var(--slate7);
+      }
+
+      &__danger {
+        color: var(--tomato9);
+      }
+
+      :hover {
+        background-color: var(--slate3);
       }
     }
   }
+}
 
 .workspace-settings-filter-wrap {
   background: var(--slate3);
@@ -10464,6 +10551,7 @@ tbody {
       border: 1px solid var(--indigo9) !important;
       box-shadow: none !important;
     }
+
     &.input-error-border {
       border-color: #DB4324 !important;
     }
@@ -11003,7 +11091,7 @@ tbody {
   }
 
   .workspace-constant-card-body {
-   height: 100%;
+    height: 100%;
   }
 
   .constant-table-card {
@@ -11038,6 +11126,7 @@ tbody {
 
   @media only screen and (max-width: 768px) {
     margin-bottom: 0rem !important;
+
     .liner {
       width: unset !important;
     }
@@ -11308,11 +11397,13 @@ tbody {
     .field-name {
       color: var(--slate-12) !important;
     }
+
     input.slug-input {
       background: #1f2936 !important;
       color: #f4f6fa !important;
       border-color: #324156 !important;
-    }  
+    }
+
     .applink-text {
       background-color: #2b394b !important;
     }
@@ -11326,7 +11417,7 @@ tbody {
     }
 
     .input-with-icon {
-      .form-control{
+      .form-control {
         background-color: #1f2936 !important;
         border-color: #3E4B5A !important;
         color: #fff !important;
@@ -11336,7 +11427,7 @@ tbody {
 
 }
 
-.dark-theme{
+.dark-theme {
   .manage-app-users-footer {
     .default-secondary-button {
       background-color: var(--indigo9);
@@ -11349,9 +11440,9 @@ tbody {
   word-break: break-all;
 }
 
-.workspace-folder-modal{
+.workspace-folder-modal {
   .tj-text-input.dark {
-    background:  #202425;
+    background: #202425;
     border-color: var(--slate7) !important;
   }
 }
@@ -11360,7 +11451,7 @@ tbody {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 150px; 
+  width: 150px;
 }
 
 .app-slug-container,
@@ -11392,7 +11483,7 @@ tbody {
     &:hover {
       box-shadow: none;
     }
-    
+
     &:active {
       border: 1px solid #D7DBDF;
       box-shadow: none;
@@ -11401,6 +11492,7 @@ tbody {
 
   .input-with-icon {
     flex: none;
+
     .icon-container {
       right: 20px;
       top: calc(50% - 13px);
@@ -11415,7 +11507,7 @@ tbody {
     color: #3D9A50;
   }
 
-  
+
   .workspace-spinner {
     color: #889096 !important;
     width: 16px;
@@ -11427,6 +11519,7 @@ tbody {
     color: var(--indigo9);
   }
 }
+
 .confirm-dialogue-modal {
   background: var(--base);
 }
@@ -11756,10 +11849,10 @@ tbody {
       border-color: var(--tomato9) !important;
     }
 
-    .icon-container {  
+    .icon-container {
       right: 12px;
-      top: calc(50% - 11px);  
-      
+      top: calc(50% - 11px);
+
       .spinner-border {
         width: 20px;
         height: 20px;
@@ -11776,6 +11869,7 @@ tbody {
 .manage-app-users-footer {
   padding-bottom: 20px;
   margin-top: 18px;
+
   .default-secondary-button {
     width: auto !important;
     padding: 18px;
@@ -12177,6 +12271,7 @@ tbody {
 
 .groups-name-cell[data-active="true"] {
   background: var(--gray5) !important;
+
   .groups-name-container {
     padding-left: 6px;
   }
@@ -12223,6 +12318,7 @@ tbody {
   button {
     color: var(--slate12);
     border: none !important;
+
     &:hover {
       background: none !important;
     }
@@ -12240,11 +12336,13 @@ tbody {
 
   .user-archive {
     color: var(--tomato9);
+
     &:hover {
       color: var(--tomato9) !important;
     }
   }
 }
+
 .divider {
   border-top: 1px solid var(--slate6);
 }
@@ -12265,6 +12363,7 @@ tbody {
 
 .blank-page-wrapper-mobile {
   display: none;
+
   @media only screen and (max-width: 768px) {
     transform: translateY(80%);
     display: flex;
