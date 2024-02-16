@@ -158,6 +158,8 @@ import Check from './Check.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
+import Danger from './Danger.jsx';
+import DangerDark from './DangerDark.jsx';
 import WorkspaceConstants from './WorkspaceConstants.jsx';
 import ArrowBackDown from './ArrowBackDown.jsx';
 
@@ -237,6 +239,10 @@ const Icon = (props) => {
       return <DarkMode {...props} />;
     case 'datasource':
       return <Datasource {...props} />;
+    case 'danger':
+      return <Danger {...props} />;
+    case 'danger-dark':
+      return <DangerDark {...props} />;
     case 'delete':
       return <Delete {...props} />;
     case 'diamond':

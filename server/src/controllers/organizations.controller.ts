@@ -23,6 +23,8 @@ import { User as UserEntity } from 'src/entities/user.entity';
 import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization.dto';
 import { Response } from 'express';
+import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
+import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -72,11 +74,17 @@ export class OrganizationsController {
     return decamelizeKeys(response);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(OrganizationAuthGuard)
   @Get()
-  async get(@User() user) {
-    const result = await this.organizationsService.fetchOrganizations(user);
-    return decamelizeKeys({ organizations: result });
+  async get(
+    @User() user,
+    @Query('status') status: string,
+    @Query('currentPage') currentPage: number,
+    @Query('perPageCount') perPageCount: number,
+    @Query('name') name: string
+  ) {
+    const result = await this.organizationsService.fetchOrganizations(user, status, currentPage, perPageCount, name);
+    return decamelizeKeys({ organizations: result.organizations, totalCount: result.totalCount });
   }
 
   @UseGuards(JwtAuthGuard, AllowPersonalWorkspaceGuard)
@@ -100,6 +108,7 @@ export class OrganizationsController {
     if (!existingOrganizationId) {
       throw new NotFoundException();
     }
+
     if (!organizationId) {
       const result = await this.organizationsService.constructSSOConfigs();
       return decamelizeKeys({ ssoConfigs: result });
@@ -127,6 +136,13 @@ export class OrganizationsController {
   @Patch()
   async update(@Body() organizationUpdateDto: OrganizationUpdateDto, @User() user) {
     await this.organizationsService.updateOrganization(user.organizationId, organizationUpdateDto);
+    return;
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Patch(':id')
+  async updateById(@Body() organizationUpdateDto: OrganizationUpdateDto, @Param('id') organizationId: string) {
+    await this.organizationsService.updateOrganization(organizationId, organizationUpdateDto);
     return;
   }
 

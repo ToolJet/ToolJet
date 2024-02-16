@@ -25,6 +25,11 @@ export enum USER_TYPE {
   WORKSPACE = 'workspace',
 }
 
+export enum WORKSPACE_STATUS {
+  ACTIVE = 'active',
+  ARCHIVE = 'archived',
+}
+
 export enum USER_STATUS {
   INVITED = 'invited',
   VERIFIED = 'verified',

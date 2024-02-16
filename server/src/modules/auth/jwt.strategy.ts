@@ -7,13 +7,15 @@ import { User } from 'src/entities/user.entity';
 import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { Request } from 'express';
 import { SessionService } from '@services/session.service';
+import { OrganizationsService } from '@services/organizations.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private usersService: UsersService,
     private configService: ConfigService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private organizationService: OrganizationsService
   ) {
     super({
       jwtFromRequest: (request) => {
@@ -28,6 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(req: Request, payload: JWTPayload) {
     const isUserMandatory = !req['isUserNotMandatory'];
     const isGetUserSession = !!req['isGetUserSession'];
+    const bypassOrganizationValidation = !req['isFetchingOrganization'] && !req['isSwitchingOrganization'];
 
     if (isUserMandatory || isGetUserSession) {
       await this.sessionService.validateUserSession(payload.username, payload.sessionId);
@@ -60,7 +63,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (payload?.sub && organizationId) {
       const user: User = await this.usersService.findByEmail(payload.sub, organizationId, WORKSPACE_USER_STATUS.ACTIVE);
-
+      if (bypassOrganizationValidation) await this.organizationService.fetchOrganization(organizationId);
       user.organizationId = organizationId;
       user.organizationIds = payload.organizationIds;
       user.isPasswordLogin = payload.isPasswordLogin;

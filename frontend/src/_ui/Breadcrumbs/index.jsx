@@ -45,6 +45,7 @@ const routes = [
   { path: '/license', breadcrumb: 'Enterprise Edition' },
   { path: '/instance-settings/all-users', breadcrumb: 'Settings' },
   { path: '/instance-settings/manage-instance-settings', breadcrumb: 'Settings' },
+  { path: '/instance-settings/all-workspaces', breadcrumb: 'Settings' },
   { path: '/instance-settings/white-labelling', breadcrumb: 'Settings' },
   { path: '/instance-settings/license', breadcrumb: 'Settings' },
   { path: '/:worspace_id/workflows', breadcrumb: 'Workflows', props: { beta: true } },

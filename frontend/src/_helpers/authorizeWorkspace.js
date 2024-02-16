@@ -40,8 +40,24 @@ export const authorizeWorkspace = () => {
         }
       })
       .catch((error) => {
-        if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
-          if (appId) {
+        const isDesiredStatusCode =
+          (error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404 || error?.data?.statusCode == 400;
+        if (isDesiredStatusCode) {
+          const isWorkspaceArchived =
+            error?.data?.statusCode == 400 && error?.data?.message == ERROR_TYPES.WORKSPACE_ARCHIVED;
+          if (isWorkspaceArchived) {
+            const subpath = getSubpath();
+            const queryParams = [];
+            if (appId) {
+              queryParams.push('appurl=true');
+            }
+            queryParams.push('archived=true');
+
+            const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+            window.location = subpath
+              ? `${subpath}${'/switch-workspace'}${queryString}`
+              : `/switch-workspace${queryString}`;
+          } else if (appId) {
             /* If the user is trying to load the app viewer and the app id / slug not found */
             redirectToErrorPage(ERROR_TYPES.INVALID);
           } else if (error?.data?.statusCode == 422) {

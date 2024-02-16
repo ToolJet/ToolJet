@@ -45,6 +45,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 import LdapLoginPage from '../LdapLogin';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
+import { ManageWorkspaceArchivePageComponent } from '@/_ui/ManageWorkspaceArchive/ManageWorspaceArchivePage';
 import WorkspaceConstants from '@/WorkspaceConstants';
 import { SuperadminLoginPage } from '@/LoginPage/SuperadminLoginPage';
 
@@ -317,6 +318,14 @@ class AppComponent extends React.Component {
                 <Route
                   path="manage-instance-settings"
                   element={<ManageInstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="all-workspaces"
+                  element={
+                    <AdminRoute>
+                      <ManageWorkspaceArchivePageComponent switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
                 />
                 <Route
                   path="white-labelling"

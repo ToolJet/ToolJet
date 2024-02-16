@@ -38,6 +38,7 @@ import { SessionService } from '@services/session.service';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { OrganizationsService } from '@services/organizations.service';
 import { Organization } from 'src/entities/organization.entity';
+import { SwitchWorkspaceAuthGuard } from 'src/modules/auth/switch-workspace.guard';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
 
 @Controller()
@@ -93,6 +94,10 @@ export class AppController {
       currentOrganization = organization;
     }
 
+    if (appData && appData?.isPublic) {
+      await this.organizationService.fetchOrganization(appData.organizationId);
+    }
+
     return this.authService.generateSessionPayload(user, currentOrganization, appData);
   }
 
@@ -115,7 +120,7 @@ export class AppController {
     return await this.authService.authorizeOrganization(user);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SwitchWorkspaceAuthGuard)
   @Get('switch/:organizationId')
   async switch(@Param('organizationId') organizationId, @User() user, @Res({ passthrough: true }) response: Response) {
     if (!organizationId) {
