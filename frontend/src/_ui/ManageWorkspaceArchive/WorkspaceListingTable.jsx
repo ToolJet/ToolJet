@@ -81,7 +81,9 @@ const WorkspaceListingTable = ({
                       disabled={workspace.status == WORKSPACE_STATUS.ACTIVE && singleActiveWorkspace}
                       data-tooltip-id={singleActiveWorkspace ? 'single-active-tooltip' : ''}
                       data-tooltip-content={
-                        singleActiveWorkspace ? 'There must be atleast one active workspace all the time' : ''
+                        singleActiveWorkspace && workspace.status == WORKSPACE_STATUS.ACTIVE
+                          ? 'There must be atleast one active workspace all the time'
+                          : ''
                       }
                       leftIcon="archive"
                       fill={
