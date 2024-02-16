@@ -129,12 +129,8 @@ const EditorInput = ({
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
-
-    const shoudlReturnEarly = word.text === '' && word.from == word.to ? false : word.from == word.to;
-
-    if (shoudlReturnEarly && !context.explicit) return null;
-
     let completions = getAutocompletion(context.state.doc.toString(), validationType, hints, fxActive);
+
     return {
       from: word.from,
       options: completions,
