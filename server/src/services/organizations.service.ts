@@ -27,7 +27,7 @@ import {
   EntityManager,
   FindManyOptions,
   getManager,
-  Like,
+  ILike,
   Repository,
 } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
@@ -403,7 +403,7 @@ export class OrganizationsService {
         where: {
           status: status,
           /* Adding optional like filter for name */
-          ...(name ? { name: Like(`%${name}%`) } : {}),
+          ...(name ? { name: ILike(`%${name}%`) } : {}),
         },
       };
 
@@ -434,7 +434,7 @@ export class OrganizationsService {
         });
 
       if (name) {
-        query = query.andWhere('organization.name LIKE :name', {
+        query = query.andWhere('organization.name ILIKE :name', {
           name: `%${name}%`,
         });
       }
