@@ -30,6 +30,9 @@ import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppEnvironmentService } from '@services/app_environments.service';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
+import { TooljetDbService } from '@services/tooljet_db.service';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 @Module({
   imports: [
@@ -66,6 +69,9 @@ import { AppEnvironmentService } from '@services/app_environments.service';
     FilesService,
     PluginsHelper,
     AppEnvironmentService,
+    TooljetDbOperationsService,
+    TooljetDbService,
+    PostgrestProxyService,
   ],
   controllers: [DataQueriesController],
 })

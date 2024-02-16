@@ -471,7 +471,9 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     <TooljetDatabaseContext.Provider value={value}>
       {/* table name dropdown */}
       <div className={cx({ row: !isHorizontalLayout })}>
-        <div className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}>
+        <div
+          className={cx({ 'col-4': !isHorizontalLayout, 'd-flex tooljetdb-worflow-operations': isHorizontalLayout })}
+        >
           <label className={cx('form-label', 'flex-shrink-0')}>Table name</label>
           <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded', 'overflow-hidden')}>
             <DropDownSelect
@@ -494,7 +496,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       <div className={cx('my-3 py-1', { row: !isHorizontalLayout })}>
         <div
           /* className="my-2 col-4"  */
-          className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}
+          className={cx({ 'col-4': !isHorizontalLayout, 'd-flex tooljetdb-worflow-operations': isHorizontalLayout })}
         >
           <label className={cx('form-label', 'flex-shrink-0')}>Operations</label>
           <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded', 'overflow-hidden')}>

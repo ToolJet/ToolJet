@@ -41,6 +41,9 @@ import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { SessionService } from '@services/session.service';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
+import { TooljetDbService } from '@services/tooljet_db.service';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 @Module({
   imports: [
@@ -93,6 +96,9 @@ import { SessionService } from '@services/session.service';
     MetadataService,
     AppEnvironmentService,
     SessionService,
+    TooljetDbOperationsService,
+    TooljetDbService,
+    PostgrestProxyService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
   exports: [OrganizationsService],
