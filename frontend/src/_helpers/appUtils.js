@@ -998,8 +998,28 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatusCode === 400 ||
             queryStatusCode === 404 ||
             queryStatusCode === 422: {
-            const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
-            toast.error(`${err.message}`);
+            // const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
+            // toast.error(`${err.message}`);
+            let err;
+            if (query.kind == 'tooljetdb') {
+              err = data?.error || data;
+            } else if (query.kind == 'runjs') {
+              err = data?.status === 'failed' && data?.data?.message ? { message: data?.data?.message } : data;
+            } else if (query.kind == 'runpy') {
+              err = data?.data?.status === 'failed' ? { message: data?.data?.message } : data;
+            } else {
+              err = data?.status === 'failed' && data?.description ? { message: data?.description } : data;
+            }
+
+            toast(
+              <span>
+                <b style={{ whiteSpace: 'nowrap' }}>{query.name}:&nbsp;</b>
+                {err?.message ? err?.message : 'Something went wrong'}
+              </span>,
+              {
+                type: 'error',
+              }
+            );
             break;
           }
           case queryStatus === 'needs_oauth': {
@@ -1021,7 +1041,8 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
 
         resolve({ status: data.status, data: finalData });
       })
-      .catch(({ error, data }) => {
+      .catch((err) => {
+        const { error, data } = err;
         setPreviewLoading(false);
         setPreviewData(data);
         toast.error(error);
@@ -1217,8 +1238,26 @@ export function runQuery(
           resolve(data);
           onEvent(_self, 'onDataQueryFailure', queryEvents);
           if (mode !== 'view') {
-            const err = query.kind == 'tooljetdb' ? data?.error || data : data;
-            toast.error(err?.message ? err?.message : 'Something went wrong');
+            let err;
+            if (query.kind == 'tooljetdb') {
+              err = data?.error || data;
+            } else if (query.kind == 'runjs') {
+              err = data?.status === 'failed' && data?.data?.message ? { message: data?.data?.message } : data;
+            } else if (query.kind == 'runpy') {
+              err = data?.data?.status === 'failed' ? { message: data?.data?.message } : data;
+            } else {
+              err = data?.status === 'failed' && data?.description ? { message: data?.description } : data;
+            }
+
+            toast(
+              <span>
+                <b style={{ whiteSpace: 'nowrap' }}>{query.name}:&nbsp;</b>
+                {err?.message ? err?.message : 'Something went wrong'}
+              </span>,
+              {
+                type: 'error',
+              }
+            );
           }
           return;
         } else {
