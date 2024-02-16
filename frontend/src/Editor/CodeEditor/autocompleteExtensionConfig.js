@@ -36,16 +36,18 @@ export const getAutocompletion = (input, fieldType, hints, fxActive = false) => 
     return true;
   });
 
-  const jsHints = JSLangHints.filter((cm) => {
-    const lastCharsAfterDot = actualInput.split('.').pop();
-    if (cm.hint.includes(lastCharsAfterDot)) return true;
-  });
-
   const appHintsFilteredByDepth = filterHintsByDepth(actualInput, appHints);
 
   const autoSuggestionList = appHintsFilteredByDepth.filter((suggestion) => {
     if (actualInput.length === 0) return true;
     return suggestion.hint.includes(actualInput);
+  });
+
+  const jsHints = JSLangHints.filter((cm) => {
+    const lastCharsAfterDot = actualInput.split('.').pop();
+    if (cm.hint.includes(lastCharsAfterDot)) return true;
+
+    if (autoSuggestionList.length === 0 && !cm.hint.includes(actualInput)) return true;
   });
 
   const suggestions = generateHints([...jsHints, ...autoSuggestionList], fxActive);
@@ -62,17 +64,11 @@ function orderSuggestions(suggestions, validationType) {
   return [...matchingSuggestions, ...otherSuggestions];
 }
 
-export const generateHints = (hints) => {
+export const generateHints = (hints, isFxHinter = false) => {
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
     let displayedHint = type === 'js_method' ? `${hint}()` : hint;
-
-    // // need to check if the hint is `queries.queryName` and not `queries.queryName.data`
-    // // add the `.data` to the hint
-    // if (displayedHint.includes('queries') && displayedHint.split('.').length === 2) {
-    //   displayedHint = `${displayedHint}.data`;
-    // }
 
     return {
       displayLabel: hint,
@@ -80,6 +76,28 @@ export const generateHints = (hints) => {
       type: type === 'js_method' ? 'js_methods' : type?.toLowerCase(),
       section: type === 'js_method' ? { name: 'JS methods', rank: 2 } : { name: 'Suggestions', rank: 1 },
       detail: type === 'js_method' ? 'method' : type?.toLowerCase() || '',
+      apply: (view, completion, from, to) => {
+        const doc = view.state.doc;
+        const { from: _, to: end } = doc.lineAt(from);
+
+        const pickedCompletionConfig = {
+          from: end - to,
+          to: to,
+          insert: completion.label,
+        };
+        if (completion.type === 'js_methods') {
+          pickedCompletionConfig.from = from;
+        }
+
+        const anchorSelection = isFxHinter
+          ? pickedCompletionConfig.insert.length
+          : pickedCompletionConfig.insert.length + 2;
+
+        view.dispatch({
+          changes: pickedCompletionConfig,
+          selection: { anchor: anchorSelection },
+        });
+      },
     };
   });
 
