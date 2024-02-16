@@ -31,21 +31,25 @@ export class PostgrestProxyService {
   async perform(url, method, headers, body) {
     try {
       const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
-      const reqPath = replaceUrlForPostgrest(url);
+      const updatedPath = replaceUrlForPostgrest(url);
+      let postgrestUrl = (this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001') + updatedPath;
+
+      if (!postgrestUrl.startsWith('http://') && !postgrestUrl.startsWith('https://')) {
+        postgrestUrl = 'http://' + postgrestUrl;
+      }
 
       const reqHeaders = {
         ...headers,
         Authorization: authToken,
         Prefer: 'count=exact', // get the total no of records
       };
-      const postgrestUrl = (this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001') + reqPath;
 
       const response = await got(postgrestUrl, {
         method,
         headers: reqHeaders,
         responseType: 'json',
         throwHttpErrors: false, // don't throw for non-2xx status codes
-        ...(!isEmpty(body) && { body }),
+        ...(!isEmpty(body) && { body: JSON.stringify(body) }),
       });
 
       return response.body;
@@ -127,13 +131,9 @@ export class PostgrestProxyService {
 }
 
 function replaceUrlForPostgrest(url: string) {
-  let postgrestUrl = url;
-  if (!postgrestUrl.startsWith('http://') && !postgrestUrl.startsWith('https://')) {
-    postgrestUrl = 'http://' + postgrestUrl;
-  }
   const path = '/api/tooljet-db';
   const pathRegex = new RegExp(`${maybeSetSubPath(path)}/proxy`);
-  const parts = postgrestUrl.split('?');
+  const parts = url.split('?');
   const queryString = parts[1];
   const updatedUrl = parts[0].replace(pathRegex, '');
 

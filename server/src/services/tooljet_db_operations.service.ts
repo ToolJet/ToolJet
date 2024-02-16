@@ -119,7 +119,7 @@ export class TooljetDbOperationsService implements QueryService {
     !isEmpty(whereQuery) && query.push(whereQuery);
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
-    const url = `/api/tooljet-db/proxy/${tableId}` + query.join('&') + '&order=id';
+    const url = `/api/tooljet-db/proxy/${tableId}?` + query.join('&') + '&order=id';
     return await this.proxyPostgrest(url, 'PATCH', headers, body);
   }
 
