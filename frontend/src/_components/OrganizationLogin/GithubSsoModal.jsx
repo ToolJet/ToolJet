@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import EnableModal from './EnableModal';
 
 export function GithubSSOModal({ settings, onClose, changeStatus }) {
   const [showModal, setShowModal] = useState(false);
@@ -29,6 +30,11 @@ export function GithubSSOModal({ settings, onClose, changeStatus }) {
 
     setHasChanges(false);
   }, [settings]);
+
+  const handleSaveChanges = () => {
+    // If there are changes, show the EnableModal
+    <EnableModal key="Github" />;
+  };
 
   const handleClientIdChange = (newClientId) => {
     setClientId(newClientId);

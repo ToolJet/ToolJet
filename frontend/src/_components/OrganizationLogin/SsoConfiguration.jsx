@@ -20,7 +20,8 @@ class SSOConfiguration extends React.Component {
       showModal: false,
       currentSSO: '',
       ssoOptions: this.props.ssoOptions,
-      defaultSSO: this.props.ssoOptions,
+      defaultSSO: this.props.defaultSSO,
+      isAnySSOEnabled: this.props.isAnySSOEnabled,
       showDropdown: false,
       enabledWorkspaceSSO: 0,
     };
@@ -48,6 +49,8 @@ class SSOConfiguration extends React.Component {
     const initialState = this.initializeOptionStates(this.props.ssoOptions);
     this.setState({ ...initialState });
     this.setState({ ssoOptions: this.props.ssoOptions });
+    this.setState({ defaultSSO: this.props.defaultSSO });
+    this.setState({ isAnySSOEnabled: this.props.isAnySSOEnabled });
   }
 
   componentDidUpdate(prevProps) {
@@ -61,6 +64,8 @@ class SSOConfiguration extends React.Component {
         ...initialState,
         ssoOptions: this.props.ssoOptions,
         enabledWorkspaceSSO: enabledSSOCount,
+        defaultSSO: this.props.defaultSSO,
+        isAnySSOEnabled: this.props.isAnySSOEnabled,
       });
     }
   }
@@ -76,10 +81,19 @@ class SSOConfiguration extends React.Component {
     this.setState({ showModal: false });
   };
 
-  toggleDefaultSSO = () => {
-    this.setState({
-      defaultSSO: !this.state.defaultSSO,
-    });
+  toggleDefaultSSO = async () => {
+    try {
+      await organizationService.editOrganization({ inheritSSO: !this.state.defaultSSO });
+      this.props.onUpdateAnySSOEnabled(
+        this.state.ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) || !this.state.defaultSSO
+      );
+      this.setState({
+        defaultSSO: !this.state.defaultSSO,
+      });
+      toast.success('Updated default sso settings');
+    } catch (e) {
+      toast.error('Default sso settings could not be updated');
+    }
   };
 
   handleToggleSSOOption = async (key) => {
@@ -98,6 +112,9 @@ class SSOConfiguration extends React.Component {
           return option;
         });
         const enabledSSOCount = updatedSSOOptions.filter((option) => option.enabled && option.sso !== 'form').length;
+        this.props.onUpdateAnySSOEnabled(
+          updatedSSOOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) || this.state.defaultSSO
+        );
         return {
           ssoOptions: updatedSSOOptions,
           showModal: enabledStatus,
@@ -142,7 +159,7 @@ class SSOConfiguration extends React.Component {
   };
 
   getSSOIcon = (key) => {
-    const iconStyles = { width: '20px', height: '20x' }; // Set your desired icon size
+    const iconStyles = { width: '20px', height: '20x' };
     switch (key) {
       case 'google':
         return <img src="/assets/images/Google.png" alt="Google" style={iconStyles} />;
@@ -184,10 +201,11 @@ class SSOConfiguration extends React.Component {
 
   render() {
     const { showModal, currentSSO, defaultSSO, initialState, ssoOptions, showDropdown } = this.state;
+    console.log(defaultSSO, 'check too');
 
     return (
       <div className="sso-configuration">
-        <h4>SSO</h4>
+        <h4 style={{ fontSize: '12px' }}>SSO</h4>
         <div
           className={`sso-option ${showDropdown ? 'clicked' : ''}`}
           style={{ paddingLeft: '0px', marginBottom: '1px' }}

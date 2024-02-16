@@ -42,8 +42,7 @@ class OrganizationLogin extends React.Component {
     const organizationSettings = await this.fetchSSOSettings();
     const ssoConfigs = organizationSettings?.sso_configs;
     console.log(organizationSettings, ssoConfigs, 'see');
-    const isAnySSOEnabled = ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) || false;
-    this.setState({ isAnySSOEnabled: isAnySSOEnabled });
+    console.log(this.state.defaultSSO, 'me too');
     const passwordLoginEnabled = passwordLogin || ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
     const initialOptions = {
       enableSignUp: organizationSettings?.enable_sign_up || false,
@@ -55,8 +54,14 @@ class OrganizationLogin extends React.Component {
       initialOptions: { ...initialOptions },
       ssoOptions: [...ssoConfigs],
       defaultSSO: organizationSettings?.inherit_s_s_o,
+      isAnySSOEnabled:
+        ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) || organizationSettings?.inherit_s_s_o,
     });
   }
+
+  updateAnySSOEnabled = (isAnySSOEnabled) => {
+    this.setState({ isAnySSOEnabled });
+  };
 
   async fetchSSOSettings() {
     const configs = await organizationService.getSSODetails();
@@ -282,7 +287,12 @@ class OrganizationLogin extends React.Component {
                   </form>
                 </div>
                 <div style={{ width: '50%' }}>
-                  <SSOConfiguration isAnySSOEnabled={isAnySSOEnabled} ssoOptions={ssoOptions} defaultSSO={defaultSSO} />
+                  <SSOConfiguration
+                    isAnySSOEnabled={isAnySSOEnabled}
+                    ssoOptions={ssoOptions}
+                    defaultSSO={defaultSSO}
+                    onUpdateAnySSOEnabled={this.updateAnySSOEnabled}
+                  />
                 </div>
               </div>
               <div className="card-footer">
