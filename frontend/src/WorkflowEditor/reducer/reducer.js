@@ -83,18 +83,6 @@ export const initialState = ({ appId, appVersionId }) => ({
   currentWebhookEnvironment: 'development',
 });
 
-// case 'SET_APP_NAME': {
-//   const updatedApp = { ...state.app, name: payload.name };
-//   const updatedState = { ...state, app: updatedApp };
-
-//   const updatedHistory = [...state.history]; // Make a copy of the existing history
-
-//   updatedHistory.push({ ...state, app: state.app }); // Save the previous state with the default name
-//   updatedHistory.push(updatedState); // Save the updated state
-
-//   return { ...updatedState, history: updatedHistory };
-// }
-
 export const reducer = (state = initialState(), { payload, type }) => {
   console.log('reducer', { type, payload, state });
   switch (type) {
