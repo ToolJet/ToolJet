@@ -1,4 +1,4 @@
-export const getAutocompletion = (input, fieldType, hints, fxActive = false) => {
+export const getAutocompletion = (input, fieldType, hints, fxActive = false, totalReferences = 1) => {
   if (!fxActive && (!input.startsWith('{{') || !input.endsWith('}}'))) return [];
 
   const actualInput = !fxActive ? input.replace(/{{|}}/g, '') : input;
@@ -50,7 +50,7 @@ export const getAutocompletion = (input, fieldType, hints, fxActive = false) => 
     if (autoSuggestionList.length === 0 && !cm.hint.includes(actualInput)) return true;
   });
 
-  const suggestions = generateHints([...jsHints, ...autoSuggestionList], fxActive);
+  const suggestions = generateHints([...jsHints, ...autoSuggestionList], fxActive, totalReferences);
   return orderSuggestions(suggestions, fieldType).map((cm, index) => ({ ...cm, boost: 100 - index }));
 };
 
@@ -64,7 +64,7 @@ function orderSuggestions(suggestions, validationType) {
   return [...matchingSuggestions, ...otherSuggestions];
 }
 
-export const generateHints = (hints, isFxHinter = false) => {
+export const generateHints = (hints, isFxHinter = false, totalReferences = 1) => {
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
@@ -89,9 +89,15 @@ export const generateHints = (hints, isFxHinter = false) => {
         let anchorSelection = isFxHinter
           ? pickedCompletionConfig.insert.length
           : pickedCompletionConfig.insert.length + 2;
+
         if (completion.type === 'js_methods') {
           pickedCompletionConfig.from = from;
           anchorSelection = anchorSelection + to;
+        }
+
+        if (totalReferences > 1) {
+          pickedCompletionConfig.from = from;
+          anchorSelection = anchorSelection + from;
         }
 
         view.dispatch({

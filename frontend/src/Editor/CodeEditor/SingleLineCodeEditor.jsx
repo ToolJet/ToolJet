@@ -129,7 +129,16 @@ const EditorInput = ({
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
-    let completions = getAutocompletion(context.state.doc.toString(), validationType, hints, fxActive);
+
+    const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
+
+    let queryInput = context.state.doc.toString();
+
+    if (totalReferences > 1) {
+      queryInput = fxActive ? word?.text : `{{${word?.text}}}`;
+    }
+
+    let completions = getAutocompletion(queryInput, validationType, hints, fxActive, totalReferences);
 
     return {
       from: word.from,
