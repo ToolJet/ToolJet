@@ -127,11 +127,15 @@ export class PostgrestProxyService {
 }
 
 function replaceUrlForPostgrest(url: string) {
+  let postgrestUrl = url;
+  if (!postgrestUrl.startsWith('http://') && !postgrestUrl.startsWith('https://')) {
+    postgrestUrl = 'http://' + postgrestUrl;
+  }
   const path = '/api/tooljet-db';
   const pathRegex = new RegExp(`${maybeSetSubPath(path)}/proxy`);
-  const parts = url.split('?');
+  const parts = postgrestUrl.split('?');
   const queryString = parts[1];
-  const updatedPath = parts[0].replace(pathRegex, '');
+  const updatedUrl = parts[0].replace(pathRegex, '');
 
-  return updatedPath + (queryString ? '?' + queryString : '');
+  return updatedUrl + (queryString ? '?' + queryString : '');
 }
