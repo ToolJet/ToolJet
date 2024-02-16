@@ -1,7 +1,15 @@
 import React from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 
-export default function Modal({ title, show, closeModal, customClassName, children, footerContent = null }) {
+export default function Modal({
+  title,
+  show,
+  closeModal,
+  customClassName,
+  children,
+  footerContent = null,
+  headerContent = null,
+}) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const modalFooter = footerContent ? (
     <BootstrapModal.Footer className={`modal-divider ${darkMode ? 'dark-theme-modal-divider' : ''}`}>
@@ -25,9 +33,12 @@ export default function Modal({ title, show, closeModal, customClassName, childr
       data-cy={'modal-component'}
     >
       <BootstrapModal.Header>
-        <BootstrapModal.Title data-cy={`${title.toLowerCase().replace(/\s+/g, '-')}-title`}>
-          {title}
-        </BootstrapModal.Title>
+        <div>
+          <BootstrapModal.Title data-cy={`${title.toLowerCase().replace(/\s+/g, '-')}-title`}>
+            {title}
+          </BootstrapModal.Title>
+          {headerContent && <div>{headerContent}</div>}
+        </div>
         <button
           className="btn-close"
           aria-label="Close"

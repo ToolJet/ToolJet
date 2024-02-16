@@ -32,7 +32,12 @@ export class GitOAuthService {
       email = await this.#getEmailId(access_token, hostName);
     }
 
-    return { userSSOId: access_token, firstName, lastName, email, sso: 'git' };
+    const userinfoResponse = {
+      ...response,
+      access_token,
+    };
+
+    return { userSSOId: access_token, firstName, lastName, email, sso: 'git', userinfoResponse };
   }
 
   async #getEmailId(access_token: string, hostName: string) {

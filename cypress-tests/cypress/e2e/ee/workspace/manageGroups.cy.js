@@ -6,6 +6,7 @@ import * as common from "Support/utils/common";
 import { resetDsPermissions } from "Support/utils/eeCommon";
 import { eeGroupsSelector } from "Selectors/eeCommon";
 import { eeGroupsText } from "Texts/eeCommon";
+import { OpenGroupCardOption } from "Support/utils/manageGroups";
 
 const groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 
@@ -143,7 +144,8 @@ describe(
       );
       cy.get(groupsSelector.permissionsLink).click();
 
-      cy.get(groupsSelector.deleteGroupLink(groupName)).click();
+      OpenGroupCardOption(groupName);
+      cy.get(groupsSelector.deleteGroupOption).click();
       cy.get(commonSelectors.buttonSelector("Yes")).click();
     });
   }

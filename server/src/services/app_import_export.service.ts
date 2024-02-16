@@ -139,9 +139,13 @@ export class AppImportExportService {
 
         dataSourceOptions = await manager
           .createQueryBuilder(DataSourceOptions, 'data_source_options')
-          .where('data_source_options.environmentId IN(:...environmentId)', {
-            environmentId: appEnvironments.map((v) => v.id),
-          })
+          .where(
+            'data_source_options.environmentId IN(:...environmentId) AND data_source_options.dataSourceId IN(:...dataSourceId)',
+            {
+              environmentId: appEnvironments.map((v) => v.id),
+              dataSourceId: dataSources.map((v) => v.id),
+            }
+          )
           .orderBy('data_source_options.createdAt', 'ASC')
           .getMany();
 
@@ -734,6 +738,7 @@ export class AppImportExportService {
             newComponent.properties = component.properties;
             newComponent.styles = component.styles;
             newComponent.generalStyles = component.generalStyles;
+            newComponent.displayPreferences = component.displayPreferences;
             newComponent.validation = component.validation;
             newComponent.parent = component.parent ? parentId : null;
 

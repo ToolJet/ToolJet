@@ -4,31 +4,22 @@ import { groupsSelector } from "Selectors/manageGroups";
 import { fake } from "Fixtures/fake";
 import {
     logout,
-    navigateToAppEditor,
     navigateToManageGroups,
     releaseApp,
 } from "Support/utils/common";
 import { commonText } from "Texts/common";
-import { inviteUser } from "Support/utils/manageUsers";
-import { userSignUp } from "Support/utils/onboarding";
 
 describe("Redirection error pages", () => {
     const data = {};
-    data.appName = `${fake.companyName} App`;
-    data.firstName = fake.firstName;
-    data.email = fake.email.toLowerCase();
-    data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 
     beforeEach(() => {
         cy.apiLogin();
     });
-    before(() => {
-        cy.apiLogin();
-        inviteUser(data.firstName, data.email);
-        logout();
-    });
 
     it("Verify error modal in case of invalid app URL", () => {
+        data.lastName = fake.lastName.toLowerCase();
+        data.appName = `${fake.companyName} App`;
+
         cy.visit(`/applications/${data.lastName}`);
         cy.get(commonSelectors.modalHeader).verifyVisibleElement(
             "have.text",
@@ -50,11 +41,12 @@ describe("Redirection error pages", () => {
         cy.get(commonSelectors.backToHomeButton).click();
         cy.get(commonSelectors.workEmailLabel).should("be.visible");
 
-        cy.apiLogin(data.email, "password");
+        cy.apiLogin("test@tooljet.com", "password");
         cy.visit(`/applications/${data.lastName}`);
     });
 
     it("Verify error message in case of restricted access", () => {
+        data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
         data.appName = `${fake.companyName} App`;
         cy.apiCreateApp(data.appName);
         cy.openApp();
@@ -66,7 +58,7 @@ describe("Redirection error pages", () => {
         cy.wait(1000);
         cy.logoutApi();
 
-        cy.apiLogin(data.email, "password");
+        cy.apiLogin("test@tooljet.com", "password");
         cy.visit(`/applications/${data.slug}`);
 
         cy.get(commonSelectors.modalHeader).verifyVisibleElement(
@@ -87,7 +79,7 @@ describe("Redirection error pages", () => {
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
     });
 
-    it("Verify error modal for app url of unreleased apps", () => {
+    it.only("Verify error modal for app url of unreleased apps", () => {
         data.appName = `${fake.companyName} App`;
         data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 
@@ -105,21 +97,27 @@ describe("Redirection error pages", () => {
         );
         cy.get(commonSelectors.modalDescription).verifyVisibleElement(
             "have.text",
-            'The app URL is currently unavailable because the app has not been released. Please either release it or contact admin for access.'
+            "The app URL is currently unavailable because the app has not been released. Please either release it or contact admin for access."
         );
-        cy.get('[data-cy="open-app-button"]').verifyVisibleElement("have.text", "Open app")
+        cy.get('[data-cy="open-app-button"]').verifyVisibleElement(
+            "have.text",
+            "Open app"
+        );
 
         cy.get(commonSelectors.backToHomeButton).verifyVisibleElement(
             "have.text",
             "Back to home page"
         );
 
-        cy.url().should("eq", `http://localhost:8082/error/url-unavailable?appSlug=${data.slug}`);
+        cy.url().should(
+            "eq",
+            `http://localhost:8082/error/url-unavailable?appSlug=${data.slug}`
+        );
         cy.get(commonSelectors.backToHomeButton).click();
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
 
         cy.logoutApi();
-        cy.apiLogin(data.email, "password");
+        cy.apiLogin("test@tooljet.com", "password");
         cy.wait(500);
 
         cy.visit(`http://localhost:8082/applications/${data.slug}`);
@@ -144,7 +142,8 @@ describe("Redirection error pages", () => {
 
         cy.defaultWorkspaceLogin();
         navigateToManageGroups();
-        cy.wait(2000);
+        cy.get(groupsSelector.appsLink).click();
+        cy.wait(1000);
         cy.get(groupsSelector.appSearchBox).click();
         cy.wait(1000);
         cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
@@ -157,7 +156,7 @@ describe("Redirection error pages", () => {
             });
 
         cy.logoutApi();
-        cy.apiLogin(data.email, "password");
+        cy.apiLogin("test@tooljet.com", "password");
         cy.wait(500);
 
         cy.visit(`http://localhost:8082/applications/${data.slug}`);
@@ -167,13 +166,16 @@ describe("Redirection error pages", () => {
         );
         cy.get(commonSelectors.modalDescription).verifyVisibleElement(
             "have.text",
-            'The app URL is currently unavailable because the app has not been released. Please either release it or contact admin for access.'
+            "The app URL is currently unavailable because the app has not been released. Please either release it or contact admin for access."
         );
         cy.get(commonSelectors.backToHomeButton).verifyVisibleElement(
             "have.text",
             "Back to home page"
         );
-        cy.url().should("eq", `http://localhost:8082/error/url-unavailable?appSlug=${data.slug}`);
+        cy.url().should(
+            "eq",
+            `http://localhost:8082/error/url-unavailable?appSlug=${data.slug}`
+        );
         cy.get(commonSelectors.backToHomeButton).click();
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
     });

@@ -41,19 +41,13 @@ describe("Workspace constants", () => {
     });
 
     it("Verify workspace constants UI and CRUD operations on development", () => {
-        cy.get(commonSelectors.workspaceSettingsIcon).click();
-        cy.get(commonSelectors.workspaceConstantsOption).should(($el) => {
-            expect($el.contents().first().text().trim()).to.eq("Workspace constants");
-        });
-        cy.wait(1000);
-        cy.get(commonSelectors.workspaceConstantsOption).click();
-
+        cy.get('[data-cy="icon-workspace-constants"]').click();
         cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
-            expect($el.contents().first().text().trim()).to.eq("Workspace settings");
+            expect($el.contents().first().text().trim()).to.eq("Workspace constants");
         });
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            " Workspace constants"
+            " Development"
         );
 
         cy.get(
@@ -270,13 +264,12 @@ describe("Workspace constants", () => {
     });
 
     it("Verify workspace constants UI and CRUD operations on staging", () => {
-        cy.get(commonSelectors.workspaceSettingsIcon).click();
-        cy.get(commonSelectors.workspaceConstantsOption).should(($el) => {
-            expect($el.contents().first().text().trim()).to.eq("Workspace constants");
-        });
-        cy.wait(1000);
-        cy.get(commonSelectors.workspaceConstantsOption).click();
+        cy.get('[data-cy="icon-workspace-constants"]').click();
         cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(2)').click();
+        cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+            "have.text",
+            " Staging"
+        );
 
         cy.get(
             workspaceConstantsSelectors.workspaceConstantsHelperText
@@ -492,13 +485,12 @@ describe("Workspace constants", () => {
     });
 
     it("Verify workspace constants UI and CRUD operations on production", () => {
-        cy.get(commonSelectors.workspaceSettingsIcon).click();
-        cy.get(commonSelectors.workspaceConstantsOption).should(($el) => {
-            expect($el.contents().first().text().trim()).to.eq("Workspace constants");
-        });
-        cy.wait(1000);
-        cy.get(commonSelectors.workspaceConstantsOption).click();
+        cy.get('[data-cy="icon-workspace-constants"]').click();
         cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(3)').click();
+        cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+            "have.text",
+            " Production"
+        );
 
         cy.get(
             workspaceConstantsSelectors.workspaceConstantsHelperText
@@ -717,7 +709,7 @@ describe("Workspace constants", () => {
             .toLowerCase()
             .replaceAll("[^A-Za-z]", "");
 
-        common.navigateToworkspaceConstants();
+        cy.get('[data-cy="icon-workspace-constants"]').click();
         AddNewconstants(data.constantsName, "Development");
         cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(2)').click();
         AddNewconstants(data.constantsName, "Staging");

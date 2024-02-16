@@ -1,23 +1,22 @@
-import { commonSelectors } from "../../constants/selectors/common";
+import { commonSelectors } from "Selectors/common";
 import { commonText } from "../../constants/texts/common";
 import { fake } from "Fixtures/fake";
-import { addNewUserMW } from "Support/utils/userPermissions";
+import { addNewUser } from "Support/utils/onboarding";
 import { logout } from "Support/utils/common";
 
 describe("Password reset functionality", () => {
   const data = {};
-  data.firstName = fake.firstName;
-  data.lastName = fake.lastName.replaceAll("[^A-Za-z]", "");
-  data.email = fake.email.toLowerCase();
   let passwordResetLink = "";
-
-  before(() => {
-    cy.defaultWorkspaceLogin();
-    addNewUserMW(data.firstName, data.email);
-    logout();
-  });
+  const envVar = Cypress.env("environment");
 
   it("Verify wrong password limit", () => {
+    data.firstName = fake.firstName;
+    data.email = fake.email.toLowerCase();
+
+    cy.defaultWorkspaceLogin();
+    addNewUser(data.firstName, data.email);
+    logout();
+
     for (let i = 0; i < 5; i++) {
       cy.clearAndType(commonSelectors.workEmailInputField, data.email);
       cy.clearAndType(commonSelectors.passwordInputField, "passw");
@@ -61,6 +60,12 @@ describe("Password reset functionality", () => {
       .verifyVisibleElement("have.text", commonText.resetPasswordLinkButton)
       .and("be.disabled");
     cy.get(commonSelectors.enterIcon).should("be.visible");
+    if (envVar === "Enterprise") {
+      cy.get('[data-cy="reset-password-info-banner"]').verifyVisibleElement(
+        "have.text",
+        "Contact super admin to reset your password"
+      );
+    }
 
     cy.clearAndType(commonSelectors.emailInputField, data.email);
     cy.get(commonSelectors.resetPasswordLinkButton).click();

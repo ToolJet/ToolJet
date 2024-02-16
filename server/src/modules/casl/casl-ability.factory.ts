@@ -15,11 +15,12 @@ type Actions =
   | 'deleteGroupPermission'
   | 'updateGroupPermission'
   | 'accessAuditLogs'
-  | 'viewAllUsers'
   | 'updateOrganizations'
   | 'updateGroupUserPermission'
   | 'updateGroupAppPermission'
-  | 'updateGroupDataSourcePermission';
+  | 'updateGroupDataSourcePermission'
+  | 'updateUser'
+  | 'viewAllUsers';
 
 type Subjects = InferSubjects<typeof OrganizationUser | typeof User> | 'all';
 
@@ -43,12 +44,14 @@ export class CaslAbilityFactory {
       can('accessGroupPermission', User);
       can('updateOrganizations', User);
       can('viewAllUsers', User);
+      can('updateUser', User);
       can('updateGroupUserPermission', User);
       can('updateGroupAppPermission', User);
+      can('deleteGroupPermission', User);
+      can('updateUser', User);
 
       if (isLicenseValid) {
         can('createGroupPermission', User);
-        can('deleteGroupPermission', User);
         can('updateGroupPermission', User);
         can('updateGroupDataSourcePermission', User);
 

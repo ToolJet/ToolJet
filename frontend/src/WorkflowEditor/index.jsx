@@ -25,6 +25,7 @@ import { toast } from 'react-hot-toast';
 import './style.scss';
 import Header from './Header';
 import LogsPanel from './LogsPanel';
+import { fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
 
 // Wherever this file uses the term 'app', it means 'workflow'
 function WorkflowEditor(props) {
@@ -68,7 +69,7 @@ function WorkflowEditor(props) {
         editorSessionActions.setMaintenanceStatus(isMaintenanceOn);
         editorSessionActions.toggleWebhookEnable(workflowEnabled);
         editorSessionActions.setWorkflowApiToken(workflowToken);
-        document.title = `${name} - ToolJet`;
+        fetchAndSetWindowTitle({ page: pageTitles.WORKFLOW_EDITOR, appName: `${name}` });
 
         if (appData.definition) {
           const bodyParameters = appData.definition?.webhookParams;
@@ -113,7 +114,7 @@ function WorkflowEditor(props) {
       .saveApp(appId, { name })
       .then(() => {
         editorSessionActions.setAppName(name);
-        document.title = `${name} - ToolJet`;
+        fetchAndSetWindowTitle({ page: pageTitles.WORKFLOW_EDITOR, appName: `${name}` });
       })
       .catch(() => {
         toast('Something went wrong while editing workflow name', {

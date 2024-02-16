@@ -111,7 +111,6 @@ export function InstanceSettings(props) {
                 size="xsmall"
                 type={featureAccess?.licenseStatus?.licenseType}
               />
-              <OrganizationList />
             </div>
 
             {licenseLoaded ? (

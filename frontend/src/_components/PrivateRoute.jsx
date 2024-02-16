@@ -3,7 +3,7 @@ import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { authenticationService } from '@/_services';
 import { appendWorkspaceId, excludeWorkspaceIdFromURL, getPathname, getQueryParams } from '@/_helpers/routes';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, setFaviconAndTitle } from '@/_helpers/utils';
 import { handleAppAccess } from '@/_helpers/handleAppAccess';
 import queryString from 'query-string';
 
@@ -14,6 +14,7 @@ export const PrivateRoute = ({ children }) => {
   const params = useParams();
   const [extraProps, setExtraProps] = useState({});
   const [isValidatingUserAccess, setUserValidationStatus] = useState(true);
+  const { WHITE_LABEL_FAVICON, WHITE_LABEL_TEXT } = window.public_config;
 
   const pathname = getPathname(null, true);
   const isEditorOrViewerGoingToRender = pathname.startsWith('/apps/') || pathname.startsWith('/applications/');
@@ -64,6 +65,7 @@ export const PrivateRoute = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    setFaviconAndTitle(WHITE_LABEL_FAVICON, WHITE_LABEL_TEXT, location);
     setUserValidationStatus(true);
     /* When route changes (not hard reload). will validate the access */
     validateRoutes(session?.group_permissions, () => {

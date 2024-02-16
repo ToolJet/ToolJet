@@ -40,6 +40,7 @@ describe("App Version Functionality", () => {
     let versionFrom = "";
     beforeEach(() => {
         cy.apiLogin();
+        cy.skipWalkthrough();
     });
 
     it("Verify the elements of the version module", () => {
@@ -83,6 +84,7 @@ describe("App Version Functionality", () => {
         promoteApp();
 
         verifyComponent("button1");
+        cy.wait(1000);
         cy.get('[data-cy="list-current-env-name"]').click();
         cy.get(multiEnvSelector.envNameList).eq(0).click();
 
@@ -114,7 +116,7 @@ describe("App Version Functionality", () => {
             const parts = url.split("/");
             const value = parts[parts.length - 1];
             cy.log(`Extracted value: ${value}`);
-            cy.get(commonSelectors.editorPageLogo).click();
+            cy.backToApps();
             cy.wait(1000);
 
             cy.visit(`/applications/${value}`);

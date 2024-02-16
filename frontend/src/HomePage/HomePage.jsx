@@ -21,7 +21,7 @@ import TemplateLibraryModal from './TemplateLibraryModal/';
 import HomeHeader from './Header';
 import Modal from './Modal';
 import configs from './Configs/AppIcon.json';
-import { retrieveWhiteLabelText, getWorkspaceId } from '../_helpers/utils';
+import { fetchAndSetWindowTitle, getWorkspaceId, pageTitles } from '../_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { sample, isEmpty } from 'lodash';
 import ExportAppModal from './ExportAppModal';
@@ -34,6 +34,7 @@ import { LicenseBanner } from '@/LicenseBanner';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import ModalBase from '@/_ui/Modal';
 import Skeleton from 'react-loading-skeleton';
+import FolderFilter from './FolderFilter';
 
 const { iconList, defaultIcon } = configs;
 
@@ -102,6 +103,7 @@ class HomePageComponent extends React.Component {
   }
 
   async componentDidMount() {
+    fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     await Promise.all([
       this.fetchApps(1, this.state.currentFolder.id),
       this.fetchFolders(),
@@ -111,7 +113,6 @@ class HomePageComponent extends React.Component {
       this.fetchWorkflowsWorkspaceLimit(),
       this.fetchOrgGit(),
     ]);
-    document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
 
   componentDidUpdate(prevProps) {
@@ -1199,6 +1200,27 @@ class HomePageComponent extends React.Component {
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
                     <div className="liner"></div>
+                    <div className="filter-container">
+                      <span>{currentFolder?.count ?? meta?.total_count} APPS</span>
+                      <div className="d-flex align-items-center">
+                        <div className="mx-2">Filter by</div>
+                        <FolderFilter
+                          disabled={!!appOperations?.isAdding}
+                          options={this.state.folders.map((folder) => {
+                            return {
+                              name: folder.name,
+                              label: folder.name,
+                              value: folder.id,
+                              id: folder.id,
+                              ...folder,
+                            };
+                          })}
+                          onChange={this.folderChanged}
+                          value={currentFolder}
+                          closeMenuOnSelect={true}
+                        />
+                      </div>
+                    </div>
                   </>
                 )}
                 {!isLoading && featuresLoaded && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
@@ -1246,16 +1268,21 @@ class HomePageComponent extends React.Component {
                   />
                 }
               </div>
-              {this.pageCount() > MAX_APPS_PER_PAGE && (
-                <Footer
-                  currentPage={meta.current_page}
-                  count={this.pageCount()}
-                  itemsPerPage={MAX_APPS_PER_PAGE}
-                  pageChanged={this.pageChanged}
-                  darkMode={this.props.darkMode}
-                  dataLoading={isLoading}
-                />
-              )}
+              <div className="footer-container">
+                {this.pageCount() > MAX_APPS_PER_PAGE && (
+                  <Footer
+                    currentPage={meta.current_page}
+                    count={this.pageCount()}
+                    itemsPerPage={MAX_APPS_PER_PAGE}
+                    pageChanged={this.pageChanged}
+                    darkMode={this.props.darkMode}
+                    dataLoading={isLoading}
+                  />
+                )}
+                <div className="org-selector-mobile">
+                  <OrganizationList />
+                </div>
+              </div>
             </div>
           </div>
           <TemplateLibraryModal

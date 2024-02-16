@@ -3,21 +3,16 @@ import { authHeader, handleResponse } from '@/_helpers';
 
 export const organizationUserService = {
   archiveAll,
+  unarchiveAll,
   archive,
   unarchive,
   create,
   changeRole,
   inviteBulkUsers,
+  updateOrgUser,
 };
 
-function create(first_name, last_name, email, groupIds = []) {
-  const body = {
-    first_name,
-    last_name,
-    email,
-    groups: groupIds,
-  };
-
+function create(id, body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/organization_users`, requestOptions).then(handleResponse);
 }
@@ -42,6 +37,11 @@ function archiveAll(userId) {
   return fetch(`${config.apiUrl}/organization_users/${userId}/archive-all`, requestOptions).then(handleResponse);
 }
 
+function unarchiveAll(userId) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization_users/${userId}/unarchive-all`, requestOptions).then(handleResponse);
+}
+
 function archive(id, organizationId) {
   const requestOptions = {
     method: 'POST',
@@ -60,4 +60,9 @@ function unarchive(id, organizationId) {
     body: JSON.stringify({ ...(organizationId && { organizationId }) }),
   };
   return fetch(`${config.apiUrl}/organization_users/${id}/unarchive`, requestOptions).then(handleResponse);
+}
+
+function updateOrgUser(id, body) {
+  const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/organization_users/${id}`, requestOptions).then(handleResponse);
 }

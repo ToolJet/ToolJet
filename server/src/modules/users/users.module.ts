@@ -12,6 +12,7 @@ import { AuditLog } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from '@services/audit_logger.service';
 import { CaslModule } from '../casl/casl.module';
 import { FilesService } from '@services/files.service';
+import { SessionService } from '@services/session.service';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { FilesService } from '@services/files.service';
     TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App, AuditLog]),
     CaslModule,
   ],
-  providers: [UsersService, AuditLoggerService, FilesService],
+  providers: [UsersService, AuditLoggerService, FilesService, SessionService],
   controllers: [UsersController],
   exports: [UsersService],
 })

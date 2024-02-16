@@ -44,7 +44,7 @@ export const URL_SSO_SOURCE = 'sso';
 export function getUserErrorMessages(status: any) {
   switch (status) {
     case USER_STATUS.ARCHIVED:
-      return 'The user has been archived, please contact the administrator to activate the account';
+      return 'You have been archived from this instance. Contact super admin to know more.';
     default:
       return 'The user is not active, please use the invite link shared to activate';
   }

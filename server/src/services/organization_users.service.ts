@@ -12,6 +12,7 @@ import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT } from 'src/helpers/license.helper';
+import { UpdateUserDto } from '@dto/user.dto';
 const uuid = require('uuid');
 
 @Injectable()
@@ -57,6 +58,16 @@ export class OrganizationUsersService {
     return await this.organizationUsersRepository.update(id, { role });
   }
 
+  async updateOrgUser(organizationUserId: string, updateUserDto: UpdateUserDto) {
+    const organizationUser = await this.organizationUsersRepository.findOne({ where: { id: organizationUserId } });
+    return await this.usersService.update(
+      organizationUser.userId,
+      updateUserDto,
+      null,
+      organizationUser.organizationId
+    );
+  }
+
   async archive(id: string, organizationId: string, user?: User): Promise<void> {
     const organizationUser = await this.organizationUsersRepository.findOneOrFail({
       where: { id, organizationId },
@@ -73,8 +84,18 @@ export class OrganizationUsersService {
 
   async archiveFromAll(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(OrganizationUser, { userId }, { status: 'archived', invitationToken: null });
-      await this.usersService.updateUser(userId, { status: 'archived' }, manager);
+      await manager.update(
+        OrganizationUser,
+        { userId },
+        { status: WORKSPACE_USER_STATUS.ARCHIVED, invitationToken: null }
+      );
+      await this.usersService.updateUser(userId, { status: USER_STATUS.ARCHIVED }, manager);
+    });
+  }
+
+  async unarchiveUser(userId: string): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.usersService.updateUser(userId, { status: USER_STATUS.ACTIVE }, manager);
     });
   }
 

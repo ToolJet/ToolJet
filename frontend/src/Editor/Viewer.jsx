@@ -27,7 +27,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -113,15 +113,6 @@ class ViewerComponent extends React.Component {
       };
     }
 
-    let mobileLayoutHasWidgets = false;
-
-    if (this.props.currentLayout === 'mobile') {
-      const currentComponents = appDefData.pages[appDefData.homePageId].components;
-      mobileLayoutHasWidgets =
-        Object.keys(currentComponents).filter((componentId) => currentComponents[componentId]['layouts']['mobile'])
-          .length > 0;
-    }
-
     let queryState = {};
     let dataQueries = [];
 
@@ -202,7 +193,7 @@ class ViewerComponent extends React.Component {
       ...variables,
       ...constants,
     });
-    useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
+    useEditorStore.getState().actions.toggleCurrentLayout(this.props?.currentLayout == 'mobile' ? 'mobile' : 'desktop');
     this.props.updateState({ events: data.events ?? [] });
     this.setState(
       {
@@ -211,7 +202,7 @@ class ViewerComponent extends React.Component {
         canvasWidth:
           this.props.currentLayout === 'desktop'
             ? '100%'
-            : mobileLayoutHasWidgets
+            : this.props?.currentLayout === 'mobile'
             ? `${this.state.deviceWindowWidth}px`
             : '1292px',
         selectedComponent: null,
@@ -320,13 +311,18 @@ class ViewerComponent extends React.Component {
       .fetchAppBySlug(slug)
       .then((data) => {
         const isAppPublic = data?.is_public;
+        const preview = !!queryString.parse(this.props?.location?.search)?.version;
         if (authentication_failed && !isAppPublic) {
           return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
         }
         this.setStateForApp(data, true);
         this.setState({ appId: data.id });
         this.setStateForContainer(data);
-        this.setWindowTitle(data.name);
+        fetchAndSetWindowTitle({
+          page: pageTitles.VIEWER,
+          appName: data.name,
+          preview,
+        });
       })
       .catch((error) => {
         this.setState({
@@ -504,10 +500,6 @@ class ViewerComponent extends React.Component {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
     return canvasBoundingRect?.width;
   };
-
-  setWindowTitle(name) {
-    document.title = name ?? 'My App';
-  }
 
   computeCanvasBackgroundColor = () => {
     const bgColor =
@@ -693,7 +685,7 @@ class ViewerComponent extends React.Component {
                       background: this.computeCanvasBackgroundColor() || (!this.props.darkMode ? '#EBEBEF' : '#2E3035'),
                     }}
                   >
-                    <div className={`areas d-flex flex-rows app-${this.state.appId}`}>
+                    <div className={`areas d-flex flex-rows app-${this.props.id}`}>
                       {appDefinition?.showViewerNavigation && (
                         <ViewerNavigation
                           isMobileDevice={this.props.currentLayout === 'mobile'}

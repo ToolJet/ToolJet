@@ -13,6 +13,7 @@ export default function ModalBase({
   handleConfirm,
   isLoading,
   children,
+  cancelDisabled,
 }) {
   return (
     <Modal
@@ -40,11 +41,11 @@ export default function ModalBase({
         )}
       </Modal.Body>
       <Modal.Footer>
-        <ButtonSolid variant={'tertiary'} onClick={handleClose} data-cy="cancel-button">
+        <ButtonSolid disabled={cancelDisabled} variant={'tertiary'} onClick={handleClose} data-cy="cancel-button">
           Cancel
         </ButtonSolid>
         <ButtonSolid
-          disabled={isLoading}
+          disabled={isLoading || confirmBtnProps?.disabled}
           isLoading={isLoading}
           variant={confirmBtnProps?.variant || 'primary'}
           onClick={handleConfirm}
