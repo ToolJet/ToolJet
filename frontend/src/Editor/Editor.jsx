@@ -587,6 +587,8 @@ const EditorComponent = (props) => {
   };
 
   const onNameChanged = (newName) => {
+    app.name = newName;
+    updateState({ appName: newName, app: app });
     updateState({ appName: newName });
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: newName });
   };
