@@ -85,13 +85,14 @@ export const generateHints = (hints, isFxHinter = false) => {
           to: to,
           insert: completion.label,
         };
-        if (completion.type === 'js_methods') {
-          pickedCompletionConfig.from = from;
-        }
 
-        const anchorSelection = isFxHinter
+        let anchorSelection = isFxHinter
           ? pickedCompletionConfig.insert.length
           : pickedCompletionConfig.insert.length + 2;
+        if (completion.type === 'js_methods') {
+          pickedCompletionConfig.from = from;
+          anchorSelection = anchorSelection + to;
+        }
 
         view.dispatch({
           changes: pickedCompletionConfig,
