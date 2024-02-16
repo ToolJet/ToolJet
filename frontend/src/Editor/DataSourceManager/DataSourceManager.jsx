@@ -747,7 +747,7 @@ class DataSourceManagerComponent extends React.Component {
                   data-cy={`${env.name}-label`}
                 >
                   <ToolTip
-                    message={'Multi-environmentss is a paid plan feature'}
+                    message={'Multi-environments is a paid plan feature'}
                     show={isTrial && licenseValid}
                     placement="bottom"
                   >
