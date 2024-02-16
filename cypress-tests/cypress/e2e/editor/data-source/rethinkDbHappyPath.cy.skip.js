@@ -15,11 +15,13 @@ import {
 } from "Support/utils/postgreSql";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on connection form", () => {
@@ -43,7 +45,7 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "RethinkDB", data.lastName);
+    selectAndAddDataSource("databases", "RethinkDB", data.dataSourceName);
 
     cy.get('[data-cy="label-database"]').verifyVisibleElement(
       "have.text",
@@ -101,7 +103,7 @@ describe("Data sources", () => {
   });
 
   it("Should verify the functionality of RethinkDB connection form.", () => {
-    selectAndAddDataSource("databases", "RethinkDB", data.lastName);
+    selectAndAddDataSource("databases", "RethinkDB", data.dataSourceName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
