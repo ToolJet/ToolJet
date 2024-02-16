@@ -8,12 +8,15 @@ const initialState = {
 
 const ThemeProviderContext = createContext(initialState);
 
-export function ThemeProvider({ children, defaultTheme = 'system', storageKey = 'vite-ui-theme', ...props }) {
-  const [theme, setTheme] = useState(() => localStorage.getItem(storageKey) || defaultTheme);
+export function ThemeProvider({ children, darkMode, defaultTheme = 'system', storageKey = 'vite-ui-theme', ...props }) {
+  const [theme, setTheme] = useState(() => (darkMode ? 'dark' : 'light'));
+
+  useEffect(() => {
+    setTheme(darkMode ? 'dark' : 'light');
+  }, [darkMode]);
 
   useEffect(() => {
     const root = window.document.documentElement;
-
     root.classList.remove('light', 'dark');
 
     if (theme === 'system') {
@@ -33,6 +36,7 @@ export function ThemeProvider({ children, defaultTheme = 'system', storageKey = 
       setTheme(theme);
     },
   };
+  console.log('log---', darkMode);
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>

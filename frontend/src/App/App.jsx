@@ -120,7 +120,7 @@ class AppComponent extends React.Component {
     const { updateSidebarNAV } = this;
     return (
       <>
-        <ThemeProvider defaultTheme={darkMode ? 'dark' : 'light'} storageKey="vite-ui-theme">
+        <ThemeProvider defaultTheme={darkMode ? 'dark' : 'light'} darkMode={darkMode} storageKey="vite-ui-theme">
           <div className={`main-wrapper ${darkMode ? 'theme-dark dark-theme' : ''}`} data-cy="main-wrapper">
             {updateAvailable && (
               <div className="alert alert-info alert-dismissible" role="alert">
