@@ -3,7 +3,7 @@ id: marketplace-plugin-github
 title: GitHub
 ---
 
-ToolJet can connect to GitHub account to read and write data. In order for ToolJet to access and manipulate data on GitHub, a **GitHub Personal Access Toke**n is necessary to authenticate and interact with the GitHub API.
+ToolJet can connect to GitHub account to read and write data. In order for ToolJet to access and manipulate data on GitHub, a **GitHub Personal Access Token** is necessary to authenticate and interact with the GitHub API.
 
 <div style={{textAlign: 'center'}}>
 
