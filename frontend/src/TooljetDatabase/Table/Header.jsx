@@ -20,6 +20,8 @@ const Header = ({
   setIsCreateColumnDrawerOpen,
   isCreateRowDrawerOpen,
   setIsCreateRowDrawerOpen,
+  setIsBulkUploadDrawerOpen,
+  isBulkUploadDrawerOpen,
   selectedRowIds,
   handleDeleteRow,
   rows,
@@ -28,7 +30,6 @@ const Header = ({
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
-  const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
   const [bulkUploadFile, setBulkUploadFile] = useState(null);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
   const [errors, setErrors] = useState({ client: [], server: [] });
