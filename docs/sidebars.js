@@ -375,6 +375,7 @@ const sidebars = {
           'label': 'Marketplace Plugins',
           'items': [
             'marketplace/plugins/marketplace-plugin-textract',
+            'marketplace/plugins/aws-lambda-plugin',
             'marketplace/plugins/marketplace-plugin-github',
             'marketplace/plugins/marketplace-plugin-harperdb',
             'marketplace/plugins/marketplace-plugin-openai',
