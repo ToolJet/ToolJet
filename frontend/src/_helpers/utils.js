@@ -556,12 +556,26 @@ export const handleCircularStructureToJSON = () => {
 };
 
 export function hasCircularDependency(obj) {
-  try {
-    JSON.stringify(obj);
-  } catch (e) {
-    return String(e).includes('Converting circular structure to JSON');
+  let seenObjects = new WeakSet();
+
+  function detect(obj) {
+    if (obj && typeof obj === 'object') {
+      if (seenObjects.has(obj)) {
+        // Circular reference found
+        return true;
+      }
+      seenObjects.add(obj);
+
+      for (let key in obj) {
+        if (obj.hasOwnProperty(key) && detect(obj[key])) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
-  return false;
+
+  return detect(obj);
 }
 
 export const hightlightMentionedUserInComment = (comment) => {
