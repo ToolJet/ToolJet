@@ -31,6 +31,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
+import { AuthRoute } from '@/Routes/AuthRoute';
 
 const AppWrapper = (props) => {
   return (
@@ -147,13 +148,45 @@ class AppComponent extends React.Component {
           )}
           <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
             <Routes>
-              <Route path="/login/:organizationId" exact element={<LoginPage />} />
-              <Route path="/login" exact element={<LoginPage />} />
+              <Route
+                path="/login/:organizationId"
+                exact
+                element={
+                  <AuthRoute {...this.props}>
+                    <LoginPage {...this.props} />
+                  </AuthRoute>
+                }
+              />
+              <Route
+                path="/login"
+                exact
+                element={
+                  <AuthRoute {...this.props}>
+                    <LoginPage {...this.props} />
+                  </AuthRoute>
+                }
+              />
               <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
               <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
               <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
-              <Route path="/signup/:organizationId" exact element={<SignupPage />} />
-              <Route path="/signup" exact element={<SignupPage />} />
+              <Route
+                path="/signup/:organizationId"
+                exact
+                element={
+                  <AuthRoute {...this.props}>
+                    <SignupPage {...this.props} />
+                  </AuthRoute>
+                }
+              />
+              <Route
+                path="/signup"
+                exact
+                element={
+                  <AuthRoute {...this.props}>
+                    <SignupPage {...this.props} />
+                  </AuthRoute>
+                }
+              />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
@@ -162,7 +195,6 @@ class AppComponent extends React.Component {
                 path="/invitations/:token/workspaces/:organizationToken"
                 element={<OrganizationInviteRoute {...this.props} />}
               />
-              <Route path="/confirm" element={<VerificationSuccessInfoScreen />} />
               <Route
                 path="/organization-invitations/:token"
                 element={
@@ -170,10 +202,6 @@ class AppComponent extends React.Component {
                     <OrganizationInvitationPage {...this.props} darkMode={darkMode} />
                   </OrganizationInviteRoute>
                 }
-              />
-              <Route
-                path="/confirm-invite"
-                element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
               />
               <Route
                 exact

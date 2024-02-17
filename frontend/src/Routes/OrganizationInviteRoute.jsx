@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useLocation, useParams } from 'react-router-dom';
 import { authenticationService } from '@/_services';
-import { authorizeUserAndHandleErrors } from '@/_helpers/authorizeWorkspace';
+import { authorizeUserAndHandleErrors, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { toast } from 'react-hot-toast';
 import { LinkExpiredPage } from '@/ConfirmationPage/LinkExpiredPage';
 
@@ -61,6 +61,9 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
           if (isAccountNotActivated) {
             /* Account is not activated yet. Logout and redirect to signup page */
             toast.error(errorMessage);
+            updateCurrentSession({
+              authentication_status: false,
+            });
             navigate(`/signup/${organizationId}`, {
               state: { organizationToken },
             });
@@ -98,6 +101,9 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
   };
 
   const redirectToInstanceLoginPage = () => {
+    updateCurrentSession({
+      authentication_status: false,
+    });
     const redirectTo = `${location.pathname}${location.search}`;
     navigate(
       {

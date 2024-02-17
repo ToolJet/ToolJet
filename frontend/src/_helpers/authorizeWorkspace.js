@@ -37,10 +37,11 @@ export const authorizeWorkspace = () => {
           if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
             updateCurrentSession({
               noWorkspaceAttachedInTheSession,
+              authentication_status: true,
             });
             if (noWorkspaceAttachedInTheSession) {
-              /* 
-                User just signed up after the invite flow and doesn't have any active workspace. 
+              /*
+                User just signed up after the invite flow and doesn't have any active workspace.
                 - From useSessionManagement hook we will be redirecting the user to an error page.
               */
               return;
@@ -66,7 +67,7 @@ export const authorizeWorkspace = () => {
             window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
           }
         }
-        if (!isThisWorkspaceLoginPage(true) && !isApplicationsPath) {
+        if (!isApplicationsPath) {
           /* CASE-3 */
           updateCurrentSession({
             authentication_status: false,
@@ -100,14 +101,17 @@ const isThisExistedRoute = () => {
   return pathnames?.length > 0 ? (checkPath() ? true : false) : false;
 };
 
-const fetchOrganizations = (current_organization_id, callback) => {
-  organizationService.getOrganizations().then((response) => {
-    const current_organization = response.organizations?.find((org) => org.id === current_organization_id);
-    callback({
-      organizations: response.organizations,
-      current_organization,
-    });
-  });
+const fetchOrganizations = (current_organization_id, callback, onRequestFailure = () => {}) => {
+  organizationService
+    .getOrganizations()
+    .then((response) => {
+      const current_organization = response.organizations?.find((org) => org.id === current_organization_id);
+      callback({
+        organizations: response.organizations,
+        current_organization,
+      });
+    })
+    .catch(onRequestFailure);
 };
 
 const isThisWorkspaceLoginPage = (justLoginPage = false) => {

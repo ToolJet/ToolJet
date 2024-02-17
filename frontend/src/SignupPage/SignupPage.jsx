@@ -24,13 +24,13 @@ class SignupPageComponent extends React.Component {
     /* Need these params to organization signup work */
     const routeState = this.props?.location?.state;
     this.organizationToken = routeState?.organizationToken;
-    this.inviteOrganizationId = props.params.organizationId;
+    this.inviteOrganizationId = props.organizationId;
+    this.paramInviteOrganizationSlug = props.params.organizationId;
 
     this.state = {
       isLoading: false,
       showPassword: false,
       emailError: '',
-      isGettingConfigs: true,
       disableOnEdit: false,
     };
   }
@@ -42,19 +42,6 @@ class SignupPageComponent extends React.Component {
 
   componentDidMount() {
     authenticationService.deleteLoginOrganizationId();
-
-    authenticationService.getOrganizationConfigs(this.inviteOrganizationId).then(
-      (configs) => {
-        this.setState({ isGettingConfigs: false, configs });
-      },
-      (response) => {
-        if (response.data.statusCode !== 404) {
-          this.setState({ isGettingConfigs: false });
-        } else {
-          return this.props.navigate('/setup');
-        }
-      }
-    );
   }
 
   handleChange = (event) => {
@@ -92,7 +79,7 @@ class SignupPageComponent extends React.Component {
           this.setState({ isLoading: false });
         });
     } else {
-      authenticationService.signup(email, name, password).then(
+      authenticationService.signup(email, name, password, this.inviteOrganizationId).then(
         () => {
           // eslint-disable-next-line no-unused-vars
           const { from } = this.props.location.state || {
@@ -111,9 +98,10 @@ class SignupPageComponent extends React.Component {
   };
 
   isFormSignUpEnabled = () => {
+    const { configs } = this.props;
     return this.inviteOrganizationId
-      ? this.state.configs?.form?.enabled && this.state.configs?.enable_sign_up
-      : this.state.configs?.form?.enable_sign_up;
+      ? configs?.form?.enabled && configs?.enable_sign_up
+      : configs?.form?.enable_sign_up;
   };
 
   setSignupOrganizationId = () => {
@@ -121,6 +109,7 @@ class SignupPageComponent extends React.Component {
   };
 
   render() {
+    const { configs } = this.props;
     const { isLoading, signupSuccess } = this.state;
     return (
       <div className="page common-auth-section-whole-wrapper">
@@ -128,225 +117,238 @@ class SignupPageComponent extends React.Component {
           <OnboardingNavbar darkMode={this.darkMode} />
 
           <div className="common-auth-section-left-wrapper-grid">
-            {this.state.isGettingConfigs ? (
-              <div className="loader-wrapper">
-                <ShowLoading />
-              </div>
-            ) : (
-              <form action="." method="get" autoComplete="off">
-                {!signupSuccess && (
-                  <div className="common-auth-container-wrapper common-auth-signup-container-wrapper">
-                    <h2
-                      className="common-auth-section-header common-auth-signup-section-header"
-                      data-cy="signup-section-header"
-                    >
-                      {this.props.t('loginSignupPage.signUp', `Sign up`)}
+            <form action="." method="get" autoComplete="off">
+              {
+                /* If the configs don't have any organization id. that means the workspace slug is invalid */
+                this.paramInviteOrganizationSlug && !configs?.id ? (
+                  <div className="text-center-onboard">
+                    <h2 data-cy="no-workspace">
+                      {this.props.t(
+                        'loginSignupPage.workspaceDoesntExist',
+                        'Workspace does not exist. Please check the workspace login url again'
+                      )}
                     </h2>
-                    <span className="mb-2">{`Sign up to the workspace - ${this.state.configs?.name}`}</span>
-                    <div className="signup-page-signin-redirect" data-cy="signin-redirect-text">
-                      {this.props.t('loginSignupPage.alreadyHaveAnAccount', `Already have an account? `)} &nbsp;
-                      <Link to={'/login'} tabIndex="-1" data-cy="signin-redirect-link">
-                        {this.props.t('loginSignupPage.signIn', `Sign in`)}
-                      </Link>
-                    </div>
-                    {((!this.state.configs?.enable_sign_up && !this.state.configs?.form?.enable_sign_up) ||
-                      (!this.state.configs?.form?.enable_sign_up &&
-                        this.state.configs?.enable_sign_up &&
-                        !this.state.configs?.git?.enabled &&
-                        !this.state.configs?.google?.enabled)) && (
-                      <SignupStatusCard text={'Signup has been disabled by your workspace admin.'} />
-                    )}
+                  </div>
+                ) : (
+                  !signupSuccess && (
+                    <>
+                      <div className="common-auth-container-wrapper common-auth-signup-container-wrapper">
+                        <h2
+                          className="common-auth-section-header common-auth-signup-section-header"
+                          data-cy="signup-section-header"
+                        >
+                          {this.props.t('loginSignupPage.signUp', `Sign up`)}
+                        </h2>
+                        {this.inviteOrganizationId && (
+                          <span className="mb-2">{`Sign up to the workspace - ${configs?.name}`}</span>
+                        )}
+                        <div className="signup-page-signin-redirect" data-cy="signin-redirect-text">
+                          {this.props.t('loginSignupPage.alreadyHaveAnAccount', `Already have an account? `)} &nbsp;
+                          <Link to={'/login'} tabIndex="-1" data-cy="signin-redirect-link">
+                            {this.props.t('loginSignupPage.signIn', `Sign in`)}
+                          </Link>
+                        </div>
+                        {((!configs?.enable_sign_up && !configs?.form?.enable_sign_up) ||
+                          (!configs?.form?.enable_sign_up &&
+                            configs?.enable_sign_up &&
+                            !configs?.git?.enabled &&
+                            !configs?.google?.enabled)) && (
+                          <SignupStatusCard text={'Signup has been disabled by your workspace admin.'} />
+                        )}
 
-                    {this.state.configs?.enable_sign_up && (
-                      <div>
-                        {this.state.configs?.git?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GitSSOLoginButton
-                              configs={this.state.configs?.git?.configs}
-                              text={this.props.t('confirmationPage.signupWithGithub', 'Sign up with GitHub')}
-                            />
+                        {configs?.enable_sign_up && (
+                          <div>
+                            {configs?.git?.enabled && (
+                              <div className="login-sso-wrapper">
+                                <GitSSOLoginButton
+                                  configs={configs?.git?.configs}
+                                  text={this.props.t('confirmationPage.signupWithGithub', 'Sign up with GitHub')}
+                                />
+                              </div>
+                            )}
+                            {configs?.google?.enabled && (
+                              <div className="login-sso-wrapper">
+                                <GoogleSSOLoginButton
+                                  configs={configs?.google?.configs}
+                                  configId={configs?.google?.config_id}
+                                  text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
+                                  setSignupOrganizationId={this.setSignupOrganizationId}
+                                />
+                              </div>
+                            )}
+                            {(configs?.git?.enabled || configs?.google?.enabled) && this.isFormSignUpEnabled() && (
+                              <div className="separator-signup">
+                                <div className="mt-2 separator" data-cy="onboarding-separator">
+                                  <h2>
+                                    <span data-cy="onboarding-separator-text">OR</span>
+                                  </h2>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
-                        {this.state.configs?.google?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GoogleSSOLoginButton
-                              configs={this.state.configs?.google?.configs}
-                              configId={this.state.configs?.google?.config_id}
-                              text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                              setSignupOrganizationId={this.setSignupOrganizationId}
-                            />
-                          </div>
-                        )}
-                        {(this.state.configs?.git?.enabled || this.state.configs?.google?.enabled) &&
-                          this.isFormSignUpEnabled() && (
-                            <div className="separator-signup">
-                              <div className="mt-2 separator" data-cy="onboarding-separator">
-                                <h2>
-                                  <span data-cy="onboarding-separator-text">OR</span>
-                                </h2>
+                        {this.isFormSignUpEnabled() && (
+                          <>
+                            <div className="signup-page-inputs-wrapper">
+                              <label className="tj-text-input-label" data-cy="name-input-label">
+                                Name
+                              </label>
+                              <input
+                                onChange={this.handleChange}
+                                name="name"
+                                type="text"
+                                className="tj-text-input"
+                                placeholder={this.props.t('loginSignupPage.enterFullName', 'Enter your full name')}
+                                value={this.state.name || ''}
+                                data-cy="name-input-field"
+                                autoFocus
+                                autoComplete="off"
+                              />
+                              <div className="signup-password-wrap">
+                                <label className="tj-text-input-label" data-cy="email-input-label">
+                                  Email address
+                                </label>
+                                <input
+                                  onChange={this.handleChange}
+                                  name="email"
+                                  type="email"
+                                  className="tj-text-input"
+                                  placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your email')}
+                                  style={{ marginBottom: '0px' }}
+                                  value={this.state.email || ''}
+                                  data-cy="email-input-field"
+                                  autoComplete="off"
+                                />
+                                {this.state.emailError && (
+                                  <span className="tj-text-input-error-state">{this.state.emailError}</span>
+                                )}
+                              </div>
+                              <label className="tj-text-input-label" data-cy="passwor-label">
+                                Password
+                              </label>
+                              <div className="login-password signup-password-wrapper">
+                                <input
+                                  onChange={this.handleChange}
+                                  name="password"
+                                  type={this.state.showPassword ? 'text' : 'password'}
+                                  className="tj-text-input"
+                                  placeholder={this.props.t('loginSignupPage.enterNewPassword', 'Enter new password')}
+                                  data-cy="password-input-field"
+                                  autoComplete="new-password"
+                                />
+                                <div
+                                  className="signup-password-hide-img"
+                                  onClick={this.handleOnCheck}
+                                  data-cy="show-password-icon"
+                                >
+                                  {this.state.showPassword ? (
+                                    <EyeHide
+                                      fill={
+                                        this.darkMode
+                                          ? this.state?.password?.length
+                                            ? '#D1D5DB'
+                                            : '#656565'
+                                          : this.state?.password?.length
+                                          ? '#384151'
+                                          : '#D1D5DB'
+                                      }
+                                    />
+                                  ) : (
+                                    <EyeShow
+                                      fill={
+                                        this.darkMode
+                                          ? this.state?.password?.length
+                                            ? '#D1D5DB'
+                                            : '#656565'
+                                          : this.state?.password?.length
+                                          ? '#384151'
+                                          : '#D1D5DB'
+                                      }
+                                    />
+                                  )}
+                                </div>
+                                <span className="tj-input-helper-text" data-cy="password-helper-text">
+                                  {this.props.t(
+                                    'loginSignupPage.passwordCharacter',
+                                    'Password must be at least 5 characters'
+                                  )}
+                                </span>
                               </div>
                             </div>
-                          )}
+                            <div>
+                              <ButtonSolid
+                                className="signup-btn"
+                                onClick={this.signup}
+                                disabled={
+                                  isLoading ||
+                                  !this.state.email ||
+                                  !this.state.password ||
+                                  !this.state.name ||
+                                  this.state.password.length < 5 ||
+                                  this.state.name.trim().length === 0
+                                }
+                                data-cy="sign-up-button"
+                              >
+                                {isLoading ? (
+                                  <div className="spinner-center">
+                                    <Spinner />
+                                  </div>
+                                ) : (
+                                  <>
+                                    <span>
+                                      {this.props.t('loginSignupPage.getStartedForFree', 'Get started for free')}
+                                    </span>
+                                    <EnterIcon
+                                      className="enter-icon-onboard"
+                                      fill={
+                                        isLoading ||
+                                        !this.state.email ||
+                                        !this.state.password ||
+                                        !this.state.name ||
+                                        this.state.password.length < 5
+                                          ? this.darkMode
+                                            ? '#656565'
+                                            : ' #D1D5DB'
+                                          : '#fff'
+                                      }
+                                    />
+                                  </>
+                                )}
+                              </ButtonSolid>
+                            </div>
+                          </>
+                        )}
+                        <p className="signup-terms" data-cy="signup-terms-helper">
+                          By signing up you are agreeing to the
+                          <br />
+                          <span>
+                            <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
+                              Terms of Service{' '}
+                            </a>
+                            &
+                            <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
+                              {' '}
+                              Privacy Policy
+                            </a>
+                          </span>
+                        </p>
                       </div>
-                    )}
-                    {this.isFormSignUpEnabled() && (
-                      <>
-                        <div className="signup-page-inputs-wrapper">
-                          <label className="tj-text-input-label" data-cy="name-input-label">
-                            Name
-                          </label>
-                          <input
-                            onChange={this.handleChange}
-                            name="name"
-                            type="text"
-                            className="tj-text-input"
-                            placeholder={this.props.t('loginSignupPage.enterFullName', 'Enter your full name')}
-                            value={this.state.name || ''}
-                            data-cy="name-input-field"
-                            autoFocus
-                            autoComplete="off"
-                          />
-                          <div className="signup-password-wrap">
-                            <label className="tj-text-input-label" data-cy="email-input-label">
-                              Email address
-                            </label>
-                            <input
-                              onChange={this.handleChange}
-                              name="email"
-                              type="email"
-                              className="tj-text-input"
-                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your email')}
-                              style={{ marginBottom: '0px' }}
-                              value={this.state.email || ''}
-                              data-cy="email-input-field"
-                              autoComplete="off"
-                            />
-                            {this.state.emailError && (
-                              <span className="tj-text-input-error-state">{this.state.emailError}</span>
-                            )}
-                          </div>
-                          <label className="tj-text-input-label" data-cy="passwor-label">
-                            Password
-                          </label>
-                          <div className="login-password signup-password-wrapper">
-                            <input
-                              onChange={this.handleChange}
-                              name="password"
-                              type={this.state.showPassword ? 'text' : 'password'}
-                              className="tj-text-input"
-                              placeholder={this.props.t('loginSignupPage.enterNewPassword', 'Enter new password')}
-                              data-cy="password-input-field"
-                              autoComplete="new-password"
-                            />
-                            <div
-                              className="signup-password-hide-img"
-                              onClick={this.handleOnCheck}
-                              data-cy="show-password-icon"
-                            >
-                              {this.state.showPassword ? (
-                                <EyeHide
-                                  fill={
-                                    this.darkMode
-                                      ? this.state?.password?.length
-                                        ? '#D1D5DB'
-                                        : '#656565'
-                                      : this.state?.password?.length
-                                      ? '#384151'
-                                      : '#D1D5DB'
-                                  }
-                                />
-                              ) : (
-                                <EyeShow
-                                  fill={
-                                    this.darkMode
-                                      ? this.state?.password?.length
-                                        ? '#D1D5DB'
-                                        : '#656565'
-                                      : this.state?.password?.length
-                                      ? '#384151'
-                                      : '#D1D5DB'
-                                  }
-                                />
-                              )}
-                            </div>
-                            <span className="tj-input-helper-text" data-cy="password-helper-text">
-                              {this.props.t(
-                                'loginSignupPage.passwordCharacter',
-                                'Password must be at least 5 characters'
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                        <div>
-                          <ButtonSolid
-                            className="signup-btn"
-                            onClick={this.signup}
-                            disabled={
-                              isLoading ||
-                              !this.state.email ||
-                              !this.state.password ||
-                              !this.state.name ||
-                              this.state.password.length < 5 ||
-                              this.state.name.trim().length === 0
-                            }
-                            data-cy="sign-up-button"
-                          >
-                            {isLoading ? (
-                              <div className="spinner-center">
-                                <Spinner />
-                              </div>
-                            ) : (
-                              <>
-                                <span>{this.props.t('loginSignupPage.getStartedForFree', 'Get started for free')}</span>
-                                <EnterIcon
-                                  className="enter-icon-onboard"
-                                  fill={
-                                    isLoading ||
-                                    !this.state.email ||
-                                    !this.state.password ||
-                                    !this.state.name ||
-                                    this.state.password.length < 5
-                                      ? this.darkMode
-                                        ? '#656565'
-                                        : ' #D1D5DB'
-                                      : '#fff'
-                                  }
-                                />
-                              </>
-                            )}
-                          </ButtonSolid>
-                        </div>
-                      </>
-                    )}
-                    <p className="signup-terms" data-cy="signup-terms-helper">
-                      By signing up you are agreeing to the
-                      <br />
-                      <span>
-                        <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
-                          Terms of Service{' '}
-                        </a>
-                        &
-                        <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
-                          {' '}
-                          Privacy Policy
-                        </a>
-                      </span>
-                    </p>
-                  </div>
-                )}
-                {signupSuccess && (
-                  <div>
-                    <SignupInfoScreen
-                      props={this.props}
-                      email={this.state.email}
-                      name={this.state.name}
-                      backtoSignup={this.backtoSignup}
-                      darkMode={this.darkMode}
-                    />
-                  </div>
-                )}
-              </form>
-            )}
+                    </>
+                  )
+                )
+              }
+              {signupSuccess && (
+                <div>
+                  <SignupInfoScreen
+                    props={this.props}
+                    email={this.state.email}
+                    name={this.state.name}
+                    backtoSignup={this.backtoSignup}
+                    darkMode={this.darkMode}
+                  />
+                </div>
+              )}
+            </form>
           </div>
         </div>
       </div>

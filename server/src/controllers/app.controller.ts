@@ -66,14 +66,17 @@ export class AppController {
 
   @UseGuards(InvitedUserSessionAuthGuard)
   @Post('invited-user-session')
-  async getInvitedUserSessionDetails(@User() user, @InvitedUser() invitedUser, @Body() tokens:InvitedUserSessionDto ) {
+  async getInvitedUserSessionDetails(@User() user, @InvitedUser() invitedUser, @Body() tokens: InvitedUserSessionDto) {
     return await this.authService.validateInvitedUserSession(user, invitedUser, tokens);
   }
 
   @UseGuards(SignupDisableGuard)
   @UseGuards(FirstUserSignupDisableGuard)
   @Post('activate-account-with-token')
-  async activateAccountWithToken(@Body() activateAccountWithPasswordDto: ActivateAccountWithTokenDto,  @Res({ passthrough: true }) response: Response) {
+  async activateAccountWithToken(
+    @Body() activateAccountWithPasswordDto: ActivateAccountWithTokenDto,
+    @Res({ passthrough: true }) response: Response
+  ) {
     return this.authService.activateAccountWithToken(activateAccountWithPasswordDto, response);
   }
 
@@ -141,15 +144,19 @@ export class AppController {
   @UseGuards(FirstUserSignupDisableGuard)
   @UseGuards(OrganizationInviteAuthGuard)
   @Post('accept-invite')
-  async acceptInvite(@User() user,@Body() acceptInviteDto: AcceptInviteDto,  @Res({ passthrough: true }) response: Response) {
-    return await this.authService.acceptOrganizationInvite(response, user,acceptInviteDto);
+  async acceptInvite(
+    @User() user,
+    @Body() acceptInviteDto: AcceptInviteDto,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    return await this.authService.acceptOrganizationInvite(response, user, acceptInviteDto);
   }
 
   @UseGuards(SignupDisableGuard)
   @UseGuards(FirstUserSignupDisableGuard)
   @Post('signup')
-  async signup(@Body() appAuthDto: AppSignupDto) {
-    return this.authService.signup(appAuthDto.email, appAuthDto.name, appAuthDto.password);
+  async signup(@Body() appSignUpDto: AppSignupDto) {
+    return this.authService.signup(appSignUpDto);
   }
 
   @UseGuards(SignupDisableGuard)

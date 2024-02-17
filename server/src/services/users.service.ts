@@ -28,7 +28,7 @@ export class UsersService {
     return this.usersRepository.count();
   }
 
-  async findOne(where={}): Promise<User> {
+  async findOne(where = {}): Promise<User> {
     return this.usersRepository.findOne({ where });
   }
 
@@ -81,7 +81,7 @@ export class UsersService {
     isInvite?: boolean,
     defaultOrganizationId?: string,
     manager?: EntityManager,
-    shouldNotAttachWorkspace = false,
+    shouldNotAttachWorkspace = false
   ): Promise<User> {
     const { email, firstName, lastName, password, source, status, phoneNumber } = userParams;
     let user: User;
@@ -97,7 +97,7 @@ export class UsersService {
           source,
           status,
           invitationToken: isInvite ? uuid.v4() : null,
-          defaultOrganizationId: !shouldNotAttachWorkspace ?  defaultOrganizationId || organizationId : null,
+          defaultOrganizationId: !shouldNotAttachWorkspace ? defaultOrganizationId || organizationId : null,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
@@ -105,7 +105,7 @@ export class UsersService {
       } else {
         user = existingUser;
       }
-      await this.attachUserGroup(groups, organizationId, user.id, manager);
+      if (groups.length) await this.attachUserGroup(groups, organizationId, user.id, manager);
     }, manager);
 
     return user;

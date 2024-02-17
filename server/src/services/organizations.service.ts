@@ -5,13 +5,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import {
-  catchDbException,
-  cleanObject,
-  dbTransactionWrap,
-  isPlural,
-  fullName,
-} from 'src/helpers/utils.helper';
+import { catchDbException, cleanObject, dbTransactionWrap, isPlural, fullName } from 'src/helpers/utils.helper';
 import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
@@ -152,9 +146,15 @@ export class OrganizationsService {
   async fetchOrganization(slug: string): Promise<Organization> {
     let organization: Organization;
     try {
-      organization = await this.organizationsRepository.findOneOrFail({ where: { slug }, select: ['id', 'slug', 'name'] });
+      organization = await this.organizationsRepository.findOneOrFail({
+        where: { slug },
+        select: ['id', 'slug', 'name'],
+      });
     } catch (error) {
-      organization = await this.organizationsRepository.findOne({ where: { id: slug }, select: ['id', 'slug', 'name'] });
+      organization = await this.organizationsRepository.findOne({
+        where: { id: slug },
+        select: ['id', 'slug', 'name'],
+      });
     }
     return organization;
   }
@@ -616,7 +616,7 @@ export class OrganizationsService {
         true,
         null,
         manager,
-        !user,
+        !user
       );
 
       const currentOrganization: Organization = await this.organizationsRepository.findOneOrFail({
@@ -630,7 +630,7 @@ export class OrganizationsService {
         manager
       );
 
-      const name = fullName(currentUser.firstName, currentUser.lastName)
+      const name = fullName(currentUser.firstName, currentUser.lastName);
       if (shouldSendWelcomeMail) {
         this.emailService
           .sendWelcomeEmail(

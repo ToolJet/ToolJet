@@ -13,7 +13,10 @@ import { appendWorkspaceId, excludeWorkspaceIdFromURL } from '@/_helpers/routes'
   - can customise the after behaviour using the disableValidSessionCallback, disableInValidSessionCallback params
 */
 
-const defaultState = { disableValidSessionCallback: false, disableInValidSessionCallback: false };
+const defaultState = {
+  disableValidSessionCallback: false,
+  disableInValidSessionCallback: false,
+};
 export const useSessionManagement = (initialState = defaultState) => {
   const [session, setSession] = useState(authenticationService.currentSessionValue);
   const [isLoading, setLoading] = useState(true);

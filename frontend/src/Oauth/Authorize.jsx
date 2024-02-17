@@ -5,8 +5,7 @@ import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 import { RedirectLoader } from '../_components';
 import { getCookie } from '@/_helpers';
-import { redirectToWorkspace } from '@/_helpers/utils';
-import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
+import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 
 export function Authorize({ navigate }) {
   const [error, setError] = useState('');
@@ -65,15 +64,15 @@ export function Authorize({ navigate }) {
   const signIn = (authParams, configs) => {
     authenticationService
       .signInViaOAuth(router.query.configId, router.query.origin, authParams, signupOrganizationId)
-      .then(({ redirect_url, current_organization_id, ...restResponse }) => {
+      .then(({ redirect_url, ...restResponse }) => {
         if (redirect_url) {
           window.location.href = redirect_url;
           return;
         }
         /*for workspace login / normal login response will contain the next organization_id user want to login*/
-        if (current_organization_id) {
-          redirectToWorkspace();
-        }
+        const { current_organization_id } = restResponse;
+        if (current_organization_id) onLoginSuccess(restResponse, navigate);
+
         if (restResponse?.organizationInviteUrl) onInvitedUserSignUpSuccess(restResponse, navigate);
       })
       .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));

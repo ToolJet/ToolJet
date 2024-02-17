@@ -20,6 +20,7 @@ const currentSessionSubject = new BehaviorSubject({
   group_permissions: null,
   app_group_permissions: null,
   organizations: [],
+  isUserLoggingIn: false,
   authentication_status: null,
   authentication_failed: null,
   isUserUpdated: false,
@@ -73,7 +74,6 @@ function login(email, password, organizationId) {
   return fetch(`${config.apiUrl}/authenticate${organizationId ? `/${organizationId}` : ''}`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {
-      authenticationService.updateCurrentSession(user);
       return user;
     });
 }
@@ -140,11 +140,11 @@ function getOrganizationConfigs(organizationId) {
     .then((configs) => configs?.sso_configs);
 }
 
-function signup(email, name, password) {
+function signup(email, name, password, organizationId) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, name, password }),
+    body: JSON.stringify({ email, name, password, organizationId }),
   };
 
   return fetch(`${config.apiUrl}/signup`, requestOptions)

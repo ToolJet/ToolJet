@@ -17,7 +17,13 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
-import { dbTransactionWrap, generateInviteURL, generateNextNameAndSlug, generateOrgInviteURL } from 'src/helpers/utils.helper';
+import {
+  dbTransactionWrap,
+  generateInviteURL,
+  generateNextNameAndSlug,
+  generateOrgInviteURL,
+  isValidDomain,
+} from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
@@ -35,30 +41,6 @@ export class OauthService {
     private readonly gitOAuthService: GitOAuthService,
     private configService: ConfigService
   ) {}
-
-  #isValidDomain(email: string, restrictedDomain: string): boolean {
-    if (!email) {
-      return false;
-    }
-    const domain = email.substring(email.lastIndexOf('@') + 1);
-
-    if (!restrictedDomain) {
-      return true;
-    }
-    if (!domain) {
-      return false;
-    }
-    if (
-      !restrictedDomain
-        .split(',')
-        .map((e) => e && e.trim())
-        .filter((e) => !!e)
-        .includes(domain)
-    ) {
-      return false;
-    }
-    return true;
-  }
 
   async #findOrCreateUser(
     { firstName, lastName, email, sso }: UserResponse,
@@ -197,7 +179,7 @@ export class OauthService {
     if (!(userResponse.userSSOId && userResponse.email)) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    if (!this.#isValidDomain(userResponse.email, domain)) {
+    if (!isValidDomain(userResponse.email, domain)) {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
     }
 
@@ -307,24 +289,23 @@ export class OauthService {
 
         if (userDetails.invitationToken) {
           const updatableUserParams = {
-            ...(getUserStatusAndSource(isInvitedUserSignUp ? lifecycleEvents.USER_SSO_ACTIVATE : lifecycleEvents.USER_SSO_VERIFY, sso)),
-            ...(isInvitedUserSignUp ? { invitationToken: null } : {})
-          }
+            ...getUserStatusAndSource(
+              isInvitedUserSignUp ? lifecycleEvents.USER_SSO_ACTIVATE : lifecycleEvents.USER_SSO_VERIFY,
+              sso
+            ),
+            ...(isInvitedUserSignUp ? { invitationToken: null } : {}),
+          };
           // User account setup not done, updating source and status
-          await this.usersService.updateUser(
-            userDetails.id,
-            updatableUserParams,
-            manager
-          );
+          await this.usersService.updateUser(userDetails.id, updatableUserParams, manager);
           // New user created and invited to the organization
           const organizationToken = userDetails.organizationUsers?.find(
             (ou) => ou.organizationId === organization.id
           )?.invitationToken;
 
-          if(isInvitedUserSignUp){
+          if (isInvitedUserSignUp) {
             /* User is coming from invite flow. */
-            const session = await this.authService.generateInviteSignupPayload(response, userDetails, 'sso');      
-            const organizationInviteUrl = generateOrgInviteURL(organizationToken, organization.id, false); 
+            const session = await this.authService.generateInviteSignupPayload(response, userDetails, 'sso');
+            const organizationInviteUrl = generateOrgInviteURL(organizationToken, organization.id, false);
             return { ...session, organizationInviteUrl };
           }
 
