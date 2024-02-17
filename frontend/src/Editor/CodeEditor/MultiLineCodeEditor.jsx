@@ -154,6 +154,8 @@ const MultiLineCodeEditor = (props) => {
     };
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), []);
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
 
   return (
@@ -191,7 +193,7 @@ const MultiLineCodeEditor = (props) => {
                 extensions={[
                   langExtention,
                   javascriptLanguage.data.of({
-                    autocomplete: autoCompleteExtensionConfig,
+                    autocomplete: overRideFunction,
                   }),
                 ]}
                 onChange={handleChange}
