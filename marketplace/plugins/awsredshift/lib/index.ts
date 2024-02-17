@@ -70,18 +70,9 @@ export default class Awsredshift implements QueryService {
     };
     const command = new ExecuteStatementCommand(input);
     const result = await client.send(command);
-
-    const sqlResults = [];
-    const resultId = result.Id;
-    while (resultId) {
-      const getResultsCommand = new GetStatementResultCommand({ Id: resultId });
-      const getResultsResult = await client.send(getResultsCommand);
-      sqlResults.push(...getResultsResult.Records);
-      //resultId = getResultsResult.NextResult;
-    }
     return {
       status: 'ok',
-      data: sqlResults,
+      data: result,
     };
   }
 
