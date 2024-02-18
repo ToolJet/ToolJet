@@ -11,7 +11,7 @@ export const onInvitedUserSignUpSuccess = (response, navigate) => {
   navigate(organizationInviteUrl);
 };
 
-export const onLoginSuccess = (userResponse, navigate) => {
+export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
   const {
     current_organization_id,
     current_organization_slug,
@@ -24,7 +24,7 @@ export const onLoginSuccess = (userResponse, navigate) => {
     noWorkspaceAttachedInTheSession,
     isUserLoggingIn: true,
   });
-  const redirectPath = getCookie('redirectPath');
+  const redirectPath = redirectTo || getCookie('redirectPath');
   eraseRedirectUrl();
   if (!noWorkspaceAttachedInTheSession) {
     authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, () => {

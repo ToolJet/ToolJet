@@ -7,7 +7,7 @@ import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
 import { withRouter } from '@/_hoc/withRouter';
-import { authorizeUserAndHandleErrors } from '@/_helpers/authorizeWorkspace';
+import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -37,11 +37,7 @@ class OrganizationInvitationPageComponent extends React.Component {
       })
       .then((data) => {
         toast.success(`Added to the workspace successfully.`);
-        const { current_organization_id, current_organization_slug } = data;
-        authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, () => {
-          this.setState({ isLoading: false });
-          this.props.navigate(`/${current_organization_slug}`);
-        });
+        onLoginSuccess(data, this.props.navigate, `/${data.current_organization_slug}`);
       })
       .catch(() => {
         toast.error('Error while setting up your account.', { position: 'top-center' });
