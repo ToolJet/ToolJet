@@ -1,4 +1,4 @@
-import { Injectable, NotAcceptableException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
@@ -105,7 +105,7 @@ export class UsersService {
       } else {
         user = existingUser;
       }
-      if (groups.length) await this.attachUserGroup(groups, organizationId, user.id, manager);
+      await this.attachUserGroup(groups, organizationId, user.id, manager);
     }, manager);
 
     return user;

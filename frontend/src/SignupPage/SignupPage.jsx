@@ -12,7 +12,6 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
-import { ShowLoading } from '@/_components';
 import Spinner from '@/_ui/Spinner';
 import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 import { withRouter } from '@/_hoc/withRouter';
@@ -79,21 +78,21 @@ class SignupPageComponent extends React.Component {
           this.setState({ isLoading: false });
         });
     } else {
-      authenticationService.signup(email, name, password, this.inviteOrganizationId).then(
-        () => {
+      authenticationService
+        .signup(email, name, password, this.inviteOrganizationId)
+        .then(() => {
           // eslint-disable-next-line no-unused-vars
           const { from } = this.props.location.state || {
             from: { pathname: '/' },
           };
           this.setState({ isLoading: false, signupSuccess: true });
-        },
-        (e) => {
+        })
+        .catch((e) => {
           toast.error(e?.error || 'Something went wrong!', {
             position: 'top-center',
           });
           this.setState({ isLoading: false });
-        }
-      );
+        });
     }
   };
 

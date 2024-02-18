@@ -266,7 +266,7 @@ export class AuthService {
         throw new ForbiddenException('Workspace signup has been disabled. Please contact the workspace admin.');
       }
       if (!isValidDomain(email, domain)) {
-        throw new UnauthorizedException('You cannot sign up using the email address - Domain verification failed.');
+        throw new ForbiddenException('You cannot sign up using the email address - Domain verification failed.');
       }
     }
 
@@ -285,18 +285,24 @@ export class AuthService {
     if (existingUser) {
       return await this.whatIfTheSignUpIsAtTheWorkspaceLevel(existingUser, signingUpOrganization, userParams);
     } else {
-      return await this.createUserOrPersonalWorkspace(userParams, existingUser);
+      return await this.createUserOrPersonalWorkspace(userParams, existingUser, signingUpOrganization);
     }
   }
 
   createUserOrPersonalWorkspace = async (
     userParams: { email: string; password: string; firstName: string; lastName: string },
-    existingUser: User
+    existingUser: User,
+    signingUpOrganization: Organization = null
   ) => {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const { email, password, firstName, lastName } = userParams;
       const { name, slug } = generateNextNameAndSlug('My workspace');
-      const organization = await this.organizationsService.create(name, slug, null, manager);
+      let organization = signingUpOrganization;
+      if (!signingUpOrganization) {
+        /* No organization signup - Create personal workspace for the user */
+        organization = await this.organizationsService.create(name, slug, null, manager);
+      }
+      const groups = !signingUpOrganization ? ['all_users', 'admin'] : ['all_users'];
       const user = await this.usersService.create(
         {
           email,
@@ -306,7 +312,7 @@ export class AuthService {
           ...getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP),
         },
         organization.id,
-        ['all_users', 'admin'],
+        groups,
         existingUser,
         true,
         null,
@@ -362,14 +368,19 @@ export class AuthService {
     const hasSomeWorkspaceInvites = organizationUsers.some(
       (organizationUser: OrganizationUser) => organizationUser.status === WORKSPACE_USER_STATUS.INVITED
     );
+    const isAlreadyActiveInWorkspace = organizationUsers.find(
+      (organizationUser: OrganizationUser) =>
+        organizationUser.organizationId === organizationId && organizationUser.status === WORKSPACE_USER_STATUS.ACTIVE
+    );
 
     /* User who missed the organization invite flow  */
     const activeAccountButnoActiveWorkspaces = !!alreadyInvitedUserByAdmin && !existingUser.invitationToken;
     const invitedButNotActivated = !!alreadyInvitedUserByAdmin && !!existingUser.invitationToken;
-    const activeUserWantsToSignUpToWorkspace = hasActiveWorkspaces && !!organizationId;
+    const activeUserWantsToSignUpToWorkspace = hasActiveWorkspaces && !!organizationId && !isAlreadyActiveInWorkspace;
     const didInstanceSignUpAlreadyButNotActive = !!existingUser?.invitationToken;
     /* Personal workspace case */
     const adminInvitedButUserWantsInstanceSignup = !!existingUser?.invitationToken && hasSomeWorkspaceInvites;
+    const isUserAlreadyExisted = !!isAlreadyActiveInWorkspace || hasActiveWorkspaces;
 
     switch (true) {
       case invitedButNotActivated: {
@@ -405,13 +416,13 @@ export class AuthService {
       }
       case didInstanceSignUpAlreadyButNotActive: {
         /* Resend intance invitation */
+        const errorMessage = organizationId
+          ? 'Please finish setting up your account before signing in to this workspace. Check your inbox for the activation link.'
+          : 'The user is already registered. Please check your inbox for the activation link';
         this.emailService
           .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
           .catch((err) => console.error(err));
-        throw new NotAcceptableException(
-          'The user is already registered. Please check your inbox for the activation link'
-        );
-        break;
+        throw new NotAcceptableException(errorMessage);
       }
       case activeUserWantsToSignUpToWorkspace: {
         /* Create new organizations_user entry and send an invite */
@@ -439,10 +450,10 @@ export class AuthService {
         );
         break;
       }
-      case !existingUser?.invitationToken && !organizationId:
-      case hasActiveWorkspaces && !organizationId: {
-        /* Instance signup. old user / tried workspace signup  */
-        throw new NotAcceptableException('Email already exists');
+      case isUserAlreadyExisted: {
+        /* already an user of that workspace or user is trying signup again from instance signup page */
+        const errorMessage = organizationId ? 'User already extsts in the workspace.' : 'Email already exists.';
+        throw new NotAcceptableException(errorMessage);
       }
       default:
         break;

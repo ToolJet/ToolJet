@@ -147,11 +147,7 @@ function signup(email, name, password, organizationId) {
     body: JSON.stringify({ email, name, password, organizationId }),
   };
 
-  return fetch(`${config.apiUrl}/signup`, requestOptions)
-    .then(handleResponse)
-    .then((user) => {
-      return user;
-    });
+  return fetch(`${config.apiUrl}/signup`, requestOptions).then(handleResponse);
 }
 
 function activateAccountWithToken(email, name, password, organizationToken, source) {
