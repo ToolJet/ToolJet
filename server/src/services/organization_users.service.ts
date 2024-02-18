@@ -15,8 +15,8 @@ const uuid = require('uuid');
 
 /* TYPES */
 type InvitedUserType = Partial<User> & {
-  invitedOrganizationId?: string,
-  organizationStatus?: string,
+  invitedOrganizationId?: string;
+  organizationStatus?: string;
 };
 
 @Injectable()
@@ -62,32 +62,35 @@ export class OrganizationUsersService {
     return await this.organizationUsersRepository.update(id, { role });
   }
 
-  async findByWorkspaceInviteToken(invitationToken:string): Promise<InvitedUserType> {
+  async findByWorkspaceInviteToken(invitationToken: string): Promise<InvitedUserType> {
     const organizationUser = await getRepository(OrganizationUser)
       .createQueryBuilder('organizationUser')
       .select([
-      'organizationUser.organizationId',
-      'organizationUser.invitationToken',
-      'organizationUser.status',
-      'user.id',
-      'user.email',
-      'user.invitationToken',
-      'user.status',
-      'user.firstName',
-      'user.lastName'
-    ])
-    .innerJoin('organizationUser.user', 'user')
-    .where('organizationUser.invitationToken = :invitationToken', { invitationToken })
-    .getOne();
+        'organizationUser.organizationId',
+        'organizationUser.invitationToken',
+        'organizationUser.status',
+        'user.id',
+        'user.email',
+        'user.invitationToken',
+        'user.status',
+        'user.firstName',
+        'user.lastName',
+      ])
+      .innerJoin('organizationUser.user', 'user')
+      .where('organizationUser.invitationToken = :invitationToken', { invitationToken })
+      .getOne();
 
-    const user:InvitedUserType  = organizationUser?.user;
+    const user: InvitedUserType = organizationUser?.user;
     /* Invalid organization token */
-		if(!user){
+    if (!user) {
       const errorResponse = {
-        message: { error: 'Invalid invitation token. Please ensure that you have a valid invite url', isInvalidInvitationUrl:true },
+        message: {
+          error: 'Invalid invitation token. Please ensure that you have a valid invite url',
+          isInvalidInvitationUrl: true,
+        },
       };
-		  throw new BadRequestException(errorResponse);
-		}  
+      throw new BadRequestException(errorResponse);
+    }
     user.invitedOrganizationId = organizationUser.organizationId;
     user.organizationStatus = organizationUser.status;
     return user;
@@ -98,8 +101,8 @@ export class OrganizationUsersService {
       where: {
         userId,
         status: WORKSPACE_USER_STATUS.ACTIVE,
-      }
-    })
+      },
+    });
   }
 
   async updateOrgUser(organizationUserId: string, updateUserDto) {

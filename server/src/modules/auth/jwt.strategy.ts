@@ -62,17 +62,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       }
     }
 
-    let user:User;
+    let user: User;
     if (payload?.sub && organizationId) {
       user = await this.usersService.findByEmail(payload.sub, organizationId, WORKSPACE_USER_STATUS.ACTIVE);
       user.organizationId = organizationId;
-    }else if(payload?.sub && isInviteSession) {
+    } else if (payload?.sub && isInviteSession) {
       /* Fetch user details for organization-invite and accept-invite route */
       user = await this.usersService.findOne({ email: payload?.sub, status: USER_STATUS.ACTIVE });
       user.organizationId = user.defaultOrganizationId;
-    };
+    }
 
-    if(user){
+    if (user) {
       user.organizationIds = payload.organizationIds;
       user.isPasswordLogin = payload.isPasswordLogin;
       user.isSSOLogin = payload.isSSOLogin;
