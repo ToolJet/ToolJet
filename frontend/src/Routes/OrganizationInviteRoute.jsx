@@ -12,8 +12,6 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
   const [invalidLink, setLinkStatus] = useState(false);
   const params = useParams();
   const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const organizationId = queryParams.get('oid');
   const organizationToken = params.organizationToken || (isOrgazanizationOnlyInvite ? params.token : null);
   const accountToken = !isOrgazanizationOnlyInvite ? params.token : null;
   const [extraProps, setExtraProps] = useState({});
@@ -58,13 +56,14 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
       switch (errorStatus) {
         case 406: {
           const isAccountNotActivated = errorObj?.error?.isAccountNotActivated;
-          if (isAccountNotActivated) {
+          const redirectPath = errorObj?.error?.redirectPath;
+          if (isAccountNotActivated && redirectPath) {
             /* Account is not activated yet. Logout and redirect to signup page */
             toast.error(errorMessage);
             updateCurrentSession({
               authentication_status: false,
             });
-            navigate(`/signup/${organizationId}`, {
+            navigate(redirectPath, {
               state: { organizationToken },
             });
           }

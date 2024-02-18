@@ -486,6 +486,7 @@ export class AuthService {
         names['lastName'] = lastName;
       }
     }
+    const { firstName, lastName } = names;
 
     let password = userPassword;
     if (!password && source === URL_SSO_SOURCE) {
@@ -500,8 +501,10 @@ export class AuthService {
         signupUser.id,
         {
           password,
-          ...(names.firstName && { firstName: names.firstName }),
-          ...(names.lastName && { lastName: names.lastName }),
+          ...(firstName && {
+            firstName,
+          }) /* we should reset the name if the user is not activated his account before */,
+          lastName: lastName ?? '',
           invitationToken: null,
           ...(password ? { password } : {}),
           ...lifecycleParams,
@@ -880,10 +883,16 @@ export class AuthService {
     const accountYetToActive =
       organizationAndAccountInvite &&
       [USER_STATUS.INVITED, USER_STATUS.VERIFIED].includes(invitedUserStatus as USER_STATUS);
+    const invitedOrganization = await this.organizationsService.fetchOrganization(invitedUser['invitedOrganizationId']);
+    const { name: invitedOrganizationName, slug: invitedOrganizationSlug } = invitedOrganization;
 
     if (accountYetToActive) {
       const errorResponse = {
-        message: { error: 'Account is not activated yet', isAccountNotActivated: true },
+        message: {
+          error: 'Account is not activated yet',
+          isAccountNotActivated: true,
+          redirectPath: `/signup/${invitedOrganizationSlug ?? invitedOrganizationId}`,
+        },
       };
       throw new NotAcceptableException(errorResponse);
     }
@@ -901,10 +910,9 @@ export class AuthService {
       ? await this.organizationsService.fetchOrganization(user?.organizationId)
       : null;
     const payload = await this.generateSessionPayload(user, activeOrganization);
-    const invitedOrganization = await this.organizationsService.fetchOrganization(invitedUser['invitedOrganizationId']);
     const responseObj = {
       ...payload,
-      invitedOrganizationName: invitedOrganization.name,
+      invitedOrganizationName,
       name: fullName(user['firstName'], user['lastName']),
       ...(organizationInviteUrl && { organizationInviteUrl }),
     };
