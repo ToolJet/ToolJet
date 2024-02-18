@@ -154,15 +154,14 @@ export class AuthService {
         }
       }
 
-      await this.usersService.updateUser(
-        user.id,
-        {
-          ...(user.defaultOrganizationId &&
-            user.defaultOrganizationId !== user.organizationId && { defaultOrganizationId: organization.id }),
-          passwordRetryCount: 0,
-        },
-        manager
-      );
+      const shouldUpdateDefaultOrgId =
+        user.defaultOrganizationId && user.organizationId && user.defaultOrganizationId !== user.organizationId;
+      const updateData = {
+        ...(shouldUpdateDefaultOrgId && { defaultOrganizationId: organization.id }),
+        passwordRetryCount: 0,
+      };
+
+      await this.usersService.updateUser(user.id, updateData, manager);
 
       return await this.generateLoginResultPayload(response, user, organization, false, true, loggedInUser);
     });
