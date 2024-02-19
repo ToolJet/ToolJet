@@ -1,6 +1,6 @@
 import { authorizeUserAndHandleErrors, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { getCookie } from '@/_helpers/cookie';
-import { eraseRedirectUrl } from '@/_helpers/routes';
+import { eraseRedirectUrl, getRedirectURL } from '@/_helpers/routes';
 
 export const onInvitedUserSignUpSuccess = (response, navigate) => {
   const { organizationInviteUrl, ...currentUser } = response;
@@ -25,15 +25,16 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
     isUserLoggingIn: true,
   });
   const redirectPath = redirectTo || getCookie('redirectPath');
+  const path = getRedirectURL(redirectPath);
   eraseRedirectUrl();
   if (!noWorkspaceAttachedInTheSession) {
     authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, () => {
       updateCurrentSession({
         isUserLoggingIn: false,
       });
-      navigate(redirectPath);
+      navigate(path);
     });
   } else {
-    navigate(redirectPath);
+    navigate(path);
   }
 };

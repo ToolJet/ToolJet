@@ -14,7 +14,7 @@ export function Authorize({ navigate }) {
   const organizationId = authenticationService.getLoginOrganizationId();
   const organizationSlug = authenticationService.getLoginOrganizationSlug();
   const redirectUrl = getCookie('redirectPath');
-  const signupOrganizationId = getCookie('signupOrganizationId');
+  const signupOrganizationId = authenticationService.getSignupOrganizationId();
 
   useEffect(() => {
     const errorMessage = router.query.error_description || router.query.error;

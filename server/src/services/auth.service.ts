@@ -927,7 +927,6 @@ export class AuthService {
   ): Promise<any> {
     const request = RequestContext?.currentContext?.req;
 
-    // logged in user and new user are different -> creating session
     const session: UserSessions = await this.sessionService.createSession(
       user.id,
       `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${

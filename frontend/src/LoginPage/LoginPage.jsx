@@ -32,8 +32,6 @@ class LoginPageComponent extends React.Component {
 
   componentDidMount() {
     /* remove login oranization's id and slug from the cookie */
-    authenticationService.deleteLoginOrganizationId();
-    authenticationService.deleteLoginOrganizationSlug();
     this.setRedirectUrlToCookie();
 
     this.props.location?.state?.errorMessage &&

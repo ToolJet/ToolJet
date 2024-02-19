@@ -304,7 +304,7 @@ export class OauthService {
 
           if (isInvitedUserSignUp) {
             /* User is coming from invite flow. */
-            const session = await this.authService.generateInviteSignupPayload(response, userDetails, 'sso');
+            const session = await this.authService.generateInviteSignupPayload(response, userDetails, 'sso', manager);
             const organizationInviteUrl = generateOrgInviteURL(organizationToken, organization.id, false);
             return { ...session, organizationInviteUrl };
           }

@@ -28,7 +28,12 @@ export const AuthRoute = ({ children, navigate }) => {
   const isSignUpRoute = location.pathname.startsWith('/signup');
 
   useEffect(
-    () => fetchOrganizationDetails(),
+    () => {
+      authenticationService.deleteLoginOrganizationId();
+      authenticationService.deleteLoginOrganizationSlug();
+      authenticationService.deleteSignUpOrganizationId();
+      fetchOrganizationDetails();
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );

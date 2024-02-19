@@ -61,6 +61,7 @@ export const authenticationService = {
   activateAccountWithToken,
   setSignupOrganizationId,
   getSignupOrganizationId,
+  deleteSignUpOrganizationId,
 };
 
 function login(email, password, organizationId) {
@@ -112,6 +113,10 @@ function getSignupOrganizationId() {
 
 function deleteLoginOrganizationId() {
   eraseCookie('login-workspace');
+}
+
+function deleteSignUpOrganizationId() {
+  eraseCookie('signup-workspace');
 }
 
 function saveLoginOrganizationSlug(organizationSlug) {

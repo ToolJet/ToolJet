@@ -37,7 +37,7 @@ class OrganizationInvitationPageComponent extends React.Component {
       })
       .then((data) => {
         toast.success(`Added to the workspace successfully.`);
-        onLoginSuccess(data, this.props.navigate, `/${data.current_organization_slug}`);
+        onLoginSuccess(data, this.props.navigate);
       })
       .catch(() => {
         toast.error('Error while setting up your account.', { position: 'top-center' });

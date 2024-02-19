@@ -39,10 +39,6 @@ class SignupPageComponent extends React.Component {
   };
   darkMode = localStorage.getItem('darkMode') === 'true';
 
-  componentDidMount() {
-    authenticationService.deleteLoginOrganizationId();
-  }
-
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value, emailError: '', disableOnEdit: false });
   };
@@ -104,7 +100,7 @@ class SignupPageComponent extends React.Component {
   };
 
   setSignupOrganizationId = () => {
-    if (this.inviteOrganizationId) setCookie('signupOrganizationId', this.inviteOrganizationId);
+    if (this.inviteOrganizationId) setCookie('signup-workspace', this.inviteOrganizationId);
   };
 
   render() {
@@ -162,6 +158,7 @@ class SignupPageComponent extends React.Component {
                                 <GitSSOLoginButton
                                   configs={configs?.git?.configs}
                                   text={this.props.t('confirmationPage.signupWithGithub', 'Sign up with GitHub')}
+                                  setSignupOrganizationId={this.setSignupOrganizationId}
                                 />
                               </div>
                             )}
