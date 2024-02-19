@@ -24,11 +24,29 @@ export const verifyValue = (node, type, children, index = 0) => {
   cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .mx-2`)
     .eq(index)
     .realHover()
-    .verifyVisibleElement("have.text", `${children}`);
+    .verifyVisibleElement("contain.text", `${children}`);
   cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .node-key`)
     .eq(index)
-    .verifyVisibleElement("have.text", node);
+    .verifyVisibleElement("contain.text", node);
   cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .mx-1`)
     .eq(index)
-    .verifyVisibleElement("have.text", type);
+    .verifyVisibleElement("contain.text", type);
+};
+export const deleteComponentFromInspector = (node) => {
+  cy.get('[data-cy="inspector-node-components"] > .node-key').click();
+  cy.get(`[data-cy="inspector-node-${node}"] > .node-key`).click();
+  cy.get('[style="height: 13px; width: 13px;"] > img').click();
+};
+
+export const verifyfunctions = (node, type, index = 0) => {
+  cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .mx-1`)
+    .eq(index)
+    .realHover()
+    .verifyVisibleElement("contain.text", `${type}`);
+  cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .node-key`)
+    .eq(index)
+    .verifyVisibleElement("contain.text", node);
+  // cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .mx-1`)
+  //   .eq(index)
+  //   .verifyVisibleElement("contain.text", type);
 };

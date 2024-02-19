@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { ToolTip } from '@/_components/ToolTip';
 import { shallow } from 'zustand/shallow';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
 
 export const AppVersionsManager = function ({
   appId,
@@ -15,6 +16,8 @@ export const AppVersionsManager = function ({
   environments,
   setCurrentEnvironment,
   appCreationMode,
+  isEditable = true,
+  isViewer,
 }) {
   const [appVersions, setAppVersions] = useState([]);
   const [appVersionStatus, setGetAppVersionStatus] = useState('');
@@ -32,6 +35,12 @@ export const AppVersionsManager = function ({
     shallow
   );
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const { currentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
 
   useEffect(() => {
     setGetAppVersionStatus('loading');
@@ -150,7 +159,7 @@ export const AppVersionsManager = function ({
             </div>
           </ToolTip>
         </div>
-        {appVersion.id !== releasedVersionId && (
+        {isEditable && appVersion.id !== releasedVersionId && (
           <div
             className="col cursor-pointer m-auto app-version-delete"
             onClick={(e) => {
@@ -200,17 +209,33 @@ export const AppVersionsManager = function ({
   };
 
   return (
-    <div className="app-versions-selector" data-cy="app-version-selector">
-      <CustomSelect
-        isLoading={appVersionStatus === 'loading'}
-        options={options}
-        value={editingVersion.id}
-        onChange={(id) => handleOnSelectVersion(id)}
-        {...customSelectProps}
-        className={` ${darkMode && 'dark-theme'}`}
-        currentEnvironment={currentEnvironment}
-        onSelectVersion={handleOnSelectVersion}
-      />
+    <div
+      className="d-flex align-items-center p-0"
+      style={{ margin: isViewer && currentLayout === 'mobile' ? '0px' : '0 24px' }}
+    >
+      <div
+        className={cx('d-flex version-manager-container p-0', {
+          'w-100': isViewer && currentLayout === 'mobile',
+        })}
+      >
+        <div
+          className={cx('app-versions-selector', {
+            'w-100': isViewer && currentLayout === 'mobile',
+          })}
+          data-cy="app-version-selector"
+        >
+          <CustomSelect
+            isLoading={appVersionStatus === 'loading'}
+            options={options}
+            value={editingVersion?.id}
+            onChange={(id) => selectVersion(id)}
+            {...customSelectProps}
+            className={` ${darkMode && 'dark-theme'}`}
+            currentEnvironment={currentEnvironment}
+            isEditable={isEditable}
+          />
+        </div>
+      </div>
     </div>
   );
 };

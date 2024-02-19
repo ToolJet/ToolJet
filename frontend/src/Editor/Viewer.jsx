@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import {
   // appsService,
   authenticationService,
@@ -13,7 +14,6 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
 import { Confirm } from './Viewer/Confirm';
-import { ViewerNavigation } from './Viewer/ViewerNavigation';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
@@ -41,7 +41,13 @@ import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { getPreviewQueryParams, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
-import { camelizeKeys } from 'humps';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import TooljetLogoIcon from '@/_ui/Icon/solidIcons/TooljetLogoIcon';
+import TooljetLogoText from '@/_ui/Icon/solidIcons/TooljetLogoText';
+import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
+import MobileHeader from './Viewer/MobileHeader';
+import DesktopHeader from './Viewer/DesktopHeader';
+import './Viewer/viewer.scss';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -81,13 +87,13 @@ class ViewerComponent extends React.Component {
 
   setStateForApp = (data, byAppSlug = false) => {
     const appDefData = buildAppDefinition(data);
-
     if (byAppSlug) {
       appDefData.globalSettings = data.globalSettings;
       appDefData.homePageId = data.homePageId;
       appDefData.showViewerNavigation = data.showViewerNavigation;
     }
-
+    useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
+    useAppVersionStore.getState().actions.updateReleasedVersionId(data.currentVersionId);
     this.setState({
       app: data,
       isLoading: false,
@@ -98,7 +104,7 @@ class ViewerComponent extends React.Component {
   };
 
   setStateForContainer = async (data, appVersionId) => {
-    const appDefData = buildAppDefinition(data);
+    const appDefData = this.state.appDefinition;
 
     const currentUser = this.state.currentUser;
     let userVars = {};
@@ -217,7 +223,6 @@ class ViewerComponent extends React.Component {
 
         computeComponentState(components).then(async () => {
           this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
-          console.log('Default component state computed and set');
           this.runQueries(dataQueries);
 
           const currentPageEvents = this.state.events.filter(
@@ -261,7 +266,6 @@ class ViewerComponent extends React.Component {
         const constantValue = constant.values.find(condition)['value'];
         orgConstants[constant.name] = constantValue;
       });
-
       return {
         constants: orgConstants,
       };
@@ -306,7 +310,12 @@ class ViewerComponent extends React.Component {
     }
   };
 
-  loadApplicationBySlug = (slug, authentication_failed) => {
+  fetchAppVersions = async (appId) => {
+    const appVersions = await appEnvironmentService.getVersionsByEnvironment(appId);
+    useAppVersionStore.getState().actions.setAppVersions(appVersions.appVersions);
+  };
+
+  loadApplicationBySlug = (slug, authentication_failed = false) => {
     appService
       .fetchAppBySlug(slug)
       .then((data) => {
@@ -339,8 +348,8 @@ class ViewerComponent extends React.Component {
       });
   };
 
-  loadApplicationByVersion = (appId, versionId) => {
-    appService
+  loadApplicationByVersion = async (appId, versionId) => {
+    await appService
       .fetchAppByVersion(appId, versionId)
       .then((data) => {
         this.setStateForApp(data);
@@ -351,6 +360,13 @@ class ViewerComponent extends React.Component {
           isLoading: false,
         });
       });
+  };
+
+  setAppDefinitionFromVersion = (data) => {
+    this.setState({
+      isLoading: true,
+    });
+    this.loadApplicationByVersion(this.props.id, data.editing_version.id);
   };
 
   updateQueryConfirmationList = (queryConfirmationList) =>
@@ -386,6 +402,7 @@ class ViewerComponent extends React.Component {
             userVars,
             versionId,
           });
+          this.fetchAppVersions(appId);
           versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
         } else if (currentSession?.authentication_failed) {
           this.loadApplicationBySlug(slug, true);
@@ -422,6 +439,11 @@ class ViewerComponent extends React.Component {
     if (this.props.params.slug && this.props.params.slug !== prevProps.params.slug) {
       this.setState({ isLoading: true });
       this.loadApplicationBySlug(this.props.params.slug);
+    }
+    if (prevProps.currentLayout !== this.props.currentLayout) {
+      if (this.props.id && useAppVersionStore.getState()?.editingVersion?.id) {
+        this.loadApplicationByVersion(this.props.id, useAppVersionStore.getState().editingVersion.id);
+      }
     }
 
     if (this.state.initialComputationOfStateDone) this.handlePageSwitchingBasedOnURLparam();
@@ -590,15 +612,18 @@ class ViewerComponent extends React.Component {
       dataQueries,
       canvasWidth,
     } = this.state;
-
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
-
     const canvasMaxWidth = this.computeCanvasMaxWidth();
+    const pages =
+      Object.entries(_.cloneDeep(appDefinition)?.pages)
+        .map(([id, page]) => ({ id, ...page }))
+        .sort((a, b) => a.index - b.index) || [];
 
+    const isMobilePreviewMode = this.props.versionId && this.props.currentLayout === 'mobile';
     if (this.state.app?.isLoading) {
       return (
-        <div className="tooljet-logo-loader">
+        <div className={cx('tooljet-logo-loader', { 'theme-dark': this.props.darkMode })}>
           <div>
             <div className="loader-logo">
               <ViewerLogoIcon />
@@ -609,150 +634,207 @@ class ViewerComponent extends React.Component {
           </div>
         </div>
       );
-    } else {
-      if (this.state.app?.is_maintenance_on) {
-        return (
-          <div className="maintenance_container">
-            <div className="card">
-              <div className="card-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <h3>{this.props.t('viewer', 'Sorry!. This app is under maintenance')}</h3>
-              </div>
+    } else if (this.state.app?.is_maintenance_on) {
+      return (
+        <div className="maintenance_container">
+          <div className="card">
+            <div className="card-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <h3>{this.props.t('viewer', 'Sorry!. This app is under maintenance')}</h3>
             </div>
           </div>
-        );
-      } else {
-        const pageArray = Object.values(this.state.appDefinition?.pages || {});
-        const { env, version, ...restQueryParams } = getQueryParams();
-        const queryParamsString = Object.keys(restQueryParams)
-          .map((key) => `${key}=${restQueryParams[key]}`)
-          .join('&');
-        const constructTheURL = (homeHandle) =>
-          `/applications/${this.state.slug}/${homeHandle}${env && version ? `?env=${env}&version=${version}` : ''}`;
-        //checking if page is disabled
-        if (
-          pageArray.find((page) => page.handle === this.props.params.pageHandle)?.disabled &&
-          this.state.currentPageId !== this.state.appDefinition?.homePageId && //Prevent page crashing when home page is disabled
-          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
-        ) {
-          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
-          return <Navigate to={constructTheURL(homeHandle)} replace />;
-        }
+        </div>
+      );
+    } else {
+      const pageArray = Object.values(this.state.appDefinition?.pages || {});
+      const { env, version, ...restQueryParams } = getQueryParams();
+      const queryParamsString = Object.keys(restQueryParams)
+        .map((key) => `${key}=${restQueryParams[key]}`)
+        .join('&');
+      const constructTheURL = (homeHandle) =>
+        `/applications/${this.state.slug}/${homeHandle}${env && version ? `?env=${env}&version=${version}` : ''}`;
+      //checking if page is disabled
+      if (
+        pageArray.find((page) => page.handle === this.props.params.pageHandle)?.disabled &&
+        this.state.currentPageId !== this.state.appDefinition?.homePageId && //Prevent page crashing when home page is disabled
+        this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
+      ) {
+        const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+        return <Navigate to={constructTheURL(homeHandle)} replace />;
+      }
 
-        //checking if page exists
-        if (
-          !pageArray.find((page) => page.handle === this.props.params.pageHandle) &&
-          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
-        ) {
-          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
-
-          return (
-            <Navigate
-              to={`${constructTheURL(homeHandle)}${
-                this.props.params.pageHandle ? '' : `${env && version ? '&' : '?'}${queryParamsString}`
-              }`}
-              replace
-            />
-          );
-        }
+      //checking if page exists
+      if (
+        !pageArray.find((page) => page.handle === this.props.params.pageHandle) &&
+        this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
+      ) {
+        const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
 
         return (
-          <div className="viewer wrapper">
-            <Confirm
-              show={queryConfirmationList.length > 0}
-              message={'Do you want to run this query?'}
-              onConfirm={(queryConfirmationData) =>
-                onQueryConfirmOrCancel(this.getViewerRef(), queryConfirmationData, true, 'view')
-              }
-              onCancel={() => onQueryConfirmOrCancel(this.getViewerRef(), queryConfirmationList[0], false, 'view')}
-              queryConfirmationData={queryConfirmationList[0]}
-              key={queryConfirmationList[0]?.queryName}
-            />
-            <DndProvider backend={HTML5Backend}>
-              <ViewerNavigation.Header
+          <Navigate
+            to={`${constructTheURL(homeHandle)}${
+              this.props.params.pageHandle ? '' : `${env && version ? '&' : '?'}${queryParamsString}`
+            }`}
+            replace
+          />
+        );
+      }
+
+      return (
+        <div className={`viewer wrapper ${this.props.currentLayout === 'mobile' ? 'mobile-layout' : ''}`}>
+          <Confirm
+            show={queryConfirmationList.length > 0}
+            message={'Do you want to run this query?'}
+            onConfirm={(queryConfirmationData) =>
+              onQueryConfirmOrCancel(this.getViewerRef(), queryConfirmationData, true, 'view')
+            }
+            onCancel={() => onQueryConfirmOrCancel(this.getViewerRef(), queryConfirmationList[0], false, 'view')}
+            queryConfirmationData={queryConfirmationList[0]}
+            key={queryConfirmationList[0]?.queryName}
+          />
+          <DndProvider backend={HTML5Backend}>
+            {this.props.currentLayout !== 'mobile' && (
+              <DesktopHeader
                 showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
                 appName={this.state.app?.name ?? null}
                 changeDarkMode={this.changeDarkMode}
                 darkMode={this.props.darkMode}
-                pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                pages={pages}
                 currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                 switchPage={this.switchPage}
+                setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                showViewerNavigation={appDefinition?.showViewerNavigation}
               />
-              <div className="sub-section">
-                <div className="main">
-                  <div
-                    className="canvas-container page-container align-items-center"
-                    style={{
-                      background: this.computeCanvasBackgroundColor() || (!this.props.darkMode ? '#EBEBEF' : '#2E3035'),
-                    }}
-                  >
-                    <div className={`areas d-flex flex-rows app-${this.props.id}`}>
-                      {appDefinition?.showViewerNavigation && (
-                        <ViewerNavigation
-                          isMobileDevice={this.props.currentLayout === 'mobile'}
-                          canvasBackgroundColor={this.computeCanvasBackgroundColor()}
-                          pages={Object.entries(this.state.appDefinition?.pages) ?? []}
-                          currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
-                          switchPage={this.switchPage}
-                          darkMode={this.props.darkMode}
-                        />
-                      )}
-                      <div className="flex-grow-1 d-flex justify-content-center">
-                        <div
-                          className={`canvas-area ${this.formCustomPageSelectorClass()}`}
-                          style={{
-                            width: currentCanvasWidth,
-                            maxWidth: canvasMaxWidth,
-                            backgroundColor: this.computeCanvasBackgroundColor(),
-                            margin: 0,
-                            padding: 0,
-                          }}
-                        >
-                          {defaultComponentStateComputed && (
-                            <>
-                              {isLoading ? (
-                                <div className="mx-auto mt-5 w-50 p-5">
-                                  <center>
-                                    <div className="spinner-border text-azure" role="status"></div>
-                                  </center>
-                                </div>
-                              ) : (
-                                <Container
-                                  appDefinition={appDefinition}
-                                  appDefinitionChanged={() => false} // function not relevant in viewer
-                                  snapToGrid={true}
-                                  appLoading={isLoading}
-                                  darkMode={this.props.darkMode}
-                                  onEvent={this.handleEvent}
-                                  mode="view"
-                                  deviceWindowWidth={deviceWindowWidth}
-                                  selectedComponent={this.state.selectedComponent}
-                                  onComponentClick={(id, component) => {
-                                    this.setState({
-                                      selectedComponent: { id, component },
-                                    });
-                                    onComponentClick(this, id, component, 'view');
-                                  }}
-                                  onComponentOptionChanged={(component, optionName, value) => {
-                                    return onComponentOptionChanged(component, optionName, value);
-                                  }}
-                                  onComponentOptionsChanged={onComponentOptionsChanged}
-                                  canvasWidth={this.getCanvasWidth()}
-                                  dataQueries={dataQueries}
-                                  currentPageId={this.state.currentPageId}
-                                />
-                              )}
-                            </>
-                          )}
-                        </div>
+            )}
+            {/* Render following mobile header only when its in preview mode and not in launched app */}
+            {this.props.currentLayout === 'mobile' && !isMobilePreviewMode && (
+              <MobileHeader
+                showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
+                appName={this.state.app?.name ?? null}
+                changeDarkMode={this.changeDarkMode}
+                darkMode={this.props.darkMode}
+                pages={pages}
+                currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                switchPage={this.switchPage}
+                setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                showViewerNavigation={appDefinition?.showViewerNavigation}
+              />
+            )}
+            <div className="sub-section">
+              <div className="main">
+                <div
+                  className="canvas-container page-container align-items-center"
+                  style={{
+                    background: this.computeCanvasBackgroundColor() || (!this.props.darkMode ? '#EBEBEF' : '#2E3035'),
+                  }}
+                >
+                  <div className={`areas d-flex flex-rows app-${this.props.id}`}>
+                    {appDefinition?.showViewerNavigation && (
+                      <ViewerSidebarNavigation
+                        showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
+                        isMobileDevice={this.props.currentLayout === 'mobile'}
+                        canvasBackgroundColor={this.computeCanvasBackgroundColor()}
+                        pages={pages}
+                        currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                        switchPage={this.switchPage}
+                        darkMode={this.props.darkMode}
+                      />
+                    )}
+                    <div
+                      className="flex-grow-1 d-flex justify-content-center"
+                      style={{
+                        backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',
+                        marginLeft:
+                          appDefinition?.showViewerNavigation && this.props.currentLayout !== 'mobile'
+                            ? '200px'
+                            : 'auto',
+                      }}
+                    >
+                      <div
+                        className={`canvas-area ${this.formCustomPageSelectorClass()}`}
+                        style={{
+                          width: isMobilePreviewMode ? '450px' : currentCanvasWidth,
+                          maxWidth: isMobilePreviewMode ? '450px' : canvasMaxWidth,
+                          backgroundColor: this.computeCanvasBackgroundColor(),
+                          margin: 0,
+                          padding: 0,
+                        }}
+                      >
+                        {this.props.currentLayout === 'mobile' && isMobilePreviewMode && (
+                          <MobileHeader
+                            showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
+                            appName={this.state.app?.name ?? null}
+                            changeDarkMode={this.changeDarkMode}
+                            darkMode={this.props.darkMode}
+                            pages={pages}
+                            currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                            switchPage={this.switchPage}
+                            setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                            showViewerNavigation={appDefinition?.showViewerNavigation}
+                          />
+                        )}
+                        {defaultComponentStateComputed && (
+                          <>
+                            {isLoading ? (
+                              <div className="mx-auto mt-5 w-50 p-5">
+                                <center>
+                                  <div className="spinner-border text-azure" role="status"></div>
+                                </center>
+                              </div>
+                            ) : (
+                              <Container
+                                appDefinition={appDefinition}
+                                appDefinitionChanged={() => false} // function not relevant in viewer
+                                snapToGrid={true}
+                                appLoading={isLoading}
+                                darkMode={this.props.darkMode}
+                                onEvent={this.handleEvent}
+                                mode="view"
+                                deviceWindowWidth={isMobilePreviewMode ? '450px' : deviceWindowWidth}
+                                selectedComponent={this.state.selectedComponent}
+                                onComponentClick={(id, component) => {
+                                  this.setState({
+                                    selectedComponent: { id, component },
+                                  });
+                                  onComponentClick(this, id, component, 'view');
+                                }}
+                                onComponentOptionChanged={(component, optionName, value) => {
+                                  return onComponentOptionChanged(component, optionName, value);
+                                }}
+                                onComponentOptionsChanged={onComponentOptionsChanged}
+                                canvasWidth={this.getCanvasWidth()}
+                                dataQueries={dataQueries}
+                                currentPageId={this.state.currentPageId}
+                              />
+                            )}
+                          </>
+                        )}
                       </div>
+                      <div
+                        className="powered-with-tj"
+                        onClick={() => {
+                          const url = `https://tooljet.com/?utm_source=powered_by_banner&utm_medium=${
+                            useAppDataStore.getState()?.metadata?.instance_id
+                          }&utm_campaign=self_hosted`;
+                          window.open(url, '_blank');
+                        }}
+                      >
+                        Built with
+                        <span className={'powered-with-tj-icon'}>
+                          <TooljetLogoIcon />
+                        </span>
+                        <TooljetLogoText fill={this.props.darkMode ? '#ECEDEE' : '#11181C'} />
+                      </div>
+                      {/* Following div is a hack to prevent showing mobile drawer navigation coming from left*/}
+                      {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
+                      {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                     </div>
                   </div>
                 </div>
               </div>
-            </DndProvider>
-          </div>
-        );
-      }
+            </div>
+          </DndProvider>
+        </div>
+      );
     }
   }
 }
@@ -765,7 +847,6 @@ const withStore = (Component) => (props) => {
     }),
     shallow
   );
-
   const { updateState } = useAppDataActions();
   return (
     <Component

@@ -33,7 +33,7 @@ module.exports = {
       new TerserPlugin({
         minify: TerserPlugin.esbuildMinify,
         terserOptions: {
-          ...(environment === 'production' && { drop: ['debugger'] }),
+          ...(environment === 'production' && { drop: ['debugger', 'console'] }),
         },
         parallel: environment === 'production',
       }),
