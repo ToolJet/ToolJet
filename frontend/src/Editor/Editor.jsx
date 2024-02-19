@@ -47,7 +47,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, setWindowTitle, defaultWhiteLabellingSettings, pageTitles } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -76,10 +76,6 @@ import { useResolveStore } from '@/_stores/resolverStore';
 
 setAutoFreeze(false);
 enablePatches();
-
-function setWindowTitle(name) {
-  document.title = name ? `${name} - Tooljet` : `My App - Tooljet`;
-}
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
@@ -242,7 +238,7 @@ const EditorComponent = (props) => {
 
     // 6. Unsubscribe from the observable when the component is unmounted
     return () => {
-      document.title = 'Tooljet - Dashboard';
+      document.title = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
       socket && socket?.close();
       subscription.unsubscribe();
       if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
@@ -266,6 +262,8 @@ const EditorComponent = (props) => {
 
       computeComponentState(components);
 
+      if (appDiffOptions?.skipAutoSave === true) return;
+
       if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
         autoSave();
       }
@@ -284,6 +282,7 @@ const EditorComponent = (props) => {
 
   useEffect(() => {
     // This effect runs when lastKeyPressTimestamp changes
+    if (!appDiffOptions?.widgetMovedWithKeyboard) return;
     if (Date.now() - lastKeyPressTimestamp < 500) {
       updateEditorState({
         isUpdatingEditorStateInProcess: true,
@@ -308,17 +307,13 @@ const EditorComponent = (props) => {
     }
   }, [currentLayout, mounted]);
 
-  useEffect(() => {
-    if (mounted && JSON.stringify(prevEventsStoreRef.current) !== JSON.stringify(events)) {
-      props.ymap?.set('eventHandlersUpdated', {
-        updated: true,
-        currentVersionId: currentVersionId,
-        currentSessionId: currentSessionId,
-      });
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ events })]);
+  const handleYmapEventUpdates = () => {
+    props.ymap?.set('eventHandlersUpdated', {
+      currentVersionId: currentVersionId,
+      currentSessionId: currentSessionId,
+      update: true,
+    });
+  };
 
   const handleMessage = (event) => {
     const { data } = event;
@@ -421,8 +416,6 @@ const EditorComponent = (props) => {
 
         // Trigger real-time save with specific options
 
-        const ymapOpts = ymapUpdates?.opts;
-
         realtimeSave(props.ymap?.get('appDef').newDefinition, {
           skipAutoSave: true,
           skipYmapUpdate: true,
@@ -432,7 +425,7 @@ const EditorComponent = (props) => {
         });
       }
 
-      if (ymapEventHandlersUpdated) {
+      if (ymapEventHandlersUpdated?.update === true) {
         if (
           !ymapEventHandlersUpdated.currentSessionId ||
           ymapEventHandlersUpdated.currentSessionId === currentSessionId
@@ -578,8 +571,10 @@ const EditorComponent = (props) => {
   };
 
   const onNameChanged = (newName) => {
+    app.name = newName;
+    updateState({ appName: newName, app: app });
     updateState({ appName: newName });
-    setWindowTitle(newName);
+    setWindowTitle({ page: pageTitles.EDITOR, appName: newName });
   };
 
   const onZoomChanged = (zoom) => {
@@ -705,7 +700,7 @@ const EditorComponent = (props) => {
   };
 
   const callBack = async (data, startingPageHandle, versionSwitched = false) => {
-    setWindowTitle(data.name);
+    setWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
     if (!releasedVersionId || !versionSwitched) {
       useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
@@ -1060,7 +1055,7 @@ const EditorComponent = (props) => {
     for (let key in prevPatch) {
       const type = typeof prevPatch[key];
 
-      if (type === 'object') {
+      if (type === 'object' && !_.isEmpty(prevPatch[key])) {
         handlePaths(prevPatch[key], [...paths, key], appJSON);
       } else {
         const currentpath = [...paths, key].join('.');
@@ -1182,7 +1177,7 @@ const EditorComponent = (props) => {
       const diffPatches = diff(appDefinition, updatedAppDefinition);
 
       if (!isEmpty(diffPatches)) {
-        appDefinitionChanged(updatedAppDefinition, { skipAutoSave: true, componentDefinitionChanged: true, ...props });
+        appDefinitionChanged(updatedAppDefinition, { componentDefinitionChanged: true, ...props });
       }
     }
   };

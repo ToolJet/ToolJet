@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Avatar from '@/_ui/Avatar';
 import Skeleton from 'react-loading-skeleton';
 import cx from 'classnames';
 import { Pagination } from '@/_components';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
+import UsersActionMenu from './UsersActionMenu';
+import { humanizeifDefaultGroupName } from '@/_helpers/utils';
 
 const UsersTable = ({
   isLoading,
@@ -21,6 +22,7 @@ const UsersTable = ({
   pageChanged,
   darkMode,
   translator,
+  toggleEditUserDrawer,
 }) => {
   return (
     <div className="workspace-settings-table-wrap mb-4">
@@ -35,6 +37,7 @@ const UsersTable = ({
                 <th data-cy="users-table-email-column-header">
                   {translator('header.organization.menus.manageUsers.email', 'Email')}
                 </th>
+                <th data-cy="users-table-groups-column-header">Groups</th>
                 {users && users[0]?.status ? (
                   <th data-cy="users-table-status-column-header">
                     {translator('header.organization.menus.manageUsers.status', 'Status')}
@@ -88,7 +91,7 @@ const UsersTable = ({
                           }`}
                         />
                         <span
-                          className="mx-3 tj-text-sm"
+                          className="mx-3 tj-text tj-text-sm"
                           data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
                         >
                           {user.name}
@@ -102,6 +105,7 @@ const UsersTable = ({
                           {user.email}
                         </a>
                       </td>
+                      <GroupChipTD groups={user.groups} />
                       {user.status && (
                         <td className="text-muted">
                           <span
@@ -146,24 +150,15 @@ const UsersTable = ({
                           )}
                         </td>
                       )}
-                      <td>
-                        <ButtonSolid
-                          variant="dangerSecondary"
-                          style={{ minWidth: '100px' }}
-                          className="workspace-user-archive-btn tj-text-xsm"
-                          disabled={unarchivingUser === user.id || archivingUser === user.id}
-                          leftIcon="archive"
-                          fill="#E54D2E"
-                          iconWidth="12"
-                          onClick={() => {
-                            user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
-                          }}
-                          data-cy="button-user-status-change"
-                        >
-                          {user.status === 'archived'
-                            ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')
-                            : translator('header.organization.menus.manageUsers.archive', 'Archive')}
-                        </ButtonSolid>
+                      <td className="user-actions-button" data-cy="user-actions-button">
+                        <UsersActionMenu
+                          archivingUser={archivingUser}
+                          user={user}
+                          unarchivingUser={unarchivingUser}
+                          unarchiveOrgUser={unarchiveOrgUser}
+                          archiveOrgUser={archiveOrgUser}
+                          toggleEditUserDrawer={() => toggleEditUserDrawer(user)}
+                        />
                       </td>
                     </tr>
                   ))}
@@ -186,3 +181,83 @@ const UsersTable = ({
 };
 
 export default UsersTable;
+
+const GroupChipTD = ({ groups = [] }) => {
+  const [showAllGroups, setShowAllGroups] = useState(false);
+  const groupsListRef = useRef();
+
+  useEffect(() => {
+    const onCloseHandler = (e) => {
+      if (groupsListRef.current && !groupsListRef.current.contains(e.target)) {
+        setShowAllGroups(false);
+      }
+    };
+
+    window.addEventListener('click', onCloseHandler);
+    return () => {
+      window.removeEventListener('click', onCloseHandler);
+    };
+  }, [showAllGroups]);
+
+  function moveValuesToLast(arr, valuesToMove) {
+    const validValuesToMove = valuesToMove.filter((value) => arr.includes(value));
+
+    validValuesToMove.forEach((value) => {
+      const index = arr.indexOf(value);
+      if (index !== -1) {
+        const removedItem = arr.splice(index, 1);
+        arr.push(removedItem[0]);
+      }
+    });
+
+    return arr;
+  }
+
+  const orderedArray = moveValuesToLast(groups, ['all_users', 'admin']);
+
+  const toggleAllGroupsList = (e) => {
+    setShowAllGroups(!showAllGroups);
+  };
+
+  const renderGroupChip = (group, index) => (
+    <span className="group-chip" key={index} data-cy="group-chip">
+      {humanizeifDefaultGroupName(group)}
+    </span>
+  );
+
+  return (
+    <td
+      data-active={showAllGroups}
+      ref={groupsListRef}
+      onClick={(e) => {
+        orderedArray.length > 2 && toggleAllGroupsList(e);
+      }}
+      className={cx('text-muted groups-name-cell', { 'groups-hover': orderedArray.length > 2 })}
+    >
+      <div className="groups-name-container tj-text-sm font-weight-500">
+        {orderedArray.slice(0, 2).map((group, index) => {
+          if (orderedArray.length <= 2) {
+            return renderGroupChip(group, index);
+          }
+
+          if (orderedArray.length > 2) {
+            if (index === 1) {
+              return (
+                <>
+                  <span className="group-chip" key={index}>
+                    {' '}
+                    +{orderedArray.length - 1} more
+                  </span>
+                  {showAllGroups && (
+                    <div className="all-groups-list">{groups.map((group, index) => renderGroupChip(group, index))}</div>
+                  )}
+                </>
+              );
+            }
+            return renderGroupChip(group, index);
+          }
+        })}
+      </div>
+    </td>
+  );
+};

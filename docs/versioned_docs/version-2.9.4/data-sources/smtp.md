@@ -48,7 +48,7 @@ To create a query for sending an email, follow these steps:
  - **Body** : You can enter the body text of the email in either raw text or html format, in their respective fields.
  - **Attachments** : You can add attachments to an SMTP query by referencing the file from the File Picker component in the attachments field.
 
-For instance, you can set the `Attachments` field value to `{{ components.filepicker1.file }}` or pass an array of `{{ name: 'filename.jpg', dataURL: '......' }}` objects to include attachments.
+For instance, you can set the `Attachments` field value to `{{ components.filepicker1.file }}` or pass an object `{{ name: 'filename.jpg', dataURL: '......' }}` to include attachments.
 
 <div style={{textAlign: 'center'}}>
 

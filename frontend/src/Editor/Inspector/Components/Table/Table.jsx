@@ -268,6 +268,25 @@ class TableComponent extends React.Component {
               ignoreValidation={true}
             />
           </div>
+
+          <div data-cy={`transformation-field`} className="field mb-2 mt-1">
+            <label className="form-label">{this.props.t('widget.Table.transformationField', 'Transformation')}</label>
+            <CodeHinter
+              currentState={this.props.currentState}
+              initialValue={column?.transformation ?? '{{cellValue}}'}
+              theme={this.props.darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={column.name}
+              onChange={(value) => this.onColumnItemChange(index, 'transformation', value)}
+              componentName={this.getPopoverFieldSource(column.columnType, 'transformation')}
+              popOverCallback={(showing) => {
+                this.setColumnPopoverRootCloseBlocker('transformation', showing);
+              }}
+              enablePreview={false}
+            />
+          </div>
+
           <div className="field mb-2">
             <label className="form-label">
               {this.props.t('widget.Table.horizontalAlignment', 'Horizontal Alignment')}
@@ -904,7 +923,7 @@ class TableComponent extends React.Component {
   addNewColumn = () => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4() });
+    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4(), fxActiveFields: [] });
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
   };
 
@@ -1129,7 +1148,9 @@ class TableComponent extends React.Component {
 
     const rowSelectionsOptions = [
       'allowSelection',
-      ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow'] : []),
+      ...(allowSelection
+        ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow', 'selectRowOnCellEdit']
+        : []),
     ];
     const searchSortFilterOptions = [
       ...(displaySearchBox ? ['displaySearchBox'] : []),

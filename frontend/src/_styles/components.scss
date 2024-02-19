@@ -238,7 +238,6 @@ $btn-dark-color: #FFFFFF;
 }
 
 .query-manager-sort-filter-popup {
-  width: 215px !important;
   box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03) !important;
 }
 
@@ -375,4 +374,20 @@ $btn-dark-color: #FFFFFF;
   }
 
   border: none;
+}
+
+// Style for Chart component
+.widget-chart{
+  .js-plotly-plot{
+    border-radius: inherit;
+    .plot-container{
+      border-radius: inherit;
+      .svg-container{
+        border-radius: inherit;
+        .main-svg{
+          border-radius: inherit;
+        }
+      }
+    }
+  }
 }

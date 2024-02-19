@@ -1,0 +1,138 @@
+.preview-chip {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.app-title {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+  color: #11181C;
+}
+
+.released-version-no-header-dark-mode-icon {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  padding: 0px 4px;
+  border: none;
+  border: 1px solid var(--slate7);
+  border-radius: 6px;
+  z-index: 1000;
+  cursor: pointer;
+  background-color: var(--base);
+  box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.04);
+}
+
+.released-version-no-header-mbl-preview {
+  position: absolute;
+  left: 50%;
+  border-radius: 100px;
+  padding : 2px 8px;
+  z-index: 1000;
+}
+
+.preview-settings-overlay {
+  display: flex;
+  align-items: center;
+  background-color: var(--base);
+  padding: 6px 12px;
+  border : 1px solid;
+  border-radius: 6px;
+  margin-top: 4px;
+  .preview-settings-text {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 20px; /* 166.667% */
+    color: #6A727C;
+    display: flex;
+    align-items: center
+  }
+}
+
+.offcanvas {
+  background-color: var(--base) !important;
+  max-height: 150px !important;
+  &.offcanvas-top {
+    left : calc(50vw - 225px) !important;
+    width : 450px
+  }
+  .offcanvas-title {
+    color:  #6A727C;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 20px; /* 166.667% */
+  }
+  .offcanvas-body {
+    padding: 0px 4px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 8px;
+  }
+}
+
+.hide-drawer-transition {
+  position: absolute;
+  top: 0;
+  background-color:#ACB2B9;
+  width: calc(50vw - 225px);
+  height: 100vh;
+  z-index: 1201;
+}
+
+.bm-menu-wrap,
+.bm-overlay {
+  right: calc(50vw - 225px) !important;
+  width: calc(450px - 68px) !important;
+}
+
+.powered-with-tj {
+  cursor: pointer;
+  background-color: var(--base);
+  padding: 10px;
+  text-align: center;
+  position: fixed;
+  bottom: 1rem;
+  color: var(--slate11);
+  border-radius: 6px;
+  border: 1px solid var(--slate5);
+  box-shadow: 0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+  .powered-with-tj-icon {
+    background-color: #3E63DD;
+    padding: 4px;
+    padding-top: 1px;
+    border-radius: 6px;
+    margin-left: 6px;
+    margin-right: 3px;
+  }
+}
+
+.viewer {
+  &.mobile-layout {
+    .canvas-container {
+      scrollbar-width: auto;
+      width: 100%;
+    }
+
+
+    .canvas-container::-webkit-scrollbar {
+      width: 0;
+      background: transparent;
+    }
+
+    .canvas-container::-webkit-scrollbar-track {
+      background: transparent !important;
+    }
+
+    .canvas-container {
+      scrollbar-width: none;
+    }
+  }
+}
