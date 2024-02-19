@@ -17,7 +17,7 @@
         "yes": "Yes",
         "submit": "Submit",
         "select": "Select",
-        "environmentVar": "Workspace Variables",
+        "environmentVar": "Workspace constants/variables",
         "saving": "Saving...",
         "saveDatasource": "Save data source",
         "authorize": "Authorize",
@@ -284,6 +284,10 @@
                         "resource": "Resource",
                         "createUpdateDelete": "Create/Update/Delete",
                         "folder": "Folder"
+                    },
+                    "groupOptions":{
+                        "deleteGroup":"Delete Group",
+                        "duplicateGroup":"Duplicate Group"
                     }
                 },
                 "manageSSO": {
@@ -352,7 +356,7 @@
             "lastName": "Last name",
             "enterFirstName": "Enter First Name",
             "enterLastName": "Enter Last Name",
-            "email": "Email",
+            "email": "Email address",
             "avatar": "Avatar",
             "update": "Update",
             "profile": "Profile",
@@ -491,6 +495,7 @@
             "properties": "Properties",
             "events": "Events",
             "layout": "Layout",
+            "devices":"Devices",
             "styles": "Styles",
             "general": "General",
             "validation": "Validation",
@@ -503,6 +508,7 @@
             "visibility": "Visibility",
             "disable": "Disable",
             "borderRadius": "Border radius",
+            "transformation": "Transformation",
             "boxShadow": "Box shadow",
             "tooltip": "Tooltip",
             "showOnDesktop": "Show on desktop",
