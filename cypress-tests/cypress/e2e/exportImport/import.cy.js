@@ -28,7 +28,7 @@ describe("App Import Functionality", () => {
   let exportedFilePath;
 
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
   });
   before(() => {
     cy.fixture("templates/test-app.json").then((app) => {
@@ -39,6 +39,7 @@ describe("App Import Functionality", () => {
     });
   });
   it("Verify the Import functionality of an Application", () => {
+    cy.visit("/");
     cy.get("body").then(($title) => {
       if ($title.text().includes(commonText.welcomeTooljetWorkspace)) {
         cy.get(dashboardSelector.importAppButton).click();
@@ -73,6 +74,7 @@ describe("App Import Functionality", () => {
       .and("have.text", importText.appImportedToastMessage);
 
     cy.get(".driver-close-btn").click();
+    cy.wait(500);
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
       "contain.value",
       appData.name.toLowerCase()
@@ -87,7 +89,8 @@ describe("App Import Functionality", () => {
       data.appName
     );
     cy.waitForAutoSave();
-    cy.get(commonSelectors.editorPageLogo).should("be.visible").click();
+    cy.get(commonSelectors.editorPageLogo).should("be.visible");
+    cy.backToApps();
     cy.get(commonSelectors.appHeaderLable).should("be.visible");
     cy.reload();
     selectAppCardOption(
@@ -141,7 +144,7 @@ describe("App Import Functionality", () => {
       cy.exec("cd ./cypress/downloads/ && rm -rf *");
     });
     cy.renameApp(data.appReName);
-    cy.get(commonSelectors.editorPageLogo).click();
+    cy.backToApps();
     cy.get(commonSelectors.appHeaderLable).should("be.visible");
     cy.reload();
     navigateToAppEditor(data.appReName);
@@ -159,7 +162,7 @@ describe("App Import Functionality", () => {
           .invoke("text")
           .then((versionText) => {
             cy.log(versionText);
-            cy.get(commonSelectors.editorPageLogo).click();
+            cy.backToApps();
             cy.get(commonSelectors.appHeaderLable).should("be.visible");
             cy.reload();
             selectAppCardOption(

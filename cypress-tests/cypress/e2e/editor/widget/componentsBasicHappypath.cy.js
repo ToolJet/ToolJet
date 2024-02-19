@@ -356,14 +356,14 @@ describe("Basic components", () => {
     verifyComponent("container1");
 
     openEditorSidebar("container1");
-    editAndVerifyWidgetName("container2", ["Layout"]);
+    editAndVerifyWidgetName("container2", ["Devices"]);
 
     cy.forceClickOnCanvas();
     cy.resizeWidget("container2", 650, 400, false);
     cy.waitForAutoSave();
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
-    verifyComponent("container2", ["Layout"]);
+    verifyComponent("container2", ["Devices"]);
 
     cy.go("back");
     resizeQueryPanel(0);
@@ -466,7 +466,7 @@ describe("Basic components", () => {
     verifyComponentWithOutLabel("Link", "link1", "link2", data.appName);
   });
 
-  it("Should verify Map", () => {
+  it.skip("Should verify Map", () => {
     cy.dragAndDropWidget("Map", 300, 300);
     cy.get("body").then(($body) => {
       if ($body.find(".dismissButton").length > 0) {

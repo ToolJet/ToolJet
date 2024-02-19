@@ -11,7 +11,7 @@ import { toast } from 'react-hot-toast';
 import _, { isEmpty, throttle } from 'lodash';
 import { useEditorStore } from './editorStore';
 import { shallow } from 'zustand/shallow';
-import { useCurrentStateStore } from './currentStateStore';
+import { getCurrentState, useCurrentStateStore } from './currentStateStore';
 
 const initialState = {
   dataQueries: [],
@@ -59,7 +59,7 @@ export const useDataQueriesStore = create(
             }
 
             useCurrentStateStore.getState().actions.setCurrentState({
-              ...useCurrentStateStore.getState(),
+              ...getCurrentState(),
               queries: updatedQueries,
             });
           }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -19,6 +19,7 @@ import { shallow } from 'zustand/shallow';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import NoListItem from './Components/Table/NoListItem';
 import ManageEventButton from './ManageEventButton';
+import { EditorContext } from '../Context/EditorContextWrapper';
 import CodeHinter from '../CodeEditor';
 
 export const EventManager = ({
@@ -47,11 +48,23 @@ export const EventManager = ({
     appId,
     apps,
     events: allAppEvents,
+    eventsUpdatedLoader,
+    eventsCreatedLoader,
+    actionsUpdatedLoader,
+    eventToDeleteLoaderIndex,
+    setEventToDeleteLoaderIndex,
   } = useAppDataStore((state) => ({
     appId: state.appId,
     apps: state.apps,
     events: state.events,
+    eventsUpdatedLoader: state.eventsUpdatedLoader,
+    eventsCreatedLoader: state.eventsCreatedLoader,
+    actionsUpdatedLoader: state.actionsUpdatedLoader,
+    eventToDeleteLoaderIndex: state.eventToDeleteLoaderIndex,
+    setEventToDeleteLoaderIndex: state.actions.setEventToDeleteLoaderIndex,
   }));
+
+  const { handleYmapEventUpdates } = useContext(EditorContext) || {};
 
   const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler } =
     useAppDataActions();
@@ -68,7 +81,13 @@ export const EventManager = ({
 
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
+
   const { t } = useTranslation();
+
+  useEffect(() => {
+    handleYmapEventUpdates && handleYmapEventUpdates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ allAppEvents })]);
 
   useEffect(() => {
     if (_.isEqual(currentEvents, events)) return;
@@ -268,6 +287,11 @@ export const EventManager = ({
     let updatedEvent = newEvents[index];
     updatedEvent.event[param] = value;
 
+    // Remove debounce key if it's empty
+    if (param === 'debounce' && value === '') {
+      delete updatedEvent.event.debounce;
+    }
+
     if (param === 'componentSpecificActionHandle') {
       const getDefault = getComponentActionDefaultParams(updatedEvent.event?.componentId, value);
       updatedEvent.event['componentSpecificActionParams'] = getDefault;
@@ -282,7 +306,8 @@ export const EventManager = ({
           diff: updatedEvent,
         },
       ],
-      'update'
+      'update',
+      param
     );
   }
 
@@ -290,14 +315,13 @@ export const EventManager = ({
     const eventsHandler = _.cloneDeep(events);
 
     const eventId = eventsHandler[index].id;
-
+    setEventToDeleteLoaderIndex(index);
     deleteAppVersionEventHandler(eventId);
   }
 
   function addHandler() {
     let newEvents = events;
     const eventIndex = newEvents.length;
-
     createAppVersionEventHandlers({
       event: {
         eventId: Object.keys(eventMetaDefinition?.events)[0],
@@ -310,6 +334,8 @@ export const EventManager = ({
       attachedTo: sourceId,
       index: eventIndex,
     });
+
+    handleYmapEventUpdates();
   }
 
   //following two are functions responsible for on change and value for the control specific actions
@@ -855,7 +881,7 @@ export const EventManager = ({
                             }}
                             paramType={param?.type}
                             fieldMeta={{ options: param?.options }}
-                            cyLabel={param.displayName}
+                            cyLabel={`event-${param.displayName}`}
                             component={component}
                           />
                         </div>
@@ -911,7 +937,6 @@ export const EventManager = ({
   };
 
   const renderDraggable = useDraggableInPortal();
-
   const renderHandlers = (events) => {
     return (
       <DragDropContext
@@ -961,6 +986,11 @@ export const EventManager = ({
                               removeHandler={removeHandler}
                               index={index}
                               darkMode={darkMode}
+                              actionsUpdatedLoader={index === focusedEventIndex ? actionsUpdatedLoader : false}
+                              eventsUpdatedLoader={index === focusedEventIndex ? eventsUpdatedLoader : false}
+                              eventsDeletedLoader={
+                                index === eventToDeleteLoaderIndex ? !!eventToDeleteLoaderIndex : false
+                              }
                             />
                           </div>
                         </OverlayTrigger>
@@ -979,7 +1009,7 @@ export const EventManager = ({
 
   const renderAddHandlerBtn = () => {
     return (
-      <AddNewButton onClick={addHandler} dataCy="add-event-handler" className="mt-0">
+      <AddNewButton onClick={addHandler} dataCy="add-event-handler" className="mt-0" isLoading={eventsCreatedLoader}>
         {t('editor.inspector.eventManager.addHandler', 'New event handler')}
       </AddNewButton>
     );
