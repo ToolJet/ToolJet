@@ -87,7 +87,11 @@ const EnvironmentManager = (props) => {
               show={haveVersions || !multiEnvironmentEnabled ? (showTrialTag ? true : false) : true}
             >
               <div className="d-flex align-items-center">
-                <div className={`app-environment-name d-flex ${darkMode ? 'dark-theme' : ''}`} style={grayColorStyle}>
+                <div
+                  className={`app-environment-name d-flex ${darkMode ? 'dark-theme' : ''}`}
+                  style={grayColorStyle}
+                  data-cy="env-name-dropdown"
+                >
                   {capitalize(environment.name)}
                 </div>
                 {environment.priority > 1 && (!multiEnvironmentEnabled || licenseType === 'trial') && (

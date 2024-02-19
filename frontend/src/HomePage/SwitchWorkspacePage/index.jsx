@@ -67,8 +67,10 @@ export function SwitchWorkspaceModal({
             />
           </svg>
         )}
-        <span className="header-text">{headerText}</span>
-        <p>{title}</p>
+        <span className="header-text" data-cy="modal-title">
+          {headerText}
+        </span>
+        <p data-cy="modal-message">{title}</p>
       </Modal.Header>
 
       <Modal.Body>
@@ -87,9 +89,17 @@ export function SwitchWorkspaceModal({
                 name="organization_id"
                 checked={organization.id === selectedOrganization?.id}
                 onChange={() => {}}
+                data-cy={`${organization.name.toLowerCase().replace(/\s+/g, '-')}-workspace-input`}
               />
-              <span className={'avatar avatar-sm'}>{getAvatar(organization.name)}</span>
-              <span>{organization.name}</span>
+              <span
+                className={'avatar avatar-sm'}
+                data-cy={`${organization.name.toLowerCase().replace(/\s+/g, '-')}-workspace-avatar`}
+              >
+                {getAvatar(organization.name)}
+              </span>
+              <span data-cy={`${organization.name.toLowerCase().replace(/\s+/g, '-')}-workspace-name`}>
+                {organization.name}
+              </span>
             </div>
           ))}
         </div>
@@ -100,6 +110,7 @@ export function SwitchWorkspaceModal({
             className="btn btn-primary switch-ws-btn"
             onClick={() => switchOrganization(selectedOrganization)}
             disabled={isEmpty(selectedOrganization)}
+            data-cy="continue-button"
           >
             {t('globals.workspace-modal.continue-btn', 'Continue on this workspace')}
           </button>
