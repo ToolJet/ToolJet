@@ -9,6 +9,7 @@
 
     .codehinter-container {
         height: inherit !important;
+
         .codehinter-vertical-line {
             position: relative;
             width: 0;
@@ -39,22 +40,22 @@
     overflow-x: hidden !important;
 
 
-    ul {      
+    ul {
         width: 100% !important;
         max-width: 100% !important;
         max-height: 100% !important;
 
         completion-section {
-         color: var(--Text-default, #1B1F24) !important;
-         border-bottom: none !important;
-         background-color: var(--slate3);
-         font-size: 13px !important;
-         line-height: 20px !important;
-         font-weight: 500 !important;
-         padding: 8px !important;
+            color: var(--Text-default, #1B1F24) !important;
+            border-bottom: none !important;
+            background-color: var(--slate3);
+            font-size: 13px !important;
+            line-height: 20px !important;
+            font-weight: 500 !important;
+            padding: 8px !important;
         }
 
-        
+
 
 
         li {
@@ -81,6 +82,7 @@
                 // border-radius: 50%;
                 // background-color: red;
             }
+
             .cm-completionIcon-object::after {
                 content: '';
                 background-image: url('data:image/svg+xml,<svg viewBox="-4.08 -4.08 32.16 32.16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"><rect x="-4.08" y="-4.08" width="32.16" height="32.16" rx="16.08" fill="%23849DFF" strokewidth="0"></rect></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M9.5 5H9C7.89543 5 7 5.89543 7 7V9C7 10 6.4 12 4 12C5 12 7 12.6 7 15V17.0002C7 18.1048 7.89543 19 9 19H9.5M14.5 5H15C16.1046 5 17 5.89543 17 7V9C17 10 17.6 12 20 12C19 12 17 12.6 17 15V17.0002C17 18.1048 16.1046 19 15 19H14.5" stroke="%23000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></g></svg>');
@@ -92,6 +94,7 @@
                 border-radius: 50%;
                 background-color: red;
             }
+
             .cm-completionIcon-array::after {
                 content: '';
                 background-image: url('data:image/svg+xml,<svg fill="%23000000" viewBox="-25.6 -25.6 307.20 307.20" id="Flat" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"><rect x="-25.6" y="-25.6" width="307.20" height="307.20" rx="153.6" fill="%23C1C8CD" strokewidth="0"></rect></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M48,48V208H80a8,8,0,0,1,0,16H40a8.00039,8.00039,0,0,1-8-8V40a8.00039,8.00039,0,0,1,8-8H80a8,8,0,0,1,0,16ZM216,32H176a8,8,0,0,0,0,16h32V208H176a8,8,0,0,0,0,16h40a8.00039,8.00039,0,0,0,8-8V40A8.00039,8.00039,0,0,0,216,32Z"></path></g></svg>');
@@ -103,6 +106,7 @@
                 border-radius: 50%;
                 background-color: red;
             }
+
             .cm-completionIcon-string::after {
                 content: 'str';
                 display: flex;
@@ -117,7 +121,7 @@
             }
 
 
-         
+
 
 
         }
@@ -129,7 +133,7 @@
 
 
         // li > :first-child,
-        li > :nth-child(2) {
+        li> :nth-child(2) {
             display: flex !important;
             align-self: flex-start !important;
             width: 100% !important;
@@ -138,7 +142,7 @@
             overflow: hidden !important;
         }
 
-        li > :last-child {
+        li> :last-child {
             align-self: flex-end !important;
         }
 
@@ -152,7 +156,7 @@
 
 
 .widget-code-editor {
-    .cm-content > .cm-line {
+    .cm-content>.cm-line {
         max-width: 220px !important;
         white-space: pre-wrap;
         word-wrap: break-word;
@@ -161,7 +165,7 @@
 
 .codehinter-input {
     font-family: IBM Plex Sans;
-    font-size: 13px !important;
+    font-size: 12px !important;
     display: block;
     width: 100%;
     font-weight: 400;
@@ -171,7 +175,7 @@
     -moz-appearance: none;
     appearance: none;
     cursor: text;
-    
+
 
     .cm-tooltip-autocomplete {
         @extend .cm-base-autocomplete;
@@ -184,29 +188,29 @@
         max-height: 220px;
     }
 
-    
-
-    
 
 
 
-  }
 
-  .codehinter-input.focused {
+
+
+}
+
+.codehinter-input.focused {
 
     .cm-editor {
         outline: none;
         border-color: $color-dark-indigo-09 !important;
     }
-  }
+}
 
-  .focus-box-shadow-active {
+.focus-box-shadow-active {
     .cm-editor {
         box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
     }
-  }
+}
 
-  .codehinter-multi-line-input {
+.codehinter-multi-line-input {
 
     .cm-editor {
         height: 300px;
@@ -220,7 +224,7 @@
     .cm-tooltip-autocomplete {
         @extend .cm-base-autocomplete;
     }
-  }
+}
 
 
 
@@ -230,9 +234,11 @@
     font-size: 11px;
     font-style: normal;
     font-weight: 400;
-    line-height: 16px; /* 145.455% */
+    line-height: 16px;
+    /* 145.455% */
 
-    &:hover, &:active { 
+    &:hover,
+    &:active {
         border-radius: 0 !important;
     }
 }
@@ -250,18 +256,18 @@
         border-color: var(--slate5) !important;
     }
 
-    .cm-tooltip-autocomplete > ul > completion-section {
+    .cm-tooltip-autocomplete>ul>completion-section {
         background: var(--slate5);
         color: #c9cbcf !important;
-    } 
+    }
 
-    .cm-tooltip-autocomplete > ul > li {
+    .cm-tooltip-autocomplete>ul>li {
         background: var(--slate3);
         color: #c9cbcf !important;
     }
 }
 
-  
+
 
 
 
@@ -281,8 +287,9 @@
     border-radius: 4px;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
-.fields-container{
-    .cm-editor{
+
+.fields-container {
+    .cm-editor {
         border-radius: 0 !important;
         box-shadow: none !important;
     }
@@ -306,13 +313,15 @@
 
 
 .code-hinter-preview-card-body::-webkit-scrollbar {
-    width: 4px !important; /* for vertical scrollbars */;
+    width: 4px !important;
+    /* for vertical scrollbars */
+    ;
 }
-  
+
 .code-hinter-preview-card-body::-webkit-scrollbar-track {
     margin: 5px !important;
 }
 
-.code-hinter-preview-card-body > .codehinter-popup-icon {
+.code-hinter-preview-card-body>.codehinter-popup-icon {
     left: 2px !important;
 }
