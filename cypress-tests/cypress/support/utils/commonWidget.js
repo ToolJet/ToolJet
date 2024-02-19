@@ -40,13 +40,16 @@ export const openEditorSidebar = (widgetName = "") => {
 export const verifyAndModifyToggleFx = (
   paramName,
   defaultValue,
-  toggleModification = true
+  toggleModification = true,
+  hiddenFx = true
 ) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName)).should(
     "have.text",
     paramName
   );
-  cy.get(commonWidgetSelector.parameterTogglebutton(paramName)).realHover();
+  if (hiddenFx) {
+    cy.get(commonWidgetSelector.parameterTogglebutton(paramName)).realHover();
+  }
   cy.get(commonWidgetSelector.parameterFxButton(paramName, " > svg")).click();
   if (defaultValue)
     cy.get(commonWidgetSelector.parameterInputField(paramName))
