@@ -90,7 +90,7 @@ async function listRows(dataQuery, currentState) {
     !isEmpty(limit) && query.push(`limit=${limit}`);
     !isEmpty(offset) && query.push(`offset=${offset}`);
   }
-  const headers = { 'data-query-id': dataQuery.id };
+  const headers = { ...(dataQuery.id && { 'data-query-id': dataQuery.id }) };
   return await tooljetDatabaseService.findOne(headers, tableId, query.join('&'));
 }
 
@@ -101,7 +101,7 @@ async function createRow(dataQuery, currentState) {
     if (isEmpty(colOpts.column)) return acc;
     return { ...acc, ...{ [colOpts.column]: colOpts.value } };
   }, {});
-  const headers = { 'data-query-id': dataQuery.id };
+  const headers = { ...(dataQuery.id && { 'data-query-id': dataQuery.id }) };
   return await tooljetDatabaseService.createRow(headers, resolvedOptions.table_id, columns);
 }
 
@@ -129,7 +129,7 @@ async function updateRows(dataQuery, currentState) {
 
   !isEmpty(whereQuery) && query.push(whereQuery);
 
-  const headers = { 'data-query-id': dataQuery.id };
+  const headers = { ...(dataQuery.id && { 'data-query-id': dataQuery.id }) };
   return await tooljetDatabaseService.updateRows(headers, tableId, body, query.join('&') + '&order=id');
 }
 
@@ -173,7 +173,7 @@ async function deleteRows(dataQuery, currentState) {
   !isEmpty(whereQuery) && query.push(whereQuery);
   limit && limit !== '' && query.push(`limit=${limit}&order=id`);
 
-  const headers = { 'data-query-id': dataQuery.id };
+  const headers = { ...(dataQuery.id && { 'data-query-id': dataQuery.id }) };
   return await tooljetDatabaseService.deleteRows(headers, tableId, query.join('&'));
 }
 
@@ -250,5 +250,7 @@ async function joinTables(dataQuery, currentState) {
   if (sanitizedJoinTableJson?.order_by && !sanitizedJoinTableJson?.order_by.length)
     delete sanitizedJoinTableJson.order_by;
 
-  return await tooljetDatabaseService.joinTables(organizationId, sanitizedJoinTableJson);
+  const headers = { ...(dataQuery.id && { 'data-query-id': dataQuery.id }) };
+
+  return await tooljetDatabaseService.joinTables(headers, organizationId, sanitizedJoinTableJson);
 }

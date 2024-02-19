@@ -6,6 +6,8 @@ import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { generatePayloadForLimits } from 'src/helpers/utils.helper';
 import { isString, isEmpty, camelCase } from 'lodash';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 
 export type TableColumnSchema = {
   column_name: string;
@@ -46,6 +48,7 @@ export class TooljetDbService {
     @Optional()
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager,
+    private eventEmitter: EventEmitter2,
     private licenseService: LicenseService
   ) {}
 
@@ -286,7 +289,7 @@ export class TooljetDbService {
   }
 
   private async joinTable(organizationId: string, params: Record<string, any>) {
-    const { joinQueryJson } = params;
+    const { joinQueryJson, dataQuery, user } = params;
     if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
 
     // Gathering tables used, from Join coditions
@@ -338,6 +341,18 @@ export class TooljetDbService {
         throw new HttpException(customErrorMessage, 422);
       }
       throw error;
+    } finally {
+      if (!isEmpty(dataQuery) && !isEmpty(user)) {
+        this.eventEmitter.emit('auditLogEntry', {
+          userId: user.id,
+          organizationId,
+          resourceId: dataQuery.id,
+          resourceName: dataQuery.name,
+          resourceType: ResourceTypes.DATA_QUERY,
+          actionType: ActionTypes.DATA_QUERY_RUN,
+          metadata: {},
+        });
+      }
     }
   }
 

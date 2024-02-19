@@ -3,7 +3,6 @@ import HttpClient from '@/_helpers/http-client';
 const tooljetAdapter = new HttpClient();
 
 function findOne(headers, tableId, query = '') {
-  tooljetAdapter.headers = { ...tooljetAdapter.headers, ...headers };
   return tooljetAdapter.get(`/tooljet-db/proxy/${tableId}?${query}`, headers);
 }
 
@@ -77,8 +76,8 @@ function deleteTable(organizationId, tableName) {
   return tooljetAdapter.delete(`/tooljet-db/organizations/${organizationId}/table/${tableName}`);
 }
 
-function joinTables(organizationId, data) {
-  return tooljetAdapter.post(`tooljet-db/organizations/${organizationId}/join`, data);
+function joinTables(headers, organizationId, data) {
+  return tooljetAdapter.post(`tooljet-db/organizations/${organizationId}/join`, data, headers);
 }
 
 export const tooljetDatabaseService = {
