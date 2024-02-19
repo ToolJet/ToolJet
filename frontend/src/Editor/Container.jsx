@@ -50,7 +50,6 @@ export const Container = ({
   // Dont update first time to skip
   // redundant save on app definition load
   const firstUpdate = useRef(true);
-
   const { showComments, currentLayout } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
@@ -74,7 +73,7 @@ export const Container = ({
   const gridWidth = canvasWidth / NO_OF_GRIDS;
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
-    maxWidth: `${canvasWidth}px`,
+    maxWidth: currentLayout === 'mobile' ? deviceWindowWidth : `${canvasWidth}px`,
     backgroundSize: `${gridWidth}px 10px`,
   };
 
@@ -241,7 +240,6 @@ export const Container = ({
 
       const bottomPadding = mode === 'view' ? 100 : 300;
       const frameHeight = mode === 'view' ? 45 : 85;
-
       setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`);
     },
     [setCanvasHeight, currentLayout, mode]
@@ -563,7 +561,6 @@ export const Container = ({
     },
     [setIsDragging]
   );
-
   const containerProps = useMemo(() => {
     return {
       mode,

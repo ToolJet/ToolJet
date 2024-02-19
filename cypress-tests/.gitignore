@@ -4,3 +4,5 @@
 /cypress/screenshots
 /cypress/downloads
 /cypress/videos
+/coverage
+/.nyc_output

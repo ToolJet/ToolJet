@@ -71,6 +71,7 @@ export function getSuggestionKeys(refState) {
   const actions = [
     'runQuery',
     'setVariable',
+    'getVariable',
     'unSetVariable',
     'showAlert',
     'logout',
@@ -81,6 +82,7 @@ export function getSuggestionKeys(refState) {
     'goToApp',
     'generateFile',
     'setPageVariable',
+    'getPageVariable',
     'unsetPageVariable',
     'switchPage',
   ];
