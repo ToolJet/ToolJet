@@ -208,7 +208,17 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
           {!isEmpty(validationSchema) && (
             <>
               <div className="mb-1">
-                <span>Expected</span>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: '500',
+                    lineHeight: '16px',
+                    letterSpacing: '0em',
+                    color: '#6A727C',
+                  }}
+                >
+                  Expected
+                </span>
               </div>
               <Card className={darkMode && 'bg-slate2'}>
                 <Card.Body
@@ -234,7 +244,17 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
         </div>
         <div className="mt-2">
           <div className="mb-1">
-            <span>Current</span>
+            <span
+              style={{
+                fontSize: '11px',
+                fontWeight: '500',
+                lineHeight: '16px',
+                letterSpacing: '0em',
+                color: '#6A727C',
+              }}
+            >
+              Current
+            </span>
           </div>
 
           <Card
