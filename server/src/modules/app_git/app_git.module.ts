@@ -29,6 +29,8 @@ import { ImportExportResourcesService } from '@services/import_export_resources.
 import { TooljetDbImportExportService } from '@services/tooljet_db_import_export_service';
 import { AuditLoggerService } from '@services/audit_logger.service';
 import { TooljetDbService } from '@services/tooljet_db.service';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 @Module({
   controllers: [GitSyncController],
@@ -63,6 +65,8 @@ import { TooljetDbService } from '@services/tooljet_db.service';
     TooljetDbService,
     EncryptionService,
     ImportExportResourcesService,
+    TooljetDbOperationsService,
+    PostgrestProxyService,
     TooljetDbImportExportService,
   ],
 })

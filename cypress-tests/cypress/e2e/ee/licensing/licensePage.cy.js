@@ -28,6 +28,7 @@ describe("", () => {
         updateLicense(Cypress.env("license-key"));
     });
     it("should verify license page elements", () => {
+        cy.get(commonSelectors.settingsIcon).click();
         cy.get(commonEeSelectors.instanceSettingIcon).click();
         cy.get(licenseSelectors.licenseOption).click();
 
@@ -191,6 +192,7 @@ describe("", () => {
     it("should verify banners, renew modal and tooltips for expired license", () => {
         let ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
         //app creation
+        cy.get(commonSelectors.settingsIcon).click();
         cy.get(commonEeSelectors.instanceSettingIcon).click();
         cy.get(licenseSelectors.licenseOption).click();
         cy.get(licenseSelectors.licenseKeyOption).click();
@@ -296,6 +298,8 @@ describe("", () => {
         cy.get('[data-cy="datasource-link"]').click();
         cy.get(licenseSelectors.dsGradientIcon).should("be.visible");
 
+        cy.get(commonSelectors.settingsIcon).click();
+
         verifyTooltip(
             commonEeSelectors.auditLogIcon,
             "Audit logs are available only in paid plans"
@@ -304,7 +308,7 @@ describe("", () => {
             groupsSelector.createNewGroupButton,
             "Custom groups can only be created in paid plans"
         );
-        navigateToManageSSO();
+        cy.get(commonSelectors.manageSSOOption).click();
         verifyTooltipDisabled(
             '[data-cy="openid-connect-list-item"]',
             "OpenID Connect is available only\n        in paid plans"

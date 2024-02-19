@@ -1,8 +1,8 @@
 import { cyParamName } from "./common";
 
 export const commonEeSelectors = {
-  instanceSettingIcon: '[data-cy="icon-instance-settings"]',
-  auditLogIcon: '[data-cy="icon-audit-logs"]',
+  instanceSettingIcon: '[data-cy="instance-settings-option"]',
+  auditLogIcon: '[data-cy="audit-log-option"]',
   cancelButton: '[data-cy="cancel-button"]',
   saveButton: '[data-cy="save-button"]',
   pageTitle: '[data-cy="dashboard-section-header"]',
@@ -13,6 +13,10 @@ export const commonEeSelectors = {
   AddQueryButton: '[data-cy="show-ds-popover-button"]',
   promoteButton: '[data-cy="promote-button"]',
   settingsIcon: '[data-cy="icon-settings"]',
+  gitSyncIcon: '[data-cy="git-sync-icon"]',
+  confirmButton: '[data-cy="confirm-button"]',
+  importFromGit: '[data-cy="import-from-git-button"]'
+
 };
 
 export const ssoEeSelector = {
@@ -136,3 +140,31 @@ export const whiteLabellingSelectors = {
   favIconInput: '[data-cy="input-field-fav-icon"]',
   favIconHelpText: '[data-cy="fav-icon-help-text"]',
 };
+
+export const gitSyncSelector = {
+  gitCommitInput: '[data-cy="git-commit-input"]',
+  commitHelperText: '[data-cy="commit-helper-text"]',
+  gitRepoInput: '[data-cy="git-repo-input"]',
+  commitMessageInput: '[data-cy="commit-message-input"]',
+  lastCommitInput: '[data-cy="las-commit-message"]',
+  lastCommitVersion: '[data-cy="last-commit-version"]',
+  autherInfo: '[data-cy="auther-info"]',
+  commitButton: '[data-cy="commit-button"]',
+  gitSyncToggleInput: '[data-cy="git-sync-toggle-input"]',
+  gitSyncApphelperText: '[data-cy="sync-app-helper-text"]',
+  connectRepoButton: '[data-cy="connect-repo-button"]',
+  toggleMessage: '[data-cy="toggle-message"]',
+  sshInput: '[data-cy="git-ssh-input"]',
+  generateSshButton: '[data-cy="generate-ssh-key-button"',
+  sshInputHelperText: '[data-cy="git-ssh-input-helper-text"]',
+  configDeleteButton: '[data-cy="button-config-delete"]',
+  testConnectionButton: '[data-cy="test-connection-button"]',
+  sshKey: '[data-cy="ssh-key"]',
+  deployKeyHelperText: '[data-cy="deploy-key-helper-text"]',
+  gitRepoLink: '[data-cy="git-repo-link"]',
+  appNameField: '[data-cy="app-name-field"]',
+  gitRepoInfo: '[data-cy="git-repo-info"]',
+  pullButton: '[data-cy="pull-button"]'
+
+
+}

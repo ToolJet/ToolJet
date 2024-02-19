@@ -6,11 +6,10 @@ import {
     navigateToManageUsers,
 } from "Support/utils/common";
 import { commonText } from "Texts/common";
-import { addNewUserMW } from "Support/utils/userPermissions";
 import { commonEeSelectors } from "Selectors/eeCommon";
 import {
     userSignUp,
-    resetAllowPersonalWorkspace,
+    allowPersonalWorkspace,
     inviteUser,
     WorkspaceInvitationLink,
     createAnAppWithSlug,
@@ -27,6 +26,9 @@ describe(
     () => {
         const data = {};
         const envVar = Cypress.env("environment");
+        beforeEach(() => {
+            cy.skipWalkthrough();
+        });
 
         it("Verify private and public app share funtionality", () => {
             data.appName = `${fake.companyName} App1`;
@@ -53,7 +55,6 @@ describe(
 
             cy.get(commonWidgetSelector.modalCloseButton).click();
             cy.wait(3000);
-            cy.get(commonSelectors.editorPageLogo).click();
 
             cy.logoutApi();
             cy.visit(`/applications/${data.slug}`);
@@ -72,7 +73,7 @@ describe(
             navigateToAppEditor(data.appName);
             cy.wait(2000);
             cy.get(commonWidgetSelector.shareAppButton).click();
-            cy.wait(500)
+            cy.wait(500);
             cy.get(commonWidgetSelector.makePublicAppToggle).check();
 
             cy.get(commonWidgetSelector.iframeLink).should("be.visible");
@@ -83,7 +84,6 @@ describe(
             cy.get(commonWidgetSelector.iframeLink).should("be.visible");
             cy.get('[data-cy="iframe-link-copy-button"]').should("be.visible");
             cy.get(commonWidgetSelector.modalCloseButton).click();
-            cy.get(commonSelectors.editorPageLogo).click();
 
             cy.logoutApi();
             cy.visit(`/applications/${data.slug}`);
@@ -100,11 +100,12 @@ describe(
             cy.defaultWorkspaceLogin();
             createAnAppWithSlug(data.appName, data.slug);
             cy.get(commonWidgetSelector.shareAppButton).click();
-            cy.wait(500)
+            cy.wait(500);
             cy.get(commonWidgetSelector.makePublicAppToggle).check();
-            cy.wait(500)
+            cy.wait(500);
             cy.get(commonWidgetSelector.modalCloseButton).click();
-            cy.get(commonSelectors.editorPageLogo).click();
+
+            cy.backToApps();
 
             cy.wait(1000);
             navigateToManageUsers();
@@ -119,13 +120,13 @@ describe(
             cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
 
             cy.defaultWorkspaceLogin();
-            navigateToAppEditor(data.appName)
+            navigateToAppEditor(data.appName);
             cy.get(commonWidgetSelector.shareAppButton).click();
-            cy.wait(500)
+            cy.wait(500);
             cy.get(commonWidgetSelector.makePublicAppToggle).uncheck();
-            cy.wait(500)
+            cy.wait(500);
             cy.get(commonWidgetSelector.modalCloseButton).click();
-            cy.get(commonSelectors.editorPageLogo).click();
+
             cy.wait(1000);
 
             cy.logoutApi();
@@ -140,7 +141,7 @@ describe(
 
         it("Verify app private and public app visibility for the same instance user", () => {
             if (envVar === "Enterprise") {
-                resetAllowPersonalWorkspace();
+                allowPersonalWorkspace();
             }
 
             data.appName = `${fake.companyName} App3`;
@@ -169,13 +170,12 @@ describe(
             cy.wait(2000);
             logout();
             cy.defaultWorkspaceLogin();
-            navigateToAppEditor(data.appName)
+            navigateToAppEditor(data.appName);
             cy.get(commonWidgetSelector.shareAppButton).click();
-            cy.wait(2000)
+            cy.wait(2000);
             cy.get(commonWidgetSelector.makePublicAppToggle).check();
-            cy.wait(1000)
+            cy.wait(1000);
             cy.get(commonWidgetSelector.modalCloseButton).click();
-            cy.get(commonSelectors.editorPageLogo).click();
 
             cy.logoutApi();
             cy.visit(`/applications/${data.slug}`);

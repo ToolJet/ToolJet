@@ -25,6 +25,7 @@ import { toast } from 'react-hot-toast';
 import './style.scss';
 import Header from './Header';
 import LogsPanel from './LogsPanel';
+import { fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
 
 // Wherever this file uses the term 'app', it means 'workflow'
 function WorkflowEditor(props) {
@@ -57,19 +58,18 @@ function WorkflowEditor(props) {
       .getApp(editorSession.app.id)
       .then((appData) => {
         const versionId = appData.editing_version.id;
-        const organizationId = appData.organizationId;
+        const organizationId = appData.organization_id;
         const name = appData.name;
         const isMaintenanceOn = appData.is_maintenance_on;
         const workflowEnabled = appData.workflow_enabled;
         const workflowToken = appData.workflow_api_token;
-        console.log('appData', appData);
         // TODO: could we map all app data setup in action/reducer?
         editorSessionActions.setAppVersionId(versionId);
         editorSessionActions.setAppName(name);
         editorSessionActions.setMaintenanceStatus(isMaintenanceOn);
         editorSessionActions.toggleWebhookEnable(workflowEnabled);
         editorSessionActions.setWorkflowApiToken(workflowToken);
-        document.title = `${name} - ToolJet`;
+        fetchAndSetWindowTitle({ page: pageTitles.WORKFLOW_EDITOR, appName: `${name}` });
 
         if (appData.definition) {
           const bodyParameters = appData.definition?.webhookParams;
@@ -80,13 +80,7 @@ function WorkflowEditor(props) {
         return { definition: appData.definition, queriesData: appData.data_queries, versionId, organizationId };
       })
       .then(({ definition, queriesData, versionId, organizationId }) => {
-        datasourceService.getAll(versionId, true).then((dataSourceData) => {
-          editorSessionActions.setDataSources(dataSourceData.data_sources);
-        });
-        return { definition, queriesData, versionId, organizationId };
-      })
-      .then(({ definition, queriesData, versionId, organizationId }) => {
-        globalDatasourceService.getAll(organizationId, true).then((dataSourceData) => {
+        globalDatasourceService.getAll(organizationId, versionId).then((dataSourceData) => {
           editorSessionActions.setDataSources(dataSourceData.data_sources);
         });
         return { definition, queriesData, versionId };
@@ -120,7 +114,7 @@ function WorkflowEditor(props) {
       .saveApp(appId, { name })
       .then(() => {
         editorSessionActions.setAppName(name);
-        document.title = `${name} - ToolJet`;
+        fetchAndSetWindowTitle({ page: pageTitles.WORKFLOW_EDITOR, appName: `${name}` });
       })
       .catch(() => {
         toast('Something went wrong while editing workflow name', {
@@ -169,7 +163,7 @@ function WorkflowEditor(props) {
         query.id,
         queryChanges.name ?? query.name,
         merge(query.options, queryChanges.options),
-        queryChanges.dataSourceId
+        queryChanges.data_source_id === 'null' ? null : queryChanges.data_source_id // handle for static init state
       )
       .then(() => editorSessionActions.setAppSavingStatus(false));
   };
@@ -213,15 +207,25 @@ function WorkflowEditor(props) {
     }
   };
 
-  const addQuery = (kind = 'runjs', options = {}, dataSourceId = undefined, pluginId = undefined) => {
+  const addQuery = (
+    kind = 'runjs',
+    options = {},
+    dataSourceId = undefined,
+    pluginId = undefined,
+    isStaticDataSource = false
+  ) => {
     const idOnDefinition = uuidv4();
+    const type = isStaticDataSource ? 'static' : 'default';
     const name = generateQueryName(kind, editorSession.queries);
-    editorSessionActions.addQuery({ idOnDefinition, kind, options, dataSourceId, pluginId });
+    editorSessionActions.addQuery(
+      { idOnDefinition, kind, options, dataSourceId, pluginId, type },
+      isStaticDataSource,
+      editorSession
+    );
 
     dataqueryService
       .create(editorSession.app.id, editorSession.app.versionId, name, kind, options, dataSourceId, pluginId)
       .then((query) => {
-        console.log('updating query', query);
         editorSessionActions.updateQuery(idOnDefinition, query);
       });
 
@@ -229,8 +233,6 @@ function WorkflowEditor(props) {
   };
 
   const updateFlow = useCallback((flow) => dispatch({ type: 'UPDATE_FLOW', payload: { flow } }), [dispatch]);
-
-  console.log({ editorSession });
 
   return !editorSession.bootupComplete ? (
     <div>loading</div>
@@ -262,13 +264,15 @@ function WorkflowEditor(props) {
                     dispatch({ type: 'SET_FLOW_BUILDER_EDITING_ACTIVITY', payload: { editingActivity } })
                   }
                   editingActivity={editorSession.editingActivity}
+                  executeWorkflow={executeWorkflow}
+                  debouncedSave={debouncedSave}
                 />
               </WorkflowEditorContext.Provider>
             </ReactFlowProvider>
           </div>
         </EditorContextWrapper>
       </div>
-      <LogsPanel editorSession={editorSession} editorSessionActions={editorSessionActions} />
+      {/* <LogsPanel editorSession={editorSession} editorSessionActions={editorSessionActions} /> */}
     </div>
   );
 }

@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Avatar from '@/_ui/Avatar';
 import Skeleton from 'react-loading-skeleton';
 import cx from 'classnames';
-import { Pagination } from '@/_components';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { Pagination, ToolTip } from '@/_components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
+import UsersActionMenu from './UsersActionMenu';
+import { humanizeifDefaultGroupName } from '@/_helpers/utils';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { ResetPasswordModal } from '@/_components/ResetPasswordModal';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 
 const UsersTable = ({
   isLoading,
@@ -25,7 +29,16 @@ const UsersTable = ({
   openOrganizationModal,
   openEditModal,
   customStyles,
+  toggleEditUserDrawer,
+  resetPassword = false,
 }) => {
+  const [isResetPasswordModalVisible, setIsResetPasswordModalVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const handleResetPasswordClick = (user) => {
+    setSelectedUser(user);
+    setIsResetPasswordModalVisible(true);
+  };
   return (
     <div className="workspace-settings-table-wrap mb-4">
       <div style={customStyles} className="tj-user-table-wrapper">
@@ -44,6 +57,7 @@ const UsersTable = ({
                     {translator('header.organization.menus.manageUsers.userType', 'Type')}
                   </th>
                 )}
+                {!isLoadingAllUsers && <th data-cy="users-table-groups-column-header">Groups</th>}
                 {users && users[0]?.status ? (
                   <th data-cy="users-table-status-column-header">
                     {translator('header.organization.menus.manageUsers.status', 'Status')}
@@ -113,7 +127,7 @@ const UsersTable = ({
                           className="mx-3 tj-text-sm"
                           data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
                         >
-                          {user.name}
+                          <OverflowTooltip>{user.name}</OverflowTooltip>
                         </span>
                       </td>
                       <td className="text-muted">
@@ -121,7 +135,7 @@ const UsersTable = ({
                           className="text-reset user-email tj-text-sm"
                           data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-email`}
                         >
-                          {user.email}
+                          <OverflowTooltip>{user.email}</OverflowTooltip>
                         </a>
                       </td>
                       {isLoadingAllUsers && (
@@ -134,6 +148,7 @@ const UsersTable = ({
                           </span>
                         </td>
                       )}
+                      {!isLoadingAllUsers && <GroupChipTD groups={user.groups} />}
                       {user.status && (
                         <td className="text-muted">
                           <span
@@ -189,42 +204,18 @@ const UsersTable = ({
                           </a>
                         </td>
                       )}
-                      {!isLoadingAllUsers ? (
-                        <td>
-                          <ButtonSolid
-                            variant="dangerSecondary"
-                            style={{ minWidth: '100px' }}
-                            className="workspace-user-archive-btn tj-text-xsm"
-                            disabled={unarchivingUser === user.id || archivingUser === user.id}
-                            leftIcon="archive"
-                            fill="#E54D2E"
-                            iconWidth="12"
-                            onClick={() => {
-                              user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
-                            }}
-                            data-cy="button-user-status-change"
-                          >
-                            {user.status === 'archived'
-                              ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')
-                              : translator('header.organization.menus.manageUsers.archive', 'Archive')}
-                          </ButtonSolid>
-                        </td>
-                      ) : (
-                        <td>
-                          <ButtonSolid
-                            variant="dangerSecondary"
-                            style={{ minWidth: '100px' }}
-                            className="workspace-user-archive-btn tj-text-xsm"
-                            leftIcon="edit"
-                            fill="#E54D2E"
-                            iconWidth="12"
-                            onClick={() => openEditModal(user)}
-                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-edit-button`}
-                          >
-                            {translator('header.organization.menus.manageUsers.edit', 'Edit')}
-                          </ButtonSolid>
-                        </td>
-                      )}
+                      <td className="user-actions-button">
+                        <UsersActionMenu
+                          archivingUser={archivingUser}
+                          user={user}
+                          unarchivingUser={unarchivingUser}
+                          unarchiveOrgUser={unarchiveOrgUser}
+                          archiveOrgUser={archiveOrgUser}
+                          toggleEditUserDrawer={() => toggleEditUserDrawer(user)}
+                          onResetPasswordClick={() => handleResetPasswordClick(user)}
+                          resetPassword={resetPassword}
+                        />
+                      </td>
                     </tr>
                   ))}
               </tbody>
@@ -241,8 +232,98 @@ const UsersTable = ({
           />
         )}
       </div>
+      {isResetPasswordModalVisible && (
+        <ResetPasswordModal
+          show={isResetPasswordModalVisible}
+          closeModal={() => {
+            setIsResetPasswordModalVisible(false);
+            setSelectedUser(null);
+          }}
+          user={selectedUser}
+        />
+      )}
     </div>
   );
 };
 
 export default UsersTable;
+
+const GroupChipTD = ({ groups = [] }) => {
+  const [showAllGroups, setShowAllGroups] = useState(false);
+  const groupsListRef = useRef();
+
+  useEffect(() => {
+    const onCloseHandler = (e) => {
+      if (groupsListRef.current && !groupsListRef.current.contains(e.target)) {
+        setShowAllGroups(false);
+      }
+    };
+
+    window.addEventListener('click', onCloseHandler);
+    return () => {
+      window.removeEventListener('click', onCloseHandler);
+    };
+  }, [showAllGroups]);
+
+  function moveValuesToLast(arr, valuesToMove) {
+    const validValuesToMove = valuesToMove.filter((value) => arr.includes(value));
+
+    validValuesToMove.forEach((value) => {
+      const index = arr.indexOf(value);
+      if (index !== -1) {
+        const removedItem = arr.splice(index, 1);
+        arr.push(removedItem[0]);
+      }
+    });
+
+    return arr;
+  }
+
+  const orderedArray = moveValuesToLast(groups, ['all_users', 'admin']);
+
+  const toggleAllGroupsList = (e) => {
+    setShowAllGroups(!showAllGroups);
+  };
+
+  const renderGroupChip = (group, index) => (
+    <span className="group-chip" key={index} data-cy="group-chip">
+      {humanizeifDefaultGroupName(group)}
+    </span>
+  );
+
+  return (
+    <td
+      data-active={showAllGroups}
+      ref={groupsListRef}
+      onClick={(e) => {
+        orderedArray.length > 2 && toggleAllGroupsList(e);
+      }}
+      className={cx('text-muted groups-name-cell', { 'groups-hover': orderedArray.length > 2 })}
+    >
+      <div className="groups-name-container tj-text-sm font-weight-500">
+        {orderedArray.slice(0, 2).map((group, index) => {
+          if (orderedArray.length <= 2) {
+            return renderGroupChip(group, index);
+          }
+
+          if (orderedArray.length > 2) {
+            if (index === 1) {
+              return (
+                <>
+                  <span className="group-chip" key={index}>
+                    {' '}
+                    +{orderedArray.length - 1} more
+                  </span>
+                  {showAllGroups && (
+                    <div className="all-groups-list">{groups.map((group, index) => renderGroupChip(group, index))}</div>
+                  )}
+                </>
+              );
+            }
+            return renderGroupChip(group, index);
+          }
+        })}
+      </div>
+    </td>
+  );
+};

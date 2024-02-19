@@ -12,6 +12,7 @@ import XenvSvg from '@assets/images/icons/x-env.svg';
 
 import './styles.scss';
 import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
+import LogoNavDropdown from '@/_components/LogoNavDropdown';
 
 const Header = (props) => {
   const { executeWorkflow, editorSession, editorSessionActions, saveAppName } = props;
@@ -24,20 +25,13 @@ const Header = (props) => {
 
   const isRunnable = editorSession.queries && editorSession.queries.length > 0;
 
-  const handleLogoClick = () => {
-    // Force a reload for clearing interval triggers
-    redirectToDashboard(null, '/workflows');
-  };
-
   return (
     <div className="header workflow-header">
       <div className="grid">
         <div className="row" style={{ height: '40px' }}>
           <div className="items">
             <div className="logo-section">
-              <Link onClick={handleLogoClick}>
-                <AppLogo isLoadingFromHeader={false} />
-              </Link>
+              <LogoNavDropdown darkMode={props.darkMode} type="workflows" />
             </div>
             <div className="name-editor workflow-edit-app-name" style={{ display: 'flex', flexDirection: 'row' }}>
               <EditAppName

@@ -8,7 +8,13 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
-import { cleanObject, dbTransactionWrap, generatePayloadForLimits, isSuperAdmin } from 'src/helpers/utils.helper';
+import {
+  cleanObject,
+  dbTransactionWrap,
+  generatePayloadForLimits,
+  isSuperAdmin,
+  generateSecurePassword,
+} from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { LIMIT_TYPE, USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { Organization } from 'src/entities/organization.entity';
@@ -102,8 +108,8 @@ export class UsersService {
     return allUsers?.map((user) => {
       return {
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
         name: `${user.firstName || ''}${user.lastName ? ` ${user.lastName}` : ''}`,
         id: user.id,
         avatarId: user.avatarId,
@@ -378,7 +384,6 @@ export class UsersService {
       if (removeGroups.includes('all_users')) {
         throw new BadRequestException('Cannot remove user from default group.');
       }
-
       await dbTransactionWrap(async (manager: EntityManager) => {
         const groupPermissions = await manager.find(GroupPermission, {
           group: In(removeGroups),
@@ -775,11 +780,16 @@ export class UsersService {
     const userIdsWithEditPermissions = (
       await manager
         .createQueryBuilder(User, 'users')
-        .innerJoin('users.groupPermissions', 'group_permissions')
-        .leftJoin('group_permissions.appGroupPermission', 'app_group_permissions')
         .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
           statusList,
         })
+        .innerJoin(
+          'users.groupPermissions',
+          'group_permissions',
+          'organization_users.organizationId = group_permissions.organizationId'
+        )
+        .innerJoin('group_permissions.organization', 'organization')
+        .leftJoin('group_permissions.appGroupPermission', 'app_group_permissions')
         .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
         .andWhere(
           new Brackets((qb) => {
@@ -975,5 +985,14 @@ export class UsersService {
       },
       ['userId']
     );
+  }
+
+  async autoUpdateUserPassword(userId) {
+    // Generate new password
+    const newPassword = generateSecurePassword();
+    await this.update(userId, {
+      password: newPassword,
+    });
+    return newPassword;
   }
 }

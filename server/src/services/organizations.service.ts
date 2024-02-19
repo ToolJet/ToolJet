@@ -32,7 +32,6 @@ import { ConfigService } from '@nestjs/config';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from './audit_logger.service';
 import {
-  getUserErrorMessages,
   getUserStatusAndSource,
   lifecycleEvents,
   USER_STATUS,
@@ -291,10 +290,19 @@ export class OrganizationsService {
           });
       });
     };
-    const query = createQueryBuilder(OrganizationUser, 'organization_user').innerJoinAndSelect(
-      'organization_user.user',
-      'user'
-    );
+    const query = createQueryBuilder(OrganizationUser, 'organization_user')
+      .innerJoinAndSelect('organization_user.user', 'user')
+      .innerJoinAndSelect(
+        'user.groupPermissions',
+        'group_permissions',
+        'group_permissions.organization_id = :organizationId',
+        {
+          organizationId: organizationId,
+        }
+      )
+      .where('organization_user.organization_id = :organizationId', {
+        organizationId,
+      });
 
     if (getSuperAdmin) {
       query.andWhere(
@@ -329,12 +337,13 @@ export class OrganizationsService {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName ?? '',
         lastName: orgUser.user.lastName ?? '',
-        name: `${orgUser.user.firstName ?? ''} ${orgUser.user.lastName ?? ''}`,
+        name: `${orgUser.user.firstName || ''}${orgUser.user.lastName ? ` ${orgUser.user.lastName}` : ''}`,
         id: orgUser.id,
         userId: orgUser.user.id,
         role: orgUser.role,
         status: orgUser.status,
         avatarId: orgUser.user.avatarId,
+        groups: orgUser.user.groupPermissions.map((groupPermission) => groupPermission.group),
         ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
         ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken
           ? { accountSetupToken: orgUser.user.invitationToken }
@@ -709,7 +718,7 @@ export class OrganizationsService {
       let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
 
       if (user?.status === USER_STATUS.ARCHIVED) {
-        throw new BadRequestException(getUserErrorMessages(user.status));
+        throw new BadRequestException('User is archived in the instance. Contact super admin to activate them.');
       }
       let defaultOrganization: Organization,
         shouldSendWelcomeMail = false;

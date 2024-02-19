@@ -13,6 +13,8 @@ export const userService = {
   updateAvatar,
   updateUserType,
   getUserLimits,
+  changeUserPassword,
+  generateUserPassword,
 };
 
 function getInstanceUsers(page, options) {
@@ -68,9 +70,13 @@ function updateCurrentUser(firstName, lastName) {
   return fetch(`${config.apiUrl}/users/update`, requestOptions).then(handleResponse);
 }
 
-function updateUserType(userId, userType) {
-  const body = { userType, userId };
-  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
+function updateUserType(userUpdateBody) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    body: JSON.stringify(userUpdateBody),
+    credentials: 'include',
+  };
   return fetch(`${config.apiUrl}/users/user-type`, requestOptions).then(handleResponse);
 }
 
@@ -78,6 +84,17 @@ function changePassword(currentPassword, newPassword) {
   const body = { currentPassword, newPassword };
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/users/change_password`, requestOptions).then(handleResponse);
+}
+
+function changeUserPassword(userId, newPassword) {
+  const body = { newPassword };
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/users/${userId}/password`, requestOptions).then(handleResponse);
+}
+
+function generateUserPassword(userId) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/users/${userId}/password/generate`, requestOptions).then(handleResponse);
 }
 
 function getUserLimits(type) {

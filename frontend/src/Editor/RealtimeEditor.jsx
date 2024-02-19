@@ -28,6 +28,7 @@ const getWebsocketUrl = () => {
 export const RealtimeEditor = (props) => {
   const appId = props.id;
   const [provider, setProvider] = React.useState();
+  const multiPlayerEdit = window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
 
   React.useEffect(() => {
     /* TODO: when we convert the editor.jsx to fn component. please try to avoid this extra call */
@@ -35,7 +36,9 @@ export const RealtimeEditor = (props) => {
     document.cookie = domain ? `domain=.${domain}; path=/` : `path=/`;
     document.cookie = domain ? `app_id=${appId}; domain=.${domain}; path=/` : `app_id=${appId}; path=/`;
     document.cookie = `app_id=${appId}; domain=.${domain}; path=/`;
-    setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
+    if (multiPlayerEdit) {
+      setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
 
@@ -50,8 +53,6 @@ export const RealtimeEditor = (props) => {
     () => provider.disconnect();
   }, [provider]);
 
-  if (!provider) return <Spinner />;
-
   const initialPresence = {
     firstName: '',
     lastName: '',
@@ -62,6 +63,10 @@ export const RealtimeEditor = (props) => {
     y: 0,
     color: '',
   };
+
+  if (!multiPlayerEdit || !provider) {
+    return <Editor {...props} />;
+  }
 
   return (
     <RoomProvider awareness={provider.awareness} initialPresence={initialPresence}>

@@ -20,20 +20,11 @@ export function OrganizationSettings(props) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const sideBarNavs = [
-    'Users',
-    'Groups',
-    'SSO',
-    'Workspace variables',
-    'Copilot',
-    'Custom styles',
-    'Workspace constants',
-    'Configure git',
-  ];
+  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Copilot', 'Custom styles', 'Configure git'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'users':
-        return 'Users & permissions';
+        return 'Users';
       case 'groups':
         return 'Groups';
       case 'sso':
@@ -44,14 +35,16 @@ export function OrganizationSettings(props) {
         return 'Copilot';
       case 'custom-styles':
         return 'Custom styles';
-      case 'workspace-constants':
-        return 'Workspace constants';
       case 'configure-git':
         return 'Configure git';
       default:
         return groupName;
     }
   };
+
+  if (!admin) {
+    navigate('/');
+  }
 
   const fetchFeatureAccess = () => {
     licenseService.getFeatureAccess().then((data) => {
@@ -60,20 +53,34 @@ export function OrganizationSettings(props) {
     });
   };
 
+  if (!admin) {
+    navigate('/');
+  }
+
+  useEffect(() => {
+    const subscription = authenticationService.currentSession.subscribe((newOrd) => {
+      setAdmin(newOrd?.admin);
+    });
+    updateSidebarNAV('Users');
+
+    () => subscription.unsubsciption();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authenticationService.currentSessionValue?.admin]);
+
   useEffect(() => {
     const fetchData = async () => {
       await fetchFeatureAccess();
       const subscription = authenticationService.currentSession.subscribe((newOrd) => {
         setAdmin(newOrd?.admin);
-        admin ? updateSidebarNAV('Users & permissions') : updateSidebarNAV('Workspace variables');
       });
+      admin ? updateSidebarNAV('Users') : updateSidebarNAV('Workspace variables');
 
       () => subscription.unsubsciption();
       // eslint-disable-next-line react-hooks/exhaustive-deps
       if (featuresLoaded) {
         const selectedTabFromRoute = location.pathname.split('/').pop();
         if (selectedTabFromRoute === 'workspace-settings') {
-          setSelectedTab(admin ? 'Users & permissions' : 'Workspace variables');
+          setSelectedTab(admin ? 'Users' : 'Workspace variables');
           navigate(
             admin
               ? `/${workspaceId}/workspace-settings/users`
@@ -118,7 +125,7 @@ export function OrganizationSettings(props) {
                             className="workspace-settings-nav-items"
                             key={index}
                             onClick={() => {
-                              if (item == 'Users') updateSidebarNAV('Users & permissions');
+                              if (item == 'Users') updateSidebarNAV('Users');
                               else updateSidebarNAV(item);
                             }}
                             selectedItem={selectedTab == defaultOrgName(item)}

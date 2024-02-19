@@ -46,7 +46,7 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
 
   return (
     <div className="row tj-db-field-wrapper">
-      <div className="tab-content-wrapper mt-2 d-flex">
+      <div className="tab-content-wrapper mt-2 d-flex tooljetdb-worflow-operations">
         <label className="form-label" data-cy="label-column-filter">
           Columns
         </label>
@@ -135,7 +135,7 @@ const RenderColumnOptions = ({
 
   return (
     <div className="mt-1 row-container">
-      <div className="d-flex fields-container">
+      <div className="d-flex fields-container column-create">
         <div className="field col-4 me-3">
           <Select
             useMenuPortal={true}
@@ -157,7 +157,7 @@ const RenderColumnOptions = ({
           />
         </div>
 
-        <div className="col cursor-pointer m-1 mx-3">
+        <div className="cursor-pointer m-1" style={{ margin: '4px 4px 4px 8px' }}>
           <svg
             onClick={() => {
               removeColumnOptionsPair(id);

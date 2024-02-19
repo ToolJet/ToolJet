@@ -28,6 +28,7 @@ export const CreateVersion = ({
   const [cancommit, setCommitEnabled] = useState(false);
   const [orgGit, setOrgGit] = useState(null);
   const { t } = useTranslation();
+  const { currentAppEnvironmentId } = useEditorState();
   const { editingVersion } = useAppVersionStore(
     (state) => ({
       editingVersion: state.editingVersion,
@@ -56,7 +57,7 @@ export const CreateVersion = ({
     setIsCreatingVersion(true);
 
     appVersionService
-      .create(appId, versionName, selectedVersion.id)
+      .create(appId, versionName, selectedVersion.id, currentAppEnvironmentId)
       .then((data) => {
         toast.success('Version Created');
         appVersionService.getAll(appId).then((data) => {
@@ -183,11 +184,16 @@ export const CreateVersion = ({
                   checked={cancommit}
                   type="checkbox"
                   onChange={handleCommitEnableChange}
+                  data-cy="git-commit-input"
                 />
               </div>
               <div>
-                <div className="tj-text tj-text-xsm">Commit changes</div>
-                <div className="tj-text-xxsm">This will commit the creation of the new version to the git repo</div>
+                <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
+                  Commit changes
+                </div>
+                <div className="tj-text-xxsm" data-cy="commit-helper-text">
+                  This will commit the creation of the new version to the git repo
+                </div>
               </div>
             </div>
           )}

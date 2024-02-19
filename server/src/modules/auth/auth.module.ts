@@ -47,6 +47,9 @@ import { SessionScheduler } from 'src/schedulers/session.scheduler';
 import { LdapService } from '@ee/services/oauth/ldap.service';
 import { SAMLService } from '@ee/services/oauth/saml.service';
 import { ClearSSOResponseScheduler } from 'src/schedulers/clear_sso_response.scheduler';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
+import { TooljetDbService } from '@services/tooljet_db.service';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 @Module({
   imports: [
@@ -108,6 +111,9 @@ import { ClearSSOResponseScheduler } from 'src/schedulers/clear_sso_response.sch
     ClearSSOResponseScheduler,
     LdapService,
     SAMLService,
+    TooljetDbOperationsService,
+    TooljetDbService,
+    PostgrestProxyService,
   ],
   controllers: [OauthController],
   exports: [AuthService, SessionService],

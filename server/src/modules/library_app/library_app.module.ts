@@ -22,6 +22,9 @@ import { UsersService } from '@services/users.service';
 import { User } from 'src/entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { ImportExportResourcesModule } from '../import_export_resources/import_export_resources.module';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
+import { TooljetDbService } from '@services/tooljet_db.service';
 
 @Module({
   imports: [
@@ -50,6 +53,9 @@ import { ImportExportResourcesModule } from '../import_export_resources/import_e
     PluginsHelper,
     AppEnvironmentService,
     UsersService,
+    TooljetDbOperationsService,
+    TooljetDbService,
+    PostgrestProxyService,
   ],
   controllers: [LibraryAppsController],
 })

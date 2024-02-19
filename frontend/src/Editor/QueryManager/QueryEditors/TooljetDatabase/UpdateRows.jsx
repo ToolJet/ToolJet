@@ -74,7 +74,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
 
   return (
     <div className="tab-content-wrapper tj-db-field-wrapper mt-2">
-      <div className="d-flex mb-2">
+      <div className="d-flex tooljetdb-worflow-operations mb-2">
         <label className="form-label" data-cy="label-column-filter">
           Filter
         </label>
@@ -111,7 +111,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
         </div>
       </div>
 
-      <div className="fields-container d-flex">
+      <div className="fields-container d-flex tooljetdb-worflow-operations">
         <label className="form-label" data-cy="label-column-filter">
           Columns
         </label>
@@ -205,7 +205,7 @@ const RenderFilterFields = ({
             width="auto"
           />
         </div>
-        <div className="field col-4">
+        <div className="field col">
           {operator === 'is' ? (
             <Select
               useMenuPortal={true}
@@ -226,7 +226,7 @@ const RenderFilterFields = ({
             />
           )}
         </div>
-        <div className="col-1 cursor-pointer m-1 mr-2">
+        <div className="cursor-pointer" style={{ margin: '4px 4px 4px 8px' }}>
           <svg
             onClick={() => removeFilterConditionPair(id)}
             width="12"
@@ -297,7 +297,7 @@ const RenderColumnOptions = ({
 
   return (
     <div className="mt-1 row-container">
-      <div className="d-flex fields-container">
+      <div className="d-flex fields-container column-update">
         <div className="field col-4 me-3">
           <Select
             useMenuPortal={true}
@@ -319,7 +319,7 @@ const RenderColumnOptions = ({
           />
         </div>
 
-        <div className="col cursor-pointer m-1 mx-3">
+        <div className="cursor-pointer m-1">
           <svg
             onClick={() => {
               removeColumnOptionsPair(id);

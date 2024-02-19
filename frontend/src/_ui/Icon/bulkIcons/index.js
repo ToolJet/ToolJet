@@ -14,6 +14,7 @@ import BookSearch from './BookSearch.jsx';
 import Branch from './Branch.jsx';
 import Bug from './Bug.jsx';
 import Calender from './Calender.jsx';
+import UsersList from './UsersList.jsx';
 import CheckRectangle from './CheckRectangle.jsx';
 import CheveronDown from './CheveronDown.jsx';
 import CheveronLeft from './CheveronLeft.jsx';
@@ -213,7 +214,6 @@ const Icon = (props) => {
       return <Layers {...props} />;
     case 'leftarrow':
       return <LeftArrow {...props} />;
-
     case 'listview':
       return <ListView {...props} />;
     case 'lock':
@@ -309,6 +309,8 @@ const Icon = (props) => {
       return <Trash {...props} />;
     case 'uparrow':
       return <UpArrow {...props} />;
+    case 'users':
+      return <UsersList {...props} />;
 
     case 'useradd':
       return <UserAdd {...props} />;

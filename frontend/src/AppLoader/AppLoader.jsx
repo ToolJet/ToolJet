@@ -48,11 +48,7 @@ const AppBuilder = React.memo((props) => {
 
   if (!shouldLoadApp) return <></>;
 
-  return config.ENABLE_MULTIPLAYER_EDITING ? (
-    <RealtimeEditor {...props} shouldLoadApp={shouldLoadApp} />
-  ) : (
-    <Editor {...props} />
-  );
+  return <RealtimeEditor {...props} shouldLoadApp={shouldLoadApp} />;
 });
 
 export const AppLoader = withTranslation()(AppLoaderComponent);
