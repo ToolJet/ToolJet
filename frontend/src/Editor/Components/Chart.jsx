@@ -172,7 +172,6 @@ export const Chart = function Chart({
 
   const handleClick = useCallback((data) => {
     if (data.length > 0) {
-      console.log('handleChartClick', data);
       const {
         x: xAxisLabel,
         y: yAxisLabel,
