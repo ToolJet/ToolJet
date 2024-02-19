@@ -1,13 +1,8 @@
-import { IsBoolean, IsEmail, IsNotEmpty, IsString, IsUUID, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, IsUUID, MinLength } from 'class-validator';
 import { lowercaseString } from 'src/helpers/utils.helper';
 import { Transform } from 'class-transformer';
 
 export class ActivateAccountWithTokenDto {
-  @IsString()
-  @Transform(({ value }) => value?.trim())
-  @IsNotEmpty()
-  name: string;
-
   @IsEmail()
   @Transform(({ value }) => lowercaseString(value))
   @IsNotEmpty()

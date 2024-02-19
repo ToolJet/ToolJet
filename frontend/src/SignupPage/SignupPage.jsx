@@ -17,6 +17,7 @@ import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 import { withRouter } from '@/_hoc/withRouter';
 import { setCookie } from '@/_helpers';
 import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
+import { isEmpty } from 'lodash';
 class SignupPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -65,13 +66,11 @@ class SignupPageComponent extends React.Component {
     if (organizationToken) {
       /* different API */
       authenticationService
-        .activateAccountWithToken(email, name, password, organizationToken, 'signup')
+        .activateAccountWithToken(email, password, organizationToken, 'signup')
         .then((response) => onInvitedUserSignUpSuccess(response, this.props.navigate))
-        .catch((e) => {
-          toast.error(e?.error || 'Something went wrong!', {
-            position: 'top-center',
-          });
-          this.setState({ isLoading: false });
+        .catch((errorObj) => {
+          const emailError = errorObj?.error?.inputError;
+          this.setState({ isLoading: false, emailError });
         });
     } else {
       authenticationService
@@ -106,6 +105,14 @@ class SignupPageComponent extends React.Component {
   render() {
     const { configs } = this.props;
     const { isLoading, signupSuccess } = this.state;
+    const comingFromInviteFlow = !!this.organizationToken;
+    const isSignUpButtonDisabled =
+      isLoading ||
+      !this.state.email ||
+      !this.state.password ||
+      (isEmpty(this.state.name) && !comingFromInviteFlow) ||
+      this.state.password.length < 5;
+
     return (
       <div className="page common-auth-section-whole-wrapper">
         <div className="common-auth-section-left-wrapper">
@@ -186,20 +193,24 @@ class SignupPageComponent extends React.Component {
                         {this.isFormSignUpEnabled() && (
                           <>
                             <div className="signup-page-inputs-wrapper">
-                              <label className="tj-text-input-label" data-cy="name-input-label">
-                                Name
-                              </label>
-                              <input
-                                onChange={this.handleChange}
-                                name="name"
-                                type="text"
-                                className="tj-text-input"
-                                placeholder={this.props.t('loginSignupPage.enterFullName', 'Enter your full name')}
-                                value={this.state.name || ''}
-                                data-cy="name-input-field"
-                                autoFocus
-                                autoComplete="off"
-                              />
+                              {!comingFromInviteFlow && (
+                                <>
+                                  <label className="tj-text-input-label" data-cy="name-input-label">
+                                    Name
+                                  </label>
+                                  <input
+                                    onChange={this.handleChange}
+                                    name="name"
+                                    type="text"
+                                    className="tj-text-input"
+                                    placeholder={this.props.t('loginSignupPage.enterFullName', 'Enter your full name')}
+                                    value={this.state.name || ''}
+                                    data-cy="name-input-field"
+                                    autoFocus
+                                    autoComplete="off"
+                                  />{' '}
+                                </>
+                              )}
                               <div className="signup-password-wrap">
                                 <label className="tj-text-input-label" data-cy="email-input-label">
                                   Email address
@@ -275,14 +286,7 @@ class SignupPageComponent extends React.Component {
                               <ButtonSolid
                                 className="signup-btn"
                                 onClick={this.signup}
-                                disabled={
-                                  isLoading ||
-                                  !this.state.email ||
-                                  !this.state.password ||
-                                  !this.state.name ||
-                                  this.state.password.length < 5 ||
-                                  this.state.name.trim().length === 0
-                                }
+                                disabled={isSignUpButtonDisabled}
                                 data-cy="sign-up-button"
                               >
                                 {isLoading ? (
@@ -296,17 +300,7 @@ class SignupPageComponent extends React.Component {
                                     </span>
                                     <EnterIcon
                                       className="enter-icon-onboard"
-                                      fill={
-                                        isLoading ||
-                                        !this.state.email ||
-                                        !this.state.password ||
-                                        !this.state.name ||
-                                        this.state.password.length < 5
-                                          ? this.darkMode
-                                            ? '#656565'
-                                            : ' #D1D5DB'
-                                          : '#fff'
-                                      }
+                                      fill={isSignUpButtonDisabled ? (this.darkMode ? '#656565' : ' #D1D5DB') : '#fff'}
                                     />
                                   </>
                                 )}

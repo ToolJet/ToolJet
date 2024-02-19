@@ -48,6 +48,7 @@ import * as requestIp from 'request-ip';
 import { ActivateAccountWithTokenDto } from '@dto/activate-account-with-token.dto';
 import { uuid4 } from '@sentry/utils';
 import { AppSignupDto } from '@dto/app-authentication.dto';
+import { SIGNUP_ERRORS } from 'src/helpers/error_types';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -460,7 +461,7 @@ export class AuthService {
   };
 
   async activateAccountWithToken(activateAccountWithToken: ActivateAccountWithTokenDto, response: any) {
-    const { email, name, password: userPassword, source, organizationToken } = activateAccountWithToken;
+    const { email, password: userPassword, source, organizationToken } = activateAccountWithToken;
     const signupUser = await this.usersService.findByEmail(email);
     const invitedUser = await this.organizationUsersService.findByWorkspaceInviteToken(organizationToken);
 
@@ -470,23 +471,20 @@ export class AuthService {
     }
 
     if (!signupUser || invitedUser.email !== signupUser.email) {
-      throw new NotAcceptableException('Invalid Email: Please use the email address provided in the invitation.');
+      const { type, message, inputError } = SIGNUP_ERRORS.INCORRECT_INVITED_EMAIL;
+      const errorResponse = {
+        message: {
+          message,
+          type,
+          inputError,
+        },
+      };
+      throw new NotAcceptableException(errorResponse);
     }
 
     if (signupUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
       throw new NotAcceptableException('Email already exists');
     }
-
-    const names = { firstName: '', lastName: '' };
-    if (name) {
-      const [firstName, ...rest] = name.split(' ');
-      names['firstName'] = firstName;
-      if (rest.length != 0) {
-        const lastName = rest.join(' ');
-        names['lastName'] = lastName;
-      }
-    }
-    const { firstName, lastName } = names;
 
     let password = userPassword;
     if (!password && source === URL_SSO_SOURCE) {
@@ -501,10 +499,6 @@ export class AuthService {
         signupUser.id,
         {
           password,
-          ...(firstName && {
-            firstName,
-          }) /* we should reset the name if the user is not activated his account before */,
-          lastName: lastName ?? '',
           invitationToken: null,
           ...(password ? { password } : {}),
           ...lifecycleParams,

@@ -155,12 +155,12 @@ function signup(email, name, password, organizationId) {
   return fetch(`${config.apiUrl}/signup`, requestOptions).then(handleResponse);
 }
 
-function activateAccountWithToken(email, name, password, organizationToken, source) {
+function activateAccountWithToken(email, password, organizationToken, source) {
   const requestOptions = {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, name, password, organizationToken, source }),
+    body: JSON.stringify({ email, password, organizationToken, source }),
   };
 
   return fetch(`${config.apiUrl}/activate-account-with-token`, requestOptions).then(handleResponse);
