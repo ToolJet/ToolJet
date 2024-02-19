@@ -37,8 +37,26 @@ jobs:
       - name: use mybuilder buildx
         run: docker buildx use mybuilder
 
-      - name: Build docker image
-        run: docker buildx build --platform=linux/amd64 -f docker/production.Dockerfile  . -t tooljet/tj-osv:cypressplaform
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/production.Dockerfile
+          push: true
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set up environment variables
         run: |
@@ -62,18 +80,17 @@ jobs:
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
-          echo "REDIS_HOST=redis" >> .env
-          echo "REDIS_PORT=6379" >> .env
-          echo "REDIS_USER=default" >> .env
-          echo "REDIS_PASSWORD=" >> .env
-          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
-          echo "NODE_ENV=production" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+
 
       - name: Pulling the docker-compose file
-        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
 
-      - name: Folder creation
-        run: mkdir postgres_data && mkdir redis_data
+
+      - name: Update docker-compose file
+        run: |
+            # Update docker-compose.yaml with the new image
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
 
       - name: Run docker-compose file
         run: docker-compose up -d
@@ -87,7 +104,7 @@ jobs:
       - name: Wait for the server to be ready
         run: |
           timeout 1500 bash -c '
-          until curl --silent --fail http://localhost:80; do
+          until curl --silent --fail http://localhost:3000; do
             sleep 5
           done'
 
@@ -106,7 +123,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:80"
+          config: "baseUrl=http://localhost:3000"
           config-file: cypress-marketplace.config.js
 
       - name: Capture Screenshots
@@ -115,6 +132,7 @@ jobs:
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
+
 
   Cypress-Marketplace-Subpath:
     runs-on: ubuntu-22.04
@@ -170,17 +188,9 @@ jobs:
           echo "SUB_PATH=/apps/tooljet/" >> .env
           echo "NODE_ENV=production" >> .env
           echo "SERVE_CLIENT=true" >> .env
-          echo "REDIS_HOST=redis" >> .env
-          echo "REDIS_PORT=6379" >> .env
-          echo "REDIS_USER=default" >> .env
-          echo "REDIS_PASSWORD=" >> .env
-          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: Pulling the docker-compose file
-        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml
-
-      - name: Folder creation
-        run: mkdir postgres_data && mkdir redis_data
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
 
       - name: Run docker-compose file
         run: docker-compose up -d

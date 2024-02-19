@@ -22,6 +22,9 @@ import { User } from 'src/entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { File } from 'src/entities/file.entity';
 import { CustomStylesAbilityFactory } from '../casl/abilities/custom-styles-ability.factory';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
+import { TooljetDbService } from '@services/tooljet_db.service';
 
 @Module({
   imports: [
@@ -50,6 +53,9 @@ import { CustomStylesAbilityFactory } from '../casl/abilities/custom-styles-abil
     EncryptionService,
     FilesService,
     CustomStylesAbilityFactory,
+    TooljetDbOperationsService,
+    TooljetDbService,
+    PostgrestProxyService,
   ],
   controllers: [CustomStylesController],
 })

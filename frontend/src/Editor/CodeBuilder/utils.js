@@ -260,7 +260,7 @@ export function handleChange(
 ) {
   const isWorkflowNode = editorSource?.startsWith('workflowNode'); //To stop generating suggestion in workflow nodes
 
-  const suggestions = !isWorkflowNode && getSuggestionKeys(currentState, editorSource);
+  const suggestions = !isWorkflowNode ? getSuggestionKeys(currentState, editorSource) : [];
   const resolvedSuggstions = attachCustomResolvables(resolvables); //attach custom resolved values to suggetsion list
   suggestions.push(...resolvedSuggstions);
   let state = editor.state.matchHighlighter;
