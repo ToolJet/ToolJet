@@ -6,7 +6,9 @@ import { useTranslation } from 'react-i18next';
 import { camelCase, isEmpty } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
-import { autocompletion } from '@codemirror/autocomplete';
+import { autocompletion, completionKeymap, acceptCompletion } from '@codemirror/autocomplete';
+import { defaultKeymap } from '@codemirror/commands';
+import { keymap } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
@@ -129,7 +131,16 @@ const EditorInput = ({
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
-    let completions = getAutocompletion(context.state.doc.toString(), validationType, hints, fxActive);
+
+    const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
+
+    let queryInput = context.state.doc.toString();
+
+    if (totalReferences > 1) {
+      queryInput = fxActive ? word?.text : `{{${word?.text}}}`;
+    }
+
+    let completions = getAutocompletion(queryInput, validationType, hints, fxActive, totalReferences);
 
     return {
       from: word.from,
@@ -138,14 +149,23 @@ const EditorInput = ({
     };
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), []);
+
   const autoCompleteConfig = autocompletion({
-    override: [autoCompleteExtensionConfig],
+    override: [overRideFunction],
     compareCompletions: (a, b) => {
       return a.label < b.label ? -1 : 1;
     },
     aboveCursor: false,
     defaultKeymap: true,
   });
+
+  const acceptCompletionKeymap = {
+    key: 'Tab',
+    run: acceptCompletion,
+  };
+  const customKeyMaps = [...defaultKeymap, ...completionKeymap, acceptCompletionKeymap];
 
   const handleOnChange = React.useCallback((val) => {
     setCurrentValue(val);
@@ -216,7 +236,7 @@ const EditorInput = ({
             placeholder={placeholder}
             height={lang === 'jsx' ? '400px' : '100%'}
             width="100%"
-            extensions={[javascript({ jsx: lang === 'jsx' }), autoCompleteConfig]}
+            extensions={[javascript({ jsx: lang === 'jsx' }), autoCompleteConfig, keymap.of([...customKeyMaps])]}
             onChange={(val) => {
               setFirstTimeFocus(false);
               handleOnChange(val);
@@ -231,11 +251,13 @@ const EditorInput = ({
               foldGutter: false,
               highlightActiveLine: false,
               autocompletion: true,
+              completionKeymap: true,
             }}
             onFocus={() => setFocus(true)}
             onBlur={handleOnBlur}
             className={customClassNames}
             theme={theme}
+            indentWithTab={false}
           />
         </ErrorBoundary>
       </CodeHinter.Portal>

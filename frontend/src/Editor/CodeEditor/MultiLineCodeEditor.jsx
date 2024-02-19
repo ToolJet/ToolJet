@@ -1,7 +1,10 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
+import { defaultKeymap } from '@codemirror/commands';
+import { keymap } from '@codemirror/view';
+import { completionKeymap, acceptCompletion } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
@@ -71,6 +74,7 @@ const MultiLineCodeEditor = (props) => {
     highlightActiveLine: false,
     autocompletion: hideSuggestion ?? true,
     highlightActiveLineGutter: false,
+    completionKeymap: true,
   };
 
   function autoCompleteExtensionConfig(context) {
@@ -154,6 +158,14 @@ const MultiLineCodeEditor = (props) => {
     };
   }
 
+  const acceptCompletionKeymap = {
+    key: 'Tab',
+    run: acceptCompletion,
+  };
+  const customKeyMaps = [...defaultKeymap, ...completionKeymap, acceptCompletionKeymap];
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), []);
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
 
   return (
@@ -191,8 +203,9 @@ const MultiLineCodeEditor = (props) => {
                 extensions={[
                   langExtention,
                   javascriptLanguage.data.of({
-                    autocomplete: autoCompleteExtensionConfig,
+                    autocomplete: overRideFunction,
                   }),
+                  keymap.of([...customKeyMaps]),
                 ]}
                 onChange={handleChange}
                 onBlur={handleOnBlur}
@@ -201,6 +214,7 @@ const MultiLineCodeEditor = (props) => {
                   overflowY: 'auto',
                 }}
                 className={`codehinter-multi-line-input`}
+                indentWithTab={false}
               />
             </div>
           </ErrorBoundary>

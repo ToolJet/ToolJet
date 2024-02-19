@@ -54,6 +54,13 @@ export const PreviewBox = ({
     previewType = typeof previewContent;
   }
 
+  const ifCoersionErrorHasCircularDependency = (value) => {
+    if (hasCircularDependency(value)) {
+      return JSON.stringify(value, handleCircularStructureToJSON());
+    }
+    return value;
+  };
+
   const content = getPreviewContent(previewContent, previewType);
 
   useEffect(() => {
@@ -101,9 +108,11 @@ export const PreviewBox = ({
         ? 'SyntaxError'
         : 'Invalid';
 
+      const errValue = ifCoersionErrorHasCircularDependency(resolvedValue);
+
       setError({
         message: _error,
-        value: jsErrorType === 'Invalid' ? JSON.stringify(resolvedValue) : resolvedValue,
+        value: jsErrorType === 'Invalid' ? JSON.stringify(errValue) : resolvedValue,
         type: jsErrorType,
       });
       setCoersionData(null);
