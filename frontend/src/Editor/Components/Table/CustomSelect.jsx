@@ -3,7 +3,7 @@ import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-
+import { Checkbox } from '@/_ui/CheckBox/CheckBox';
 const { MenuList } = components;
 export const CustomSelect = ({
   options,
@@ -16,6 +16,7 @@ export const CustomSelect = ({
   darkMode,
   defaultOptionsList,
   textColor,
+  isMulti,
 }) => {
   const containerRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -55,6 +56,7 @@ export const CustomSelect = ({
         className={className}
         components={{
           MenuList: CustomMenuList,
+          Option: CustomMultiSelectOption,
         }}
         value={value}
         onMenuInputFocus={() => setIsFocused(true)}
@@ -73,6 +75,9 @@ export const CustomSelect = ({
         styles={customStyles}
         defaultValue={defaultValue}
         placeholder={placeholder}
+        isMulti={isMulti}
+        hideSelectedOptions={false}
+        isClearable={false}
       />
     </div>
   );
@@ -114,6 +119,15 @@ const CustomMenuList = ({ selectProps, ...props }) => {
         />
       </div>
       <MenuList {...props} selectProps={selectProps} />
+    </div>
+  );
+};
+
+const CustomMultiSelectOption = ({ innerRef, innerProps, children, isSelected, ...props }) => {
+  return (
+    <div ref={innerRef} {...innerProps} className="option-wrapper d-flex">
+      <Checkbox label="" isChecked={isSelected} onChange={(e) => e.stopPropagation()} key="" value={children} />
+      {children}
     </div>
   );
 };

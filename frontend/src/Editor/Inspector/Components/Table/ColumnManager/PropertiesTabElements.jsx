@@ -42,12 +42,13 @@ export const PropertiesTabElements = ({
               { name: 'Dropdown', value: 'dropdown' },
               { name: 'Link', value: 'link' },
               { name: 'Radio', value: 'radio' },
-              { name: 'Multiselect', value: 'multiselect' },
+              { name: 'Multiselect deprecated', value: 'multiselect' },
               { name: 'Toggle switch', value: 'toggle' },
               { name: 'Date Picker', value: 'datepicker' },
               { name: 'Image', value: 'image' },
               { name: 'Boolean', value: 'boolean' },
               { name: 'Select', value: 'select' },
+              { name: 'MultiSelect', value: 'newMultiSelect' },
             ],
           }}
           onChange={(value) => {
@@ -320,7 +321,7 @@ export const PropertiesTabElements = ({
           />
         </div>
       </div>
-      {column.columnType === 'select' && (
+      {['select', 'newMultiSelect'].includes(column.columnType) && (
         <OptionsList
           column={column}
           props={props}
