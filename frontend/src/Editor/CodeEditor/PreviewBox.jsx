@@ -194,7 +194,8 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
     >
       <Popover.Body
         style={{
-          border: '1px solid var(--slate6)',
+          border: !isEmpty(validationSchema) && '1px solid var(--slate6)',
+          padding: isEmpty(validationSchema) && '0px',
         }}
       >
         <div>
@@ -251,20 +252,22 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
             </>
           )}
         </div>
-        <div className="mt-2">
-          <div className="mb-1">
-            <span
-              style={{
-                fontSize: '11px',
-                fontWeight: '500',
-                lineHeight: '16px',
-                letterSpacing: '0em',
-                color: '#6A727C',
-              }}
-            >
-              Current
-            </span>
-          </div>
+        <div className={`${!isEmpty(validationSchema) && 'mt-2'}`}>
+          {!isEmpty(validationSchema) && (
+            <div className={`mb-1`}>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: '500',
+                  lineHeight: '16px',
+                  letterSpacing: '0em',
+                  color: '#6A727C',
+                }}
+              >
+                Current
+              </span>
+            </div>
+          )}
 
           <Card
             className={darkMode && 'bg-slate2'}
