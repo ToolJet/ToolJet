@@ -187,20 +187,13 @@
         min-height: 32px;
         max-height: 220px;
     }
-
-
-
-
-
-
-
 }
 
 .codehinter-input.focused {
 
     .cm-editor {
         outline: none;
-        border-color: $color-dark-indigo-09 !important;
+        // border-color: $color-dark-indigo-09 !important;
     }
 }
 
