@@ -26,10 +26,6 @@ export const GlobalDatasources = (props) => {
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  if (!admin) {
-    navigate('/');
-  }
-
   useEffect(() => {
     if (dataSources?.length == 0) updateSidebarNAV('Databases');
   }, []);
@@ -44,9 +40,9 @@ export const GlobalDatasources = (props) => {
   useEffect(() => {
     if (!admin) {
       toast.error("You don't have access to GDS, contact your workspace admin to add datasources");
-    } else {
-      fetchEnvironments();
+      navigate('/');
     }
+    fetchEnvironments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [admin]);
 

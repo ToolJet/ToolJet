@@ -14,13 +14,11 @@ import {
   selectAndAddDataSource,
 } from "Support/utils/postgreSql";
 const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source Firestore", () => {
   beforeEach(() => {
     cy.appUILogin();
-    data.dataSourceName = fake.lastName
-      .toLowerCase()
-      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on Firestore connection form", () => {
@@ -28,11 +26,11 @@ describe("Data source Firestore", () => {
     closeDSModal();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources()
+      postgreSqlText.allDataSources
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase()
+      postgreSqlText.allDatabase
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -43,11 +41,7 @@ describe("Data source Firestore", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource(
-      "databases",
-      firestoreText.firestore,
-      data.dataSourceName
-    );
+    selectAndAddDataSource("databases", firestoreText.firestore, data.lastName);
 
     cy.get('[data-cy="label-private-key"]').verifyVisibleElement(
       "have.text",
@@ -85,15 +79,11 @@ describe("Data source Firestore", () => {
       "have.text",
       firestoreText.errorGcpKeyCouldNotBeParsed
     );
-    deleteDatasource(`cypress-${data.dataSourceName}-firestore`);
+    deleteDatasource(`cypress-${data.lastName}-firestore`);
   });
 
   it("Should verify the functionality of Firestore connection form.", () => {
-    selectAndAddDataSource(
-      "databases",
-      firestoreText.firestore,
-      data.dataSourceName
-    );
+    selectAndAddDataSource("databases", firestoreText.firestore, data.lastName);
 
     fillDataSourceTextField(
       firestoreText.privateKey,
@@ -114,12 +104,9 @@ describe("Data source Firestore", () => {
     );
 
     cy.get(
-      `[data-cy="cypress-${data.dataSourceName}-firestore-button"]`
-    ).verifyVisibleElement(
-      "have.text",
-      `cypress-${data.dataSourceName}-firestore`
-    );
+      `[data-cy="cypress-${data.lastName}-firestore-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-firestore`);
 
-    deleteDatasource(`cypress-${data.dataSourceName}-firestore`);
+    deleteDatasource(`cypress-${data.lastName}-firestore`);
   });
 });

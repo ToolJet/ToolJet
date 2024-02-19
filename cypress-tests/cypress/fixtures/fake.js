@@ -17,7 +17,7 @@ function fullName() {
   return `${faker.name.firstName()} ${faker.name.lastName()}`;
 }
 function companyName() {
-  const str = `${faker.company.companyName()} ${faker.name.lastName()}`;
+  const str = faker.company.companyName();
   return str.substring(0, str.indexOf(" ")).replace(/[^a-zA-Z ]/g, "");
 }
 function widgetName() {
@@ -29,10 +29,7 @@ function randomSentence() {
 
 function randomRgba() {
   let rgba = faker.color.rgb({ format: "decimal", includeAlpha: true });
-  let alpha = rgba[rgba.length - 1].toPrecision(2) * 100;
-
-  alpha = Math.min(Math.max(alpha, 20), 80);
-  rgba[rgba.length - 1] = alpha;
+  rgba[rgba.length - 1] = rgba[rgba.length - 1].toPrecision(2) * 100;
   return rgba;
 }
 
@@ -85,3 +82,4 @@ Object.defineProperty(fake, "randomRgb", { get: randomRgb });
 Object.defineProperty(fake, "boxShadowParam", { get: boxShadowParam });
 Object.defineProperty(fake, "randomRgbaHex", { get: randomRgbaHex });
 Object.defineProperty(fake, "tableName", { get: tableName });
+

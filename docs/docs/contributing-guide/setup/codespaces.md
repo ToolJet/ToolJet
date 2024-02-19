@@ -11,12 +11,12 @@ Open the terminal and run the commands below.
 
 ### 1. Set up the environment 
 
-1. Install Node.js ( version: v18.18.2 ) and npm (version: v9.8.1)
+1. Install Node.js ( version: v18.3.0 ) and npm (version: v8.11.0)
 
 ```
-nvm install 18.18.2
-nvm use 18.18.2
-npm install -g npm@9.8.1
+nvm install 18.3.0
+nvm use 18.3.0
+npm install -g npm@8.11.0
 ```
 
 2. Install Postgres
@@ -83,7 +83,7 @@ SERVE_CLIENT=true
 
 ### 3.  Install and build dependencies
 
-Make sure node version is set to 18.18.2 before running the below command:
+Make sure node version is set to 18.3.0 before running the below command:
 
 ```
 npm install
@@ -97,7 +97,7 @@ npm run build:plugins
 
 ```
 npm run --prefix server db:create
-npm run --prefix server db:migrate
+npm run --prefix server db:mirgate
 ```
 
 If at any point you need to reset the database, use this command `npm run --prefix server db:reset`

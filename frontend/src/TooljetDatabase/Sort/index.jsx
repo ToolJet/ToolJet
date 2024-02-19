@@ -85,7 +85,7 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
       }}
       show={show}
       trigger="click"
-      placement="bottom-start"
+      placement="bottom"
       overlay={popover}
       className="sort-overlay-wrapper"
     >
@@ -95,9 +95,6 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
           'tj-db-sort-btn-active': show,
         })}
         data-cy="sort-button"
-        style={{
-          width: '70px',
-        }}
       >
         <SolidIcon
           name="arrowsortrectangle"

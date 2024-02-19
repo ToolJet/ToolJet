@@ -18,13 +18,11 @@ import {
 } from "Support/utils/postgreSql";
 
 const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
-    data.dataSourceName = fake.lastName
-      .toLowerCase()
-      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on CouchDB connection form", () => {
@@ -33,11 +31,11 @@ describe("Data sources", () => {
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources()
+      postgreSqlText.allDataSources
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase()
+      postgreSqlText.allDatabase
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -48,7 +46,7 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "CouchDB", data.dataSourceName);
+    selectAndAddDataSource("databases", "CouchDB", data.lastName);
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -106,11 +104,11 @@ describe("Data sources", () => {
       "have.text",
       "Invalid URL"
     );
-    deleteDatasource(`cypress-${data.dataSourceName}-couchdb`);
+    deleteDatasource(`cypress-${data.lastName}-couchdb`);
   });
 
   it("Should verify the functionality of CouchDB connection form.", () => {
-    selectAndAddDataSource("databases", "CouchDB", data.dataSourceName);
+    selectAndAddDataSource("databases", "CouchDB", data.lastName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -147,11 +145,8 @@ describe("Data sources", () => {
     );
 
     cy.get(
-      `[data-cy="cypress-${data.dataSourceName}-couchdb-button"]`
-    ).verifyVisibleElement(
-      "have.text",
-      `cypress-${data.dataSourceName}-couchdb`
-    );
-    deleteDatasource(`cypress-${data.dataSourceName}-couchdb`);
+      `[data-cy="cypress-${data.lastName}-couchdb-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-couchdb`);
+    deleteDatasource(`cypress-${data.lastName}-couchdb`);
   });
 });

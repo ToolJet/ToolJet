@@ -1,7 +1,7 @@
 import React from 'react';
 import { ButtonSolid } from '../../AppButton/AppButton';
 
-function DrawerFooter({ fetching, onClose, isEditMode, onCreate, onEdit, shouldDisableCreateBtn }) {
+function DrawerFooter({ fetching, onClose, isEditMode, onCreate, onEdit }) {
   return (
     <div className="position-sticky bottom-0 right-0 w-100  mt-auto">
       <div className="d-flex justify-content-end drawer-footer-btn-wrap">
@@ -10,7 +10,7 @@ function DrawerFooter({ fetching, onClose, isEditMode, onCreate, onEdit, shouldD
         </ButtonSolid>
         {isEditMode && (
           <ButtonSolid
-            disabled={shouldDisableCreateBtn || fetching}
+            disabled={fetching}
             data-cy={`save-changes-button`}
             onClick={onEdit}
             fill="#fff"
@@ -21,7 +21,7 @@ function DrawerFooter({ fetching, onClose, isEditMode, onCreate, onEdit, shouldD
         )}
         {!isEditMode && (
           <ButtonSolid
-            disabled={fetching || shouldDisableCreateBtn}
+            disabled={fetching}
             data-cy={`create-button`}
             onClick={() => {
               onCreate();

@@ -43,6 +43,7 @@ export class TooljetDbBulkUploadService {
   ): Promise<{ processedRows: number; rowsInserted: number; rowsUpdated: number }> {
     const csvStream = csv.parseString(fileBuffer.toString(), {
       headers: true,
+      ignoreEmpty: true,
       strictColumnHandling: true,
       discardUnmappedColumns: true,
     });
@@ -66,10 +67,7 @@ export class TooljetDbBulkUploadService {
           idstoUpdate.add(row.id);
           rowsToUpdate.push(row);
         } else {
-          // TODO: Revise logic for primary key instead of hardcoded id column
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { id, ...rowWithoutId } = row;
-          rowsToInsert.push(rowWithoutId);
+          rowsToInsert.push(row);
         }
       })
       .on('error', (error) => {
@@ -157,7 +155,10 @@ export class TooljetDbBulkUploadService {
       const columnsInCsv = Object.keys(row);
       const transformedRow = columnsInCsv.reduce((result, columnInCsv) => {
         const columnDetails = internalTableColumnSchema.find((colDetails) => colDetails.column_name === columnInCsv);
-        result[columnInCsv] = this.convertToDataType(row[columnInCsv], columnDetails.data_type);
+        const convertedValue = this.validateDataType(row[columnInCsv], columnDetails.data_type);
+
+        if (convertedValue) result[columnInCsv] = this.validateDataType(row[columnInCsv], columnDetails.data_type);
+
         return result;
       }, {});
 
@@ -167,29 +168,29 @@ export class TooljetDbBulkUploadService {
     }
   }
 
-  convertToDataType(columnValue: string, supportedDataType: SupportedDataTypes) {
+  validateDataType(columnValue: string, supportedDataType: SupportedDataTypes) {
     if (!columnValue) return null;
 
     switch (supportedDataType) {
       case 'boolean':
-        return this.convertBoolean(columnValue);
+        return this.validateBoolean(columnValue);
       case 'integer':
       case 'double precision':
       case 'bigint':
-        return this.convertNumber(columnValue, supportedDataType);
+        return this.validateNumber(columnValue, supportedDataType);
       default:
         return columnValue;
     }
   }
 
-  convertBoolean(str: string) {
+  validateBoolean(str: string) {
     const parsedString = str.toLowerCase().trim();
     if (parsedString === 'true' || parsedString === 'false') return str;
 
     throw `${str} is not a valid boolean string`;
   }
 
-  convertNumber(str: string, dataType: 'integer' | 'bigint' | 'double precision') {
+  validateNumber(str: string, dataType: 'integer' | 'bigint' | 'double precision') {
     if (dataType === 'integer' && !isNaN(parseInt(str, 10))) return str;
     if (dataType === 'double precision' && !isNaN(parseFloat(str))) return str;
     if (dataType === 'bigint' && typeof BigInt(str) === 'bigint') return str;

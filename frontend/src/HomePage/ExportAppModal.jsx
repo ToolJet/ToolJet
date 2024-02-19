@@ -80,7 +80,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     const requestBody = {
       ...appOpts,
       ...(exportTjDb && { tooljet_database: exportTables }),
-      organization_id: app.organization_id || app.organizationId,
+      organization_id: app.organization_id,
     };
 
     appsService
@@ -146,7 +146,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                   versionId={currentVersion?.id}
                   data-cy={`${currentVersion?.id.toLowerCase().replace(/\s+/g, '-')}-value`}
                   versionName={currentVersion?.name}
-                  versionCreatedAt={currentVersion?.created_at || currentVersion?.createdAt}
+                  versionCreatedAt={currentVersion?.createdAt}
                   checked={versionId === currentVersion?.id}
                   setVersionId={setVersionId}
                   className="current-version-wrap"
@@ -164,7 +164,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                           versionId={version.id}
                           data-cy={`${version.id.toLowerCase().replace(/\s+/g, '-')}-value`}
                           versionName={version.name}
-                          versionCreatedAt={version.createdAt || version.created_at}
+                          versionCreatedAt={version.createdAt}
                           key={version.name}
                           checked={versionId === version.id}
                           setVersionId={setVersionId}

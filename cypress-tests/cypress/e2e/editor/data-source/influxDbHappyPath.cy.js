@@ -20,13 +20,11 @@ import {
 } from "Support/utils/dataSource";
 
 const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
-    data.dataSourceName = fake.lastName
-      .toLowerCase()
-      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on connection form", () => {
@@ -35,11 +33,11 @@ describe("Data sources", () => {
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources()
+      postgreSqlText.allDataSources
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase()
+      postgreSqlText.allDatabase
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -50,7 +48,7 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "InfluxDB", data.dataSourceName);
+    selectAndAddDataSource("databases", "InfluxDB", data.lastName);
 
     cy.get('[data-cy="label-api-token"]').verifyVisibleElement(
       "have.text",
@@ -99,11 +97,11 @@ describe("Data sources", () => {
       "have.text",
       "Invalid URL"
     );
-    deleteDatasource(`cypress-${data.dataSourceName}-influxdb`);
+    deleteDatasource(`cypress-${data.lastName}-influxdb`);
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectAndAddDataSource("databases", "InfluxDB", data.dataSourceName);
+    selectAndAddDataSource("databases", "InfluxDB", data.lastName);
 
     fillDataSourceTextField(
       "API token",
@@ -131,12 +129,9 @@ describe("Data sources", () => {
     );
 
     cy.get(
-      `[data-cy="cypress-${data.dataSourceName}-influxdb-button"]`
-    ).verifyVisibleElement(
-      "have.text",
-      `cypress-${data.dataSourceName}-influxdb`
-    );
+      `[data-cy="cypress-${data.lastName}-influxdb-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-influxdb`);
 
-    deleteDatasource(`cypress-${data.dataSourceName}-influxdb`);
+    deleteDatasource(`cypress-${data.lastName}-influxdb`);
   });
 });

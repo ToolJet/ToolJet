@@ -7,7 +7,7 @@ const tooltipStyle = {
   textDecorationStyle: 'dashed',
 };
 
-export const ToolTip = ({ label, meta, labelClass, bold = false }) => {
+export const ToolTip = ({ label, meta, labelClass }) => {
   function renderTooltip(props) {
     return (
       <Tooltip id="button-tooltip" {...props}>
@@ -31,7 +31,6 @@ export const ToolTip = ({ label, meta, labelClass, bold = false }) => {
           .toLowerCase()
           .replace(/\s+/g, '-')}`}
         className={labelClass || 'form-label'}
-        style={{ fontWeight: bold ? 500 : 400 }}
       >
         {label}
       </label>

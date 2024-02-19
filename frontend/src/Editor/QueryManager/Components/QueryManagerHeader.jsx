@@ -20,18 +20,14 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
-import { cloneDeep } from 'lodash';
 
-import ParameterList from './ParameterList';
-
-export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setOptions }, ref) => {
+export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, ref) => {
   const { renameQuery } = useDataQueriesActions();
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
   const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
   const queryName = selectedQuery?.name ?? '';
-  const currentState = useCurrentState((state) => ({ queries: state.queries }), shallow);
-  const { queries } = currentState;
+  const { queries } = useCurrentState((state) => ({ queries: state.queries }), shallow);
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -39,8 +35,6 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
     }),
     shallow
   );
-
-  const { updateDataQuery } = useDataQueriesActions();
 
   useEffect(() => {
     if (selectedQuery?.name) {
@@ -86,7 +80,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
       kind: selectedDataSource.kind,
       name: queryName,
     };
-    previewQuery(editorRef, query, false, undefined)
+    const hasParamSupport = selectedQuery?.options?.hasParamSupport;
+    previewQuery(editorRef, query, false, undefined, hasParamSupport)
       .then(() => {
         ref.current.scrollIntoView();
       })
@@ -105,7 +100,11 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
         })}
       >
         <button
-          onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
+          onClick={() =>
+            runQuery(editorRef, selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {
+              shouldSetPreviewData: true,
+            })
+          }
           className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(isLoading)}`}
           data-cy="query-run-button"
           disabled={isInDraft}
@@ -130,53 +129,13 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
 
   const renderButtons = () => {
     if (selectedQuery === null || showCreateQuery) return;
-    const { isLoading } = queries[selectedQuery?.name] ?? false;
     return (
       <>
-        <PreviewButton
-          onClick={previewButtonOnClick}
-          buttonLoadingState={buttonLoadingState}
-          isRunButtonLoading={isLoading}
-        />
+        <PreviewButton onClick={previewButtonOnClick} buttonLoadingState={buttonLoadingState} />
         {renderRunButton()}
       </>
     );
   };
-
-  const optionsChanged = (newOptions) => {
-    setOptions(newOptions);
-    updateDataQuery(cloneDeep(newOptions));
-  };
-
-  const handleAddParameter = (newParameter) => {
-    const prevOptions = { ...options };
-    //check if paramname already used
-    if (!prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
-      const newOptions = {
-        ...prevOptions,
-        parameters: [...(prevOptions?.parameters ?? []), newParameter],
-      };
-      optionsChanged(newOptions);
-    }
-  };
-
-  const handleParameterChange = (index, updatedParameter) => {
-    const prevOptions = { ...options };
-    //check if paramname already used
-    if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
-      const updatedParameters = [...prevOptions.parameters];
-      updatedParameters[index] = updatedParameter;
-      optionsChanged({ ...prevOptions, parameters: updatedParameters });
-    }
-  };
-
-  const handleParameterRemove = (index) => {
-    const prevOptions = { ...options };
-    const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
-    optionsChanged({ ...prevOptions, parameters: updatedParameters });
-  };
-
-  const paramListContainerRef = useRef(null);
 
   return (
     <div className="row header">
@@ -189,37 +148,20 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
             isDiabled={isVersionReleased}
           />
         )}
-
-        <div
-          className="query-parameters-list col w-100 d-flex justify-content-center font-weight-500"
-          ref={paramListContainerRef}
-        >
-          {selectedQuery && (
-            <ParameterList
-              parameters={options.parameters}
-              handleAddParameter={handleAddParameter}
-              handleParameterChange={handleParameterChange}
-              handleParameterRemove={handleParameterRemove}
-              currentState={currentState}
-              darkMode={darkMode}
-              containerRef={paramListContainerRef}
-            />
-          )}
-        </div>
       </div>
       <div className="query-header-buttons me-3">{renderButtons()}</div>
     </div>
   );
 });
 
-const PreviewButton = ({ buttonLoadingState, onClick, isRunButtonLoading }) => {
+const PreviewButton = ({ buttonLoadingState, onClick }) => {
   const previewLoading = usePreviewLoading();
   const { t } = useTranslation();
 
   return (
     <button
       onClick={onClick}
-      className={`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading && !isRunButtonLoading)}`}
+      className={`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`}
       data-cy={'query-preview-button'}
     >
       <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">

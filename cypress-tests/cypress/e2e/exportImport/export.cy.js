@@ -25,12 +25,11 @@ describe("App Export Functionality", () => {
   let currentVersion = "";
   let otherVersions = [];
   beforeEach(() => {
-    cy.apiLogin();
+    cy.appUILogin();
   });
 
   it("Verify the elements of export dialog box", () => {
-    cy.apiCreateApp(data.appName1);
-    cy.openApp();
+    cy.createApp(data.appName1);
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
     cy.renameApp(data.appName1);
@@ -43,8 +42,7 @@ describe("App Export Functionality", () => {
       .should("be.visible")
       .invoke("text")
       .then(() => {
-        cy.get(commonSelectors.editorPageLogo).should("be.visible");
-        cy.backToApps();
+        cy.get(commonSelectors.editorPageLogo).should("be.visible").click();
         cy.get(commonSelectors.appHeaderLable).should("be.visible");
         cy.reload();
         selectAppCardOption(
@@ -56,7 +54,6 @@ describe("App Export Functionality", () => {
   });
 
   it("Verify 'Export app' functionality of an application", () => {
-    cy.visit("/");
     cy.get(commonSelectors.appHeaderLable).should("be.visible");
 
     selectAppCardOption(
@@ -102,7 +99,7 @@ describe("App Export Functionality", () => {
       .should("be.visible")
       .invoke("text")
       .then(() => {
-        cy.backToApps();
+        cy.get(commonSelectors.editorPageLogo).click();
         cy.get(commonSelectors.appHeaderLable).should("be.visible");
         selectAppCardOption(
           data.appName1,

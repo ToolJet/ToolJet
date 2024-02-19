@@ -1,6 +1,5 @@
 import React from 'react';
 import { renderElement } from '../Utils';
-import { EventManager } from '@/Editor/Inspector/EventManager';
 import Accordion from '@/_ui/Accordion';
 import { resolveReferences } from '@/_helpers/utils';
 import CodeHinter from '@/Editor/CodeEditor';
@@ -57,19 +56,7 @@ class Chart extends React.Component {
   }
 
   render() {
-    const {
-      dataQueries,
-      component,
-      paramUpdated,
-      componentMeta,
-      components,
-      currentState,
-      allComponents,
-      apps,
-      eventsChanged,
-      darkMode,
-      pages,
-    } = this.props;
+    const { dataQueries, component, paramUpdated, componentMeta, components, currentState } = this.props;
     const data = this.props.component.component.definition.properties.data; // since component is not unmounting on every render in current scenario
 
     const jsonDescription = this.props.component.component.definition.properties.jsonDescription;
@@ -212,24 +199,6 @@ class Chart extends React.Component {
         ),
       });
     }
-
-    items.push({
-      title: 'Events',
-      children: (
-        <EventManager
-          sourceId={component?.id}
-          eventSourceType="component"
-          eventMetaDefinition={componentMeta}
-          currentState={currentState}
-          dataQueries={dataQueries}
-          components={allComponents}
-          eventsChanged={eventsChanged}
-          apps={apps}
-          darkMode={darkMode}
-          pages={pages}
-        />
-      ),
-    });
 
     items.push({
       title: 'Layout',

@@ -18,7 +18,6 @@ export function ConfirmDialog({
   backdropClassName,
   onCloseIconClick,
   footerStyle,
-  confirmIcon,
 }) {
   darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(show);
@@ -85,7 +84,6 @@ export function ConfirmDialog({
           onClick={handleConfirm}
           isLoading={confirmButtonLoading}
         >
-          {confirmIcon && confirmIcon}
           {buttonText}
         </ButtonSolid>
       </Modal.Footer>

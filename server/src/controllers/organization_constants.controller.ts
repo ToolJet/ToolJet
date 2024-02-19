@@ -16,17 +16,15 @@ import { IsPublicGuard } from 'src/modules/org_environment_variables/is-public.g
 import { User } from 'src/decorators/user.decorator';
 import { OrganizationConstantsService } from '@services/organization_constants.service';
 import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@dto/organization-constant.dto';
+import { OrganizationConstant } from '../entities/organization_constants.entity';
 import { OrganizationConstantsAbilityFactory } from 'src/modules/casl/abilities/organization-constants-ability.factory';
 import { AppDecorator as App } from 'src/decorators/app.decorator';
-import { OrgEnvironmentVariablesAbilityFactory } from 'src/modules/casl/abilities/org-environment-variables-ability.factory';
-import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 
 @Controller('organization-constants')
 export class OrganizationConstantController {
   constructor(
     private organizationConstantsService: OrganizationConstantsService,
-    private organizationConstantsAbilityFactory: OrganizationConstantsAbilityFactory,
-    private orgEnvironmentVariablesAbilityFactory: OrgEnvironmentVariablesAbilityFactory
+    private organizationConstantsAbilityFactory: OrganizationConstantsAbilityFactory
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -56,9 +54,9 @@ export class OrganizationConstantController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@User() user, @Body() createOrganizationConstantDto: CreateOrganizationConstantDto) {
-    const ability = await this.orgEnvironmentVariablesAbilityFactory.orgEnvironmentVariableActions(user, {});
+    const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, {});
 
-    if (!ability.can('createOrgEnvironmentVariable', OrgEnvironmentVariable)) {
+    if (!ability.can('createOrganizationConstant', OrganizationConstant)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -71,9 +69,9 @@ export class OrganizationConstantController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(@Body() body: UpdateOrganizationConstantDto, @User() user, @Param('id') constantId) {
-    const ability = await this.orgEnvironmentVariablesAbilityFactory.orgEnvironmentVariableActions(user, {});
+    const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, {});
 
-    if (!ability.can('updateOrgEnvironmentVariable', OrgEnvironmentVariable)) {
+    if (!ability.can('createOrganizationConstant', OrganizationConstant)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -86,9 +84,9 @@ export class OrganizationConstantController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async delete(@User() user, @Param('id') constantId, @Query('environmentId') environmentId) {
-    const ability = await this.orgEnvironmentVariablesAbilityFactory.orgEnvironmentVariableActions(user, {});
+    const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, {});
 
-    if (!ability.can('deleteOrgEnvironmentVariable', OrgEnvironmentVariable)) {
+    if (!ability.can('deleteOrganizationConstant', OrganizationConstant)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 

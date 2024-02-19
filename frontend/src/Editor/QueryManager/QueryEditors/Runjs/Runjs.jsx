@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { defaults } from 'lodash';
 import { Card } from 'react-bootstrap';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import ParameterList from '../../Components/ParameterList';
+import ParameterList from './ParameterList';
 import CodeHinter from '@/Editor/CodeEditor';
 
 const Runjs = (props) => {
@@ -18,12 +18,50 @@ const Runjs = (props) => {
     });
   }, [currentState?.components, options?.parameters]);
 
+  const handleAddParameter = (newParameter) => {
+    const prevOptions = { ...options };
+    //check if paramname already used
+    if (!prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
+      props.optionsChanged({
+        ...prevOptions,
+        parameters: [...prevOptions.parameters, newParameter],
+      });
+    }
+  };
+
   useEffect(() => {
     setOptions(props.options);
   }, [props.options]);
 
+  const handleParameterChange = (index, updatedParameter) => {
+    const prevOptions = { ...options };
+    //check if paramname already used
+    if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
+      const updatedParameters = [...prevOptions.parameters];
+      updatedParameters[index] = updatedParameter;
+      props.optionsChanged({ ...prevOptions, parameters: updatedParameters });
+    }
+  };
+
+  const handleParameterRemove = (index) => {
+    const prevOptions = { ...options };
+    const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
+    props.optionsChanged({ ...prevOptions, parameters: updatedParameters });
+  };
+
   return (
     <Card className="runjs-editor mb-3">
+      {(options.hasParamSupport || props.mode === 'create') && (
+        <ParameterList
+          parameters={options.parameters}
+          handleAddParameter={handleAddParameter}
+          handleParameterChange={handleParameterChange}
+          handleParameterRemove={handleParameterRemove}
+          currentState={props.currentState}
+          darkMode={props.darkMode}
+        />
+      )}
+
       <CodeHinter
         type="multiline"
         initialValue={props.options.code}

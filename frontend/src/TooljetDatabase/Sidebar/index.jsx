@@ -2,11 +2,10 @@ import React from 'react';
 import List from '../TableList';
 import CreateTableDrawer from '../Drawers/CreateTableDrawer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
-import cx from 'classnames';
 
-export default function Sidebar({ collapseSidebar }) {
+export default function Sidebar() {
   return (
-    <div className={cx('tooljet-database-sidebar col', { 'visually-hidden': collapseSidebar })}>
+    <div className="tooljet-database-sidebar col">
       <div className="sidebar-container">
         <CreateTableDrawer />
       </div>

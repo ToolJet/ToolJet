@@ -12,14 +12,12 @@ import { commonText } from "Texts/common";
 import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 
 const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source BigQuery", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.intercept("GET", "/api/v2/data_sources");
-    data.dataSourceName = fake.lastName
-      .toLowerCase()
-      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on BigQuery connection form", () => {
@@ -31,11 +29,11 @@ describe("Data source BigQuery", () => {
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources()
+      postgreSqlText.allDataSources
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase()
+      postgreSqlText.allDatabase
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -46,11 +44,7 @@ describe("Data source BigQuery", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource(
-      "databases",
-      bigqueryText.bigQuery,
-      data.dataSourceName
-    );
+    selectAndAddDataSource("databases", bigqueryText.bigQuery, data.lastName);
 
     cy.get('[data-cy="label-private-key"]').verifyVisibleElement(
       "have.text",
@@ -89,18 +83,14 @@ describe("Data source BigQuery", () => {
       bigqueryText.errorInvalidEmailId
     );
     deleteDatasource(
-      `cypress-${String(data.dataSourceName).toLowerCase()}-${String(
+      `cypress-${String(data.lastName).toLowerCase()}-${String(
         bigqueryText.bigQuery
       ).toLowerCase()}`
     );
   });
 
   it("Should verify the functionality of BigQuery connection form.", () => {
-    selectAndAddDataSource(
-      "databases",
-      bigqueryText.bigQuery,
-      data.dataSourceName
-    );
+    selectAndAddDataSource("databases", bigqueryText.bigQuery, data.lastName);
 
     fillDataSourceTextField(
       firestoreText.privateKey,
@@ -122,12 +112,9 @@ describe("Data source BigQuery", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.dataSourceName}-bigquery-button"]`
-    ).verifyVisibleElement(
-      "have.text",
-      `cypress-${data.dataSourceName}-bigquery`
-    );
+      `[data-cy="cypress-${data.lastName}-bigquery-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-bigquery`);
 
-    deleteDatasource(`cypress-${data.dataSourceName}-bigquery`);
+    deleteDatasource(`cypress-${data.lastName}-bigquery`);
   });
 });

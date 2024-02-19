@@ -17,7 +17,7 @@
         "yes": "Yes",
         "submit": "Submit",
         "select": "Select",
-        "environmentVar": "Workspace constants/variables",
+        "environmentVar": "Workspace Variables",
         "saving": "Saving...",
         "saveDatasource": "Save data source",
         "authorize": "Authorize",
@@ -275,7 +275,7 @@
                     "permissionResources": {
                         "userGroup": "User group",
                         "apps": "Apps",
-                        "users": "Users",
+                        "users": "User",
                         "permissions": "Permissions",
                         "addAppsToGroup": "Select apps to add to the group",
                         "name": "name",
@@ -284,10 +284,6 @@
                         "resource": "Resource",
                         "createUpdateDelete": "Create/Update/Delete",
                         "folder": "Folder"
-                    },
-                    "groupOptions":{
-                        "deleteGroup":"Delete Group",
-                        "duplicateGroup":"Duplicate Group"
                     }
                 },
                 "manageSSO": {
@@ -356,7 +352,7 @@
             "lastName": "Last name",
             "enterFirstName": "Enter First Name",
             "enterLastName": "Enter Last Name",
-            "email": "Email address",
+            "email": "Email",
             "avatar": "Avatar",
             "update": "Update",
             "profile": "Profile",
@@ -495,7 +491,6 @@
             "properties": "Properties",
             "events": "Events",
             "layout": "Layout",
-            "devices":"Devices",
             "styles": "Styles",
             "general": "General",
             "validation": "Validation",
@@ -508,13 +503,12 @@
             "visibility": "Visibility",
             "disable": "Disable",
             "borderRadius": "Border radius",
-            "transformation": "Transformation",
             "boxShadow": "Box shadow",
             "tooltip": "Tooltip",
             "showOnDesktop": "Show on desktop",
             "showOnMobile": "Show on mobile",
             "showLoadingState": "Show loading state",
-            "backgroundColor": "Background color",
+            "backgroundColor": "Background Color",
             "textColor": "Text color",
             "loaderColor": "Loader color",
             "defaultValue": "Default value",

@@ -15,7 +15,6 @@ export enum Action {
   DropColumn = 'dropColumn',
   BulkUpload = 'bulkUpload',
   JoinTables = 'joinTables',
-  EditColumn = 'editColumn',
 }
 
 type Subjects = 'all';
@@ -40,7 +39,6 @@ export class TooljetDbAbilityFactory {
       can(Action.DropColumn, 'all');
       can(Action.RenameTable, 'all');
       can(Action.BulkUpload, 'all');
-      can(Action.EditColumn, 'all');
     }
 
     if (isPublicAppRequest || isUserLoggedin) {

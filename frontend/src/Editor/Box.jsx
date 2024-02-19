@@ -68,8 +68,9 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
+import WidgetIcon from '@/../assets/images/icons/widgets';
 
-export const AllComponents = {
+const AllComponents = {
   Button,
   Image,
   Text,
@@ -148,13 +149,22 @@ export const Box = memo(
     sideBarDebugger,
     readOnly,
     childComponents,
-    isResizing,
-    adjustHeightBasedOnAlignment,
-    currentLayout,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
+
+    let styles = {
+      height: '100%',
+      padding: '1px',
+    };
+
+    if (inCanvas) {
+      styles = {
+        ...styles,
+      };
+    }
+
     const { events } = useAppInfo();
 
     const componentMeta = useMemo(() => {
@@ -172,11 +182,9 @@ export const Box = memo(
       : [resolvedProperties, []];
 
     const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
-
-    const [validatedStyles, styleErrors] =
-      mode === 'edit' && component.validate
-        ? validateProperties(resolvedStyles, componentMeta.styles)
-        : [resolvedStyles, []];
+    const [validatedStyles, styleErrors] = component.validate
+      ? validateProperties(resolvedStyles, componentMeta.styles)
+      : [resolvedStyles, []];
     validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
 
     const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
@@ -193,15 +201,6 @@ export const Box = memo(
     const darkMode = localStorage.getItem('darkMode') === 'true';
     const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
-    let styles = {
-      height: '100%',
-    };
-
-    if (inCanvas) {
-      styles = {
-        ...styles,
-      };
-    }
     useEffect(() => {
       if (!component?.parent) {
         onComponentOptionChanged && onComponentOptionChanged(component, 'id', id);
@@ -276,29 +275,17 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
-    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
+
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
         delay={{ show: 500, hide: 0 }}
-        trigger={
-          inCanvas && shouldAddBoxShadow.includes(component.component)
-            ? !validatedProperties.tooltip?.toString().trim()
-              ? null
-              : ['hover', 'focus']
-            : !validatedGeneralProperties.tooltip?.toString().trim()
-            ? null
-            : ['hover', 'focus']
-        }
+        trigger={inCanvas && !validatedGeneralProperties.tooltip?.toString().trim() ? null : ['hover', 'focus']}
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${
-                  shouldAddBoxShadow.includes(component.component)
-                    ? validatedProperties.tooltip
-                    : validatedGeneralProperties.tooltip
-                }`
+              ? `${validatedGeneralProperties.tooltip}`
               : `${t(`widget.${component.name}.description`, component.description)}`,
           })
         }
@@ -307,7 +294,6 @@ export const Box = memo(
           style={{
             ...styles,
             backgroundColor,
-            padding: validatedStyles?.padding ? (validatedStyles?.padding == 'default' ? '1px' : '0px') : '1px',
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >
@@ -330,12 +316,7 @@ export const Box = memo(
               canvasWidth={canvasWidth}
               properties={validatedProperties}
               exposedVariables={exposedVariables}
-              styles={{
-                ...validatedStyles,
-                ...(!shouldAddBoxShadow.includes(component.component)
-                  ? { boxShadow: validatedGeneralStyles?.boxShadow }
-                  : {}),
-              }}
+              styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
               setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
               setExposedVariables={(variableSet) =>
                 onComponentOptionsChanged(component, Object.entries(variableSet), id)
@@ -353,9 +334,6 @@ export const Box = memo(
               resetComponent={() => setResetStatus(true)}
               childComponents={childComponents}
               dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
-              isResizing={isResizing}
-              adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
-              currentLayout={currentLayout}
             ></ComponentToRender>
           ) : (
             <></>

@@ -8,18 +8,15 @@ import { importText } from "Texts/exportImport";
 
 describe("App creation", () => {
     const data = {};
+    data.appName = `${fake.companyName}-App`;
+    data.rename = `New-${data.appName}`;
+    data.cloneAppName = `cloned-${data.appName}`;
     const appFile = "cypress/fixtures/templates/test-app.json";
 
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
-        cy.skipWalkthrough();
     });
-
     it("Should verify create, rename and clone app flow", () => {
-        data.appName = `${fake.companyName}-App`;
-        data.rename = `New-${data.appName}`;
-        data.cloneAppName = `cloned-${data.appName}`;
-
         cy.get(commonSelectors.appCreateButton).click();
         cy.get(commonSelectors.createAppTitle).verifyVisibleElement(
             "have.text",
@@ -193,8 +190,6 @@ describe("App creation", () => {
         cy.get(commonSelectors.createAppButton).should("be.disabled");
     });
     it("Should verify the import app flow", () => {
-        data.appName = `${fake.companyName}-App`;
-
         cy.get(importSelectors.dropDownMenu).click();
         cy.get(importSelectors.importOptionInput).eq(0).selectFile(appFile, {
             force: true,
@@ -274,7 +269,7 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.value",
-            "Applicant tracking system"
+            "Customer dashboard"
         );
         cy.get(commonSelectors.appNameInfoLabel).verifyVisibleElement(
             "have.text",

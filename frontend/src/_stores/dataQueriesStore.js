@@ -11,7 +11,7 @@ import { toast } from 'react-hot-toast';
 import _, { isEmpty, throttle } from 'lodash';
 import { useEditorStore } from './editorStore';
 import { shallow } from 'zustand/shallow';
-import { getCurrentState, useCurrentStateStore } from './currentStateStore';
+import { useCurrentStateStore } from './currentStateStore';
 
 const initialState = {
   dataQueries: [],
@@ -59,7 +59,7 @@ export const useDataQueriesStore = create(
             }
 
             useCurrentStateStore.getState().actions.setCurrentState({
-              ...getCurrentState(),
+              ...useCurrentStateStore.getState(),
               queries: updatedQueries,
             });
           }
@@ -98,7 +98,7 @@ export const useDataQueriesStore = create(
               const currentQueries = useCurrentStateStore.getState().queries;
 
               useCurrentStateStore.getState().actions.setCurrentState({
-                ...getCurrentState(),
+                ...useCurrentStateStore.getState(),
                 queries: Object.keys(currentQueries).reduce((acc, key) => {
                   if (currentQueries[key].id !== queryId) {
                     acc[key] = currentQueries[key];
@@ -195,7 +195,7 @@ export const useDataQueriesStore = create(
               const currentQueries = useCurrentStateStore.getState().queries;
 
               useCurrentStateStore.getState().actions.setCurrentState({
-                ...getCurrentState(),
+                ...useCurrentStateStore.getState(),
                 queries: {
                   ...currentQueries,
                   [data.name]: {
@@ -251,7 +251,7 @@ export const useDataQueriesStore = create(
               const { [queryName]: _, ...rest } = currentQueries;
 
               useCurrentStateStore.getState().actions.setCurrentState({
-                ...getCurrentState(),
+                ...useCurrentStateStore.getState(),
                 queries: {
                   ...rest,
                   [newName]: {

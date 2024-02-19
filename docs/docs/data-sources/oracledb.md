@@ -11,7 +11,7 @@ ToolJet can connect to Oracle databases to read and write data.
 
 To establish a connection with the Oracle DB data source, click on the `+Add new` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
 
-A Oracle DB can be connected with the following credentials:
+A Oracle DB can be connected with the following credentails:
 - **Host**
 - **Port**
 - **SID / Service Name** ( Database name must be a SID / Service Name )

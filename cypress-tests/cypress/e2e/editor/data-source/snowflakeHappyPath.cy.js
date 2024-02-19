@@ -16,14 +16,13 @@ import {
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
 
-const data = {};
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
-    data.dataSourceName = fake.lastName
-      .toLowerCase()
-      .replaceAll("[^A-Za-z]", "");
   });
+
+  const data = {};
+  data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
@@ -31,11 +30,11 @@ describe("Data sources", () => {
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources()
+      postgreSqlText.allDataSources
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase()
+      postgreSqlText.allDatabase
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -45,7 +44,7 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.allCloudStorage
     );
-    selectAndAddDataSource("databases", "Snowflake", data.dataSourceName);
+    selectAndAddDataSource("databases", "Snowflake", data.lastName);
 
     cy.get(postgreSqlSelector.labelUserName).verifyVisibleElement(
       "have.text",
@@ -106,11 +105,11 @@ describe("Data sources", () => {
       "have.text",
       "Invalid account. The specified value must be a valid subdomain string."
     );
-    deleteDatasource(`cypress-${data.dataSourceName}-snowflake`);
+    deleteDatasource(`cypress-${data.lastName}-snowflake`);
   });
 
   it.skip("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectAndAddDataSource("databases", "Snowflake", data.dataSourceName);
+    selectAndAddDataSource("databases", "Snowflake", data.lastName);
 
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
@@ -152,12 +151,9 @@ describe("Data sources", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.dataSourceName}-snowflake-button"]`
-    ).verifyVisibleElement(
-      "have.text",
-      `cypress-${data.dataSourceName}-snowflake`
-    );
+      `[data-cy="cypress-${data.lastName}-snowflake-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-snowflake`);
 
-    deleteDatasource(`cypress-${data.dataSourceName}-snowflake`);
+    deleteDatasource(`cypress-${data.lastName}-snowflake`);
   });
 });

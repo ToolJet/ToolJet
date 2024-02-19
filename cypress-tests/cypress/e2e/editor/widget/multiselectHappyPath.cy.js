@@ -363,29 +363,18 @@ describe("Multiselect widget", () => {
     );
   });
 
-  it.only("should verify CSA", () => {
+  it("should verify CSA", () => {
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget("Number input", 600, 50);
     selectEvent("On change", "Control Component");
     selectCSA("multiselect1", "Select Option", "1000");
-    cy.get('[data-cy="action-label"]').click({ force: true });
-    cy.wait(2000);
     addSupportCSAData("Option", "{{components.numberinput1.value");
-    // cy.get('[data-cy="-input-field"]')
-    //   .eq(1)
-    //   .type(`{selectAll}{backspace}1000{enter}`);
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget("Number input", 600, 150);
     selectEvent("On change", "Control Component");
     selectCSA("multiselect1", "Deselect Option", "1000");
-    cy.wait(2000);
-    cy.get('[data-cy="action-label"]').click({ force: true });
-    cy.wait(2000);
     addSupportCSAData("Option", "{{components.numberinput2.value");
-    // cy.get('[data-cy="-input-field"]')
-    //   .eq(1)
-    //   .type(`{selectAll}{backspace}1000{enter}`);
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget("Button", 600, 250);
@@ -401,8 +390,6 @@ describe("Multiselect widget", () => {
     cy.get(commonWidgetSelector.draggableWidget("numberinput1"))
       .clear()
       .type("1");
-    cy.forceClickOnCanvas();
-    cy.wait(1000);
     verifyMultiselectHeader(
       "multiselect1",
       multiselectText.labelAllItemsSelected
@@ -410,8 +397,6 @@ describe("Multiselect widget", () => {
     cy.get(commonWidgetSelector.draggableWidget("numberinput2"))
       .clear()
       .type("3");
-    cy.forceClickOnCanvas();
-    cy.wait(1000);
     verifyMultipleComponentValuesFromInspector("multiselect1", [2, 1]);
 
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();

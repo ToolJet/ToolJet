@@ -8,16 +8,17 @@ export const GlobalFilter = ({
   setGlobalFilter,
   onComponentOptionChanged,
   component,
+  onEvent,
   // eslint-disable-next-line no-unused-vars
   darkMode,
-  setExposedVariable,
-  fireEvent,
+  tableEvents,
 }) => {
   const [value, setValue] = React.useState(globalFilter);
   const onChange = (filterValue) => {
     setGlobalFilter(filterValue || undefined);
-    setExposedVariable('searchText', filterValue);
-    fireEvent('onSearch');
+    onComponentOptionChanged(component, 'searchText', filterValue).then(() => {
+      onEvent('onSearch', tableEvents, { component, data: {} });
+    });
   };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedChange = useMemo(() => debounce(onChange, 500), []);

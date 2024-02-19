@@ -99,7 +99,7 @@ export default function AppCard({
           </div>
         </div>
         <div>
-          <ToolTip trigger={['hover']} message={app.name}>
+          <ToolTip message={app.name}>
             <h3
               className="app-card-name font-weight-500 tj-text-md"
               data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}

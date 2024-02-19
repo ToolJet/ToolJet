@@ -13,15 +13,13 @@ import { dataSourceSelector } from "Selectors/dataSource";
 import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 
 const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.customText = fake.randomSentence;
 
 describe("Data source Azure Blob Storage", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.intercept("GET", "/api/v2/data_sources");
-    data.dataSourceName = fake.lastName
-      .toLowerCase()
-      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on Azure Blob Storage connection form", () => {
@@ -33,11 +31,11 @@ describe("Data source Azure Blob Storage", () => {
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources()
+      postgreSqlText.allDataSources
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase()
+      postgreSqlText.allDatabase
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -50,7 +48,7 @@ describe("Data source Azure Blob Storage", () => {
     selectAndAddDataSource(
       "cloudstorage",
       azureBlobStorageText.azureBlobStorage,
-      data.dataSourceName
+      data.lastName
     );
 
     // cy.get("[data-cy*='data-source-']")
@@ -99,7 +97,7 @@ describe("Data source Azure Blob Storage", () => {
       "have.text",
       "Cannot read properties of undefined (reading 'startsWith')"
     );
-    deleteDatasource(`cypress-${data.dataSourceName}-azure-blob-storage`);
+    deleteDatasource(`cypress-${data.lastName}-azure-blob-storage`);
   });
 
   it("Should verify the functionality of Azure Blob Storage connection form.", () => {
@@ -107,12 +105,12 @@ describe("Data source Azure Blob Storage", () => {
     closeDSModal();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources()
+      postgreSqlText.allDataSources
     );
     selectAndAddDataSource(
       "cloudstorage",
       azureBlobStorageText.azureBlobStorage,
-      data.dataSourceName
+      data.lastName
     );
 
     fillDataSourceTextField(
@@ -157,12 +155,12 @@ describe("Data source Azure Blob Storage", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.dataSourceName}-azure-blob-storage-button"]`
+      `[data-cy="cypress-${data.lastName}-azure-blob-storage-button"]`
     ).verifyVisibleElement(
       "have.text",
-      `cypress-${data.dataSourceName}-azure-blob-storage`
+      `cypress-${data.lastName}-azure-blob-storage`
     );
 
-    deleteDatasource(`cypress-${data.dataSourceName}-azure-blob-storage`);
+    deleteDatasource(`cypress-${data.lastName}-azure-blob-storage`);
   });
 });

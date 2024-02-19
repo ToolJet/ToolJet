@@ -10,7 +10,6 @@ type Actions =
   | 'inviteUser'
   | 'accessGroupPermission'
   | 'updateOrganizations'
-  | 'updateUser'
   | 'viewAllUsers';
 
 type Subjects = InferSubjects<typeof OrganizationUser | typeof User> | 'all';
@@ -32,7 +31,6 @@ export class CaslAbilityFactory {
       can('accessGroupPermission', User);
       can('updateOrganizations', User);
       can('viewAllUsers', User);
-      can('updateUser', User);
     }
 
     return build({

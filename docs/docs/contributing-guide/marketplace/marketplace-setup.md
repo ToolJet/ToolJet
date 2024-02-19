@@ -6,8 +6,8 @@ title: 'Marketplace: Development Setup'
 The Marketplace offers custom plugins that can be installed in your ToolJet instance. This guide aims to assist you in creating a new plugin for the ToolJet marketplace.
 
 ## Requirements
-- [Node.js](https://nodejs.org/en/download/) **(v18.18.2)**
-- [npm](https://www.npmjs.com/get-npm) **(v9.8.1)**
+- [Node.js](https://nodejs.org/en/download/) **(v18.3.0)**
+- [npm](https://www.npmjs.com/get-npm) **(v8.11.0)**
 
 ## Getting started
 
@@ -48,7 +48,7 @@ The use of this environment variable facilitates plugin development by enabling 
 
 Please note that the marketplace is not enabled by default. After updating the variable, restart your ToolJet instance. 
 
-For information on running ToolJet on your local machine, please refer to the instructions provided **[here](/docs/contributing-guide/setup/architecture)**. You can access the marketplace by navigating to the **'/integrations'** route.
+For information on running ToolJet on your local machine, please refer to the instructions provided **[here](/docs/category/contributing-guide)**. You can access the marketplace by navigating to the **'/integrations'** route.
 
 ### Step 3: Installation of tooljet-cli
 

@@ -1,21 +1,23 @@
 import { commonSelectors } from "../../constants/selectors/common";
 import { commonText } from "../../constants/texts/common";
 import { fake } from "Fixtures/fake";
-import { addNewUser } from "Support/utils/onboarding";
+import { addNewUserMW } from "Support/utils/userPermissions";
 import { logout } from "Support/utils/common";
 
 describe("Password reset functionality", () => {
   const data = {};
+  data.firstName = fake.firstName;
+  data.lastName = fake.lastName.replaceAll("[^A-Za-z]", "");
+  data.email = fake.email.toLowerCase();
   let passwordResetLink = "";
 
-  it("Verify wrong password limit", () => {
-    data.firstName = fake.firstName;
-    data.email = fake.email.toLowerCase();
-
+  before(() => {
     cy.defaultWorkspaceLogin();
-    addNewUser(data.firstName, data.email);
+    addNewUserMW(data.firstName, data.email);
     logout();
+  });
 
+  it("Verify wrong password limit", () => {
     for (let i = 0; i < 5; i++) {
       cy.clearAndType(commonSelectors.workEmailInputField, data.email);
       cy.clearAndType(commonSelectors.passwordInputField, "passw");

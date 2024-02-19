@@ -22,22 +22,22 @@ export class CreateLayoutTable1691007037021 implements MigrationInterface {
           {
             name: 'top',
             type: 'double precision',
-            isNullable: true,
+            isNullable: false,
           },
           {
             name: 'left',
             type: 'double precision',
-            isNullable: true,
+            isNullable: false,
           },
           {
             name: 'width',
             type: 'double precision',
-            isNullable: true,
+            isNullable: false,
           },
           {
             name: 'height',
             type: 'double precision',
-            isNullable: true,
+            isNullable: false,
           },
           {
             name: 'component_id',

@@ -9,28 +9,17 @@
   <% } %>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ToolJet</title>
+  <title>ToolJet - Dashboard</title>
 
   <style>
     a {
       cursor: pointer;
     }
 
-    body {
-      margin: 0;
-    }
-
     .load {
-      display: none;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .load.dark-loader {
       display: flex;
-      background-color: #1f2936;
-      margin: 0;
+      justify-content: center;
+      margin: 200px auto;
     }
 
     .load div {
@@ -124,7 +113,7 @@
 <body>
   <div id="app">
     <div style="width: 100%">
-      <div id="app-loader" class="load">
+      <div class="load">
         <div class="one"></div>
         <div class="two"></div>
         <div class="three"></div>
@@ -132,15 +121,5 @@
     </div>
   </div>
 </body>
-<script>
-  if (typeof localStorage !== 'undefined') {
-      const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
-      const loaderElement = document.getElementById('app-loader');
-      if (darkModeEnabled) {
-        loaderElement.classList.add('dark-loader');
-      } else {
-        loaderElement.style.display = 'flex';
-      }
-  }
-</script>
+
 </html>

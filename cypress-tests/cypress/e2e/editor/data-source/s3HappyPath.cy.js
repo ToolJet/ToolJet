@@ -16,13 +16,11 @@ import {
 } from "Support/utils/dataSource";
 
 const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources AWS S3", () => {
   beforeEach(() => {
     cy.appUILogin();
-    data.dataSourceName = fake.lastName
-      .toLowerCase()
-      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on AWS S3 connection form", () => {
@@ -31,11 +29,11 @@ describe("Data sources AWS S3", () => {
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources()
+      postgreSqlText.allDataSources
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase()
+      postgreSqlText.allDatabase
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -46,7 +44,7 @@ describe("Data sources AWS S3", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("cloudstorage", s3Text.awsS3, data.dataSourceName);
+    selectAndAddDataSource("cloudstorage", s3Text.awsS3, data.lastName);
     cy.get(s3Selector.accessKeyLabel).verifyVisibleElement(
       "have.text",
       s3Text.accessKey
@@ -102,11 +100,11 @@ describe("Data sources AWS S3", () => {
       commonSelectors.toastMessage,
       postgreSqlText.toastDSSaved
     );
-    deleteDatasource(`cypress-${data.dataSourceName}-aws-s3`);
+    deleteDatasource(`cypress-${data.lastName}-aws-s3`);
   });
 
   it("Should verify the functionality of AWS S3 connection form.", () => {
-    selectAndAddDataSource("cloudstorage", s3Text.awsS3, data.dataSourceName);
+    selectAndAddDataSource("cloudstorage", s3Text.awsS3, data.lastName);
 
     fillDataSourceTextField(
       s3Text.accessKey,
@@ -191,11 +189,8 @@ describe("Data sources AWS S3", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.dataSourceName}-aws-s3-button"]`
-    ).verifyVisibleElement(
-      "have.text",
-      `cypress-${data.dataSourceName}-aws-s3`
-    );
-    deleteDatasource(`cypress-${data.dataSourceName}-aws-s3`);
+      `[data-cy="cypress-${data.lastName}-aws-s3-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-aws-s3`);
+    deleteDatasource(`cypress-${data.lastName}-aws-s3`);
   });
 });

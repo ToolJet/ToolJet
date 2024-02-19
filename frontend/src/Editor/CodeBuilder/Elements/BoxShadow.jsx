@@ -187,13 +187,7 @@ export const BoxShadow = ({ value, onChange, cyLabel }) => {
                 }}
                 data-cy={`${cyLabel}-picker-icon`}
               ></div>
-              <small
-                className="col p-0"
-                data-cy={`${cyLabel}-value`}
-                style={{
-                  color: 'var(--slate12)',
-                }}
-              >
+              <small className="col p-0" data-cy={`${cyLabel}-value`}>
                 {_value}
               </small>
             </div>

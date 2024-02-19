@@ -10,6 +10,9 @@ import { userSignUp } from "Support/utils/onboarding";
 
 describe("Bulk user upload", () => {
   const data = {};
+  data.firstName = fake.firstName;
+  data.email = fake.email.toLowerCase();
+
   const without_name = "cypress/fixtures/bulkUser/without_name - Sheet1.csv";
   const without_email = "cypress/fixtures/bulkUser/without_email - Sheet1.csv";
   const without_group = "cypress/fixtures/bulkUser/without_group - Sheet1.csv";
@@ -30,17 +33,16 @@ describe("Bulk user upload", () => {
     "cypress/fixtures/bulkUser/without_lastname - Sheet1.csv";
   const invite_users = "cypress/fixtures/bulkUser/invite_users - Sheet1 .csv";
 
-  it("Verfiy bulk user upload invalid files", () => {
-    data.firstName = fake.firstName;
-    data.email = fake.email.toLowerCase();
-    data.workspaceName = data.firstName.toLowerCase();
-
-    cy.apiLogin()
-    cy.apiCreateWorkspace(data.firstName, data.workspaceName);
-    cy.visit(`${data.workspaceName}`)
-
+  before(() => {
+    userSignUp(data.firstName, data.email, "Test");
+    common.logout();
+  });
+  beforeEach(() => {
+    cy.login(data.email, usersText.password);
     common.navigateToManageUsers();
+  });
 
+  it("Verfiy bulk user upload invalid files", () => {
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();
 
@@ -120,15 +122,6 @@ describe("Bulk user upload", () => {
   });
 
   it("Verify bulk user upload functionality", () => {
-    data.firstName = fake.firstName;
-    data.email = fake.email.toLowerCase();
-    data.workspaceName = data.firstName.toLowerCase();
-
-    cy.apiLogin()
-    cy.apiCreateWorkspace(data.firstName, data.workspaceName);
-    cy.visit(`${data.workspaceName}`)
-    common.navigateToManageUsers();
-
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();
 
@@ -144,7 +137,7 @@ describe("Bulk user upload", () => {
       force: true,
     });
     cy.get(usersSelector.buttonUploadUsers).click();
-    cy.wait(10000);
+    cy.wait(1000);
     cy.get(".go2072408551")
       .should("be.visible")
       .and("have.text", "250 users are being added");

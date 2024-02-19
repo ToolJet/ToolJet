@@ -34,12 +34,13 @@ const generateActionsData = ({
                     setExposedVariables({
                       selectedRowId: cell.row.id,
                       selectedRow: cell.row.original,
-                    });
-                    fireEvent('onTableActionButtonClicked', {
-                      data: cell.row.original,
-                      rowId: cell.row.id,
-                      action,
-                      tableActionEvents,
+                    }).then(() => {
+                      fireEvent('onTableActionButtonClicked', {
+                        data: cell.row.original,
+                        rowId: cell.row.id,
+                        action,
+                        tableActionEvents,
+                      });
                     });
                   }}
                   disabled={action.isDisabled}
@@ -74,12 +75,13 @@ const generateActionsData = ({
                     setExposedVariables({
                       selectedRowId: cell.row.id,
                       selectedRow: cell.row.original,
-                    });
-                    fireEvent('onTableActionButtonClicked', {
-                      data: cell.row.original,
-                      rowId: cell.row.id,
-                      action,
-                      tableActionEvents,
+                    }).then(() => {
+                      fireEvent('onTableActionButtonClicked', {
+                        data: cell.row.original,
+                        rowId: cell.row.id,
+                        action,
+                        tableActionEvents,
+                      });
                     });
                   }}
                   disabled={action.isDisabled}

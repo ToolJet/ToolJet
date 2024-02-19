@@ -16,13 +16,11 @@ import {
 } from "Support/utils/dataSource";
 
 const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source DynamoDB", () => {
   beforeEach(() => {
     cy.appUILogin();
-    data.dataSourceName = fake.lastName
-      .toLowerCase()
-      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on DynamoDB connection form", () => {
@@ -31,11 +29,11 @@ describe("Data source DynamoDB", () => {
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources()
+      postgreSqlText.allDataSources
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase()
+      postgreSqlText.allDatabase
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -46,11 +44,7 @@ describe("Data source DynamoDB", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource(
-      "databases",
-      dynamoDbText.dynamoDb,
-      data.dataSourceName
-    );
+    selectAndAddDataSource("databases", dynamoDbText.dynamoDb, data.lastName);
 
     cy.get('[data-cy="label-region"]').verifyVisibleElement(
       "have.text",
@@ -96,15 +90,11 @@ describe("Data source DynamoDB", () => {
       "have.text",
       dynamoDbText.errorMissingRegion
     );
-    deleteDatasource(`cypress-${data.dataSourceName}-dynamodb`);
+    deleteDatasource(`cypress-${data.lastName}-dynamodb`);
   });
 
   it("Should verify the functionality of DynamoDB connection form.", () => {
-    selectAndAddDataSource(
-      "databases",
-      dynamoDbText.dynamoDb,
-      data.dataSourceName
-    );
+    selectAndAddDataSource("databases", dynamoDbText.dynamoDb, data.lastName);
 
     cy.get('[data-cy="label-region"]')
       .parent()
@@ -157,12 +147,9 @@ describe("Data source DynamoDB", () => {
     );
 
     cy.get(
-      `[data-cy="cypress-${data.dataSourceName}-dynamodb-button"]`
-    ).verifyVisibleElement(
-      "have.text",
-      `cypress-${data.dataSourceName}-dynamodb`
-    );
+      `[data-cy="cypress-${data.lastName}-dynamodb-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-dynamodb`);
 
-    deleteDatasource(`cypress-${data.dataSourceName}-dynamodb`);
+    deleteDatasource(`cypress-${data.lastName}-dynamodb`);
   });
 });

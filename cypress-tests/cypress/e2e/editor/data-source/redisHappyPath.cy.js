@@ -15,13 +15,11 @@ import {
 } from "Support/utils/dataSource";
 
 const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source Redis", () => {
   beforeEach(() => {
     cy.appUILogin();
-    data.dataSourceName = fake.lastName
-      .toLowerCase()
-      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on connecti Redison form", () => {
@@ -30,11 +28,11 @@ describe("Data source Redis", () => {
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources()
+      postgreSqlText.allDataSources
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase()
+      postgreSqlText.allDatabase
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -45,7 +43,7 @@ describe("Data source Redis", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", redisText.redis, data.dataSourceName);
+    selectAndAddDataSource("databases", redisText.redis, data.lastName);
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -101,10 +99,10 @@ describe("Data source Redis", () => {
       commonSelectors.toastMessage,
       postgreSqlText.toastDSSaved
     );
-    deleteDatasource(`cypress-${data.dataSourceName}-redis`);
+    deleteDatasource(`cypress-${data.lastName}-redis`);
   });
   it("Should verify the functionality of Redis connection form.", () => {
-    selectAndAddDataSource("databases", redisText.redis, data.dataSourceName);
+    selectAndAddDataSource("databases", redisText.redis, data.lastName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -203,9 +201,9 @@ describe("Data source Redis", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.dataSourceName}-redis-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.dataSourceName}-redis`);
+      `[data-cy="cypress-${data.lastName}-redis-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-redis`);
 
-    deleteDatasource(`cypress-${data.dataSourceName}-redis`);
+    deleteDatasource(`cypress-${data.lastName}-redis`);
   });
 });

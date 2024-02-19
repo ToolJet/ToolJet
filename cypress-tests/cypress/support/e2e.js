@@ -17,8 +17,6 @@
 import "../commands/commands";
 import "../commands/apiCommands";
 import "cypress-real-events";
-import "@cypress/code-coverage/support";
-
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 Cypress.on("uncaught:exception", (err, runnable) => {

@@ -1,16 +1,14 @@
 import React from 'react';
-import classNames from 'classnames';
 
-const Header = ({ children, className, styles = {}, showNavbarClass = true }) => {
+const Header = ({ children, className }) => {
   return (
     <div
       style={{
-        minHeight: '47px',
-        ...styles,
+        minHeight: 45,
       }}
       className={`header ${className}`}
     >
-      <header className={classNames({ 'navbar navbar-expand-md': showNavbarClass })}>
+      <header className="navbar navbar-expand-md d-print-none">
         <div className="container-xl header-container position-relative">{children}</div>
       </header>
     </div>

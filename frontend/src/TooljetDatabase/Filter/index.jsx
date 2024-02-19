@@ -14,11 +14,6 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
   const filterKeys = Object.keys(filters);
   const isMounted = useMounted();
 
-  const reset = () => {
-    setFilters({});
-    setShow(false);
-  };
-
   const popover = (
     <Popover id="storage-filter-popover" className={cx({ 'dark-theme': darkMode })} data-cy="filter-section">
       <Popover.Body bsPrefix="storage-filter-popover">
@@ -63,7 +58,6 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
 
   React.useEffect(() => {
     if (Object.keys(filters).length === 0 && isMounted) {
-      reset();
       resetFilterQuery();
     } else {
       Object.keys(filters).map((key) => {
@@ -88,7 +82,7 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
           if (show && isEmpty(filters)) setFilters({ 0: {} });
           setShow(show);
         }}
-        placement="bottom-start"
+        placement="bottom"
         overlay={popover}
       >
         <button

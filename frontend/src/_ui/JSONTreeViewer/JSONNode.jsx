@@ -34,7 +34,6 @@ export const JSONNode = ({ data, ...restProps }) => {
     actionsList,
     fontSize,
     inspectorTree,
-    renderCurrentNodeInfoIcon,
   } = restProps;
 
   const [expandable, set] = React.useState(() =>
@@ -95,7 +94,6 @@ export const JSONNode = ({ data, ...restProps }) => {
   let $VALUE = null;
   let $NODEType = null;
   let $NODEIcon = null;
-  let $NODEInfoIcon = null;
 
   const checkSelectedNode = (_selectedNode, _currentNode, parent, toExpand) => {
     if (selectedNode?.parent && parent) {
@@ -137,7 +135,6 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   if (toUseNodeIcons && currentNode) {
     $NODEIcon = renderNodeIcons(currentNode);
-    $NODEInfoIcon = renderCurrentNodeInfoIcon(currentNode);
   }
 
   switch (typeofCurrentNode) {
@@ -267,14 +264,7 @@ export const JSONNode = ({ data, ...restProps }) => {
       onMouseLeave={() => updateHoveredNode(null)}
     >
       {(inspectorTree || toShowNodeIndicator) && (
-        <div
-          className={cx('json-tree-icon-container', {
-            'mx-2': !$NODEInfoIcon,
-            'm-0': $NODEInfoIcon,
-            'selected-node': applySelectedNodeStyles,
-          })}
-        >
-          {$NODEInfoIcon && $NODEInfoIcon}
+        <div className={`json-tree-icon-container  mx-2 ${applySelectedNodeStyles && 'selected-node'}`}>
           <JSONNodeIndicator
             toExpand={expandable}
             toShowNodeIndicator={toShowNodeIndicator}

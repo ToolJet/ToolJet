@@ -1,6 +1,6 @@
 import React from 'react';
 
-const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEvent, ...rest }, ref) => {
+const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
   const defaultRef = React.useRef();
   const resolvedRef = ref || defaultRef;
 
@@ -14,12 +14,7 @@ const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEvent, ...r
         data-cy={`checkbox-input`}
         type="checkbox"
         ref={resolvedRef}
-        onClick={(event) => {
-          if (fireEvent) {
-            fireEvent('onRowClicked');
-          }
-          event.stopPropagation();
-        }}
+        onClick={(event) => event.stopPropagation()}
         {...rest}
         style={{
           width: 16,
