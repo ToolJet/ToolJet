@@ -41,7 +41,7 @@ import {
 describe("Multiselect widget", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-Multiselect-App`);
     cy.openApp();
     cy.dragAndDropWidget(multiselectText.multiselect);
   });
@@ -371,7 +371,7 @@ describe("Multiselect widget", () => {
     );
   });
 
-  it.only("should verify CSA", () => {
+  it("should verify CSA", () => {
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget("Number input", 600, 50);
     selectEvent("On change", "Control Component");
