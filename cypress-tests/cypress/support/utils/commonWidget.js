@@ -64,11 +64,14 @@ export const addDefaultEventHandler = (message) => {
   cy.get(commonWidgetSelector.addEventHandlerLink)
     .should("contain.text", commonWidgetText.addEventHandlerLink)
     .click();
+  cy.intercept("PUT", "events").as("events");
   cy.get(commonWidgetSelector.eventHandlerCard).click();
+  cy.wait(1000);
   cy.get(commonWidgetSelector.alertMessageInputField)
     .find('[data-cy*="-input-field"]')
     .eq(0)
     .clearAndTypeOnCodeMirror(message);
+  cy.get('[data-cy="run-only-if-input-field"]').click({ force: true });
 };
 
 export const addAndVerifyTooltip = (widgetSelector, message) => {
