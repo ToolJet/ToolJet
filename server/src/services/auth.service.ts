@@ -528,7 +528,9 @@ export class AuthService {
   async resetPassword(token: string, password: string) {
     const user = await this.usersService.findByPasswordResetToken(token);
     if (!user) {
-      throw new NotFoundException('Invalid URL');
+      throw new NotFoundException(
+        'Invalid Reset Password URL. Please ensure you have the correct URL for resetting your password.'
+      );
     } else {
       await this.usersService.updateUser(user.id, {
         password,

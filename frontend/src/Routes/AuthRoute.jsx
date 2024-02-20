@@ -45,7 +45,8 @@ export const AuthRoute = ({ children, navigate }) => {
   );
 
   useEffect(() => {
-    if (isInvalidSession && !isGettingConfigs) setLoading(false);
+    const isComingFromPasswordReset = location?.state?.from === '/reset-password';
+    if ((isInvalidSession || isComingFromPasswordReset) && !isGettingConfigs) setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInvalidSession, isGettingConfigs]);
 
