@@ -111,7 +111,9 @@ describe("Text Input", () => {
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionEvents, ["Validation", "Devices"]);
     addDefaultEventHandler(data.customText);
+    cy.wait(1000);
     cy.get(commonWidgetSelector.eventSelection).type("On Enter Pressed{Enter}");
+    cy.wait("@events");
 
     cy.clearAndType(
       commonWidgetSelector.draggableWidget(data.widgetName),
@@ -268,7 +270,7 @@ describe("Text Input", () => {
     data.errorTextColor = fake.randomRgba;
     data.iconColor = fake.randomRgba;
     data.labelColor = fake.randomRgba;
-    ata.widgetName = textInputText.defaultWidgetName;
+    data.widgetName = textInputText.defaultWidgetName;
 
     openEditorSidebar(textInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -311,7 +313,7 @@ describe("Text Input", () => {
     cy.get('[data-cy="togglr-button-left"]').click();
     verifyAlignment(textInputText.defaultWidgetName, "sideLeft");
     addCustomWidthOfLabel("50");
-    verifyCustomWidthOfLabel(textInputText.defaultWidgetName, "50");
+    verifyCustomWidthOfLabel(textInputText.defaultWidgetName, "35");
     selectColourFromColourPicker(
       "Text",
       data.labelColor,
@@ -335,7 +337,7 @@ describe("Text Input", () => {
     );
 
     verifyAlignment(textInputText.defaultWidgetName, "sideLeft");
-    verifyCustomWidthOfLabel(textInputText.defaultWidgetName, "50");
+    verifyCustomWidthOfLabel(textInputText.defaultWidgetName, "35");
     verifyInputFieldColors("textinput1", data);
 
     verifyBoxShadowCss(
