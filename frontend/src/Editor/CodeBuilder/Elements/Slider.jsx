@@ -31,6 +31,7 @@ function Slider1({ value, onChange, component }) {
         value={sliderValue}
         staticText="% of the field"
         onInputChange={onInputChange}
+        dataCy="width"
       />
       <div style={{ position: 'absolute', top: '34px' }}>
         <Slider.Root
