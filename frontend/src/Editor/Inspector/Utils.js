@@ -28,7 +28,6 @@ export function renderCustomStyles(
   components = {},
   accordian,
   darkMode = false,
-  verticalLine = true,
   placeholder = ''
 ) {
   const componentConfig = component.component;
@@ -79,7 +78,6 @@ export function renderCustomStyles(
           paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);
         }}
         component={component}
-        verticalLine={verticalLine}
         accordian={accordian}
         placeholder={placeholder}
       />
@@ -97,8 +95,7 @@ export function renderElement(
   currentState,
   components = {},
   darkMode = false,
-  placeholder = '',
-  verticalLine = true
+  placeholder = ''
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
@@ -141,7 +138,6 @@ export function renderElement(
         paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);
       }}
       component={component}
-      verticalLine={verticalLine}
       placeholder={placeholder}
     />
   );

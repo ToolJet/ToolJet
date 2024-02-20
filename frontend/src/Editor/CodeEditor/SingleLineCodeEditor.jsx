@@ -63,7 +63,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
 
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
-
   return (
     <div
       ref={wrapperRef}
@@ -282,7 +281,6 @@ const DynamicEditorBridge = (props) => {
     className,
     onFxPress,
     cyLabel = '',
-    verticalLine = false,
     onChange,
     styleDefinition,
   } = props;
@@ -355,7 +353,6 @@ const DynamicEditorBridge = (props) => {
         <div className={`row custom-row`} style={{ display: codeShow ? 'flex' : 'none' }}>
           <div className={`col code-hinter-col`}>
             <div className="d-flex">
-              <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div>
               <SingleLineCodeEditor initialValue {...props} />
             </div>
           </div>
