@@ -20,7 +20,16 @@ import {
   generateNextNameAndSlug,
   isSuperAdmin,
 } from 'src/helpers/utils.helper';
-import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
+import {
+  Brackets,
+  createQueryBuilder,
+  DeepPartial,
+  EntityManager,
+  FindManyOptions,
+  getManager,
+  ILike,
+  Repository,
+} from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
@@ -37,6 +46,7 @@ import {
   USER_STATUS,
   USER_TYPE,
   WORKSPACE_USER_STATUS,
+  WORKSPACE_STATUS,
 } from 'src/helpers/user_lifecycle';
 import { InstanceSettingsService } from './instance_settings.service';
 import { decamelize } from 'humps';
@@ -185,10 +195,18 @@ export class OrganizationsService {
   async fetchOrganization(slug: string): Promise<Organization> {
     let organization: Organization;
     try {
-      organization = await this.organizationsRepository.findOneOrFail({ where: { slug }, select: ['id', 'slug'] });
+      organization = await this.organizationsRepository.findOneOrFail({
+        where: { slug },
+        select: ['id', 'slug', 'status'],
+      });
     } catch (error) {
-      organization = await this.organizationsRepository.findOne({ where: { id: slug }, select: ['id', 'slug'] });
+      organization = await this.organizationsRepository.findOne({
+        where: { id: slug },
+        select: ['id', 'slug', 'status'],
+      });
     }
+    if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
+      throw new BadRequestException('Organization is Archived');
     return organization;
   }
 
@@ -357,11 +375,49 @@ export class OrganizationsService {
     return await this.organizationUsersQuery(user.organizationId, options, condition).getCount();
   }
 
-  async fetchOrganizations(user: any): Promise<Organization[]> {
+  async fetchOrganizations(
+    user: any,
+    status = 'active',
+    currentPage?: number,
+    perPageCount?: number,
+    name?: string
+  ): Promise<{ organizations: Organization[]; totalCount: number }> {
+    /**
+     * Asynchronous function to fetch organizations based on specified parameters.
+     *
+     * @param user - The user making the request. If the user is a Super Admin, all organizations are accessible; otherwise, only organizations associated with the user are retrieved.
+     * @param status - Optional parameter specifying the status of organizations to retrieve (default: 'active').
+     * @param currentPage - Optional parameter specifying the current page number for paginated results.
+     * @param perPageCount - Optional parameter specifying the number of organizations to fetch per page.
+     * @param name - Optional parameter to filter organizations by name.
+     *
+     * @returns A Promise containing an object with two properties:
+     *   - organizations: An array of Organization objects based on the specified criteria.
+     *   - totalCount: The total count of organizations that match the criteria.
+     *
+     * @throws An error if the function encounters issues during database queries or data retrieval.
+     */
     if (isSuperAdmin(user)) {
-      return await this.organizationsRepository.find({ order: { name: 'ASC' } });
+      const findOptions: FindManyOptions<Organization> = {
+        order: { name: 'ASC' },
+        where: {
+          status: status,
+          /* Adding optional like filter for name */
+          ...(name ? { name: ILike(`%${name}%`) } : {}),
+        },
+      };
+
+      /* Adding pagination in API using current page and page per count  */
+      if (currentPage && perPageCount > 0) {
+        findOptions.skip = (currentPage - 1) * perPageCount;
+        findOptions.take = perPageCount;
+      }
+
+      /* Returning both all organizations and total count of organization that matches the given status and name condition   */
+      const [organizations, totalCount] = await this.organizationsRepository.findAndCount(findOptions);
+      return { organizations, totalCount };
     } else {
-      return await createQueryBuilder(Organization, 'organization')
+      let query = createQueryBuilder(Organization, 'organization')
         .innerJoin(
           'organization.organizationUsers',
           'organization_users',
@@ -373,8 +429,30 @@ export class OrganizationsService {
         .andWhere('organization_users.userId = :userId', {
           userId: user.id,
         })
-        .orderBy('name', 'ASC')
-        .getMany();
+        .andWhere('organization.status = :status', {
+          status,
+        });
+
+      if (name) {
+        query = query.andWhere('organization.name ILIKE :name', {
+          name: `%${name}%`,
+        });
+      }
+      query = query.orderBy('name', 'ASC');
+
+      /* wrapping two different promises for optimization */
+      const [organizations, totalCount] = await Promise.all([
+        (async () => {
+          if (currentPage && perPageCount > 0) {
+            const skipCount = (currentPage - 1) * perPageCount;
+            query = query.take(perPageCount).skip(skipCount);
+          }
+          return await query.getMany();
+        })(),
+        query.getCount(),
+      ]);
+
+      return { organizations, totalCount };
     }
   }
 
@@ -638,7 +716,7 @@ export class OrganizationsService {
   }
 
   async updateOrganization(organizationId: string, params: OrganizationUpdateDto) {
-    const { name, slug, domain, enableSignUp, inheritSSO } = params;
+    const { name, slug, domain, enableSignUp, inheritSSO, status } = params;
 
     const updatableParams = {
       name,
@@ -646,14 +724,17 @@ export class OrganizationsService {
       domain,
       enableSignUp,
       inheritSSO,
+      status,
     };
 
     // removing keys with undefined values
     cleanObject(updatableParams);
-
-    return await catchDbException(async () => {
-      return await this.organizationsRepository.update(organizationId, updatableParams);
-    }, orgConstraints);
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      await catchDbException(async () => {
+        await manager.update(Organization, organizationId, updatableParams);
+      }, orgConstraints);
+      await this.usersService.validateLicense(manager);
+    });
   }
 
   async updateOrganizationConfigs(organizationId: string, params: any) {

@@ -322,6 +322,16 @@
     color: #172531;
 }
 
+.tj-text-input-super-admin-label {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 28px;
+    margin-bottom: 4px !important;
+    display: flex;
+    align-items: center;
+    color: #687076;
+}
+
 .common-auth-sub-header {
     font-weight: 400;
     font-size: 14px;
@@ -358,6 +368,14 @@
     font-weight: 400;
     font-size: 45px;
     line-height: 68px;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.common-auth-section-header-super-admin {
+    font-weight: 400;
+    font-size: 45px;
+    line-height: 45px;
     color: #111827;
     margin-bottom: 4px;
 }

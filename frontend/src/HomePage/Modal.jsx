@@ -3,6 +3,7 @@ import { default as BootstrapModal } from 'react-bootstrap/Modal';
 
 export default function Modal({
   title,
+  titleAdornment,
   show,
   closeModal,
   customClassName,
@@ -36,6 +37,7 @@ export default function Modal({
         <div>
           <BootstrapModal.Title data-cy={`${title.toLowerCase().replace(/\s+/g, '-')}-title`}>
             {title}
+            {titleAdornment}
           </BootstrapModal.Title>
           {headerContent && <div>{headerContent}</div>}
         </div>

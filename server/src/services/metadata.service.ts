@@ -87,9 +87,8 @@ export class MetadataService {
   async sendTelemetryData(metadata: Metadata) {
     const manager = getManager();
     const totalUserCount = await manager.count(User);
-    const { editor: totalEditorCount, viewer: totalViewerCount } = await this.usersService.fetchTotalViewerEditorCount(
-      manager
-    );
+    const { editor: totalEditorCount, viewer: totalViewerCount } =
+      await this.licenseService.fetchTotalViewerEditorCount(manager);
     const totalAppCount = await manager.count(App);
     const totalInternalTableCount = await manager.count(InternalTable);
     const totalDatasourcesByKindCount = await this.fetchDatasourcesByKindCount(manager);

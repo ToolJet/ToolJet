@@ -35,6 +35,7 @@ import Diamond from './Diamond.jsx';
 import DownArrow from './DownArrow.jsx';
 import EditRectangle from './EditRectangle.jsx';
 import Enterprise from './Enterprise.jsx';
+import EnterpriseSmall from './EnterpriseSmall.jsx';
 import Eye from './Eye.jsx';
 import Eye1 from './Eye1.jsx';
 import EyeDisable from './EyeDisable.jsx';
@@ -157,6 +158,8 @@ import Check from './Check.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
+import Danger from './Danger.jsx';
+import DangerDark from './DangerDark.jsx';
 import WorkspaceConstants from './WorkspaceConstants.jsx';
 import ArrowBackDown from './ArrowBackDown.jsx';
 
@@ -236,6 +239,10 @@ const Icon = (props) => {
       return <DarkMode {...props} />;
     case 'datasource':
       return <Datasource {...props} />;
+    case 'danger':
+      return <Danger {...props} />;
+    case 'danger-dark':
+      return <DangerDark {...props} />;
     case 'delete':
       return <Delete {...props} />;
     case 'diamond':
@@ -248,6 +255,8 @@ const Icon = (props) => {
       return <Enterprise {...props} />;
     case 'enterpriseGradient':
       return <EnterpriseGradient {...props} />;
+    case 'enterprisesmall':
+      return <EnterpriseSmall {...props} />;
     case 'lockGradient':
       return <LockGradient {...props} />;
     case 'datasourceGradient':

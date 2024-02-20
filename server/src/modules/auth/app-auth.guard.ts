@@ -1,7 +1,9 @@
-import { ExecutionContext, Injectable, NotFoundException } from '@nestjs/common';
+import { ExecutionContext, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { App } from 'src/entities/app.entity';
+import { Organization } from 'src/entities/organization.entity';
 import { getManager } from 'typeorm';
+import { WORKSPACE_STATUS } from 'src/helpers/user_lifecycle';
 
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
@@ -24,6 +26,13 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       },
     });
     if (!app) throw new NotFoundException('App not found. Invalid app id');
+    const organization = await getManager().findOne(Organization, {
+      where: {
+        id: app.organizationId,
+      },
+    });
+    if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
+      throw new BadRequestException('Organization is Archived');
 
     request.tj_app = app;
     request.headers['tj-workspace-id'] = app.organizationId;

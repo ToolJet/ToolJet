@@ -74,7 +74,7 @@ const Menu = (props) => {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <rect width="34" height="34" rx="6" fill="#F1F3F5" />
+              <rect width="34" height="34" rx="6" fill="var(--indigo3)" />
               <path
                 fillRule="evenodd"
                 clipRule="evenodd"

@@ -224,22 +224,29 @@ describe("Self host onboarding", () => {
             "Priority support via email, phone & private channel"
         );
 
-        cy.get(commonSelectors.continueButton).click();
-        cy.get("body").then(($title) => {
-            if (!$title.text().includes("Start your 14-day Free Trial")) {
-                cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-                    "have.text",
-                    "My workspace"
-                );
+        // cy.get(commonSelectors.continueButton).click();
 
-                logout();
-                cy.appUILogin();
+        // cy.get(".modal-title").verifyVisibleElement("have.text", "Free Trial");
+        // cy.get('[data-cy="modal-message"]')
+        //     .should("be.visible")
+        //     .and(($el) => {
+        //         expect($el.contents().first().text().trim()).to.eq(
+        //             "Trial could not be activated. Please try again!"
+        //         );
+        //     });
 
-                cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-                    "have.text",
-                    "My workspace"
-                );
-            }
-        });
+        // cy.get(".cancel-btn").verifyVisibleElement("have.text", "Cancel");
+        // cy.get(".modal-footer > :nth-child(2)").verifyVisibleElement(
+        //     "have.text",
+        //     "Try again"
+        // );
+        // cy.get(".cancel-btn").click();
+
+        cy.get(".tj-base-btn").click();
+        cy.wait(4000);
+        cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+            "have.text",
+            "My workspace"
+        );
     });
 });

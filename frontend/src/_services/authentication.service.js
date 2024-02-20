@@ -30,6 +30,7 @@ const currentSessionSubject = new BehaviorSubject({
 
 export const authenticationService = {
   login,
+  superAdminLogin,
   getOrganizationConfigs,
   logout,
   signup,
@@ -67,8 +68,22 @@ function login(email, password, organizationId) {
     body: JSON.stringify({ email, password }),
     credentials: 'include',
   };
-
   return fetch(`${config.apiUrl}/authenticate${organizationId ? `/${organizationId}` : ''}`, requestOptions)
+    .then(handleResponseWithoutValidation)
+    .then((user) => {
+      authenticationService.updateCurrentSession(user);
+      return user;
+    });
+}
+
+function superAdminLogin(email, password) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify({ email, password }),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/authenticate/super-admin`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {
       authenticationService.updateCurrentSession(user);

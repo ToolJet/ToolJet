@@ -37,6 +37,7 @@ const routes = [
   { path: '/:worspace_id', breadcrumb: 'Applications' },
   { path: '/:worspace_id/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
+  { path: '/:worpsace_id/audit-logs', breadcrumb: ' ' },
   { path: '/data-sources', breadcrumb: 'Data sources' },
   { path: '/:worspace_id/workspace-constants', breadcrumb: 'Workspace constants' },
   { path: '/:worspace_id/settings', breadcrumb: ' ' },
@@ -44,8 +45,8 @@ const routes = [
   { path: '/license', breadcrumb: 'Enterprise Edition' },
   { path: '/instance-settings/all-users', breadcrumb: 'Settings' },
   { path: '/instance-settings/manage-instance-settings', breadcrumb: 'Settings' },
+  { path: '/instance-settings/all-workspaces', breadcrumb: 'Settings' },
   { path: '/instance-settings/white-labelling', breadcrumb: 'Settings' },
   { path: '/instance-settings/license', breadcrumb: 'Settings' },
-  { path: '/:worspace_id/audit-logs', breadcrumb: ' ' },
   { path: '/:worspace_id/workflows', breadcrumb: 'Workflows', props: { beta: true } },
 ];
