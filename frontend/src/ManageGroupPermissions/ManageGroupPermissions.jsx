@@ -120,6 +120,7 @@ class ManageGroupPermissionsComponent extends React.Component {
           <Popover.Body bsPrefix="popover-body">
             <div>
               <Field
+                customClass={this.props.darkMode ? 'dark-theme' : ''}
                 leftIcon="copy"
                 leftIconWidth="20"
                 leftViewBox="0  0 20 20"
@@ -127,6 +128,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                 onClick={duplicateGroup}
               />
               <Field
+                customClass={this.props.darkMode ? 'dark-theme' : ''}
                 leftIcon="delete"
                 leftIconWidth="18"
                 leftIconHeight="18"
@@ -136,6 +138,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                 tooltipContent="Cannot delete default group"
                 onClick={isDefaultGroup ? {} : deleteGroup}
                 buttonDisable={isDefaultGroup}
+                darkMode={this.props.darkMode}
               />
             </div>
           </Popover.Body>
@@ -337,8 +340,12 @@ class ManageGroupPermissionsComponent extends React.Component {
               confirmBtnProps={{ title: 'Duplicate', disabled: allFalse }}
               isLoading={isDuplicatingGroup}
               cancelDisabled={isDuplicatingGroup}
+              data-cy="modal-title"
+              darkMode={this.props.darkMode}
             >
-              <div className="tj-text">Duplicate the following parts of the group</div>
+              <div className="tj-text" data-cy="modal-message">
+                Duplicate the following parts of the group
+              </div>
               <div className="group-duplcate-modal-body">
                 <div className="row check-row">
                   <div className="col-1 ">
@@ -354,10 +361,13 @@ class ManageGroupPermissionsComponent extends React.Component {
                           },
                         }));
                       }}
+                      data-cy="users-check-input"
                     />
                   </div>
                   <div className="col-11">
-                    <div className="tj-text ">Users</div>
+                    <div className="tj-text " data-cy="users-label">
+                      Users
+                    </div>
                   </div>
                 </div>
                 <div className="row check-row">
@@ -374,10 +384,13 @@ class ManageGroupPermissionsComponent extends React.Component {
                           },
                         }));
                       }}
+                      data-cy="permissions-check-input"
                     />
                   </div>
                   <div className="col-11">
-                    <div className="tj-text ">Permissions</div>
+                    <div className="tj-text " data-cy="permissions-label">
+                      Permissions
+                    </div>
                   </div>
                 </div>
                 <div className="row check-row">
@@ -394,10 +407,13 @@ class ManageGroupPermissionsComponent extends React.Component {
                           },
                         }));
                       }}
+                      data-cy="apps-check-input"
                     />
                   </div>
                   <div className="col-11">
-                    <div className="tj-text ">Apps</div>
+                    <div className="tj-text " data-cy="apps-label">
+                      Apps
+                    </div>
                   </div>
                 </div>
               </div>
@@ -577,6 +593,7 @@ const Field = ({
   buttonDisable = false,
   tooltipContent = '',
   tooltipId = '',
+  darkMode = false,
 }) => {
   return (
     <div className={`field ${customClass ? ` ${customClass}` : ''}`}>
@@ -598,7 +615,7 @@ const Field = ({
             ></SolidIcon>
           )}
         </div>
-        <div className={`col ${buttonDisable ? 'disable' : ''}`}>{text}</div>
+        <div className={`col ${buttonDisable ? 'disable' : ''} ${darkMode ? 'dark-theme' : ''}`}>{text}</div>
       </span>
     </div>
   );

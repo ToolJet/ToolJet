@@ -16,6 +16,7 @@ describe("User permissions", () => {
     cy.defaultWorkspaceLogin();
     cy.removeAssignedApps();
     permissions.reset();
+    cy.skipWalkthrough();
   });
   it("Should verify the Create and Delete app permission", () => {
     data.appName = `${fake.companyName}-App`;
