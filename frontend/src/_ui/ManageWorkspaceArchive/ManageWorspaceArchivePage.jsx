@@ -59,7 +59,7 @@ class ManageWorkspaceArchivePage extends Component {
         isLoading: true,
       }),
       () => {
-        this.fetchWorkspace(this.state.currentTab, () => {}, false, this.state.searchValue, true);
+        this.fetchWorkspace(this.state.currentTab, () => {}, this.state.searchValue, true);
       }
     );
   };
@@ -86,12 +86,26 @@ class ManageWorkspaceArchivePage extends Component {
         isLoading: true,
       }),
       () => {
-        this.fetchWorkspace(this.state.currentTab, () => {}, false, this.state.searchValue, true);
+        this.fetchWorkspace(this.state.currentTab, () => {}, this.state.searchValue, true);
       }
     );
   };
 
-  fetchWorkspace = (currentTab, callback = () => {}, updateSession = false, name = undefined, isSearch = false) => {
+  updateCurrentActiveWorkspaces = () => {
+    organizationService.getOrganizations().then((response) => {
+      const { organizations } = response;
+      const currentOrganization = organizations?.find((org) => org.id === this.state.currentOrganizationId);
+      this.setState({
+        currentOrganizations: organizations,
+      });
+      updateCurrentSession({
+        organizations: organizations,
+        current_organization: currentOrganization,
+      });
+    });
+  };
+
+  fetchWorkspace = (currentTab, callback = () => {}, name = undefined, isSearch = false) => {
     organizationService.getOrganizations(currentTab, this.state.currentPage, 7, name).then((response) => {
       const { organizations, total_count } = response;
       if (currentTab == WORKSPACE_STATUS.ACTIVE) {
@@ -117,12 +131,6 @@ class ManageWorkspaceArchivePage extends Component {
             singleActiveWorkspace: true,
           });
         }
-        const currentOrganization = organizations?.find((org) => org.id === this.state.currentOrganizationId);
-        if (updateSession)
-          updateCurrentSession({
-            organizations: organizations,
-            current_organization: currentOrganization,
-          });
       } else {
         this.setState(
           {
@@ -144,7 +152,7 @@ class ManageWorkspaceArchivePage extends Component {
         searchValue: event.target.value,
       },
       () => {
-        this.fetchWorkspace(this.state.currentTab, () => {}, false, event.target.value, true);
+        this.fetchWorkspace(this.state.currentTab, () => {}, event.target.value, true);
       }
     );
   };
@@ -164,8 +172,9 @@ class ManageWorkspaceArchivePage extends Component {
   componentDidMount = () => {
     this.fetchWorkspace(WORKSPACE_STATUS.ACTIVE);
     this.fetchWorkspace(WORKSPACE_STATUS.ARCHIVED, () => {
-      this.setState((prevState) => ({
-        totalWorkspace: prevState.totalActive + prevState.totalArchived,
+      const { totalActive, totalArchived } = this.state;
+      this.setState(() => ({
+        totalWorkspace: totalActive + totalArchived,
       }));
     });
   };
@@ -179,19 +188,16 @@ class ManageWorkspaceArchivePage extends Component {
       .editOrganization({ status: status }, organizationId)
       .then(() => {
         toast.success(`${name} \n was successfully ${status == 'active' ? 'unarchived' : 'archived'}`);
-        this.fetchWorkspace(WORKSPACE_STATUS.ACTIVE, () => {}, true);
-        this.fetchWorkspace(
-          WORKSPACE_STATUS.ARCHIVED,
-          () => {
-            this.setState({
-              searchValue: '',
-              organizationIdToArchive: '',
-              organizationNameToArchive: '',
-              showArchiveConfirmModal: false,
-            });
-          },
-          true
-        );
+        this.fetchWorkspace(WORKSPACE_STATUS.ACTIVE, () => {});
+        this.fetchWorkspace(WORKSPACE_STATUS.ARCHIVED, () => {
+          this.setState({
+            searchValue: '',
+            organizationIdToArchive: '',
+            organizationNameToArchive: '',
+            showArchiveConfirmModal: false,
+          });
+        });
+        this.updateCurrentActiveWorkspaces();
       })
       .catch(({ error, data }) => {
         const { statusCode } = data;
@@ -317,7 +323,7 @@ class ManageWorkspaceArchivePage extends Component {
           <div class="org-users-page-container">
             <div class="d-flex">
               <p class="tj-text" data-cy="page-title">
-                {totalWorkspace} Workspaces
+                {totalActive + totalArchived} Workspaces
               </p>
             </div>
             <div class={`manage-workspace-table-wrap ${this.props.darkMode ? 'dark-mode' : ''}`}>

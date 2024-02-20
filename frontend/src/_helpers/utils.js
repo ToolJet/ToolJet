@@ -1047,6 +1047,7 @@ export const validateName = (
     const reservedPaths = [
       'forgot-password',
       'switch-workspace',
+      'switch-workspace-archived',
       'reset-password',
       'invitations',
       'organization-invitations',
