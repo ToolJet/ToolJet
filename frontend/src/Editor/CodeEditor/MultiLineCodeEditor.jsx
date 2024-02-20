@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap } from '@codemirror/commands';
@@ -12,6 +12,8 @@ import { githubLight } from '@uiw/codemirror-theme-github';
 import { generateHints } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
+import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
+import { createReferencesLookup } from '@/_stores/utils';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -38,6 +40,11 @@ const MultiLineCodeEditor = (props) => {
   } = props;
 
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
+
+  const context = useContext(CodeHinterContext);
+
+  const { suggestionList } = createReferencesLookup(context, true);
+
   const diffOfCurrentValue = React.useRef(null);
 
   const handleChange = React.useCallback((val) => {
@@ -120,7 +127,7 @@ const MultiLineCodeEditor = (props) => {
       return suggestion.hint.includes(currentWord);
     });
 
-    const suggestions = generateHints([...JSLangHints, ...autoSuggestionList]).map((hint) => {
+    const suggestions = generateHints([...JSLangHints, ...autoSuggestionList, ...suggestionList]).map((hint) => {
       delete hint['apply'];
 
       hint.apply = (view, completion, from, to) => {
@@ -215,7 +222,7 @@ const MultiLineCodeEditor = (props) => {
                   overflowY: 'auto',
                 }}
                 className={`codehinter-multi-line-input`}
-                indentWithTab={false}
+                indentWithTab={true}
               />
             </div>
           </ErrorBoundary>

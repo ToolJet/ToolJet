@@ -330,11 +330,15 @@ function toRemoveExposedvariablesFromComponentDiff(object) {
   return copy;
 }
 
-export function createReferencesLookup(refState) {
+export function createReferencesLookup(refState, forQueryParams = false) {
+  if (forQueryParams && _.isEmpty(refState['parameters'])) {
+    return { suggestionList: [] };
+  }
+
   const getCurrentNodeType = (node) => Object.prototype.toString.call(node).slice(8, -1);
 
   const state = _.cloneDeep(refState);
-  const queries = state['queries'];
+  const queries = forQueryParams ? {} : state['queries'];
   const actions = [
     'runQuery',
     'setVariable',
@@ -352,14 +356,16 @@ export function createReferencesLookup(refState) {
     'switchPage',
   ];
 
-  // eslint-disable-next-line no-unused-vars
-  _.forIn(queries, (query, key) => {
-    if (!query.hasOwnProperty('run')) {
-      query.run = true;
-    }
-  });
+  if (!forQueryParams) {
+    // eslint-disable-next-line no-unused-vars
+    _.forIn(queries, (query, key) => {
+      if (!query.hasOwnProperty('run')) {
+        query.run = true;
+      }
+    });
+  }
 
-  const currentState = _.merge(state, { queries });
+  const currentState = !forQueryParams ? _.merge(state, { queries }) : state;
   const suggestionList = [];
   const map = new Map();
 
@@ -405,16 +411,18 @@ export function createReferencesLookup(refState) {
   };
 
   buildMap(currentState, '');
+
   map.forEach((__, key) => {
     if (key.endsWith('run') && key.startsWith('queries')) {
       return suggestionList.push({ hint: `${key}()`, type: 'Function' });
     }
     return suggestionList.push({ hint: key, type: resolvedRefTypes.get(hintsMap.get(key)) });
   });
-
-  actions.forEach((action) => {
-    suggestionList.push({ hint: `actions.${action}()`, type: 'method' });
-  });
+  if (!forQueryParams) {
+    actions.forEach((action) => {
+      suggestionList.push({ hint: `actions.${action}()`, type: 'method' });
+    });
+  }
 
   return { suggestionList, hintsMap, resolvedRefs };
 }
