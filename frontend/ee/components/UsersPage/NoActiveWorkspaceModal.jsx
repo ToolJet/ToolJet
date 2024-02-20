@@ -42,8 +42,12 @@ export function NoActiveWorkspaceModal({ darkMode, handleClose, show }) {
             fill="#E54D2E"
           />
         </svg>
-        <span className="header-text">No active workspace</span>
-        <p>User is not part of any active workspaces. Invite them to a workspace so they can begin exploring!</p>
+        <span className="header-text" data-cy="modal-title">
+          No active workspace
+        </span>
+        <p data-cy="modal-message">
+          User is not part of any active workspaces. Invite them to a workspace so they can begin exploring!
+        </p>
       </Modal.Header>
     </Modal>
   );

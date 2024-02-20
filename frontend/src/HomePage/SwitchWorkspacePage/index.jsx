@@ -67,10 +67,10 @@ export function SwitchWorkspaceModal({
             />
           </svg>
         )}
-        <span className="header-text" data-cy="modal-title">
+        <span className="header-text" data-cy="switch-modal-title">
           {headerText}
         </span>
-        <p data-cy="modal-message">{title}</p>
+        <p data-cy="switch-modal-message">{title}</p>
       </Modal.Header>
 
       <Modal.Body>

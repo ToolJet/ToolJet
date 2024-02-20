@@ -295,8 +295,14 @@ class ManageWorkspaceArchivePage extends Component {
           <ModalBase
             title={
               <div className="my-3">
-                <span className="tj-text-md font-weight-500">Archive workspace</span>
-                <div className="tj-text-sm text-muted font-weight-400" style={{ color: '#687076' }}>
+                <span className="tj-text-md font-weight-500" data-cy="modal-title">
+                  Archive workspace
+                </span>
+                <div
+                  className="tj-text-sm text-muted font-weight-400"
+                  style={{ color: '#687076' }}
+                  data-cy="workspace-name"
+                >
                   {organizationNameToArchive}
                 </div>
               </div>
@@ -310,7 +316,7 @@ class ManageWorkspaceArchivePage extends Component {
             handleConfirm={this.archiveWorkspaceAction}
             confirmBtnProps={confirmButtonProps}
             body={
-              <div className="tj-text-sm">
+              <div className="tj-text-sm" data-cy="modal-message">
                 {
                   'Archiving the workspace will revoke user access and all associate content. Are you sure you want to continue?'
                 }

@@ -15,7 +15,11 @@ export const commonEeSelectors = {
   settingsIcon: '[data-cy="icon-settings"]',
   gitSyncIcon: '[data-cy="git-sync-icon"]',
   confirmButton: '[data-cy="confirm-button"]',
-  importFromGit: '[data-cy="import-from-git-button"]'
+  importFromGit: '[data-cy="import-from-git-button"]',
+  searchBar: '[data-cy="query-manager-search-bar"]',
+  nameHeader: '[data-cy="name-header"]',
+  modalMessage: '[data-cy="modal-message"]',
+  paginationSection: '[data-cy="pagination-section"]',
 
 };
 
@@ -108,6 +112,7 @@ export const instanceSettingsSelector = {
   allowWorkspaceToggle: '[data-cy="form-check-input"]',
   allowWorkspaceToggleLabel: '[data-cy="form-check-label"]',
   allowWorkspaceHelperText: '[data-cy="instance-settings-help-text"]',
+  allWorkspaceTab: '[data-cy="all-workspaces-list-item"]',
 };
 
 
@@ -166,5 +171,21 @@ export const gitSyncSelector = {
   gitRepoInfo: '[data-cy="git-repo-info"]',
   pullButton: '[data-cy="pull-button"]'
 
+
+}
+
+export const workspaceSelector = {
+  activelink: '[data-cy="active-link"]',
+  archivedLik: '[data-cy="archived-link"]',
+  userStatusChange: '[data-cy="button-user-status-change"]',
+  workspaceStatusChange: '[data-cy="button-ws-status-change"]',
+  switchWsModalTitle: '[data-cy="switch-modal-title"]',
+  switchWsModalMessage: '[data-cy="switch-modal-message"]',
+  workspaceName: (workspaceName) => {
+    return `[data-cy="${workspaceName}-workspace-name"]`
+  },
+  workspaceInput: (workspaceName) => {
+    return `[data-cy="${workspaceName}-workspace-input"]`
+  },
 
 }

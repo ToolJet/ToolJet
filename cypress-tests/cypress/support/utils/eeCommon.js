@@ -3,6 +3,7 @@ import {
   ssoEeSelector,
   instanceSettingsSelector,
   multiEnvSelector,
+  workspaceSelector,
 } from "Selectors/eeCommon";
 import { ssoEeText } from "Texts/eeCommon";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
@@ -553,4 +554,11 @@ export const openUserActionMenu = (email) => {
   cy.wait(1000);
   cy.get('[data-cy="user-actions-button"]').eq(0).click();
   cy.wait(2000);
+};
+
+export const archiveWorkspace = (workspaceName) => {
+  cy.get(instanceSettingsSelector.allWorkspaceTab).click();
+  cy.clearAndType(commonEeSelectors.searchBar, workspaceName);
+  cy.get(workspaceSelector.workspaceStatusChange).eq(0).click();
+  cy.get(commonEeSelectors.confirmButton).click();
 };
