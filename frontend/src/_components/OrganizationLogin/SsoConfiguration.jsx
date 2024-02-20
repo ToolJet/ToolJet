@@ -1,0 +1,296 @@
+import React from 'react';
+import './Configuration.css';
+import Modal from '@/HomePage/Modal';
+import { Google } from '@/ManageSSO/Google';
+import { Git } from '@/ManageSSO/Git';
+import { GoogleSSOModal } from './GoogleSsoModal';
+import { GithubSSOModal } from './GithubSsoModal';
+import { organizationService } from '@/_services';
+import { toast } from 'react-hot-toast';
+import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Color } from '@/Editor/CodeBuilder/Elements/Color';
+import EditIcon from '@/_ui/Icon/solidIcons/EditIcon';
+
+class SSOConfiguration extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      initialState: {},
+      showModal: false,
+      currentSSO: '',
+      ssoOptions: this.props.ssoOptions,
+      defaultSSO: this.props.defaultSSO,
+      isAnySSOEnabled: this.props.isAnySSOEnabled,
+      showDropdown: false,
+      enabledWorkspaceSSO: 0,
+    };
+  }
+
+  handleSelect = (eventKey) => {
+    console.log(`Selected ${eventKey}`);
+  };
+
+  setShowDropdown = (show) => {
+    this.setState({ showDropdown: show });
+  };
+
+  initializeOptionStates = (ssoOptions) => {
+    const initialState = ssoOptions.reduce((acc, option) => {
+      return {
+        ...acc,
+        [`${option.sso}Enabled`]: option.enabled,
+      };
+    }, {});
+    return initialState;
+  };
+
+  componentDidMount() {
+    const initialState = this.initializeOptionStates(this.props.ssoOptions);
+    this.setState({ ...initialState });
+    this.setState({ ssoOptions: this.props.ssoOptions });
+    this.setState({ defaultSSO: this.props.defaultSSO });
+    this.setState({ isAnySSOEnabled: this.props.isAnySSOEnabled });
+  }
+
+  componentDidUpdate(prevProps) {
+    // Check if ssoOptions have changed
+    if (prevProps.ssoOptions !== this.props.ssoOptions) {
+      const initialState = this.initializeOptionStates(this.props.ssoOptions);
+      const enabledSSOCount = this.getCountOfEnabledSSO();
+
+      // Update state in a single call
+      this.setState({
+        ...initialState,
+        ssoOptions: this.props.ssoOptions,
+        enabledWorkspaceSSO: enabledSSOCount,
+        defaultSSO: this.props.defaultSSO,
+        isAnySSOEnabled: this.props.isAnySSOEnabled,
+      });
+    }
+  }
+
+  openModal = (ssoType) => {
+    this.setState({
+      showModal: true,
+      currentSSO: ssoType,
+    });
+  };
+
+  closeModal = () => {
+    this.setState({ showModal: false });
+  };
+
+  toggleDefaultSSO = async () => {
+    try {
+      await organizationService.editOrganization({ inheritSSO: !this.state.defaultSSO });
+      this.props.onUpdateAnySSOEnabled(
+        this.state.ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) || !this.state.defaultSSO
+      );
+      this.setState({
+        defaultSSO: !this.state.defaultSSO,
+      });
+      toast.success('Updated default sso settings');
+    } catch (e) {
+      toast.error('Default sso settings could not be updated');
+    }
+  };
+
+  handleToggleSSOOption = async (key) => {
+    const isEnabledKey = `${key}Enabled`;
+    const enabledStatus = !this.state[isEnabledKey];
+
+    try {
+      await this.changeStatus(key, enabledStatus);
+      toast.success(`${enabledStatus ? 'Enabled' : 'Disabled'} ${key} SSO`, { position: 'top-center' });
+
+      this.setState((prevState) => {
+        const updatedSSOOptions = prevState.ssoOptions.map((option) => {
+          if (option.sso === key) {
+            return { ...option, enabled: enabledStatus };
+          }
+          return option;
+        });
+        const enabledSSOCount = updatedSSOOptions.filter((option) => option.enabled && option.sso !== 'form').length;
+        this.props.onUpdateAnySSOEnabled(
+          updatedSSOOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) || this.state.defaultSSO
+        );
+        return {
+          ssoOptions: updatedSSOOptions,
+          showModal: enabledStatus,
+          currentSSO: key,
+          [isEnabledKey]: enabledStatus,
+          enabledWorkspaceSSO: enabledSSOCount,
+        };
+      });
+    } catch (error) {
+      toast.error('Error while updating SSO configuration', { position: 'top-center' });
+    }
+  };
+
+  changeStatus = async (key, enabledStatus) => {
+    try {
+      const response = await organizationService.editOrganizationConfigs({ type: key, enabled: enabledStatus });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  renderSSOConfigComponent = () => {
+    const { currentSSO } = this.state;
+    switch (currentSSO) {
+      case 'google':
+        return <Google />;
+      case 'git':
+        return <Git />;
+      default:
+        return null;
+    }
+  };
+
+  isOptionEnabled = (key) => {
+    const option = this.state.ssoOptions.find((option) => option.sso === key);
+    return option ? option.enabled : false;
+  };
+
+  getCountOfEnabledSSO = () => {
+    const enabledOptions = this.props.ssoOptions.filter((option) => option.enabled && option.sso !== 'form');
+    return enabledOptions.length;
+  };
+
+  getSSOIcon = (key) => {
+    const iconStyles = { width: '20px', height: '20x' };
+    switch (key) {
+      case 'google':
+        return <img src="/assets/images/Google.png" alt="Google" style={iconStyles} />;
+      case 'git':
+        return <img src="/assets/images/Github.png" alt="GitHub" style={iconStyles} />;
+      default:
+        return null;
+    }
+  };
+
+  renderSSOOption = (key, name) => {
+    const isEnabledKey = `${key}Enabled`;
+    const isEnabled = this.state[isEnabledKey];
+
+    return (
+      <div className="sso-option" key={key} onClick={() => this.openModal(key)}>
+        <div className="sso-option-label">
+          {
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {this.getSSOIcon(key)}
+              <span style={{ marginLeft: 8 }}>{name}</span>
+              {
+                <img
+                  src="/assets/images/EditIcon.png"
+                  className="option-icon"
+                  style={{ width: '14px', height: '14px', marginLeft: '8px' }}
+                />
+              }
+            </div>
+          }
+        </div>
+        <label className="switch" onClick={(e) => e.stopPropagation()}>
+          <input type="checkbox" checked={isEnabled} onChange={() => this.handleToggleSSOOption(key)} />
+          <span className="slider round"></span>
+        </label>
+      </div>
+    );
+  };
+
+  render() {
+    const { showModal, currentSSO, defaultSSO, initialState, ssoOptions, showDropdown } = this.state;
+    console.log(defaultSSO, 'check too');
+
+    return (
+      <div className="sso-configuration">
+        <h4 style={{ fontSize: '12px' }}>SSO</h4>
+        <div
+          className={`sso-option ${showDropdown ? 'clicked' : ''}`}
+          style={{ paddingLeft: '0px', marginBottom: '1px' }}
+        >
+          <Dropdown onToggle={() => this.setShowDropdown(!showDropdown)}>
+            <Dropdown.Toggle
+              variant="transparent"
+              id="dropdown-custom-toggle"
+              style={{
+                background: 'none',
+                border: 'none',
+                height: '20px',
+                width: '20px',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+              }}
+              bsPrefix="no-caret-dropdown-toggle"
+            >
+              <div
+                className="sso-option-label"
+                style={{
+                  paddingLeft: '12px',
+                  width: '270px',
+                  paddingRight: '220px',
+                  paddingTop: '6px',
+                  paddingBottom: '6px',
+                  height: '34px',
+                }}
+              >
+                Default SSO {defaultSSO ? `(${2 - this.state.enabledWorkspaceSSO})` : ''}
+                <SolidIcon className="option-icon" name={showDropdown ? 'cheveronup' : 'cheverondown'} fill={'grey'} />
+              </div>
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu style={{ width: '100%' }}>
+              <Dropdown.Item
+                eventKey="Google"
+                onSelect={this.handleSelect}
+                disabled={!(defaultSSO && !this.isOptionEnabled('google'))} // Disable the item if defaultSSO is false
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {this.getSSOIcon('google')}
+                  <span style={{ marginLeft: 8 }}>Google</span>
+                </div>
+              </Dropdown.Item>
+              <Dropdown.Item
+                eventKey="GitHub"
+                onSelect={this.handleSelect}
+                disabled={!(defaultSSO && !this.isOptionEnabled('git'))} // Disable the item if defaultSSO is false
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {this.getSSOIcon('git')}
+                  <span style={{ marginLeft: 8 }}>Github</span>
+                </div>
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+
+          <label className="switch" style={{ marginLeft: '95px' }}>
+            <input type="checkbox" checked={defaultSSO} onChange={this.toggleDefaultSSO} />
+            <span className="slider round"></span>
+          </label>
+        </div>
+        <p className="sso-note">Display default SSO for workspace URL login</p>
+        {this.renderSSOOption('google', 'Google')}
+        {this.renderSSOOption('git', 'GitHub')}
+        {showModal && currentSSO === 'google' && (
+          <GoogleSSOModal
+            settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
+            onClose={() => this.setState({ showModal: false })}
+            changeStatus={this.handleToggleSSOOption}
+          />
+        )}
+        {showModal && currentSSO === 'git' && (
+          <GithubSSOModal
+            settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
+            onClose={() => this.setState({ showModal: false })}
+            changeStatus={this.handleToggleSSOOption}
+          />
+        )}
+      </div>
+    );
+  }
+}
+
+export default SSOConfiguration;
