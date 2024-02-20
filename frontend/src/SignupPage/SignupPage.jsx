@@ -36,8 +36,6 @@ class SignupPageComponent extends React.Component {
 
   componentDidMount() {
     const errorMessage = this.props?.location?.state?.errorMessage;
-    console.log('inside', this.props?.location?.state);
-    console.log('inside', errorMessage);
     if (errorMessage) {
       toast.error(errorMessage);
     }
