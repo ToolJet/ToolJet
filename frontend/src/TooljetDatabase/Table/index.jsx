@@ -75,6 +75,7 @@ const Table = ({ collapseSidebar }) => {
   const [isCellUpdateInProgress, setIsCellUpdateInProgress] = useState(false);
 
   const prevSelectedTableRef = useRef({});
+  const tooljetDbTableRef = useRef(null);
   const duration = 300;
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -277,6 +278,7 @@ const Table = ({ collapseSidebar }) => {
     // Logic for Cell Navigation - Enter ( Opens edit menu ), Backspace (removes Null value ) & ESC event ( close edit menu )
     if (cellClick.rowIndex !== null && !cellClick.errorState && !isCellUpdateInProgress) {
       if (e.key === 'ArrowRight') {
+        e.preventDefault();
         setSelectedRowIds({});
         setEditPopover(false);
         const cellIndexValue =
@@ -292,6 +294,7 @@ const Table = ({ collapseSidebar }) => {
         cellValue === null ? setNullValue(true) : setNullValue(false);
         setDefaultValue(false);
       } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
         setSelectedRowIds({});
         setEditPopover(false);
         const cellIndexValue = cellClick.cellIndex === 0 ? 0 : cellClick.cellIndex - 1;
@@ -305,6 +308,7 @@ const Table = ({ collapseSidebar }) => {
         cellValue === null ? setNullValue(true) : setNullValue(false);
         setDefaultValue(false);
       } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
         setSelectedRowIds({});
         setEditPopover(false);
         const cellValue = rows[cellClick.rowIndex - 1].cells[cellClick.cellIndex].value; // row Index's value
@@ -317,6 +321,7 @@ const Table = ({ collapseSidebar }) => {
         cellValue === null ? setNullValue(true) : setNullValue(false);
         setDefaultValue(false);
       } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
         setSelectedRowIds({});
         setEditPopover(false);
         const cellValue = rows[cellClick.rowIndex + 1].cells[cellClick.cellIndex].value; // row Index's value
@@ -350,6 +355,46 @@ const Table = ({ collapseSidebar }) => {
   useEffect(() => {
     if (!editPopover) {
       document.addEventListener('keydown', handleKeyDown);
+
+      // Table Scroll based on Content overlfow is handled here
+      const selectedCellElem = document.querySelector('.tjdb-selected-cell');
+      if (selectedCellElem && tooljetDbTableRef.current) {
+        const tableBoundingRect = tooljetDbTableRef?.current?.getBoundingClientRect();
+        const cellBoundingRect = selectedCellElem.getBoundingClientRect();
+
+        // Scroll when we reach the bottom of the table and when content overflows
+        if (cellBoundingRect.bottom > tableBoundingRect.bottom) {
+          tooljetDbTableRef.current.scrollTo({
+            top: tooljetDbTableRef.current.scrollTop + (cellBoundingRect.bottom - tableBoundingRect.bottom),
+            behavior: 'smooth',
+          });
+        }
+
+        // Scroll when we reach the top of the table. Added 32 for considering table header space
+        if (cellBoundingRect.top < tableBoundingRect.top + 32) {
+          tooljetDbTableRef.current.scrollTo({
+            top: tooljetDbTableRef.current.scrollTop + (cellBoundingRect.top - (tableBoundingRect.top + 32)),
+            behavior: 'smooth',
+          });
+        }
+
+        // Scroll when we reach right end of the table and if content gets overflow
+        if (cellBoundingRect.right > tableBoundingRect.right) {
+          tooljetDbTableRef.current.scrollTo({
+            left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.right - tableBoundingRect.right),
+            behavior: 'smooth',
+          });
+        }
+
+        // Scroll when we reach left end of the table and if content gets overflow. Added 296 for width of two sticky columns
+        if (cellBoundingRect.left < tableBoundingRect.left + 296) {
+          tooljetDbTableRef.current.scrollTo({
+            left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.left - (tableBoundingRect.left + 296)),
+            behavior: 'smooth',
+          });
+        }
+      }
+
       return () => {
         document.removeEventListener('keydown', handleKeyDown);
       };
@@ -628,6 +673,7 @@ const Table = ({ collapseSidebar }) => {
           height: 'calc(100vh - 164px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
         className={cx('table-responsive border-0 tj-db-table animation-fade tj-table')}
+        ref={tooljetDbTableRef}
       >
         <table
           {...getTableProps()}
