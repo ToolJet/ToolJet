@@ -12,7 +12,7 @@ export default function GoogleSSOLoginButton(props) {
   };
   const googleLogin = (e) => {
     e.preventDefault();
-    props.setSignupOrganizationId && props.setSignupOrganizationId();
+    props.setSignupOrganizationDetails && props.setSignupOrganizationDetails();
     props.setRedirectUrlToCookie && props.setRedirectUrlToCookie();
     const { client_id } = props.configs;
     const authUrl = buildURLWithQuery('https://accounts.google.com/o/oauth2/auth', {

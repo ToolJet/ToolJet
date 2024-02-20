@@ -71,12 +71,12 @@ class OrganizationInvitationPageComponent extends React.Component {
 
                     <div className="org-page-inputs-wrapper">
                       <label className="tj-text-input-label">Name</label>
-                      <p className="tj-text-input">{name}</p>
+                      <p className="tj-text-input onbaording-disabled-field">{name}</p>
                     </div>
 
                     <div className="signup-inputs-wrap">
                       <label className="tj-text-input-label">Email</label>
-                      <p className="tj-text-input">{email}</p>
+                      <p className="tj-text-input onbaording-disabled-field">{email}</p>
                     </div>
 
                     <div>

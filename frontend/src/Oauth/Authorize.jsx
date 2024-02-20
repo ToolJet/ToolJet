@@ -14,7 +14,8 @@ export function Authorize({ navigate }) {
   const organizationId = authenticationService.getLoginOrganizationId();
   const organizationSlug = authenticationService.getLoginOrganizationSlug();
   const redirectUrl = getCookie('redirectPath');
-  const signupOrganizationId = authenticationService.getSignupOrganizationId();
+  const signupOrganizationSlug = authenticationService.getSignupOrganizationSlug();
+  const inviteFlowIdentifier = authenticationService.getInviteFlowIndetifier();
 
   useEffect(() => {
     const errorMessage = router.query.error_description || router.query.error;
@@ -63,7 +64,7 @@ export function Authorize({ navigate }) {
 
   const signIn = (authParams, configs) => {
     authenticationService
-      .signInViaOAuth(router.query.configId, router.query.origin, authParams, signupOrganizationId)
+      .signInViaOAuth(router.query.configId, router.query.origin, authParams)
       .then(({ redirect_url, ...restResponse }) => {
         if (redirect_url) {
           window.location.href = redirect_url;
@@ -72,22 +73,27 @@ export function Authorize({ navigate }) {
         /*for workspace login / normal login response will contain the next organization_id user want to login*/
         const { current_organization_id } = restResponse;
         if (current_organization_id) onLoginSuccess(restResponse, navigate);
-
         if (restResponse?.organizationInviteUrl) onInvitedUserSignUpSuccess(restResponse, navigate);
       })
       .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));
   };
 
+  const baseRoute = signupOrganizationSlug ? '/signup' : '/login';
+  const slug = signupOrganizationSlug ? signupOrganizationSlug : organizationSlug;
+  const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${
+    !signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
+  }`;
   return (
     <div>
       <RedirectLoader origin={Configs[router.query.origin] ? router.query.origin : 'unknown'} />
       {error && (
         <Navigate
           replace
-          to={`/login${error && organizationSlug ? `/${organizationSlug}` : '/'}${
-            redirectUrl ? `?redirectTo=${redirectUrl}` : ''
-          }`}
-          state={{ errorMessage: error && error }}
+          to={errorURL}
+          state={{
+            errorMessage: error && error,
+            ...(inviteFlowIdentifier ? { organizationToken: inviteFlowIdentifier } : {}),
+          }}
         />
       )}
     </div>

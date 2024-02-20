@@ -594,7 +594,17 @@ export class AuthService {
   }
 
   async setupAccountFromInvitationToken(response: Response, userCreateDto: CreateUserDto) {
-    const { companyName, companySize, token, role, organizationToken, password, source, phoneNumber } = userCreateDto;
+    const {
+      companyName,
+      companySize,
+      token,
+      role,
+      organizationToken,
+      password: userPassword,
+      source,
+      phoneNumber,
+    } = userCreateDto;
+    let password = userPassword;
 
     if (!token) {
       throw new BadRequestException('Invalid token');
@@ -612,6 +622,11 @@ export class AuthService {
         });
       }
       if (user?.organizationUsers) {
+        if (!password && source === 'sso') {
+          /* For SSO we don't need password. let us set uuid as a password. */
+          password = uuid.v4();
+        }
+
         if (isPasswordMandatory(user.source) && !password) {
           throw new BadRequestException('Please enter password');
         }

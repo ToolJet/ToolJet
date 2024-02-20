@@ -49,6 +49,7 @@ export const authenticationService = {
   resetPassword,
   saveLoginOrganizationId,
   getLoginOrganizationId,
+  //TODO: delete this function from files if not needed
   deleteLoginOrganizationId,
   forgotPassword,
   resendInvite,
@@ -57,13 +58,32 @@ export const authenticationService = {
   getUserDetails,
   getLoginOrganizationSlug,
   saveLoginOrganizationSlug,
-  deleteLoginOrganizationSlug,
   getInvitedUserSession,
   activateAccountWithToken,
-  setSignupOrganizationId,
   getSignupOrganizationId,
-  deleteSignUpOrganizationId,
+  getSignupOrganizationSlug,
+  getInviteFlowIndetifier,
+  setSignUpOrganizationDetails,
+  deleteAllAuthCookies,
 };
+
+function setSignUpOrganizationDetails(organizationId, organizationSlug, inviteFlowIdentifier) {
+  organizationId && setCookie('signup-workspace-id', organizationId);
+  organizationSlug && setCookie('signup-workspace-slug', organizationSlug);
+  inviteFlowIdentifier && setCookie('invite-flow-identifier', inviteFlowIdentifier);
+}
+
+function deleteAllAuthCookies() {
+  const cookiesToDelete = [
+    'login-workspace',
+    'login-workspace-slug',
+    'signup-workspace-id',
+    'signup-workspace-slug',
+    'invite-flow-identifier',
+  ];
+
+  cookiesToDelete.forEach((cookieName) => eraseCookie(cookieName));
+}
 
 function login(email, password, organizationId) {
   const requestOptions = {
@@ -104,20 +124,20 @@ function getLoginOrganizationId() {
   return getCookie('login-workspace');
 }
 
-function setSignupOrganizationId(value) {
-  return setCookie('signup-workspace', value);
-}
-
 function getSignupOrganizationId() {
-  return getCookie('signup-workspace');
+  return getCookie('signup-workspace-id');
 }
 
 function deleteLoginOrganizationId() {
   eraseCookie('login-workspace');
 }
 
-function deleteSignUpOrganizationId() {
-  eraseCookie('signup-workspace');
+function getSignupOrganizationSlug() {
+  return getCookie('signup-workspace-slug');
+}
+
+function getInviteFlowIndetifier() {
+  return getCookie('invite-flow-identifier');
 }
 
 function saveLoginOrganizationSlug(organizationSlug) {
@@ -126,10 +146,6 @@ function saveLoginOrganizationSlug(organizationSlug) {
 
 function getLoginOrganizationSlug() {
   return getCookie('login-workspace-slug');
-}
-
-function deleteLoginOrganizationSlug() {
-  eraseCookie('login-workspace-slug');
 }
 
 function getOrganizationConfigs(organizationId) {
@@ -299,8 +315,9 @@ function logout(avoidRedirection = false) {
     .finally(() => redirectToLoginPage());
 }
 
-function signInViaOAuth(configId, ssoType, ssoResponse, signupOrganizationId) {
+function signInViaOAuth(configId, ssoType, ssoResponse) {
   const organizationId = getLoginOrganizationId();
+  const signupOrganizationId = getSignupOrganizationId();
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),

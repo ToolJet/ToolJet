@@ -25,6 +25,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     companySize: '',
     phoneNumber: '',
   });
+  const source = new URLSearchParams(location?.search).get('source');
 
   const pageProps = {
     formData,
@@ -44,6 +45,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           companySize: formData.companySize,
           role: formData.role,
           token: token,
+          source,
           organizationToken: organizationToken,
           ...(password?.length > 0 && { password }),
           phoneNumber: formData?.phoneNumber,

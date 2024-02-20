@@ -15,7 +15,6 @@ import { withTranslation } from 'react-i18next';
 import Spinner from '@/_ui/Spinner';
 import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 import { withRouter } from '@/_hoc/withRouter';
-import { setCookie } from '@/_helpers';
 import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { isEmpty } from 'lodash';
 class SignupPageComponent extends React.Component {
@@ -33,6 +32,15 @@ class SignupPageComponent extends React.Component {
       emailError: '',
       disableOnEdit: false,
     };
+  }
+
+  componentDidMount() {
+    const errorMessage = this.props?.location?.state?.errorMessage;
+    console.log('inside', this.props?.location?.state);
+    console.log('inside', errorMessage);
+    if (errorMessage) {
+      toast.error(errorMessage);
+    }
   }
 
   backtoSignup = (email, name) => {
@@ -98,8 +106,12 @@ class SignupPageComponent extends React.Component {
       : configs?.form?.enable_sign_up;
   };
 
-  setSignupOrganizationId = () => {
-    if (this.inviteOrganizationId) setCookie('signup-workspace', this.inviteOrganizationId);
+  setSignupOrganizationDetails = () => {
+    authenticationService.setSignUpOrganizationDetails(
+      this.inviteOrganizationId,
+      this.paramInviteOrganizationSlug,
+      this.organizationToken
+    );
   };
 
   render() {
@@ -165,7 +177,7 @@ class SignupPageComponent extends React.Component {
                                 <GitSSOLoginButton
                                   configs={configs?.git?.configs}
                                   text={this.props.t('confirmationPage.signupWithGithub', 'Sign up with GitHub')}
-                                  setSignupOrganizationId={this.setSignupOrganizationId}
+                                  setSignupOrganizationDetails={this.setSignupOrganizationDetails}
                                 />
                               </div>
                             )}
@@ -175,7 +187,7 @@ class SignupPageComponent extends React.Component {
                                   configs={configs?.google?.configs}
                                   configId={configs?.google?.config_id}
                                   text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                                  setSignupOrganizationId={this.setSignupOrganizationId}
+                                  setSignupOrganizationDetails={this.setSignupOrganizationDetails}
                                 />
                               </div>
                             )}

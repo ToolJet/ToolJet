@@ -29,9 +29,7 @@ export const AuthRoute = ({ children, navigate }) => {
 
   useEffect(
     () => {
-      authenticationService.deleteLoginOrganizationId();
-      authenticationService.deleteLoginOrganizationSlug();
-      authenticationService.deleteSignUpOrganizationId();
+      authenticationService.deleteAllAuthCookies();
       fetchOrganizationDetails();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

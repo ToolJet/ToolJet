@@ -29,6 +29,7 @@ import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
 import UserResponse from './models/user_response';
 import { Response } from 'express';
+const uuid = require('uuid');
 
 @Injectable()
 export class OauthService {
@@ -66,8 +67,10 @@ export class OauthService {
     }
 
     const groups = ['all_users'];
+    /* Default password for sso-signed workspace user */
+    const password = uuid.v4();
     user = await this.usersService.create(
-      { firstName, lastName, email, ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso) },
+      { firstName, lastName, email, ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso), password },
       organization.id,
       groups,
       user,
@@ -131,7 +134,6 @@ export class OauthService {
     const organizationId = loginOrganiaztionId || signupOrganizationId;
     const isInstanceSSOLogin = !!(!configId && ssoType && !organizationId);
     const isInstanceSSOOrganizationLogin = !!(!configId && ssoType && organizationId);
-    const isInvitedUserSignUp = !!signupOrganizationId;
 
     if (configId) {
       // SSO under an organization
@@ -289,11 +291,8 @@ export class OauthService {
 
         if (userDetails.invitationToken) {
           const updatableUserParams = {
-            ...getUserStatusAndSource(
-              isInvitedUserSignUp ? lifecycleEvents.USER_SSO_ACTIVATE : lifecycleEvents.USER_SSO_VERIFY,
-              sso
-            ),
-            ...(isInvitedUserSignUp ? { invitationToken: null } : {}),
+            ...getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso),
+            ...{ invitationToken: null },
           };
           // User account setup not done, updating source and status
           await this.usersService.updateUser(userDetails.id, updatableUserParams, manager);
@@ -302,21 +301,9 @@ export class OauthService {
             (ou) => ou.organizationId === organization.id
           )?.invitationToken;
 
-          if (isInvitedUserSignUp) {
-            /* User is coming from invite flow. */
-            const session = await this.authService.generateInviteSignupPayload(response, userDetails, 'sso', manager);
-            const organizationInviteUrl = generateOrgInviteURL(organizationToken, organization.id, false);
-            return { ...session, organizationInviteUrl };
-          }
-
-          return decamelizeKeys({
-            redirectUrl: generateInviteURL(
-              userDetails.invitationToken,
-              organizationToken,
-              organization.id,
-              URL_SSO_SOURCE
-            ),
-          });
+          const session = await this.authService.generateInviteSignupPayload(response, userDetails, 'sso', manager);
+          const organizationInviteUrl = generateOrgInviteURL(organizationToken, organization.id, false);
+          return { ...session, organizationInviteUrl };
         }
       }
 
