@@ -2,8 +2,9 @@ import React from 'react';
 import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
+import { LicenseBanner } from '@/LicenseBanner';
 
-function Header() {
+function Header({ featureAccess }) {
   const currentVersion = localStorage.getItem('currentVersion');
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -40,6 +41,16 @@ function Header() {
         return 'Applications';
     }
   };
+
+  const routesWithTags = (pathEnd) => {
+    switch (pathEnd) {
+      case 'Audit logs':
+        return 'auditLogs';
+      default:
+        return null;
+    }
+  };
+
   const location = useLocation();
   const pathname = routes(location?.pathname.split('/').pop(), location?.pathname);
 
@@ -50,6 +61,16 @@ function Header() {
           <p className="tj-text-md font-weight-500" data-cy="dashboard-section-header">
             {pathname}
           </p>
+          {routesWithTags(pathname) && (
+            <LicenseBanner
+              classes="mb-3 small"
+              isAvailable={false}
+              showPaidFeatureBanner={
+                !featureAccess[routesWithTags(pathname)] || featureAccess?.licenseStatus?.licenseType === 'trial'
+              }
+              size="small"
+            />
+          )}
         </div>
         <div className="col tj-dashboard-header-wrap">
           <div className="d-flex justify-content-sm-between">

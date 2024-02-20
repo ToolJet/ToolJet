@@ -5,7 +5,7 @@ import {
   appEnvironmentService,
   licenseService,
 } from '@/_services';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog, ToolTip } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { capitalize } from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -20,6 +20,7 @@ import FolderList from '@/_ui/FolderList/FolderList';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { BreadCrumbContext } from '@/App';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const MODES = Object.freeze({
   CREATE: 'create',
@@ -34,6 +35,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [environments, setEnvironments] = useState([]);
   const [activeTabEnvironment, setActiveTabEnvironment] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [featureAccess, setFeatureAccess] = useState({});
 
   const [mode, setMode] = useState(MODES.NULL);
 
@@ -54,6 +56,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     const fetchData = async () => {
       const featureAccess = await licenseService.getFeatureAccess();
       setLicenseValid(!featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid);
+      setFeatureAccess(featureAccess);
     };
 
     fetchData();
@@ -347,6 +350,8 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
               isLoading={isLoading}
               allConstants={constants}
               licenseValid={licenseValid}
+              featureAceess={featureAccess}
+              licenseType={featureAccess?.licenseStatus?.licenseType}
             />
           </div>
           <OrganizationList />
@@ -470,6 +475,8 @@ const RenderEnvironmentsTab = ({
   isLoading,
   allConstants,
   licenseValid,
+  featureAceess,
+  licenseType,
 }) => {
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   if (!currentEnvironment || allEnvironments.length <= 1) return null;
@@ -499,6 +506,8 @@ const RenderEnvironmentsTab = ({
     enabled: env?.enabled,
     name: env?.name,
   }));
+
+  const multiEnvironmentEnabled = featureAceess?.multiEnvironment;
 
   return (
     <div data-cy="left-menu-items tj-text-xsm">
@@ -532,7 +541,18 @@ const RenderEnvironmentsTab = ({
               items={menuItems}
               isLoading={isLoading}
             >
-              {item.label}
+              <ToolTip
+                message={'Multi-environments is a paid plan feature'}
+                show={licenseType === 'trial' && licenseValid}
+                placement="right"
+              >
+                <div className="d-flex align-items-center">
+                  {item.label}
+                  {item.priority > 1 && (!multiEnvironmentEnabled || licenseType === 'trial') && (
+                    <SolidIcon className="mx-1" name="enterprisesmall" />
+                  )}
+                </div>
+              </ToolTip>
             </FolderList>
           </Wrapper>
         );

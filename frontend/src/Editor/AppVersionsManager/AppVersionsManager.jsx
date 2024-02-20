@@ -34,13 +34,14 @@ export const AppVersionsManager = function ({
     }),
     shallow
   );
-  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   const { currentLayout } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
     }),
     shallow
   );
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
     setGetAppVersionStatus('loading');
@@ -228,11 +229,12 @@ export const AppVersionsManager = function ({
             isLoading={appVersionStatus === 'loading'}
             options={options}
             value={editingVersion?.id}
-            onChange={(id) => selectVersion(id)}
+            onChange={(id) => handleOnSelectVersion(id)}
             {...customSelectProps}
             className={` ${darkMode && 'dark-theme'}`}
-            currentEnvironment={currentEnvironment}
             isEditable={isEditable}
+            currentEnvironment={currentEnvironment}
+            onSelectVersion={handleOnSelectVersion}
           />
         </div>
       </div>

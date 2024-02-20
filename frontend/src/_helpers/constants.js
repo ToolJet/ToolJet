@@ -33,6 +33,7 @@ export const ERROR_TYPES = {
   RESTRICTED: 'restricted',
   INVALID: 'invalid-link',
   UNKNOWN: 'unknown',
+  WORKSPACE_ARCHIVED: 'Organization is Archived',
 };
 
 export const ERROR_MESSAGES = {

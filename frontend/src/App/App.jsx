@@ -45,8 +45,10 @@ import 'react-tooltip/dist/react-tooltip.css';
 import LdapLoginPage from '../LdapLogin';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
+import { ManageWorkspaceArchivePageComponent } from '@/_ui/ManageWorkspaceArchive/ManageWorspaceArchivePage';
 import WorkspaceConstants from '@/WorkspaceConstants';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import { SuperadminLoginPage } from '@/LoginPage/SuperadminLoginPage';
 
 const AppWrapper = (props) => {
   return (
@@ -170,6 +172,7 @@ class AppComponent extends React.Component {
             <Routes>
               <Route path="/login/:organizationId" exact element={<LoginPage />} />
               <Route path="/login" exact element={<LoginPage />} />
+              <Route path="/login/super-admin" exact element={<SuperadminLoginPage />} />
               <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
               <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
               <Route path="/sso/:origin" exact element={<Oauth />} />
@@ -317,6 +320,14 @@ class AppComponent extends React.Component {
                 <Route
                   path="manage-instance-settings"
                   element={<ManageInstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="all-workspaces"
+                  element={
+                    <AdminRoute>
+                      <ManageWorkspaceArchivePageComponent switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
                 />
                 <Route
                   path="white-labelling"

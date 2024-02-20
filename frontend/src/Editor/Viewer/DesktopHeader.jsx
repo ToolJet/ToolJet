@@ -11,7 +11,14 @@ import classNames from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import PreviewSettings from './PreviewSettings';
 
-const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDefinitionFromVersion }) => {
+const DesktopHeader = ({
+  showHeader,
+  appName,
+  changeDarkMode,
+  darkMode,
+  setAppDefinitionFromVersion,
+  handleAppEnvironmentChanged,
+}) => {
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -43,6 +50,16 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
     </div>
   );
 
+  const _renderPreviewSettings = () => (
+    <PreviewSettings
+      isMobileLayout={false}
+      showHeader={showHeader}
+      setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+      darkMode={darkMode}
+      onAppEnvironmentChanged={handleAppEnvironmentChanged}
+    />
+  );
+
   if (!showHeader) {
     return (
       <>
@@ -52,6 +69,7 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
             showHeader={showHeader}
             setAppDefinitionFromVersion={setAppDefinitionFromVersion}
             darkMode={darkMode}
+            onAppEnvironmentChanged={handleAppEnvironmentChanged}
           />
         )}
         <span className="released-version-no-header-dark-mode-icon">
@@ -68,14 +86,7 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
       }}
     >
       {_renderAppNameAndLogo()}
-      {!isVersionReleased && !isEmpty(editingVersion) && (
-        <PreviewSettings
-          isMobileLayout={false}
-          showHeader={showHeader}
-          setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-          darkMode={darkMode}
-        />
-      )}
+      {!isVersionReleased && !isEmpty(editingVersion) && _renderPreviewSettings()}
       <div className="d-flex align-items-center">
         <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
       </div>

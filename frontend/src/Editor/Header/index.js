@@ -88,8 +88,7 @@ export default function EditorHeader({
     });
   };
   // a flag to disable the release button if the current environment is not production
-  const shouldDisablePromote =
-    environments.length === 0 || isSaving || currentAppEnvironment.priority < currentAppVersionEnvironment.priority;
+  const shouldDisablePromote = isSaving || currentAppEnvironment.priority < currentAppVersionEnvironment.priority;
 
   const shouldRenderReleaseButton =
     app?.id &&
@@ -114,7 +113,6 @@ export default function EditorHeader({
     setAppPreviewLink(appVersionPreviewLink);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, currentVersionId, editingVersion, currentAppEnvironmentId, pageHandle]);
-
   return (
     <div className="header" style={{ width: '100%' }}>
       <header className="navbar navbar-expand-md d-print-none">
@@ -201,6 +199,7 @@ export default function EditorHeader({
                       setCurrentEnvironment={setCurrentAppEnvironmentId}
                       setCurrentAppVersionPromoted={setCurrentAppVersionPromoted}
                       licenseValid={licenseValid}
+                      licenseType={featureAccess?.licenseStatus?.licenseType}
                     />
                   )}
                   <div className="navbar-seperator"></div>

@@ -22,6 +22,7 @@ const MobileHeader = ({
   switchPage,
   setAppDefinitionFromVersion,
   showViewerNavigation,
+  handleAppEnvironmentChanged,
 }) => {
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
@@ -76,6 +77,7 @@ const MobileHeader = ({
       showHeader={showHeader}
       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
       darkMode={darkMode}
+      onAppEnvironmentChanged={handleAppEnvironmentChanged}
     />
   );
 

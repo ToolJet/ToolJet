@@ -6,6 +6,7 @@ import '@/_styles/versions.scss';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { useEditorStore } from '@/_stores/editorStore';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const EnvironmentManager = (props) => {
   const {
@@ -15,16 +16,18 @@ const EnvironmentManager = (props) => {
     multiEnvironmentEnabled,
     setCurrentAppVersionPromoted,
     licenseValid,
+    isViewer,
+    licenseType,
   } = props;
 
-  const { currentAppEnvironmentId, currentAppEnvironment } = useEditorStore(
+  const { currentAppEnvironmentId, currentAppEnvironment, currentLayout } = useEditorStore(
     (state) => ({
       currentAppEnvironmentId: state?.currentAppEnvironmentId,
       currentAppEnvironment: state?.currentAppEnvironment,
+      currentLayout: state.currentLayout,
     }),
     shallow
   );
-
   const { onEditorFreeze, currentAppVersionEnvironment, editingVersion } = useAppVersionStore(
     (state) => ({
       onEditorFreeze: state.actions.onEditorFreeze,
@@ -66,6 +69,7 @@ const EnvironmentManager = (props) => {
         selectEnvironment(environment);
       }
     };
+    const showTrialTag = licenseType === 'trial' && licenseValid && environment.priority > 1;
     return {
       value: environment.id,
       environmentName: environment.name,
@@ -75,14 +79,25 @@ const EnvironmentManager = (props) => {
       enabled: environment.enabled,
       label: (
         <div className="env-option" key={index}>
-          <div className="col-10">
+          <div className="col-10 env-name">
             <ToolTip
-              message="There are no versions in this environment"
-              placement="left"
-              show={haveVersions || !multiEnvironmentEnabled ? false : true}
+              message={
+                showTrialTag ? 'Multi-environments is a paid plan feature' : 'There are no versions in this environment'
+              }
+              placement="right"
+              show={haveVersions || !multiEnvironmentEnabled ? (showTrialTag ? true : false) : true}
             >
-              <div className={`app-environment-name ${darkMode ? 'dark-theme' : ''}`} style={grayColorStyle}>
-                {capitalize(environment.name)}
+              <div className="d-flex align-items-center">
+                <div
+                  className={`app-environment-name d-flex ${darkMode ? 'dark-theme' : ''}`}
+                  style={grayColorStyle}
+                  data-cy="env-name-dropdown"
+                >
+                  {capitalize(environment.name)}
+                </div>
+                {environment.priority > 1 && (!multiEnvironmentEnabled || licenseType === 'trial') && (
+                  <SolidIcon name="enterprisesmall" />
+                )}
               </div>
             </ToolTip>
           </div>
@@ -92,7 +107,13 @@ const EnvironmentManager = (props) => {
   });
 
   return (
-    <div className="app-environment-menu">
+    <div
+      className="app-environment-menu"
+      style={{
+        marginLeft: isViewer && currentLayout === 'mobile' ? '0px' : '1rem',
+        maxWidth: isViewer && currentLayout === 'mobile' ? '100%' : '180px',
+      }}
+    >
       <EnvironmentSelectBox
         options={options}
         currentEnv={currentAppEnvironment}

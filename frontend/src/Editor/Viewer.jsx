@@ -9,6 +9,7 @@ import {
   orgEnvironmentConstantService,
   dataqueryService,
   appService,
+  licenseService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -23,6 +24,7 @@ import {
   runQuery,
   computeComponentState,
   buildAppDefinition,
+  checkIfLicenseNotValid,
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
@@ -42,12 +44,11 @@ import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { getPreviewQueryParams, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import TooljetLogoIcon from '@/_ui/Icon/solidIcons/TooljetLogoIcon';
-import TooljetLogoText from '@/_ui/Icon/solidIcons/TooljetLogoText';
 import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
 import MobileHeader from './Viewer/MobileHeader';
 import DesktopHeader from './Viewer/DesktopHeader';
 import './Viewer/viewer.scss';
+import TooljetBanner from './Viewer/TooljetBanner';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -164,7 +165,7 @@ class ViewerComponent extends React.Component {
     const constants = await this.fetchOrgEnvironmentConstants(data.slug, data.is_public);
 
     /* Get current environment details from server, for released apps the environment will be production only (Release preview) */
-    const environmentResult = await this.getEnvironmentDetails(data.is_public);
+    const environmentResult = await this.getEnvironmentDetails(this.state.environmentId);
     const { environment } = environmentResult;
 
     const pages = data.pages;
@@ -256,7 +257,7 @@ class ViewerComponent extends React.Component {
       variablesResult = constants;
     }
 
-    const environmentResult = await this.getEnvironmentDetails();
+    const environmentResult = await this.getEnvironmentDetails(this.state.environmentId);
     const { environment } = environmentResult;
 
     if (variablesResult && Array.isArray(variablesResult)) {
@@ -315,7 +316,14 @@ class ViewerComponent extends React.Component {
     useAppVersionStore.getState().actions.setAppVersions(appVersions.appVersions);
   };
 
-  loadApplicationBySlug = (slug, authentication_failed = false) => {
+  fetchEnvironments = async (appId) => {
+    await appEnvironmentService.getAllEnvironments(appId).then((data) => {
+      const envArray = data?.environments;
+      useAppDataStore.getState().actions.setEnvironments(envArray);
+    });
+  };
+
+  loadApplicationBySlug = (slug, authentication_failed) => {
     appService
       .fetchAppBySlug(slug)
       .then((data) => {
@@ -369,11 +377,24 @@ class ViewerComponent extends React.Component {
     this.loadApplicationByVersion(this.props.id, data.editing_version.id);
   };
 
+  updateEnvironmentDetails = async (environmentId) => {
+    const { environment } = await this.getEnvironmentDetails(environmentId);
+    useEditorStore.getState()?.actions?.setCurrentAppEnvironmentId(environmentId);
+    useEditorStore.getState()?.actions?.setCurrentAppEnvironmentDetails(environment);
+    useAppVersionStore.getState().actions.setAppVersionCurrentEnvironment(environment);
+  };
+
+  handleAppEnvironmentChanged = async (currentEnvironment, envSelection) => {
+    const environmentId = currentEnvironment.id;
+    this.setState({ environmentId });
+    this.updateEnvironmentDetails(environmentId);
+  };
+
   updateQueryConfirmationList = (queryConfirmationList) =>
     useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
 
   setupViewer() {
-    this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
+    this.subscription = authenticationService.currentSession.subscribe(async (currentSession) => {
       const slug = this.props.params.slug;
       const appId = this.props.id;
       const versionId = this.props.versionId;
@@ -383,7 +404,6 @@ class ViewerComponent extends React.Component {
         if (currentSession?.group_permissions) {
           this.setState({ environmentId });
           useAppDataStore.getState().actions.setAppId(appId);
-
           const currentUser = currentSession.current_user;
           const userVars = {
             email: currentUser.email,
@@ -402,7 +422,12 @@ class ViewerComponent extends React.Component {
             userVars,
             versionId,
           });
+          licenseService.getFeatureAccess().then((data) => {
+            useEditorStore.getState().actions.updateFeatureAccess(data);
+          });
+          this.fetchEnvironments(appId);
           this.fetchAppVersions(appId);
+          this.updateEnvironmentDetails(environmentId);
           versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
         } else if (currentSession?.authentication_failed) {
           this.loadApplicationBySlug(slug, true);
@@ -445,7 +470,6 @@ class ViewerComponent extends React.Component {
         this.loadApplicationByVersion(this.props.id, useAppVersionStore.getState().editingVersion.id);
       }
     }
-
     if (this.state.initialComputationOfStateDone) this.handlePageSwitchingBasedOnURLparam();
     if (this.state.homepage !== prevState.homepage && !this.state.isLoading) {
       <Navigate to={`${this.state.homepage}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
@@ -555,7 +579,7 @@ class ViewerComponent extends React.Component {
 
     if (this.state.currentPageId === id) return;
 
-    const { handle } = this.state.appDefinition.pages[id];
+    const handle = this.state?.appDefinition?.pages?.[id]?.handle;
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
@@ -597,9 +621,9 @@ class ViewerComponent extends React.Component {
     return `_tooljet-page-${handle}`;
   };
 
-  getEnvironmentDetails = () => {
+  getEnvironmentDetails = (environmentId) => {
     const queryParams = { slug: this.props.params.slug };
-    return appEnvironmentService.getEnvironment(this.state.environmentId, queryParams);
+    return appEnvironmentService.getEnvironment(environmentId, queryParams);
   };
 
   render() {
@@ -619,8 +643,9 @@ class ViewerComponent extends React.Component {
       Object.entries(_.cloneDeep(appDefinition)?.pages)
         .map(([id, page]) => ({ id, ...page }))
         .sort((a, b) => a.index - b.index) || [];
-
     const isMobilePreviewMode = this.props.versionId && this.props.currentLayout === 'mobile';
+    const isLicenseNotValid = checkIfLicenseNotValid();
+
     if (this.state.app?.isLoading) {
       return (
         <div className={cx('tooljet-logo-loader', { 'theme-dark': this.props.darkMode })}>
@@ -678,7 +703,6 @@ class ViewerComponent extends React.Component {
           />
         );
       }
-
       return (
         <div className={`viewer wrapper ${this.props.currentLayout === 'mobile' ? 'mobile-layout' : ''}`}>
           <Confirm
@@ -703,6 +727,7 @@ class ViewerComponent extends React.Component {
                 switchPage={this.switchPage}
                 setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
                 showViewerNavigation={appDefinition?.showViewerNavigation}
+                handleAppEnvironmentChanged={this.handleAppEnvironmentChanged}
               />
             )}
             {/* Render following mobile header only when its in preview mode and not in launched app */}
@@ -717,6 +742,7 @@ class ViewerComponent extends React.Component {
                 switchPage={this.switchPage}
                 setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
                 showViewerNavigation={appDefinition?.showViewerNavigation}
+                handleAppEnvironmentChanged={this.handleAppEnvironmentChanged}
               />
             )}
             <div className="sub-section">
@@ -770,8 +796,10 @@ class ViewerComponent extends React.Component {
                             switchPage={this.switchPage}
                             setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
                             showViewerNavigation={appDefinition?.showViewerNavigation}
+                            handleAppEnvironmentChanged={this.handleAppEnvironmentChanged}
                           />
                         )}
+
                         {defaultComponentStateComputed && (
                           <>
                             {isLoading ? (
@@ -809,21 +837,7 @@ class ViewerComponent extends React.Component {
                           </>
                         )}
                       </div>
-                      <div
-                        className="powered-with-tj"
-                        onClick={() => {
-                          const url = `https://tooljet.com/?utm_source=powered_by_banner&utm_medium=${
-                            useAppDataStore.getState()?.metadata?.instance_id
-                          }&utm_campaign=self_hosted`;
-                          window.open(url, '_blank');
-                        }}
-                      >
-                        Built with
-                        <span className={'powered-with-tj-icon'}>
-                          <TooljetLogoIcon />
-                        </span>
-                        <TooljetLogoText fill={this.props.darkMode ? '#ECEDEE' : '#11181C'} />
-                      </div>
+                      {isLicenseNotValid && <TooljetBanner isDarkMode={this.props.darkMode} />}
                       {/* Following div is a hack to prevent showing mobile drawer navigation coming from left*/}
                       {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                       {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
