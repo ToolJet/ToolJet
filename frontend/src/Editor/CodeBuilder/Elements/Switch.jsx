@@ -3,7 +3,7 @@ import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import React from 'react';
 import cx from 'classnames';
 
-const Switch = ({ value, onChange, cyLabel, meta, paramName, isIcon }) => {
+const Switch = ({ value, onChange, meta, isIcon }) => {
   const options = meta?.options;
   const defaultValue = value;
   return (

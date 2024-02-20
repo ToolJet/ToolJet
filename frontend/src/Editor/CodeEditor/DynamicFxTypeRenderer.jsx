@@ -8,6 +8,13 @@ import { AlignButtons } from '../CodeBuilder/Elements/AlignButtons';
 import { Number } from '../CodeBuilder/Elements/Number';
 import { BoxShadow } from '../CodeBuilder/Elements/BoxShadow';
 import ClientServerSwitch from '../CodeBuilder/Elements/ClientServerSwitch';
+import Switch from '../CodeBuilder/Elements/Switch';
+import Checkbox from '../CodeBuilder/Elements/Checkbox';
+import Slider from '../CodeBuilder/Elements/Slider';
+import { Input } from '../CodeBuilder/Elements/Input';
+import { Icon } from '../CodeBuilder/Elements/Icon';
+import { Visibility } from '../CodeBuilder/Elements/Visibility';
+import { NumberInput } from '../CodeBuilder/Elements/NumberInput';
 
 const AllElements = {
   Color,
@@ -18,6 +25,13 @@ const AllElements = {
   Number,
   BoxShadow,
   ClientServerSwitch,
+  Switch,
+  Checkbox,
+  Slider,
+  Input,
+  Icon,
+  Visibility,
+  NumberInput,
 };
 
 export const DynamicFxTypeRenderer = ({ paramType, ...restProps }) => {
