@@ -9,7 +9,7 @@ A Super Admin is the user who has full access to all the Workspaces, Users, and 
 
 The user details entered while setting up ToolJet will have Super Admin privileges.
 
-## How is Super Admin different from Admin
+## How Super Admin is different from Admin
 
 | Privilege | Admin | Super Admin | 
 | --------- | ----- | ----------- |
@@ -24,6 +24,9 @@ The user details entered while setting up ToolJet will have Super Admin privileg
 | [Access any user's ToolJet database (create, edit or delete database)](#access-tooljet-db-in-any-workspace) | ❌ | ✅ |
 | [Manage any workspace's setting (Groups/SSO/Workspace constants)](#manage-workspace-setting-groupsssoworkspace-constants) | ❌ | ✅ |
 | [Manage all users from all the workspaces in the instance](#manage-all-users-in-the-instance) | ❌ | ✅ |
+| [Archive/Unarchive any user from all the workspaces in the instance](#archiving-a-user-from-all-the-workspaces-instance-level) | ❌ | ✅ |
+| [Reset password of any user](#reset-password-of-any-user) | ❌ | ✅ |
+| [Edit name of any user](#edit-name) | ❌ | ✅ |
 | [Make any user Super Admin](#make-the-user-super-admin) | ❌ | ✅ |
 | [Restrict creation of personal workspace of users](#restrict-creation-of-personal-workspace-of-users) | ❌ | ✅ |
 | [Enable Multiplayer editing](#enable-multiplayer-editing) | ❌ | ✅ |
@@ -39,7 +42,7 @@ The user details entered while setting up ToolJet will have Super Admin privileg
 
 ### Access any workspace
 
-If a user has Super Admin privileges, they can switch to any workspace created by any user within the instance using the Workspace Switcher located in the bottom left corner of the screen.
+If a user is a Super Admin, they can switch to any workspace created by any user within the instance using the Workspace Switcher located in the bottom left corner of the screen.
 
 The dropdown will display all workspaces, including those created by both Super Admins and any other users.
 
@@ -94,37 +97,57 @@ Only Super Admins can access the Settings:
 
 ### Manage all users in the instance
 
-**All Users** page can be used to check the list of all the users in the instance. Super Admins can also promote/demote any user to/from Super Admin from this page. They can also archive/unarchive any user from this page.
+**All Users** settings can be used to check the list of all the users available on all the workspaces in the instance. Super Admins can also promote/demote any user to/from Super Admin from this page. They can also archive/unarchive any user at an instance level from this setting.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/enterprise/superadmin/allusersa.png" alt="Super Admin: Enterprise" />
+<img className="screenshot-full" src="/img/enterprise/superadmin/alluserspage.png" alt="Super Admin: Enterprise" />
 
 </div>
 
-### Archiving a user from workspace
+### Archiving a user from all the workspaces (Instance level)
 
-Super Admins have the privilege to remove any user from any workspace to which they belong.
+Super Admins have the authority to deactivate any user at instance level. This will remove the user from all the workspaces in the instance.
 
-Super Admins can go to **All Users** page, Under the **Workspaces** column they'll see the number of workspaces a user belongs to. Click on the **`View(n)`**, a modal will pop up that will have the list of **`n`** number the workspaces, click on the **Archive/Unarchive** button next to the workspace name to remove the user from the workspace.
+To archive a user, go to the **All Users** settings, click on the kebab menu next to the user that is to be archived and select **Archive** option. Once the user is archived, the status will change from **Active** to **Archived**. The user will not be able to login to any workspace in the instance.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/enterprise/superadmin/archivesa.png" alt="Super Admin: Enterprise" />
+<img className="screenshot-full" src="/img/enterprise/superadmin/archiveinstance.png" alt="Super Admin: Archive a user from all the workspaces" />
 
 </div>
 
-### Make the user super admin
+<br/>
 
-Super Admins can make any user as Super Admin or remove any Super Admin from the **Manage All Users** in the Settings page.
+**Unarchiving** a user from **All Users** settings will unarchive the user from the instance and not at workspace level. 
 
-Click on the **Edit** button next to any user, **Enable** the **Make the user Super Admin** option, and then **Save** it.
-
-The user will become Super Admin and the Type column will update from **`workspace`** to **`instance`**.
+**Info**: The user will be unarchived from instance level automatically if a workspace admin unarchives the user from their workspace.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/enterprise/superadmin/saset.png" alt="Super Admin: Enterprise" />
+<img className="screenshot-full" src="/img/enterprise/superadmin/unarchiveinstance.png" alt="Super Admin: Archive a user from all the workspaces" />
+
+</div>
+
+### Reset password of any user
+
+Super Admins can reset the password of any user from the **All Users** settings. To reset the password, click on the kebab menu next to the user and select **Reset Password** option. A pop-up will appear asking either to auto-generate a password or to enter a new password. 
+
+### Edit user details
+
+Super Admins can edit the details of any user from the **All Users** settings. To edit the details, click on the kebab menu next to the user and select **Edit user details** option. 
+
+#### Edit name
+
+On selecting the **Edit user details** option, a drawer will open from the right. Super Admins can edit the name of the user from this drawer. Once the changes are made, click on the **Update** button.
+
+#### Make the user Super Admin
+
+From the **Edit user details** drawer, Super Admins can make any user as Super Admin or remove any Super Admin from the **All Users** settings. To make a user Super Admin, toggle on the **Super Admin** radio button. The user will become Super Admin and the Type column will update from **`Workspace`** to **`Instance`**.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/enterprise/superadmin/edituserdetailsinstance.png" alt="Super Admin: Enterprise" />
 
 </div>
 
