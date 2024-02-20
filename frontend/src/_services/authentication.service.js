@@ -23,6 +23,7 @@ const currentSessionSubject = new BehaviorSubject({
   isUserLoggingIn: false,
   authentication_status: null,
   authentication_failed: null,
+  isOrgSwitchingFailed: null,
   isUserUpdated: false,
   load_app: false, //key is used only in the viewer mode
   noWorkspaceAttachedInTheSession: false,

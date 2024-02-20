@@ -173,8 +173,9 @@ export class AuthService {
     }
     const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, WORKSPACE_USER_STATUS.ACTIVE);
 
+    /* User doesn't have access to this workspace */
     if (!newUser) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("User doesn't have access to this workspace");
     }
     newUser.organizationId = newOrganizationId;
 

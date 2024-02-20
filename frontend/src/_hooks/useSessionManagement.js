@@ -55,8 +55,8 @@ export const useSessionManagement = (initialState = defaultState) => {
   }, [session, pathname]);
 
   const handleNewSession = async (newSession) => {
-    const { group_permissions, authentication_status, authentication_failed } = newSession;
-    const isInvalidSession = authentication_status === false || authentication_failed;
+    const { group_permissions, authentication_status, authentication_failed, isOrgSwitchingFailed } = newSession;
+    const isInvalidSession = authentication_status === false || authentication_failed || isOrgSwitchingFailed;
     if (newSession?.noWorkspaceAttachedInTheSession) {
       /* No active workspace for the user show error page */
       navigate('/error/no-active-workspace');

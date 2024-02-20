@@ -180,7 +180,7 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
               .then(() => {
                 authorizeUserAndHandleErrors(unauthorized_organization_id);
               })
-              .catch(() => {
+              .catch((error) => {
                 /* CASE-3 */
                 fetchOrganizations(current_organization_id, ({ current_organization }) => {
                   const { name: current_organization_name, slug: current_organization_slug } = current_organization;
@@ -194,6 +194,13 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
                     return (window.location = `${
                       subpath ?? ''
                     }/login/${unauthorized_organization_slug}?redirectTo=${getRedirectToWithParams()}`);
+
+                  const statusCode = error?.data.statusCode;
+                  if (statusCode === 401) {
+                    updateCurrentSession({
+                      isOrgSwitchingFailed: true,
+                    });
+                  }
                 });
               });
           })
