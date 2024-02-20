@@ -15,11 +15,10 @@ import {
 } from "Support/utils/dataSource";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-
 describe("Data source Elasticsearch", () => {
   beforeEach(() => {
     cy.appUILogin();
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on Elasticsearch connection form", () => {
@@ -28,11 +27,11 @@ describe("Data source Elasticsearch", () => {
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources
+      postgreSqlText.allDataSources()
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase
+      postgreSqlText.allDatabase()
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",

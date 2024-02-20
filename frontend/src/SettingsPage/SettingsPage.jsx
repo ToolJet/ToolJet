@@ -9,8 +9,9 @@ import { BreadCrumbContext } from '@/App/App';
 function SettingsPage(props) {
   const currentSession = authenticationService.currentSessionValue;
   const email = currentSession?.current_user.email;
-  const [firstName, setFirstName] = React.useState(currentSession?.current_user.first_name);
-  const [lastName, setLastName] = React.useState(currentSession?.current_user.last_name);
+  const [fullName, setFullName] = React.useState(
+    joinNames(currentSession?.current_user.first_name, currentSession?.current_user.last_name)
+  );
   const [currentpassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
@@ -26,10 +27,25 @@ function SettingsPage(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function joinNames(firstName, lastName) {
+    if (lastName && lastName.trim() !== '') {
+      return `${firstName} ${lastName}`;
+    } else {
+      return firstName;
+    }
+  }
+
+  const handleNameSplit = (fullName) => {
+    const words = fullName.split(' ');
+    const firstName = words.length > 1 ? words.slice(0, -1).join(' ') : words[0];
+    const lastName = words.length > 1 ? words[words.length - 1] : '';
+    return [firstName, lastName];
+  };
+
   const updateDetails = async () => {
-    const firstNameMatch = firstName.match(/^ *$/);
-    if (firstNameMatch !== null) {
-      toast.error(`First name can't be empty!`, {
+    const fullNameMatch = fullName.match(/^ *$/);
+    if (fullNameMatch !== null) {
+      toast.error(`Name can't be empty!`, {
         position: 'top-center',
       });
       return;
@@ -37,7 +53,9 @@ function SettingsPage(props) {
 
     setUpdateInProgress(true);
     try {
-      await userService.updateCurrentUser(firstName, lastName);
+      const [firstName, lastName] = handleNameSplit(fullName);
+      const updatedUser = await userService.updateCurrentUser(firstName, lastName);
+      setFullName(joinNames(updatedUser?.first_name, updatedUser?.last_name));
       let avatar;
       if (selectedFile) {
         const formData = new FormData();
@@ -136,34 +154,17 @@ function SettingsPage(props) {
                     <div className="col">
                       <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="first-name-label">
-                          {t('header.profileSettingPage.firstName', 'First name')}
+                          Name
                         </label>
                         <input
                           type="text"
                           className="form-control"
                           name="first-name"
-                          placeholder={t('header.profileSettingPage.enterFirstName', 'Enter first name')}
-                          value={firstName}
-                          onChange={(event) => setFirstName(event.target.value)}
-                          data-cy="first-name-input"
+                          placeholder={'Enter full name'}
+                          value={fullName}
+                          onChange={(event) => setFullName(event.target.value)}
                           autoComplete="off"
-                        />
-                      </div>
-                    </div>
-                    <div className="col">
-                      <div className="mb-3 tj-app-input">
-                        <label className="form-label" data-cy="last-name-label">
-                          {t('header.profileSettingPage.lastName', 'Last name')}
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="last-name"
-                          placeholder={t('header.profileSettingPage.enterLastName', 'Enter last name')}
-                          value={lastName}
-                          onChange={(event) => setLastName(event.target.value)}
-                          data-cy="last-name-input"
-                          autoComplete="off"
+                          data-cy="name-input-field"
                         />
                       </div>
                     </div>
@@ -172,7 +173,7 @@ function SettingsPage(props) {
                     <div className="col">
                       <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="email-label">
-                          {t('header.profileSettingPage.email', 'Email')}
+                          {t('header.profileSettingPage.email', 'Email address')}
                         </label>
                         <input
                           type="text"

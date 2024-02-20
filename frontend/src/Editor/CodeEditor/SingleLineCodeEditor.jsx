@@ -279,18 +279,18 @@ const DynamicEditorBridge = (props) => {
     paramName,
     fieldMeta,
     darkMode,
-    options,
     className,
     onFxPress,
     cyLabel = '',
     verticalLine = false,
     onChange,
+    styleDefinition,
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
 
-  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
+  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'TextComponentTextInput'];
 
   const { t } = useTranslation();
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
@@ -345,6 +345,7 @@ const DynamicEditorBridge = (props) => {
                 }}
                 meta={fieldMeta}
                 cyLabel={cyLabel}
+                styleDefinition={styleDefinition}
               />
             )}
           </div>

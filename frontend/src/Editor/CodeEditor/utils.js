@@ -331,6 +331,13 @@ export const FxParamTypeMapping = Object.freeze({
   number: 'Number',
   boxShadow: 'BoxShadow',
   clientServerSwitch: 'ClientServerSwitch',
+  switch: 'Switch',
+  checkbox: 'Checkbox',
+  slider: 'Slider',
+  input: 'Input',
+  icon: 'Icon',
+  visibility: 'Visibility',
+  numberInput: 'NumberInput',
 });
 
 export function computeCoercion(oldValue, newValue) {

@@ -1,10 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import {
-  commonWidgetText,
-  commonText,
-  codeMirrorInputLabel,
-} from "Texts/common";
+import { commonWidgetSelector } from "Selectors/common";
+import { codeMirrorInputLabel, commonWidgetText } from "Texts/common";
 
 export const openAccordion = (
   accordionName,
@@ -50,6 +46,7 @@ export const verifyAndModifyToggleFx = (
     "have.text",
     paramName
   );
+  cy.get(commonWidgetSelector.parameterTogglebutton(paramName)).realHover();
   cy.get(commonWidgetSelector.parameterFxButton(paramName, " > svg")).click();
   if (defaultValue)
     cy.get(commonWidgetSelector.parameterInputField(paramName))
@@ -80,11 +77,11 @@ export const addAndVerifyTooltip = (widgetSelector, message) => {
 
 export const editAndVerifyWidgetName = (
   name,
-  accordion = ["General", "Properties", "Layout"]
+  accordion = ["General", "Properties", "Devices"]
 ) => {
   closeAccordions(accordion);
   cy.clearAndType(commonWidgetSelector.WidgetNameInputField, name);
-  cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+  cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({ force: true });
 
   cy.get(commonWidgetSelector.draggableWidget(name)).trigger("mouseover");
   cy.get(commonWidgetSelector.widgetConfigHandle(name))
@@ -129,9 +126,14 @@ export const selectColourFromColourPicker = (
   paramName,
   colour,
   index = 0,
-  parent = commonWidgetSelector.colourPickerParent
+  parent = commonWidgetSelector.colourPickerParent,
+  hasIndex = false
 ) => {
-  cy.get(commonWidgetSelector.stylePicker(paramName)).click();
+  if (hasIndex === false) {
+    cy.get(commonWidgetSelector.stylePicker(paramName)).last().click();
+  } else {
+    cy.get(commonWidgetSelector.stylePicker(paramName)).eq(hasIndex).click();
+  }
   cy.get(parent)
     .eq(index)
     .then(() => {
@@ -210,7 +212,8 @@ export const verifyAndModifyStylePickerFx = (
   defaultValue,
   value,
   index = 0,
-  boxShadow = ""
+  boxShadow = "",
+  hasIndex = false
 ) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName)).should(
     "have.text",
@@ -224,8 +227,16 @@ export const verifyAndModifyStylePickerFx = (
   cy.get(commonWidgetSelector.stylePickerValue(paramName))
     .should("be.visible")
     .verifyVisibleElement("have.text", defaultValue);
-  cy.get(commonWidgetSelector.parameterFxButton(paramName, " > svg")).click();
 
+  if (hasIndex === false) {
+    cy.get(commonWidgetSelector.stylePicker(paramName)).last().realHover();
+  } else {
+    cy.get(commonWidgetSelector.stylePicker(paramName))
+      .eq(hasIndex)
+      .realHover();
+  }
+
+  cy.get(commonWidgetSelector.parameterFxButton(paramName)).click();
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
     cy.get(".CodeMirror-line")
       .should("be.visible")
@@ -274,9 +285,12 @@ export const verifyLoaderColor = (widgetName, color) => {
     });
 };
 
-export const verifyLayout = (widgetName) => {
+export const verifyLayout = (
+  widgetName,
+  layout = commonWidgetText.accordionLayout
+) => {
   openEditorSidebar(widgetName);
-  openAccordion(commonWidgetText.accordionLayout);
+  openAccordion(layout);
   verifyAndModifyToggleFx(
     commonWidgetText.parameterShowOnDesktop,
     commonWidgetText.codeMirrorLabelTrue
@@ -306,21 +320,24 @@ export const verifyStylesGeneralAccordion = (
   boxShadowParameter,
   hexColor,
   boxShadowColor,
-  index = 0
+  index = 0,
+  boxShadowDefaultValue = commonWidgetText.boxShadowDefaultValue
 ) => {
   openEditorSidebar(widgetName);
   cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
   // openAccordion(commonWidgetText.accordionGenaral, []);
   verifyAndModifyStylePickerFx(
     commonWidgetText.parameterBoxShadow,
-    commonWidgetText.boxShadowDefaultValue,
+    boxShadowDefaultValue,
     `${boxShadowParameter[0]}px ${boxShadowParameter[1]}px ${boxShadowParameter[2]}px ${boxShadowParameter[3]}px ${hexColor}`,
     0,
     "0px 0px 0px 0px "
   );
   cy.get(
     commonWidgetSelector.parameterFxButton(commonWidgetText.parameterBoxShadow)
-  ).click();
+  )
+    .realHover()
+    .click();
 
   cy.get(
     commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
@@ -354,9 +371,7 @@ export const verifyTooltip = (widgetSelector, message) => {
     .trigger("mouseover", { timeout: 2000 })
     .trigger("mouseover")
     .then(() => {
-      cy.get(commonWidgetSelector.tooltipLabel)
-        .last()
-        .should("have.text", message);
+      cy.get(".tooltip-inner").last().should("have.text", message);
     });
 };
 
@@ -396,4 +411,42 @@ export const closeAccordions = (accordionNames = [], index = "0") => {
         });
     });
   }
+};
+
+export const selectFromSidebarDropdown = (property, option) => {
+  cy.get(`[data-cy="dropdown-${property.toLowerCase().replace(/\s+/g, "-")}"]`)
+    .click()
+    .type(`${option}{enter}`);
+};
+
+export const addValueOnInput = (property, value) => {
+  cy.get(`[data-cy="${property.toLowerCase().replace(/\s+/g, "-")}-input"]`)
+    .clear()
+    .click()
+    .type(`${value}`);
+};
+
+export const verifyContainerElements = () => {
+  cy.get('[data-cy="widget-accordion-container"]').verifyVisibleElement(
+    "have.text",
+    "container"
+  );
+  cy.get('[data-cy="label-padding"]').verifyVisibleElement(
+    "have.text",
+    "Padding"
+  );
+  cy.get('[data-cy="togglr-button-default"]').verifyVisibleElement(
+    "have.text",
+    "Default"
+  );
+  cy.get('[data-cy="togglr-button-none"]').verifyVisibleElement(
+    "have.text",
+    "None"
+  );
+};
+
+export const checkPaddingOfContainer = (widgetName, value, mode = "Box") => {
+  cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .parents(`[role=${mode}]`)
+    .should("have.css", "padding", `${value}px`);
 };
