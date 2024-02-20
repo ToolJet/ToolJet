@@ -5,6 +5,7 @@ import { Plugin } from 'src/entities/plugin.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import allPlugins from '@tooljet/plugins/dist/server';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
 
 @Injectable()
 export class PluginsHelper {
@@ -13,7 +14,8 @@ export class PluginsHelper {
 
   constructor(
     @InjectRepository(Plugin)
-    private pluginsRepository: Repository<Plugin>
+    private pluginsRepository: Repository<Plugin>,
+    private tooljetDbOperationsService: TooljetDbOperationsService
   ) {
     if (PluginsHelper.instance) {
       return PluginsHelper.instance;
@@ -41,6 +43,7 @@ export class PluginsHelper {
         const service = new code.default();
         return service;
       } else {
+        if (kind === 'tooljetdb') return this.tooljetDbOperationsService;
         return new allPlugins[kind]();
       }
     } catch (error) {

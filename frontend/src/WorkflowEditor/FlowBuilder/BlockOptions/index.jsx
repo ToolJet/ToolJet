@@ -13,8 +13,8 @@ const BlockOptions = (props) => {
   const workspaceId = getWorkspaceId();
   const navigate = useNavigate();
 
-  const defaultDataSources = availableDataSources.filter((item) => item.kind === 'restapi' || item.kind === 'runjs');
-  const actualDataSources = availableDataSources.filter((item) => item.kind !== 'restapi' && item.kind !== 'runjs');
+  const defaultDataSources = availableDataSources.filter((item) => item.type === 'static');
+  const actualDataSources = availableDataSources.filter((item) => item.type == 'default');
 
   defaultDataSources.push({ kind: 'If condition', id: 'if', name: 'If condition' });
 
