@@ -202,6 +202,13 @@ const EditorInput = ({
 
   const currentEditorHeightRef = useRef(null);
 
+  const handleFocus = () => {
+    setFirstTimeFocus(true);
+    setTimeout(() => {
+      setFocus(true);
+    }, 50);
+  };
+
   return (
     <div
       ref={currentEditorHeightRef}
@@ -241,9 +248,6 @@ const EditorInput = ({
               setFirstTimeFocus(false);
               handleOnChange(val);
             }}
-            onClick={() => {
-              setFirstTimeFocus(true);
-            }}
             basicSetup={{
               lineNumbers: lang === 'jsx',
               syntaxHighlighting: true,
@@ -253,7 +257,7 @@ const EditorInput = ({
               autocompletion: true,
               completionKeymap: true,
             }}
-            onFocus={() => setFocus(true)}
+            onFocus={() => handleFocus()}
             onBlur={handleOnBlur}
             className={customClassNames}
             theme={theme}
