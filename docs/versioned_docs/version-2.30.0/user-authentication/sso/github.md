@@ -3,65 +3,115 @@ id: github
 title: GitHub
 ---
 
-# GitHub Single Sign-on
+# GitHub Single Sign-on Configuration
 
-- Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
+To enable GitHub Single Sign-on (SSO) for your ToolJet instance, follow these steps:
+
+1. From the ToolJet dashboard, go to **Settings** (⚙️) from the bottom of the left sidebar and select the **Workspace Settings**.
+
   <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/sso/general/workside2.png" alt="General Settings: SSO" width="500"/>
-
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/git/workset.png" alt="GitHub SSO" />
   </div>
 
-- Select `SSO` from sidebar and then select **GitHub**. GitHub login will be **disabled** by default,
+2. In the **Workspace Settings**, select **SSO** from the sidebar and then select **GitHub**. GitHub login will be **Disabled** by default, **Enable** it and you will see the generated `Redirect URL`.
+  
   <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/sso/git/gitssov22.png" alt="General Settings: SSO" />
-
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/git/ssogit.png" alt="GitHub SSO" />
   </div>
 
-- Enable GitHub. You can see `Redirect URL` generated
+3. Now go to the **[GitHub Developer settings](https://github.com/settings/developers)** and navigate to `OAuth Apps` and create a new project.
+  - The **Client ID** will be generated automatically.
+  - Generate the **Client Secret** by clicking the `Generate new client secret` button. Copy the **Client Secret** and save it for later use.
+  - Enter the **App Name**, **Homepage URL**, and **Authorization callback URL**. The **Authorization callback URL** should be the generated `Redirect URL` in the GitHub manage SSO page.
+
   <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/sso/git/gitsso2v22.png" alt="General Settings: SSO" />
-
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/git/gitdev.png" alt="GitHub SSO" />
   </div>
 
-- Go to **[GitHub Developer settings](https://github.com/settings/developers)** and navigate to `OAuth Apps` and create a project. `Authorization callback URL` should be the generated `Redirect URL` in Git manage SSO page.
+4. Open the ToolJet's GitHub SSO settings and enter the obtained **Client ID** and **Client Secret**.
+
   <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/sso/git/create-project.png" alt="General Settings: SSO" width="500" />
-
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/git/ssogit.png" alt="GitHub SSO" />
   </div>
 
-- Open the application details, and you can see the `Client ID`
-  <div style={{textAlign: 'center'}}>
+5. If you are using **GitHub Enterprise** self-hosted, enter the `Host Name`. The host name should be a URL and should not end with `/`, for example, `https://github.tooljet.com`. If it is not self-hosted, you can skip this field.
 
-  <img className="screenshot-full" src="/img/sso/git/client-id.png" alt="General Settings: SSO" width="700"/>
+6. Finally, click on the **Save changes** button and the GitHub sign-in button will now be available in your ToolJet login screen.
 
-  </div>
+7. Obtain the Login URL from the **[General Settings](/docs/user-authentication/general-settings#login-url)** of the SSO page.
 
-- Then create `Client secrets` by clicking `Generate new client secret`
-  <div style={{textAlign: 'center'}}>
+### Setting Default SSO
 
-  <img className="screenshot-full" src="/img/sso/git/client-secret.png" alt="General Settings: SSO" width="700"/>
+To set GitHub as the default SSO for the instance, use the following environment variables:
 
-  </div>
-
-Lastly, enter **Client Id** and **Client Secret** in GitHub manage SSO page and save.
-
-The GitHub sign-in button will now be available in your ToolJet login screen.
-
-:::info
-Should configure `Host Name` if you are using GitHub Enterprise self hosted. Host name should be a URL and should not ends with `/`, example: `https://github.tooljet.com`
-:::
-
-## Setting default SSO
-To set GitHub as default SSO for the instance use environment variable.
-
-| variable                              | description                                                   |
+| Variable                              | Description                                                   |
 | ------------------------------------- | -----------------------------------------------------------   |
-| SSO_GIT_OAUTH2_CLIENT_ID              | GitHub OAuth client id |
-| SSO_GIT_OAUTH2_CLIENT_SECRET          | GitHub OAuth client secret |
-| SSO_GIT_OAUTH2_HOST                   | GitHub OAuth host name if GitHub is self hosted |
+| SSO_GIT_OAUTH2_CLIENT_ID              | GitHub OAuth client ID                                        |
+| SSO_GIT_OAUTH2_CLIENT_SECRET          | GitHub OAuth client secret                                    |
+| SSO_GIT_OAUTH2_HOST                   | GitHub OAuth host name if GitHub is self-hosted               |
 
 **Redirect URL should be `<host>/sso/git`**
+
+### Exposed ssoUserInfo
+
+Once the GitHub SSO is configured (on ToolJet version **`2.28.0-ee2.12.2`** or above), ToolJet will expose the user info returned by the GitHub. The user info will be available under the `ssoUserInfo` property of the `currentUser` global variable. Check the **[Inspector](/docs/how-to/use-inspector)** doc to learn more.
+
+The exposed user info can be dynamically accessed throughout the apps using JS **`{{globals.currentUser.ssoUserInfo.<key>}}`**
+
+The following is an example of the user info returned by GitHub:
+
+| Key | Description | Syntax to access |
+|:--- |:----------- |:---------------- |
+| **login** | GitHub username | `{{globals.currentUser.ssoUserInfo.login}}` |
+| **id** | GitHub user ID | `{{globals.currentUser.ssoUserInfo.id}}` |
+| **node_id** | GitHub user node ID | `{{globals.currentUser.ssoUserInfo.node_id}}` |
+| **avatar_url** | GitHub user avatar URL | `{{globals.currentUser.ssoUserInfo.avatar_url}}` |
+| **gravatar_id** | GitHub user gravatar ID | `{{globals.currentUser.ssoUserInfo.gravatar_id}}` |
+| **url** | GitHub user URL | `{{globals.currentUser.ssoUserInfo.url}}` |
+| **html_url** | GitHub user HTML URL | `{{globals.currentUser.ssoUserInfo.html_url}}` |
+| **followers_url** | GitHub user followers URL | `{{globals.currentUser.ssoUserInfo.followers_url}}` |
+| **following_url** | GitHub user following URL | `{{globals.currentUser.ssoUserInfo.following_url}}` |
+| **gists_url** | GitHub user gists URL | `{{globals.currentUser.ssoUserInfo.gists_url}}` |
+| **starred_url** | GitHub user starred URL | `{{globals.currentUser.ssoUserInfo.starred_url}}` |
+| **subscriptions_url** | GitHub user subscriptions URL | `{{globals.currentUser.ssoUserInfo.subscriptions_url}}` |
+| **organizations_url** | GitHub user organizations URL | `{{globals.currentUser.ssoUserInfo.organizations_url}}` |
+| **repos_url** | GitHub user repos URL | `{{globals.currentUser.ssoUserInfo.repos_url}}` |
+| **events_url** | GitHub user events URL | `{{globals.currentUser.ssoUserInfo.events_url}}` |
+| **received_events_url** | GitHub user received events URL | `{{globals.currentUser.ssoUserInfo.received_events_url}}` |
+| **type** | GitHub user type | `{{globals.currentUser.ssoUserInfo.type}}` |
+| **site_admin** | GitHub user site admin | `{{globals.currentUser.ssoUserInfo.site_admin}}` |
+| **name** | GitHub user name | `{{globals.currentUser.ssoUserInfo.name}}` |
+| **company** | GitHub user company | `{{globals.currentUser.ssoUserInfo.company}}` |
+| **blog** | GitHub user blog | `{{globals.currentUser.ssoUserInfo.blog}}` |
+| **location** | GitHub user location | `{{globals.currentUser.ssoUserInfo.location}}` |
+| **email** | GitHub user email | `{{globals.currentUser.ssoUserInfo.email}}` |
+| **hireable** | GitHub user hireable | `{{globals.currentUser.ssoUserInfo.hireable}}` |
+| **bio** | GitHub user bio | `{{globals.currentUser.ssoUserInfo.bio}}` |
+| **twitter_username** | GitHub user twitter username | `{{globals.currentUser.ssoUserInfo.twitter_username}}` |
+| **public_repos** | GitHub user public repos | `{{globals.currentUser.ssoUserInfo.public_repos}}` |
+| **public_gists** | GitHub user public gists | `{{globals.currentUser.ssoUserInfo.public_gists}}` |
+| **followers** | GitHub user followers | `{{globals.currentUser.ssoUserInfo.followers}}` |
+| **following** | GitHub user following | `{{globals.currentUser.ssoUserInfo.following}}` |
+| **created_at** | GitHub user created at | `{{globals.currentUser.ssoUserInfo.created_at}}` |
+| **updated_at** | GitHub user updated at | `{{globals.currentUser.ssoUserInfo.updated_at}}` |
+| **access_token** | GitHub user access token. Sensitive information of a logged-in user. | `{{globals.currentUser.ssoUserInfo.access_token}}` |
+
+<div style={{textAlign: 'center'}}>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/git/ssogithub.png" alt="GitHub SSO" />
+</div>
+
+### Example: Getting user information using the access_token
+
+Once a user is logged in to ToolJet using GitHub SSO, the access token of the user becomes available. This access token can be utilized within ToolJet apps to retrieve detailed user information from the GitHub API.
+
+1. Log in to ToolJet using GitHub Single Sign-on as outlined in the previous setup steps.
+
+2. Create a new ToolJet application and then create new REST API query. Set the method to `GET` and the URL to `https://api.github.com/user/followers`. This API call will return the list of followers for the logged-in GitHub user.
+
+3. In the Headers section of the query, include the **key** `Authorization` and set the **value** to `Bearer {{globals.currentUser.ssoUserInfo.access_token}}`. This will pass the user's GitHub access token as a Bearer token in the request header.
+
+5. Execute the query to fetch the list of followers for the logged-in user. The response will contain the list of followers for the authenticated GitHub user.
+
+<div style={{textAlign: 'center'}}>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/git/queryresults.png" alt="GitHub SSO" />
+</div>
