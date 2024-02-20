@@ -128,6 +128,38 @@
 
 }
 
+.tjdb-loader-parent>span:first-child {
+  height: 20px !important;
+
+  .tjdb-loader {
+    width: 180px !important;
+    background: var(--slate7) !important;
+    display: flex !important;
+  }
+}
+
+.tjdb-loader-icon-parent {
+  width: 20px !important;
+  height: 20px !important;
+
+  .tjdb-icon-loader {
+    width: 20px !important;
+    background: var(--slate7) !important;
+    display: flex !important;
+  }
+}
+
+.tjdb-empty-row td {
+  border-right: 1px solid !important;
+  border-bottom: 1px solid !important;
+  border-color: inherit !important;
+}
+
+.loading-table th {
+  padding: 5px 8px 5px 8px !important;
+  height: 32px !important;
+}
+
 .warning-icon-container {
   width: 54px !important;
   height: 52px !important;
