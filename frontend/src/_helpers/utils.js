@@ -66,6 +66,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
           'client',
           'server',
           'constants',
+          'parameters',
           'moment',
           '_',
           ...Object.keys(customObjects),
@@ -82,6 +83,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
         isJsCode ? undefined : state?.client,
         isJsCode ? undefined : state?.server,
         state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
+        state?.parameters,
         moment,
         _,
         ...Object.values(customObjects),
@@ -341,7 +343,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const minValue = validationObject?.minValue?.value;
   const maxValue = validationObject?.maxValue?.value;
   const customRule = validationObject?.customRule?.value;
-
+  const mandatory = validationObject?.mandatory?.value;
   const validationRegex = resolveWidgetFieldValue(regex, currentState, '', customResolveObjects);
   const re = new RegExp(validationRegex, 'g');
 
@@ -372,7 +374,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMinValue = resolveWidgetFieldValue(minValue, currentState, undefined, customResolveObjects);
   if (resolvedMinValue !== undefined) {
-    if (widgetValue === undefined || widgetValue < parseInt(resolvedMinValue)) {
+    if (widgetValue === undefined || widgetValue < parseFloat(resolvedMinValue)) {
       return {
         isValid: false,
         validationError: `Minimum value is ${resolvedMinValue}`,
@@ -382,7 +384,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMaxValue = resolveWidgetFieldValue(maxValue, currentState, undefined, customResolveObjects);
   if (resolvedMaxValue !== undefined) {
-    if (widgetValue === undefined || widgetValue > parseInt(resolvedMaxValue)) {
+    if (widgetValue === undefined || widgetValue > parseFloat(resolvedMaxValue)) {
       return {
         isValid: false,
         validationError: `Maximum value is ${resolvedMaxValue}`,
@@ -395,6 +397,13 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     return { isValid: false, validationError: resolvedCustomRule };
   }
 
+  const resolvedMandatory = resolveWidgetFieldValue(mandatory, currentState, false, customResolveObjects);
+
+  if (resolvedMandatory == true) {
+    if (!widgetValue) {
+      return { isValid: false, validationError: `Field cannot be empty` };
+    }
+  }
   return {
     isValid,
     validationError,
@@ -408,15 +417,7 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(
-  _ref,
-  code,
-  queryId,
-  isPreview,
-  mode = '',
-  parameters = {},
-  hasParamSupport = false
-) {
+export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
   const currentState = getCurrentState();
   let result = {},
     error = null;
@@ -429,7 +430,6 @@ export async function executeMultilineJS(
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
   const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
-  hasParamSupport = !hasParamSupport ? queryDetails?.options?.hasParamSupport : hasParamSupport;
 
   const defaultParams =
     queryDetails?.options?.parameters?.reduce(
@@ -450,6 +450,7 @@ export async function executeMultilineJS(
     //this will handle the preview case where you cannot find the queryDetails in state.
     formattedParams = { ...parameters };
   }
+
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
       ...currentState.queries[key],
@@ -461,6 +462,18 @@ export async function executeMultilineJS(
         const query = useDataQueriesStore.getState().dataQueries.find((q) => q.name === key);
         query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
         return actions.runQuery(key, processedParams);
+      },
+
+      getData: () => {
+        return getCurrentState().queries[key].data;
+      },
+
+      getRawData: () => {
+        return getCurrentState().queries[key].rawData;
+      },
+
+      getloadingState: () => {
+        return getCurrentState().queries[key].isLoading;
       },
     };
   }
@@ -480,7 +493,7 @@ export async function executeMultilineJS(
       'client',
       'server',
       'constants',
-      ...(hasParamSupport ? ['parameters'] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+      ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
       code,
     ];
     var evalFn = new AsyncFunction(...fnParams);
@@ -498,7 +511,7 @@ export async function executeMultilineJS(
       currentState?.client,
       currentState?.server,
       currentState?.constants,
-      ...(hasParamSupport ? [formattedParams] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+      ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
     ];
     result = {
       status: 'ok',
@@ -597,9 +610,9 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
       );
     }
 
-    if (isPreview) {
-      return previewQuery(_ref, query, true, processedParams);
-    }
+    // if (isPreview) {
+    //   return previewQuery(_ref, query, true, processedParams);
+    // }
 
     const event = {
       actionId: 'run-query',
@@ -617,6 +630,16 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
         actionId: 'set-custom-variable',
         key,
         value,
+      };
+      return executeAction(_ref, event, mode, {});
+    }
+  };
+
+  const getVariable = (key = '') => {
+    if (key) {
+      const event = {
+        actionId: 'get-custom-variable',
+        key,
       };
       return executeAction(_ref, event, mode, {});
     }
@@ -727,6 +750,14 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     return executeAction(_ref, event, mode, {});
   };
 
+  const getPageVariable = (key = '') => {
+    const event = {
+      actionId: 'get-page-variable',
+      key,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
   const unsetPageVariable = (key = '') => {
     const event = {
       actionId: 'unset-page-variable',
@@ -765,6 +796,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
   return {
     runQuery,
     setVariable,
+    getVariable,
     unSetVariable,
     showAlert,
     logout,
@@ -775,6 +807,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     goToApp,
     generateFile,
     setPageVariable,
+    getPageVariable,
     unsetPageVariable,
     switchPage,
   };

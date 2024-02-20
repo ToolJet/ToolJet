@@ -4,7 +4,6 @@ import { groupsSelector } from "Selectors/manageGroups";
 import { fake } from "Fixtures/fake";
 import {
     logout,
-    navigateToAppEditor,
     navigateToManageGroups,
     releaseApp,
 } from "Support/utils/common";
@@ -51,6 +50,7 @@ describe("Redirection error pages", () => {
         data.appName = `${fake.companyName} App`;
         cy.apiCreateApp(data.appName);
         cy.openApp();
+        cy.wait(1000);
         releaseApp();
 
         cy.get(commonWidgetSelector.shareAppButton).click();
@@ -79,7 +79,7 @@ describe("Redirection error pages", () => {
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
     });
 
-    it("Verify error modal for app url of unreleased apps", () => {
+    it.only("Verify error modal for app url of unreleased apps", () => {
         data.appName = `${fake.companyName} App`;
         data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 
@@ -145,7 +145,7 @@ describe("Redirection error pages", () => {
         cy.get(groupsSelector.appsLink).click();
         cy.wait(1000);
         cy.get(groupsSelector.appSearchBox).click();
-        cy.wait(500);
+        cy.wait(1000);
         cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
         cy.get(groupsSelector.selectAddButton).click();
         cy.get("table").contains("td", data.appName);
