@@ -15,10 +15,6 @@ export class ActivateAccountWithTokenDto {
 
   @IsString()
   @IsNotEmpty()
-  source: string;
-
-  @IsString()
-  @IsNotEmpty()
   @IsUUID()
   organizationToken: string;
 }

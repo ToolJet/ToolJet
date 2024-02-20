@@ -46,9 +46,8 @@ import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
 import { ActivateAccountWithTokenDto } from '@dto/activate-account-with-token.dto';
-import { uuid4 } from '@sentry/utils';
 import { AppSignupDto } from '@dto/app-authentication.dto';
-import { SIGNUP_ERRORS } from 'src/helpers/error_types';
+import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -461,7 +460,7 @@ export class AuthService {
   };
 
   async activateAccountWithToken(activateAccountWithToken: ActivateAccountWithTokenDto, response: any) {
-    const { email, password: userPassword, source, organizationToken } = activateAccountWithToken;
+    const { email, password, organizationToken } = activateAccountWithToken;
     const signupUser = await this.usersService.findByEmail(email);
     const invitedUser = await this.organizationUsersService.findByWorkspaceInviteToken(organizationToken);
 
@@ -486,12 +485,6 @@ export class AuthService {
       throw new NotAcceptableException('Email already exists');
     }
 
-    let password = userPassword;
-    if (!password && source === URL_SSO_SOURCE) {
-      /* For SSO we don't need password. let us set uuid as a password. */
-      password = uuid4();
-    }
-
     const lifecycleParams = getUserStatusAndSource(lifecycleEvents.USER_REDEEM, SOURCE.INVITE);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -512,7 +505,7 @@ export class AuthService {
         CASE: user redirected to signup to activate his account with password. 
         Till now user doesn't have an organization.
       */
-      const session = await this.generateInviteSignupPayload(response, signupUser, source);
+      const session = await this.generateInviteSignupPayload(response, signupUser, 'signup', manager);
       const organizationInviteUrl = generateOrgInviteURL(
         organizationToken,
         invitedUser['invitedOrganizationId'],
@@ -920,6 +913,7 @@ export class AuthService {
     manager?: EntityManager
   ): Promise<any> {
     const request = RequestContext?.currentContext?.req;
+    const { id, email, firstName, lastName } = user;
 
     const session: UserSessions = await this.sessionService.createSession(
       user.id,
@@ -931,9 +925,9 @@ export class AuthService {
     const sessionId = session.id;
 
     const JWTPayload: JWTPayload = {
-      sessionId: sessionId,
-      username: user.id,
-      sub: user.email,
+      sessionId,
+      username: id,
+      sub: email,
       organizationIds: [],
       isSSOLogin: source === 'sso',
       isPasswordLogin: source === 'signup',
@@ -950,14 +944,13 @@ export class AuthService {
       cookieOptions.sameSite = 'none';
       cookieOptions.secure = true;
     }
-
     response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), cookieOptions);
 
     return decamelizeKeys({
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      id,
+      email,
+      firstName,
+      lastName,
     });
   }
 }

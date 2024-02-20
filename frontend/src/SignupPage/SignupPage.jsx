@@ -66,7 +66,7 @@ class SignupPageComponent extends React.Component {
     if (organizationToken) {
       /* different API */
       authenticationService
-        .activateAccountWithToken(email, password, organizationToken, 'signup')
+        .activateAccountWithToken(email, password, organizationToken)
         .then((response) => onInvitedUserSignUpSuccess(response, this.props.navigate))
         .catch((errorObj) => {
           const emailError = errorObj?.error?.inputError;
