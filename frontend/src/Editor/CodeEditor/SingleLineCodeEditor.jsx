@@ -244,10 +244,14 @@ const EditorInput = ({
             height={lang === 'jsx' ? '400px' : '100%'}
             width="100%"
             extensions={[javascript({ jsx: lang === 'jsx' }), autoCompleteConfig, keymap.of([...customKeyMaps])]}
-            onChange={(val) => {
+            onChange={(val, viewUpdate) => {
+              // console.log('---arpit:: onchange', { viewUpdate });
               setFirstTimeFocus(false);
               handleOnChange(val);
             }}
+            // onUpdate={(viewUpdate) => {
+            //   console.log('---arpit:: [onUpdate]', { viewUpdate });
+            // }}
             basicSetup={{
               lineNumbers: lang === 'jsx',
               syntaxHighlighting: true,
@@ -256,9 +260,10 @@ const EditorInput = ({
               highlightActiveLine: false,
               autocompletion: true,
               completionKeymap: true,
+              searchKeymap: false,
             }}
             onFocus={() => handleFocus()}
-            onBlur={handleOnBlur}
+            onBlur={() => handleOnBlur()}
             className={customClassNames}
             theme={theme}
             indentWithTab={false}

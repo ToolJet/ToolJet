@@ -75,6 +75,7 @@ const MultiLineCodeEditor = (props) => {
     autocompletion: hideSuggestion ?? true,
     highlightActiveLineGutter: false,
     completionKeymap: true,
+    searchKeymap: false,
   };
 
   function autoCompleteExtensionConfig(context) {
