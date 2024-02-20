@@ -59,6 +59,8 @@ import { WorkflowExecutionsController } from '@controllers/workflow_executions_c
 import { ImportExportResourcesService } from '@services/import_export_resources.service';
 import { TooljetDbImportExportService } from '@services/tooljet_db_import_export_service';
 import { TooljetDbService } from '@services/tooljet_db.service';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 @Module({
   imports: [
@@ -120,6 +122,8 @@ import { TooljetDbService } from '@services/tooljet_db.service';
     TooljetDbService,
     ImportExportResourcesService,
     TooljetDbImportExportService,
+    TooljetDbOperationsService,
+    PostgrestProxyService,
   ],
   controllers: [
     AppsController,

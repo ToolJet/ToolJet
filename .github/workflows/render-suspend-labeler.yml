@@ -16,7 +16,7 @@ jobs:
       - uses: akshaysasidrn/stale-label-fetch@v1.1
         id: stale-label
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.TJ_BOT_PAT }}
           stale-label: "active-review-app"
           stale-time: "86400"
           type: "pull_request"
