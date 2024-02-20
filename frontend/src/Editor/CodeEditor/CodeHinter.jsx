@@ -91,7 +91,7 @@ const PopupIcon = ({ callback, icon, tip, position, isMultiEditor = false }) => 
   let top = isMultiEditor ? 370 : topRef > 32 ? topRef : 0;
 
   return (
-    <div className="d-flex justify-content-end w-100 position-absolute codehinter-popup-icon" style={{ top: '0px' }}>
+    <div className="d-flex justify-content-end w-100 position-absolute codehinter-popup-icon" style={{ top: top }}>
       <OverlayTrigger
         trigger={['hover', 'focus']}
         placement="top"
