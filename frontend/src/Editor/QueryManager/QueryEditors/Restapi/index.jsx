@@ -166,7 +166,10 @@ class Restapi extends React.Component {
                 {dataSourceURL && (
                   <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
                 )}
-                <div className={`flex-grow-1  ${dataSourceURL ? 'url-input-group' : ''}`}>
+                <div
+                  className={`flex-grow-1 rest-api-url-codehinter  ${dataSourceURL ? 'url-input-group' : ''}`}
+                  style={{ width: '530px' }}
+                >
                   <CodeHinter
                     type="basic"
                     currentState={this.props.currentState}
