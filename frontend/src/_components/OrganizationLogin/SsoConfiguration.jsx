@@ -46,8 +46,6 @@ class SSOConfiguration extends React.Component {
   };
 
   handleUpdateSSOSettings = (ssoType, newSettings) => {
-    console.log(`Updating settings for ${ssoType}:`, newSettings);
-
     this.setState((prevState) => {
       const updatedSSOOptions = prevState.ssoOptions.map((option) => {
         if (option.sso === ssoType) {
@@ -194,7 +192,6 @@ class SSOConfiguration extends React.Component {
     const instanceEnabledSSOs = this.state.instanceSSO
       .filter((sso) => sso.enabled === true && sso.sso != 'form')
       .map((sso) => sso.sso);
-    console.log(this.state.instanceSSO, instanceEnabledSSOs, 'instace we');
 
     let enabledSSOCount = 0;
 
@@ -249,7 +246,6 @@ class SSOConfiguration extends React.Component {
 
   render() {
     const { showModal, currentSSO, defaultSSO, initialState, ssoOptions, showDropdown } = this.state;
-    console.log(defaultSSO, 'check too');
 
     return (
       <div className="sso-configuration">

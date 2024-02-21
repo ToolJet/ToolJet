@@ -3,7 +3,6 @@ import Modal from '@/HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 function WorkspaceSSOEnableModal({ show, ssoKey, saveSettings, setShowModal, reset }) {
-    console.log(ssoKey);
   const handleEnable = () => {
     saveSettings();
     setShowModal(false);

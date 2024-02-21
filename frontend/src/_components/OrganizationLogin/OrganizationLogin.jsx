@@ -59,8 +59,6 @@ class OrganizationLogin extends React.Component {
     const instanceSSO = this.transformConfigToObject(settings?.instance_configs);
     const organizationSettings = settings?.organization_details;
     const ssoConfigs = organizationSettings?.sso_configs;
-    console.log(organizationSettings, ssoConfigs, instanceSSO, 'see');
-    console.log(this.state.defaultSSO, 'me too');
     const passwordLoginEnabled = passwordLogin || ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
     const initialOptions = {
       enableSignUp: organizationSettings?.enable_sign_up || false,
