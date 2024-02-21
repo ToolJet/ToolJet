@@ -530,7 +530,7 @@ class ManageGroupPermissionsComponent extends React.Component {
               }
               customClassName={'add-new-group-modal'}
               titleAdornment={
-                isTrial && <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>
+                isTrial && <LicenseBannerCloud isAvailable={false} showPaidFeatureBanner={true}></LicenseBannerCloud>
               }
             >
               <form

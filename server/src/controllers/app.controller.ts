@@ -24,8 +24,6 @@ import { AuthService } from '../services/auth.service';
 import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
 import { CreateAdminDto, CreateUserDto, TrialUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { UserCountGuard } from '@ee/licensing/guards/user.guard';
-import { EditorUserCountGuard } from '@ee/licensing/guards/editorUser.guard';
 import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 import { FirstUserSignupDisableGuard } from 'src/modules/auth/first-user-signup-disable.guard';
 import { FirstUserSignupGuard } from 'src/modules/auth/first-user-signup.guard';
@@ -165,13 +163,7 @@ export class AppController {
     return await this.authService.acceptOrganizationInvite(acceptInviteDto);
   }
 
-  @UseGuards(
-    SignupDisableGuard,
-    UserCountGuard,
-    EditorUserCountGuard,
-    AllowPersonalWorkspaceGuard,
-    FirstUserSignupDisableGuard
-  )
+  @UseGuards(SignupDisableGuard, AllowPersonalWorkspaceGuard, FirstUserSignupDisableGuard)
   @Post('signup')
   async signup(@Body() appAuthDto: AppSignupDto) {
     return this.authService.signup(appAuthDto.email, appAuthDto.name, appAuthDto.password);
