@@ -28,6 +28,9 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
   useEffect(() => {
     if (currentValue) {
       const keysWithNullValues = Object.keys(currentValue).filter((key) => currentValue[key] === null);
+      const keysWithDefaultValues = Object.keys(currentValue).filter(
+        (key, index) => currentValue[key] === columns[index].column_default
+      );
       setActiveTab((prevActiveTabs) => {
         const newActiveTabs = [...prevActiveTabs];
         keysWithNullValues.forEach((key) => {
@@ -36,13 +39,20 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
             newActiveTabs[index] = 'Null';
           }
         });
+        keysWithDefaultValues.forEach((key) => {
+          const index = Object.keys(currentValue).indexOf(key);
+          if (columns[index].column_default === currentValue[key]) {
+            newActiveTabs[index] = 'Default';
+          }
+        });
         return newActiveTabs;
       });
       const initialInputValues = currentValue
-        ? Object.keys(currentValue).map((key) => {
+        ? Object.keys(currentValue).map((key, index) => {
             const value =
               currentValue[key] === null ? null : currentValue[key] === currentValue[key] ? currentValue[key] : '';
-            const disabledValue = currentValue[key] === null ? true : false;
+            const disabledValue =
+              currentValue[key] === null || currentValue[key] === columns[index].column_default ? true : false;
             return { value: value, disabled: disabledValue };
           })
         : [];
