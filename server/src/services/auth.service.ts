@@ -283,7 +283,7 @@ export class AuthService {
     const userParams = { email, password, firstName, lastName };
 
     if (existingUser) {
-      return await this.whatIfTheSignUpIsAtTheWorkspaceLevel(existingUser, signingUpOrganization, userParams);
+      return await this.whatIfTheSignUpIsAtTheWorkspaceLevel(existingUser, signingUpOrganization, userParams, response);
     } else {
       return await this.createUserOrPersonalWorkspace(userParams, existingUser, signingUpOrganization, response);
     }
@@ -342,7 +342,7 @@ export class AuthService {
     response: Response,
     user: User,
     organizationParams: Partial<OrganizationUser>,
-    manager: EntityManager
+    manager?: EntityManager
   ) {
     const { invitationToken, organizationId } = organizationParams;
     const session = await this.generateInviteSignupPayload(response, user, 'signup', manager);
@@ -377,7 +377,8 @@ export class AuthService {
   whatIfTheSignUpIsAtTheWorkspaceLevel = async (
     existingUser: User,
     signingUpOrganization: Organization,
-    userParams: { firstName: string; lastName: string; password: string }
+    userParams: { firstName: string; lastName: string; password: string },
+    response: Response
   ) => {
     const { firstName, lastName, password } = userParams;
     const organizationId: string = signingUpOrganization?.id;
@@ -421,13 +422,10 @@ export class AuthService {
           lastName: lastName ?? '',
           ...getUserStatusAndSource(lifecycleEvents.USER_REDEEM),
         });
-        this.sendOrgInvite(
-          { email: existingUser.email, firstName },
-          signingUpOrganization.name,
-          alreadyInvitedUserByAdmin.invitationToken,
-          false
-        );
-        break;
+        return await this.processOrganizationSignup(response, existingUser, {
+          invitationToken: alreadyInvitedUserByAdmin.invitationToken,
+          organizationId,
+        });
       }
       case activeAccountButnoActiveWorkspaces: {
         /* Send the org invite again */
