@@ -81,7 +81,9 @@ class SignupPageComponent extends React.Component {
     } else {
       authenticationService
         .signup(email, name, password, this.inviteOrganizationId)
-        .then(() => {
+        .then((response) => {
+          const { organizationInviteUrl } = response;
+          if (organizationInviteUrl) onInvitedUserSignUpSuccess(response, this.props.navigate);
           // eslint-disable-next-line no-unused-vars
           const { from } = this.props.location.state || {
             from: { pathname: '/' },

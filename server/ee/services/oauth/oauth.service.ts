@@ -241,16 +241,23 @@ export class OauthService {
           const defaultOrgDetails: Organization = organizationList?.find(
             (og) => og.id === userDetails.defaultOrganizationId
           );
+          const personalWorkspaceCount = await this.organizationUsersService.personalWorkspaceCount(userDetails.id);
+
           if (defaultOrgDetails) {
             // default organization SSO login enabled
             organizationDetails = defaultOrgDetails;
-          } else if (organizationList?.length > 0) {
+          } else if (organizationList?.length > 0 && personalWorkspaceCount > 0) {
             // default organization SSO login not enabled, picking first one from SSO enabled list
             organizationDetails = organizationList[0];
           } else {
             // no SSO login enabled organization available for user - creating new one
             const { name, slug } = generateNextNameAndSlug('My workspace');
             organizationDetails = await this.organizationService.create(name, slug, userDetails, manager);
+            await this.usersService.updateUser(
+              userDetails.id,
+              { defaultOrganizationId: organizationDetails.id },
+              manager
+            );
           }
         } else if (!userDetails) {
           throw new UnauthorizedException('User does not exist, please sign up');

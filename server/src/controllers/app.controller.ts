@@ -155,8 +155,8 @@ export class AppController {
   @UseGuards(SignupDisableGuard)
   @UseGuards(FirstUserSignupDisableGuard)
   @Post('signup')
-  async signup(@Body() appSignUpDto: AppSignupDto) {
-    return this.authService.signup(appSignUpDto);
+  async signup(@Body() appSignUpDto: AppSignupDto, @Res({ passthrough: true }) response: Response) {
+    return this.authService.signup(appSignUpDto, response);
   }
 
   @UseGuards(SignupDisableGuard)
