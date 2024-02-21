@@ -30,7 +30,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
 
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
-
   //! Re render the component when the componentName changes as the initialValue is not updated
 
   useEffect(() => {

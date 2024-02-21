@@ -21,7 +21,6 @@ export const Code = ({
   placeholder,
 }) => {
   const currentState = useCurrentState();
-
   const getDefinitionForNewProps = (param) => {
     if (param === 'enablePagination') {
       const clientSidePagination = component?.component?.definition?.properties?.clientSidePagination?.value ?? false;

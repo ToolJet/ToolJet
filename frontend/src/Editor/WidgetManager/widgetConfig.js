@@ -2887,7 +2887,6 @@ export const widgets = [
           { displayName: 'Markdown', value: 'markdown' },
           { displayName: 'HTML', value: 'html' },
         ],
-        isFxNotRequired: true,
         defaultValue: { value: 'plainText' },
         fullWidth: true,
       },
