@@ -15,9 +15,13 @@ function WorkspaceSSOEnableModal({ show, ssoKey, saveSettings, setShowModal, res
 
   const modalContent = (
     <div>
-    <p>Enabling <strong>{ssoKey.charAt(0).toUpperCase() + ssoKey.slice(1)}</strong> at the workspace level will override any <strong>{ssoKey.charAt(0).toUpperCase() + ssoKey.slice(1)}</strong> configurations set at the instance level.</p>
-    <p>Are you sure you want to continue?</p>
-  </div>
+      <p>
+        Enabling <strong>{ssoKey.charAt(0).toUpperCase() + ssoKey.slice(1)}</strong> at the workspace level will
+        override any <strong>{ssoKey.charAt(0).toUpperCase() + ssoKey.slice(1)}</strong> configurations set at the
+        instance level.
+      </p>
+      <p>Are you sure you want to continue?</p>
+    </div>
   );
 
   const modalFooter = (
@@ -31,8 +35,14 @@ function WorkspaceSSOEnableModal({ show, ssoKey, saveSettings, setShowModal, res
     </>
   );
 
+  const ModalTitle = () => (
+    <strong style={{ fontWeight: 500, fontSize: 'medium' }}>
+      Enable {ssoKey.charAt(0).toUpperCase() + ssoKey.slice(1)}
+    </strong>
+  );
+
   return (
-    <Modal title="Disable password login" show={show} closeModal={handleClose} footerContent={modalFooter}>
+    <Modal title={<ModalTitle />} show={show} closeModal={handleClose} footerContent={modalFooter}>
       {modalContent}
     </Modal>
   );
