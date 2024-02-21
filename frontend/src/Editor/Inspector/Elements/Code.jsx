@@ -40,14 +40,6 @@ export const Code = ({
     return param.name;
   }, [param]);
 
-  const { getDefaultComponentValue } = useResolverStoreActions();
-
-  const defaultValue = paramMeta?.validation ? getDefaultComponentValue(component?.component?.component) : undefined;
-
-  if (paramMeta?.validation) {
-    paramMeta.validation.expectedValue = defaultValue[param.name];
-  }
-
   function onVisibilityChange(value) {
     onChange({ name: 'iconVisibility' }, 'value', value, 'styles');
   }

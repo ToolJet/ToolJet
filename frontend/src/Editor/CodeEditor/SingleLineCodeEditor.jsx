@@ -244,14 +244,10 @@ const EditorInput = ({
             height={lang === 'jsx' ? '400px' : '100%'}
             width="100%"
             extensions={[javascript({ jsx: lang === 'jsx' }), autoCompleteConfig, keymap.of([...customKeyMaps])]}
-            onChange={(val, viewUpdate) => {
-              // console.log('---arpit:: onchange', { viewUpdate });
+            onChange={(val) => {
               setFirstTimeFocus(false);
               handleOnChange(val);
             }}
-            // onUpdate={(viewUpdate) => {
-            //   console.log('---arpit:: [onUpdate]', { viewUpdate });
-            // }}
             basicSetup={{
               lineNumbers: lang === 'jsx',
               syntaxHighlighting: true,

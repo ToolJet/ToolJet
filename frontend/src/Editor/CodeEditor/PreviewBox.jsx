@@ -245,7 +245,7 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
                       </span>
                     </div>
 
-                    <PreviewBox.CodeBlock code={validationSchema?.expectedValue} isExpectValue={true} />
+                    <PreviewBox.CodeBlock code={validationSchema?.defaultValue} isExpectValue={true} />
                   </div>
                 </Card.Body>
               </Card>
@@ -302,11 +302,11 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
 const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
   let preview = code && code.trim ? code?.trim() : `${code}`;
 
-  const shouldTrim = preview.length > 15;
+  const shouldTrim = preview.length > 35;
   let showJSONTree = false;
 
   if (isExpectValue && shouldTrim) {
-    preview = preview.substring(0, 15) + '...' + preview.substring(preview.length - 2, preview.length);
+    preview = preview.substring(0, 35) + '...' + preview.substring(preview.length - 2, preview.length);
   }
 
   let prettyPrintedJson = preview;
