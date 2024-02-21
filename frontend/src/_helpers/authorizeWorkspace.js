@@ -47,16 +47,13 @@ export const authorizeWorkspace = () => {
             error?.data?.statusCode == 400 && error?.data?.message == ERROR_TYPES.WORKSPACE_ARCHIVED;
           if (isWorkspaceArchived) {
             const subpath = getSubpath();
-            const queryParams = [];
+            let path = subpath ? `${subpath}/switch-workspace` : `/switch-workspace`;
             if (appId) {
-              queryParams.push('appurl=true');
+              path = 'app-url-archived';
+            } else {
+              path += '-archived';
             }
-            queryParams.push('archived=true');
-
-            const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
-            window.location = subpath
-              ? `${subpath}${'/switch-workspace'}${queryString}`
-              : `/switch-workspace${queryString}`;
+            window.location = path;
           } else if (appId) {
             /* If the user is trying to load the app viewer and the app id / slug not found */
             redirectToErrorPage(ERROR_TYPES.INVALID);
@@ -92,6 +89,7 @@ const isThisExistedRoute = () => {
     'setup',
     'confirm',
     'confirm-invite',
+    'app-url-archived',
   ];
 
   const subpath = getSubpath();

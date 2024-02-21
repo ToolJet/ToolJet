@@ -4,7 +4,7 @@ import LegalReasonsErrorModal from '../_components/LegalReasonsErrorModal';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { authenticationService } from '@/_services';
-import { getSubpath } from './routes';
+import { getPathname, redirectToSwitchOrArchivedAppPage } from './routes';
 import { ERROR_TYPES } from './constants';
 
 const copyFunction = (input) => {
@@ -74,13 +74,7 @@ export function handleResponse(response, avoidRedirection = false) {
           ReactDOM.render(modalEl, document.getElementById('modal-div'));
         }
       } else if ([400].indexOf(response.status) !== -1) {
-        let message = data?.message ?? '';
-        if (message && message == ERROR_TYPES.WORKSPACE_ARCHIVED) {
-          const subpath = getSubpath();
-          window.location = subpath
-            ? `${subpath}${'/switch-workspace'}?archived=${true}`
-            : `/switch-workspace?archived=${true}`;
-        }
+        redirectToSwitchOrArchivedAppPage(data);
       }
       const error = (data && data.message) || response.statusText;
       return Promise.reject({ error, data, statusCode: response?.status });
