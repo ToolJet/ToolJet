@@ -28,15 +28,10 @@ The user details entered while setting up ToolJet will have Super Admin privileg
 | [Reset password of any user](#reset-password-of-any-user) | ❌ | ✅ |
 | [Edit name of any user](#edit-name) | ❌ | ✅ |
 | [Make any user Super Admin](#make-the-user-super-admin) | ❌ | ✅ |
+| [Manage all workspaces in the instance(Archive/Unarchive)](#all-workspaces) | ❌ | ✅ |
 | [Restrict creation of personal workspace of users](#restrict-creation-of-personal-workspace-of-users) | ❌ | ✅ |
 | [Enable Multiplayer editing](#enable-multiplayer-editing) | ❌ | ✅ |
 | [Implement White Labelling](#white-labelling) | ❌ | ✅ |
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/enterprise/superadmin/instanceset.png" alt="Super Admin: Enterprise" />
-
-</div>
 
 ## Super Admin features
 
@@ -47,14 +42,12 @@ If a user is a Super Admin, they can switch to any workspace created by any user
 The dropdown will display all workspaces, including those created by both Super Admins and any other users.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/enterprise/superadmin/workspaceswitcher.png" alt="Super Admin: Enterprise" />
-
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/workspaceswitcher.png" alt="Superadmin: settings" />
 </div>
 
 ### Create, Edit or Delete apps from any user's personal workspace
 
-Once the Super Admin accesses the workspace of any other user, they can create, edit or delete app on the workspace.
+Once the Super Admin access the workspace of any other user, they can create, edit or delete app on the workspace.
 
 This also includes - modifying folders and importing, exporting, or cloning apps to any user's workspace.
 
@@ -65,9 +58,7 @@ Super Admin can not only archive/unarchive users/admins on their workspace but a
 If a user is Super Admin, they just need to open the workspace in which they want to archive or unarchive a user. Then go to the **Workspace Settings** from the sidebar -> **Manage Users** -> **Archive/Unarchive** any user/admin
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/enterprise/superadmin/unarchivesa.png" alt="Super Admin: Enterprise" />
-
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/archiveusersa.png" alt="Superadmin: settings" />
 </div>
 
 ###  Access ToolJet DB in any workspace
@@ -86,12 +77,17 @@ Super Admins have all the privileges that an Admin of a workspace have, Super Ad
 
 ## Settings
 
-Only Super Admins can access the Settings:
+Only Super Admins can access the Settings. To access the Settings page, click on the **⚙️** button and select **Settings** from the dropdown.
 
-- **All Users**
-- **Manage Settings**
-- **License**
-- **White labelling**
+- **[All Users](#all-users)**
+- **[All workspaces](#all-workspaces)**
+- **[Manage instance settings](#manage-instance-settings)**
+- **[License](#license)**
+- **[White labelling](#white-labelling)**
+
+<div style={{textAlign: 'center'}}>
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/settings.png" alt="Superadmin: settings" />
+</div>
 
 ## All Users
 
@@ -100,9 +96,7 @@ Only Super Admins can access the Settings:
 **All Users** settings can be used to check the list of all the users available on all the workspaces in the instance. Super Admins can also promote/demote any user to/from Super Admin from this page. They can also archive/unarchive any user at an instance level from this setting.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/enterprise/superadmin/alluserspage.png" alt="Super Admin: Enterprise" />
-
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/allusers1.png" alt="Superadmin: settings" />
 </div>
 
 ### Archiving a user from all the workspaces (Instance level)
@@ -112,9 +106,7 @@ Super Admins have the authority to deactivate any user at instance level. This w
 To archive a user, go to the **All Users** settings, click on the kebab menu next to the user that is to be archived and select **Archive** option. Once the user is archived, the status will change from **Active** to **Archived**. The user will not be able to login to any workspace in the instance.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/enterprise/superadmin/archiveinstance.png" alt="Super Admin: Archive a user from all the workspaces" />
-
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/archiveinstance.png" alt="Superadmin: settings" />
 </div>
 
 <br/>
@@ -124,9 +116,7 @@ To archive a user, go to the **All Users** settings, click on the kebab menu nex
 **Info**: The user will be unarchived from instance level automatically if a workspace admin unarchives the user from their workspace.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/enterprise/superadmin/unarchiveinstance.png" alt="Super Admin: Archive a user from all the workspaces" />
-
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/unarchiveinstance.png" alt="Superadmin: settings" />
 </div>
 
 ### Reset password of any user
@@ -146,17 +136,47 @@ On selecting the **Edit user details** option, a drawer will open from the right
 From the **Edit user details** drawer, Super Admins can make any user as Super Admin or remove any Super Admin from the **All Users** settings. To make a user Super Admin, toggle on the **Super Admin** radio button. The user will become Super Admin and the Type column will update from **`Workspace`** to **`Instance`**.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/enterprise/superadmin/edituserdetailsinstance.png" alt="Super Admin: Enterprise" />
-
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/edituserdetailsinstance.png" alt="Superadmin: settings" />
 </div>
 
-## Manage Settings
+## All workspaces
+
+The All Workspaces tab provides a comprehensive view of all workspaces within the ToolJet instance. Super Admins can use this functionality to monitor and manage workspaces collectively, ensuring efficient administration and organization-wide oversight. 
+
+Super Admins have the authority to **archive** or **unarchive** workspaces of any user in the instance as needed. Archiving a workspace essentially sets it to an inactive state, removing it from active use. Conversely, unarchiving reactivates a previously archived workspace, making it accessible once again.
 
 <div style={{textAlign: 'center'}}>
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/workspaces1.png" alt="Superadmin: settings" />
+</div>
 
-<img className="screenshot-full" src="/img/enterprise/superadmin/instancesett.png" alt="Super Admin: Enterprise" />
+### Current Workspace
 
+The **Current Workspace** label will be displayed next to the workspace that the Super Admin has currently opened. If the Super Admin archives the current workspace, they will be prompted to switch to another active workspace to ensure continuous accessibility.
+
+### Open Active Workspaces
+
+In the list of active workspaces, there is an option to open the workspace directly. This feature helps superadmins to quickly navigate to the workspace on the new tab of the browser and manage the workspace.
+
+### Archive Workspaces
+
+The **Archive** button on the right of the workspace name allows Super Admins to archive the workspace. Once archived, the workspace will be moved to the **Archived Workspaces** section.
+
+**Impact**:
+- The apps on the archived workspace won't be accessable through the URL
+- Users will be logged out if they don't have access to any active workspace
+
+### Archived Workspaces
+
+The **Archived** section displays a list of all archived workspaces. Super Admins can unarchive any workspace from this section by clicking the **Unarchive** button.
+
+<div style={{textAlign: 'center'}}>
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/workspaces2.png" alt="Superadmin: settings" />
+</div>
+
+## Manage instance settings
+
+<div style={{textAlign: 'center'}}>
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/instanceoptions.png" alt="Superadmin: settings" />
 </div>
 
 ### Restrict creation of personal workspace of users
@@ -169,13 +189,17 @@ Super Admins can **control** this behavior from the Manage Settings page, they c
 
 Super Admins can enable multiplayer editing from the Manage Settings page. Once enabled, users will be able to edit the same app simultaneously resulting in real-time collaboration.
 
-## License
+### Comments
 
-Manage the instance license via the **Settings** page. Super Admins have the capability to update the instance's license key from this page.
-
-Check out the [License](/docs/licensing) page for more details.
+Super Admins can enable comments from the Manage Settings page. Once enabled, users will be able to collaborate by adding comments anywhere on the canvas.
 
 ## White labelling
 This feature allows you to customize the ToolJet instance with your own branding. You can change the logo, favicon, and the name of the instance.
 
 Check out the [White labelling](/docs/enterprise/white-label/) page for more details.
+
+## License
+
+Manage the instance license via the **Settings** page. Super Admins have the capability to update the instance's license key from this page.
+
+Check out the [License](/docs/licensing) page for more details.
