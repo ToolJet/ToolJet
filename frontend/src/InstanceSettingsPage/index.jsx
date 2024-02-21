@@ -16,7 +16,7 @@ export function InstanceSettings(props) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const sideBarNavs = ['All users', 'Manage instance settings', 'White labelling', 'License'];
+  const sideBarNavs = ['All users', 'All workspaces', 'Manage instance settings', 'White labelling', 'License'];
 
   const defaultOrgName = (groupName) => {
     switch (groupName) {
@@ -30,6 +30,8 @@ export function InstanceSettings(props) {
       case 'License':
       case 'license':
         return 'License';
+      case 'all-workspaces':
+        return 'All workspaces';
       default:
         return groupName;
     }

@@ -174,6 +174,7 @@ export class AuthService {
         user.organizationId = organizationId;
 
         organization = await this.organizationsService.get(user.organizationId);
+
         const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
 
         if (!formConfigs?.enabled) {

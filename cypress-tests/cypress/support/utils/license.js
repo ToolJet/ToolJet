@@ -34,3 +34,15 @@ export const verifyExpiredLicenseBanner = () => {
         .verifyVisibleElement("have.text", "Renew")
         .click();
 };
+
+export const adminExpiredLicenseBanner = () => {
+    cy.get(licenseSelectors.enterpriseGradientIcon).should("be.visible");
+    cy.get('[data-cy="warning-text-header"] > div').verifyVisibleElement(
+        "have.text",
+        "Your license has expired! "
+    );
+    cy.get(licenseSelectors.warningInfoText).verifyVisibleElement(
+        "have.text",
+        "Contact your super admin to renew your ToolJet subscription."
+    );
+};

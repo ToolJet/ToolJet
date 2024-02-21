@@ -81,11 +81,12 @@ export const PrivateRoute = ({ children }) => {
     const path = appendWorkspaceId(current_organization_slug || current_organization_id, location.pathname, true);
     (current_organization_slug || current_organization_id) && window.history.replaceState(null, null, path);
   }
+  const validPaths = ['/switch-workspace', '/switch-workspace-archived', 'app-url-archived'];
 
   if (
     (session?.group_permissions && !isValidatingUserAccess) ||
     (pathname.startsWith('/applications/') && !isValidatingUserAccess) ||
-    (pathname === '/switch-workspace' && session?.current_organization_id)
+    (validPaths.includes(pathname) && session?.current_organization_id)
   ) {
     if (location.pathname.startsWith('/instance-settings/') && !session.super_admin) {
       return (

@@ -10,6 +10,7 @@ import {
   Query,
   Res,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -23,8 +24,6 @@ import { AuthService } from '../services/auth.service';
 import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
 import { CreateAdminDto, CreateUserDto, TrialUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { UserCountGuard } from '@ee/licensing/guards/user.guard';
-import { EditorUserCountGuard } from '@ee/licensing/guards/editorUser.guard';
 import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 import { FirstUserSignupDisableGuard } from 'src/modules/auth/first-user-signup-disable.guard';
 import { FirstUserSignupGuard } from 'src/modules/auth/first-user-signup.guard';
@@ -37,6 +36,8 @@ import { SessionService } from '@services/session.service';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { OrganizationsService } from '@services/organizations.service';
 import { Organization } from 'src/entities/organization.entity';
+import { SwitchWorkspaceAuthGuard } from 'src/modules/auth/switch-workspace.guard';
+import { isSuperAdmin } from 'src/helpers/utils.helper';
 
 @Controller()
 export class AppController {
@@ -50,6 +51,16 @@ export class AppController {
   @Post('authenticate')
   async login(@Body() appAuthDto: AppAuthenticationDto, @Res({ passthrough: true }) response: Response) {
     return this.authService.login(response, appAuthDto.email, appAuthDto.password);
+  }
+
+  @Post('authenticate/super-admin')
+  async superAdminLogin(@Body() appAuthDto: AppAuthenticationDto, @Res({ passthrough: true }) response: Response) {
+    const user = await this.userService.findByEmail(appAuthDto.email);
+    if (!isSuperAdmin(user)) {
+      throw new UnauthorizedException('Only superadmin can login through this url');
+    }
+    const { email, password } = appAuthDto;
+    return this.authService.login(response, email, password);
   }
 
   @UseGuards(OrganizationAuthGuard)
@@ -81,6 +92,10 @@ export class AppController {
       currentOrganization = organization;
     }
 
+    if (appData && appData?.isPublic) {
+      await this.organizationService.fetchOrganization(appData.organizationId);
+    }
+
     return this.authService.generateSessionPayload(user, currentOrganization, appData);
   }
 
@@ -103,7 +118,7 @@ export class AppController {
     return await this.authService.authorizeOrganization(user);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SwitchWorkspaceAuthGuard)
   @Get('switch/:organizationId')
   async switch(@Param('organizationId') organizationId, @User() user, @Res({ passthrough: true }) response: Response) {
     if (!organizationId) {
@@ -148,13 +163,7 @@ export class AppController {
     return await this.authService.acceptOrganizationInvite(acceptInviteDto);
   }
 
-  @UseGuards(
-    SignupDisableGuard,
-    UserCountGuard,
-    EditorUserCountGuard,
-    AllowPersonalWorkspaceGuard,
-    FirstUserSignupDisableGuard
-  )
+  @UseGuards(SignupDisableGuard, AllowPersonalWorkspaceGuard, FirstUserSignupDisableGuard)
   @Post('signup')
   async signup(@Body() appAuthDto: AppSignupDto) {
     return this.authService.signup(appAuthDto.email, appAuthDto.name, appAuthDto.password);

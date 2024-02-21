@@ -5,7 +5,7 @@ import {
     navigateToManageSSO,
     navigateToManageGroups,
 } from "Support/utils/common";
-import { addNewUser } from "Support/utils/eeCommon";
+import { addNewUser, openInstanceSettings } from "Support/utils/eeCommon";
 
 import { licenseText } from "Texts/license";
 import { licenseSelectors, cloudLicesningSelector } from "Selectors/license";
@@ -28,7 +28,7 @@ describe("", () => {
 
     it("Verify White labelling and Subscription page elements", () => {
         cy.defaultWorkspaceLogin();
-        cy.get(commonEeSelectors.settingsIcon).click();
+        openInstanceSettings()
         cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
             expect($el.contents().first().text().trim()).to.eq("Settings");
         });
@@ -353,6 +353,7 @@ describe("", () => {
 
         cy.get(eeGroupsSelector.datasourceLink).click();
         cy.get(licenseSelectors.dsGradientIcon).should("be.visible");
+        cy.get(commonSelectors.settingsIcon).click();
 
         verifyTooltip(
             commonEeSelectors.auditLogIcon,

@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
-import { LicenseBanner } from '@/LicenseBanner';
 import { licenseService, customStylesService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import InformationCircle from '@/_ui/Icon/solidIcons/InformationCircle';
@@ -15,12 +14,14 @@ export default function CustomStylesEditor({ darkMode }) {
   const [styles, setStyles] = useState();
   const [initialStyles, setInitialStyles] = useState();
   const [disabled, setDisabledStatus] = useState(false);
+  const [featureAccess, setFeatureAccess] = useState({});
 
   const fetchFeatureAccess = () => {
     licenseService.getFeatureAccess().then((data) => {
       setDisabledStatus(
         data?.licenseStatus?.isExpired || !data?.licenseStatus?.isLicenseValid || data?.customStyling !== true
       );
+      setFeatureAccess(data);
     });
   };
 
@@ -67,6 +68,8 @@ export default function CustomStylesEditor({ darkMode }) {
     }
   };
 
+  const isTrial = featureAccess?.licenseStatus?.licenseType === 'trial';
+
   return (
     <ErrorBoundary showFallback={true}>
       <div className="wrapper animation-fade">
@@ -76,7 +79,7 @@ export default function CustomStylesEditor({ darkMode }) {
               <div className="col p-3 border-bottom">
                 <div className="d-flex justify-content-between align-items-center">
                   <h3 className="card-title m-0">Custom Styles</h3>
-                  {disabled && (
+                  {(disabled || isTrial) && (
                     <LicenseBannerCloud isAvailable={false} showPaidFeatureBanner={true}></LicenseBannerCloud>
                   )}
                 </div>

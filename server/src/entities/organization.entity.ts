@@ -41,6 +41,15 @@ export class Organization extends BaseEntity {
   @Column({ name: 'owner_id' })
   ownerId: string;
 
+  @Column({
+    type: 'enum',
+    enumName: 'workspace_status',
+    name: 'status',
+    enum: ['active', 'archived'],
+    default: 'active',
+  })
+  status: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

@@ -41,14 +41,16 @@ function createOrganization(data) {
   return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse);
 }
 
-function editOrganization(params) {
+function editOrganization(params, organizationId = '') {
   const requestOptions = {
     method: 'PATCH',
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify(params),
   };
-  return fetch(`${config.apiUrl}/organizations/`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/organizations${organizationId ? `/${organizationId}` : ''}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function editOrganizationName(name) {
@@ -56,9 +58,15 @@ function editOrganizationName(name) {
   return fetch(`${config.apiUrl}/organizations/name`, requestOptions).then(handleResponse);
 }
 
-function getOrganizations() {
+function getOrganizations(status = 'active', currentPage = undefined, perPageCount = undefined, name = undefined) {
+  const query = queryString.stringify({
+    status,
+    currentPage,
+    perPageCount,
+    name,
+  });
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/organizations?${query}`, requestOptions).then(handleResponse);
 }
 
 function switchOrganization(organizationId) {

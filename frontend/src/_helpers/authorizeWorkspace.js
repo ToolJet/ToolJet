@@ -40,8 +40,21 @@ export const authorizeWorkspace = () => {
         }
       })
       .catch((error) => {
-        if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
-          if (appId) {
+        const isDesiredStatusCode =
+          (error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404 || error?.data?.statusCode == 400;
+        if (isDesiredStatusCode) {
+          const isWorkspaceArchived =
+            error?.data?.statusCode == 400 && error?.data?.message == ERROR_TYPES.WORKSPACE_ARCHIVED;
+          if (isWorkspaceArchived) {
+            const subpath = getSubpath();
+            let path = subpath ? `${subpath}/switch-workspace` : `/switch-workspace`;
+            if (appId) {
+              path = 'app-url-archived';
+            } else {
+              path += '-archived';
+            }
+            window.location = path;
+          } else if (appId) {
             /* If the user is trying to load the app viewer and the app id / slug not found */
             redirectToErrorPage(ERROR_TYPES.INVALID);
           } else if (error?.data?.statusCode == 422) {
@@ -76,6 +89,7 @@ const isThisExistedRoute = () => {
     'setup',
     'confirm',
     'confirm-invite',
+    'app-url-archived',
   ];
 
   const subpath = getSubpath();

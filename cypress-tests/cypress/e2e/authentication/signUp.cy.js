@@ -48,7 +48,7 @@ describe("User signup", () => {
     verifyConfirmPageElements();
     cy.get(commonSelectors.setUpToolJetButton).click();
     cy.wait(4000);
-    verifyOnboardingQuestions(data.fullName, data.workspaceName);
+    verifyCloudOnboardingQuestions(data.fullName, data.workspaceName);
   });
   it("Verify invalid invitation link", () => {
     cy.visit(invitationLink);

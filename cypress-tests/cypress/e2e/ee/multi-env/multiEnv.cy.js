@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonEeText, ssoEeText } from "Texts/eeCommon";
 import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
-import { verifyPromoteModalUI } from "Support/utils/eeCommon";
+import { verifyPromoteModalUI, verifyTooltipDisabled } from "Support/utils/eeCommon";
 import { dataSourceSelector } from "Selectors/dataSource";
 import {
   navigateToAppEditor,
@@ -275,11 +275,11 @@ describe("Multi env", () => {
       .verifyVisibleElement("have.text", "Production");
 
     verifyTooltip(
-      '[data-cy="env-name-list"]:eq(1)',
+      '[data-cy="env-name-dropdown"]:eq(1)',
       "There are no versions in this environment"
     );
     verifyTooltip(
-      '[data-cy="env-name-list"]:eq(2)',
+      '[data-cy="env-name-dropdown"]:eq(2)',
       "There are no versions in this environment"
     );
 
@@ -347,7 +347,7 @@ describe("Multi env", () => {
       .eq(2)
       .verifyVisibleElement("have.text", "Production");
     verifyTooltip(
-      '[data-cy="env-name-list"]:eq(2)',
+      '[data-cy="env-name-dropdown"]:eq(2)',
       "There are no versions in this environment"
     );
 

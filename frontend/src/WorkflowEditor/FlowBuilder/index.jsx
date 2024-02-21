@@ -22,10 +22,12 @@ import CommonCustomNode from './Nodes/CommonCustomNode';
 import ModalContent from './ModalContent';
 import StartNode from './Nodes/StartNode';
 import ResultNode from './Nodes/ResultNode';
+import ToolBar from '../BottomToolBar';
 
 const nodeTypes = { 'if-condition': ifConditionNode, query: CommonCustomNode, input: StartNode, output: ResultNode };
 
-function FlowBuilder(_props) {
+function FlowBuilder(props) {
+  const { executeWorkflow, debouncedSave } = props;
   const { project } = useReactFlow();
   const { editorSession, editorSessionActions, addQuery } = useContext(WorkflowEditorContext);
   const [showBlockOptions, setShowBlockOptions] = useState(false);
@@ -115,8 +117,9 @@ function FlowBuilder(_props) {
         addIfConditionNode(newNode);
         addEdge(newEdge);
       } else {
+        const isStaticDataSource = dataSourceId === 'null';
         const _dataSourceId = dataSourceId === 'null' ? null : dataSourceId;
-        const queryId = addQuery(kind, {}, _dataSourceId, pluginId);
+        const queryId = addQuery(kind, {}, _dataSourceId, pluginId, isStaticDataSource);
 
         const newNode = {
           id: uuidv4(),
@@ -224,7 +227,7 @@ function FlowBuilder(_props) {
         }}
       >
         <Background />
-        <Controls />
+        <ToolBar node={selectedNode} controls={<Controls />} executeWorkflow={executeWorkflow} />
       </ReactFlow>
       {showBlockOptions && (
         <BlockOptions
