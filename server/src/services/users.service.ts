@@ -30,6 +30,7 @@ import { UserDetails } from 'src/entities/user_details.entity';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
+import { OrganizationLicenseService } from './organization_license.service';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -49,6 +50,7 @@ type UserFilterOptions = { searchText?: string; status?: string };
 export class UsersService {
   constructor(
     private readonly filesService: FilesService,
+    private readonly organizationLicenseService: OrganizationLicenseService,
     private readonly licenseService: LicenseService,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -146,7 +148,8 @@ export class UsersService {
   async getCount(isOnlyActive?: boolean, manager?: EntityManager, organizationId?: string): Promise<number> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
-      const organizationUsersCondition = this.licenseService.createOrganizationUsersJoinCondition(organizationId);
+      const organizationUsersCondition =
+        this.organizationLicenseService.createOrganizationUsersJoinCondition(organizationId);
       const organizationStatusList = [WORKSPACE_STATUS.ACTIVE];
       !isOnlyActive && statusList.push(USER_STATUS.ARCHIVED);
       !isOnlyActive && organizationStatusList.push(WORKSPACE_STATUS.ARCHIVE);
@@ -827,11 +830,11 @@ export class UsersService {
     }
 
     if (editorUsers !== LICENSE_LIMIT.UNLIMITED && viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
-      ({ editor, viewer } = await this.licenseService.fetchTotalViewerEditorCount(manager, organizationId));
+      ({ editor, viewer } = await this.organizationLicenseService.fetchTotalViewerEditorCount(manager, organizationId));
     }
     if (editorUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (editor === -1) {
-        editor = await this.licenseService.fetchTotalEditorCount(manager, organizationId);
+        editor = await this.organizationLicenseService.fetchTotalEditorCount(manager, organizationId);
       }
       if (editor > editorUsers) {
         throw new HttpException('You have reached your limit for number of builders.', 451);
@@ -840,7 +843,7 @@ export class UsersService {
 
     if (viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (viewer === -1) {
-        ({ viewer } = await this.licenseService.fetchTotalViewerEditorCount(manager, organizationId));
+        ({ viewer } = await this.organizationLicenseService.fetchTotalViewerEditorCount(manager, organizationId));
       }
       const addedUsers = await this.getCount(true, manager, organizationId);
       const addableUsers = users - addedUsers;
@@ -871,14 +874,17 @@ export class UsersService {
         if (editorUsers === LICENSE_LIMIT.UNLIMITED) {
           return;
         }
-        const currentEditorsCount = await this.licenseService.fetchTotalEditorCount(manager, organizationId);
+        const currentEditorsCount = await this.organizationLicenseService.fetchTotalEditorCount(
+          manager,
+          organizationId
+        );
         return generatePayloadForLimits(currentEditorsCount, editorUsers, licenseStatus);
       }
       case LIMIT_TYPE.VIEWER: {
         if (viewerUsers === LICENSE_LIMIT.UNLIMITED) {
           return;
         }
-        const { viewer: currentViewersCount } = await this.licenseService.fetchTotalViewerEditorCount(
+        const { viewer: currentViewersCount } = await this.organizationLicenseService.fetchTotalViewerEditorCount(
           manager,
           organizationId
         );
@@ -887,7 +893,7 @@ export class UsersService {
       case LIMIT_TYPE.ALL: {
         const currentUsersCount = await this.getCount(true, manager, organizationId);
         const { viewer: currentViewersCount, editor: currentEditorsCount } =
-          await this.licenseService.fetchTotalViewerEditorCount(manager, organizationId);
+          await this.organizationLicenseService.fetchTotalViewerEditorCount(manager, organizationId);
 
         return {
           usersCount: generatePayloadForLimits(currentUsersCount, users, licenseStatus, LICENSE_LIMITS_LABEL.USERS),

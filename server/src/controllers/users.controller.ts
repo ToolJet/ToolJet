@@ -25,7 +25,7 @@ import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { LIMIT_TYPE, USER_TYPE } from 'src/helpers/user_lifecycle';
 import { SessionService } from '@services/session.service';
-import { LicenseService } from '@services/license.service';
+import { OrganizationLicenseService } from '@services/organization_license.service';
 
 const MAX_AVATAR_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
@@ -34,7 +34,7 @@ export class UsersController {
   constructor(
     private usersService: UsersService,
     private sessionService: SessionService,
-    private licenseService: LicenseService
+    private licenseService: OrganizationLicenseService
   ) {}
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
