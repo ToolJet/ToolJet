@@ -9,8 +9,6 @@ import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { Color } from '@/Editor/CodeBuilder/Elements/Color';
-import EditIcon from '@/_ui/Icon/solidIcons/EditIcon';
 
 class SSOConfiguration extends React.Component {
   constructor(props) {
@@ -22,8 +20,10 @@ class SSOConfiguration extends React.Component {
       ssoOptions: this.props.ssoOptions,
       defaultSSO: this.props.defaultSSO,
       isAnySSOEnabled: this.props.isAnySSOEnabled,
+      instanceSSO: this.props.instanceSSO,
       showDropdown: false,
-      enabledWorkspaceSSO: 0,
+      inheritedInstanceSSO: 0,
+      showEnablingWorkspaceSSOModal: false,
     };
   }
 
@@ -45,27 +45,44 @@ class SSOConfiguration extends React.Component {
     return initialState;
   };
 
+  handleUpdateSSOSettings = (ssoType, newSettings) => {
+    console.log(`Updating settings for ${ssoType}:`, newSettings);
+
+    this.setState((prevState) => {
+      const updatedSSOOptions = prevState.ssoOptions.map((option) => {
+        if (option.sso === ssoType) {
+          return { ...option, ...newSettings };
+        }
+        return option;
+      });
+      return {
+        ssoOptions: updatedSSOOptions,
+      };
+    });
+  };
+
   componentDidMount() {
     const initialState = this.initializeOptionStates(this.props.ssoOptions);
     this.setState({ ...initialState });
     this.setState({ ssoOptions: this.props.ssoOptions });
     this.setState({ defaultSSO: this.props.defaultSSO });
     this.setState({ isAnySSOEnabled: this.props.isAnySSOEnabled });
+    this.setState({ instanceSSO: this.props.instanceSSO });
   }
 
   componentDidUpdate(prevProps) {
-    // Check if ssoOptions have changed
     if (prevProps.ssoOptions !== this.props.ssoOptions) {
       const initialState = this.initializeOptionStates(this.props.ssoOptions);
-      const enabledSSOCount = this.getCountOfEnabledSSO();
 
-      // Update state in a single call
       this.setState({
         ...initialState,
         ssoOptions: this.props.ssoOptions,
-        enabledWorkspaceSSO: enabledSSOCount,
         defaultSSO: this.props.defaultSSO,
         isAnySSOEnabled: this.props.isAnySSOEnabled,
+        instanceSSO: this.props.instanceSSO,
+      },() => {
+        const enabledSSOCount = this.getCountOfEnabledSSO();
+        this.setState({ inheritedInstanceSSO: enabledSSOCount });
       });
     }
   }
@@ -99,10 +116,8 @@ class SSOConfiguration extends React.Component {
   handleToggleSSOOption = async (key) => {
     const isEnabledKey = `${key}Enabled`;
     const enabledStatus = !this.state[isEnabledKey];
-
     try {
       await this.changeStatus(key, enabledStatus);
-      toast.success(`${enabledStatus ? 'Enabled' : 'Disabled'} ${key} SSO`, { position: 'top-center' });
 
       this.setState((prevState) => {
         const updatedSSOOptions = prevState.ssoOptions.map((option) => {
@@ -111,7 +126,6 @@ class SSOConfiguration extends React.Component {
           }
           return option;
         });
-        const enabledSSOCount = updatedSSOOptions.filter((option) => option.enabled && option.sso !== 'form').length;
         this.props.onUpdateAnySSOEnabled(
           updatedSSOOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) || this.state.defaultSSO
         );
@@ -120,13 +134,31 @@ class SSOConfiguration extends React.Component {
           showModal: enabledStatus,
           currentSSO: key,
           [isEnabledKey]: enabledStatus,
-          enabledWorkspaceSSO: enabledSSOCount,
         };
+      }, () => {
+        const enabledSSOCount = this.getCountOfEnabledSSO();
+        this.setState({ inheritedInstanceSSO: enabledSSOCount });
       });
     } catch (error) {
       toast.error('Error while updating SSO configuration', { position: 'top-center' });
     }
   };
+
+  toggleSSOOption = async (key) => {
+    const isEnabledKey = `${key}Enabled`;
+    const enabledStatus = !this.state[isEnabledKey];
+  
+    if (enabledStatus === false) {
+      try {
+        await this.handleToggleSSOOption(key);
+        toast.success(`${enabledStatus ? 'Enabled' : 'Disabled'} ${key} SSO`, { position: 'top-center' });
+      } catch (error) {
+      }
+    } else {
+      this.setState({ currentSSO: key, showModal: true });
+    }
+  };
+  
 
   changeStatus = async (key, enabledStatus) => {
     try {
@@ -153,9 +185,25 @@ class SSOConfiguration extends React.Component {
     return option ? option.enabled : false;
   };
 
+  isInstanceOptionEnabled = (key) => {
+    const option = this.state.instanceSSO.find((option) => option.sso === key);
+    return option ? option.enabled : false;
+  };
+
   getCountOfEnabledSSO = () => {
-    const enabledOptions = this.props.ssoOptions.filter((option) => option.enabled && option.sso !== 'form');
-    return enabledOptions.length;
+    const instanceEnabledSSOs = this.state.instanceSSO
+      .filter((sso) => sso.enabled === true && sso.sso != 'form')
+      .map((sso) => sso.sso);
+    console.log(this.state.instanceSSO, instanceEnabledSSOs, 'instace we');
+
+    let enabledSSOCount = 0;
+
+    this.state.ssoOptions.forEach((ssoOption) => {
+      if (ssoOption.enabled === true && instanceEnabledSSOs.includes(ssoOption.sso)) {
+        enabledSSOCount += 1;
+      }
+    });
+    return instanceEnabledSSOs.length - enabledSSOCount;
   };
 
   getSSOIcon = (key) => {
@@ -192,7 +240,7 @@ class SSOConfiguration extends React.Component {
           }
         </div>
         <label className="switch" onClick={(e) => e.stopPropagation()}>
-          <input type="checkbox" checked={isEnabled} onChange={() => this.handleToggleSSOOption(key)} />
+          <input type="checkbox" checked={isEnabled} onChange={() => this.toggleSSOOption(key)} />
           <span className="slider round"></span>
         </label>
       </div>
@@ -237,7 +285,7 @@ class SSOConfiguration extends React.Component {
                   height: '34px',
                 }}
               >
-                Default SSO {defaultSSO ? `(${2 - this.state.enabledWorkspaceSSO})` : ''}
+                Default SSO {defaultSSO ? `(${this.state.inheritedInstanceSSO})` : ''}
                 <SolidIcon className="option-icon" name={showDropdown ? 'cheveronup' : 'cheverondown'} fill={'grey'} />
               </div>
             </Dropdown.Toggle>
@@ -246,7 +294,7 @@ class SSOConfiguration extends React.Component {
               <Dropdown.Item
                 eventKey="Google"
                 onSelect={this.handleSelect}
-                disabled={!(defaultSSO && !this.isOptionEnabled('google'))} // Disable the item if defaultSSO is false
+                disabled={!defaultSSO || this.isOptionEnabled('google') || !this.isInstanceOptionEnabled('google')} // Disable the item if defaultSSO is false
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {this.getSSOIcon('google')}
@@ -256,7 +304,7 @@ class SSOConfiguration extends React.Component {
               <Dropdown.Item
                 eventKey="GitHub"
                 onSelect={this.handleSelect}
-                disabled={!(defaultSSO && !this.isOptionEnabled('git'))} // Disable the item if defaultSSO is false
+                disabled={!defaultSSO || this.isOptionEnabled('git') || !this.isInstanceOptionEnabled('git')} // Disable the item if defaultSSO is false
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {this.getSSOIcon('git')}
@@ -279,6 +327,8 @@ class SSOConfiguration extends React.Component {
             settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
             onClose={() => this.setState({ showModal: false })}
             changeStatus={this.handleToggleSSOOption}
+            onUpdateSSOSettings={this.handleUpdateSSOSettings}
+            isInstanceOptionEnabled={this.isInstanceOptionEnabled}
           />
         )}
         {showModal && currentSSO === 'git' && (
@@ -286,6 +336,8 @@ class SSOConfiguration extends React.Component {
             settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
             onClose={() => this.setState({ showModal: false })}
             changeStatus={this.handleToggleSSOOption}
+            onUpdateSSOSettings={this.handleUpdateSSOSettings}
+            isInstanceOptionEnabled={this.isInstanceOptionEnabled}
           />
         )}
       </div>

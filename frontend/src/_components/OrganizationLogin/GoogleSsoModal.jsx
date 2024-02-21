@@ -6,8 +6,9 @@ import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import WorkspaceSSOEnableModal from './WorkspaceSSOEnableModal';
 
-export function GoogleSSOModal({ settings, onClose, changeStatus }) {
+export function GoogleSSOModal({ settings, onClose, changeStatus, onUpdateSSOSettings, isInstanceOptionEnabled }) {
   const [showModal, setShowModal] = useState(false);
   const [ssoSettings, setSettings] = useState(settings);
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -15,6 +16,7 @@ export function GoogleSSOModal({ settings, onClose, changeStatus }) {
   const [configId, setConfigId] = useState(settings?.id);
   const [clientId, setClientId] = useState(settings?.configs?.client_id || '');
   const [hasChanges, setHasChanges] = useState(false);
+  const [showEnablingWorkspaceSSOModal, setShowEnablingWorkspaceSSOModal] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -35,11 +37,12 @@ export function GoogleSSOModal({ settings, onClose, changeStatus }) {
   const onToggleChange = () => {
     const newEnabledStatus = !enabled;
     setEnabled(newEnabledStatus);
-    changeStatus('google');
+    setHasChanges(true);
   };
 
   const reset = () => {
     setClientId(settings?.configs?.client_id || '');
+    setEnabled(settings?.enabled || false);
     setHasChanges(false);
   };
 
@@ -50,23 +53,35 @@ export function GoogleSSOModal({ settings, onClose, changeStatus }) {
 
   const saveSettings = () => {
     setSaving(true);
+    if (enabled != settings?.enabled){
+      changeStatus('google', enabled);
+    }
     organizationService.editOrganizationConfigs({ type: 'google', configs: { clientId } }).then(
       (data) => {
         setSaving(false);
         data.id && setConfigId(data.id);
-        toast.success('updated SSO configurations', {
+        onUpdateSSOSettings('google', { id: configId, configs: { client_id: clientId } });
+        toast.success('Saved Google SSO configurations', {
           position: 'top-center',
         });
       },
       () => {
         setSaving(false);
-        toast.error('Error while saving SSO configurations', {
+        toast.error('Error while saving Google SSO configurations', {
           position: 'top-center',
         });
       }
     );
     setHasChanges(false);
   };
+
+  const initiateSave = () => {
+    if (enabled != settings?.enabled && enabled === true && isInstanceOptionEnabled('google')){ (
+      setShowEnablingWorkspaceSSOModal(true)
+    )} else {
+      saveSettings();
+    }
+  }
 
   // GoogleHeader Component
   function GoogleHeader() {
@@ -114,7 +129,7 @@ export function GoogleSSOModal({ settings, onClose, changeStatus }) {
         <ButtonSolid
           disabled={!hasChanges || isSaving}
           isLoading={isSaving}
-          onClick={saveSettings}
+          onClick={initiateSave}
           data-cy="save-button"
           variant="primary"
           className="sso-footer-save-btn"
@@ -186,6 +201,15 @@ export function GoogleSSOModal({ settings, onClose, changeStatus }) {
           }
         </Modal>
       )}
+      {showEnablingWorkspaceSSOModal && (
+      <WorkspaceSSOEnableModal
+        show={showEnablingWorkspaceSSOModal}
+        ssoKey={'google'}
+        saveSettings={saveSettings}
+        setShowModal={setShowEnablingWorkspaceSSOModal}
+        reset={reset}
+      />
+    )}
     </div>
   );
 }

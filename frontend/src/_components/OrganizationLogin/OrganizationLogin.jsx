@@ -21,6 +21,7 @@ class OrganizationLogin extends React.Component {
       isAnySSOEnabled: false,
       ssoOptions: [],
       defaultSSO: false,
+      instanceSSO: {},
     };
     this.copyFunction = this.copyFunction.bind(this);
   }
@@ -38,10 +39,27 @@ class OrganizationLogin extends React.Component {
     copyToClipboard(text);
   };
 
+  transformConfigToObject(config) {
+    const result = [];
+    Object.keys(config).forEach(key => {
+      // Exclude the 'enable_sign_up' key or any other keys you wish to exclude
+      if (key !== 'enable_sign_up') {
+        result.push({
+          sso: key,
+          enabled: config[key].enabled,
+          configs: config[key].configs || {}
+        });
+      }
+    });
+    return result;
+  }
+
   async setInstanceLoginConfigs(passwordLogin) {
-    const organizationSettings = await this.fetchSSOSettings();
+    const settings = await this.fetchSSOSettings();
+    const instanceSSO = this.transformConfigToObject(settings?.instance_configs);
+    const organizationSettings = settings?.organization_details;
     const ssoConfigs = organizationSettings?.sso_configs;
-    console.log(organizationSettings, ssoConfigs, 'see');
+    console.log(organizationSettings, ssoConfigs, instanceSSO, 'see');
     console.log(this.state.defaultSSO, 'me too');
     const passwordLoginEnabled = passwordLogin || ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
     const initialOptions = {
@@ -56,6 +74,7 @@ class OrganizationLogin extends React.Component {
       defaultSSO: organizationSettings?.inherit_s_s_o,
       isAnySSOEnabled:
         ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) || organizationSettings?.inherit_s_s_o,
+      instanceSSO: [...instanceSSO],
     });
   }
 
@@ -65,7 +84,7 @@ class OrganizationLogin extends React.Component {
 
   async fetchSSOSettings() {
     const configs = await organizationService.getSSODetails();
-    return configs?.organization_details;
+    return configs;
   }
 
   disablePasswordLogin = async () => {
@@ -168,7 +187,7 @@ class OrganizationLogin extends React.Component {
 
   render() {
     const { t, darkMode } = this.props;
-    const { options, isSaving, showDisablingPasswordConfirmation, isAnySSOEnabled, ssoOptions, defaultSSO } =
+    const { options, isSaving, showDisablingPasswordConfirmation, isAnySSOEnabled, ssoOptions, defaultSSO, instanceSSO } =
       this.state;
     const flexContainerStyle = {
       display: 'flex',
@@ -291,6 +310,7 @@ class OrganizationLogin extends React.Component {
                     isAnySSOEnabled={isAnySSOEnabled}
                     ssoOptions={ssoOptions}
                     defaultSSO={defaultSSO}
+                    instanceSSO={instanceSSO}
                     onUpdateAnySSOEnabled={this.updateAnySSOEnabled}
                   />
                 </div>

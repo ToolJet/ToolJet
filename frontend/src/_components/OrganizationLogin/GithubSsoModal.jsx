@@ -6,9 +6,9 @@ import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import EnableModal from './EnableModal';
+import WorkspaceSSOEnableModal from './WorkspaceSSOEnableModal';
 
-export function GithubSSOModal({ settings, onClose, changeStatus }) {
+export function GithubSSOModal({ settings, onClose, changeStatus, onUpdateSSOSettings, isInstanceOptionEnabled }) {
   const [showModal, setShowModal] = useState(false);
   const [ssoSettings, setSettings] = useState(settings);
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -18,6 +18,7 @@ export function GithubSSOModal({ settings, onClose, changeStatus }) {
   const [hostName, setHostName] = useState(settings?.configs?.host_name || '');
   const [clientSecret, setClientSecret] = useState(settings?.configs?.client_secret || '');
   const [hasChanges, setHasChanges] = useState(false);
+  const [showEnablingWorkspaceSSOModal, setShowEnablingWorkspaceSSOModal] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -30,11 +31,6 @@ export function GithubSSOModal({ settings, onClose, changeStatus }) {
 
     setHasChanges(false);
   }, [settings]);
-
-  const handleSaveChanges = () => {
-    // If there are changes, show the EnableModal
-    <EnableModal key="Github" />;
-  };
 
   const handleClientIdChange = (newClientId) => {
     setClientId(newClientId);
@@ -57,7 +53,7 @@ export function GithubSSOModal({ settings, onClose, changeStatus }) {
   const onToggleChange = () => {
     const newEnabledStatus = !enabled;
     setEnabled(newEnabledStatus);
-    changeStatus('git');
+    setHasChanges(true);
   };
 
   const reset = () => {
@@ -65,6 +61,7 @@ export function GithubSSOModal({ settings, onClose, changeStatus }) {
     setClientSecret(settings?.configs?.client_secret || '');
     setHostName(settings?.configs?.host_name || '');
     setHasChanges(false);
+    setEnabled(settings?.enabled || false);
   };
 
   const copyFunction = (input) => {
@@ -74,23 +71,38 @@ export function GithubSSOModal({ settings, onClose, changeStatus }) {
 
   const saveSettings = () => {
     setSaving(true);
+    if (enabled != settings?.enabled){
+      changeStatus('git', enabled);
+    }
     organizationService.editOrganizationConfigs({ type: 'git', configs: { clientId, clientSecret, hostName } }).then(
       (data) => {
         setSaving(false);
         data.id && setConfigId(data.id);
-        toast.success('updated SSO configurations', {
+        onUpdateSSOSettings('git', {
+          id: data.id,
+          configs: { client_id: clientId, client_secret: clientSecret, host_name: hostName },
+        });
+        toast.success('Saved Git SSO configurations', {
           position: 'top-center',
         });
       },
       () => {
         setSaving(false);
-        toast.error('Error while saving SSO configurations', {
+        toast.error('Error while saving Git SSO configurations', {
           position: 'top-center',
         });
       }
     );
     setHasChanges(false);
   };
+
+  const initiateSave = () => {
+    if (enabled != settings?.enabled && enabled === true && isInstanceOptionEnabled('git')){ (
+      setShowEnablingWorkspaceSSOModal(true)
+    )} else {
+      saveSettings();
+    }
+  }
 
   // GitHeader Component
   function GithubHeader() {
@@ -138,7 +150,7 @@ export function GithubSSOModal({ settings, onClose, changeStatus }) {
         <ButtonSolid
           disabled={!hasChanges || isSaving}
           isLoading={isSaving}
-          onClick={saveSettings}
+          onClick={initiateSave}
           data-cy="save-button"
           variant="primary"
           className="sso-footer-save-btn"
@@ -255,6 +267,15 @@ export function GithubSSOModal({ settings, onClose, changeStatus }) {
           }
         </Modal>
       )}
+      {showEnablingWorkspaceSSOModal && (
+      <WorkspaceSSOEnableModal
+        show={showEnablingWorkspaceSSOModal}
+        ssoKey={'git'}
+        saveSettings={saveSettings}
+        setShowModal={setShowEnablingWorkspaceSSOModal}
+        reset={reset}
+      />
+    )}
     </div>
   );
 }
