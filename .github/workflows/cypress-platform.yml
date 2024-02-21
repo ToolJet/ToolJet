@@ -298,7 +298,7 @@ jobs:
   Cypress-Platform-Onboarding:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress-platform-onboarding' || github.event.label.name == 'run-cypress') }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-platform-onboarding' }}
 
     steps:
       - name: Setup Node.js
