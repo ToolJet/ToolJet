@@ -53,6 +53,7 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { format } from 'date-fns';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -342,6 +343,10 @@ export function Table({
     }
   }
 
+  function getExportFileName() {
+    return `${component?.name}_${format(new Date(), 'dd-MM-yyyy_HH:mm')}`;
+  }
+
   function onPageIndexChanged(page) {
     onComponentOptionChanged(component, 'pageIndex', page).then(() => {
       onEvent('onPageChanged', tableEvents, { component });
@@ -580,6 +585,7 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
+      getExportFileName,
       disableSortBy: !enabledSort,
       manualSortBy: serverSideSort,
       stateReducer: (newState, action, prevState) => {
