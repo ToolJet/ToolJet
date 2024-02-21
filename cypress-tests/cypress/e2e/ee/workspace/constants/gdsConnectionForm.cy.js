@@ -10,7 +10,6 @@ import { dataSourceSelector } from "Selectors/dataSource";
 import { AddNewconstants } from "Support/utils/workspaceConstants";
 import { buttonText } from "Texts/button";
 import {
-    verifyAndModifyParameter,
     editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
 
@@ -233,10 +232,12 @@ describe("Workspace constants", () => {
         cy.get(".custom-toggle-switch>.switch>").eq(3).click();
         cy.waitForAutoSave();
         cy.dragAndDropWidget("Text", 550, 650);
-        editAndVerifyWidgetName(data.widgetName);
+        editAndVerifyWidgetName(data.widgetName, []);
         cy.waitForAutoSave();
 
-        verifyAndModifyParameter("Text", `{{queries.table_preview.data[0].envname`);
+        cy.get(
+            '[data-cy="textcomponenttextinput-input-field"]'
+        ).clearAndTypeOnCodeMirror(`{{queries.table_preview.data[0].envname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();

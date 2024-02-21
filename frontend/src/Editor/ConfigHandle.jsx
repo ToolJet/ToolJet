@@ -14,6 +14,7 @@ export const ConfigHandle = function ConfigHandle({
   setSelectedComponent = () => null, //! Only Modal widget passes this uses props down. All other widgets use selecto lib
   customClassName = '',
   configWidgetHandlerForModalComponent = false,
+  isVerticalResizingAllowed,
 }) {
   const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
@@ -27,7 +28,7 @@ export const ConfigHandle = function ConfigHandle({
       className={`config-handle ${customClassName}`}
       ref={dragRef}
       style={{
-        top: position === 'top' ? '-22px' : widgetTop + widgetHeight - 10,
+        top: position === 'top' ? (!isVerticalResizingAllowed() ? '-20px' : '-22px') : widgetTop + widgetHeight - 10,
       }}
     >
       <span

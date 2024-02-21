@@ -26,10 +26,7 @@ import { addQuery, selectDatasource } from "Support/utils/dataSource";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { dataSourceSelector } from "Selectors/dataSource";
-import {
-    verifyAndModifyParameter,
-    editAndVerifyWidgetName,
-} from "Support/utils/commonWidget";
+import { editAndVerifyWidgetName } from "Support/utils/commonWidget";
 import { promoteApp, releaseApp } from "Support/utils/multiEnv";
 
 describe("", () => {
@@ -610,10 +607,12 @@ describe("", () => {
         cy.get(".custom-toggle-switch>.switch>").eq(3).click();
         cy.waitForAutoSave();
         cy.dragAndDropWidget("Text", 550, 650);
-        editAndVerifyWidgetName(data.widgetName);
+        editAndVerifyWidgetName(data.widgetName, []);
         cy.waitForAutoSave();
 
-        verifyAndModifyParameter("Text", `{{queries.table_preview.data[0].envname`);
+        cy.get(
+            '[data-cy="textcomponenttextinput-input-field"]'
+        ).clearAndTypeOnCodeMirror(`{{queries.table_preview.data[0].envname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
@@ -714,10 +713,12 @@ describe("", () => {
         cy.get(".custom-toggle-switch>.switch>").eq(3).click();
         cy.waitForAutoSave();
         cy.dragAndDropWidget("Text", 550, 650);
-        editAndVerifyWidgetName(data.widgetName);
+        editAndVerifyWidgetName(data.widgetName, []);
         cy.waitForAutoSave();
 
-        verifyAndModifyParameter("Text", `{{queries.table_preview.data[0].envname`);
+        cy.get(
+            '[data-cy="textcomponenttextinput-input-field"]'
+        ).clearAndTypeOnCodeMirror(`{{queries.table_preview.data[0].envname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();

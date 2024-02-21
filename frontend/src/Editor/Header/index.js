@@ -4,7 +4,7 @@ import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
 import EnvironmentManager from '../EnvironmentsManager';
-import { AppVersionsManager } from '../AppVersionsManager/List';
+import { AppVersionsManager } from '@/Editor/AppVersionsManager/AppVersionsManager';
 import { ManageAppUsers } from '../ManageAppUsers';
 import { ReleaseVersionButton } from '../ReleaseVersionButton';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -114,7 +114,6 @@ export default function EditorHeader({
     setAppPreviewLink(appVersionPreviewLink);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, currentVersionId, editingVersion, currentAppEnvironmentId, pageHandle]);
-
   return (
     <div className="header" style={{ width: '100%' }}>
       <header className="navbar navbar-expand-md d-print-none">
@@ -149,7 +148,14 @@ export default function EditorHeader({
                     appCreationMode={creationMode}
                   />
                 </div>
-                <HeaderActions canUndo={canUndo} canRedo={canRedo} handleUndo={handleUndo} handleRedo={handleRedo} />
+                <HeaderActions
+                  canUndo={canUndo}
+                  canRedo={canRedo}
+                  handleUndo={handleUndo}
+                  handleRedo={handleRedo}
+                  showToggleLayoutBtn
+                  showUndoRedoBtn
+                />
                 <div className="d-flex align-items-center">
                   <div style={{ width: '100px', marginRight: '20px' }}>
                     <span

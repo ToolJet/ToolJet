@@ -191,7 +191,7 @@ export const commonWidgetText = {
   accordionEvents: "Events",
   accordionGenaral: "General",
   accordionValidation: "Validation",
-  accordionLayout: "Layout",
+  accordionLayout: "Devices",
   accordionDevices: "Devices",
 
   parameterCustomValidation: "Custom validation",
@@ -207,6 +207,7 @@ export const commonWidgetText = {
   parameterOptionvalues: "Option values",
   boxShadowColor: "Box shadow Color",
   boxShadowFxValue: "-5px 6px 5px 8px #ee121240",
+  loadingState: "Loading state",
 
   codeMirrorLabelTrue: "{{true}}",
   codeMirrorLabelFalse: "{{false}}",

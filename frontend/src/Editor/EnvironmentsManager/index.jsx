@@ -16,17 +16,18 @@ const EnvironmentManager = (props) => {
     multiEnvironmentEnabled,
     setCurrentAppVersionPromoted,
     licenseValid,
+    isViewer,
     licenseType,
   } = props;
 
-  const { currentAppEnvironmentId, currentAppEnvironment } = useEditorStore(
+  const { currentAppEnvironmentId, currentAppEnvironment, currentLayout } = useEditorStore(
     (state) => ({
       currentAppEnvironmentId: state?.currentAppEnvironmentId,
       currentAppEnvironment: state?.currentAppEnvironment,
+      currentLayout: state.currentLayout,
     }),
     shallow
   );
-
   const { onEditorFreeze, currentAppVersionEnvironment, editingVersion } = useAppVersionStore(
     (state) => ({
       onEditorFreeze: state.actions.onEditorFreeze,
@@ -106,7 +107,13 @@ const EnvironmentManager = (props) => {
   });
 
   return (
-    <div className="app-environment-menu">
+    <div
+      className="app-environment-menu"
+      style={{
+        marginLeft: isViewer && currentLayout === 'mobile' ? '0px' : '1rem',
+        maxWidth: isViewer && currentLayout === 'mobile' ? '100%' : '180px',
+      }}
+    >
       <EnvironmentSelectBox
         options={options}
         currentEnv={currentAppEnvironment}
