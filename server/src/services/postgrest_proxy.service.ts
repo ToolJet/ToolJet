@@ -43,6 +43,20 @@ export class PostgrestProxyService {
       });
     }
 
+    const tableId = req.url.split('?')[0].split('/').pop();
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: {
+        organizationId,
+        id: tableId,
+      },
+    });
+
+    if (internalTable.tableName) {
+      const tableInfo = {};
+      tableInfo[tableId] = internalTable.tableName;
+      req.headers['tableInfo'] = tableInfo;
+    }
+
     return this.httpProxy(req, res, next);
   }
 
@@ -77,6 +91,22 @@ export class PostgrestProxyService {
   }
 
   private httpProxy = proxy(this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001', {
+    userResDecorator: function (proxyRes, proxyResData, userReq, _userRes) {
+      if (userReq?.headers?.tableInfo && proxyRes.statusCode >= 400) {
+        const customErrorObj = Buffer.isBuffer(proxyResData) ? JSON.parse(proxyResData.toString('utf8')) : proxyResData;
+
+        let customErrorMessage = customErrorObj?.message ?? '';
+        if (customErrorMessage) {
+          Object.entries(userReq.headers.tableInfo).forEach(([key, value]) => {
+            customErrorMessage = customErrorMessage.replace(key, value as string);
+          });
+          customErrorObj.message = customErrorMessage;
+        }
+        proxyResData = Buffer.from(JSON.stringify(customErrorObj), 'utf-8');
+      }
+
+      return proxyResData;
+    },
     proxyReqPathResolver: function (req) {
       return replaceUrlForPostgrest(req.url);
     },

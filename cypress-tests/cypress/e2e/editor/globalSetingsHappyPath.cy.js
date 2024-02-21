@@ -95,15 +95,16 @@ describe("Editor- Global Settings", () => {
     cy.forceClickOnCanvas();
     cy.wait(500);
     cy.waitForAutoSave();
-    //Fix this after the release. 2.9.0
-    // cy.get('[data-cy="button-release"]').click();
-    // cy.get('[data-cy="yes-button"]').click();
-    // cy.get('[data-cy="editor-page-logo"]').click();
-    // cy.get(`[data-cy="${data.appName.toLowerCase()}-card"]`)
-    //   .realHover()
-    //   .find('[data-cy="launch-button"]')
-    //   .invoke("attr", "class")
-    //   .should("contains", "disabled-btn");
+
+    cy.get('[data-cy="button-release"]').click();
+    cy.get('[data-cy="yes-button"]').click();
+    cy.get('[data-cy="editor-page-logo"]').click();
+    cy.get('[data-cy="back-to-app-option"]').click();
+    cy.get(`[data-cy="${data.appName.toLowerCase()}-card"]`)
+      .realHover()
+      .find('[data-cy="launch-button"]')
+      .invoke("attr", "class")
+      .should("contains", "disabled-btn");
 
     cy.apiDeleteApp();
   });

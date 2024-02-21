@@ -22,11 +22,13 @@ import {
 import { realHover } from "cypress-real-events/commands/realHover";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources MySql", () => {
   beforeEach(() => {
     cy.appUILogin();
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on MySQL connection form", () => {
@@ -48,7 +50,7 @@ describe("Data sources MySql", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "MySQL", data.lastName);
+    selectAndAddDataSource("databases", "MySQL", data.dataSourceName);
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -99,11 +101,11 @@ describe("Data sources MySql", () => {
       postgreSqlText.buttonTextSave
     );
     verifyCouldnotConnectWithAlert(mySqlText.errorConnectionRefused);
+    deleteDatasource(`cypress-${data.dataSourceName}-mysql`);
   });
 
-  it("Should verify the functionality of MySQL connection form.", () => {
-    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    selectAndAddDataSource("databases", "MySQL", data.lastName);
+  it.only("Should verify the functionality of MySQL connection form.", () => {
+    selectAndAddDataSource("databases", "MySQL", data.dataSourceName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -132,6 +134,7 @@ describe("Data sources MySql", () => {
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.wait(500);
     verifyCouldnotConnectWithAlert("");
     fillDataSourceTextField(
       postgreSqlText.labelDbName,
@@ -144,6 +147,7 @@ describe("Data sources MySql", () => {
       "admin1"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.wait(500);
     verifyCouldnotConnectWithAlert(
       "ER_NOT_SUPPORTED_AUTH_MODE: Client does not support authentication protocol requested by server; consider upgrading MySQL client"
     );
@@ -156,6 +160,7 @@ describe("Data sources MySql", () => {
     cy.get(postgreSqlSelector.passwordTextField).type("testpassword");
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.wait(500);
     verifyCouldnotConnectWithAlert(
       "ER_ACCESS_DENIED_ERROR: Access denied for user 'root'@'103.171.99.42' (using password: YES)"
     );
@@ -191,15 +196,15 @@ describe("Data sources MySql", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.lastName}-mysql-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-mysql`);
+      `[data-cy="cypress-${data.dataSourceName}-mysql-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.dataSourceName}-mysql`);
 
-    deleteDatasource(`cypress-${data.lastName}-mysql`);
+    deleteDatasource(`cypress-${data.dataSourceName}-mysql`);
   });
 
   it.skip("Should verify elements of the Query section.", () => {
     cy.viewport(1200, 1300);
-    selectAndAddDataSource("databases", "MySQL", data.lastName);
+    selectAndAddDataSource("databases", "MySQL", data.dataSourceName);
     fillConnectionForm({
       Host: Cypress.env("mysql_host"),
       Port: Cypress.env("mysql_port"),
@@ -369,7 +374,7 @@ describe("Data sources MySql", () => {
 
   it.skip("Should verify CRUD operations on SQL Query.", () => {
     let dbName = "7mmplik";
-    selectAndAddDataSource("databases", "MySQL", data.lastName);
+    selectAndAddDataSource("databases", "MySQL", data.dataSourceName);
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
@@ -448,7 +453,7 @@ describe("Data sources MySql", () => {
   });
 
   it.skip("Should verify bulk update", () => {
-    selectAndAddDataSource("databases", "MySQL", data.lastName);
+    selectAndAddDataSource("databases", "MySQL", data.dataSourceName);
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
       mySqlText.cypressMySql
@@ -456,7 +461,7 @@ describe("Data sources MySql", () => {
     fillConnectionForm({
       Host: Cypress.env("mysql_host"),
       Port: "3306",
-      "Database Name": "test_db",
+      "Database Name": "testdv",
       Username: Cypress.env("mysql_user"),
       Password: Cypress.env("mysql_password"),
     });

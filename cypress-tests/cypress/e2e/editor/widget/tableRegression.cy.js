@@ -1246,7 +1246,7 @@ describe("Table", () => {
       '[data-cy="textcomponenttextinput-input-field"]'
     ).clearAndTypeOnCodeMirror("Column Email");
     // verifyAndModifyParameter("Text", "Column Email");
-    cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
+    cy.get('[data-cy="inspector-close-icon"]').click();
     cy.get(`[data-cy="draggable-widget-${commonWidgetText.text1}"]`).should(
       "have.text",
       "Column Email"

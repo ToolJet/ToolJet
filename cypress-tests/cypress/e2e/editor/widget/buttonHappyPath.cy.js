@@ -454,7 +454,6 @@ describe("Editor- Test Button widget", () => {
     cy.apiDeleteApp();
   });
   it("Should verify deletion of button component from right side panel", () => {
-    openEditorSidebar(buttonText.defaultWidgetName);
     cy.get('[data-cy="component-inspector-options"]').click();
     cy.get('[data-cy="component-inspector-delete-button"]').click();
     cy.get('[data-cy="yes-button"]').click();

@@ -45,6 +45,7 @@ export const verifyCSA = (data) => {
     force: true,
   });
   cy.get(commonWidgetSelector.draggableWidget("textinput1"))
+    .find("input")
     .clear()
     .type(data.customText);
   cy.get(

@@ -17,11 +17,13 @@ import {
 } from "Support/utils/postgreSql";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on connection form", () => {
@@ -43,7 +45,7 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "SQL Server", data.lastName);
+    selectAndAddDataSource("databases", "SQL Server", data.dataSourceName);
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -105,11 +107,11 @@ describe("Data sources", () => {
       "have.text",
       "Failed to connect to localhost:1433 - Could not connect (sequence)"
     );
+    deleteDatasource(`cypress-${data.dataSourceName}-sql-server`);
   });
 
   it("Should verify the functionality of SQL Server connection form.", () => {
-    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    selectAndAddDataSource("databases", "SQL Server", data.lastName);
+    selectAndAddDataSource("databases", "SQL Server", data.dataSourceName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -156,8 +158,11 @@ describe("Data sources", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.lastName}-sql-server-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-sql-server`);
-    deleteDatasource(`cypress-${data.lastName}-sql-server`);
+      `[data-cy="cypress-${data.dataSourceName}-sql-server-button"]`
+    ).verifyVisibleElement(
+      "have.text",
+      `cypress-${data.dataSourceName}-sql-server`
+    );
+    deleteDatasource(`cypress-${data.dataSourceName}-sql-server`);
   });
 });

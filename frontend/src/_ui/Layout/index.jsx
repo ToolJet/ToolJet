@@ -16,7 +16,14 @@ import Beta from '../Beta';
 import Settings from '@/_components/Settings';
 import './styles.scss';
 
-function Layout({ children, switchDarkMode, darkMode }) {
+function Layout({
+  children,
+  switchDarkMode,
+  darkMode,
+  enableCollapsibleSidebar = false,
+  collapseSidebar = false,
+  toggleCollapsibleSidebar = () => {},
+}) {
   const router = useRouter();
   const [featureAccess, setFeatureAccess] = useState({});
   let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
@@ -261,7 +268,12 @@ function Layout({ children, switchDarkMode, darkMode }) {
         </aside>
       </div>
       <div style={{ paddingLeft: 48, paddingRight: 0 }} className="col">
-        <Header featureAccess={featureAccess} />
+        <Header
+          featureAccess={featureAccess}
+          enableCollapsibleSidebar={enableCollapsibleSidebar}
+          collapseSidebar={collapseSidebar}
+          toggleCollapsibleSidebar={toggleCollapsibleSidebar}
+        />
         <div style={{ paddingTop: 64 }}>{children}</div>
       </div>
       <ConfirmDialog
