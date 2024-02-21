@@ -161,11 +161,7 @@ const EditorInput = ({
     defaultKeymap: true,
   });
 
-  const acceptCompletionKeymap = {
-    key: 'Tab',
-    run: acceptCompletion,
-  };
-  const customKeyMaps = [...defaultKeymap, ...completionKeymap, acceptCompletionKeymap];
+  const customKeyMaps = [...defaultKeymap, ...completionKeymap];
 
   const handleOnChange = React.useCallback((val) => {
     setCurrentValue(val);
@@ -262,7 +258,7 @@ const EditorInput = ({
             onBlur={() => handleOnBlur()}
             className={customClassNames}
             theme={theme}
-            indentWithTab={false}
+            indentWithTab={true}
           />
         </ErrorBoundary>
       </CodeHinter.Portal>

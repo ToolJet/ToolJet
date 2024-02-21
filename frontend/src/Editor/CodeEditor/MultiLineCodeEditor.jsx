@@ -166,11 +166,7 @@ const MultiLineCodeEditor = (props) => {
     };
   }
 
-  const acceptCompletionKeymap = {
-    key: 'Tab',
-    run: acceptCompletion,
-  };
-  const customKeyMaps = [...defaultKeymap, ...completionKeymap, acceptCompletionKeymap];
+  const customKeyMaps = [...defaultKeymap, ...completionKeymap];
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), []);
