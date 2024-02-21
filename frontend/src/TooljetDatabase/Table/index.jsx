@@ -86,9 +86,11 @@ const Table = ({ collapseSidebar }) => {
       editable: false,
       errorState: false,
     });
-    const isSelectAll =
+
+    const shouldDeselect = Object.keys(selectedRowIds).length > 0 && Object.keys(selectedRowIds).length < rows.length;
+    const shouldSelectAll =
       Object.keys(selectedRowIds).length !== totalRowsCount && Object.keys(selectedRowIds).length < totalRowsCount;
-    if (!isSelectAll) {
+    if (!shouldSelectAll || shouldDeselect) {
       setSelectedRowIds({});
       return;
     }
