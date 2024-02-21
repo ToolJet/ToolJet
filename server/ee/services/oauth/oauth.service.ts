@@ -128,7 +128,11 @@ export class OauthService {
     ssoType?: 'google' | 'git',
     user?: User
   ): Promise<any> {
-    const { organizationId: loginOrganiaztionId, signupOrganizationId } = ssoResponse;
+    const {
+      organizationId: loginOrganiaztionId,
+      signupOrganizationId,
+      invitationToken: signUpInvitationToken,
+    } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
     const organizationId = loginOrganiaztionId || signupOrganizationId;
@@ -176,6 +180,14 @@ export class OauthService {
 
       default:
         break;
+    }
+
+    if (signUpInvitationToken && signupOrganizationId) {
+      /* Validate the invite session. */
+      const invitedUser = await this.organizationUsersService.findByWorkspaceInviteToken(signUpInvitationToken);
+      if (invitedUser.email !== userResponse.email) {
+        throw new UnauthorizedException('Incorrect email \n address');
+      }
     }
 
     if (!(userResponse.userSSOId && userResponse.email)) {
@@ -341,5 +353,6 @@ interface SSOResponse {
   token: string;
   state?: string;
   organizationId?: string;
-  signupOrganizationId;
+  signupOrganizationId?: string;
+  invitationToken?: string;
 }

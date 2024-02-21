@@ -319,11 +319,12 @@ function logout(avoidRedirection = false) {
 function signInViaOAuth(configId, ssoType, ssoResponse) {
   const organizationId = getLoginOrganizationId();
   const signupOrganizationId = getSignupOrganizationId();
+  const invitationToken = getInviteFlowIndetifier();
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ ...ssoResponse, organizationId, signupOrganizationId }),
+    body: JSON.stringify({ ...ssoResponse, organizationId, signupOrganizationId, invitationToken }),
   };
 
   const url = configId ? configId : `common/${ssoType}`;
