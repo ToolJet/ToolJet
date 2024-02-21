@@ -31,7 +31,7 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
               {emptyMessage}
               <p className="empty-table-description mb-2">Create a table to get started!</p>
             </div>
-            <div style={{ width: '180px', margin: '0px auto' }}>
+            <div className="tjdb-create-new-table">
               <ButtonSolid
                 variant="tertiary"
                 disabled={false}
