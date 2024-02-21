@@ -139,9 +139,8 @@ export const getSubpath = () =>
 
 export const returnWorkspaceIdIfNeed = (path) => {
   if (path) {
-    return !['/applications/', '/integrations', '/organization-invitations'].find((subpath) => path.includes(subpath))
-      ? `/${getWorkspaceId()}`
-      : '';
+    const paths = ['/applications/', '/integrations', '/organization-invitations/', '/invitations/'];
+    return !paths.find((subpath) => path.includes(subpath)) ? `/${getWorkspaceId()}` : '';
   }
   return `/${getWorkspaceId()}`;
 };

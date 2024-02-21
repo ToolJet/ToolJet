@@ -169,6 +169,26 @@ export class OrganizationUsersService {
     }, manager);
   }
 
+  async personalWorkspaceCount(userId: string): Promise<number> {
+    const personalWorkspaces: Partial<OrganizationUser[]> = await this.organizationUsersRepository.find({
+      select: ['organizationId'],
+      where: { userId },
+    });
+    let personalWorkspacesCount = 0;
+    for (const { organizationId } of personalWorkspaces) {
+      const workspaceOwner = await this.organizationUsersRepository.find({
+        where: { organizationId },
+        order: { createdAt: 'ASC' },
+        take: 1,
+      });
+      if (workspaceOwner[0]?.userId === userId) {
+        /* First user of the workspace = created by the user */
+        personalWorkspacesCount++;
+      }
+    }
+    return personalWorkspacesCount;
+  }
+
   async lastActiveAdmin(organizationId: string): Promise<boolean> {
     const adminsCount = await this.activeAdminCount(organizationId);
 

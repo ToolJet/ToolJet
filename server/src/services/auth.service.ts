@@ -244,7 +244,7 @@ export class AuthService {
     }
   }
 
-  async signup(appSignUpDto: AppSignupDto) {
+  async signup(appSignUpDto: AppSignupDto, response: Response) {
     const { name, email, password, organizationId } = appSignUpDto;
 
     // Check if the configs allows user signups
@@ -285,16 +285,17 @@ export class AuthService {
     if (existingUser) {
       return await this.whatIfTheSignUpIsAtTheWorkspaceLevel(existingUser, signingUpOrganization, userParams);
     } else {
-      return await this.createUserOrPersonalWorkspace(userParams, existingUser, signingUpOrganization);
+      return await this.createUserOrPersonalWorkspace(userParams, existingUser, signingUpOrganization, response);
     }
   }
 
   createUserOrPersonalWorkspace = async (
     userParams: { email: string; password: string; firstName: string; lastName: string },
     existingUser: User,
-    signingUpOrganization: Organization = null
+    signingUpOrganization: Organization = null,
+    response?: Response
   ) => {
-    await dbTransactionWrap(async (manager: EntityManager) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
       const { email, password, firstName, lastName } = userParams;
       const { name, slug } = generateNextNameAndSlug('My workspace');
       let organization = signingUpOrganization;
@@ -309,22 +310,45 @@ export class AuthService {
           password,
           ...(firstName && { firstName }),
           ...(lastName && { lastName }),
-          ...getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP),
+          ...(signingUpOrganization
+            ? getUserStatusAndSource(lifecycleEvents.USER_SIGNUP_ACTIVATE)
+            : getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP)),
         },
         organization.id,
         groups,
         existingUser,
-        true,
+        !signingUpOrganization,
         null,
         manager
       );
-      await this.organizationUsersService.create(user, organization, true, manager);
-      this.emailService
-        .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
-        .catch((err) => console.error(err));
+      const organizationUser = await this.organizationUsersService.create(user, organization, true, manager);
+      if (signingUpOrganization) {
+        return this.processOrganizationSignup(
+          response,
+          user,
+          { invitationToken: organizationUser.invitationToken, organizationId: organization.id },
+          manager
+        );
+      } else {
+        this.emailService
+          .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
+          .catch((err) => console.error(err));
+        return {};
+      }
     });
-    return {};
   };
+
+  async processOrganizationSignup(
+    response: Response,
+    user: User,
+    organizationParams: Partial<OrganizationUser>,
+    manager: EntityManager
+  ) {
+    const { invitationToken, organizationId } = organizationParams;
+    const session = await this.generateInviteSignupPayload(response, user, 'signup', manager);
+    const organizationInviteUrl = generateOrgInviteURL(invitationToken, organizationId, false);
+    return { ...session, organizationInviteUrl };
+  }
 
   sendOrgInvite = (
     userParams: { email: string; firstName: string },
@@ -506,13 +530,12 @@ export class AuthService {
         CASE: user redirected to signup to activate his account with password. 
         Till now user doesn't have an organization.
       */
-      const session = await this.generateInviteSignupPayload(response, signupUser, 'signup', manager);
-      const organizationInviteUrl = generateOrgInviteURL(
-        organizationToken,
-        invitedUser['invitedOrganizationId'],
-        false
+      return this.processOrganizationSignup(
+        response,
+        signupUser,
+        { invitationToken: organizationToken, organizationId: invitedUser['invitedOrganizationId'] },
+        manager
       );
-      return { ...session, organizationInviteUrl };
     });
   }
 

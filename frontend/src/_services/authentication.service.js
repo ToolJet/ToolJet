@@ -167,6 +167,7 @@ function signup(email, name, password, organizationId) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, name, password, organizationId }),
+    credentials: 'include',
   };
 
   return fetch(`${config.apiUrl}/signup`, requestOptions).then(handleResponse);
