@@ -33,6 +33,10 @@ export const selectCSA = (
     .click()
     .find("input")
     .type(`{selectAll}{backspace}${componentAction}{enter}`);
+  cy.get('[data-cy="action-options-action-selection-field"]')
+    .click()
+    .find("input")
+    .type(`{selectAll}{backspace}${componentAction}{enter}`);
   cy.wait("@events");
   cy.get('[data-cy="debounce-input-field"]')
     .click()

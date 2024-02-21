@@ -55,6 +55,7 @@ describe("Editor- component duplication", () => {
     openEditorSidebar("button1");
     cy.realPress(["Control", "c"]);
     cy.moveComponent("button1", 200, 90);
+    cy.forceClickOnCanvas();
     cy.dragAndDropWidget("Container", 300, 200);
     cy.resizeWidget("container1", 800, 500);
     cy.verifyToastMessage(

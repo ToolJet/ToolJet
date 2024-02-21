@@ -37,6 +37,7 @@ describe("List view widget", () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-Listview-App`);
     cy.openApp();
+    cy.waitForAppLoad();
     cy.viewport(1200, 1200);
     cy.dragAndDropWidget("List View", 50, 500);
     cy.modifyCanvasSize(1200, 700);
@@ -97,6 +98,7 @@ describe("List view widget", () => {
     )
       .realHover()
       .realClick();
+    openEditorSidebar(commonWidgetText.text1);
     cy.get(
       '[data-cy="textcomponenttextinput-input-field"] '
     ).clearAndTypeOnCodeMirror(codeMirrorInputLabel("listItem.name"));
@@ -323,6 +325,7 @@ describe("List view widget", () => {
     cy.get(
       `${commonWidgetSelector.draggableWidget(commonWidgetText.text1)}:eq(0)`
     ).click();
+    openEditorSidebar(commonWidgetText.text1);
 
     cy.get(
       '[data-cy="textcomponenttextinput-input-field"] '

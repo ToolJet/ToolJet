@@ -39,6 +39,7 @@ describe("Editor- Test Button widget", () => {
     cy.openApp();
     cy.waitForAppLoad();
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
+    cy.wait(500);
   });
 
   it("should verify position of component after dragging", () => {
@@ -386,7 +387,7 @@ describe("Editor- Test Button widget", () => {
 
   it("Should verify csa", () => {
     cy.get('[data-tooltip-content="Hide query panel"]').click();
-    // cy.dragAndDropWidget(buttonText.defaultWidgetText);
+    openEditorSidebar(buttonText.defaultWidgetName);
     selectEvent("On click", "Show alert");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
@@ -453,6 +454,7 @@ describe("Editor- Test Button widget", () => {
     cy.apiDeleteApp();
   });
   it("Should verify deletion of button component from right side panel", () => {
+    openEditorSidebar(buttonText.defaultWidgetName);
     cy.get('[data-cy="component-inspector-options"]').click();
     cy.get('[data-cy="component-inspector-delete-button"]').click();
     cy.get('[data-cy="yes-button"]').click();
@@ -468,6 +470,7 @@ describe("Editor- Test Button widget", () => {
     cy.get(commonWidgetSelector.draggableWidget("button1")).should(
       "be.visible"
     );
+    openEditorSidebar(buttonText.defaultWidgetName);
     cy.realPress("Backspace");
     cy.get('[data-cy="yes-button"]').click();
     cy.verifyToastMessage(
