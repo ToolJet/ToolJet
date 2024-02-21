@@ -290,7 +290,8 @@ const Table = ({ collapseSidebar }) => {
         }));
         setCellVal(cellValue);
         cellValue === null ? setNullValue(true) : setNullValue(false);
-        setDefaultValue(false);
+        const findDfaultValue = headerGroups[0].headers[cellClick.cellIndex].column_default === cellVal ? true : false;
+        setDefaultValue(findDfaultValue);
       } else if (e.key === 'ArrowLeft') {
         setSelectedRowIds({});
         setEditPopover(false);
@@ -303,7 +304,8 @@ const Table = ({ collapseSidebar }) => {
         }));
         setCellVal(cellValue);
         cellValue === null ? setNullValue(true) : setNullValue(false);
-        setDefaultValue(false);
+        const findDfaultValue = headerGroups[0].headers[cellClick.cellIndex].column_default === cellVal ? true : false;
+        setDefaultValue(findDfaultValue);
       } else if (e.key === 'ArrowUp') {
         setSelectedRowIds({});
         setEditPopover(false);
@@ -315,7 +317,8 @@ const Table = ({ collapseSidebar }) => {
         }));
         setCellVal(cellValue);
         cellValue === null ? setNullValue(true) : setNullValue(false);
-        setDefaultValue(false);
+        const findDfaultValue = headerGroups[0].headers[cellClick.cellIndex].column_default === cellVal ? true : false;
+        setDefaultValue(findDfaultValue);
       } else if (e.key === 'ArrowDown') {
         setSelectedRowIds({});
         setEditPopover(false);
@@ -327,7 +330,8 @@ const Table = ({ collapseSidebar }) => {
         }));
         setCellVal(cellValue);
         cellValue === null ? setNullValue(true) : setNullValue(false);
-        setDefaultValue(false);
+        const findDfaultValue = headerGroups[0].headers[cellClick.cellIndex].column_default === cellVal ? true : false;
+        setDefaultValue(findDfaultValue);
       } else if (e.key === 'Enter' && cellClick.cellIndex !== 0) {
         setEditPopover(true);
         document.getElementById('edit-input-blur').focus();
@@ -338,7 +342,9 @@ const Table = ({ collapseSidebar }) => {
           setSelectedRowIds({});
           cellDataType === 'boolean' ? setCellVal(true) : setCellVal('');
           setNullValue(false);
-          setDefaultValue(false);
+          const findDfaultValue =
+            headerGroups[0].headers[cellClick.cellIndex].column_default === cellVal ? true : false;
+          setDefaultValue(findDfaultValue);
           setEditPopover(true);
           document.getElementById('edit-input-blur').focus();
         }
@@ -576,14 +582,17 @@ const Table = ({ collapseSidebar }) => {
         errorState: false,
       }));
       cellVal === null ? setNullValue(true) : setNullValue(false);
+      const findDfaultValue = headerGroups[0].headers[cellIndex].column_default === cellVal ? true : false;
+      setDefaultValue(findDfaultValue);
       setEditPopover(false);
     }
   };
 
-  const closeEditPopover = (previousValue) => {
+  const closeEditPopover = (previousValue, cellIndex) => {
     setEditPopover(false);
     previousValue === null ? setNullValue(true) : setNullValue(false);
-    setDefaultValue(false);
+    const findDfaultValue = headerGroups[0].headers[cellIndex].column_default === cellVal ? true : false;
+    setDefaultValue(findDfaultValue);
     setCellVal(previousValue);
     document.getElementById('edit-input-blur').blur();
   };
@@ -879,7 +888,7 @@ const Table = ({ collapseSidebar }) => {
                                   cellClick.cellIndex === index ? (
                                     <CellEditMenu
                                       show={index === 0 ? false : editPopover}
-                                      close={() => closeEditPopover(cell.value)}
+                                      close={() => closeEditPopover(cell.value, index)}
                                       columnDetails={headerGroups[0].headers[index]}
                                       saveFunction={(newValue) => {
                                         handleToggleCellEdit(newValue, row.values.id, index, rIndex, false, cell.value);
@@ -948,13 +957,16 @@ const Table = ({ collapseSidebar }) => {
                                             value={cellVal === null ? '' : cellVal}
                                             onChange={(e) => {
                                               if (index !== 0) setCellVal(e.target.value);
+                                              if (e.target.value !== headerGroups[0].headers[index].column_default) {
+                                                setDefaultValue(false);
+                                              } else {
+                                                setDefaultValue(true);
+                                              }
                                             }}
                                             onFocus={() => {
                                               if (index !== 0) setEditPopover(true);
                                             }}
-                                            disabled={
-                                              defaultValue === true || nullValue === true || index === 0 ? true : false
-                                            }
+                                            disabled={nullValue === true || index === 0 ? true : false}
                                           />
                                         )}
                                       </div>
