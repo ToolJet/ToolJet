@@ -2,7 +2,7 @@ import React from 'react';
 import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
-import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 
 function Header({ featureAccess }) {
   const currentVersion = localStorage.getItem('currentVersion');
@@ -64,7 +64,7 @@ function Header({ featureAccess }) {
             {pathname}
           </p>
           {routesWithTags(pathname) && (
-            <LicenseBanner
+            <LicenseBannerCloud
               classes="mb-3 small"
               isAvailable={false}
               showPaidFeatureBanner={
