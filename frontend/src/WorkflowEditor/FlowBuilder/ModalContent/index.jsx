@@ -26,7 +26,10 @@ function ModalContent({ node, darkMode, onClose }) {
     // delete the query on the backend.
     dataqueryService.del(queryIdToDelete);
     // update the new queries in the editor session/redux store
-    setQueries(editorSession.queries.filter((query) => query.idOnDefinition !== node.data.idOnDefinition));
+    setQueries(
+      editorSession.queries.filter((query) => query.idOnDefinition !== node.data.idOnDefinition),
+      editorSession
+    );
     onClose && onClose();
   };
 

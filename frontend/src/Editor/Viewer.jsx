@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import {
   // appsService,
   authenticationService,
@@ -39,11 +40,15 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
-import { getPreviewQueryParams, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
+import {
+  getPreviewQueryParams,
+  getQueryParams,
+  redirectToErrorPage,
+  redirectToSwitchOrArchivedAppPage,
+} from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
-import { camelizeKeys } from 'humps';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -365,6 +370,8 @@ class ViewerComponent extends React.Component {
         redirectToErrorPage(ERROR_TYPES.INVALID);
       } else if (error?.statusCode === 403) {
         redirectToErrorPage(ERROR_TYPES.RESTRICTED);
+      } else if (error?.statusCode === 400) {
+        redirectToSwitchOrArchivedAppPage(error?.data);
       } else if (error?.statusCode !== 401) {
         redirectToErrorPage(ERROR_TYPES.UNKNOWN);
       }
@@ -644,7 +651,7 @@ class ViewerComponent extends React.Component {
 
     if (this.state.app?.isLoading) {
       return (
-        <div className="tooljet-logo-loader">
+        <div className={cx('tooljet-logo-loader', { 'theme-dark': this.props.darkMode })}>
           <div>
             <div className="loader-logo">
               <ViewerLogoIcon />

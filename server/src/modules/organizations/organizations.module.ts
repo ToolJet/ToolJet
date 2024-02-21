@@ -42,6 +42,9 @@ import { MetadataService } from '@services/metadata.service';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { SessionService } from '@services/session.service';
 import { WhiteLabellingModule } from '../white-labelling/white-labelling.module';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
+import { TooljetDbService } from '@services/tooljet_db.service';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 @Module({
   imports: [
@@ -95,6 +98,9 @@ import { WhiteLabellingModule } from '../white-labelling/white-labelling.module'
     MetadataService,
     AppEnvironmentService,
     SessionService,
+    TooljetDbOperationsService,
+    TooljetDbService,
+    PostgrestProxyService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
   exports: [OrganizationsService],

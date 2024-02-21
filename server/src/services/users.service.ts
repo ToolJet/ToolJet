@@ -16,7 +16,13 @@ import {
   generateSecurePassword,
 } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
-import { LIMIT_TYPE, USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import {
+  LIMIT_TYPE,
+  USER_STATUS,
+  USER_TYPE,
+  WORKSPACE_USER_STATUS,
+  WORKSPACE_STATUS,
+} from 'src/helpers/user_lifecycle';
 import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
@@ -54,6 +60,8 @@ export class UsersService {
   ) {}
 
   usersQuery(options: UserFilterOptions, condition?: 'and' | 'or') {
+    /* If you are using this function , keep in mind that this implicitly filter 
+      user only if the user is member of active workspace */
     const defaultConditions = () => {
       return new Brackets((qb) => {
         if (options?.searchText) {
@@ -92,8 +100,11 @@ export class UsersService {
       .addSelect(['user.id, user.email, user.firstName, user.lastName, user.avatarId', 'user.status', 'user.userType'])
       .leftJoin('user.organizationUsers', 'organizationUsers')
       .addSelect(['organizationUsers.id', 'organizationUsers.status', 'organizationUsers.organizationId'])
-      .leftJoin('organizationUsers.organization', 'organization')
+      .leftJoin('organizationUsers.organization', 'organization', 'organization.status = :orgStatus', {
+        orgStatus: WORKSPACE_STATUS.ACTIVE,
+      })
       .addSelect(['organization.name']);
+
     query.andWhere(defaultConditions()).andWhere(condition === 'and' ? getAndConditions() : getOrConditions());
     return query;
   }
@@ -104,8 +115,10 @@ export class UsersService {
       .take(10)
       .skip(10 * (page - 1))
       .getMany();
-
     return allUsers?.map((user) => {
+      user.organizationUsers = user.organizationUsers.filter(
+        (orgUser) => orgUser.organization && orgUser.organization.name !== null
+      );
       return {
         email: user.email,
         firstName: user.firstName ?? '',
@@ -133,14 +146,24 @@ export class UsersService {
   async getCount(isOnlyActive?: boolean, manager?: EntityManager, organizationId?: string): Promise<number> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
-      const organizationUsersCondition = this.createOrganizationUsersJoinCondition(organizationId);
+      const organizationUsersCondition = this.licenseService.createOrganizationUsersJoinCondition(organizationId);
+      const organizationStatusList = [WORKSPACE_STATUS.ACTIVE];
       !isOnlyActive && statusList.push(USER_STATUS.ARCHIVED);
+      !isOnlyActive && organizationStatusList.push(WORKSPACE_STATUS.ARCHIVE);
       return await manager
         .createQueryBuilder(User, 'users')
         .innerJoin('users.organizationUsers', 'organization_users', organizationUsersCondition, {
           statusList,
           organizationId,
         })
+        .innerJoin(
+          'organization_users.organization',
+          'organization',
+          'organization.status IN (:...organizationStatusList)',
+          {
+            organizationStatusList,
+          }
+        )
         .select('users.id')
         .distinct()
         .getCount();
@@ -777,112 +800,6 @@ export class UsersService {
     }, manager);
   }
 
-  private createAppsJoinCondition(organizationId?: string): string {
-    return organizationId ? 'apps.organizationId = :organizationId' : '1=1';
-  }
-
-  private createGroupPermissionsJoinCondition(organizationId?: string): string {
-    return organizationId ? 'group_permissions.organizationId = :organizationId' : '1=1';
-  }
-
-  private createOrganizationUsersJoinCondition(organizationId?: string): string {
-    const statusCondition = 'organization_users.status IN (:...statusList)';
-    const organizationCondition = organizationId ? ' AND organization_users.organizationId = :organizationId' : '';
-    return `${statusCondition}${organizationCondition}`;
-  }
-
-  private async getUserIdWithEditPermission(manager: EntityManager, organizationId?: string) {
-    const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
-    const groupPermissionsCondition = this.createGroupPermissionsJoinCondition(organizationId);
-    const organizationUsersCondition = this.createOrganizationUsersJoinCondition(organizationId);
-    const appsCondition = this.createAppsJoinCondition(organizationId);
-    const userIdsWithEditPermissions = (
-      await manager
-        .createQueryBuilder(User, 'users')
-        .innerJoin('users.groupPermissions', 'group_permissions', groupPermissionsCondition, { organizationId })
-        .leftJoin('group_permissions.appGroupPermission', 'app_group_permissions')
-        .innerJoin('users.organizationUsers', 'organization_users', organizationUsersCondition, {
-          statusList,
-          organizationId,
-        })
-        .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
-        .andWhere(
-          new Brackets((qb) => {
-            qb.where('app_group_permissions.read = true AND app_group_permissions.update = true').orWhere(
-              'group_permissions.appCreate = true'
-            );
-          })
-        )
-        .select('users.id')
-        .distinct()
-        .getMany()
-    ).map((record) => record.id);
-
-    const userIdsOfAppOwners = (
-      await manager
-        .createQueryBuilder(User, 'users')
-        .innerJoin('users.apps', 'apps', appsCondition, { organizationId })
-        .innerJoin('users.organizationUsers', 'organization_users', organizationUsersCondition, {
-          statusList,
-          organizationId,
-        })
-        .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
-        .select('users.id')
-        .distinct()
-        .getMany()
-    ).map((record) => record.id);
-
-    const userIdsOfSuperAdmins = (
-      await manager
-        .createQueryBuilder(User, 'users')
-        .select('users.id')
-        .where('users.userType = :userType', { userType: USER_TYPE.INSTANCE })
-        .andWhere('users.status = :status', { status: USER_STATUS.ACTIVE })
-        .getMany()
-    ).map((record) => record.id);
-
-    return [...new Set([...userIdsWithEditPermissions, ...userIdsOfAppOwners, ...userIdsOfSuperAdmins])];
-  }
-
-  async fetchTotalEditorCount(manager: EntityManager, organizationId?: string): Promise<number> {
-    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager, organizationId);
-    return userIdsWithEditPermissions?.length || 0;
-  }
-
-  async fetchTotalViewerEditorCount(
-    manager: EntityManager,
-    organizationId?: string
-  ): Promise<{ editor: number; viewer: number }> {
-    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager, organizationId);
-    const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
-    const groupPermissionsCondition = this.createGroupPermissionsJoinCondition(organizationId);
-    const organizationUsersCondition = this.createOrganizationUsersJoinCondition(organizationId);
-
-    if (!userIdsWithEditPermissions?.length) {
-      // No editors -> No viewers
-      return { editor: 0, viewer: 0 };
-    }
-    const viewer = await manager
-      .createQueryBuilder(User, 'users')
-      .innerJoin('users.groupPermissions', 'group_permissions', groupPermissionsCondition, { organizationId })
-      .leftJoin(
-        'group_permissions.appGroupPermission',
-        'app_group_permissions',
-        'app_group_permissions.read = true AND app_group_permissions.update = false'
-      )
-      .innerJoin('users.organizationUsers', 'organization_users', organizationUsersCondition, {
-        statusList,
-        organizationId,
-      })
-      .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
-      .andWhere('users.id NOT IN(:...userIdsWithEditPermissions)', { userIdsWithEditPermissions })
-      .select('users.id')
-      .distinct()
-      .getCount();
-
-    return { editor: userIdsWithEditPermissions?.length || 0, viewer };
-  }
-
   async fetchTotalSuperadminCount(manager: EntityManager): Promise<number> {
     return await manager
       .createQueryBuilder(User, 'users')
@@ -910,11 +827,11 @@ export class UsersService {
     }
 
     if (editorUsers !== LICENSE_LIMIT.UNLIMITED && viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
-      ({ editor, viewer } = await this.fetchTotalViewerEditorCount(manager, organizationId));
+      ({ editor, viewer } = await this.licenseService.fetchTotalViewerEditorCount(manager, organizationId));
     }
     if (editorUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (editor === -1) {
-        editor = await this.fetchTotalEditorCount(manager, organizationId);
+        editor = await this.licenseService.fetchTotalEditorCount(manager, organizationId);
       }
       if (editor > editorUsers) {
         throw new HttpException('You have reached your limit for number of builders.', 451);
@@ -923,7 +840,7 @@ export class UsersService {
 
     if (viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (viewer === -1) {
-        ({ viewer } = await this.fetchTotalViewerEditorCount(manager, organizationId));
+        ({ viewer } = await this.licenseService.fetchTotalViewerEditorCount(manager, organizationId));
       }
       const addedUsers = await this.getCount(true, manager, organizationId);
       const addableUsers = users - addedUsers;
@@ -954,22 +871,23 @@ export class UsersService {
         if (editorUsers === LICENSE_LIMIT.UNLIMITED) {
           return;
         }
-        const currentEditorsCount = await this.fetchTotalEditorCount(manager, organizationId);
+        const currentEditorsCount = await this.licenseService.fetchTotalEditorCount(manager, organizationId);
         return generatePayloadForLimits(currentEditorsCount, editorUsers, licenseStatus);
       }
       case LIMIT_TYPE.VIEWER: {
         if (viewerUsers === LICENSE_LIMIT.UNLIMITED) {
           return;
         }
-        const { viewer: currentViewersCount } = await this.fetchTotalViewerEditorCount(manager, organizationId);
+        const { viewer: currentViewersCount } = await this.licenseService.fetchTotalViewerEditorCount(
+          manager,
+          organizationId
+        );
         return generatePayloadForLimits(currentViewersCount, viewerUsers, licenseStatus);
       }
       case LIMIT_TYPE.ALL: {
         const currentUsersCount = await this.getCount(true, manager, organizationId);
-        const { viewer: currentViewersCount, editor: currentEditorsCount } = await this.fetchTotalViewerEditorCount(
-          manager,
-          organizationId
-        );
+        const { viewer: currentViewersCount, editor: currentEditorsCount } =
+          await this.licenseService.fetchTotalViewerEditorCount(manager, organizationId);
 
         return {
           usersCount: generatePayloadForLimits(currentUsersCount, users, licenseStatus, LICENSE_LIMITS_LABEL.USERS),

@@ -139,14 +139,14 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Sort Section */}
-      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
+      <div className="field-container tooljetdb-worflow-operations d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Sort</label>
         <div className="field flex-grow-1 overflow-hidden">
           <JoinSort darkMode={darkMode} />
         </div>
       </div>
       {/* Limit Section */}
-      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
+      <div className="field-container tooljetdb-worflow-operations d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Limit</label>
         <div className="field flex-grow-1 overflow-hidden">
           <CodeHinter
@@ -167,7 +167,7 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Offset Section */}
-      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
+      <div className="field-container tooljetdb-worflow-operations d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Offset</label>
         <div className="field flex-grow-1 overflow-hidden">
           <CodeHinter
@@ -188,7 +188,7 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Select Section */}
-      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
+      <div className="field-container tooljetdb-worflow-operations d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Select</label>
         <div className="field flex-grow-1 overflow-hidden">
           <JoinSelect darkMode={darkMode} />

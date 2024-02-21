@@ -11,6 +11,7 @@ import { humanizeifDefaultGroupName } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ResetPasswordModal } from '@/_components/ResetPasswordModal';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { NoActiveWorkspaceModal } from './NoActiveWorkspaceModal';
 
 const UsersTable = ({
   isLoading,
@@ -34,6 +35,7 @@ const UsersTable = ({
 }) => {
   const [isResetPasswordModalVisible, setIsResetPasswordModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [showNoActiveWorkspaceModal, setShowNoActiveWorkspaceModal] = useState(false);
 
   const handleResetPasswordClick = (user) => {
     setSelectedUser(user);
@@ -41,6 +43,13 @@ const UsersTable = ({
   };
   return (
     <div className="workspace-settings-table-wrap mb-4">
+      <NoActiveWorkspaceModal
+        show={showNoActiveWorkspaceModal}
+        handleClose={() => {
+          setShowNoActiveWorkspaceModal(false);
+        }}
+        darkMode={darkMode}
+      />
       <div style={customStyles} className="tj-user-table-wrapper">
         <div className="card-table fixedHeader table-responsive  ">
           <table data-testid="usersTable" className="users-table table table-vcenter h-100">
@@ -197,7 +206,13 @@ const UsersTable = ({
                         <td className="text-muted">
                           <a
                             className="px-2 text-muted workspaces"
-                            onClick={() => openOrganizationModal(user)}
+                            onClick={
+                              user.total_organizations > 0
+                                ? () => openOrganizationModal(user)
+                                : () => {
+                                    setShowNoActiveWorkspaceModal(true);
+                                  }
+                            }
                             data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-view-button`}
                           >
                             View ({user.total_organizations})

@@ -4,15 +4,17 @@ import License from '@ee/licensing/configs/License';
 import { LicenseUpdateDto } from '@dto/license.dto';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 import { CreateTrialLicenseDto } from '@dto/create-trial-license.dto';
-import { EntityManager } from 'typeorm';
 import got from 'got';
 import { SelfhostCustomerLicense } from 'src/entities/selfhost_customer_license.entity';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { ConfigService } from '@nestjs/config';
 import { CRMData } from '@ee/licensing/types';
 import OrganizationLicense from '@ee/licensing/configs/OrganizationLicense';
 import { OrganizationsLicense } from 'src/entities/organization_license.entity';
 import { OrganizationLicenseService } from './organization_license.service';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { Brackets, EntityManager } from 'typeorm';
+import { User } from 'src/entities/user.entity';
+import { USER_STATUS, USER_TYPE } from 'src/helpers/user_lifecycle';
 
 @Injectable()
 export class LicenseService {
@@ -407,4 +409,103 @@ export class LicenseService {
   }
 
   isBasicPlan = async () => !(await this.getLicenseFieldValue(LICENSE_FIELD.VALID));
+
+  private createAppsJoinCondition(organizationId?: string): string {
+    return organizationId ? 'apps.organizationId = :organizationId' : '1=1';
+  }
+
+  private createGroupPermissionsJoinCondition(organizationId?: string): string {
+    return organizationId ? 'group_permissions.organizationId = :organizationId' : '1=1';
+  }
+
+  createOrganizationUsersJoinCondition(organizationId?: string): string {
+    const statusCondition = 'organization_users.status IN (:...statusList)';
+    const organizationCondition = organizationId ? ' AND organization_users.organizationId = :organizationId' : '';
+    return `${statusCondition}${organizationCondition}`;
+  }
+
+  private async getUserIdWithEditPermission(manager: EntityManager, organizationId?: string) {
+    const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
+    const groupPermissionsCondition = this.createGroupPermissionsJoinCondition(organizationId);
+    const organizationUsersCondition = this.createOrganizationUsersJoinCondition(organizationId);
+    const appsCondition = this.createAppsJoinCondition(organizationId);
+    const userIdsWithEditPermissions = (
+      await manager
+        .createQueryBuilder(User, 'users')
+        .innerJoin('users.groupPermissions', 'group_permissions', groupPermissionsCondition, { organizationId })
+        .leftJoin('group_permissions.appGroupPermission', 'app_group_permissions')
+        .innerJoin('users.organizationUsers', 'organization_users', organizationUsersCondition, {
+          statusList,
+          organizationId,
+        })
+        .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where('app_group_permissions.read = true AND app_group_permissions.update = true').orWhere(
+              'group_permissions.appCreate = true'
+            );
+          })
+        )
+        .select('users.id')
+        .distinct()
+        .getMany()
+    ).map((record) => record.id);
+
+    const userIdsOfAppOwners = (
+      await manager
+        .createQueryBuilder(User, 'users')
+        .innerJoin('users.apps', 'apps', appsCondition, { organizationId })
+        .innerJoin('users.organizationUsers', 'organization_users', organizationUsersCondition, {
+          statusList,
+          organizationId,
+        })
+        .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
+        .select('users.id')
+        .distinct()
+        .getMany()
+    ).map((record) => record.id);
+
+    const userIdsOfSuperAdmins = (
+      await manager
+        .createQueryBuilder(User, 'users')
+        .select('users.id')
+        .where('users.userType = :userType', { userType: USER_TYPE.INSTANCE })
+        .andWhere('users.status = :status', { status: USER_STATUS.ACTIVE })
+        .getMany()
+    ).map((record) => record.id);
+
+    return [...new Set([...userIdsWithEditPermissions, ...userIdsOfAppOwners, ...userIdsOfSuperAdmins])];
+  }
+
+  async fetchTotalEditorCount(manager: EntityManager, organizationId?: string): Promise<number> {
+    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager, organizationId);
+    return userIdsWithEditPermissions?.length || 0;
+  }
+
+  async fetchTotalViewerEditorCount(
+    manager: EntityManager,
+    organizationId?: string
+  ): Promise<{ editor: number; viewer: number }> {
+    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager, organizationId);
+    const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
+    const organizationUsersCondition = this.createOrganizationUsersJoinCondition(organizationId);
+
+    if (!userIdsWithEditPermissions?.length) {
+      // No editors -> No viewers
+      return { editor: 0, viewer: 0 };
+    }
+    const viewer = await manager
+      .createQueryBuilder(User, 'users')
+      .innerJoin('users.organizationUsers', 'organization_users', organizationUsersCondition, {
+        statusList,
+        organizationId,
+      })
+      .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
+      .andWhere('users.id NOT IN(:...userIdsWithEditPermissions)', { userIdsWithEditPermissions })
+      .select('users.id')
+      .distinct()
+      .getCount();
+
+    return { editor: userIdsWithEditPermissions?.length || 0, viewer };
+  }
 }

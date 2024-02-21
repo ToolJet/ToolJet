@@ -48,6 +48,9 @@ import { LdapService } from '@ee/services/oauth/ldap.service';
 import { SAMLService } from '@ee/services/oauth/saml.service';
 import { ClearSSOResponseScheduler } from 'src/schedulers/clear_sso_response.scheduler';
 import { WhiteLabellingModule } from '../white-labelling/white-labelling.module';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
+import { TooljetDbService } from '@services/tooljet_db.service';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 @Module({
   imports: [
@@ -110,6 +113,9 @@ import { WhiteLabellingModule } from '../white-labelling/white-labelling.module'
     ClearSSOResponseScheduler,
     LdapService,
     SAMLService,
+    TooljetDbOperationsService,
+    TooljetDbService,
+    PostgrestProxyService,
   ],
   controllers: [OauthController],
   exports: [AuthService, SessionService],

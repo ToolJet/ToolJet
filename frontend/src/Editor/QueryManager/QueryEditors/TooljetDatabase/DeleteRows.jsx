@@ -48,7 +48,7 @@ export const DeleteRows = React.memo(({ darkMode }) => {
 
   return (
     <div className="tab-content-wrapper tj-db-field-wrapper mt-2">
-      <div className="d-flex">
+      <div className="d-flex tooljetdb-worflow-operations">
         <label className="form-label" data-cy="label-column-filter">
           Filter
         </label>
@@ -84,7 +84,7 @@ export const DeleteRows = React.memo(({ darkMode }) => {
           </ButtonSolid>
         </div>
       </div>
-      <div className="field-container d-flex">
+      <div className="field-container d-flex tooljetdb-worflow-operations delete-limit">
         <label className="form-label" data-cy="label-column-limit">
           Limit
         </label>
@@ -133,7 +133,7 @@ const RenderFilterFields = ({
 
   return (
     <div className="mt-1 row-container">
-      <div className="d-flex fields-container">
+      <div className="d-flex fields-container delete-filter">
         <div className="field col">
           <Select
             useMenuPortal={true}
@@ -144,7 +144,7 @@ const RenderFilterFields = ({
             width="auto"
           />
         </div>
-        <div className="field col mx-1">
+        <div className="field mx-1 col">
           <Select
             useMenuPortal={true}
             placeholder="Select operation"
@@ -154,7 +154,7 @@ const RenderFilterFields = ({
             width="auto"
           />
         </div>
-        <div className="field col-4">
+        <div className="field col">
           {operator === 'is' ? (
             <Select
               useMenuPortal={true}
@@ -175,7 +175,7 @@ const RenderFilterFields = ({
             />
           )}
         </div>
-        <div className="col-1 cursor-pointer m-1 mr-2">
+        <div className="cursor-pointer" style={{ margin: '4px 4px 4px 8px' }}>
           <svg
             onClick={() => removeFilterConditionPair(id)}
             width="12"
