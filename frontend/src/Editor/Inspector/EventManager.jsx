@@ -48,10 +48,20 @@ export const EventManager = ({
     appId,
     apps,
     events: allAppEvents,
+    eventsUpdatedLoader,
+    eventsCreatedLoader,
+    actionsUpdatedLoader,
+    eventToDeleteLoaderIndex,
+    setEventToDeleteLoaderIndex,
   } = useAppDataStore((state) => ({
     appId: state.appId,
     apps: state.apps,
     events: state.events,
+    eventsUpdatedLoader: state.eventsUpdatedLoader,
+    eventsCreatedLoader: state.eventsCreatedLoader,
+    actionsUpdatedLoader: state.actionsUpdatedLoader,
+    eventToDeleteLoaderIndex: state.eventToDeleteLoaderIndex,
+    setEventToDeleteLoaderIndex: state.actions.setEventToDeleteLoaderIndex,
   }));
 
   const { handleYmapEventUpdates } = useContext(EditorContext) || {};
@@ -71,6 +81,7 @@ export const EventManager = ({
 
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
+
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -276,6 +287,11 @@ export const EventManager = ({
     let updatedEvent = newEvents[index];
     updatedEvent.event[param] = value;
 
+    // Remove debounce key if it's empty
+    if (param === 'debounce' && value === '') {
+      delete updatedEvent.event.debounce;
+    }
+
     if (param === 'componentSpecificActionHandle') {
       const getDefault = getComponentActionDefaultParams(updatedEvent.event?.componentId, value);
       updatedEvent.event['componentSpecificActionParams'] = getDefault;
@@ -290,7 +306,8 @@ export const EventManager = ({
           diff: updatedEvent,
         },
       ],
-      'update'
+      'update',
+      param
     );
   }
 
@@ -298,14 +315,13 @@ export const EventManager = ({
     const eventsHandler = _.cloneDeep(events);
 
     const eventId = eventsHandler[index].id;
-
+    setEventToDeleteLoaderIndex(index);
     deleteAppVersionEventHandler(eventId);
   }
 
   function addHandler() {
     let newEvents = events;
     const eventIndex = newEvents.length;
-
     createAppVersionEventHandlers({
       event: {
         eventId: Object.keys(eventMetaDefinition?.events)[0],
@@ -407,6 +423,7 @@ export const EventManager = ({
             </div>
             <div className="col-9" data-cy="alert-message-type">
               <CodeHinter
+                cyLabel={`run-only-if`}
                 theme={darkMode ? 'monokai' : 'default'}
                 initialValue={event.runOnlyIf}
                 onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
@@ -702,7 +719,7 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
-                      cyLabel={`key`}
+                      cyLabel={`event-key`}
                       component={component}
                     />
                   </div>
@@ -715,7 +732,7 @@ export const EventManager = ({
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
-                      cyLabel={`variable`}
+                      cyLabel={`event-variable`}
                       component={component}
                     />
                   </div>
@@ -748,7 +765,7 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
-                      cyLabel={`key`}
+                      cyLabel={`event-key`}
                       component={component}
                     />
                   </div>
@@ -761,7 +778,7 @@ export const EventManager = ({
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
-                      cyLabel={`variable`}
+                      cyLabel={`event-variable`}
                       component={component}
                     />
                   </div>
@@ -778,7 +795,7 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
-                      cyLabel={`key`}
+                      cyLabel={`event-key`}
                       component={component}
                     />
                   </div>
@@ -876,7 +893,7 @@ export const EventManager = ({
                             enablePreview={true}
                             type={param?.type}
                             fieldMeta={{ options: param?.options }}
-                            cyLabel={param.displayName}
+                            cyLabel={`event-${param.displayName}`}
                             component={component}
                           />
                         </div>
@@ -887,8 +904,9 @@ export const EventManager = ({
             )}
             <div className="row mt-3">
               <div className="col-3 p-2">{t('editor.inspector.eventManager.debounce', 'Debounce')}</div>
-              <div className="col-9" data-cy="debounce-input-field">
+              <div className="col-9">
                 <CodeHinter
+                  cyLabel={`debounce`}
                   theme={darkMode ? 'monokai' : 'default'}
                   initialValue={event.debounce}
                   onChange={(value) => handlerChanged(index, 'debounce', value)}
@@ -932,7 +950,6 @@ export const EventManager = ({
   };
 
   const renderDraggable = useDraggableInPortal();
-
   const renderHandlers = (events) => {
     return (
       <DragDropContext
@@ -982,6 +999,11 @@ export const EventManager = ({
                               removeHandler={removeHandler}
                               index={index}
                               darkMode={darkMode}
+                              actionsUpdatedLoader={index === focusedEventIndex ? actionsUpdatedLoader : false}
+                              eventsUpdatedLoader={index === focusedEventIndex ? eventsUpdatedLoader : false}
+                              eventsDeletedLoader={
+                                index === eventToDeleteLoaderIndex ? !!eventToDeleteLoaderIndex : false
+                              }
                             />
                           </div>
                         </OverlayTrigger>
@@ -1000,7 +1022,7 @@ export const EventManager = ({
 
   const renderAddHandlerBtn = () => {
     return (
-      <AddNewButton onClick={addHandler} dataCy="add-event-handler" className="mt-0">
+      <AddNewButton onClick={addHandler} dataCy="add-event-handler" className="mt-0" isLoading={eventsCreatedLoader}>
         {t('editor.inspector.eventManager.addHandler', 'New event handler')}
       </AddNewButton>
     );

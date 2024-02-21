@@ -12,7 +12,7 @@ const EmptyState = ({ canCreateVariable, setIsManageVarDrawerOpen, isLoading }) 
             <img src="assets/images/icons/org-constants.svg" width="64" height="64" data-cy="empty-state-image" />
             <div className="w-50 mt-2">
               <h3 data-cy="empty-state-header">No Workspace constants yet</h3>
-              <p className="text-muted mt-2" data-cy="empty-state-text">
+              <p className="info mt-2" data-cy="empty-state-text">
                 Use workspace constants seamlessly in both the app builder and data source connections across ToolJet.
               </p>
               {canCreateVariable && (
