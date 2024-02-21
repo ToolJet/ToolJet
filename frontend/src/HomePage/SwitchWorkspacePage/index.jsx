@@ -67,10 +67,10 @@ export function SwitchWorkspaceModal({
             />
           </svg>
         )}
-        <span className="header-text" data-cy="modal-title">
+        <span className="header-text" data-cy="switch-modal-title">
           {headerText}
         </span>
-        <p data-cy="modal-message">{title}</p>
+        <p data-cy="switch-modal-message">{title}</p>
       </Modal.Header>
 
       <Modal.Body>
@@ -120,12 +120,9 @@ export function SwitchWorkspaceModal({
   );
 }
 
-export default function SwitchWorkspacePage({ darkMode }) {
+export default function SwitchWorkspacePage({ darkMode, archived = false, isAppUrl = false }) {
   const [organizations, setOrganizations] = React.useState([]);
 
-  const location = useLocation();
-  const archived = !!getQueryParams('archived');
-  const isAppUrl = !!getQueryParams('appurl');
   const fetchOrganizations = () => {
     organizationService.getOrganizations().then((response) => setOrganizations(response.organizations));
   };
@@ -155,7 +152,7 @@ export default function SwitchWorkspacePage({ darkMode }) {
     : t('globals.workspace-modal.wrong-link', 'Incorrect workspace link.');
 
   useEffect(() => {
-    fetchOrganizations();
+    if (!isAppUrl) fetchOrganizations();
   }, []);
 
   return (

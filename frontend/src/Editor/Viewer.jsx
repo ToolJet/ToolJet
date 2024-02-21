@@ -41,7 +41,12 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
-import { getPreviewQueryParams, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
+import {
+  getPreviewQueryParams,
+  getQueryParams,
+  redirectToErrorPage,
+  redirectToSwitchOrArchivedAppPage,
+} from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
@@ -346,10 +351,12 @@ class ViewerComponent extends React.Component {
           isLoading: false,
         });
         if (error?.statusCode === 404) {
-          /* User is not authenticated. but the app url is wrong */
+          /* User is not authenticated. but the app url is wrong or of archived workspace */
           redirectToErrorPage(ERROR_TYPES.INVALID);
         } else if (error?.statusCode === 403) {
           redirectToErrorPage(ERROR_TYPES.RESTRICTED);
+        } else if (error?.statusCode === 400) {
+          redirectToSwitchOrArchivedAppPage(error?.data);
         } else if (error?.statusCode !== 401) {
           redirectToErrorPage(ERROR_TYPES.UNKNOWN);
         }

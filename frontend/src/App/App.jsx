@@ -414,10 +414,32 @@ class AppComponent extends React.Component {
               />
               <Route
                 exact
+                path="/app-url-archived"
+                element={
+                  <SwitchWorkspacePage
+                    switchDarkMode={this.switchDarkMode}
+                    darkMode={darkMode}
+                    archived={true}
+                    isAppUrl={true}
+                  />
+                }
+              />
+              <Route
+                exact
                 path="/switch-workspace"
                 element={
                   <PrivateRoute>
                     <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                exact
+                path="/switch-workspace-archived"
+                element={
+                  <PrivateRoute>
+                    <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} archived={true} />
                   </PrivateRoute>
                 }
               />
