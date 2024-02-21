@@ -75,7 +75,10 @@ module.exports = defineConfig({
         experimentalModfyObstructiveThirdPartyCode: true,
         experimentalRunAllSpecs: true,
         baseUrl: "http://localhost:8082",
-        specPattern: "cypress/e2e/ee/onboarding/*.cy.js",
+        specPattern: [
+            "cypress/e2e/ee/onboarding/superAdminOnboarding.cy.js",
+            "cypress/e2e/ee/onboarding/basicPlan.cy.js",
+        ],
         numTestsKeptInMemory: 1,
         redirectionLimit: 20,
         experimentalRunAllSpecs: true,

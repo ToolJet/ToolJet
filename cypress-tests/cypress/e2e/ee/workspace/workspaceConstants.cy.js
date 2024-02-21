@@ -12,7 +12,7 @@ import {
 } from "Support/utils/workspaceConstants";
 import { buttonText } from "Texts/button";
 import {
-    verifyAndModifyParameter,
+
     editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
 import { verifypreview } from "Support/utils/dataSource";
@@ -41,7 +41,7 @@ describe("Workspace constants", () => {
     });
 
     it("Verify workspace constants UI and CRUD operations on development", () => {
-        cy.get('[data-cy="icon-workspace-constants"]').click();
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
         cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
             expect($el.contents().first().text().trim()).to.eq("Workspace constants");
         });
@@ -264,7 +264,7 @@ describe("Workspace constants", () => {
     });
 
     it("Verify workspace constants UI and CRUD operations on staging", () => {
-        cy.get('[data-cy="icon-workspace-constants"]').click();
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
         cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(2)').click();
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
@@ -485,7 +485,7 @@ describe("Workspace constants", () => {
     });
 
     it("Verify workspace constants UI and CRUD operations on production", () => {
-        cy.get('[data-cy="icon-workspace-constants"]').click();
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
         cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(3)').click();
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
@@ -709,7 +709,7 @@ describe("Workspace constants", () => {
             .toLowerCase()
             .replaceAll("[^A-Za-z]", "");
 
-        cy.get('[data-cy="icon-workspace-constants"]').click();
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
         AddNewconstants(data.constantsName, "Development");
         cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(2)').click();
         AddNewconstants(data.constantsName, "Staging");
@@ -728,10 +728,12 @@ describe("Workspace constants", () => {
         verifypreview("raw", "Development");
 
         cy.dragAndDropWidget("Text", 550, 350);
-        editAndVerifyWidgetName(data.constantsName);
+        editAndVerifyWidgetName(data.constantsName, []);
         cy.waitForAutoSave();
 
-        verifyAndModifyParameter("Text", `{{constants.${data.constantsName}`);
+        cy.get(
+            '[data-cy="textcomponenttextinput-input-field"]'
+        ).clearAndTypeOnCodeMirror(`{{constants.${data.constantsName}`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
 

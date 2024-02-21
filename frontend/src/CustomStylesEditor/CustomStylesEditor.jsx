@@ -14,12 +14,14 @@ export default function CustomStylesEditor({ darkMode }) {
   const [styles, setStyles] = useState();
   const [initialStyles, setInitialStyles] = useState();
   const [disabled, setDisabledStatus] = useState(false);
+  const [featureAccess, setFeatureAccess] = useState({});
 
   const fetchFeatureAccess = () => {
     licenseService.getFeatureAccess().then((data) => {
       setDisabledStatus(
         data?.licenseStatus?.isExpired || !data?.licenseStatus?.isLicenseValid || data?.customStyling !== true
       );
+      setFeatureAccess(data);
     });
   };
 
@@ -66,6 +68,8 @@ export default function CustomStylesEditor({ darkMode }) {
     }
   };
 
+  const isTrial = featureAccess?.licenseStatus?.licenseType === 'trial';
+
   return (
     <ErrorBoundary showFallback={true}>
       <div className="wrapper animation-fade">
@@ -75,7 +79,9 @@ export default function CustomStylesEditor({ darkMode }) {
               <div className="col p-3 border-bottom">
                 <div className="d-flex justify-content-between align-items-center">
                   <h3 className="card-title m-0">Custom Styles</h3>
-                  {disabled && <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>}
+                  {(disabled || isTrial) && (
+                    <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>
+                  )}
                 </div>
               </div>
               <div className="w-100 p-4 custom-css-input-container">

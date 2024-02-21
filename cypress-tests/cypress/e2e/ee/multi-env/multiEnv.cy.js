@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonEeText, ssoEeText } from "Texts/eeCommon";
 import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
-import { verifyPromoteModalUI } from "Support/utils/eeCommon";
+import { verifyPromoteModalUI, verifyTooltipDisabled } from "Support/utils/eeCommon";
 import { dataSourceSelector } from "Selectors/dataSource";
 import {
   navigateToAppEditor,
@@ -12,7 +12,6 @@ import {
 import { addQuery, selectDatasource } from "Support/utils/dataSource";
 
 import {
-  verifyAndModifyParameter,
   editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
 
@@ -84,10 +83,12 @@ describe("Multi env", () => {
     cy.waitForAutoSave();
 
     cy.dragAndDropWidget("Text", 550, 650);
-    editAndVerifyWidgetName(data.constName);
+    editAndVerifyWidgetName(data.constName, []);
     cy.waitForAutoSave();
 
-    verifyAndModifyParameter("Text", `{{queries.restapi1.data.data[0].email`);
+    cy.get(
+      '[data-cy="textcomponenttextinput-input-field"]'
+    ).clearAndTypeOnCodeMirror(`{{queries.restapi1.data.data[0].email`);
     cy.wait(1000);
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
@@ -275,11 +276,11 @@ describe("Multi env", () => {
       .verifyVisibleElement("have.text", "Production");
 
     verifyTooltip(
-      '[data-cy="env-name-list"]:eq(1)',
+      '[data-cy="env-name-dropdown"]:eq(1)',
       "There are no versions in this environment"
     );
     verifyTooltip(
-      '[data-cy="env-name-list"]:eq(2)',
+      '[data-cy="env-name-dropdown"]:eq(2)',
       "There are no versions in this environment"
     );
 
@@ -347,7 +348,7 @@ describe("Multi env", () => {
       .eq(2)
       .verifyVisibleElement("have.text", "Production");
     verifyTooltip(
-      '[data-cy="env-name-list"]:eq(2)',
+      '[data-cy="env-name-dropdown"]:eq(2)',
       "There are no versions in this environment"
     );
 

@@ -76,7 +76,7 @@ export const groupsSelector = {
   usersCheckInput: '[data-cy="users-check-input"]',
   permissionCheckInput: '[data-cy="permissions-check-input"]',
   appsCheckInput: '[data-cy="apps-check-input"]',
-  confimButton: '[data-cy="confim-button"]',
+  confirmButton: '[data-cy="confirm-button"]',
   duplicatedGroupLink: (groupName) => {
     return `[data-cy="${cyParamName(groupName)}_copy-list-item"]`
   },

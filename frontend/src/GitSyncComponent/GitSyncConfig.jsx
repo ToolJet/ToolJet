@@ -40,6 +40,7 @@ class GitSyncConfigComponent extends Component {
       validUrl: true,
       connectFail: false,
       errorMessage: '',
+      featureAccess: {},
     };
 
     this.state = { ...this.initialState, isGitSyncFeatureEnabled: false };
@@ -61,6 +62,7 @@ class GitSyncConfigComponent extends Component {
       const isGitSyncFeature = data?.gitSync ? true : false;
       this.setState({
         isGitSyncFeatureEnabled: isGitSyncFeature,
+        featureAccess: data,
       });
     });
   };
@@ -332,6 +334,7 @@ class GitSyncConfigComponent extends Component {
       connectFail,
       errorMessage,
       isGitSyncFeatureEnabled,
+      featureAccess,
     } = this.state;
     return (
       <div className="wrapper gitsync-config-wrapper animation-fade">
@@ -360,7 +363,9 @@ class GitSyncConfigComponent extends Component {
                   <LicenseBanner
                     classes="mb-3 small"
                     isAvailable={false}
-                    showPaidFeatureBanner={!isGitSyncFeatureEnabled}
+                    showPaidFeatureBanner={
+                      !isGitSyncFeatureEnabled || featureAccess?.licenseStatus?.licenseType === 'trial'
+                    }
                     size="small"
                   />
                 </div>

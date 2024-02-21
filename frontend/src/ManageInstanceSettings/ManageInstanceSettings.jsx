@@ -22,6 +22,7 @@ class ManageInstanceSettingsComponent extends React.Component {
       hasChanges: false,
       disabled: false,
       initialOptions: {},
+      featureAccess: {},
     };
   }
 
@@ -39,7 +40,7 @@ class ManageInstanceSettingsComponent extends React.Component {
     this.setState({ isLoading: true });
     licenseService.getFeatureAccess().then((data) => {
       this.setDisabledStatus(data?.licenseStatus);
-      this.setState({ isLoading: false });
+      this.setState({ isLoading: false, featureAccess: data });
     });
   };
 
@@ -107,7 +108,8 @@ class ManageInstanceSettingsComponent extends React.Component {
   };
 
   render() {
-    const { options, isSaving, disabled, isLoading, hasChanges } = this.state;
+    const { options, isSaving, disabled, isLoading, hasChanges, featureAccess } = this.state;
+    const isTrial = featureAccess?.licenseStatus?.licenseType === 'trial';
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper instance-settings-page animation-fade">
@@ -124,7 +126,9 @@ class ManageInstanceSettingsComponent extends React.Component {
                         'Manage instance settings'
                       )}
                     </div>
-                    {disabled && <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>}
+                    {(disabled || isTrial) && (
+                      <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>
+                    )}
                   </div>
                 </div>
                 <div className="card-body">

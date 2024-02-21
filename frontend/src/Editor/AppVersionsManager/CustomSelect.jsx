@@ -12,10 +12,12 @@ import { defaultAppEnvironments } from '@/_helpers/utils';
 const Menu = (props) => {
   const { currentEnvironment } = props;
   const isEnvDevelopment = currentEnvironment?.name === 'development';
+  const isEditable = props.selectProps.isEditable;
+
   return (
     <components.Menu {...props}>
       <div>
-        {!props?.selectProps?.value?.isReleasedVersion && (
+        {isEditable && !props?.selectProps?.value?.isReleasedVersion && (
           <ToolTip
             message="Versions created from git cannot be edited"
             show={props?.selectProps?.appCreationMode === 'GIT'}
@@ -45,52 +47,56 @@ const Menu = (props) => {
         )}
         <hr className="m-0" />
         <div>{props.children}</div>
-        <ToolTip
-          message={
-            props?.selectProps?.appCreationMode === 'GIT'
-              ? 'New versions cannot be created for git imported apps'
-              : 'New versions can only be created in development'
-          }
-          show={!isEnvDevelopment || props?.selectProps?.appCreationMode === 'GIT'}
-          placement="right"
-        >
-          <div
-            className="cursor-pointer tj-text-xsm"
-            style={{
-              padding: '8px 12px',
-              color: `${isEnvDevelopment && props?.selectProps?.appCreationMode !== 'GIT' ? '#3E63DD' : '#C1C8CD'}`,
-              cursor: `${isEnvDevelopment && props?.selectProps?.appCreationMode !== 'GIT' ? 'pointer' : 'none'}`,
-            }}
-            onClick={() =>
-              isEnvDevelopment && props?.selectProps?.appCreationMode !== 'GIT' && props?.setShowCreateAppVersion(true)
+        {isEditable && (
+          <ToolTip
+            message={
+              props?.selectProps?.appCreationMode === 'GIT'
+                ? 'New versions cannot be created for git imported apps'
+                : 'New versions can only be created in development'
             }
-            data-cy="create-new-version-button"
+            show={!isEnvDevelopment || props?.selectProps?.appCreationMode === 'GIT'}
+            placement="right"
           >
-            <svg
-              className="icon me-1"
-              width="34"
-              height="34"
-              viewBox="0 0 34 34"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+            <div
+              className="cursor-pointer tj-text-xsm"
+              style={{
+                padding: '8px 12px',
+                color: `${isEnvDevelopment && props?.selectProps?.appCreationMode !== 'GIT' ? '#3E63DD' : '#C1C8CD'}`,
+                cursor: `${isEnvDevelopment && props?.selectProps?.appCreationMode !== 'GIT' ? 'pointer' : 'none'}`,
+              }}
+              onClick={() =>
+                isEnvDevelopment &&
+                props?.selectProps?.appCreationMode !== 'GIT' &&
+                props?.setShowCreateAppVersion(true)
+              }
+              data-cy="create-new-version-button"
             >
-              <rect width="34" height="34" rx="6" fill="#F1F3F5" />
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M17 11C17.4142 11 17.75 11.3358 17.75 11.75V16.25H22.25C22.6642 16.25 23 16.5858 23 17C23 17.4142 22.6642 17.75 22.25 17.75H17.75V22.25C17.75 22.6642 17.4142 23 17 23C16.5858 23 16.25 22.6642 16.25 22.25V17.75H11.75C11.3358 17.75 11 17.4142 11 17C11 16.5858 11.3358 16.25 11.75 16.25H16.25V11.75C16.25 11.3358 16.5858 11 17 11Z"
-                fill={`${isEnvDevelopment && props?.selectProps?.appCreationMode !== 'GIT' ? '#3E63DD' : '#C1C8CD'}`}
-              />
-            </svg>
-            Create new version
-          </div>
-        </ToolTip>
+              <svg
+                className="icon me-1"
+                width="34"
+                height="34"
+                viewBox="0 0 34 34"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect width="34" height="34" rx="6" fill="var(--indigo3)" />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M17 11C17.4142 11 17.75 11.3358 17.75 11.75V16.25H22.25C22.6642 16.25 23 16.5858 23 17C23 17.4142 22.6642 17.75 22.25 17.75H17.75V22.25C17.75 22.6642 17.4142 23 17 23C16.5858 23 16.25 22.6642 16.25 22.25V17.75H11.75C11.3358 17.75 11 17.4142 11 17C11 16.5858 11.3358 16.25 11.75 16.25H16.25V11.75C16.25 11.3358 16.5858 11 17 11Z"
+                  fill={`${isEnvDevelopment && props?.selectProps?.appCreationMode !== 'GIT' ? '#3E63DD' : '#C1C8CD'}`}
+                />
+              </svg>
+              Create new version
+            </div>
+          </ToolTip>
+        )}
       </div>
     </components.Menu>
   );
 };
 
-const SingleValue = ({ selectProps }) => {
+export const SingleValue = ({ selectProps }) => {
   return (
     <div className="d-inline-flex align-items-center" data-cy="app-version-label" style={{ gap: '8px' }}>
       <div className="d-inline-flex align-items-center" style={{ gap: '2px' }}>
@@ -128,11 +134,11 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
   const [showEditAppVersion, setShowEditAppVersion] = useState(false);
   const [showCreateAppVersion, setShowCreateAppVersion] = useState(false);
 
-  const { deleteVersion, deleteAppVersion, resetDeleteModal } = props;
+  const { deleteVersion, deleteAppVersion, resetDeleteModal, isEditable } = props;
 
   return (
     <>
-      {showCreateAppVersion && (
+      {isEditable && showCreateAppVersion && (
         <CreateVersion
           {...props}
           showCreateAppVersion={showCreateAppVersion}
@@ -141,13 +147,16 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
         />
       )}
 
-      <EditVersion
-        {...props}
-        showEditAppVersion={showEditAppVersion}
-        setShowEditAppVersion={setShowEditAppVersion}
-        currentEnvironment={currentEnvironment}
-      />
+      {isEditable && (
+        <EditVersion
+          {...props}
+          showEditAppVersion={showEditAppVersion}
+          setShowEditAppVersion={setShowEditAppVersion}
+          currentEnvironment={currentEnvironment}
+        />
+      )}
       {/* TODO[future]:: use environments list instead of hard coded defaultAppEnvironments data */}
+      {/*  When we merge this code to EE update the defaultAppEnvironments object with rest of default environments (then delete this comment)*/}
       <ConfirmDialog
         show={deleteVersion.showModal}
         message={`${

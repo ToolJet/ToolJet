@@ -36,6 +36,15 @@ export class Organization extends BaseEntity {
   @Column({ name: 'inherit_sso' })
   inheritSSO: boolean;
 
+  @Column({
+    type: 'enum',
+    enumName: 'workspace_status',
+    name: 'status',
+    enum: ['active', 'archived'],
+    default: 'active',
+  })
+  status: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

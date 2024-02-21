@@ -94,7 +94,7 @@ export const GlobalDatasources = (props) => {
 
   const fetchFeatureAccess = () => {
     licenseService.getFeatureAccess().then((data) => {
-      setFeatureAccess({ ...data?.licenseStatus });
+      setFeatureAccess({ ...data?.licenseStatus, ...data });
     });
   };
 

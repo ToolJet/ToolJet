@@ -60,12 +60,13 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="Job '${{ env.JOB_NAME }}' succeeded! docker image tooljet/tooljet-ee:${{ github.event.release.tag_name }} \n tooljet/tooljet:${{ github.event.release.tag_name }}"
+            message="ToolJet enterprise image published:\n\`tooljet/tooljet-ee:${{ github.event.release.tag_name }}\`\n\`tooljet/tooljet:${{ github.event.release.tag_name }}\`"
           else
-            message="Job '${{ env.JOB_NAME }}' failed! docker image tooljet/tooljet-ee:${{ github.event.release.tag_name }} \n tooljet/tooljet:${{ github.event.release.tag_name }}"
+            message="Job '${{ env.JOB_NAME }}' failed! Image built:\n\`tooljet/tooljet-ee:${{ github.event.release.tag_name }}\`\n\`tooljet/tooljet:${{ github.event.release.tag_name }}\`"
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+
 
   try-tooljet-image-build:
     runs-on: ubuntu-latest
@@ -130,7 +131,7 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="Job '${{ env.JOB_NAME }}' succeeded! tooljet/try:${{ github.event.release.tag_name }}"
+            message="Try-ToolJet image published:\n`tooljet/try:${{ github.event.release.tag_name }}`\"
           else
             message="Job '${{ env.JOB_NAME }}' failed! tooljet/try:${{ github.event.release.tag_name }}"
           fi

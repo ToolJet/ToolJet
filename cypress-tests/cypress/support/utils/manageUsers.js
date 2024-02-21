@@ -235,10 +235,6 @@ export const bulkUserUpload = (file, fileName, toastMessage) => {
   cy.wait(200);
 };
 
-<<<<<<< HEAD
-=======
-
->>>>>>> Tooljet/main
 export const copyInvitationLink = (firstName, email) => {
   cy.window().then((win) => {
     cy.stub(win, "prompt").returns(win.prompt).as("copyToClipboardPrompt");
@@ -279,43 +275,6 @@ export const selectUserGroup = (groupName) => {
     cy.wait(1000);
     cy.get('[data-cy="user-group-select"]>>>>>').eq(2).click();
   });
-};
-
-export const inviteUserWithUserGroups = (
-  firstName,
-  email,
-  groupName1,
-  groupName2
-) => {
-  fillUserInviteForm(firstName, email);
-
-  cy.wait(2000);
-
-  cy.get("body").then(($body) => {
-    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
-
-    if (selectDropdown.length === 0) {
-      cy.get('[data-cy="user-group-select"]>>>>>').click();
-    }
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName1);
-    cy.wait(1000);
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(2).click();
-    cy.wait(1000);
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName2);
-    cy.wait(1000);
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(4).click();
-  });
-
-  cy.get(usersSelector.buttonInviteUsers).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    usersText.userCreatedToast
-  );
-
-  cy.wait(1000);
-  fetchAndVisitInviteLink(email);
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.get(commonSelectors.acceptInviteButton).click();
 };
 
 export const inviteUserWithUserGroups = (
