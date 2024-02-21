@@ -7,6 +7,7 @@ import ErrorBoundary from '@/Editor/ErrorBoundary';
 import Skeleton from 'react-loading-skeleton';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _ from 'lodash';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 
 class ManageInstanceSettingsComponent extends React.Component {
   constructor(props) {
@@ -21,6 +22,7 @@ class ManageInstanceSettingsComponent extends React.Component {
       hasChanges: false,
       disabled: false,
       initialOptions: {},
+      featureAccess: {},
     };
   }
 
@@ -38,7 +40,7 @@ class ManageInstanceSettingsComponent extends React.Component {
     this.setState({ isLoading: true });
     licenseService.getFeatureAccess().then((data) => {
       this.setDisabledStatus(data?.licenseStatus);
-      this.setState({ isLoading: false });
+      this.setState({ isLoading: false, featureAccess: data });
     });
   };
 
@@ -106,7 +108,8 @@ class ManageInstanceSettingsComponent extends React.Component {
   };
 
   render() {
-    const { options, isSaving, disabled, isLoading, hasChanges } = this.state;
+    const { options, isSaving, disabled, isLoading, hasChanges, featureAccess } = this.state;
+    const isTrial = featureAccess?.licenseStatus?.licenseType === 'trial';
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper instance-settings-page animation-fade">
@@ -116,10 +119,15 @@ class ManageInstanceSettingsComponent extends React.Component {
             <div className="container-xl">
               <div className="card">
                 <div className="card-header">
-                  <div className="card-title" data-cy="card-title">
-                    {this.props.t(
-                      'header.organization.menus.manageInstanceSettings.instanceSettings',
-                      'Manage instance settings'
+                  <div className="title-banner-wrapper">
+                    <div className="card-title" data-cy="card-title">
+                      {this.props.t(
+                        'header.organization.menus.manageInstanceSettings.instanceSettings',
+                        'Manage instance settings'
+                      )}
+                    </div>
+                    {(disabled || isTrial) && (
+                      <LicenseBannerCloud isAvailable={false} showPaidFeatureBanner={true}></LicenseBannerCloud>
                     )}
                   </div>
                 </div>

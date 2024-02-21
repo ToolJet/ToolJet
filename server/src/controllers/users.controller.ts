@@ -25,16 +25,23 @@ import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { LIMIT_TYPE, USER_TYPE } from 'src/helpers/user_lifecycle';
 import { SessionService } from '@services/session.service';
+import { OrganizationLicenseService } from '@services/organization_license.service';
 
 const MAX_AVATAR_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService, private sessionService: SessionService) {}
+  constructor(
+    private usersService: UsersService,
+    private sessionService: SessionService,
+    private licenseService: OrganizationLicenseService
+  ) {}
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get('all')
   async getAllUsers(@Query() query) {
+    /* User will be filtered for active workspace only */
+
     const { page, searchText, status } = query;
     const filterOptions = {
       ...(searchText && { searchText }),
@@ -98,7 +105,7 @@ export class UsersController {
   @Get('license-terms/terms')
   async getTerms() {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const { editor, viewer } = await this.usersService.fetchTotalViewerEditorCount(manager);
+      const { editor, viewer } = await this.licenseService.fetchTotalViewerEditorCount(manager);
       const totalActive = await this.usersService.getCount(true, manager);
       const total = await this.usersService.getCount(false, manager);
       return { editor, viewer, totalActive, total };

@@ -4,6 +4,8 @@ import LegalReasonsErrorModal from '../_components/LegalReasonsErrorModal';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { authenticationService } from '@/_services';
+import { getPathname, redirectToSwitchOrArchivedAppPage } from './routes';
+import { ERROR_TYPES } from './constants';
 
 const copyFunction = (input) => {
   let text = document.getElementById(input).innerHTML;
@@ -71,6 +73,8 @@ export function handleResponse(response, avoidRedirection = false) {
         if (!message?.includes('expired')) {
           ReactDOM.render(modalEl, document.getElementById('modal-div'));
         }
+      } else if ([400].indexOf(response.status) !== -1) {
+        redirectToSwitchOrArchivedAppPage(data);
       }
       const error = (data && data.message) || response.statusText;
       return Promise.reject({ error, data, statusCode: response?.status });

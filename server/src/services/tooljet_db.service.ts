@@ -291,7 +291,7 @@ export class TooljetDbService {
     };
   }
 
-  private async joinTable(organizationId: string, params) {
+  private async joinTable(organizationId: string, params: Record<string, any>) {
     const { joinQueryJson } = params;
     if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
 

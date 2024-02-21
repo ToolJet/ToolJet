@@ -29,6 +29,9 @@ import { Credential } from 'src/entities/credential.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
+import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
+import { TooljetDbService } from '@services/tooljet_db.service';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 @Module({
   controllers: [OrgEnvironmentVariablesController],
@@ -65,6 +68,9 @@ import { AppEnvironmentService } from '@services/app_environments.service';
     CredentialsService,
     PluginsHelper,
     AppEnvironmentService,
+    PostgrestProxyService,
+    TooljetDbOperationsService,
+    TooljetDbService,
   ],
 })
 export class OrgEnvironmentVariablesModule {}

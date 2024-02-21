@@ -4,15 +4,15 @@ import License from '@ee/licensing/configs/License';
 import { LicenseUpdateDto } from '@dto/license.dto';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 import { CreateTrialLicenseDto } from '@dto/create-trial-license.dto';
-import { EntityManager } from 'typeorm';
 import got from 'got';
 import { SelfhostCustomerLicense } from 'src/entities/selfhost_customer_license.entity';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { ConfigService } from '@nestjs/config';
 import { CRMData } from '@ee/licensing/types';
 import OrganizationLicense from '@ee/licensing/configs/OrganizationLicense';
 import { OrganizationsLicense } from 'src/entities/organization_license.entity';
 import { OrganizationLicenseService } from './organization_license.service';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class LicenseService {

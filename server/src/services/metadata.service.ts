@@ -14,6 +14,7 @@ import { LicenseService } from './license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import License from '@ee/licensing/configs/License';
 import { TelemetryDataDto } from '@dto/user.dto';
+import { OrganizationLicenseService } from './organization_license.service';
 
 @Injectable()
 export class MetadataService {
@@ -22,7 +23,8 @@ export class MetadataService {
     private metadataRepository: Repository<Metadata>,
     private configService: ConfigService,
     private usersService: UsersService,
-    private licenseService: LicenseService
+    private licenseService: LicenseService,
+    private organizationLicenseService: OrganizationLicenseService
   ) {}
 
   async getMetaData() {
@@ -87,9 +89,8 @@ export class MetadataService {
   async sendTelemetryData(metadata: Metadata) {
     const manager = getManager();
     const totalUserCount = await manager.count(User);
-    const { editor: totalEditorCount, viewer: totalViewerCount } = await this.usersService.fetchTotalViewerEditorCount(
-      manager
-    );
+    const { editor: totalEditorCount, viewer: totalViewerCount } =
+      await this.organizationLicenseService.fetchTotalViewerEditorCount(manager);
     const totalAppCount = await manager.count(App);
     const totalInternalTableCount = await manager.count(InternalTable);
     const totalDatasourcesByKindCount = await this.fetchDatasourcesByKindCount(manager);

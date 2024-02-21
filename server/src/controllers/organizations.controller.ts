@@ -23,6 +23,8 @@ import { User as UserEntity } from 'src/entities/user.entity';
 import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization.dto';
 import { Response } from 'express';
+import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
+
 @Controller('organizations')
 export class OrganizationsController {
   constructor(private organizationsService: OrganizationsService, private authService: AuthService) {}
@@ -100,6 +102,7 @@ export class OrganizationsController {
     if (!existingOrganizationId) {
       throw new NotFoundException();
     }
+
     if (!organizationId) {
       const result = await this.organizationsService.constructSSOConfigs();
       return decamelizeKeys({ ssoConfigs: result });
@@ -148,6 +151,13 @@ export class OrganizationsController {
   async updateConfigs(@Body() body, @User() user) {
     const result: any = await this.organizationsService.updateOrganizationConfigs(user.organizationId, body);
     return decamelizeKeys({ id: result.id });
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Patch(':id')
+  async updateById(@Body() organizationUpdateDto: OrganizationUpdateDto, @Param('id') organizationId: string) {
+    await this.organizationsService.updateOrganization(organizationId, organizationUpdateDto);
+    return;
   }
 
   @UseGuards(JwtAuthGuard)

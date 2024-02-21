@@ -1,6 +1,7 @@
 import { Transform } from 'class-transformer';
 import {
   IsBoolean,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -61,6 +62,11 @@ export class OrganizationCreateDto {
   slug: string;
 }
 
+export enum organizationStatusType {
+  active,
+  archived,
+}
+
 export class OrganizationUpdateDto {
   @IsOptional()
   @IsString()
@@ -86,6 +92,11 @@ export class OrganizationUpdateDto {
   @Transform(({ value }) => sanitizeInput(value))
   @MaxLength(250, { message: 'Domain cannot be longer than 250 characters' })
   domain?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsEnum(organizationStatusType)
+  status?: string;
 
   @IsOptional()
   @IsBoolean()

@@ -1,5 +1,6 @@
 /* You can add all paths and routes related utils here */
 import { stripTrailingSlash, getWorkspaceId } from '@/_helpers/utils';
+import { ERROR_TYPES } from './constants';
 import { authenticationService } from '@/_services/authentication.service';
 import queryString from 'query-string';
 import _ from 'lodash';
@@ -77,6 +78,21 @@ export const redirectToDashboard = (data, relativePath = null) => {
     : `/${id_slug}${relativePath ? relativePath : ''}`;
 };
 
+export const redirectToSwitchOrArchivedAppPage = (data) => {
+  let message = data?.message ?? '';
+  const isApplicationsPath = getPathname(null, true).startsWith('/applications/');
+  if (message && message == ERROR_TYPES.WORKSPACE_ARCHIVED) {
+    const subpath = getSubpath();
+    let path = subpath ? `${subpath}/switch-workspace` : `/switch-workspace`;
+    if (isApplicationsPath) {
+      path = 'app-url-archived';
+    } else {
+      path += '-archived';
+    }
+    window.location = path;
+  }
+};
+
 export const appendWorkspaceId = (slug, path, replaceId = false) => {
   const subpath = getSubpath();
   path = getPathname(path);
@@ -103,6 +119,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
   const existedPaths = [
     'forgot-password',
     'switch-workspace',
+    'switch-workspace-archived',
     'reset-password',
     'invitations',
     'organization-invitations',
@@ -121,6 +138,9 @@ export const getWorkspaceIdOrSlugFromURL = () => {
 
   const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
   if (['login', 'ldap'].includes(workspaceId)) {
+    if (pathnameArray[pathnameArray.length - 1] === 'super-admin') {
+      return '';
+    }
     return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];
   }
 
@@ -131,8 +151,8 @@ export const excludeWorkspaceIdFromURL = (pathname) => {
   const subPath = getSubpath();
   const tempPathname = subPath ? pathname.replace(subPath, '') : pathname;
   if (
-    !['/instance-settings', '/integrations', '/applications/', '/switch-workspace'].find((path) =>
-      tempPathname.startsWith(path)
+    !['/instance-settings', '/integrations', '/applications/', '/switch-workspace', '/switch-workspace-archived'].find(
+      (path) => tempPathname.startsWith(path)
     )
   ) {
     pathname = tempPathname;

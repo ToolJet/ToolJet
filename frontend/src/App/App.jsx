@@ -49,7 +49,9 @@ import { Settings } from '@/Settings';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import { ManageSubscriptionKey } from '@/ManageLicenseKey/MangeSubscriptionKey';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { ManageWorkspaceArchivePageComponent } from '@/_ui/ManageWorkspaceArchive/ManageWorspaceArchivePage';
 import WorkspaceConstants from '@/WorkspaceConstants';
+import { SuperadminLoginPage } from '@/LoginPage/SuperadminLoginPage';
 
 const AppWrapper = (props) => {
   return (
@@ -257,6 +259,7 @@ class AppComponent extends React.Component {
             <Routes>
               <Route path="/login/:organizationId" exact element={<LoginPage />} />
               <Route path="/login" exact element={<LoginPage />} />
+              <Route path="/login/super-admin" exact element={<SuperadminLoginPage />} />
               <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
               <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
               <Route path="/sso/:origin" exact element={<Oauth />} />
@@ -406,6 +409,14 @@ class AppComponent extends React.Component {
                   element={<ManageInstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
                 />
                 <Route
+                  path="all-workspaces"
+                  element={
+                    <AdminRoute>
+                      <ManageWorkspaceArchivePageComponent switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
                   path="white-labelling"
                   element={<ManageWhiteLabelling switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
                 />
@@ -516,10 +527,32 @@ class AppComponent extends React.Component {
               />
               <Route
                 exact
+                path="/app-url-archived"
+                element={
+                  <SwitchWorkspacePage
+                    switchDarkMode={this.switchDarkMode}
+                    darkMode={darkMode}
+                    archived={true}
+                    isAppUrl={true}
+                  />
+                }
+              />
+              <Route
+                exact
                 path="/switch-workspace"
                 element={
                   <PrivateRoute>
                     <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                exact
+                path="/switch-workspace-archived"
+                element={
+                  <PrivateRoute>
+                    <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} archived={true} />
                   </PrivateRoute>
                 }
               />

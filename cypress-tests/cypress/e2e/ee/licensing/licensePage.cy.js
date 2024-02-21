@@ -1,4 +1,4 @@
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import {
     verifyTooltip,
@@ -9,6 +9,7 @@ import { addNewUser } from "Support/utils/eeCommon";
 import {
     commonEeSelectors,
     instanceSettingsSelector,
+    multiEnvSelector,
 } from "Selectors/eeCommon";
 import { licenseText } from "Texts/license";
 import { licenseSelectors } from "Selectors/license";
@@ -17,17 +18,30 @@ import { verifyTooltipDisabled, updateLicense } from "Support/utils/eeCommon";
 import {
     verifyrenewPlanModal,
     verifyExpiredLicenseBanner,
+    adminExpiredLicenseBanner,
 } from "Support/utils/license";
 import { selectAndAddDataSource } from "Support/utils/postgreSql";
+import { AddNewconstants } from "Support/utils/workspaceConstants";
+import { addQuery, selectDatasource } from "Support/utils/dataSource";
+import { postgreSqlSelector } from "Selectors/postgreSql";
+import { postgreSqlText } from "Texts/postgreSql";
+import { dataSourceSelector } from "Selectors/dataSource";
+import {
+    verifyAndModifyParameter,
+    editAndVerifyWidgetName,
+} from "Support/utils/commonWidget";
+import { promoteApp, releaseApp } from "Support/utils/multiEnv";
 
 describe("", () => {
+    const data = {};
+
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
     });
     after(() => {
         updateLicense(Cypress.env("license-key"));
     });
-    it("should verify license page elements", () => {
+    it("Should verify license page elements", () => {
         cy.get(commonSelectors.settingsIcon).click();
         cy.get(commonEeSelectors.instanceSettingIcon).click();
         cy.get(licenseSelectors.licenseOption).click();
@@ -189,16 +203,20 @@ describe("", () => {
             "Please contact ToolJet team to link your domain"
         );
     });
-    it("should verify banners, renew modal and tooltips for expired license", () => {
+    it("Should verify expired license banners, renew modal and tooltips for super-admin user", () => {
         let ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-        //app creation
+        data.appName = `${fake.companyName} App`;
+        data.constantsName = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
+
         cy.get(commonSelectors.settingsIcon).click();
         cy.get(commonEeSelectors.instanceSettingIcon).click();
         cy.get(licenseSelectors.licenseOption).click();
         cy.get(licenseSelectors.licenseKeyOption).click();
         cy.clearAndType(
             licenseSelectors.licenseTextArea,
-            "RAtrm9cnHYAJPNpDuTig+lTw9Mt8VnlflE/ohBJoF4jMVjKhi6OOJwh6aSPyDLpehIpNrffXWj+7MJmzliJWYWc5PTND2tHtsBn4deSS2nwh6+vSeWx21kCDj45esdIcRlPSdeYxfXw6JmuDe0LRDYy+SnMFAeXjyttBdGglgxSpd1givIidR2aIw61l2YabXHzId+WLD9d0JXAt5yXa6inWDjZ9VwBwiUsCE2IkY013lkJgntcIwqwjuOA9A+vJL6DRvYF+F4UlfvoQocSaikwJAJZZW9mY1SMdIP2cKWSsoshXCiK2rtTy48fDMha/iBrVm9QsW03mp/98FtWZxZwglvg8CE7Pqu+k8YbTCLusZdg9pNih/SuW8lyWvn2bn9ZJZAZbcU33SuCLkC1dCPBajL+dzfEiha3rqi5YNbe0nNbKJuFTHmcuhoMVKyoJvJYvh3yDezwlcfffbH7aIlmAY943QrsJMQw/M9JkWCz+Pq8ULwjQEI7NE55QUpX6FZR7BzllCbeK1jjbZz7b9jTOHIAfF4Ia+mNXm7yW1bWS/mZ0pwOgsMXv9o3PkwCBtd5U7ySac8d5X1YbTHZeOgD6LaBLiuFerGyPPM55h5+kJVaqgvclbfkhx0IfpMUilT7bD/0FwH3b8miHl0K/knzWorqrSyskKHg6vdFru/g="
+            Cypress.env("expired-license-key")
         );
         cy.get(licenseSelectors.updateButton).click();
         cy.intercept("GET", "http://localhost:3000/api/license").as("wait");
@@ -218,7 +236,7 @@ describe("", () => {
             .verifyVisibleElement("have.text", "Renew")
             .click();
         cy.wait(3000);
-        cy.get('[data-cy="copy-icon"]').should("be.visible").click();
+        cy.get('[data-cy="copy-icon"]').should("be.visible").realClick();
         cy.verifyToastMessage(commonSelectors.toastMessage, "Copied to clipboard!");
 
         verifyrenewPlanModal();
@@ -254,8 +272,16 @@ describe("", () => {
         cy.wait(2000);
         verifyExpiredLicenseBanner();
         verifyrenewPlanModal();
+        cy.apiCreateApp(data.appName);
+        cy.openApp();
+        cy.get(commonSelectors.releaseButton).verifyVisibleElement(
+            "have.text",
+            "Release"
+        );
+        cy.apiDeleteApp();
 
-        cy.get(commonSelectors.globalDataSourceIcon).click();
+        cy.visit("my-workspace/data-sources");
+
         selectAndAddDataSource("databases", "PostgreSQL", ds);
         cy.wait(1000);
         verifyTooltipDisabled(
@@ -331,5 +357,415 @@ describe("", () => {
             "Paid feature"
         );
         cy.get('[data-cy="save-button"]').verifyVisibleElement("be.disabled");
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
+        AddNewconstants(data.constantsName, data.constantsName);
+
+        cy.wait(3000);
+        verifyTooltip(
+            '[data-cy="-list-item"]:eq(2)',
+            "Multi-environments are available only in paid plans"
+        );
+        verifyTooltip(
+            '[data-cy="-list-item"]:eq(1)',
+            "Multi-environments are available only in paid plans"
+        );
+    });
+    it("Should verify expired license banners, renew modal and tooltips for admin user", () => {
+        let ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.appName = `${fake.companyName} App`;
+        data.constantsName = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
+        data.firstName = fake.firstName;
+        data.workspaceName = data.firstName.toLowerCase();
+
+        updateLicense(Cypress.env("expired-license-key"));
+        cy.logoutApi();
+
+        cy.apiLogin("test@tooljet.com", "password");
+        cy.apiCreateWorkspace(data.firstName, data.workspaceName);
+        cy.visit(`${data.workspaceName}`);
+
+        cy.get(commonSelectors.dashboardIcon).click();
+        cy.wait(2000);
+        adminExpiredLicenseBanner();
+
+        cy.skipWalkthrough();
+        cy.createApp(data.appName);
+        cy.get(commonSelectors.releaseButton).verifyVisibleElement(
+            "have.text",
+            "Release"
+        );
+
+        cy.visit(`${data.workspaceName}/data-sources`);
+
+        selectAndAddDataSource("databases", "PostgreSQL", ds);
+        cy.wait(1000);
+        verifyTooltipDisabled(
+            '[data-cy="staging-label"]',
+            "Multi-environments are available only in paid plans"
+        );
+        verifyTooltipDisabled(
+            '[data-cy="production-label"]',
+            "Multi-environments are available only in paid plans"
+        );
+
+        cy.get('[data-cy="icon-workflows"]').click();
+        cy.wait(2000);
+        adminExpiredLicenseBanner();
+
+        navigateToManageGroups();
+
+        cy.get('[data-cy="create-new-group-button"]').should("be.disabled");
+        cy.get('[data-cy="warning-text-header"]:eq(1)').verifyVisibleElement(
+            "have.text",
+            "Custom groups & permissions are available in our paid plans. Contact superadmin for more"
+        );
+        cy.get(licenseSelectors.enterpriseGradientIcon).should("be.visible");
+        cy.get('[data-cy="warning-text-header"] > div')
+            .eq(0)
+            .verifyVisibleElement(
+                "have.text",
+                "Your license has expired! Contact superadmin for more"
+            );
+
+        cy.get(groupsSelector.permissionsLink).click();
+        cy.get(licenseSelectors.lockGradientIcon).should("be.visible");
+        cy.get(groupsSelector.appsCreateCheck).verifyVisibleElement("be.disabled");
+        cy.get(groupsSelector.appsDeleteCheck).verifyVisibleElement("be.disabled");
+        cy.get(groupsSelector.foldersCreateCheck).verifyVisibleElement(
+            "be.disabled"
+        );
+        cy.get(groupsSelector.workspaceVarCheckbox).verifyVisibleElement(
+            "be.disabled"
+        );
+
+        cy.get('[data-cy="datasource-link"]').click();
+        cy.get(licenseSelectors.dsGradientIcon).should("be.visible");
+
+        cy.get(commonSelectors.settingsIcon).click();
+
+        verifyTooltip(
+            commonEeSelectors.auditLogIcon,
+            "Audit logs are available only in paid plans"
+        );
+        verifyTooltipDisabled(
+            groupsSelector.createNewGroupButton,
+            "Custom groups can only be created in paid plans"
+        );
+        cy.get(commonSelectors.manageSSOOption).click();
+        verifyTooltipDisabled(
+            '[data-cy="openid-connect-list-item"]',
+            "OpenID Connect is available only\n        in paid plans"
+        );
+        cy.reload();
+        verifyTooltipDisabled(
+            '[data-cy="ldap-list-item"]',
+            "LDAP is available only\n        in paid plans"
+        );
+        cy.reload();
+        verifyTooltipDisabled(
+            '[data-cy="saml-list-item"]',
+            "SAML is available only\n        in paid plans"
+        );
+
+        cy.get('[data-cy="custom-styles-list-item"]').click();
+        cy.get('[data-cy="enterprise-gradient-icon"]:eq(1)').should("be.visible");
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
+            "have.text",
+            "Paid feature"
+        );
+        cy.get('[data-cy="save-button"]').verifyVisibleElement("be.disabled");
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
+        AddNewconstants(data.constantsName, data.constantsName);
+
+        cy.wait(3000);
+        verifyTooltip(
+            '[data-cy="-list-item"]:eq(2)',
+            "Multi-environments are available only in paid plans"
+        );
+        verifyTooltip(
+            '[data-cy="-list-item"]:eq(1)',
+            "Multi-environments are available only in paid plans"
+        );
+    });
+    it("Should verify happy-path flow for a valid to expired license", () => {
+        data.constantsName = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
+        data.appName = `${fake.companyName}-App`;
+        data.dsName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.widgetName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.slug = `${fake.companyName.toLowerCase()}-app`;
+        updateLicense(Cypress.env("license-key"));
+
+        cy.apiLogin();
+        cy.apiCreateGDS(
+            "http://localhost:3000/api/v2/data_sources",
+            data.dsName,
+            "postgresql",
+            [
+                { key: "host", value: Cypress.env("pg_host") },
+                { key: "port", value: 5432 },
+                { key: "database", value: "" },
+                { key: "username", value: "postgres" },
+                { key: "password", value: Cypress.env("pg_password"), encrypted: true },
+                { key: "ssl_enabled", value: false, encrypted: false },
+                { key: "ssl_certificate", value: "none", encrypted: false },
+            ]
+        );
+        cy.visit("/");
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
+        AddNewconstants(data.constantsName, "development_multi_env");
+        AddNewconstants(
+            `${data.constantsName}_password`,
+            Cypress.env("pg_password")
+        );
+        cy.wait(500);
+        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(2)').click();
+        AddNewconstants(
+            `${data.constantsName}_password`,
+            Cypress.env("pg_password")
+        );
+        AddNewconstants(data.constantsName, "staging_multi_env");
+        cy.wait(500);
+        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(3)').click();
+        AddNewconstants(
+            `${data.constantsName}_password`,
+            Cypress.env("pg_password")
+        );
+        AddNewconstants(data.constantsName, "production_multi_env");
+
+        cy.get(commonSelectors.globalDataSourceIcon).click();
+        selectDatasource(data.dsName);
+        cy.get('[data-cy="development-label"]').click();
+        cy.get('[data-cy="database-name-text-field"]')
+            .clear()
+            .type(`{{constants.${data.constantsName}}}`, {
+                parseSpecialCharSequences: false,
+            });
+        cy.get(".tj-btn").click();
+        cy.wait(500);
+        cy.get('[data-cy="password-text-field"]')
+            .clear()
+            .type(`{{constants.${data.constantsName}_password}}`, {
+                parseSpecialCharSequences: false,
+            });
+
+        cy.get(postgreSqlSelector.buttonTestConnection).click();
+        cy.get(postgreSqlSelector.textConnectionVerified, {
+            timeout: 7000,
+        }).should("have.text", postgreSqlText.labelConnectionVerified);
+        cy.get(dataSourceSelector.buttonSave).click();
+        cy.wait(500);
+
+        cy.get('[data-cy="staging-label"]').click();
+        cy.get('[data-cy="database-name-text-field"]')
+            .clear()
+            .type(`{{constants.${data.constantsName}}}`, {
+                parseSpecialCharSequences: false,
+            });
+        cy.get(".tj-btn").click();
+        cy.wait(500);
+        cy.get('[data-cy="password-text-field"]')
+            .clear()
+            .type(`{{constants.${data.constantsName}_password}}`, {
+                parseSpecialCharSequences: false,
+            });
+
+        cy.get(postgreSqlSelector.buttonTestConnection).click();
+        cy.get(postgreSqlSelector.textConnectionVerified, {
+            timeout: 7000,
+        }).should("have.text", postgreSqlText.labelConnectionVerified);
+        cy.get(dataSourceSelector.buttonSave).click();
+        cy.wait(500);
+
+        cy.get('[data-cy="production-label"]').click();
+        cy.get('[data-cy="database-name-text-field"]')
+            .clear()
+            .type(`{{constants.${data.constantsName}}}`, {
+                parseSpecialCharSequences: false,
+            });
+        cy.get(".tj-btn").click();
+        cy.wait(500);
+        cy.get('[data-cy="password-text-field"]')
+            .clear()
+            .type(`{{constants.${data.constantsName}_password}}`, {
+                parseSpecialCharSequences: false,
+            });
+
+        cy.get(postgreSqlSelector.buttonTestConnection).click();
+        cy.get(postgreSqlSelector.textConnectionVerified, {
+            timeout: 7000,
+        }).should("have.text", postgreSqlText.labelConnectionVerified);
+        cy.get(dataSourceSelector.buttonSave).click();
+        cy.wait(500);
+
+        cy.apiCreateApp(data.appName);
+        cy.openApp();
+
+        cy.wait(2000);
+        addQuery("table_preview", `SELECT * FROM tooljet;`, data.dsName);
+        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.get(".custom-toggle-switch>.switch>").eq(3).click();
+        cy.waitForAutoSave();
+        cy.dragAndDropWidget("Text", 550, 650);
+        editAndVerifyWidgetName(data.widgetName);
+        cy.waitForAutoSave();
+
+        verifyAndModifyParameter("Text", `{{queries.table_preview.data[0].envname`);
+        cy.forceClickOnCanvas();
+        cy.waitForAutoSave();
+        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.text", "development");
+
+        promoteApp();
+        promoteApp();
+        releaseApp();
+
+        cy.get(commonWidgetSelector.shareAppButton).click();
+        cy.clearAndType(commonWidgetSelector.appNameSlugInput, data.slug);
+        cy.get(commonWidgetSelector.modalCloseButton).click();
+        cy.wait(1000);
+
+        updateLicense(Cypress.env("expired-license-key"));
+        cy.visitSlug({
+            actualUrl: `http://localhost:8082/applications/${data.slug}`,
+        });
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.text", "development");
+
+        updateLicense(Cypress.env("license-key"));
+        cy.reload();
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.text", "production");
+    });
+    it("Should verify happy-path flow for a basic to valid license", () => {
+        data.constantsName = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
+        data.appName = `${fake.companyName}-App`;
+        data.dsName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.widgetName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.slug = `${fake.companyName.toLowerCase()}-app`;
+        let currentVersion = "";
+        let newVersion = [];
+        let versionFrom = "";
+        updateLicense(Cypress.env("expired-license-key"));
+        cy.logoutApi();
+
+        cy.apiLogin();
+        cy.apiCreateGDS(
+            "http://localhost:3000/api/v2/data_sources",
+            data.dsName,
+            "postgresql",
+            [
+                { key: "host", value: Cypress.env("pg_host") },
+                { key: "port", value: 5432 },
+                { key: "database", value: "" },
+                { key: "username", value: "postgres" },
+                { key: "password", value: Cypress.env("pg_password"), encrypted: true },
+                { key: "ssl_enabled", value: false, encrypted: false },
+                { key: "ssl_certificate", value: "none", encrypted: false },
+            ]
+        );
+        cy.visit("/");
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
+        AddNewconstants(data.constantsName, "development_multi_env");
+        AddNewconstants(
+            `${data.constantsName}_password`,
+            Cypress.env("pg_password")
+        );
+
+        cy.get(commonSelectors.globalDataSourceIcon).click();
+        selectDatasource(data.dsName);
+        cy.get('[data-cy="development-label"]').click();
+        cy.get('[data-cy="database-name-text-field"]')
+            .clear()
+            .type(`{{constants.${data.constantsName}}}`, {
+                parseSpecialCharSequences: false,
+            });
+        cy.get(".tj-btn").click();
+        cy.wait(500);
+        cy.get('[data-cy="password-text-field"]')
+            .clear()
+            .type(`{{constants.${data.constantsName}_password}}`, {
+                parseSpecialCharSequences: false,
+            });
+
+        cy.get(postgreSqlSelector.buttonTestConnection).click();
+        cy.get(postgreSqlSelector.textConnectionVerified, {
+            timeout: 7000,
+        }).should("have.text", postgreSqlText.labelConnectionVerified);
+        cy.get(dataSourceSelector.buttonSave).click();
+        cy.wait(500);
+
+        cy.apiCreateApp(data.appName);
+        cy.openApp();
+
+        cy.wait(2000);
+        addQuery("table_preview", `SELECT * FROM tooljet;`, data.dsName);
+        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.get(".custom-toggle-switch>.switch>").eq(3).click();
+        cy.waitForAutoSave();
+        cy.dragAndDropWidget("Text", 550, 650);
+        editAndVerifyWidgetName(data.widgetName);
+        cy.waitForAutoSave();
+
+        verifyAndModifyParameter("Text", `{{queries.table_preview.data[0].envname`);
+        cy.forceClickOnCanvas();
+        cy.waitForAutoSave();
+        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.text", "development");
+
+        releaseApp();
+
+        cy.get(commonWidgetSelector.shareAppButton).click();
+        cy.clearAndType(commonWidgetSelector.appNameSlugInput, data.slug);
+        cy.get(commonWidgetSelector.modalCloseButton).click();
+        cy.wait(1000);
+
+        updateLicense(Cypress.env("license-key"));
+        cy.visitSlug({
+            actualUrl: `http://localhost:8082/applications/${data.slug}`,
+        });
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.text", "development");
+
+        cy.go("back");
+        cy.wait(2000);
+
+        cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
+            "have.text",
+            "Production"
+        );
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.text", "development");
+
+        cy.get(multiEnvSelector.currentEnvName).click();
+        cy.get(multiEnvSelector.envNameList).eq(1).click();
+
+        cy.wait(2000);
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.text", "development");
+
+        cy.get(multiEnvSelector.currentEnvName).click();
+        cy.get(multiEnvSelector.envNameList).eq(0).click();
+
+        cy.wait(2000);
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.text", "development");
     });
 });

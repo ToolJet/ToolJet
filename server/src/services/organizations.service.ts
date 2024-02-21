@@ -37,6 +37,7 @@ import {
   USER_STATUS,
   USER_TYPE,
   WORKSPACE_USER_STATUS,
+  WORKSPACE_STATUS,
 } from 'src/helpers/user_lifecycle';
 import { InstanceSettingsService } from './instance_settings.service';
 import { decamelize } from 'humps';
@@ -195,10 +196,18 @@ export class OrganizationsService {
   async fetchOrganization(slug: string): Promise<Organization> {
     let organization: Organization;
     try {
-      organization = await this.organizationsRepository.findOneOrFail({ where: { slug }, select: ['id', 'slug'] });
+      organization = await this.organizationsRepository.findOneOrFail({
+        where: { slug },
+        select: ['id', 'slug', 'status'],
+      });
     } catch (error) {
-      organization = await this.organizationsRepository.findOne({ where: { id: slug }, select: ['id', 'slug'] });
+      organization = await this.organizationsRepository.findOne({
+        where: { id: slug },
+        select: ['id', 'slug', 'status'],
+      });
     }
+    if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
+      throw new BadRequestException('Organization is Archived');
     return organization;
   }
 
@@ -652,7 +661,7 @@ export class OrganizationsService {
   }
 
   async updateOrganization(organizationId: string, params: OrganizationUpdateDto) {
-    const { name, slug, domain, enableSignUp, inheritSSO } = params;
+    const { name, slug, domain, enableSignUp, inheritSSO, status } = params;
 
     const updatableParams = {
       name,
@@ -660,14 +669,17 @@ export class OrganizationsService {
       domain,
       enableSignUp,
       inheritSSO,
+      status,
     };
 
     // removing keys with undefined values
     cleanObject(updatableParams);
-
-    return await catchDbException(async () => {
-      return await this.organizationsRepository.update(organizationId, updatableParams);
-    }, orgConstraints);
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      await catchDbException(async () => {
+        await manager.update(Organization, organizationId, updatableParams);
+      }, orgConstraints);
+      await this.usersService.validateLicense(manager);
+    });
   }
 
   async updateOrganizationConfigs(organizationId: string, params: any) {

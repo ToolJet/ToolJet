@@ -13,12 +13,12 @@ describe("Subscription key", () => {
                 VALUES (
                     '97a55d31-e26b-4060-9b44-06b03cdbb600',
                     '${Cypress.env("workspaceId")}',
-                    'trial',
+                    'enterprise',
                     '2025-12-13',
                     '',
                     '{
                         "expiry": "2025-12-13",
-                        "type": "trial",
+                        "type": "enterprise",
                         "workspaceId": "${Cypress.env("workspaceId")}",
                         "users": {
                           "total": 1000,

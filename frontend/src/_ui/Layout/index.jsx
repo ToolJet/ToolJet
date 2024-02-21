@@ -277,7 +277,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
         </aside>
       </div>
       <div style={{ paddingLeft: 48, paddingRight: 0 }} className="col">
-        <Header />
+        <Header featureAccess={featureAccess} />
         <div style={{ paddingTop: 64 }}>{children}</div>
       </div>
       <ConfirmDialog

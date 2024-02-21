@@ -5,6 +5,11 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _ from 'lodash';
 import { validateName } from '@/_helpers/utils';
 
+const APP_TYPE = {
+  WORKFLOW: 'workflow',
+  APP: 'app',
+};
+
 export function AppModal({
   closeModal,
   processApp,
@@ -86,7 +91,7 @@ export function AppModal({
           success = await processApp(trimmedAppName);
         }
         if (success === false) {
-          setErrorText('App name already exists');
+          setErrorText(`${appType == APP_TYPE.WORKFLOW ? 'Workflow' : 'App'} name already exists`);
           setInfoText('');
         } else {
           setErrorText('');
@@ -121,6 +126,8 @@ export function AppModal({
     (actionButton === 'Rename app' && (!isNameChanged || newAppName.trim().length === 0 || newAppName.length > 50)) || // For rename case
     (actionButton !== 'Rename app' && (newAppName.length > 50 || newAppName.trim().length === 0));
 
+  const appTypeName = appType == APP_TYPE.WORKFLOW ? 'Workflow' : 'App';
+
   return (
     <Modal
       show={show}
@@ -149,13 +156,13 @@ export function AppModal({
         <div className="row workspace-folder-modal mb-3">
           <div className="col modal-main tj-app-input">
             <label className="tj-input-label" data-cy="app-name-label">
-              {'App Name'}
+              {`${appTypeName} name`}
             </label>
             <input
               type="text"
               onChange={handleInputChange}
               className={`form-control ${errorText ? 'input-error-border' : ''}`}
-              placeholder={'Enter app name'}
+              placeholder={`Enter ${appTypeName.toLowerCase()} name`}
               value={newAppName}
               data-cy="app-name-input"
               maxLength={50}
@@ -196,10 +203,10 @@ export function AppModal({
                 }}
                 data-cy="app-name-info-label"
               >
-                App name must be unique and max 50 characters
+                {`${appTypeName} name must be unique and max 50 characters`}
               </small>
             )}
-            {orgGit?.is_enabled && appType != 'workflow' && (
+            {orgGit?.is_enabled && appType != APP_TYPE.WORKFLOW && (
               <div className="commit-changes mt-3">
                 <div>
                   <input
