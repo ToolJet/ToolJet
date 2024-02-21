@@ -344,7 +344,7 @@ export function Table({
   }
 
   function getExportFileName() {
-    return `${component?.name}_${format(new Date(), 'dd-MM-yyyy_HH:mm')}`;
+    return `${component?.name}_${format(new Date(), 'dd-MM-yyyy_HH-mm')}`;
   }
 
   function onPageIndexChanged(page) {
