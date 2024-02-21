@@ -105,10 +105,8 @@ export const verifyBasicData = (widgetName, data) => {
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).click({
     force: true,
   });
-  cy.wait(500);
-
   cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
-  cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
+  cy.get(`[data-cy="draggable-widget-textinput1"]`).should(
     "have.value",
     data.customMessage
   );

@@ -238,6 +238,7 @@ export const TextInput = function TextInput({
   const renderInput = () => (
     <>
       <div
+        data-cy={`label-${String(component.name).toLowerCase()}`}
         data-disabled={disable || loading}
         className={`text-input  d-flex  ${
           defaultAlignment === 'top' &&
@@ -295,7 +296,7 @@ export const TextInput = function TextInput({
           />
         )}
         <input
-          data-cy={`label-${String(component.name).toLowerCase()}`}
+          data-cy={dataCy}
           ref={textInputRef}
           className={`tj-text-input-widget ${
             !isValid && showValidationError ? 'is-invalid' : ''

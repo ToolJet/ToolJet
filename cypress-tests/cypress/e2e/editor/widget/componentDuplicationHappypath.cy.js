@@ -12,6 +12,7 @@ describe("Editor- component duplication", () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
+    cy.waitForAppLoad();
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
 
     data.appName = `${fake.companyName}-App`;
@@ -25,7 +26,9 @@ describe("Editor- component duplication", () => {
     data.boxShadowParam = fake.boxShadowParam;
     data.tooltipText = fake.randomSentence;
   });
-
+  afterEach(() => {
+    cy.apiDeleteApp(`${fake.companyName}-App`);
+  });
   it("should verify duplication using copy and paste", () => {
     addBasicData(data);
     cy.forceClickOnCanvas();

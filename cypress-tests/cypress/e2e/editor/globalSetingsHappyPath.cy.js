@@ -89,7 +89,8 @@ describe("Editor- Global Settings", () => {
     cy.get('[data-cy="modal-confirm-button"]').click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      "Application is on maintenance."
+      "Application is on maintenance.",
+      false
     );
     cy.forceClickOnCanvas();
     cy.wait(500);

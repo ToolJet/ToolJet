@@ -7,7 +7,7 @@ import { buttonText } from "Texts/button";
 import {
   verifyControlComponentAction,
   randomString,
-} from "Support/utils/textInput";
+} from "Support/utils/editor/textInput";
 import {
   openAccordion,
   verifyAndModifyParameter,
@@ -64,7 +64,7 @@ import { deleteDownloadsFolder } from "Support/utils/common";
 describe("RunJS", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.apiCreateApp(`${fake.companyName}-runjs-App`);
     cy.openApp();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");

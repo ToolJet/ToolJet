@@ -396,12 +396,12 @@ Cypress.Commands.add("verifyLabel", (labelName) => {
 
 Cypress.Commands.add("releaseApp", () => {
   if (Cypress.env("environment") !== "Community") {
-    cy.get(commonEeSelectors.promoteButton).click();
-    cy.get(commonEeSelectors.promoteButton).eq(1).click();
+    cy.get('[data-cy="promote-button"]').click();
+    cy.get('[data-cy="promote-button"]').eq(1).click();
     cy.waitForAppLoad();
     cy.wait(3000);
-    cy.get(commonEeSelectors.promoteButton).click();
-    cy.get(commonEeSelectors.promoteButton).eq(1).click();
+    cy.get('[data-cy="promote-button"]').click();
+    cy.get('[data-cy="promote-button"]').eq(1).click();
     cy.waitForAppLoad();
     cy.wait(3000);
   }
