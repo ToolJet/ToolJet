@@ -4,7 +4,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap } from '@codemirror/commands';
 import { keymap } from '@codemirror/view';
-import { completionKeymap, acceptCompletion } from '@codemirror/autocomplete';
+import { completionKeymap } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
@@ -207,6 +207,12 @@ const MultiLineCodeEditor = (props) => {
                 extensions={[
                   langExtention,
                   javascriptLanguage.data.of({
+                    autocomplete: overRideFunction,
+                  }),
+                  python().language.data.of({
+                    autocomplete: overRideFunction,
+                  }),
+                  sql().language.data.of({
                     autocomplete: overRideFunction,
                   }),
                   keymap.of([...customKeyMaps]),
