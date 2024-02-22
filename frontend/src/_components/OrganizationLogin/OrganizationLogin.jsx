@@ -35,23 +35,16 @@ class OrganizationLogin extends React.Component {
   };
 
   normalizeValue = (value) => {
-    // Convert null or undefined to an empty string, and trim if the value is a string
-    if (value === null || value === undefined) {
-      return '';
-    } else if (typeof value === 'string') {
-      return value.trim();
-    } else {
-      return value;
-    }
-  };  
+    return value === undefined || value === null ? '' : value.toString().trim();
+  };
 
-  checkForChanges() {
+  checkForChanges = () => {
     const { options, initialOptions } = this.state;
-    const hasChanges = Object.keys(options).some(key => 
-      this.normalizeValue(options[key]) !== this.normalizeValue(initialOptions[key])
+    const hasChanges = Object.keys(options).some(
+      (key) => this.normalizeValue(options[key]) !== this.normalizeValue(initialOptions[key])
     );
     this.setState({ hasChanges });
-  }   
+  };
 
   copyFunction = (input) => {
     let text = document.getElementById(input).innerHTML;
@@ -60,13 +53,13 @@ class OrganizationLogin extends React.Component {
 
   transformConfigToObject(config) {
     const result = [];
-    Object.keys(config).forEach(key => {
+    Object.keys(config).forEach((key) => {
       // Exclude the 'enable_sign_up' key or any other keys you wish to exclude
       if (key !== 'enable_sign_up') {
         result.push({
           sso: key,
           enabled: config[key].enabled,
-          configs: config[key].configs || {}
+          configs: config[key].configs || {},
         });
       }
     });
@@ -91,7 +84,8 @@ class OrganizationLogin extends React.Component {
       defaultSSO: organizationSettings?.inherit_s_s_o,
       instanceSSO: [...instanceSSO],
       isAnySSOEnabled:
-        ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) || (organizationSettings?.inherit_s_s_o && instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled)),
+        ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
+        (organizationSettings?.inherit_s_s_o && instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled)),
     });
   }
 
@@ -184,9 +178,12 @@ class OrganizationLogin extends React.Component {
 
   handleInputChange = (field, event) => {
     const newValue = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-    this.setState(prevState => ({
-      options: { ...prevState.options, [field]: newValue },
-    }), this.checkForChanges); // Check for changes after state update
+    this.setState(
+      (prevState) => ({
+        options: { ...prevState.options, [field]: newValue },
+      }),
+      this.checkForChanges
+    ); // Check for changes after state update
     if (field === 'passwordLoginEnabled' && !newValue) {
       this.setState({ showDisablingPasswordConfirmation: true });
     }
@@ -194,8 +191,15 @@ class OrganizationLogin extends React.Component {
 
   render() {
     const { t, darkMode } = this.props;
-    const { options, isSaving, showDisablingPasswordConfirmation, isAnySSOEnabled, ssoOptions, defaultSSO, instanceSSO } =
-      this.state;
+    const {
+      options,
+      isSaving,
+      showDisablingPasswordConfirmation,
+      isAnySSOEnabled,
+      ssoOptions,
+      defaultSSO,
+      instanceSSO,
+    } = this.state;
     const flexContainerStyle = {
       display: 'flex',
       flexDirection: 'row',
@@ -226,7 +230,7 @@ class OrganizationLogin extends React.Component {
                         className="form-control"
                         placeholder={t(`Enter allowed domains`)}
                         name="domain"
-                        value={options.domain}
+                        value={options.domain || ''}
                         onChange={(e) => this.handleInputChange('domain', e)}
                         data-cy="allowed-domains"
                       />
@@ -235,7 +239,7 @@ class OrganizationLogin extends React.Component {
                       <div data-cy="allowed-domain-helper-text">
                         {t(
                           'header.organization.menus.manageSSO.generalSettings.supportMultidomains',
-                          `Support multiple domain. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
+                          `Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
                         )}
                       </div>
                     </div>
