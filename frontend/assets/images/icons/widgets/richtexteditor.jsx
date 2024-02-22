@@ -10,14 +10,14 @@ const Richtexteditor = ({ fill = '#D7DBDF', width = 24, className = '', viewBox 
     className={className}
   >
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M2.88867 24C2.88867 22.6982 3.944 21.6428 5.24581 21.6428H44.5315C45.8333 21.6428 46.8887 22.6982 46.8887 24C46.8887 25.3018 45.8333 26.3571 44.5315 26.3571H5.24581C3.944 26.3571 2.88867 25.3018 2.88867 24Z"
       fill={fill}
     />
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M2.88867 24C2.88867 22.6982 3.944 21.6428 5.24581 21.6428H29.3421C30.6438 21.6428 31.6992 22.6982 31.6992 24C31.6992 25.3018 30.6438 26.3571 29.3421 26.3571H5.24581C3.944 26.3571 2.88867 25.3018 2.88867 24Z"
       fill="#3E63DD"
     />
