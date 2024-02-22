@@ -247,7 +247,6 @@ const Table = ({ collapseSidebar }) => {
   const handleKeyDown = (e) => {
     // Disables Cell navigation while error and update-inprogress
     if (cellClick.errorState || isCellUpdateInProgress) e.preventDefault();
-
     // Logic to edit value in a cell and simultaneously trigger edit menu
     if (
       cellClick.rowIndex !== null &&
@@ -366,7 +365,7 @@ const Table = ({ collapseSidebar }) => {
         if (cellBoundingRect.bottom > tableBoundingRect.bottom) {
           tooljetDbTableRef.current.scrollTo({
             top: tooljetDbTableRef.current.scrollTop + (cellBoundingRect.bottom - tableBoundingRect.bottom),
-            behavior: 'smooth',
+            behavior: 'instant',
           });
         }
 
@@ -374,7 +373,7 @@ const Table = ({ collapseSidebar }) => {
         if (cellBoundingRect.top < tableBoundingRect.top + 32) {
           tooljetDbTableRef.current.scrollTo({
             top: tooljetDbTableRef.current.scrollTop + (cellBoundingRect.top - (tableBoundingRect.top + 32)),
-            behavior: 'smooth',
+            behavior: 'instant',
           });
         }
 
@@ -382,7 +381,7 @@ const Table = ({ collapseSidebar }) => {
         if (cellBoundingRect.right > tableBoundingRect.right) {
           tooljetDbTableRef.current.scrollTo({
             left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.right - tableBoundingRect.right),
-            behavior: 'smooth',
+            behavior: 'instant',
           });
         }
 
@@ -390,7 +389,7 @@ const Table = ({ collapseSidebar }) => {
         if (cellBoundingRect.left < tableBoundingRect.left + 296) {
           tooljetDbTableRef.current.scrollTo({
             left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.left - (tableBoundingRect.left + 296)),
-            behavior: 'smooth',
+            behavior: 'instant',
           });
         }
       }
