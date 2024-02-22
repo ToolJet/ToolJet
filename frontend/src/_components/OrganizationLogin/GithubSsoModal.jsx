@@ -8,7 +8,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import WorkspaceSSOEnableModal from './WorkspaceSSOEnableModal';
 
-export function GithubSSOModal({ settings, onClose, changeStatus, onUpdateSSOSettings, isInstanceOptionEnabled }) {
+export function GithubSSOModal({ settings, onClose, onUpdateSSOSettings, isInstanceOptionEnabled }) {
   const [showModal, setShowModal] = useState(false);
   const [ssoSettings, setSettings] = useState(settings);
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -70,8 +70,8 @@ export function GithubSSOModal({ settings, onClose, changeStatus, onUpdateSSOSet
     setClientId(settings?.configs?.client_id || '');
     setClientSecret(settings?.configs?.client_secret || '');
     setHostName(settings?.configs?.host_name || '');
-    setHasChanges(false);
     setEnabled(settings?.enabled || false);
+    setHasChanges(false);
   };
 
   const copyFunction = (input) => {
@@ -81,15 +81,17 @@ export function GithubSSOModal({ settings, onClose, changeStatus, onUpdateSSOSet
 
   const saveSettings = () => {
     setSaving(true);
-    if (enabled != settings?.enabled){
-      changeStatus('git', enabled);
-    }
-    organizationService.editOrganizationConfigs({ type: 'git', configs: { clientId, clientSecret, hostName } }).then(
+    organizationService.editOrganizationConfigs({ type: 'git', configs: { clientId, clientSecret, hostName }, enabled: enabled }).then(
       (data) => {
         setSaving(false);
         data.id && setConfigId(data.id);
         onUpdateSSOSettings('git', {
-          id: data.id,
+          id: data?.id || configId,
+          configs: { client_id: clientId, client_secret: clientSecret, host_name: hostName },
+          enabled: enabled
+        });
+        setSettings({
+          id: data?.id || configId,
           configs: { client_id: clientId, client_secret: clientSecret, host_name: hostName },
         });
         toast.success('Saved Git SSO configurations', {

@@ -8,7 +8,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import WorkspaceSSOEnableModal from './WorkspaceSSOEnableModal';
 
-export function GoogleSSOModal({ settings, onClose, changeStatus, onUpdateSSOSettings, isInstanceOptionEnabled }) {
+export function GoogleSSOModal({ settings, onClose, onUpdateSSOSettings, isInstanceOptionEnabled }) {
   const [showModal, setShowModal] = useState(false);
   const [ssoSettings, setSettings] = useState(settings);
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -44,7 +44,6 @@ export function GoogleSSOModal({ settings, onClose, changeStatus, onUpdateSSOSet
   const checkChanges = () => {
     const hasClientIdChanged = clientId !== settings?.configs?.client_id;
     const hasEnabledChanged = enabled !== settings?.enabled;
-    console.log(hasClientIdChanged, hasEnabledChanged, 'see change');
     setHasChanges(hasClientIdChanged || hasEnabledChanged);
   };
 
@@ -61,14 +60,12 @@ export function GoogleSSOModal({ settings, onClose, changeStatus, onUpdateSSOSet
 
   const saveSettings = () => {
     setSaving(true);
-    if (enabled != settings?.enabled){
-      changeStatus('google', enabled);
-    }
-    organizationService.editOrganizationConfigs({ type: 'google', configs: { clientId } }).then(
+    organizationService.editOrganizationConfigs({ type: 'google', configs: { clientId }, enabled: enabled }).then(
       (data) => {
         setSaving(false);
         data.id && setConfigId(data.id);
-        onUpdateSSOSettings('google', { id: configId, configs: { client_id: clientId } });
+        onUpdateSSOSettings('google', {id: data?.id || configId, configs: {client_id: clientId}, enabled: enabled});
+        setSettings({id: data?.id || configId, configs: {client_id: clientId}, enabled: enabled});
         toast.success('Saved Google SSO configurations', {
           position: 'top-center',
         });

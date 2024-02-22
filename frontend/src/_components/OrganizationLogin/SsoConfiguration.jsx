@@ -45,18 +45,41 @@ class SSOConfiguration extends React.Component {
     return initialState;
   };
 
-  handleUpdateSSOSettings = (ssoType, newSettings) => {
-    this.setState((prevState) => {
-      const updatedSSOOptions = prevState.ssoOptions.map((option) => {
-        if (option.sso === ssoType) {
-          return { ...option, ...newSettings };
-        }
-        return option;
+  handleUpdateSSOSettings = async (ssoType, newSettings) => {
+    const isEnabledKey = `${ssoType}Enabled`;
+    const enabledStatus = this.state[isEnabledKey];
+    try {
+      if (newSettings?.enabled != enabledStatus){
+        await this.changeStatus(ssoType, enabledStatus);
+      }
+      this.setState((prevState) => {
+        const exists = prevState.ssoOptions.some(option => option.sso === ssoType);
+        let updatedSSOOptions;
+      if (exists) {
+        updatedSSOOptions = prevState.ssoOptions.map((option) => {
+          if (option.sso === ssoType) {
+            return { ...option, ...newSettings };
+          }
+          return option;
+        });
+      } else {
+        updatedSSOOptions = [...prevState.ssoOptions, { sso: ssoType, ...newSettings }];
+        console.log(newSettings, updatedSSOOptions, 'op');
+      }
+        this.props.onUpdateAnySSOEnabled(
+          updatedSSOOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) || (this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled)),
+        );
+        return {
+          ssoOptions: updatedSSOOptions,
+          [isEnabledKey]: newSettings?.enabled,
+        };
+      }, () => {
+        const enabledSSOCount = this.getCountOfEnabledSSO();
+        this.setState({ inheritedInstanceSSO: enabledSSOCount });
       });
-      return {
-        ssoOptions: updatedSSOOptions,
-      };
-    });
+    } catch (error) {
+      toast.error('Error while updating SSO configuration', { position: 'top-center' });
+    }
   };
 
   componentDidMount() {
@@ -323,7 +346,6 @@ class SSOConfiguration extends React.Component {
           <GoogleSSOModal
             settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
             onClose={() => this.setState({ showModal: false })}
-            changeStatus={this.handleToggleSSOOption}
             onUpdateSSOSettings={this.handleUpdateSSOSettings}
             isInstanceOptionEnabled={this.isInstanceOptionEnabled}
           />
@@ -332,7 +354,6 @@ class SSOConfiguration extends React.Component {
           <GithubSSOModal
             settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
             onClose={() => this.setState({ showModal: false })}
-            changeStatus={this.handleToggleSSOOption}
             onUpdateSSOSettings={this.handleUpdateSSOSettings}
             isInstanceOptionEnabled={this.isInstanceOptionEnabled}
           />
