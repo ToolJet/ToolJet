@@ -1,10 +1,6 @@
 name: Tooljet develop docker image build
 
 on:
-  push:
-    branches:
-      - develop
-
   workflow_dispatch:
     inputs:
       job-to-run:
