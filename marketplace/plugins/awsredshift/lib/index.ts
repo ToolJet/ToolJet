@@ -12,16 +12,9 @@ export default class Awsredshift implements QueryService {
     try {
       const input = {
         Sql: queryOptions.sql_query,
-        SecretArn: sourceOptions.secretARN,
         Database: sourceOptions.database,
         WithEvent: false,
         WorkgroupName: sourceOptions.workgroup_name,
-        // Parameters: [
-        //   {
-        //     name: '', // required
-        //     value: '', // required
-        //   },
-        // ],
       };
       const isSelectQuery = queryOptions.sql_query.trim().toLowerCase().startsWith('select');
       const client = await this.getConnection(sourceOptions);
@@ -39,7 +32,7 @@ export default class Awsredshift implements QueryService {
           if (status === 'FAILED' || status === 'ABORTED') {
             throw new Error(`Query execution failed with status: ${status}`);
           }
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 50));
         }
         const getResultCommand = new GetStatementResultCommand({ Id: executeResult.Id });
         const results = await client.send(getResultCommand);
@@ -77,11 +70,12 @@ export default class Awsredshift implements QueryService {
   }
 
   async getConnection(sourceOptions: SourceOptions): Promise<RedshiftDataClient> {
+    const region = sourceOptions.region;
     const credentials = {
       accessKeyId: sourceOptions.access_key,
       secretAccessKey: sourceOptions.secret_key,
     };
-    const client = new RedshiftDataClient({ region: sourceOptions.region, credentials });
+    const client = new RedshiftDataClient({ region, credentials });
     return client;
   }
 }

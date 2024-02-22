@@ -41,8 +41,8 @@
     "timestamp": "Thu, 08 Jun 2023 09:50:05 GMT"
   },
   {
-    "name": "awsredshift",
-    "description": "database plugin from awsredshift",
+    "name": "AWS Redshift",
+    "description": "Plugin for Amazon Redshift data warehouse",
     "version": "1.0.0",
     "id": "awsredshift",
     "author": "Tooljet",
