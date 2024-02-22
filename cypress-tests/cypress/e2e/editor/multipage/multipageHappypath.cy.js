@@ -8,7 +8,7 @@ import { buttonText } from "Texts/button";
 import {
   verifyControlComponentAction,
   randomString,
-} from "Support/utils/textInput";
+} from "Support/utils/editor/textInput";
 import {
   openAccordion,
   verifyAndModifyParameter,

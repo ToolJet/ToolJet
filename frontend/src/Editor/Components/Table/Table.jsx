@@ -453,7 +453,7 @@ export function Table({
         ])
       ),
     }));
-  }, [JSON.stringify([transformations, currentState])]);
+  }, [JSON.stringify([transformations, currentState, component.definition.properties.data.value])]);
 
   useEffect(() => {
     setExposedVariables({
