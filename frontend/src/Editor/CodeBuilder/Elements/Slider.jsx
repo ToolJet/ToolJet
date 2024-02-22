@@ -21,15 +21,12 @@ function Slider1({ value, onChange, component }) {
     setSliderValue(value);
   };
 
-  // Throttle function to handle input changes
+  // debounce function to handle input changes
   const onInputChange = (e) => {
     let inputValue = parseInt(e.target.value, 10) || 0;
     inputValue = Math.min(inputValue, 100);
     setSliderValue(inputValue);
     debouncedOnChange(inputValue);
-  };
-  const onValueCommit = (value) => {
-    onChange(value);
   };
 
   return (
@@ -51,7 +48,7 @@ function Slider1({ value, onChange, component }) {
           value={[sliderValue]}
           onValueChange={handleSliderChange}
           onValueCommit={(value) => {
-            onValueCommit(value);
+            onChange(value);
           }}
           disabled={component.component.definition.styles.auto.value}
         >
