@@ -98,6 +98,7 @@ describe("List view widget", () => {
     )
       .realHover()
       .realClick();
+    openEditorSidebar(commonWidgetText.text1);
     cy.get(
       '[data-cy="textcomponenttextinput-input-field"] '
     ).clearAndTypeOnCodeMirror(codeMirrorInputLabel("listItem.name"));
