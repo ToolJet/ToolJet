@@ -100,7 +100,7 @@ class SSOConfiguration extends React.Component {
     try {
       await organizationService.editOrganization({ inheritSSO: !this.state.defaultSSO });
       this.props.onUpdateAnySSOEnabled(
-        this.state.ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) || !this.state.defaultSSO
+        this.state.ssoOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) || (!this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled)),
       );
       this.setState({
         defaultSSO: !this.state.defaultSSO,
@@ -125,7 +125,7 @@ class SSOConfiguration extends React.Component {
           return option;
         });
         this.props.onUpdateAnySSOEnabled(
-          updatedSSOOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) || this.state.defaultSSO
+          updatedSSOOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) || (this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled)),
         );
         return {
           ssoOptions: updatedSSOOptions,
@@ -185,7 +185,7 @@ class SSOConfiguration extends React.Component {
 
   isInstanceOptionEnabled = (key) => {
     const option = this.state.instanceSSO.find((option) => option.sso === key);
-    return option ? option.enabled : false;
+    return option && this.state.defaultSSO ? option.enabled : false;
   };
 
   getCountOfEnabledSSO = () => {

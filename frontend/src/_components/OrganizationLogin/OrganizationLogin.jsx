@@ -89,9 +89,9 @@ class OrganizationLogin extends React.Component {
       initialOptions: { ...initialOptions },
       ssoOptions: [...ssoConfigs],
       defaultSSO: organizationSettings?.inherit_s_s_o,
-      isAnySSOEnabled:
-        ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) || organizationSettings?.inherit_s_s_o,
       instanceSSO: [...instanceSSO],
+      isAnySSOEnabled:
+        ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) || (organizationSettings?.inherit_s_s_o && instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled)),
     });
   }
 
@@ -187,6 +187,9 @@ class OrganizationLogin extends React.Component {
     this.setState(prevState => ({
       options: { ...prevState.options, [field]: newValue },
     }), this.checkForChanges); // Check for changes after state update
+    if (field === 'passwordLoginEnabled' && !newValue) {
+      this.setState({ showDisablingPasswordConfirmation: true });
+    }
   };
 
   render() {
