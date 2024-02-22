@@ -229,6 +229,11 @@ export class OrganizationLicenseService {
           throw new ConflictException('Trial license already exists for this organization');
         }
 
+        const { editor, viewer } = await this.fetchTotalViewerEditorCount(manager, organizationId);
+
+        const editorCount = (editor || 5) > 5 ? editor : 5;
+        const viewerCount = (viewer || 10) > 10 ? viewer : 10;
+
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + 14);
         const body = {
@@ -236,9 +241,9 @@ export class OrganizationLicenseService {
           type: LICENSE_TYPE.TRIAL,
           workspaceId: organizationId,
           users: {
-            total: 15,
-            editor: 5,
-            viewer: 10,
+            total: editorCount + viewerCount,
+            editor: editorCount,
+            viewer: viewerCount,
             superadmin: 1,
           },
           database: {

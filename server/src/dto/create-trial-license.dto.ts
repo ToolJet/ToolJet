@@ -51,4 +51,8 @@ export class CreateTrialLicenseDto {
   @IsString()
   @MaxLength(5)
   version: string;
+
+  @IsOptional()
+  @IsObject()
+  user: { editor?: number; viewer?: number };
 }
