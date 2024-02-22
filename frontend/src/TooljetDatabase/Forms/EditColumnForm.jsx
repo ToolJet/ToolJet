@@ -201,9 +201,6 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
             onChange={(e) => setDefaultValue(e.target.value)}
             disabled={dataType === 'serial'}
           />
-          {/* {isNotNull === true && (defaultValue?.length <= 0 || defaultValue === null) ? (
-            <span className="form-error-message">Default value cannot be empty when NOT NULL constraint is added</span>
-          ) : null} */}
         </div>
         <div className="row mb-3">
           <div className="col-1">
