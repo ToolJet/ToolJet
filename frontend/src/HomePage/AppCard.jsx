@@ -124,7 +124,7 @@ export default function AppCard({
                 </div>
               </div>
             </div>
-            <div visible={focused}>
+            <div visible={focused ? true : undefined}>
               {(canCreateApp(app) || canDeleteApp(app) || canUpdateApp(app)) && (
                 <AppMenu
                   onMenuOpen={onMenuToggle}
