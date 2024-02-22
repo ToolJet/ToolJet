@@ -190,7 +190,7 @@ describe("Editor- CSA", () => {
     cy.dragAndDropWidget("Button", 500, 200);
     selectEvent("On click", "Control Component");
     selectCSA("icon1", "Set Visibility");
-    cy.get('[data-cy="Value-toggle-button"]')
+    cy.get('[data-cy="event-Value-toggle-button"]')
       .should("be.visible")
       .and("be.checked");
 
@@ -198,8 +198,10 @@ describe("Editor- CSA", () => {
     cy.dragAndDropWidget("Button", 500, 300);
     selectEvent("On click", "Control Component");
     selectCSA("icon1", "Set Visibility");
-    cy.get('[data-cy="Value-fx-button"]').click();
-    cy.get('[data-cy="Value-input-field"]').clearAndTypeOnCodeMirror("{{false");
+    cy.get('[data-cy="event-Value-fx-button"]').click();
+    cy.get('[data-cy="event-Value-input-field"]').clearAndTypeOnCodeMirror(
+      "{{false"
+    );
     // cy.get('[data-cy="Value-toggle-button"]')
     //   .should("be.visible")
     //   .and("not.be.checked");

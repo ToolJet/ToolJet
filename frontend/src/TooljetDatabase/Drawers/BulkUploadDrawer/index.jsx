@@ -61,7 +61,7 @@ function BulkUploadDrawer({
 
   return (
     <>
-      <button
+      {/* <button
         onClick={() => setIsBulkUploadDrawerOpen(!isBulkUploadDrawerOpen)}
         className={`ghost-black-operation ${isBulkUploadDrawerOpen ? 'open' : ''}`}
         data-cy={`bulk-upload-data-button`}
@@ -70,7 +70,7 @@ function BulkUploadDrawer({
         <span className=" tj-text-xsm font-weight-500" style={{ marginLeft: '6px' }} data-cy="bulk-upload-button-text">
           Bulk upload data
         </span>
-      </button>
+      </button> */}
 
       <Drawer
         isOpen={isBulkUploadDrawerOpen}

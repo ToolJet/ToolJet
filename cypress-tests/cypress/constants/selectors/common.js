@@ -61,7 +61,7 @@ export const commonSelectors = {
   addWorkspaceButton: '[data-cy="add-new-workspace-link"]',
   createWorkspaceButton: '[data-cy="create-workspace-button"]',
   workspaceLoginUrl: "[data-cy=workspace-login-url]",
-  workspaceName: '[data-cy="workspace-name"]',
+  workspaceName: '[data-cy="workspace-name"]:eq(0)',
   signInHeader: '[data-cy="sign-in-header"]',
   signInSubHeader: '[data-cy="sign-in-sub-header"]',
   createAnAccountLink: '[data-cy="create-an-account-link"]',
@@ -80,7 +80,7 @@ export const commonSelectors = {
   acceptInviteButton: '[data-cy="accept-invite-button"]',
   databaseIcon: '[data-cy="icon-database"]',
   profileSettings: '[data-cy="profile-settings"]',
-  workspaceSettingsIcon: '[data-cy="icon-workspace-settings"]',
+  workspaceSettings: '[data-cy="workspace-settings"]',
   manageUsersOption: '[data-cy="users-list-item"]',
   manageGroupsOption: '[data-cy="groups-list-item"]',
   manageSSOOption: '[data-cy="sso-list-item"]',
@@ -244,6 +244,19 @@ export const commonSelectors = {
   importAppButton: '[data-cy="import-app"]',
   chooseFromTemplateButton: '[data-cy="choose-from-template-button"]',
   CreateAppFromTemplateButton: '[data-cy="create-new-app-from-template-title"]',
+  settingsIcon: '[data-cy="settings-icon"]',
+  marketplaceOption: '[data-cy="marketplace-option"]',
+  backToAppOption: '[data-cy="back-to-app-option"]',
+  databaseOption: '[data-cy="database-option"]',
+  datasourceOption: '[data-cy="data-source-option"]',
+  workspaceConstantsOption: '[data-cy="workspace-constants-option"]',
+  label: (labelName) => {
+    return `[data-cy="${labelName
+      .replace(/\s+|(?<=[\w-])\s+(?=\w)|[^\w\s]/g, "-")
+      .toLowerCase()}-label"]`;
+  },
+  defaultModalTitle: '[data-cy="modal-title"]',
+  workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
 };
 
 export const commonWidgetSelector = {
@@ -254,7 +267,9 @@ export const commonWidgetSelector = {
   draggableWidget: (widgetName) => {
     return `[data-cy=draggable-widget-${cyParamName(widgetName)}]`;
   },
-
+  textInputInputField: (widgetName) => {
+    return `[data-cy=input-${cyParamName(widgetName)}]`;
+  },
   parameterLabel: (paramName) => {
     return `[data-cy="${cyParamName(paramName)}-widget-parameter-label"]`;
   },

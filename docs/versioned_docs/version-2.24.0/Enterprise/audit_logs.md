@@ -96,6 +96,8 @@ The dropdown will display all the apps associated with your account. Select an a
 
 The file will contain all the data from audit logs. The log file can be created by specifying the path in the [environment variables](/docs/setup/env-vars). The log file is rotated on a daily basis and is updated dynamically every time a new audit log is generated.
 
+Learn more about **setting up the log file generation** [here](/docs/2.24.0/how-to/setup-rsyslog).
+
 #### Log Rotation
 
 The log file is configured to rotate on a daily basis. This means that a new log file will be created every day, ensuring efficient management and organization of audit data.

@@ -215,17 +215,15 @@ export const PageHandler = ({
 
 export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode }) => {
   const handleAddingNewPage = (pageName) => {
-    if (pageName.trim().length === 0 ) {
+    if (pageName.trim().length === 0) {
       toast('Page name should have at least 1 character', {
         icon: '⚠️',
       });
-    }
-    else if(pageName.trim().length > 50){
+    } else if (pageName.trim().length > 50) {
       toast('Page name cannot exceed 50 characters', {
         icon: '⚠️',
       });
-    }
-    else {
+    } else {
       addNewPage({ name: pageName, handle: _.kebabCase(pageName.toLowerCase()) });
     }
     setNewPageBeingCreated(false);
