@@ -68,9 +68,7 @@ export const PrivateRoute = ({ children }) => {
     setUserValidationStatus(true);
     /* When route changes (not hard reload). will validate the access */
     validateRoutes(session?.group_permissions, () => {
-      if (session.load_app) {
-        setUserValidationStatus(false);
-      }
+      setUserValidationStatus(false);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, session]);
