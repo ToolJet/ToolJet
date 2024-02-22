@@ -210,10 +210,10 @@ export const generateInviteURL = (
   }${source ? `${organizationId ? '&' : '?'}source=${source}` : ''}`;
 };
 
-export const generateOrgInviteURL = (organizationToken: string, organizationId?: string) => {
+export const generateOrgInviteURL = (organizationToken: string, organizationId?: string, fullUrl = true) => {
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-  return `${host}${subpath ? subpath : '/'}organization-invitations/${organizationToken}${
+  return `${fullUrl ? `${host}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
     organizationId ? `?oid=${organizationId}` : ''
   }`;
 };
@@ -273,4 +273,30 @@ export const getMaxCopyNumber = (existNameList) => {
   // Creating the new name with maxNumber + 1
   const maxNumber = Math.max(...numbers, 0);
   return maxNumber + 1;
+};
+
+export const fullName = (firstName: string, lastName: string) => `${firstName || ''}${lastName ? ` ${lastName}` : ''}`;
+
+export const isValidDomain = (email: string, restrictedDomain: string): boolean => {
+  if (!email) {
+    return false;
+  }
+  const domain = email.substring(email.lastIndexOf('@') + 1);
+
+  if (!restrictedDomain) {
+    return true;
+  }
+  if (!domain) {
+    return false;
+  }
+  if (
+    !restrictedDomain
+      .split(',')
+      .map((e) => e && e.trim())
+      .filter((e) => !!e)
+      .includes(domain)
+  ) {
+    return false;
+  }
+  return true;
 };

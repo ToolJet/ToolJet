@@ -4,7 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace } from '@/_helpers/authorizeWorkspace';
 import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
-import { PrivateRoute, AdminRoute } from '@/_components';
+import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, OrganizationInviteRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
@@ -31,6 +31,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
+import { AuthRoute } from '@/Routes/AuthRoute';
 import { useAppDataStore } from '@/_stores/appDataStore';
 
 const AppWrapper = (props) => {
@@ -149,36 +150,68 @@ class AppComponent extends React.Component {
           )}
           <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
             <Routes>
-              <Route path="/login/:organizationId" exact element={<LoginPage />} />
-              <Route path="/login" exact element={<LoginPage />} />
+              <Route
+                path="/login/:organizationId"
+                exact
+                element={
+                  <AuthRoute {...this.props}>
+                    <LoginPage {...this.props} />
+                  </AuthRoute>
+                }
+              />
+              <Route
+                path="/login"
+                exact
+                element={
+                  <AuthRoute {...this.props}>
+                    <LoginPage {...this.props} />
+                  </AuthRoute>
+                }
+              />
               <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
-              <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
-              <Route path="/sso/:origin" exact element={<Oauth />} />
-              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
+              <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
+              <Route
+                path="/signup/:organizationId"
+                exact
+                element={
+                  <AuthRoute {...this.props}>
+                    <SignupPage {...this.props} />
+                  </AuthRoute>
+                }
+              />
+              <Route
+                path="/signup"
+                exact
+                element={
+                  <AuthRoute {...this.props}>
+                    <SignupPage {...this.props} />
+                  </AuthRoute>
+                }
+              />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
               <Route
                 path="/invitations/:token/workspaces/:organizationToken"
-                element={<VerificationSuccessInfoScreen />}
+                element={<OrganizationInviteRoute {...this.props} />}
               />
-              <Route path="/confirm" element={<VerificationSuccessInfoScreen />} />
               <Route
                 path="/organization-invitations/:token"
-                element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
-              />
-              <Route
-                path="/confirm-invite"
-                element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
+                element={
+                  <OrganizationInviteRoute {...this.props} isOrgazanizationOnlyInvite={true}>
+                    <OrganizationInvitationPage {...this.props} darkMode={darkMode} />
+                  </OrganizationInviteRoute>
+                }
               />
               <Route
                 exact
                 path="/:workspaceId/apps/:slug/:pageHandle?/*"
                 element={
-                  <PrivateRoute>
+                  <AppsRoute componentType="editor">
                     <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
+                  </AppsRoute>
                 }
               />
               <Route
@@ -194,18 +227,18 @@ class AppComponent extends React.Component {
                 exact
                 path="/applications/:slug/:pageHandle?"
                 element={
-                  <PrivateRoute>
+                  <AppsRoute componentType="viewer">
                     <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
+                  </AppsRoute>
                 }
               />
               <Route
                 exact
                 path="/applications/:slug/versions/:versionId/:pageHandle?"
                 element={
-                  <PrivateRoute>
+                  <AppsRoute componentType="viewer">
                     <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
+                  </AppsRoute>
                 }
               />
               <Route
@@ -277,9 +310,9 @@ class AppComponent extends React.Component {
                 exact
                 path="/switch-workspace"
                 element={
-                  <PrivateRoute>
+                  <SwitchWorkspaceRoute>
                     <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
+                  </SwitchWorkspaceRoute>
                 }
               />
               <Route

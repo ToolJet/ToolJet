@@ -88,16 +88,15 @@ export class EmailService {
           ${
             organizationInvitationToken && sender && organizationName
               ? `<span>
-              ${sender} has invited you to use ToolJet workspace: ${organizationName}.
+              ${sender} has invited you to join ToolJet workspace-${organizationName}.
+              \n
             </span>`
               : ''
           }
           <span>
-            Please use the link below to set up your account and get started.
+            Click <a href="${inviteUrl}">here</a> to get started!
+            \n
           </span>
-          <br>
-          <a href="${inviteUrl}">${inviteUrl}</a>
-          <br>
           <p>
             Welcome aboard,<br>
             ToolJet Team
@@ -118,6 +117,10 @@ export class EmailService {
   ) {
     const subject = 'Welcome to ToolJet';
     const inviteUrl = generateOrgInviteURL(invitationtoken);
+    const content = sender
+      ? `${sender} has invited you to use ToolJet workspace: ${organizationName}. Use the link below to set up your account and get started.`
+      : 'Please use the link below to set up your account and get started.';
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -128,7 +131,7 @@ export class EmailService {
           <p>Hi ${name || ''},</p>
           <br>
           <span>
-          ${sender} has invited you to use ToolJet workspace: ${organizationName}. Use the link below to set up your account and get started.
+          ${content}
           </span>
           <br>
           <a href="${inviteUrl}">${inviteUrl}</a>
