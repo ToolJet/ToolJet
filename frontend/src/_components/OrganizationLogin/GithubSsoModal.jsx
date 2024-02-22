@@ -28,32 +28,42 @@ export function GithubSSOModal({ settings, onClose, changeStatus, onUpdateSSOSet
     setHostName(settings?.configs?.host_name || '');
     setClientSecret(settings?.configs?.client_secret || '');
     setShowModal(true);
-
-    setHasChanges(false);
   }, [settings]);
+
+  useEffect(() => {
+    checkChanges();
+  }, [clientId, enabled, hostName, clientSecret]);
 
   const handleClientIdChange = (newClientId) => {
     setClientId(newClientId);
     const changesMade = newClientId !== settings?.configs?.client_id;
-    setHasChanges(changesMade);
+    checkChanges();
   };
 
   const handleHostNameChange = (newHostName) => {
     setHostName(newHostName);
     const changesMade = newHostName !== settings?.configs?.host_name;
-    setHasChanges(changesMade);
+    checkChanges();
   };
 
   const handleClientSecretChange = (newClientSecret) => {
     setClientSecret(newClientSecret);
     const changesMade = newClientSecret !== settings?.configs?.client_secret;
-    setHasChanges(changesMade);
+    checkChanges();
   };
 
   const onToggleChange = () => {
     const newEnabledStatus = !enabled;
     setEnabled(newEnabledStatus);
-    setHasChanges(true);
+    checkChanges();
+  };
+
+  const checkChanges = () => {
+    const hasClientIdChanged = clientId !== settings?.configs?.client_id;
+    const hasEnabledChanged = enabled !== settings?.enabled;
+    const hasHostNameChanged = hostName !== settings?.configs?.host_name;
+    const hasClientSecretChanged = clientSecret != settings?.configs?.client_secret;
+    setHasChanges(hasClientIdChanged || hasEnabledChanged || hasHostNameChanged || hasClientSecretChanged);
   };
 
   const reset = () => {
@@ -184,6 +194,7 @@ export function GithubSSOModal({ settings, onClose, changeStatus, onUpdateSSOSet
           size="lg"
           closeButton={false}
         >
+          {showEnablingWorkspaceSSOModal && <div className="overlay-style"></div>}
           {
             <div className="sso-card-wrapper">
               <div className="card-body">

@@ -21,18 +21,37 @@ class OrganizationLogin extends React.Component {
       isAnySSOEnabled: false,
       ssoOptions: [],
       defaultSSO: false,
-      instanceSSO: {},
+      instanceSSO: [],
     };
     this.copyFunction = this.copyFunction.bind(this);
   }
 
   async componentDidMount() {
-    await this.setInstanceLoginConfigs();
+    await this.setLoginConfigs();
   }
 
   reset = () => {
     this.setState({ options: { ...this.state.initialOptions }, hasChanges: false });
   };
+
+  normalizeValue = (value) => {
+    // Convert null or undefined to an empty string, and trim if the value is a string
+    if (value === null || value === undefined) {
+      return '';
+    } else if (typeof value === 'string') {
+      return value.trim();
+    } else {
+      return value;
+    }
+  };  
+
+  checkForChanges() {
+    const { options, initialOptions } = this.state;
+    const hasChanges = Object.keys(options).some(key => 
+      this.normalizeValue(options[key]) !== this.normalizeValue(initialOptions[key])
+    );
+    this.setState({ hasChanges });
+  }   
 
   copyFunction = (input) => {
     let text = document.getElementById(input).innerHTML;
@@ -54,7 +73,7 @@ class OrganizationLogin extends React.Component {
     return result;
   }
 
-  async setInstanceLoginConfigs(passwordLogin) {
+  async setLoginConfigs(passwordLogin) {
     const settings = await this.fetchSSOSettings();
     const instanceSSO = this.transformConfigToObject(settings?.instance_configs);
     const organizationSettings = settings?.organization_details;
@@ -164,23 +183,10 @@ class OrganizationLogin extends React.Component {
   };
 
   handleInputChange = (field, event) => {
-    const newValue = event.target.value;
-
-    this.setState((prevState) => ({
+    const newValue = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+    this.setState(prevState => ({
       options: { ...prevState.options, [field]: newValue },
-      hasChanges: true,
-    }));
-  };
-
-  handleCheckboxChange = (field) => {
-    const newValue = !this.state.options[field];
-    this.setState((prevState) => ({
-      options: { ...prevState.options, [field]: newValue },
-      hasChanges: true,
-    }));
-    if (field === 'passwordLoginEnabled' && !newValue) {
-      this.setState({ showDisablingPasswordConfirmation: true });
-    }
+    }), this.checkForChanges); // Check for changes after state update
   };
 
   render() {
@@ -259,7 +265,7 @@ class OrganizationLogin extends React.Component {
                         <input
                           className="form-check-input"
                           type="checkbox"
-                          onChange={() => this.handleCheckboxChange('enableSignUp')}
+                          onChange={(e) => this.handleInputChange('enableSignUp', e)}
                           checked={options?.enableSignUp === true}
                           data-cy="enable-sign-up-toggle"
                         />
@@ -284,7 +290,7 @@ class OrganizationLogin extends React.Component {
                             <input
                               className="form-check-input"
                               type="checkbox"
-                              onChange={() => this.handleCheckboxChange('passwordLoginEnabled')}
+                              onChange={(e) => this.handleInputChange('passwordLoginEnabled', e)}
                               data-cy="password-enable-toggle"
                               checked={options?.passwordLoginEnabled === true}
                               disabled={!isAnySSOEnabled}

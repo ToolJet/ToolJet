@@ -33,12 +33,12 @@
 
   .sso-option:active {
     background-color: #ddd;
-}
+  }
 
   .sso-option.clicked,
   .sso-option.clicked:hover {
     background-color: #ddd;
-}
+  }
   
   .sso-option-label {
     font-weight: 400;
@@ -157,3 +157,14 @@
     color: #6c757d !important;
     cursor: not-allowed;
   }
+  .overlay-style {
+    position: fixed; /* Cover the whole screen */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.75); /* Semi-transparent */
+    z-index: 1050; /* Adjust based on your modal z-index values */
+}
+
+  

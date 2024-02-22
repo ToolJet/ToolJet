@@ -24,20 +24,28 @@ export function GoogleSSOModal({ settings, onClose, changeStatus, onUpdateSSOSet
     setEnabled(settings?.enabled || false);
     setClientId(settings?.configs?.client_id || '');
     setShowModal(true);
-
-    setHasChanges(false);
   }, [settings]);
+
+  useEffect(() => {
+    checkChanges();
+  }, [clientId, enabled]);
 
   const handleClientIdChange = (newClientId) => {
     setClientId(newClientId);
-    const changesMade = newClientId !== settings?.configs?.client_id;
-    setHasChanges(changesMade);
+    checkChanges();
   };
 
   const onToggleChange = () => {
     const newEnabledStatus = !enabled;
     setEnabled(newEnabledStatus);
-    setHasChanges(true);
+    checkChanges();
+  };
+
+  const checkChanges = () => {
+    const hasClientIdChanged = clientId !== settings?.configs?.client_id;
+    const hasEnabledChanged = enabled !== settings?.enabled;
+    console.log(hasClientIdChanged, hasEnabledChanged, 'see change');
+    setHasChanges(hasClientIdChanged || hasEnabledChanged);
   };
 
   const reset = () => {
@@ -76,9 +84,9 @@ export function GoogleSSOModal({ settings, onClose, changeStatus, onUpdateSSOSet
   };
 
   const initiateSave = () => {
-    if (enabled != settings?.enabled && enabled === true && isInstanceOptionEnabled('google')){ (
+    if (enabled != settings?.enabled && enabled === true && isInstanceOptionEnabled('google')) { 
       setShowEnablingWorkspaceSSOModal(true)
-    )} else {
+    } else {
       saveSettings();
     }
   }
@@ -163,6 +171,7 @@ export function GoogleSSOModal({ settings, onClose, changeStatus, onUpdateSSOSet
           size="lg"
           closeButton={false}
         >
+          {showEnablingWorkspaceSSOModal && <div className="overlay-style"></div>}
           {
             <div className="sso-card-wrapper">
               <div className="card-body">
