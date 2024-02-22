@@ -194,8 +194,8 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               <div className="icon-container">
                 <svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
+                    fillRule="evenodd"
+                    clipRule="evenodd"
                     d="M14.256 0.244078C14.5814 0.569515 14.5814 1.09715 14.256 1.42259L5.92263 9.75592C5.59719 10.0814 5.06956 10.0814 4.74412 9.75592L0.577452 5.58926C0.252015 5.26382 0.252015 4.73618 0.577452 4.41074C0.902889 4.08531 1.43053 4.08531 1.75596 4.41074L5.33337 7.98816L13.0775 0.244078C13.4029 -0.0813592 13.9305 -0.0813592 14.256 0.244078Z"
                     fill="#46A758"
                   />
@@ -249,8 +249,8 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
+                  fillRule="evenodd"
+                  clipRule="evenodd"
                   d="M6 0.666992C6.36819 0.666992 6.66667 0.965469 6.66667 1.33366V5.33366H10.6667C11.0349 5.33366 11.3333 5.63214 11.3333 6.00033C11.3333 6.36852 11.0349 6.66699 10.6667 6.66699H6.66667V10.667C6.66667 11.0352 6.36819 11.3337 6 11.3337C5.63181 11.3337 5.33333 11.0352 5.33333 10.667V6.66699H1.33333C0.965145 6.66699 0.666668 6.36852 0.666668 6.00033C0.666668 5.63214 0.965145 5.33366 1.33333 5.33366H5.33333V1.33366C5.33333 0.965469 5.63181 0.666992 6 0.666992Z"
                   fill="#FDFDFE"
                 />
