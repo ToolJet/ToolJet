@@ -1196,6 +1196,11 @@ $border-radius: 4px;
   .transformation-editor {
     margin-top: 28px;
 
+    .transformation-container {
+      min-width: 470px !important;
+      width: 100% !important;
+    }
+
     &>div.rounded-3 {
       padding: 0 24px !important;
     }
