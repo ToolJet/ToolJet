@@ -48,14 +48,14 @@ import {
   redirectToSwitchOrArchivedAppPage,
 } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
-import MobileHeader from './Viewer/MobileHeader';
 import DesktopHeader from './Viewer/DesktopHeader';
+import MobileHeader from './Viewer/MobileHeader';
+import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
 import './Viewer/viewer.scss';
 import TooljetBanner from './Viewer/TooljetBanner';
+import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -777,6 +777,7 @@ class ViewerComponent extends React.Component {
                 setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
                 showViewerNavigation={appDefinition?.showViewerNavigation}
                 handleAppEnvironmentChanged={this.handleAppEnvironmentChanged}
+                organizationId={organizationId}
               />
             )}
             {/* Render following mobile header only when its in preview mode and not in launched app */}
@@ -792,6 +793,7 @@ class ViewerComponent extends React.Component {
                 setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
                 showViewerNavigation={appDefinition?.showViewerNavigation}
                 handleAppEnvironmentChanged={this.handleAppEnvironmentChanged}
+                organizationId={organizationId}
               />
             )}
             <div className="sub-section">
@@ -846,9 +848,9 @@ class ViewerComponent extends React.Component {
                             setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
                             showViewerNavigation={appDefinition?.showViewerNavigation}
                             handleAppEnvironmentChanged={this.handleAppEnvironmentChanged}
+                            organizationId={organizationId}
                           />
                         )}
-
                         {defaultComponentStateComputed && (
                           <>
                             {isLoading ? (
@@ -901,6 +903,7 @@ class ViewerComponent extends React.Component {
     }
   }
 }
+
 const withStore = (Component) => (props) => {
   const currentState = useCurrentStateStore();
   const { currentLayout, queryConfirmationList } = useEditorStore(

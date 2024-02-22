@@ -34,7 +34,6 @@ export const AppVersionsManager = function ({
     }),
     shallow
   );
-
   const { currentLayout } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
@@ -92,7 +91,7 @@ export const AppVersionsManager = function ({
         toast.error(error);
         setGetAppVersionStatus('failure');
       });
-  }, [currentEnvironment, appId, editingVersion.id]);
+  }, [currentEnvironment, appId, editingVersion?.id]);
 
   useEffect(() => {
     if (currentEnvironment && appId && editingVersion) {
