@@ -47,7 +47,7 @@ export const CustomComponent = function CustomComponent({
   });
 
   items.push({
-    title: 'Layout',
+    title: 'Devices',
     isOpen: true,
     children: (
       <>
