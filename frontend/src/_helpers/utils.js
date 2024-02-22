@@ -901,7 +901,8 @@ export const validateName = (
   showError = false,
   allowSpecialChars = true,
   allowSpaces = true,
-  checkReservedWords = false
+  checkReservedWords = false,
+  allowAllCases = false
 ) => {
   const newName = name;
   let errorMsg = '';
@@ -919,8 +920,9 @@ export const validateName = (
 
   if (newName) {
     //check for alphanumeric
-    if (!allowSpecialChars && newName.match(/^[a-z0-9 -]+$/) === null) {
-      if (/[A-Z]/.test(newName)) {
+    const regex = allowAllCases ? /^[a-zA-Z0-9 -]+$/ : /^[a-z0-9 -]+$/;
+    if (!allowSpecialChars && newName.match(regex) === null) {
+      if (/[A-Z]/.test(newName) && !allowAllCases) {
         errorMsg = 'Only lowercase letters are accepted.';
       } else {
         errorMsg = `Special characters are not accepted.`;
