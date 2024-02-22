@@ -277,7 +277,6 @@ export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDe
       } ${!hasPermissions ? 'disabled' : ''}`}
     >
       {selectedQuery?.data_source_id && selectedDataSource !== null ? renderChangeDataSource() : null}
-
       {selectedDataSource === null || !selectedQuery ? renderDataSourcesList() : renderQueryElement()}
       {selectedDataSource !== null ? renderQueryOptions() : null}
     </div>

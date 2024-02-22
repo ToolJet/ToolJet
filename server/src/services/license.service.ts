@@ -233,7 +233,11 @@ export class LicenseService {
   }
 
   async generateTrialLicense(createDto: CreateTrialLicenseDto) {
-    const { firstName, lastName, email, hostname, subpath, companyName, otherData, customerId, version } = createDto;
+    const { firstName, lastName, email, hostname, subpath, companyName, otherData, customerId, version, user } =
+      createDto;
+
+    const editorCount = (user?.editor || 5) > 5 ? user?.editor : 5;
+    const viewerCount = (user?.viewer || 10) > 10 ? user?.viewer : 10;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const isExisted = await manager.findOne(SelfhostCustomerLicense, {
@@ -252,9 +256,9 @@ export class LicenseService {
         workspaces: '',
         type: LICENSE_TYPE.TRIAL,
         users: {
-          total: 15,
-          editor: 5,
-          viewer: 10,
+          total: editorCount + viewerCount,
+          editor: editorCount,
+          viewer: viewerCount,
           superadmin: 1,
         },
         database: {
@@ -309,6 +313,7 @@ export class LicenseService {
       const extraData = {
         ...(otherData || {}),
         name: `${firstName || ''}${firstName ? (lastName ? ` ${lastName}` : '') : `${lastName || ''}`}`,
+        user,
       };
 
       /* add new entry to license table */

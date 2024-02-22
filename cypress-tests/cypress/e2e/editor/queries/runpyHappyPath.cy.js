@@ -7,7 +7,7 @@ import { buttonText } from "Texts/button";
 import {
   verifyControlComponentAction,
   randomString,
-} from "Support/utils/textInput";
+} from "Support/utils/editor/textInput";
 import {
   openAccordion,
   verifyAndModifyParameter,
@@ -63,7 +63,7 @@ import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
 describe("runpy", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.apiCreateApp(`${fake.companyName}-runpy-App`);
     cy.openApp();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
@@ -287,7 +287,10 @@ actions.unsetPageVariable('pageVar')`
 
     openEditorSidebar("button1");
     selectEvent("On Click", "Run query", 1);
+    cy.get('[data-cy="query-selection-field"]').click();
+    cy.wait(1000);
     cy.get('[data-cy="query-selection-field"]').type("runpy1{enter}");
+    cy.wait(1000);
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
     renameQueryFromEditor("newrunpy");

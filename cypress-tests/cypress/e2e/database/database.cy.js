@@ -24,7 +24,7 @@ import {
 } from "Support/utils/database";
 import { fake } from "Fixtures/fake";
 import { randomNumber } from "Support/utils/commonWidget";
-import { randomString } from "Support/utils/textInput";
+import { randomString } from "Support/utils/editor/textInput";
 
 describe("Database Functionality", () => {
   const data = {};

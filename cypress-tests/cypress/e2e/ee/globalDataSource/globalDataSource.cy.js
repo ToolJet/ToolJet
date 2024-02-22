@@ -29,10 +29,7 @@ import {
 
 import { AddDataSourceToGroup } from "Support/utils/eeCommon";
 
-import {
-    verifyAndModifyParameter,
-    editAndVerifyWidgetName,
-} from "Support/utils/commonWidget";
+import { editAndVerifyWidgetName } from "Support/utils/commonWidget";
 
 import {
     addDsToGroup,
@@ -216,13 +213,12 @@ describe("Global Datasource Manager", () => {
         );
 
         cy.dragAndDropWidget("Text", 100, 250);
-        editAndVerifyWidgetName(data.text1);
+        editAndVerifyWidgetName(data.text1, []);
         cy.waitForAutoSave();
 
-        verifyAndModifyParameter(
-            "Text",
-            `{{queries.table_preview.data[1].firstname`
-        );
+        cy.get(
+            '[data-cy="textcomponenttextinput-input-field"]'
+        ).clearAndTypeOnCodeMirror(`{{queries.table_preview.data[1].firstname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
@@ -307,12 +303,11 @@ describe("Global Datasource Manager", () => {
         );
 
         cy.dragAndDropWidget("Text", 100, 250);
-        editAndVerifyWidgetName(data.text1);
+        editAndVerifyWidgetName(data.text1, []);
         cy.waitForAutoSave();
-        verifyAndModifyParameter(
-            "Text",
-            `{{queries.table_preview.data[1].firstname`
-        );
+        cy.get(
+            '[data-cy="textcomponenttextinput-input-field"]'
+        ).clearAndTypeOnCodeMirror(`{{queries.table_preview.data[1].firstname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
 
@@ -345,10 +340,12 @@ describe("Global Datasource Manager", () => {
         cy.wait(500);
 
         cy.dragAndDropWidget("Text", 300, 250);
-        editAndVerifyWidgetName(data.text2);
+        editAndVerifyWidgetName(data.text2, []);
         cy.waitForAutoSave();
 
-        verifyAndModifyParameter("Text", `{{queries.student_data.data[3].firstname`);
+        cy.get(
+            '[data-cy="textcomponenttextinput-input-field"]'
+        ).clearAndTypeOnCodeMirror(`{{queries.student_data.data[3].firstname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
@@ -413,13 +410,12 @@ describe("Global Datasource Manager", () => {
         );
 
         cy.dragAndDropWidget("Text", 100, 250);
-        editAndVerifyWidgetName(data.text1);
+        editAndVerifyWidgetName(data.text1, []);
         cy.waitForAutoSave();
 
-        verifyAndModifyParameter(
-            "Text",
-            `{{queries.table_preview.data[1].firstname`
-        );
+        cy.get(
+            '[data-cy="textcomponenttextinput-input-field"]'
+        ).clearAndTypeOnCodeMirror(`{{queries.table_preview.data[1].firstname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();

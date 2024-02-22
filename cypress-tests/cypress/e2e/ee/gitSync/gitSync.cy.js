@@ -10,7 +10,6 @@ import { commonEeSelectors, gitSyncSelector } from "Selectors/eeCommon";
 import { createNewVersion } from "Support/utils/exportImport";
 import { navigateToCreateNewVersionModal } from "Support/utils/version";
 import {
-    verifyAndModifyParameter,
     editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
 import { promoteApp } from "Support/utils/multiEnv";
@@ -46,7 +45,7 @@ describe("", () => {
         cy.get(commonSelectors.createAppButton).click();
         cy.wait(3000);
         cy.dragAndDropWidget("Text", 300, 250);
-        editAndVerifyWidgetName(data.text1);
+        editAndVerifyWidgetName(data.text1, []);
         cy.waitForAutoSave();
 
         navigateToCreateNewVersionModal((currentVersion = "v1"));
@@ -64,7 +63,9 @@ describe("", () => {
 
         cy.wait(3000);
         cy.get(commonWidgetSelector.draggableWidget(data.text1)).click();
-        verifyAndModifyParameter("Text", "Git sync testing");
+        cy.get(
+            '[data-cy="textcomponenttextinput-input-field"]'
+        ).clearAndTypeOnCodeMirror("Git sync testing");
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
 

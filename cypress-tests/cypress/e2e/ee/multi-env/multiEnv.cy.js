@@ -12,7 +12,6 @@ import {
 import { addQuery, selectDatasource } from "Support/utils/dataSource";
 
 import {
-  verifyAndModifyParameter,
   editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
 
@@ -84,10 +83,12 @@ describe("Multi env", () => {
     cy.waitForAutoSave();
 
     cy.dragAndDropWidget("Text", 550, 650);
-    editAndVerifyWidgetName(data.constName);
+    editAndVerifyWidgetName(data.constName, []);
     cy.waitForAutoSave();
 
-    verifyAndModifyParameter("Text", `{{queries.restapi1.data.data[0].email`);
+    cy.get(
+      '[data-cy="textcomponenttextinput-input-field"]'
+    ).clearAndTypeOnCodeMirror(`{{queries.restapi1.data.data[0].email`);
     cy.wait(1000);
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
