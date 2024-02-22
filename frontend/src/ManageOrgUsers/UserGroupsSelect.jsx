@@ -121,7 +121,7 @@ export function UserGroupsSelect(props) {
       ...base,
       input: {
         height: '25px !important',
-        color: 'var(--slate11)',
+        color: 'var(--slate11) !important',
       },
     }),
     control: (base) => ({

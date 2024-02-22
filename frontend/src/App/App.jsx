@@ -51,6 +51,7 @@ import { ManageSubscriptionKey } from '@/ManageLicenseKey/MangeSubscriptionKey';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import { ManageWorkspaceArchivePageComponent } from '@/_ui/ManageWorkspaceArchive/ManageWorspaceArchivePage';
 import WorkspaceConstants from '@/WorkspaceConstants';
+import { useAppDataStore } from '@/_stores/appDataStore';
 import { SuperadminLoginPage } from '@/LoginPage/SuperadminLoginPage';
 
 const AppWrapper = (props) => {
@@ -81,6 +82,7 @@ class AppComponent extends React.Component {
       updateCurrentSession({
         instance_id: data?.instance_id,
       });
+      useAppDataStore.getState().actions.setMetadata(data);
       localStorage.setItem('currentVersion', data.installed_version);
       if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
         this.setState({ updateAvailable: true });
