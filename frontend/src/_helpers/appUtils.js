@@ -336,7 +336,17 @@ export async function runTransformation(
     } catch (err) {
       const $error = err.name;
       const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
-      if (mode === 'edit') toast.error($errorMessage);
+      if (mode === 'edit') {
+        toast(
+          <span>
+            <b style={{ whiteSpace: 'nowrap' }}>{query.name}:&nbsp;</b>
+            {$errorMessage || 'Unknown error'}
+          </span>,
+          {
+            type: 'error',
+          }
+        );
+      }
       result = {
         message: err.stack.split('\n')[0],
         status: 'failed',
@@ -1348,8 +1358,19 @@ export function runQuery(
           onEvent(_self, 'onDataQuerySuccess', queryEvents, mode);
         }
       })
-      .catch(({ error }) => {
-        if (mode !== 'view') toast.error(error ?? 'Unknown error');
+      .catch((err) => {
+        const { error } = err;
+        if (mode !== 'view') {
+          toast(
+            <span>
+              <b style={{ whiteSpace: 'nowrap' }}>{query.name}:&nbsp;</b>
+              {err?.message ? err?.message : 'Unknown error'}
+            </span>,
+            {
+              type: 'error',
+            }
+          );
+        }
         useSuperStore
           .getState()
           .modules[_ref.moduleName].useCurrentStateStore.getState()
