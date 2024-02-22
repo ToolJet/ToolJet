@@ -9,8 +9,7 @@ import { authenticationService } from '@/_services/authentication.service';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
-import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
-import { getCookie, eraseCookie } from '@/_helpers/cookie';
+import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 
 export function findProp(obj, prop, defval) {
@@ -1054,12 +1053,6 @@ export const deepEqual = (obj1, obj2, excludedKeys = []) => {
 
   return true;
 };
-
-export function eraseRedirectUrl() {
-  const redirectPath = getCookie('redirectPath');
-  redirectPath && eraseCookie('redirectPath');
-  return redirectPath;
-}
 
 export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();

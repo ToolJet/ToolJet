@@ -57,6 +57,17 @@ export const ERROR_MESSAGES = {
     retry: false,
     queryParams: [],
   },
+  'invalid-invite-session': {
+    title: 'Incorrect email address',
+    message: 'The user details of the active session does not match that of the invite. Please log out and try again.',
+    cta: 'Back to home page',
+    queryParams: [],
+  },
+  'no-active-workspace': {
+    title: 'No active workspaces',
+    message: 'No active workspace were found for this user. Kindly contact admin to know more.',
+    queryParams: [],
+  },
   unknown: {
     title: 'Oops, something went wrong!',
     message: 'An error occurred while loading the app. Please try again or contact admin.',

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
+import { createQueryBuilder, DeepPartial, EntityManager, getRepository, Repository } from 'typeorm';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
@@ -12,6 +12,12 @@ import { ConfigService } from '@nestjs/config';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 const uuid = require('uuid');
+
+/* TYPES */
+type InvitedUserType = Partial<User> & {
+  invitedOrganizationId?: string;
+  organizationStatus?: string;
+};
 
 @Injectable()
 export class OrganizationUsersService {
@@ -54,6 +60,49 @@ export class OrganizationUsersService {
       }
     }
     return await this.organizationUsersRepository.update(id, { role });
+  }
+
+  async findByWorkspaceInviteToken(invitationToken: string): Promise<InvitedUserType> {
+    const organizationUser = await getRepository(OrganizationUser)
+      .createQueryBuilder('organizationUser')
+      .select([
+        'organizationUser.organizationId',
+        'organizationUser.invitationToken',
+        'organizationUser.status',
+        'user.id',
+        'user.email',
+        'user.invitationToken',
+        'user.status',
+        'user.firstName',
+        'user.lastName',
+      ])
+      .innerJoin('organizationUser.user', 'user')
+      .where('organizationUser.invitationToken = :invitationToken', { invitationToken })
+      .getOne();
+
+    const user: InvitedUserType = organizationUser?.user;
+    /* Invalid organization token */
+    if (!user) {
+      const errorResponse = {
+        message: {
+          error: 'Invalid invitation token. Please ensure that you have a valid invite url',
+          isInvalidInvitationUrl: true,
+        },
+      };
+      throw new BadRequestException(errorResponse);
+    }
+    user.invitedOrganizationId = organizationUser.organizationId;
+    user.organizationStatus = organizationUser.status;
+    return user;
+  }
+
+  async getActiveWorkspacesCount(userId) {
+    return await this.organizationUsersRepository.count({
+      where: {
+        userId,
+        status: WORKSPACE_USER_STATUS.ACTIVE,
+      },
+    });
   }
 
   async updateOrgUser(organizationUserId: string, updateUserDto) {
@@ -118,6 +167,26 @@ export class OrganizationUsersService {
         invitationToken: null,
       });
     }, manager);
+  }
+
+  async personalWorkspaceCount(userId: string): Promise<number> {
+    const personalWorkspaces: Partial<OrganizationUser[]> = await this.organizationUsersRepository.find({
+      select: ['organizationId'],
+      where: { userId },
+    });
+    let personalWorkspacesCount = 0;
+    for (const { organizationId } of personalWorkspaces) {
+      const workspaceOwner = await this.organizationUsersRepository.find({
+        where: { organizationId },
+        order: { createdAt: 'ASC' },
+        take: 1,
+      });
+      if (workspaceOwner[0]?.userId === userId) {
+        /* First user of the workspace = created by the user */
+        personalWorkspacesCount++;
+      }
+    }
+    return personalWorkspacesCount;
   }
 
   async lastActiveAdmin(organizationId: string): Promise<boolean> {

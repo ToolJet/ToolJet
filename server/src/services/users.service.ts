@@ -28,8 +28,8 @@ export class UsersService {
     return this.usersRepository.count();
   }
 
-  async findOne(id: string): Promise<User> {
-    return this.usersRepository.findOne({ where: { id } });
+  async findOne(where = {}): Promise<User> {
+    return this.usersRepository.findOne({ where });
   }
 
   async findByEmail(
@@ -80,7 +80,8 @@ export class UsersService {
     existingUser?: User,
     isInvite?: boolean,
     defaultOrganizationId?: string,
-    manager?: EntityManager
+    manager?: EntityManager,
+    shouldNotAttachWorkspace = false
   ): Promise<User> {
     const { email, firstName, lastName, password, source, status, phoneNumber } = userParams;
     let user: User;
@@ -96,7 +97,7 @@ export class UsersService {
           source,
           status,
           invitationToken: isInvite ? uuid.v4() : null,
-          defaultOrganizationId: defaultOrganizationId || organizationId,
+          defaultOrganizationId: !shouldNotAttachWorkspace ? defaultOrganizationId || organizationId : null,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
