@@ -1,7 +1,7 @@
 import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { validateEmail } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
@@ -135,14 +135,7 @@ class SignupPageComponent extends React.Component {
               {
                 /* If the configs don't have any organization id. that means the workspace slug is invalid */
                 this.paramInviteOrganizationSlug && !configs?.id ? (
-                  <div className="text-center-onboard">
-                    <h2 data-cy="no-workspace">
-                      {this.props.t(
-                        'loginSignupPage.workspaceDoesntExist',
-                        'Workspace does not exist. Please check the workspace login url again'
-                      )}
-                    </h2>
-                  </div>
+                  <Navigate to="/error/invalid-link" />
                 ) : (
                   !signupSuccess && (
                     <>
