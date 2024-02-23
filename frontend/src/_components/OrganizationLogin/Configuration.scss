@@ -166,7 +166,7 @@
     background-color: rgba(0, 0, 0, 0.75); /* Semi-transparent */
     z-index: 1050; /* Adjust based on your modal z-index values */                        
 }
-.theme-dark{
+.theme-dark {
   .sso-option {
     background: unset;
     .sso-option-label {
@@ -177,6 +177,16 @@
     }
     .slider {
       background-color: unset;
+    }
+  }
+  .form-label {
+    background: unset;
+  }
+}
+.dark-theme {
+  .sso-card-wrapper {
+    .form-control {
+      color: white !important
     }
   }
 }
