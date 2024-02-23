@@ -79,6 +79,9 @@
     --text-default: #1B1F24;
 
 
+    --interactive-overlay-border-pressed: #1B1F2429;
+    --interactive-overlay-fill-pressed: #1B1F241A;
+    --interactive-overlay-column-resize: #1B1F244D;
 }
 
 .dark-theme {
@@ -100,4 +103,8 @@
     --text-disabled: #6D757D;
     --text-default: #FAFCFF;
 
+
+    --interactive-overlay-border-pressed: #FFFFFF47;
+    --interactive-overlay-fill-pressed: #FFFFFF33;
+    --interactive-overlay-column-resize: #FFFFFF80;
 }
