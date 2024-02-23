@@ -6,11 +6,17 @@ import * as proxy from 'express-http-proxy';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { maybeSetSubPath } from '../helpers/utils.helper';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import got from 'got';
 
 @Injectable()
 export class PostgrestProxyService {
-  constructor(private readonly manager: EntityManager, private readonly configService: ConfigService) {}
+  constructor(
+    private readonly manager: EntityManager,
+    private readonly configService: ConfigService,
+    private eventEmitter: EventEmitter2
+  ) {}
 
   // NOTE: This method forwards request directly to PostgREST Using express middleware
   // If additional functionalities from http proxy isn't used, we can deprecate this
@@ -24,6 +30,32 @@ export class PostgrestProxyService {
     req.headers['Prefer'] = 'count=exact'; // To get the total count of records
 
     res.set('Access-Control-Expose-Headers', 'Content-Range');
+
+    if (!isEmpty(req.dataQuery) && !isEmpty(req.user)) {
+      this.eventEmitter.emit('auditLogEntry', {
+        userId: req.user.id,
+        organizationId,
+        resourceId: req.dataQuery.id,
+        resourceName: req.dataQuery.name,
+        resourceType: ResourceTypes.DATA_QUERY,
+        actionType: ActionTypes.DATA_QUERY_RUN,
+        metadata: {},
+      });
+    }
+
+    const tableId = req.url.split('?')[0].split('/').pop();
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: {
+        organizationId,
+        id: tableId,
+      },
+    });
+
+    if (internalTable.tableName) {
+      const tableInfo = {};
+      tableInfo[tableId] = internalTable.tableName;
+      req.headers['tableInfo'] = tableInfo;
+    }
 
     return this.httpProxy(req, res, next);
   }
@@ -59,6 +91,22 @@ export class PostgrestProxyService {
   }
 
   private httpProxy = proxy(this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001', {
+    userResDecorator: function (proxyRes, proxyResData, userReq, _userRes) {
+      if (userReq?.headers?.tableInfo && proxyRes.statusCode >= 400) {
+        const customErrorObj = Buffer.isBuffer(proxyResData) ? JSON.parse(proxyResData.toString('utf8')) : proxyResData;
+
+        let customErrorMessage = customErrorObj?.message ?? '';
+        if (customErrorMessage) {
+          Object.entries(userReq.headers.tableInfo).forEach(([key, value]) => {
+            customErrorMessage = customErrorMessage.replace(key, value as string);
+          });
+          customErrorObj.message = customErrorMessage;
+        }
+        proxyResData = Buffer.from(JSON.stringify(customErrorObj), 'utf-8');
+      }
+
+      return proxyResData;
+    },
     proxyReqPathResolver: function (req) {
       return replaceUrlForPostgrest(req.url);
     },

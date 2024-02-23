@@ -169,6 +169,7 @@ export class WorkflowExecutionsService {
     const logs = [];
     const queue = [];
     const addLog = (log: string) => logs.push(`[${moment().utc().format('YYYY-MM-DD HH:mm:ss.SSS')} UTC] ${log}`);
+    // FIXME: isMaintenanceOn - Column is used to check whether workflow is enabled or not.
     if (appVersion.app.isMaintenanceOn) {
       queue.push(
         ...this.computeNodesToBeExecuted(workflowExecution.startNode, workflowExecution.nodes, workflowExecution.edges)

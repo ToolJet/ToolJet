@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import List from '../TableList';
 import CreateTableDrawer from '../Drawers/CreateTableDrawer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
+import cx from 'classnames';
 
-export default function Sidebar() {
+export default function Sidebar({ collapseSidebar }) {
   const [bannerVisible, setBannerVisible] = useState(false);
-  console.log(bannerVisible);
+
   return (
-    <div className="tooljet-database-sidebar col d-flex flex-column">
+    <div className={cx('tooljet-database-sidebar col d-flex flex-column', { 'visually-hidden': collapseSidebar })}>
       <div className={`sidebar-container ${!bannerVisible ? '' : 'sidebar-container-with-banner'}`}>
         <CreateTableDrawer bannerVisible={bannerVisible} setBannerVisible={setBannerVisible} />
       </div>

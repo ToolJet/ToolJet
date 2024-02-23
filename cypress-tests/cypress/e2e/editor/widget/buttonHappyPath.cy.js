@@ -35,7 +35,7 @@ import {
 describe("Editor- Test Button widget", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.apiCreateApp(`${fake.companyName}-button-App`);
     cy.openApp();
     cy.waitForAppLoad();
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);

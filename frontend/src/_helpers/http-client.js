@@ -30,11 +30,11 @@ class HttpClient {
     return object;
   }
 
-  async request(method, url, data) {
+  async request(method, url, headers, data) {
     const endpoint = urlJoin(this.host, this.namespace, url);
     const options = {
       method,
-      headers: { ...this.headers },
+      headers: { ...this.headers, ...headers },
       credentials: 'include',
     };
     let session = authenticationService.currentSessionValue;
@@ -82,24 +82,24 @@ class HttpClient {
     }
   }
 
-  get(url) {
-    return this.request(HttpVerb.Get, url);
+  get(url, headers = {}) {
+    return this.request(HttpVerb.Get, url, headers);
   }
 
-  post(url, data) {
-    return this.request(HttpVerb.Post, url, data);
+  post(url, data, headers = {}) {
+    return this.request(HttpVerb.Post, url, headers, data);
   }
 
-  put(url, data) {
-    return this.request(HttpVerb.Put, url, data);
+  put(url, data, headers = {}) {
+    return this.request(HttpVerb.Put, url, headers, data);
   }
 
-  patch(url, data) {
-    return this.request(HttpVerb.Patch, url, data);
+  patch(url, data, headers = {}) {
+    return this.request(HttpVerb.Patch, url, headers, data);
   }
 
-  delete(url) {
-    return this.request(HttpVerb.Delete, url);
+  delete(url, headers = {}) {
+    return this.request(HttpVerb.Delete, url, headers);
   }
 }
 

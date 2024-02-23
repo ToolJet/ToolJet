@@ -1197,11 +1197,6 @@ export function runQuery(
           let rawData = data.data;
           let finalData = data.data;
 
-          if (shouldSetPreviewData) {
-            setPreviewLoading(false);
-            setPreviewData(finalData);
-          }
-
           if (dataQuery.options.enableTransformation) {
             finalData = await runTransformation(
               _ref,
@@ -1233,6 +1228,11 @@ export function runQuery(
               onEvent(_self, 'onDataQueryFailure', queryEvents);
               return;
             }
+          }
+
+          if (shouldSetPreviewData) {
+            setPreviewLoading(false);
+            setPreviewData(finalData);
           }
 
           if (dataQuery.options.showSuccessNotification) {

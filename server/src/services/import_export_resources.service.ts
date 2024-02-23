@@ -9,6 +9,7 @@ import { CloneResourcesDto } from '@dto/clone-resources.dto';
 import { isEmpty } from 'lodash';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import { transformTjdbImportDto } from 'src/helpers/tjdb_dto_transforms';
 
 @Injectable()
 export class ImportExportResourcesService {
@@ -48,12 +49,15 @@ export class ImportExportResourcesService {
   async import(user: User, importResourcesDto: ImportResourcesDto, cloning = false, isGitApp = false) {
     const tableNameMapping = {};
     const imports = { app: [], tooljet_database: [] };
+    const importingVersion = importResourcesDto.tooljet_version;
 
     if (importResourcesDto.tooljet_database) {
       for (const tjdbImportDto of importResourcesDto.tooljet_database) {
+        const transformedDto = transformTjdbImportDto(tjdbImportDto, importingVersion);
+
         const createdTable = await this.tooljetDbImportExportService.import(
           importResourcesDto.organization_id,
-          tjdbImportDto,
+          transformedDto,
           cloning
         );
         tableNameMapping[tjdbImportDto.id] = createdTable;

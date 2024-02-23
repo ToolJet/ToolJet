@@ -344,6 +344,27 @@ export function generateSecurePassword(length = 10) {
   //default length = 10
   return crypto.randomBytes(length).toString('hex').slice(0, length);
 }
+
+export function isVersionGreaterThanOrEqual(version1: string, version2: string) {
+  if (!version1) return false;
+
+  const v1Parts = version1.split('-')[0].split('.').map(Number);
+  const v2Parts = version2.split('-')[0].split('.').map(Number);
+
+  for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
+    const v1Part = +v1Parts[i] || 0;
+    const v2Part = +v2Parts[i] || 0;
+
+    if (v1Part < v2Part) {
+      return false;
+    } else if (v1Part > v2Part) {
+      return true;
+    }
+  }
+
+  return true;
+}
+
 export const getMaxCopyNumber = (existNameList) => {
   if (existNameList.length == 0) return '';
   const filteredNames = existNameList.filter((name) => {

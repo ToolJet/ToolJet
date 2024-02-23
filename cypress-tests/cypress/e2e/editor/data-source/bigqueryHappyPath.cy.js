@@ -12,12 +12,14 @@ import { commonText } from "Texts/common";
 import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source BigQuery", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.intercept("GET", "/api/v2/data_sources");
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on BigQuery connection form", () => {
@@ -40,7 +42,11 @@ describe("Data source BigQuery", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", bigqueryText.bigQuery, data.lastName);
+    selectAndAddDataSource(
+      "databases",
+      bigqueryText.bigQuery,
+      data.dataSourceName
+    );
 
     cy.get('[data-cy="label-private-key"]').verifyVisibleElement(
       "have.text",
@@ -78,11 +84,19 @@ describe("Data source BigQuery", () => {
       "have.text",
       bigqueryText.errorInvalidEmailId
     );
+    deleteDatasource(
+      `cypress-${String(data.dataSourceName).toLowerCase()}-${String(
+        bigqueryText.bigQuery
+      ).toLowerCase()}`
+    );
   });
 
   it("Should verify the functionality of BigQuery connection form.", () => {
-    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    selectAndAddDataSource("databases", bigqueryText.bigQuery, data.lastName);
+    selectAndAddDataSource(
+      "databases",
+      bigqueryText.bigQuery,
+      data.dataSourceName
+    );
 
     fillDataSourceTextField(
       firestoreText.privateKey,
@@ -104,9 +118,12 @@ describe("Data source BigQuery", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.lastName}-bigquery-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-bigquery`);
+      `[data-cy="cypress-${data.dataSourceName}-bigquery-button"]`
+    ).verifyVisibleElement(
+      "have.text",
+      `cypress-${data.dataSourceName}-bigquery`
+    );
 
-    deleteDatasource(`cypress-${data.lastName}-bigquery`);
+    deleteDatasource(`cypress-${data.dataSourceName}-bigquery`);
   });
 });

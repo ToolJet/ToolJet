@@ -13,13 +13,15 @@ import { dataSourceSelector } from "Selectors/dataSource";
 import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.customText = fake.randomSentence;
 
 describe("Data source Azure Blob Storage", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.intercept("GET", "/api/v2/data_sources");
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on Azure Blob Storage connection form", () => {
@@ -43,7 +45,7 @@ describe("Data source Azure Blob Storage", () => {
     selectAndAddDataSource(
       "cloudstorage",
       azureBlobStorageText.azureBlobStorage,
-      data.lastName
+      data.dataSourceName
     );
 
     cy.get('[data-cy="label-connection-string"]').verifyVisibleElement(
@@ -82,6 +84,7 @@ describe("Data source Azure Blob Storage", () => {
       "have.text",
       "Cannot read properties of undefined (reading 'startsWith')"
     );
+    deleteDatasource(`cypress-${data.dataSourceName}-azure-blob-storage`);
   });
 
   it("Should verify the functionality of Azure Blob Storage connection form.", () => {
@@ -94,7 +97,7 @@ describe("Data source Azure Blob Storage", () => {
     selectAndAddDataSource(
       "cloudstorage",
       azureBlobStorageText.azureBlobStorage,
-      data.lastName
+      data.dataSourceName
     );
 
     fillDataSourceTextField(
@@ -139,12 +142,12 @@ describe("Data source Azure Blob Storage", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.lastName}-azure-blob-storage-button"]`
+      `[data-cy="cypress-${data.dataSourceName}-azure-blob-storage-button"]`
     ).verifyVisibleElement(
       "have.text",
-      `cypress-${data.lastName}-azure-blob-storage`
+      `cypress-${data.dataSourceName}-azure-blob-storage`
     );
 
-    deleteDatasource(`cypress-${data.lastName}-azure-blob-storage`);
+    deleteDatasource(`cypress-${data.dataSourceName}-azure-blob-storage`);
   });
 });
