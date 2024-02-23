@@ -340,6 +340,10 @@ export function isTooljetVersionWithNormalizedAppDefinitionSchem(version) {
   return semver.satisfies(semver.coerce(version), '>= 2.24.0');
 }
 
+export function extractWorkFromUrl(url: string): string | null {
+  const match = url.match(/^([^@:/]+)@/);
+  return match ? match[1] : null;
+}
 export function generateSecurePassword(length = 10) {
   //default length = 10
   return crypto.randomBytes(length).toString('hex').slice(0, length);
