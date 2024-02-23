@@ -164,7 +164,7 @@
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.75); /* Semi-transparent */
-    z-index: 1050; /* Adjust based on your modal z-index values */
+    z-index: 1050; /* Adjust based on your modal z-index values */                        
 }
 
   
