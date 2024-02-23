@@ -145,7 +145,6 @@ import Cross from './Cross.jsx';
 import EnterButtonIcon from './EnterButtonIcon.jsx';
 import WorkspaceConstants from './WorkspaceConstants.jsx';
 import ArrowBackDown from './ArrowBackDown.jsx';
-import EditIcon from './EditIcon.jsx';
 import AlignRightinspector from './AlignRightinspector.jsx';
 import AlignLeftinspector from './AlignLeftinspector.jsx';
 import AlignVerticallyTop from './AlignVerticallyTop.jsx';
@@ -164,8 +163,6 @@ const Icon = (props) => {
   switch (props.name) {
     case 'addrectangle':
       return <AddRectangle {...props} />;
-    case 'editIcon':
-      return <EditIcon {...props} />;
     case 'alignleftinspector':
       return <AlignRightinspector {...props} />;
     case 'alignrightinspector':
