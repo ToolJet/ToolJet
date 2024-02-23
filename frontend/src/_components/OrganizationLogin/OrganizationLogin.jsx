@@ -285,7 +285,7 @@ class OrganizationLogin extends React.Component {
                           data-cy="enable-sign-up-toggle"
                         />
                         <label className="form-check-label bold-text" data-cy="enable-sign-up-label">
-                          {t('header.organization.menus.manageSSO.generalSettings.enableSignup', 'Enable signup')}
+                          {'Enable signup'}
                         </label>
                       </label>
                       <div className="help-text danger-text-login">

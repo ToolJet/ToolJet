@@ -167,7 +167,7 @@ class SSOConfiguration extends React.Component {
     if (enabledStatus === false) {
       try {
         await this.handleToggleSSOOption(key);
-        toast.success(`${enabledStatus ? 'Enabled' : 'Disabled'} ${key} SSO`, { position: 'top-center' });
+        toast.success(`${key.charAt(0).toUpperCase() + key.slice(1)} SSO ${enabledStatus ? 'enabled' : 'disabled'} successfully!`, { position: 'top-center' });
       } catch (error) {
       }
     } else {

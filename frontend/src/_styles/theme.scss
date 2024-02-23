@@ -1994,6 +1994,11 @@ button {
   border-color: rgba(101, 109, 119, 0.24);
 }
 
+#passwordLogin:checked {
+  background-color: #E54D2E;
+  border-color: rgba(101, 109, 119, 0.24);
+}
+
 .btn:focus,
 .btn:active,
 .form-check-input:focus,
