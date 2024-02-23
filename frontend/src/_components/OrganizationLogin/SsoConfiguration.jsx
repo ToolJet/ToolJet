@@ -218,7 +218,6 @@ class SSOConfiguration extends React.Component {
         enabledSSOCount += 1;
       }
     });
-    console.log(instanceEnabledSSOs.length - enabledSSOCount, 'count check');
     return instanceEnabledSSOs.length - enabledSSOCount;
   };
 
