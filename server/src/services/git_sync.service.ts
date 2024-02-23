@@ -12,6 +12,7 @@ import {
   dbTransactionWrap,
   extractMajorVersion,
   isTooljetVersionWithNormalizedAppDefinitionSchem,
+  extractWorkFromUrl,
 } from 'src/helpers/utils.helper';
 import { AppGitPullDto, AppGitPullUpdateDto, AppGitPushDto } from '@dto/app_git.dto';
 import * as Crypto from 'crypto';
@@ -89,28 +90,54 @@ export class GitSyncService {
     });
   }
 
-  private async setSshKey(orgGit: OrganizationGitSync | OrganizationGitUpdateDto) {
+  private async setSshKey(
+    orgGit: OrganizationGitSync | OrganizationGitUpdateDto,
+    keyType: 'ed25519' | 'rsa' = 'ed25519'
+  ) {
     const keyOptions = {
-      privateKeyEncoding: { format: 'pem', type: 'pkcs8' },
-      publicKeyEncoding: { format: 'pem', type: 'spki' },
+      // modulusLength: 1024,
+      ...(keyType == 'rsa' && { modulusLength: 1024 }),
+      publicKeyEncoding: {
+        type: 'spki',
+        format: 'pem',
+      },
+      privateKeyEncoding: {
+        type: 'pkcs8',
+        format: 'pem',
+      },
     };
+
     return new Promise<any | void>((resolve, reject) => {
-      Crypto.generateKeyPair('ed25519', keyOptions, (err, publicKey, privateKey) => {
-        if (err) {
-          reject(err);
-        }
-        const pemKey = Sshpk.parseKey(publicKey as undefined as string, 'pem');
-        const sshRsa = pemKey.toString('ssh');
-        orgGit.sshPublicKey = sshRsa;
-        orgGit.sshPrivateKey = privateKey as unknown as string;
-        resolve(orgGit);
-      });
+      if (keyType == 'rsa')
+        Crypto.generateKeyPair('rsa', keyOptions, (err: Error | null, publicKey, privateKey) => {
+          if (err) {
+            reject(err);
+          }
+          const pemKey = Sshpk.parseKey(publicKey as undefined as string, 'pem');
+          const sshRsa = pemKey.toString('ssh');
+          orgGit.sshPublicKey = sshRsa;
+          orgGit.sshPrivateKey = privateKey as unknown as string;
+          resolve(orgGit);
+        });
+      else {
+        Crypto.generateKeyPair('ed25519', keyOptions, (err: Error | null, publicKey, privateKey) => {
+          if (err) {
+            reject(err);
+          }
+          const pemKey = Sshpk.parseKey(publicKey as undefined as string, 'pem');
+          const sshRsa = pemKey.toString('ssh');
+          orgGit.sshPublicKey = sshRsa;
+          orgGit.sshPrivateKey = privateKey as unknown as string;
+          resolve(orgGit);
+        });
+      }
     });
   }
 
   async updateOrgGit(id: string, updateOrgGitDto: OrganizationGitUpdateDto) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      await this.setSshKey(updateOrgGitDto);
+      const { keyType } = updateOrgGitDto;
+      if (updateOrgGitDto?.gitUrl || keyType) await this.setSshKey(updateOrgGitDto, keyType ? keyType : 'ed25519');
       return await manager.update(OrganizationGitSync, { id }, updateOrgGitDto);
     });
   }
@@ -138,12 +165,14 @@ export class GitSyncService {
       const remote = await repo.getRemote('origin');
       const certificateCheck = () => 0;
       let callbackCalled = false;
+      const gitUser = extractWorkFromUrl(orgGit.gitUrl);
+
       const connectionStatusCode = await remote.connect(NodeGit.Enums.DIRECTION.PUSH, {
         certificateCheck,
         credentials: () => {
           if (callbackCalled) return;
           callbackCalled = true;
-          return NodeGit.Credential.sshKeyMemoryNew('git', orgGit.sshPublicKey, orgGit.sshPrivateKey, '');
+          return NodeGit.Credential.sshKeyMemoryNew(gitUser, orgGit.sshPublicKey, orgGit.sshPrivateKey, '');
         },
       });
 
@@ -165,6 +194,7 @@ export class GitSyncService {
       }
     } catch (err) {
       //Can we make this asyncronous instead of await
+
       await this.deleteDir(initPath);
       console.error('Cannot connect to git repo : ', err);
       let connectionMessage = `${String(err)
@@ -365,6 +395,7 @@ export class GitSyncService {
   private async gitClone(repoPath: string, orgGit: OrganizationGitSync, depth = 1) {
     const certificateCheck = () => 0;
     let callbackCalled = false;
+    const gitUser = extractWorkFromUrl(orgGit.gitUrl);
     const cloneOptions = {
       fetchOpts: {
         callbacks: {
@@ -372,7 +403,7 @@ export class GitSyncService {
           credentials: () => {
             if (callbackCalled) return;
             callbackCalled = true;
-            return NodeGit.Credential.sshKeyMemoryNew('git', orgGit.sshPublicKey, orgGit.sshPrivateKey, '');
+            return NodeGit.Credential.sshKeyMemoryNew(gitUser, orgGit.sshPublicKey, orgGit.sshPrivateKey, '');
           },
         },
         depth: depth,
@@ -384,6 +415,7 @@ export class GitSyncService {
   async renameAppOrVersion(
     user: User,
     appId: string,
+    prevName = '',
     renameVersionFlag = false,
     branchName = 'master',
     remoteName = 'origin'
@@ -399,7 +431,9 @@ export class GitSyncService {
 
     const appGitPushBody: AppGitPushDto = {
       gitAppName: appGit.gitAppName,
-      lastCommitMessage: `${renameVersionFlag ? 'Version' : 'App'} is renamed`,
+      lastCommitMessage: `${renameVersionFlag ? `Version` : `App`} ${prevName} is renamed to ${
+        renameVersionFlag ? appGit.gitVersionName : appGit.gitAppName
+      }`,
       versionId: appGit.gitVersionId,
       gitVersionName: appGit.gitVersionName,
     };
@@ -408,8 +442,9 @@ export class GitSyncService {
 
   private async pushRepo(repo: NodeGit.Repository, appGit: AppGitSync, branchName: string, remoteName: string) {
     const orgGit = appGit.orgGit;
+    const gitUser = extractWorkFromUrl(orgGit.gitUrl);
     const credentials: NodeGit.Credential = NodeGit.Credential.sshKeyMemoryNew(
-      'git',
+      gitUser,
       orgGit.sshPublicKey,
       orgGit.sshPrivateKey,
       ''

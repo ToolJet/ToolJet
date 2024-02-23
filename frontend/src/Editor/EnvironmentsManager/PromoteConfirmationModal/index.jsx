@@ -3,7 +3,7 @@ import Modal from 'react-bootstrap/Modal';
 import { capitalize } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { appVersionService } from '@/_services';
+import { appVersionService, gitSyncService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import ArrowRightIcon from '@assets/images/icons/arrow-right.svg';
 import '@/_styles/versions.scss';
@@ -20,6 +20,7 @@ export default function EnvironmontConfirmationModal(props) {
   const darkMode = props.darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(data);
   const { t } = useTranslation();
+  const { current_organization_id } = authenticationService.currentSessionValue;
 
   useEffect(() => {
     setShow(data);
@@ -35,9 +36,27 @@ export default function EnvironmontConfirmationModal(props) {
 
     appVersionService
       .promoteEnvironment(appId, editingVersion?.id, data.current.id)
-      .then(() => {
+      .then(async () => {
         toast.success(`${editingVersion.name} has been promoted to ${data.target.name}!`);
         fetchEnvironments();
+        if (data?.current?.name == 'development') {
+          const gitData = await gitSyncService.getAppConfig(current_organization_id, editingVersion?.id);
+          const appGit = gitData?.app_git;
+          if (appGit && appGit?.org_git?.auto_commit) {
+            try {
+              const body = {
+                gitAppName: appGit?.git_app_name,
+                versionId: editingVersion?.id,
+                lastCommitMessage: ` ${editingVersion.name} Version of app ${appGit?.git_app_name} promoted from development to staging`,
+                gitVersionName: editingVersion?.name,
+              };
+              await gitSyncService.gitPush(body, appGit?.id, editingVersion?.id);
+              toast.success('Changes committed successfully');
+            } catch (err) {
+              toast.error(err?.error);
+            }
+          }
+        }
         onEnvChange(data.target);
         useAppVersionStore.getState().actions.setAppVersionCurrentEnvironment(data.target);
         setPromtingEnvirontment(false);

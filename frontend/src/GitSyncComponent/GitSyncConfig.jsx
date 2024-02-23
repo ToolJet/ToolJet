@@ -11,6 +11,12 @@ import { licenseService } from '@/_services/license.service';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { ConfirmDialog } from '@/_components';
 import { LicenseBanner } from '@/LicenseBanner';
+import { Spinner } from 'react-bootstrap';
+
+const KEY_TYPE = {
+  ED25519: 'ed25519',
+  RSA: 'rsa',
+};
 class GitSyncConfigComponent extends Component {
   constructor(props) {
     super(props);
@@ -40,6 +46,9 @@ class GitSyncConfigComponent extends Component {
       validUrl: true,
       connectFail: false,
       errorMessage: '',
+      autoCommit: false,
+      keyType: KEY_TYPE.ED25519,
+      isUpdatingKey: false,
       featureAccess: {},
     };
 
@@ -114,6 +123,14 @@ class GitSyncConfigComponent extends Component {
     });
   };
 
+  setAutoCommit = () => {
+    gitSyncService.updateConfig(this.state.orgGit?.id, { autoCommit: !this.state.autoCommit }).then(() => {
+      this.setState((prevState) => ({
+        autoCommit: !prevState.autoCommit,
+      }));
+    });
+  };
+
   generateSshKey = () => {
     const { workspaceId, gitUrl } = this.state;
     this.lockUrl();
@@ -133,7 +150,7 @@ class GitSyncConfigComponent extends Component {
         });
     } else {
       gitSyncService
-        .updateConfig(this.state.orgGit?.id, this.state.gitUrl)
+        .updateConfig(this.state.orgGit?.id, { gitUrl: this.state.gitUrl, autoCommit: null })
         .then(() => {
           this.getOrgGit(workspaceId);
           this.unlockUrl();
@@ -142,6 +159,25 @@ class GitSyncConfigComponent extends Component {
           toast.error('Not able to update the configuration');
         });
     }
+  };
+
+  updatingSshKey = (keyType) => {
+    this.setState({
+      isUpdatingKey: true,
+    });
+    const { workspaceId } = this.state;
+    gitSyncService
+      .updateConfig(this.state.orgGit?.id, { autoCommit: null, keyType: keyType })
+      .then(() => {
+        this.getOrgGit(workspaceId);
+        this.unlockUrl();
+      })
+      .catch((err) => {
+        this.setState({
+          isUpdatingKey: false,
+        });
+        toast.error('Not able to update the configuration');
+      });
   };
 
   setConfiguredState(orgGit, callback = () => {}) {
@@ -156,18 +192,22 @@ class GitSyncConfigComponent extends Component {
         deleteButtonDisable: !orgGit?.is_finalized,
         gitUrl: orgGit?.git_url,
         inputUrl: orgGit?.git_url,
+        keyType: orgGit?.key_type,
         editingMode: false,
         disableGenerateButtonStatus: true,
         gitSyncToogle: orgGit?.is_enabled,
         generateKeyLoader: false,
         deleteCofigLoader: false,
+        updatingSshKey: false,
         finalLoader: false,
         showDeleteModal: false,
+        isUpdatingKey: false,
         connectFail: false,
         repoLink: this.convertSshtoHttps(orgGit?.git_url),
         toggleMessage: `${
           orgGit?.is_enabled ? 'Disabling will stop syncing data within apps' : 'Enable it to sync data within apps'
         }`,
+        autoCommit: orgGit?.auto_commit,
       },
       () => {
         callback();
@@ -252,24 +292,14 @@ class GitSyncConfigComponent extends Component {
             urlInputMessage: 'Creating an empty git repository is recommended',
           });
         } else {
-          if (this.validateGitUrl(this.state.inputUrl)) {
-            this.setState({
-              editingMode: true,
-              disableGenerateButtonStatus: false,
-              gitUrl: url,
-              finalizeBtnDisable: true,
-              urlInputMessage: 'Creating an empty git repository is recommended',
-              validUrl: true,
-            });
-          } else {
-            this.setState({
-              urlInputMessage: 'Invalid URL. Please ensure the format is git@{provider}:{user}/{xyz}.git',
-              editingMode: true,
-              disableGenerateButtonStatus: true,
-              finalizeBtnDisable: true,
-              validUrl: false,
-            });
-          }
+          this.setState({
+            editingMode: true,
+            disableGenerateButtonStatus: false,
+            gitUrl: url,
+            finalizeBtnDisable: true,
+            urlInputMessage: 'Creating an empty git repository is recommended',
+            validUrl: true,
+          });
         }
       }
     );
@@ -334,8 +364,14 @@ class GitSyncConfigComponent extends Component {
       connectFail,
       errorMessage,
       isGitSyncFeatureEnabled,
+      autoCommit,
+      keyType,
+      isUpdatingKey,
       featureAccess,
     } = this.state;
+
+    const isSwitchKeyDisable = isUpdatingKey || isFinalized || !isGitSyncFeatureEnabled;
+
     return (
       <div className="wrapper gitsync-config-wrapper animation-fade">
         <div className="page-wrapper">
@@ -442,16 +478,73 @@ class GitSyncConfigComponent extends Component {
               {!editingMode && sshKeyGenerated && (
                 <>
                   <div className="key-output-container">
-                    <label
-                      className={`label ${isGitSyncFeatureEnabled ? '' : 'disable-text'}`}
-                      for="ssh-key-box"
-                      data-cy="ssh-key-label"
-                    >
-                      SSH key
-                    </label>
+                    <div className="ssh-key-row">
+                      <label
+                        className={` label ${isGitSyncFeatureEnabled ? '' : 'disable-text'} col-md-6`}
+                        for="ssh-key-box"
+                        data-cy="ssh-key-label"
+                      >
+                        SSH key
+                      </label>
+                      <div className="col-md-6 key-type-switches-container">
+                        <input
+                          type="radio"
+                          id="switchMonthly"
+                          name="switchPlan"
+                          value="ed25519"
+                          checked={keyType === KEY_TYPE.ED25519}
+                          onClick={
+                            keyType === KEY_TYPE.RSA &&
+                            (() => {
+                              this.setState(
+                                {
+                                  keyType: KEY_TYPE.ED25519,
+                                },
+                                this.updatingSshKey(KEY_TYPE.ED25519)
+                              );
+                            })
+                          }
+                          disabled={isSwitchKeyDisable}
+                        />
+                        <input
+                          type="radio"
+                          id="switchYearly"
+                          name="switchPlan"
+                          value="rsa"
+                          checked={keyType === KEY_TYPE.RSA}
+                          onClick={
+                            keyType === KEY_TYPE.ED25519 &&
+                            (() => {
+                              this.setState(
+                                {
+                                  keyType: KEY_TYPE.RSA,
+                                },
+                                this.updatingSshKey(KEY_TYPE.RSA)
+                              );
+                            })
+                          }
+                          disabled={isSwitchKeyDisable}
+                        />
+                        <label for="switchMonthly">ED25519</label>
+                        <label for="switchYearly">RSA</label>
+                        <div className={`switch-wrapper `}>
+                          <div className={`switch`}>
+                            <div className={`div-switch ${isSwitchKeyDisable ? 'disable' : ''}`}>ED25519</div>
+                            <div className={`div-switch ${isSwitchKeyDisable ? 'disable' : ''}`}>RSA</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="row key-box">
                       <div className={`col-md-11 key-display ${!isGitSyncFeatureEnabled ? 'disabled' : ''}`}>
-                        <p data-cy="ssh-key">{sshKey}</p>
+                        {isUpdatingKey ? (
+                          <div className="spinner-center">
+                            <Spinner />
+                          </div>
+                        ) : (
+                          <p data-cy="ssh-key">{sshKey}</p>
+                        )}
                       </div>
                       <div className="col-md-1 copy-btn">
                         <CopyToClipboard onCopy={this.copyKeyToClipboard} text={sshKey}>
@@ -489,6 +582,25 @@ class GitSyncConfigComponent extends Component {
                       </a>
                     </div>
                   </div>
+                  {isFinalized && (
+                    <div className="row auto-commit-toggle-cont">
+                      <div className="col-md-1">
+                        <Toggle
+                          checked={autoCommit}
+                          onChange={this.setAutoCommit}
+                          disabled={!isFinalized || !isGitSyncFeatureEnabled}
+                          dataCy={'git-sync-auto-commit'}
+                        />
+                      </div>
+                      <div className="col-md-11">
+                        <div className="toggle-main-head">Auto-commit on promoting environment</div>
+                        <div className="toggle-desc">
+                          Application will automatically get pushed to the repository when promoting from development to
+                          staging environment
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
               {connectFail && <div className="alert-container">{errorMessage}</div>}

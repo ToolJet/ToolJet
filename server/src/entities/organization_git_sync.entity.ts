@@ -38,8 +38,20 @@ export class OrganizationGitSync extends BaseEntity {
   @Column({ name: 'ssh_public_key' })
   sshPublicKey: string;
 
+  @Column({ name: 'auto_commit', nullable: false, default: false })
+  autoCommit: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
+
+  @Column({
+    name: 'key_type',
+    type: 'enum',
+    enumName: 'ssh_key_type',
+    enum: ['rsa', 'ed25519'],
+    default: 'ed25519',
+  })
+  keyType: string;
 
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
