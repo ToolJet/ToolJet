@@ -1,13 +1,10 @@
 import React from 'react';
-import './Configuration.css';
-import Modal from '@/HomePage/Modal';
-import { Google } from '@/ManageSSO/Google';
-import { Git } from '@/ManageSSO/Git';
+import './Configuration.scss';
 import { GoogleSSOModal } from './GoogleSsoModal';
 import { GithubSSOModal } from './GithubSsoModal';
 import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
+import { Dropdown } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 class SSOConfiguration extends React.Component {
