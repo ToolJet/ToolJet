@@ -175,7 +175,7 @@ class SSOConfiguration extends React.Component {
 
   changeStatus = async (key, enabledStatus) => {
     try {
-      const response = await organizationService.editOrganizationConfigs({ type: key, enabled: enabledStatus });
+      await organizationService.editOrganizationConfigs({ type: key, enabled: enabledStatus });
     } catch (error) {
       console.error(error);
     }
