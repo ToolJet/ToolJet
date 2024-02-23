@@ -18,8 +18,12 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
     no_workspace_attached_in_the_session: noWorkspaceAttachedInTheSession,
   } = userResponse;
   /* reset the authentication status and loggingIn status */
+  const { email, id, first_name, last_name, organization_id, organization, ...restResponse } = userResponse;
+  const current_user = { email, id, first_name, last_name, organization_id, organization };
+
   updateCurrentSession({
-    ...userResponse,
+    current_user,
+    ...restResponse,
     authentication_status: null,
     noWorkspaceAttachedInTheSession,
     isUserLoggingIn: true,
