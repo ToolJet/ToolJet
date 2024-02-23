@@ -81,40 +81,42 @@ export function GithubSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
 
   const saveSettings = () => {
     setSaving(true);
-    organizationService.editOrganizationConfigs({ type: 'git', configs: { clientId, clientSecret, hostName }, enabled: enabled }).then(
-      (data) => {
-        setSaving(false);
-        data.id && setConfigId(data.id);
-        onUpdateSSOSettings('git', {
-          id: data?.id || configId,
-          configs: { client_id: clientId, client_secret: clientSecret, host_name: hostName },
-          enabled: enabled
-        });
-        setSettings({
-          id: data?.id || configId,
-          configs: { client_id: clientId, client_secret: clientSecret, host_name: hostName },
-        });
-        toast.success('Saved Git SSO configurations', {
-          position: 'top-center',
-        });
-      },
-      () => {
-        setSaving(false);
-        toast.error('Error while saving Git SSO configurations', {
-          position: 'top-center',
-        });
-      }
-    );
+    organizationService
+      .editOrganizationConfigs({ type: 'git', configs: { clientId, clientSecret, hostName }, enabled: enabled })
+      .then(
+        (data) => {
+          setSaving(false);
+          data.id && setConfigId(data.id);
+          onUpdateSSOSettings('git', {
+            id: data?.id || configId,
+            configs: { client_id: clientId, client_secret: clientSecret, host_name: hostName },
+            enabled: enabled,
+          });
+          setSettings({
+            id: data?.id || configId,
+            configs: { client_id: clientId, client_secret: clientSecret, host_name: hostName },
+          });
+          toast.success('Saved Git SSO configurations', {
+            position: 'top-center',
+          });
+        },
+        () => {
+          setSaving(false);
+          toast.error('Error while saving Git SSO configurations', {
+            position: 'top-center',
+          });
+        }
+      );
     setHasChanges(false);
   };
 
   const initiateSave = () => {
-    if (enabled != settings?.enabled && enabled === true && isInstanceOptionEnabled('git')){ (
-      setShowEnablingWorkspaceSSOModal(true)
-    )} else {
+    if (enabled != settings?.enabled && enabled === true && isInstanceOptionEnabled('git')) {
+      setShowEnablingWorkspaceSSOModal(true);
+    } else {
       saveSettings();
     }
-  }
+  };
 
   // GitHeader Component
   function GithubHeader() {
@@ -203,13 +205,13 @@ export function GithubSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
                 <form noValidate className="sso-form-wrap">
                   <div className="form-group mb-3">
                     <label className="form-label" data-cy="host-name-label">
-                      {t('header.organization.menus.manageSSO.github.hostName', 'Host Name')}
+                      {'Host name'}
                     </label>
                     <div className="tj-app-input">
                       <input
                         type="text"
                         className="form-control"
-                        placeholder={t('header.organization.menus.manageSSO.github.enterHostName', 'Enter Host Name')}
+                        placeholder={'Enter Host name'}
                         value={hostName}
                         onChange={(e) => handleHostNameChange(e.target.value)}
                         data-cy="host-name-input"
@@ -226,13 +228,13 @@ export function GithubSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
                   </div>
                   <div className="form-group mb-3">
                     <label className="form-label" data-cy="client-id-label">
-                      {t('header.organization.menus.manageSSO.github.clientId', ' Client Id')}
+                      {'Client ID'}
                     </label>
                     <div className="tj-app-input">
                       <input
                         type="text"
                         className="form-control"
-                        placeholder={t('header.organization.menus.manageSSO.github.enterClientId', 'Enter Client Id')}
+                        placeholder={'Enter Client ID'}
                         value={clientId}
                         onChange={(e) => handleClientIdChange(e.target.value)}
                         data-cy="client-id-input"
@@ -241,7 +243,7 @@ export function GithubSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
                   </div>
                   <div className="form-group mb-3">
                     <label className="form-label" data-cy="client-secret-label">
-                      {t('header.organization.menus.manageSSO.github.clientSecret', 'Client Secret')}
+                      {'Client secret'}
                       <small className="git- mx-2" data-cy="encripted-label">
                         <SolidIcon name="lock" width="16" />
                         {t('header.organization.menus.manageSSO.github.encrypted', 'Encrypted')}
@@ -251,10 +253,7 @@ export function GithubSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
                       <input
                         type="text"
                         className="form-control"
-                        placeholder={t(
-                          'header.organization.menus.manageSSO.github.enterClientSecret',
-                          'Enter Client Secret'
-                        )}
+                        placeholder={'Enter Client secret'}
                         value={clientSecret}
                         onChange={(e) => handleClientSecretChange(e.target.value)}
                         data-cy="client-secret-input"
@@ -281,14 +280,14 @@ export function GithubSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
         </Modal>
       )}
       {showEnablingWorkspaceSSOModal && (
-      <WorkspaceSSOEnableModal
-        show={showEnablingWorkspaceSSOModal}
-        ssoKey={'git'}
-        saveSettings={saveSettings}
-        setShowModal={setShowEnablingWorkspaceSSOModal}
-        reset={reset}
-      />
-    )}
+        <WorkspaceSSOEnableModal
+          show={showEnablingWorkspaceSSOModal}
+          ssoKey={'git'}
+          saveSettings={saveSettings}
+          setShowModal={setShowEnablingWorkspaceSSOModal}
+          reset={reset}
+        />
+      )}
     </div>
   );
 }

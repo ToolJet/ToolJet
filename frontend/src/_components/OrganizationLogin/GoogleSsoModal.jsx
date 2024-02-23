@@ -64,8 +64,8 @@ export function GoogleSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
       (data) => {
         setSaving(false);
         data.id && setConfigId(data.id);
-        onUpdateSSOSettings('google', {id: data?.id || configId, configs: {client_id: clientId}, enabled: enabled});
-        setSettings({id: data?.id || configId, configs: {client_id: clientId}, enabled: enabled});
+        onUpdateSSOSettings('google', { id: data?.id || configId, configs: { client_id: clientId }, enabled: enabled });
+        setSettings({ id: data?.id || configId, configs: { client_id: clientId }, enabled: enabled });
         toast.success('Saved Google SSO configurations', {
           position: 'top-center',
         });
@@ -81,12 +81,12 @@ export function GoogleSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
   };
 
   const initiateSave = () => {
-    if (enabled != settings?.enabled && enabled === true && isInstanceOptionEnabled('google')) { 
-      setShowEnablingWorkspaceSSOModal(true)
+    if (enabled != settings?.enabled && enabled === true && isInstanceOptionEnabled('google')) {
+      setShowEnablingWorkspaceSSOModal(true);
     } else {
       saveSettings();
     }
-  }
+  };
 
   // GoogleHeader Component
   function GoogleHeader() {
@@ -175,13 +175,13 @@ export function GoogleSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
                 <form noValidate className="sso-form-wrap">
                   <div className="form-group mb-3">
                     <label className="form-label" data-cy="client-id-label">
-                      {t('header.organization.menus.manageSSO.google.clientId', 'Client Id')}
+                      {'Client ID'}
                     </label>
                     <div className="tj-app-input">
                       <input
                         type="text "
                         className="form-control"
-                        placeholder={t('header.organization.menus.manageSSO.google.enterClientId', 'Enter Client Id')}
+                        placeholder={'Enter Client ID'}
                         value={clientId}
                         onChange={(e) => handleClientIdChange(e.target.value)}
                         data-cy="client-id-input"
@@ -208,14 +208,14 @@ export function GoogleSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
         </Modal>
       )}
       {showEnablingWorkspaceSSOModal && (
-      <WorkspaceSSOEnableModal
-        show={showEnablingWorkspaceSSOModal}
-        ssoKey={'google'}
-        saveSettings={saveSettings}
-        setShowModal={setShowEnablingWorkspaceSSOModal}
-        reset={reset}
-      />
-    )}
+        <WorkspaceSSOEnableModal
+          show={showEnablingWorkspaceSSOModal}
+          ssoKey={'google'}
+          saveSettings={saveSettings}
+          setShowModal={setShowEnablingWorkspaceSSOModal}
+          reset={reset}
+        />
+      )}
     </div>
   );
 }
