@@ -176,52 +176,51 @@ return [row for row in data if row['amount'] > 1000]
       <br></br>
       <div className="d-flex copilot-codehinter-wrap">
         <div className="form-label"></div>
-        <div className="col flex-grow-1">
-          {enableTransformation && (
-            <div
-              className="rounded-3"
-              style={{ marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
-            >
-              <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
-                <div className="d-flex">
-                  <div className="d-flex align-items-center border transformation-language-select-wrapper">
-                    <span className="px-2">Language</span>
-                  </div>
-                  <Select
-                    options={[
-                      { name: 'JavaScript', value: 'javascript' },
-                      { name: 'Python', value: 'python' },
-                    ]}
-                    value={lang}
-                    search={true}
-                    onChange={(value) => {
-                      setLang(value);
-                      changeOption('transformationLanguage', value);
-                      changeOption('transformation', state[value]);
-                    }}
-                    placeholder={t('globals.select', 'Select') + '...'}
-                    styles={computeSelectStyles(darkMode, 140)}
-                    useCustomStyles={true}
-                  />
+
+        {enableTransformation && (
+          <div
+            className="rounded-3 transformation-container"
+            style={{ marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
+          >
+            <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
+              <div className="d-flex">
+                <div className="d-flex align-items-center border transformation-language-select-wrapper">
+                  <span className="px-2">Language</span>
                 </div>
+                <Select
+                  options={[
+                    { name: 'JavaScript', value: 'javascript' },
+                    { name: 'Python', value: 'python' },
+                  ]}
+                  value={lang}
+                  search={true}
+                  onChange={(value) => {
+                    setLang(value);
+                    changeOption('transformationLanguage', value);
+                    changeOption('transformation', state[value]);
+                  }}
+                  placeholder={t('globals.select', 'Select') + '...'}
+                  styles={computeSelectStyles(darkMode, 140)}
+                  useCustomStyles={true}
+                />
               </div>
-              <div className="codehinter-border-bottom mx-3"></div>
-              <CodeHinter
-                type="multiline"
-                initialValue={state[lang] ?? ''}
-                lang={lang}
-                lineNumbers={true}
-                height={'300px'}
-                className="query-hinter"
-                onChange={(value) => changeOption('transformation', value)}
-                componentName={`transformation`}
-                cyLabel={'transformation-input'}
-                callgpt={noop}
-                isCopilotEnabled={false}
-              />
             </div>
-          )}
-        </div>
+            <div className="codehinter-border-bottom mx-3"></div>
+            <CodeHinter
+              type="multiline"
+              initialValue={state[lang] ?? ''}
+              lang={lang}
+              lineNumbers={true}
+              height={400}
+              className="query-hinter"
+              onChange={(value) => changeOption('transformation', value)}
+              componentName={`transformation`}
+              cyLabel={'transformation-input'}
+              callgpt={noop}
+              isCopilotEnabled={false}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

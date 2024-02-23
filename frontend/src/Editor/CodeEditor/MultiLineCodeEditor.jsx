@@ -1,10 +1,10 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap } from '@codemirror/commands';
 import { keymap } from '@codemirror/view';
-import { completionKeymap, acceptCompletion } from '@codemirror/autocomplete';
+import { completionKeymap } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
@@ -12,6 +12,8 @@ import { githubLight } from '@uiw/codemirror-theme-github';
 import { generateHints } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
+import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
+import { createReferencesLookup } from '@/_stores/utils';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -38,6 +40,11 @@ const MultiLineCodeEditor = (props) => {
   } = props;
 
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
+
+  const context = useContext(CodeHinterContext);
+
+  const { suggestionList } = createReferencesLookup(context, true);
+
   const diffOfCurrentValue = React.useRef(null);
 
   const handleChange = React.useCallback((val) => {
@@ -75,6 +82,7 @@ const MultiLineCodeEditor = (props) => {
     autocompletion: hideSuggestion ?? true,
     highlightActiveLineGutter: false,
     completionKeymap: true,
+    searchKeymap: false,
   };
 
   function autoCompleteExtensionConfig(context) {
@@ -119,7 +127,7 @@ const MultiLineCodeEditor = (props) => {
       return suggestion.hint.includes(currentWord);
     });
 
-    const suggestions = generateHints([...JSLangHints, ...autoSuggestionList]).map((hint) => {
+    const suggestions = generateHints([...JSLangHints, ...autoSuggestionList, ...suggestionList]).map((hint) => {
       delete hint['apply'];
 
       hint.apply = (view, completion, from, to) => {
@@ -158,11 +166,7 @@ const MultiLineCodeEditor = (props) => {
     };
   }
 
-  const acceptCompletionKeymap = {
-    key: 'Tab',
-    run: acceptCompletion,
-  };
-  const customKeyMaps = [...defaultKeymap, ...completionKeymap, acceptCompletionKeymap];
+  const customKeyMaps = [...defaultKeymap, ...completionKeymap];
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), []);
@@ -205,6 +209,12 @@ const MultiLineCodeEditor = (props) => {
                   javascriptLanguage.data.of({
                     autocomplete: overRideFunction,
                   }),
+                  python().language.data.of({
+                    autocomplete: overRideFunction,
+                  }),
+                  sql().language.data.of({
+                    autocomplete: overRideFunction,
+                  }),
                   keymap.of([...customKeyMaps]),
                 ]}
                 onChange={handleChange}
@@ -214,7 +224,7 @@ const MultiLineCodeEditor = (props) => {
                   overflowY: 'auto',
                 }}
                 className={`codehinter-multi-line-input`}
-                indentWithTab={false}
+                indentWithTab={true}
               />
             </div>
           </ErrorBoundary>

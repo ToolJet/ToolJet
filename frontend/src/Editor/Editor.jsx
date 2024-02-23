@@ -457,34 +457,6 @@ const EditorComponent = (props) => {
 
     useResolveStore.getState().actions.updateJSHints();
 
-    const expectedValidationProps = ['properties', 'styles', 'general', 'other'];
-
-    const defaultValues = {};
-    componentTypes.forEach((component) => {
-      const componentType = component.component;
-
-      expectedValidationProps.forEach((prop) => {
-        const componentProps = component[prop];
-
-        if (componentProps) {
-          Object.keys(componentProps).forEach((propName) => {
-            const propMeta = component['definition'][prop][propName];
-            const defaultValue = propMeta?.value ?? '';
-
-            defaultValues[componentType] = {
-              ...defaultValues[componentType],
-              [propName]:
-                typeof defaultValue === 'string' && defaultValue.startsWith('{{')
-                  ? defaultValue?.replace(/{{|}}/g, '').trim()
-                  : defaultValue,
-            };
-          });
-        }
-      });
-    });
-
-    useResolveStore.getState().actions.updateComponentDefaultValues(defaultValues);
-
     await fetchApp(props.params.pageHandle, true);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();

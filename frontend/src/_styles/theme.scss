@@ -2316,11 +2316,11 @@ body {
   color: #5890ff;
 }
 
-.transformation-editor {
-  .CodeMirror {
-    min-height: 70px;
-  }
-}
+// .transformation-editor {
+//   .CodeMirror {
+//     min-height: 70px;
+//   }
+// }
 
 .chart-data-input {
   .CodeMirror {
@@ -2488,11 +2488,11 @@ body {
   margin-bottom: 0px;
 }
 
-.transformation-editor {
-  .CodeMirror {
-    min-height: 220px;
-  }
-}
+// .transformation-editor {
+//   .CodeMirror {
+//     min-height: 220px;
+//   }
+// }
 
 hr {
   margin: 1rem 0;
@@ -12246,11 +12246,7 @@ tbody {
   align-items: center;
 }
 
-.copilot-codehinter-wrap {
-  .CodeMirror.cm-s-monokai.CodeMirror-wrap {
-    border-radius: 0px;
-  }
-}
+
 
 .avatar-list-stacked {
   display: flex;

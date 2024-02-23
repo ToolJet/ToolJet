@@ -235,7 +235,11 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
   if ((isEmpty(validationSchema) && hasMultiDynamicVariables) || hasMultiDynamicVariables?.length > 1) {
     resolvedValue = resolveMultiDynamicReferences(query, lookupTable);
   } else {
-    const value = !fxActive ? query?.replace(/{{|}}/g, '').trim() : query;
+    let value = !fxActive ? query?.replace(/{{|}}/g, '').trim() : query;
+
+    if (fxActive && (value.startsWith('#') || value.includes('table-'))) {
+      value = JSON.stringify(value);
+    }
 
     const { toResolveReference, jsExpression, jsExpMatch } = inferJSExpAndReferences(value, lookupTable.hints);
 

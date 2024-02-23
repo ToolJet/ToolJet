@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { camelCase, isEmpty } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
-import { autocompletion, completionKeymap, acceptCompletion } from '@codemirror/autocomplete';
+import { autocompletion, completionKeymap } from '@codemirror/autocomplete';
 import { defaultKeymap } from '@codemirror/commands';
 import { keymap } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
@@ -159,11 +159,7 @@ const EditorInput = ({
     defaultKeymap: true,
   });
 
-  const acceptCompletionKeymap = {
-    key: 'Tab',
-    run: acceptCompletion,
-  };
-  const customKeyMaps = [...defaultKeymap, ...completionKeymap, acceptCompletionKeymap];
+  const customKeyMaps = [...defaultKeymap, ...completionKeymap];
 
   const handleOnChange = React.useCallback((val) => {
     setCurrentValue(val);
@@ -254,12 +250,13 @@ const EditorInput = ({
               highlightActiveLine: false,
               autocompletion: true,
               completionKeymap: true,
+              searchKeymap: false,
             }}
             onFocus={() => handleFocus()}
-            onBlur={handleOnBlur}
+            onBlur={() => handleOnBlur()}
             className={customClassNames}
             theme={theme}
-            indentWithTab={false}
+            indentWithTab={true}
           />
         </ErrorBoundary>
       </CodeHinter.Portal>
