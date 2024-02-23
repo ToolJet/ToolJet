@@ -95,7 +95,7 @@
   }
   
   input:checked + .slider {
-    background-color: var(--indigo9);
+    background-color: var(--indigo9) !important;
   }
   
   input:focus + .slider {
