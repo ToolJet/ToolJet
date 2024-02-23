@@ -72,7 +72,7 @@ export default function GenerateEachCellValue({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rowData, rowChangeSet]);
 
-  let htmlElement = cellValue;
+  let htmlElement = cellValue === null ? <span>nakul</span> : cellValue;
   if (cellValue?.toString()?.toLowerCase().includes(globalFilter?.toLowerCase())) {
     if (globalFilter) {
       var normReq = globalFilter
@@ -86,6 +86,7 @@ export default function GenerateEachCellValue({
         .replace(new RegExp(`(${normReq.join('|')})`, 'gi'), (match) => `<mark>${match}</mark>`);
     }
   }
+
   return (
     <div
       onClick={() => {
@@ -140,6 +141,7 @@ export default function GenerateEachCellValue({
           </div>
         </div>
       ) : (
+        // <div>Yes</div>
         cellRender
       )}
     </div>
