@@ -99,7 +99,7 @@ export const AuthRoute = ({ children, navigate }) => {
       } = session;
       if (authentication_status && noWorkspaceAttachedInTheSession) navigate('/error/no-active-workspace');
       if (isValidSession || id) {
-        setOrganizationName({ current_organization_name });
+        setOrganizationName(current_organization_name);
         const shouldRedirect = !organizationSlug || (!isGettingConfigs && current_organization_id === organizationId);
         if (shouldRedirect || isSignUpRoute) {
           const redirectPath = getRedirectURL('/');
