@@ -179,18 +179,22 @@ class OrganizationLogin extends React.Component {
   handleInputChange = (field, event) => {
     const newValue = event.target.value;
 
-    this.setState((prevState) => ({
-      options: { ...prevState.options, [field]: newValue },
-    }),
-    this.checkForChanges);
+    this.setState(
+      (prevState) => ({
+        options: { ...prevState.options, [field]: newValue },
+      }),
+      this.checkForChanges
+    );
   };
 
   handleCheckboxChange = (field) => {
     const newValue = !this.state.options[field];
-    this.setState((prevState) => ({
-      options: { ...prevState.options, [field]: newValue },
-    }),
-    this.checkForChanges);
+    this.setState(
+      (prevState) => ({
+        options: { ...prevState.options, [field]: newValue },
+      }),
+      this.checkForChanges
+    );
     if (field === 'passwordLoginEnabled' && !newValue) {
       this.setState({ showDisablingPasswordConfirmation: true });
     }
