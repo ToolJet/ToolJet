@@ -47,11 +47,7 @@ class SSOConfiguration extends React.Component {
 
   handleUpdateSSOSettings = async (ssoType, newSettings) => {
     const isEnabledKey = `${ssoType}Enabled`;
-    const enabledStatus = this.state[isEnabledKey];
     try {
-      if (newSettings?.enabled != enabledStatus){
-        await this.changeStatus(ssoType, enabledStatus);
-      }
       this.setState((prevState) => {
         const exists = prevState.ssoOptions.some(option => option.sso === ssoType);
         let updatedSSOOptions;
@@ -64,7 +60,6 @@ class SSOConfiguration extends React.Component {
         });
       } else {
         updatedSSOOptions = [...prevState.ssoOptions, { sso: ssoType, ...newSettings }];
-        console.log(newSettings, updatedSSOOptions, 'op');
       }
         this.props.onUpdateAnySSOEnabled(
           updatedSSOOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) || (this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled)),
@@ -186,18 +181,6 @@ class SSOConfiguration extends React.Component {
       const response = await organizationService.editOrganizationConfigs({ type: key, enabled: enabledStatus });
     } catch (error) {
       console.error(error);
-    }
-  };
-
-  renderSSOConfigComponent = () => {
-    const { currentSSO } = this.state;
-    switch (currentSSO) {
-      case 'google':
-        return <Google />;
-      case 'git':
-        return <Git />;
-      default:
-        return null;
     }
   };
 

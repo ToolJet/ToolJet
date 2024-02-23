@@ -177,13 +177,20 @@ class OrganizationLogin extends React.Component {
   };
 
   handleInputChange = (field, event) => {
-    const newValue = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-    this.setState(
-      (prevState) => ({
-        options: { ...prevState.options, [field]: newValue },
-      }),
-      this.checkForChanges
-    ); // Check for changes after state update
+    const newValue = event.target.value;
+
+    this.setState((prevState) => ({
+      options: { ...prevState.options, [field]: newValue },
+    }),
+    this.checkForChanges);
+  };
+
+  handleCheckboxChange = (field) => {
+    const newValue = !this.state.options[field];
+    this.setState((prevState) => ({
+      options: { ...prevState.options, [field]: newValue },
+    }),
+    this.checkForChanges);
     if (field === 'passwordLoginEnabled' && !newValue) {
       this.setState({ showDisablingPasswordConfirmation: true });
     }
@@ -270,15 +277,16 @@ class OrganizationLogin extends React.Component {
                     <div className="form-group mb-3">
                       <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
                         <input
+                          id="enableSignUp"
                           className="form-check-input"
                           type="checkbox"
-                          onChange={(e) => this.handleInputChange('enableSignUp', e)}
+                          onChange={() => this.handleCheckboxChange('enableSignUp')}
                           checked={options?.enableSignUp === true}
                           data-cy="enable-sign-up-toggle"
                         />
-                        <span className="form-check-label bold-text" data-cy="enable-sign-up-label">
+                        <label className="form-check-label bold-text" data-cy="enable-sign-up-label">
                           {t('header.organization.menus.manageSSO.generalSettings.enableSignup', 'Enable signup')}
-                        </span>
+                        </label>
                       </label>
                       <div className="help-text danger-text-login">
                         <div data-cy="enable-sign-up-helper-text">
@@ -295,16 +303,17 @@ class OrganizationLogin extends React.Component {
                         <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
                           <div>
                             <input
+                              id="passwordLogin"
                               className="form-check-input"
                               type="checkbox"
-                              onChange={(e) => this.handleInputChange('passwordLoginEnabled', e)}
+                              onChange={() => this.handleCheckboxChange('passwordLoginEnabled')}
                               data-cy="password-enable-toggle"
                               checked={options?.passwordLoginEnabled === true}
                               disabled={!isAnySSOEnabled}
                             />
-                            <span className="form-check-label bold-text" data-cy="label-password-login">
+                            <label className="form-check-label bold-text" data-cy="label-password-login">
                               Password login
-                            </span>
+                            </label>
                           </div>
                         </label>
                       </ToolTip>
