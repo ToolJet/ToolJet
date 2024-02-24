@@ -254,9 +254,9 @@ class AppComponent extends React.Component {
                 exact
                 path="/:workspaceId/workspace-settings"
                 element={
-                  <PrivateRoute>
+                  <AdminRoute {...this.props}>
                     <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
+                  </AdminRoute>
                 }
               />
               <Route
@@ -294,7 +294,7 @@ class AppComponent extends React.Component {
                   exact
                   path="/integrations"
                   element={
-                    <AdminRoute>
+                    <AdminRoute {...this.props}>
                       <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </AdminRoute>
                   }
