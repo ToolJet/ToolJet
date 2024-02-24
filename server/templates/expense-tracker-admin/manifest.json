@@ -4,5 +4,5 @@
   "widgets": ["Table", "Chart"],
   "sources": [{ "name": "ToolJet Database", "id": "tooljetdb" }],
   "id": "expense-tracker-admin",
-  "category": "operations"
+  "category": "financial-management"
 }

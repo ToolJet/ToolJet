@@ -4,5 +4,5 @@
   "widgets": ["Table", "Chart"],
   "sources": [{ "name": "GCS", "id": "gcs" }],
   "id": "google-cloud-storage-explorer",
-  "category": "product-management"
+  "category": "data-management"
 }
