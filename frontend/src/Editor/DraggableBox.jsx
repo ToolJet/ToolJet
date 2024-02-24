@@ -7,14 +7,19 @@ import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
 import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveWidgetFieldValue, resolveReferences } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import WidgetBox from './WidgetBox';
 import * as Sentry from '@sentry/react';
-
+import {
+  resolveProperties,
+  resolveStyles,
+  resolveGeneralProperties,
+  resolveGeneralStyles,
+} from './component-properties-resolution';
 const NO_OF_GRIDS = 43;
 
 const resizerClasses = {
@@ -241,14 +246,32 @@ export const DraggableBox = React.memo(
       // Return true if vertical resizing is allowed, false otherwise
       return (
         mode === 'edit' &&
-        component.component !== 'TextInput' &&
+        // component.component !== 'TextInput' &&
         component.component !== 'PasswordInput' &&
         component.component !== 'NumberInput' &&
         !readOnly
       );
     }
+    // const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
+
+    useEffect(() => {
+      setboxHeight(layoutData?.height);
+
+      if (component.component == 'TextInput') {
+        const { alignment = { value: null } } = component?.definition?.styles ?? {};
+
+        if (alignment.value && resolveReferences(alignment?.value, currentState, null, customResolvables) === 'top') {
+          setboxHeight(layoutData?.height + 20);
+        }
+      }
+    }, [layoutData?.height]);
+
+    // const increaseHeight = () => {
+    //   setboxHeight(layoutData?.height + 20);
+    // };
 
     const adjustHeightBasedOnAlignment = (increase) => {
+      console.log('calling inside layoutData?.height---', layoutData?.height);
       if (increase) return setboxHeight(layoutData?.height + 20);
       else return setboxHeight(layoutData?.height);
     };
@@ -288,7 +311,7 @@ export const DraggableBox = React.memo(
               dragGrid={[gridWidth, 10]}
               size={{
                 width: width,
-                height: isVerticalResizingAllowed() ? layoutData.height : boxHeight,
+                height: boxHeight,
               }}
               position={{
                 x: layoutData ? (layoutData.left * canvasWidth) / 100 : 0,
@@ -381,6 +404,7 @@ export const DraggableBox = React.memo(
                     isResizing={isResizing}
                     adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
                     currentLayout={currentLayout}
+                    // increaseHeight={increaseHeight}
                   />
                 </Sentry.ErrorBoundary>
               </div>
