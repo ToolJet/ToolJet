@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import { ToolTip } from '@/_components/ToolTip';
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
@@ -25,7 +24,7 @@ export const TextInput = function TextInput({
   const textInputRef = useRef();
   const labelRef = useRef();
 
-  const { loadingState, tooltip, disabledState, label, placeholder } = properties;
+  const { loadingState, disabledState, label, placeholder } = properties;
 
   const {
     padding,
@@ -71,7 +70,6 @@ export const TextInput = function TextInput({
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
     boxShadow: boxShadow,
     padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
-    // flex: padding !== 'none' && 1,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   };

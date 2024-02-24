@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import './numberinput.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { ToolTip } from '@/_components/ToolTip';
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { resolveReferences } from '@/_helpers/utils';
@@ -23,7 +22,7 @@ export const NumberInput = function NumberInput({
   adjustHeightBasedOnAlignment,
   currentLayout,
 }) {
-  const { loadingState, tooltip, disabledState, label, placeholder } = properties;
+  const { loadingState, disabledState, label, placeholder } = properties;
   const {
     padding,
     borderRadius,
@@ -180,7 +179,6 @@ export const NumberInput = function NumberInput({
 
     boxShadow: boxShadow,
     padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
-    // flex: padding !== 'none' && 1,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   };
