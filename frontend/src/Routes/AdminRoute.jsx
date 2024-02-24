@@ -10,7 +10,6 @@ export const AdminRoute = ({ children, navigate }) => {
     return navigate(
       {
         pathname: '/',
-        search: `?redirectTo=${location.pathname}`,
         state: { from: location },
       },
       { replace: true }
