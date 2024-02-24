@@ -130,15 +130,11 @@ export class AuthService {
         } else if (organizationList?.length > 0) {
           // default organization form login not enabled, picking first one from form enabled list
           organization = organizationList[0];
+        } else {
+          // no form login enabled organization available for user - creating new one
+          const { name, slug } = generateNextNameAndSlug('My workspace');
+          organization = await this.organizationsService.create(name, slug, user, manager);
         }
-
-        /* TODO: This case should handle in different way */
-        // else {
-        //   // no form login enabled organization available for user - creating new one
-        //   const { name, slug } = generateNextNameAndSlug('My workspace');
-        //   organization = await this.organizationsService.create(name, slug, user, manager);
-        // }
-
         if (organization) user.organizationId = organization.id;
       } else {
         // organization specific login
