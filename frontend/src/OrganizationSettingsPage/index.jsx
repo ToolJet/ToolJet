@@ -35,10 +35,6 @@ export function OrganizationSettings(props) {
     }
   };
 
-  if (!admin) {
-    navigate('/');
-  }
-
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
