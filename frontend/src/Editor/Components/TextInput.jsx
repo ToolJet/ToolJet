@@ -185,9 +185,11 @@ export const TextInput = function TextInput({
   useEffect(() => {
     if (alignment == 'top' && ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)))
       adjustHeightBasedOnAlignment(true);
-    else adjustHeightBasedOnAlignment(false);
+    else {
+      adjustHeightBasedOnAlignment(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length, currentLayout]);
+  }, [alignment, label?.length, currentLayout, isResizing]);
 
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
