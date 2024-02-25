@@ -14,12 +14,6 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import WidgetBox from './WidgetBox';
 import * as Sentry from '@sentry/react';
-import {
-  resolveProperties,
-  resolveStyles,
-  resolveGeneralProperties,
-  resolveGeneralStyles,
-} from './component-properties-resolution';
 const NO_OF_GRIDS = 43;
 
 const resizerClasses = {
@@ -127,42 +121,7 @@ export const DraggableBox = React.memo(
         top: '-4px',
       },
     };
-    if (!isVerticalResizingAllowed()) {
-      resizerStyles.right = {
-        position: 'absolute',
-        height: '20px',
-        width: '5px',
-        right: '-3px',
-        background: '#4368E3',
-        borderRadius: '8px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        display:
-          (mode === 'edit' && !readOnly && mouseOver) || isResizing || isDragging2 || isSelectedComponent
-            ? isVerticalResizingAllowed()
-              ? 'none'
-              : 'block'
-            : 'none',
-        zIndex: 5,
-      };
-      resizerStyles.left = {
-        position: 'absolute',
-        height: '20px',
-        width: '5px',
-        left: '-3px',
-        background: '#4368E3',
-        borderRadius: '8px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        display:
-          (mode === 'edit' && !readOnly && mouseOver) || isResizing || isDragging2 || isSelectedComponent
-            ? isVerticalResizingAllowed()
-              ? 'none'
-              : 'block'
-            : 'none',
-        zIndex: 5,
-      };
-    }
+
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({
         type: ItemTypes.BOX,
@@ -242,36 +201,34 @@ export const DraggableBox = React.memo(
       if (selectionInProgress) return;
       setHoveredComponent(id);
     };
-    function isVerticalResizingAllowed() {
-      // Return true if vertical resizing is allowed, false otherwise
-      return (
-        mode === 'edit' &&
-        // component.component !== 'TextInput' &&
-        component.component !== 'PasswordInput' &&
-        component.component !== 'NumberInput' &&
-        !readOnly
-      );
-    }
-    // const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
+
+    const { label = { value: null } } = component?.definition?.properties ?? {};
 
     useEffect(() => {
       setboxHeight(layoutData?.height);
 
-      if (component.component == 'TextInput') {
-        const { alignment = { value: null } } = component?.definition?.styles ?? {};
+      const { width = { value: null } } = component?.definition?.styles ?? {};
+      const { auto = { value: null } } = component?.definition?.styles ?? {};
 
-        if (alignment.value && resolveReferences(alignment?.value, currentState, null, customResolvables) === 'top') {
+      const resolvedWidth = resolveReferences(width?.value, currentState, null, customResolvables);
+      const resolvedAuto = resolveReferences(auto?.value, currentState, null, customResolvables);
+      if (
+        component.component == 'TextInput' ||
+        (component.component == 'PasswordInput' && component.component == 'NumberInput')
+      ) {
+        const { alignment = { value: null } } = component?.definition?.styles ?? {};
+        if (
+          alignment?.value &&
+          resolveReferences(alignment?.value, currentState, null, customResolvables) === 'top' &&
+          ((label?.value?.length > 0 && resolvedWidth > 0) ||
+            (resolvedAuto && resolvedWidth == 0 && label?.value && label?.value?.length != 0))
+        ) {
           setboxHeight(layoutData?.height + 20);
         }
       }
-    }, [layoutData?.height]);
-
-    // const increaseHeight = () => {
-    //   setboxHeight(layoutData?.height + 20);
-    // };
+    }, [layoutData?.height, label?.value?.length, currentLayout, isResizing]);
 
     const adjustHeightBasedOnAlignment = (increase) => {
-      console.log('calling inside layoutData?.height---', layoutData?.height);
       if (increase) return setboxHeight(layoutData?.height + 20);
       else return setboxHeight(layoutData?.height);
     };
@@ -332,14 +289,14 @@ export const DraggableBox = React.memo(
               resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
               resizeHandleStyles={resizerStyles}
               enableResizing={{
-                top: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
+                top: mode == 'edit' && !readOnly,
                 right: mode == 'edit' && !readOnly && true,
-                bottom: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
+                bottom: mode == 'edit' && !readOnly,
                 left: mode == 'edit' && !readOnly && true,
-                topRight: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
-                bottomRight: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
-                bottomLeft: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
-                topLeft: mode == 'edit' && !readOnly && isVerticalResizingAllowed(),
+                topRight: mode == 'edit' && !readOnly,
+                bottomRight: mode == 'edit' && !readOnly,
+                bottomLeft: mode == 'edit' && !readOnly,
+                topLeft: mode == 'edit' && !readOnly,
               }}
               disableDragging={mode !== 'edit' || readOnly}
               onDragStop={(e, direction) => {
@@ -368,7 +325,6 @@ export const DraggableBox = React.memo(
                       widgetHeight={layoutData.height}
                       isMultipleComponentsSelected={isMultipleComponentsSelected}
                       configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
-                      isVerticalResizingAllowed={isVerticalResizingAllowed}
                     />
                   )}
                 {/* Adding a sentry's error boundary to differentiate between our generic error boundary and one from editor's component  */}
@@ -404,7 +360,6 @@ export const DraggableBox = React.memo(
                     isResizing={isResizing}
                     adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
                     currentLayout={currentLayout}
-                    // increaseHeight={increaseHeight}
                   />
                 </Sentry.ErrorBoundary>
               </div>
