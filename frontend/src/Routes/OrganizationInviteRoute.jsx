@@ -77,7 +77,6 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
           const isInvitationTokenAndUserMismatch = errorObj?.error?.isInvitationTokenAndUserMismatch;
           if (isInvitationTokenAndUserMismatch) {
             /* logout and redirect to login page */
-            toast.error(errorMessage);
             navigate('/error/invalid-invite-session');
           } else {
             /* Redirect to the login page. No session at all */
