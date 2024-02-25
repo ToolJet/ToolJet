@@ -50,7 +50,7 @@ export class AppController {
 
   @Post('authenticate')
   async login(@Body() appAuthDto: AppAuthenticationDto, @Res({ passthrough: true }) response: Response) {
-    return this.authService.login(response, appAuthDto.email, appAuthDto.password);
+    return this.authService.login(response, appAuthDto);
   }
 
   @UseGuards(OrganizationAuthGuard)
@@ -61,7 +61,7 @@ export class AppController {
     @Param('organizationId') organizationId,
     @Res({ passthrough: true }) response: Response
   ) {
-    return this.authService.login(response, appAuthDto.email, appAuthDto.password, organizationId, user);
+    return this.authService.login(response, appAuthDto, organizationId, user);
   }
 
   @UseGuards(InvitedUserSessionAuthGuard)

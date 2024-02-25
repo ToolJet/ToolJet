@@ -132,6 +132,7 @@ export class OauthService {
       organizationId: loginOrganiaztionId,
       signupOrganizationId,
       invitationToken: signUpInvitationToken,
+      redirectTo,
     } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
@@ -262,14 +263,16 @@ export class OauthService {
             // default organization SSO login not enabled, picking first one from SSO enabled list
             organizationDetails = organizationList[0];
           } else {
-            // no SSO login enabled organization available for user - creating new one
-            const { name, slug } = generateNextNameAndSlug('My workspace');
-            organizationDetails = await this.organizationService.create(name, slug, userDetails, manager);
-            await this.usersService.updateUser(
-              userDetails.id,
-              { defaultOrganizationId: organizationDetails.id },
-              manager
-            );
+            if (!redirectTo.startsWith('/organization-invitations/')) {
+              // no SSO login enabled organization available for user - creating new one
+              const { name, slug } = generateNextNameAndSlug('My workspace');
+              organizationDetails = await this.organizationService.create(name, slug, userDetails, manager);
+              await this.usersService.updateUser(
+                userDetails.id,
+                { defaultOrganizationId: organizationDetails.id },
+                manager
+              );
+            }
           }
         } else if (!userDetails) {
           throw new UnauthorizedException('User does not exist, please sign up');
@@ -355,4 +358,5 @@ interface SSOResponse {
   organizationId?: string;
   signupOrganizationId?: string;
   invitationToken?: string;
+  redirectTo?: string;
 }
