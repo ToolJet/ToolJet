@@ -214,7 +214,8 @@ export const DraggableBox = React.memo(
       const resolvedAuto = resolveReferences(auto?.value, currentState, null, customResolvables);
       if (
         component.component == 'TextInput' ||
-        (component.component == 'PasswordInput' && component.component == 'NumberInput')
+        component.component == 'PasswordInput' ||
+        component.component == 'NumberInput'
       ) {
         const { alignment = { value: null } } = component?.definition?.styles ?? {};
         if (
