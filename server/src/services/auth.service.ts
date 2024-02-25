@@ -356,10 +356,14 @@ export class AuthService {
     response: Response,
     user: User,
     organizationParams: Partial<OrganizationUser>,
-    manager?: EntityManager
+    manager?: EntityManager,
+    defaultOrganization = null
   ) {
     const { invitationToken, organizationId } = organizationParams;
-    const session = await this.generateInviteSignupPayload(response, user, 'signup', manager);
+    /* Active user want to signup to the organization case */
+    const session = defaultOrganization
+      ? await this.generateLoginResultPayload(response, user, defaultOrganization, false, true, null, manager)
+      : await this.generateInviteSignupPayload(response, user, 'signup', manager);
     const organizationInviteUrl = generateOrgInviteURL(invitationToken, organizationId, false);
     return { ...session, organizationInviteUrl };
   }
@@ -455,7 +459,7 @@ export class AuthService {
       }
       case activeUserWantsToSignUpToWorkspace: {
         /* Create new organizations_user entry and send an invite */
-        await dbTransactionWrap(async (manager: EntityManager) => {
+        return await dbTransactionWrap(async (manager: EntityManager) => {
           await this.usersService.attachUserGroup(['all_users'], organizationId, existingUser.id, manager);
           const organizationUser = await this.organizationUsersService.create(
             existingUser,
@@ -463,11 +467,18 @@ export class AuthService {
             true,
             manager
           );
-          this.sendOrgInvite(
-            { email: existingUser.email, firstName },
-            signingUpOrganization.name,
-            organizationUser.invitationToken,
-            false
+          const defaultOrganization = await this.organizationsService.fetchOrganization(
+            existingUser.defaultOrganizationId
+          );
+          return await this.processOrganizationSignup(
+            response,
+            existingUser,
+            {
+              invitationToken: organizationUser.invitationToken,
+              organizationId,
+            },
+            manager,
+            defaultOrganization
           );
         });
         break;

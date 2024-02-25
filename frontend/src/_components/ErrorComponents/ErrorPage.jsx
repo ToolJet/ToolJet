@@ -5,7 +5,6 @@ import { Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import './static-modal.scss';
-import { useSessionManagement } from '@/_hooks/useSessionManagement';
 
 export default function ErrorPage({ darkMode }) {
   const params = useParams();
@@ -26,9 +25,6 @@ export default function ErrorPage({ darkMode }) {
 
 export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
   const { t } = useTranslation();
-  const { isValidSession } = useSessionManagement({
-    disableInValidSessionCallback: true,
-  });
 
   // Redirect to edit app URL in a new tab
   const openAppEditorInNewTab = () => {
@@ -111,7 +107,7 @@ export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
               {t('globals.workspace-modal.continue-btn', 'Open app')}
             </button>
           )}
-          {errorMsg?.cta && isValidSession ? (
+          {errorMsg?.cta ? (
             <button
               className={errorMsg?.retry || appSlug ? 'btn btn-primary' : 'btn btn-primary action-btn'}
               onClick={() => redirectToDashboard()}
