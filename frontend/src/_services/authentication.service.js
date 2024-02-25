@@ -10,7 +10,7 @@ import {
 import { getWorkspaceId } from '@/_helpers/utils';
 import config from 'config';
 import queryString from 'query-string';
-import { getRedirectToWithParams } from '@/_helpers/routes';
+import { getRedirectTo, getRedirectToWithParams } from '@/_helpers/routes';
 
 const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,
@@ -86,10 +86,11 @@ function deleteAllAuthCookies() {
 }
 
 function login(email, password, organizationId) {
+  const redirectTo = getRedirectTo();
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, redirectTo }),
     credentials: 'include',
   };
 
@@ -320,11 +321,12 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
   const organizationId = getLoginOrganizationId();
   const signupOrganizationId = getSignupOrganizationId();
   const invitationToken = getInviteFlowIndetifier();
+  const redirectTo = getCookie('redirectPath');
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ ...ssoResponse, organizationId, signupOrganizationId, invitationToken }),
+    body: JSON.stringify({ ...ssoResponse, organizationId, signupOrganizationId, invitationToken, redirectTo }),
   };
 
   const url = configId ? configId : `common/${ssoType}`;

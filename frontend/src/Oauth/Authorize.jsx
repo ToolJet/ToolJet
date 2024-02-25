@@ -70,10 +70,10 @@ export function Authorize({ navigate }) {
           window.location.href = redirect_url;
           return;
         }
-        /*for workspace login / normal login response will contain the next organization_id user want to login*/
-        const { current_organization_id } = restResponse;
-        if (current_organization_id) onLoginSuccess(restResponse, navigate);
         if (restResponse?.organizationInviteUrl) onInvitedUserSignUpSuccess(restResponse, navigate);
+        else {
+          onLoginSuccess(restResponse, navigate);
+        }
       })
       .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));
   };
