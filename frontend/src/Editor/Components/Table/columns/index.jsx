@@ -9,6 +9,7 @@ import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
 import { Link } from '../Link';
 import moment from 'moment';
+import NullRenderer from '../NullRenderer/NullRenderer';
 
 export default function generateColumnsData({
   columnProperties,
@@ -113,7 +114,9 @@ export default function generateColumnsData({
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
         cellValue = cellValue === undefined ? '' : cellValue;
-
+        if (!isEditable && cellValue === null) {
+          return <NullRenderer />;
+        }
         switch (columnType) {
           case 'string':
           case undefined:
@@ -184,7 +187,6 @@ export default function generateColumnsData({
                 </div>
               );
             }
-            console.log(cellValue, 'cellValue123');
             return (
               <div
                 className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
@@ -218,7 +220,6 @@ export default function generateColumnsData({
               });
 
               const { isValid, validationError } = validationData;
-              console.log('validationData', column.minValue, column.maxValue, validationData);
               const cellStyles = {
                 color: textColor ?? '',
               };
@@ -424,7 +425,6 @@ export default function generateColumnsData({
           case 'toggle': {
             return (
               <div className="h-100 d-flex align-items-center">
-                {}
                 <Toggle
                   value={cellValue}
                   readOnly={!isEditable}

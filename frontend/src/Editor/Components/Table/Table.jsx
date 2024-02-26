@@ -402,7 +402,6 @@ export function Table({
   tableData = tableData || [];
 
   const tableRef = useRef();
-  console.log(tableData, 'tableData');
   let columnData = generateColumnsData({
     columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
     columnSizes,
@@ -431,7 +430,7 @@ export function Table({
       }),
     [columnData, currentState]
   );
-  console.log(columnData, 'columnData');
+
   const columnDataForAddNewRows = generateColumnsData({
     columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
     columnSizes,
