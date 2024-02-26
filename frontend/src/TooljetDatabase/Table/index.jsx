@@ -289,9 +289,10 @@ const Table = ({ collapseSidebar }) => {
           cellIndex: newIndex,
         }));
         setCellVal(cellValue);
+        const isCellValueDefault =
+          headerGroups[0].headers[cellClick.cellIndex]?.column_default === cellVal.toString() ? true : false;
         cellValue === null ? setNullValue(true) : setNullValue(false);
-        const findDfaultValue = headerGroups[0].headers[cellClick.cellIndex].column_default === cellVal ? true : false;
-        setDefaultValue(findDfaultValue);
+        setDefaultValue(isCellValueDefault);
       } else if (e.key === 'ArrowLeft') {
         setSelectedRowIds({});
         setEditPopover(false);
@@ -304,8 +305,9 @@ const Table = ({ collapseSidebar }) => {
         }));
         setCellVal(cellValue);
         cellValue === null ? setNullValue(true) : setNullValue(false);
-        const findDfaultValue = headerGroups[0].headers[cellClick.cellIndex].column_default === cellVal ? true : false;
-        setDefaultValue(findDfaultValue);
+        const isCellValueDefault =
+          headerGroups[0].headers[cellClick.cellIndex]?.column_default === cellVal.toString() ? true : false;
+        setDefaultValue(isCellValueDefault);
       } else if (e.key === 'ArrowUp') {
         setSelectedRowIds({});
         setEditPopover(false);
@@ -317,8 +319,9 @@ const Table = ({ collapseSidebar }) => {
         }));
         setCellVal(cellValue);
         cellValue === null ? setNullValue(true) : setNullValue(false);
-        const findDfaultValue = headerGroups[0].headers[cellClick.cellIndex].column_default === cellVal ? true : false;
-        setDefaultValue(findDfaultValue);
+        const isCellValueDefault =
+          headerGroups[0].headers[cellClick.cellIndex]?.column_default === cellVal.toString() ? true : false;
+        setDefaultValue(isCellValueDefault);
       } else if (e.key === 'ArrowDown') {
         setSelectedRowIds({});
         setEditPopover(false);
@@ -330,8 +333,9 @@ const Table = ({ collapseSidebar }) => {
         }));
         setCellVal(cellValue);
         cellValue === null ? setNullValue(true) : setNullValue(false);
-        const findDfaultValue = headerGroups[0].headers[cellClick.cellIndex].column_default === cellVal ? true : false;
-        setDefaultValue(findDfaultValue);
+        const isCellValueDefault =
+          headerGroups[0].headers[cellClick.cellIndex]?.column_default === cellVal.toString() ? true : false;
+        setDefaultValue(isCellValueDefault);
       } else if (e.key === 'Enter' && cellClick.cellIndex !== 0) {
         setEditPopover(true);
         document.getElementById('edit-input-blur').focus();
@@ -342,9 +346,9 @@ const Table = ({ collapseSidebar }) => {
           setSelectedRowIds({});
           cellDataType === 'boolean' ? setCellVal(true) : setCellVal('');
           setNullValue(false);
-          const findDfaultValue =
-            headerGroups[0].headers[cellClick.cellIndex].column_default === cellVal ? true : false;
-          setDefaultValue(findDfaultValue);
+          const isCellValueDefault =
+            headerGroups[0].headers[cellClick.cellIndex]?.column_default === cellVal.toString() ? true : false;
+          setDefaultValue(isCellValueDefault);
           setEditPopover(true);
           document.getElementById('edit-input-blur').focus();
         }
@@ -527,6 +531,12 @@ const Table = ({ collapseSidebar }) => {
     };
   }, [editColumnHeader.columnEditPopover]);
 
+  useEffect(() => {
+    const isCellValueDefault =
+      headerGroups[0]?.headers[cellClick.cellIndex]?.column_default === cellVal.toString() ? true : false;
+    setDefaultValue(isCellValueDefault);
+  }, [cellClick.cellIndex]);
+
   const handleDelete = (column) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
@@ -582,8 +592,9 @@ const Table = ({ collapseSidebar }) => {
         errorState: false,
       }));
       cellVal === null ? setNullValue(true) : setNullValue(false);
-      const findDfaultValue = headerGroups[0].headers[cellIndex].column_default === cellVal ? true : false;
-      setDefaultValue(findDfaultValue);
+      const isCellValueDefault =
+        headerGroups[0].headers[cellClick.cellIndex]?.column_default === cellVal.toString() ? true : false;
+      setDefaultValue(isCellValueDefault);
       setEditPopover(false);
     }
   };
@@ -591,8 +602,8 @@ const Table = ({ collapseSidebar }) => {
   const closeEditPopover = (previousValue, cellIndex) => {
     setEditPopover(false);
     previousValue === null ? setNullValue(true) : setNullValue(false);
-    const findDfaultValue = headerGroups[0].headers[cellIndex].column_default === cellVal ? true : false;
-    setDefaultValue(findDfaultValue);
+    const isCellValueDefault = headerGroups[0].headers[cellIndex]?.column_default === cellVal.toString() ? true : false;
+    setDefaultValue(isCellValueDefault);
     setCellVal(previousValue);
     document.getElementById('edit-input-blur').blur();
   };
