@@ -158,7 +158,7 @@ export function resolveReferences(
   forPreviewBox = false
 ) {
   if (object === '{{{}}}') return '';
-  const reservedKeyword = ['app']; //Keywords that slows down the app
+  const reservedKeyword = ['app', 'window', 'Window', 'this']; //Keywords that slows down the app
   object = _.clone(object);
   const objectType = typeof object;
   let error;
