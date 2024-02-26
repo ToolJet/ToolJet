@@ -75,7 +75,7 @@ const Table = ({ collapseSidebar }) => {
     editable: false,
     errorState: false,
   });
-
+  const [filterEnable, setFilterEnable] = useState(false);
   const [cellVal, setCellVal] = useState('');
   const [editPopover, setEditPopover] = useState(false);
   const [defaultValue, setDefaultValue] = useState(false);
@@ -632,11 +632,12 @@ const Table = ({ collapseSidebar }) => {
     setIsBulkUploadDrawerOpen(isOpenBulkUploadDrawer);
   };
 
-  // setTimeout(() => {
-  //   console.log('first', rows.length);
-  // }, 500);
   const emptyHeader = Array.from({ length: 5 }, (_, index) => index + 1);
   const emptyTableData = Array.from({ length: 10 }, (_, index) => index + 1);
+  const emptyData = filterEnable
+    ? 'No data found matching the criteria specified in current filters.'
+    : 'Use Add Row from the menu or directly click on + icon to add a row. You may use the bulk upload option to add multiple rows of data using a csv file.';
+  const emptyMainData = filterEnable ? 'No results found' : 'No data added yet';
 
   return (
     <div>
@@ -652,6 +653,8 @@ const Table = ({ collapseSidebar }) => {
         rows={rows}
         isEditRowDrawerOpen={isEditRowDrawerOpen}
         setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
+        setFilterEnable={setFilterEnable}
+        filterEnable={filterEnable}
       />
       <div
         style={{
@@ -1089,7 +1092,7 @@ const Table = ({ collapseSidebar }) => {
             </tbody>
           </table>
         )}
-        {rows.length === 0 && (
+        {rows.length === 0 && !loadingState && (
           <div className="empty-table-container">
             <div>
               <div className="warning-icon-container">
@@ -1100,11 +1103,8 @@ const Table = ({ collapseSidebar }) => {
                 style={{ width: '400px', textAlign: 'center' }}
                 data-cy="do-not-have-records-text"
               >
-                No data added yet
-                <p className="empty-table-description mb-2">
-                  Use workspace constants seamlessly in both the app builder and global data source connections across
-                  ToolJet.
-                </p>
+                {emptyMainData}
+                <p className="empty-table-description mb-2">{emptyData}</p>
               </div>
               <div style={{ width: '130px', margin: '0px auto' }}>
                 <AddNewDataPopOver
@@ -1139,6 +1139,20 @@ const Table = ({ collapseSidebar }) => {
           tableDataLength={tableData.length}
           collapseSidebar={collapseSidebar}
         />
+        {rows.length === 0 && !loadingState && (
+          <div
+            onClick={() => {
+              resetCellAndRowSelection();
+              setIsCreateRowDrawerOpen(true);
+            }}
+            className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
+            style={{
+              zIndex: 3,
+            }}
+          >
+            +
+          </div>
+        )}
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
         <EditColumnForm

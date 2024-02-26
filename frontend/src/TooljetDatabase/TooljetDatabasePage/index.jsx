@@ -13,12 +13,17 @@ import { toast } from 'react-hot-toast';
 import Drawer from '@/_ui/Drawer';
 import CreateTableForm from '../Forms/TableForm';
 import { BreadCrumbContext } from '@/App/App';
+import Skeleton from 'react-loading-skeleton';
 
 const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
-  const { organizationId, setSelectedTable, setTables, selectedTable } = useContext(TooljetDatabaseContext);
+  const { organizationId, setSelectedTable, setTables, selectedTable, loadingState } =
+    useContext(TooljetDatabaseContext);
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const emptyMessage = "You don't have any tables yet.";
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  const emptyHeader = Array.from({ length: 5 }, (_, index) => index + 1);
+  const emptyTableData = Array.from({ length: 10 }, (_, index) => index + 1);
   const EmptyState = () => {
     return (
       <>
@@ -69,11 +74,59 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
     );
   };
 
+  const LoadingState = () => {
+    return (
+      <>
+        <div className="table-responsive border-0 tj-db-table animation-fade tj-table-empty" style={{ height: 'auto' }}>
+          {loadingState && (
+            <table
+              className={`table card-table loading-table table-vcenter text-nowrap datatable ${
+                darkMode && 'dark-background'
+              }`}
+              style={{ position: 'relative' }}
+            >
+              <thead>
+                <tr>
+                  {emptyHeader.map((element, index) => (
+                    <th key={index} width={index === 0 ? 66 : 230}>
+                      <div className="d-flex align-items-center justify-content-between tjdb-loader-parent">
+                        {index > 0 && <Skeleton count={1} height={20} className="tjdb-loader" />}
+
+                        <div className="tjdb-loader-icon-parent">
+                          <Skeleton count={1} height={20} className="tjdb-icon-loader" />
+                        </div>
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {emptyTableData.map((element, rowIdex) => (
+                  <tr
+                    className={cx(`tjdb-table-row row-tj tjdb-empty-row`, {
+                      'dark-bg': darkMode,
+                    })}
+                    key={rowIdex} // row Index
+                  >
+                    {emptyHeader.map((elem, i) => (
+                      <td key={i} className={cx('table-cell')}></td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </>
+    );
+  };
+
   return (
     <div className="row gx-0">
       <Sidebar collapseSidebar={collapseSidebar} />
       <div className={cx('col animation-fade database-page-content-wrap vh-100')}>
-        {totalTables === 0 && <EmptyState />}
+        {totalTables === 0 && !loadingState && <EmptyState />}
+        {totalTables === 0 && loadingState && <LoadingState />}
         {!isEmpty(selectedTable) && (
           <div className={cx('col')}>
             <Table collapseSidebar={collapseSidebar} />

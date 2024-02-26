@@ -27,6 +27,8 @@ const Header = ({
   rows,
   isEditRowDrawerOpen,
   setIsEditRowDrawerOpen,
+  setFilterEnable,
+  filterEnable,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
@@ -168,76 +170,74 @@ const Header = ({
             <div className="row align-items-center">
               <div className="col-8 align-items-center p-3 gap-1">
                 <>
-                  {columns?.length > 0 && (
+                  {Object.keys(selectedRowIds).length === 0 && (
                     <>
-                      {Object.keys(selectedRowIds).length === 0 && (
-                        <>
-                          <AddNewDataPopOver
-                            disabled={false}
-                            show={isAddNewDataMenuOpen}
-                            darkMode={darkMode}
-                            toggleAddNewDataMenu={toggleAddNewDataMenu}
-                            handleOnClickCreateNewRow={handleOnClickCreateNewRow}
-                            handleOnClickBulkUpdateData={handleOnClickBulkUpdateData}
-                          >
-                            <span className="col-auto">
-                              <ButtonSolid
-                                variant="tertiary"
-                                disabled={false}
-                                onClick={() => toggleAddNewDataMenu(true)}
-                                size="sm"
-                                className="px-1 pe-3 ps-2 gap-0"
-                              >
-                                <Plus fill="#697177" style={{ height: '16px' }} />
-                                Add new data
-                              </ButtonSolid>
-                            </span>
-                          </AddNewDataPopOver>
-                          <div style={{ width: '70px' }}>
-                            <Filter
-                              filters={queryFilters}
-                              setFilters={setQueryFilters}
-                              handleBuildFilterQuery={handleBuildFilterQuery}
-                              resetFilterQuery={resetFilterQuery}
-                            />
-                          </div>
-                          <div style={{ width: '70px' }}>
-                            <Sort
-                              filters={sortFilters}
-                              setFilters={setSortFilters}
-                              handleBuildSortQuery={handleBuildSortQuery}
-                              resetSortQuery={resetSortQuery}
-                            />
-                          </div>
-                        </>
-                      )}
-
-                      {Object.keys(selectedRowIds).length === 1 ? (
-                        <EditRowDrawer
-                          isEditRowDrawerOpen={isEditRowDrawerOpen}
-                          setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
-                          selectedRowIds={selectedRowIds}
-                          rows={rows}
-                        />
-                      ) : null}
-                      {Object.keys(selectedRowIds).length > 0 && (
-                        <div>
+                      <AddNewDataPopOver
+                        disabled={false}
+                        show={isAddNewDataMenuOpen}
+                        darkMode={darkMode}
+                        toggleAddNewDataMenu={toggleAddNewDataMenu}
+                        handleOnClickCreateNewRow={handleOnClickCreateNewRow}
+                        handleOnClickBulkUpdateData={handleOnClickBulkUpdateData}
+                      >
+                        <span className="col-auto">
                           <ButtonSolid
-                            variant="dangerTertiary"
-                            onClick={handleDeleteRow}
+                            variant="tertiary"
+                            disabled={false}
+                            onClick={() => toggleAddNewDataMenu(true)}
                             size="sm"
-                            className="gap-0"
-                            data-cy="delete-row-records-button"
-                            style={{
-                              padding: '4px 8px 4px 8px',
-                            }}
+                            className="px-1 pe-3 ps-2 gap-0"
                           >
-                            <DeleteIcon />
-                            &nbsp; {Object.keys(selectedRowIds).length === 1 ? 'Delete row' : 'Delete rows'}
+                            <Plus fill="#697177" style={{ height: '16px' }} />
+                            Add new data
                           </ButtonSolid>
-                        </div>
-                      )}
+                        </span>
+                      </AddNewDataPopOver>
+                      <div style={{ width: '70px' }}>
+                        <Filter
+                          filters={queryFilters}
+                          setFilters={setQueryFilters}
+                          handleBuildFilterQuery={handleBuildFilterQuery}
+                          resetFilterQuery={resetFilterQuery}
+                          setFilterEnable={setFilterEnable}
+                          filterEnable={filterEnable}
+                        />
+                      </div>
+                      <div style={{ width: '70px' }}>
+                        <Sort
+                          filters={sortFilters}
+                          setFilters={setSortFilters}
+                          handleBuildSortQuery={handleBuildSortQuery}
+                          resetSortQuery={resetSortQuery}
+                        />
+                      </div>
                     </>
+                  )}
+
+                  {Object.keys(selectedRowIds).length === 1 ? (
+                    <EditRowDrawer
+                      isEditRowDrawerOpen={isEditRowDrawerOpen}
+                      setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
+                      selectedRowIds={selectedRowIds}
+                      rows={rows}
+                    />
+                  ) : null}
+                  {Object.keys(selectedRowIds).length > 0 && (
+                    <div>
+                      <ButtonSolid
+                        variant="dangerTertiary"
+                        onClick={handleDeleteRow}
+                        size="sm"
+                        className="gap-0"
+                        data-cy="delete-row-records-button"
+                        style={{
+                          padding: '4px 8px 4px 8px',
+                        }}
+                      >
+                        <DeleteIcon />
+                        &nbsp; {Object.keys(selectedRowIds).length === 1 ? 'Delete row' : 'Delete rows'}
+                      </ButtonSolid>
+                    </div>
                   )}
                 </>
               </div>
