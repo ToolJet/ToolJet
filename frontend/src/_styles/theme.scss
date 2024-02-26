@@ -335,7 +335,7 @@ button {
 
   .resizer-select,
   .resizer-active {
-    border: solid 1px $primary !important;
+    outline: solid 1px $primary !important;
 
 
     .top-right,
@@ -733,7 +733,7 @@ button {
         margin: 0px auto;
 
         .resizer {
-          border: solid 1px transparent;
+          outline: solid 1px transparent;
         }
       }
     }
