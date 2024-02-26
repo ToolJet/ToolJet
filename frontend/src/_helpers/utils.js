@@ -52,8 +52,10 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
   let result = '';
   let error;
 
-  // dont resolve if code starts with "queries." and ends with "run()"
-  if (code.startsWith('queries.') && code.endsWith('run()')) {
+  if (code === '_') {
+    error = `Cannot use "_" as a variable name`;
+  } else if (code.startsWith('queries.') && code.endsWith('run()')) {
+    //! dont resolve if code starts with "queries." and ends with "run()"
     error = `Cannot resolve function call ${code}`;
   } else {
     try {
