@@ -283,8 +283,7 @@ const DynamicEditorBridge = (props) => {
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
-
-  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'TextComponentTextInput'];
+  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
 
   const { t } = useTranslation();
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
@@ -310,7 +309,7 @@ const DynamicEditorBridge = (props) => {
             className="d-flex align-items-center "
           >
             <div className="col-auto pt-0 fx-common fx-button-container">
-              {paramLabel !== 'Type' && (
+              {paramLabel !== 'Type' && fieldMeta?.isFxNotRequired === undefined && (
                 <FxButton
                   active={codeShow}
                   onPress={() => {
