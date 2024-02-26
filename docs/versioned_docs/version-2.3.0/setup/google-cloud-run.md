@@ -46,7 +46,7 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
   <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
   </div>
 
-4. Under containers tab, please make sure the port is set 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity is set to 2GiB.
+4. Under containers tab, please make sure the port is set to 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity set to 2GiB:
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest.png" alt="port-and-capacity-postgrest" />
