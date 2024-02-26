@@ -7,6 +7,7 @@ import _, { isEmpty, debounce } from 'lodash';
 import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
 import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
+import toast from 'react-hot-toast';
 
 export default function DragContainer({
   widgets,
@@ -661,6 +662,7 @@ export default function DragContainer({
 
             console.log('timeDifference2', performance.now() - startTime);
             let draggedOverElemId = widgets[e.target.id]?.component?.parent;
+            let draggedOverElemIdType;
             const parentComponent = widgets[widgets[e.target.id]?.component?.parent];
             let draggedOverElem;
             if (document.elementFromPoint(e.clientX, e.clientY) && parentComponent?.component?.component !== 'Modal') {
@@ -693,6 +695,7 @@ export default function DragContainer({
                 return isDroppable;
               });
               draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
+              draggedOverElemIdType = draggedOverElem?.getAttribute('data-parent-type');
             }
             console.log('timeDifference3', performance.now() - startTime);
             // console.log("draggedOverElemId", draggedOverElemId);
@@ -712,36 +715,56 @@ export default function DragContainer({
             }
 
             const currentWidget = boxes.find(({ id }) => id === e.target.id)?.component?.component;
-            const parentWidget = parentElem
-              ? boxes.find(({ id }) => id === parentElem.id)?.component?.component
-              : undefined;
+            const parentWidget = draggedOverElemIdType === 'Kanban' ? 'Kanban_card' : draggedOverElemIdType;
             const restrictedWidgets = restrictedWidgetsObj?.[parentWidget] || [];
             const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
-            if (draggedOverElemId !== currentParentId && isParentChangeAllowed) {
+            if (draggedOverElemId !== currentParentId) {
               // debugger;
-              const draggedOverWidget = widgets[draggedOverElemId];
-              let { left: _left, top: _top } = getMouseDistanceFromParentDiv(
-                e,
-                draggedOverWidget?.component?.component === 'Kanban' ? draggedOverElem : draggedOverElemId
-              );
-              left = _left;
-              top = _top;
+              if (isParentChangeAllowed) {
+                const draggedOverWidget = widgets[draggedOverElemId];
+                let { left: _left, top: _top } = getMouseDistanceFromParentDiv(
+                  e,
+                  draggedOverWidget?.component?.component === 'Kanban' ? draggedOverElem : draggedOverElemId
+                );
+                left = _left;
+                top = _top;
+              } else {
+                const currBox = list.find((l) => l.id === e.target.id);
+                left = currBox.left * gridWidth;
+                top = currBox.top;
+                toast.error(`${currentWidget} is not compatible as a child component of ${parentWidget}`);
+                e.target.style.transform = `translate(${left}px, ${top}px)`;
+              }
             } else {
+              // const elemContainer = e.target.closest('.real-canvas');
+              // const containerHeight = elemContainer.clientHeight;
+              // const containerWidth = elemContainer.clientWidth;
+              // const maxY = containerHeight - e.target.clientHeight;
+              // const maxLeft = containerWidth - e.target.clientWidth;
+              // top = top < 0 ? 0 : top > maxY ? maxY : top;
+              // left = left < 0 ? 0 : left > maxLeft ? maxLeft : left;
+              // e.target.style.transform = `translate(${Math.round(left / _gridWidth) * _gridWidth}px, ${
+              //   Math.round(top / 10) * 10
+              // }px)`;
+
               e.target.style.transform = `translate(${Math.round(left / _gridWidth) * _gridWidth}px, ${
                 Math.round(top / 10) * 10
               }px)`;
             }
+
             console.log('timeDifference4', performance.now() - startTime);
 
             console.log('draggedOverElemId->', draggedOverElemId, currentParentId);
-            onDrag([
-              {
-                id: e.target.id,
-                x: left,
-                y: Math.round(top / 10) * 10,
-                parent: isParentChangeAllowed ? draggedOverElemId : undefined,
-              },
-            ]);
+            if (draggedOverElemId === currentParentId || isParentChangeAllowed) {
+              onDrag([
+                {
+                  id: e.target.id,
+                  x: left,
+                  y: Math.round(top / 10) * 10,
+                  parent: isParentChangeAllowed ? draggedOverElemId : undefined,
+                },
+              ]);
+            }
             const box = boxes.find((box) => box.id === e.target.id);
             console.log('timeDifference5', performance.now() - startTime);
             useEditorStore.getState().actions.setSelectedComponents([{ ...box }]);
@@ -778,7 +801,21 @@ export default function DragContainer({
           }
           // setDraggedTarget(e.target.id);
           if (!draggedSubContainer) {
-            e.target.style.transform = `translate(${e.translate[0]}px, ${e.translate[1]}px)`;
+            const parentComponent = widgets[widgets[e.target.id]?.component?.parent];
+            let top = e.translate[1];
+            let left = e.translate[0];
+
+            if (parentComponent?.component?.component === 'Modal') {
+              const elemContainer = e.target.closest('.real-canvas');
+              const containerHeight = elemContainer.clientHeight;
+              const containerWidth = elemContainer.clientWidth;
+              const maxY = containerHeight - e.target.clientHeight;
+              const maxLeft = containerWidth - e.target.clientWidth;
+              top = top < 0 ? 0 : top > maxY ? maxY : top;
+              left = left < 0 ? 0 : left > maxLeft ? maxLeft : left;
+            }
+
+            e.target.style.transform = `translate(${left}px, ${top}px)`;
             e.target.setAttribute(
               'widget-pos2',
               `translate: ${e.translate[0]} | Round: ${

@@ -744,7 +744,11 @@ export const SubContainer = ({
         readOnly={readOnly}
       ></DragContainerNested> */}
       <div className="root h-100">
-        <div className={`container-fluid p-0 h-100 drag-container-parent`} component-id={parent}>
+        <div
+          className={`container-fluid p-0 h-100 drag-container-parent`}
+          component-id={parent}
+          data-parent-type={parentComponent?.component}
+        >
           {checkParentVisibility() &&
             Object.entries({
               ...childWidgets,
