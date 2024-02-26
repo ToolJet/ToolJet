@@ -304,8 +304,8 @@ class OpenapiComponent extends React.Component {
                           onClick={() => this.removeParam('path', param.name)}
                         >
                           <svg
-                            width="auto"
-                            height="auto"
+                            width="100%"
+                            height="100%"
                             viewBox="0 0 12 13"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
@@ -352,8 +352,8 @@ class OpenapiComponent extends React.Component {
                           onClick={() => this.removeParam('path', param.name)}
                         >
                           <svg
-                            width="auto"
-                            height="auto"
+                            width="100%"
+                            height="100%"
                             viewBox="0 0 12 13"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
@@ -400,8 +400,8 @@ class OpenapiComponent extends React.Component {
                           onClick={() => this.removeParam('query', param.name)}
                         >
                           <svg
-                            width="auto"
-                            height="auto"
+                            width="100%"
+                            height="100%"
                             viewBox="0 0 12 13"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
@@ -452,8 +452,8 @@ class OpenapiComponent extends React.Component {
                           onClick={() => this.removeParam('request', param)}
                         >
                           <svg
-                            width="auto"
-                            height="auto"
+                            width="100%"
+                            height="100%"
                             viewBox="0 0 12 13"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
