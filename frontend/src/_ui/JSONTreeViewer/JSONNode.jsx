@@ -300,7 +300,6 @@ export const JSONNode = ({ data, ...restProps }) => {
             'group-object-container': shouldDisplayIntendedBlock,
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
           })}
-          style={{ alignItems: 'center' }}
           onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
           data-cy={`inspector-node-${String(currentNode).toLowerCase()}`}
         >

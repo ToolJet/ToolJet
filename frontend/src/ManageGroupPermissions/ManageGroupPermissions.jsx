@@ -120,6 +120,7 @@ class ManageGroupPermissionsComponent extends React.Component {
           <Popover.Body bsPrefix="popover-body">
             <div>
               <Field
+                customClass={this.props.darkMode ? 'dark-theme' : ''}
                 leftIcon="copy"
                 leftIconWidth="20"
                 leftViewBox="0  0 20 20"
@@ -127,6 +128,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                 onClick={duplicateGroup}
               />
               <Field
+                customClass={this.props.darkMode ? 'dark-theme' : ''}
                 leftIcon="delete"
                 leftIconWidth="18"
                 leftIconHeight="18"
@@ -136,6 +138,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                 tooltipContent="Cannot delete default group"
                 onClick={isDefaultGroup ? {} : deleteGroup}
                 buttonDisable={isDefaultGroup}
+                darkMode={this.props.darkMode}
               />
             </div>
           </Popover.Body>
@@ -338,6 +341,7 @@ class ManageGroupPermissionsComponent extends React.Component {
               isLoading={isDuplicatingGroup}
               cancelDisabled={isDuplicatingGroup}
               data-cy="modal-title"
+              darkMode={this.props.darkMode}
             >
               <div className="tj-text" data-cy="modal-message">
                 Duplicate the following parts of the group
@@ -589,6 +593,7 @@ const Field = ({
   buttonDisable = false,
   tooltipContent = '',
   tooltipId = '',
+  darkMode = false,
 }) => {
   return (
     <div className={`field ${customClass ? ` ${customClass}` : ''}`}>
@@ -610,7 +615,7 @@ const Field = ({
             ></SolidIcon>
           )}
         </div>
-        <div className={`col ${buttonDisable ? 'disable' : ''}`}>{text}</div>
+        <div className={`col ${buttonDisable ? 'disable' : ''} ${darkMode ? 'dark-theme' : ''}`}>{text}</div>
       </span>
     </div>
   );
