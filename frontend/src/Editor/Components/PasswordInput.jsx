@@ -232,6 +232,7 @@ export const PasswordInput = function PasswordInput({
   const renderInput = () => (
     <>
       <div
+        data-cy={`label-${String(component.name).toLowerCase()}`}
         data-disabled={disable || loading}
         className={`text-input  d-flex  ${
           defaultAlignment === 'top' &&
@@ -323,7 +324,7 @@ export const PasswordInput = function PasswordInput({
           </div>
         )}
         <input
-          data-cy={`label-${String(component.name).toLowerCase()}`}
+          data-cy={dataCy}
           className={`tj-text-input-widget ${
             !isValid && showValidationError ? 'is-invalid' : ''
           } validation-without-icon ${darkMode && 'dark-theme-placeholder'}`}
