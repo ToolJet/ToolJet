@@ -584,34 +584,41 @@ export default function DragContainer({
           // onResizeStop(newBoxs);
         }}
         onResizeGroupEnd={({ events }) => {
-          console.log('onResizeGroup---', events);
-          const newBoxs = [];
+          try {
+            console.log('onResizeGroup---', events);
+            const newBoxs = [];
 
-          const parentElm = events[0].target.closest('.real-canvas');
-          parentElm.classList.remove('show-grid');
+            const parentElm = events[0].target.closest('.real-canvas');
+            parentElm.classList.remove('show-grid');
 
-          events.forEach((ev) => {
-            console.log('resizeevents', events);
-            const currentWidget = boxes.find(({ id }) => {
-              return id === ev.target.id;
+            events.forEach((ev) => {
+              console.log('resizeevents', events);
+              const currentWidget = boxes.find(({ id }) => {
+                return id === ev.target.id;
+              });
+              let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
+              let width = Math.round(ev.lastEvent.width / _gridWidth) * _gridWidth;
+              let posX = Math.round(ev.lastEvent.drag.translate[0] / _gridWidth) * _gridWidth;
+              let posY = Math.round(ev.lastEvent.drag.translate[1] / 10) * 10;
+              const height = Math.round(ev.lastEvent.height / 10) * 10;
+
+              ev.target.style.width = `${width}px`;
+              ev.target.style.height = `${height}px`;
+              // ev.target.style.transform = ev.lastEvent.drag.transform;
+              ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
+              newBoxs.push({
+                id: ev.target.id,
+                height: height,
+                width: width,
+                x: posX,
+                y: posY,
+                gw: _gridWidth,
+              });
             });
-            let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
-            let width = Math.round(ev.lastEvent.width / _gridWidth) * _gridWidth;
-            const height = Math.round(ev.lastEvent.height / 10) * 10;
-
-            ev.target.style.width = `${width}px`;
-            ev.target.style.height = `${height}px`;
-            ev.target.style.transform = ev.lastEvent.drag.transform;
-            newBoxs.push({
-              id: ev.target.id,
-              height: height,
-              width: width,
-              x: ev.lastEvent.drag.translate[0],
-              y: ev.lastEvent.drag.translate[1],
-              gw: _gridWidth,
-            });
-          });
-          onResizeStop(newBoxs);
+            onResizeStop(newBoxs);
+          } catch (error) {
+            console.error('Error resizing group', error);
+          }
         }}
         checkInput
         onDragStart={(e) => {
@@ -825,21 +832,25 @@ export default function DragContainer({
           parentElm.classList.add('show-grid');
         }}
         onDragGroupEnd={(e) => {
-          const { events } = e;
-          const parentId = widgets[events[0]?.target?.id]?.component?.parent;
-          // setIsDragging(false);
+          try {
+            const { events } = e;
+            const parentId = widgets[events[0]?.target?.id]?.component?.parent;
+            // setIsDragging(false);
 
-          const parentElm = events[0].target.closest('.real-canvas');
-          parentElm.classList.remove('show-grid');
+            const parentElm = events[0].target.closest('.real-canvas');
+            parentElm.classList.remove('show-grid');
 
-          onDrag(
-            events.map((ev) => ({
-              id: ev.target.id,
-              x: ev.lastEvent.translate[0],
-              y: ev.lastEvent.translate[1],
-              parent: parentId,
-            }))
-          );
+            onDrag(
+              events.map((ev) => ({
+                id: ev.target.id,
+                x: ev.lastEvent.translate[0],
+                y: ev.lastEvent.translate[1],
+                parent: parentId,
+              }))
+            );
+          } catch (error) {
+            console.error('Error dragging group', error);
+          }
         }}
         //snap settgins
         snappable={true}
