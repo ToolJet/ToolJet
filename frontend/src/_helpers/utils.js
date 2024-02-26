@@ -52,8 +52,8 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
   let result = '';
   let error;
 
-  if (code === '_') {
-    error = `Cannot use "_" as a variable name`;
+  if (code === '_' || code.includes('this._')) {
+    error = `Cannot resolve circular reference ${code}`;
   } else if (code.startsWith('queries.') && code.endsWith('run()')) {
     //! dont resolve if code starts with "queries." and ends with "run()"
     error = `Cannot resolve function call ${code}`;
@@ -158,7 +158,7 @@ export function resolveReferences(
   forPreviewBox = false
 ) {
   if (object === '{{{}}}') return '';
-  const reservedKeyword = ['app', 'window', 'Window', 'this']; //Keywords that slows down the app
+  const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
   object = _.clone(object);
   const objectType = typeof object;
   let error;
