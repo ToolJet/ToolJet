@@ -205,7 +205,6 @@ export const DraggableBox = React.memo(
     const { label = { value: null } } = component?.definition?.properties ?? {};
 
     useEffect(() => {
-      setboxHeight(layoutData?.height);
       if (
         component.component == 'TextInput' ||
         component.component == 'PasswordInput' ||
