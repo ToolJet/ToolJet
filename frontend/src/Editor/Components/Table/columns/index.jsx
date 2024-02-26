@@ -194,7 +194,7 @@ export default function generateColumnsData({
                 )}`}
                 style={cellStyles}
               >
-                {cellValue === null ? 'nakul' : String(cellValue)}
+                {String(cellValue)}
               </div>
             );
           }
