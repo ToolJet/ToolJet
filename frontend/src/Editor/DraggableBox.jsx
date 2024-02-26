@@ -206,26 +206,26 @@ export const DraggableBox = React.memo(
 
     useEffect(() => {
       setboxHeight(layoutData?.height);
-
-      const { width = { value: null } } = component?.definition?.styles ?? {};
-      const { auto = { value: null } } = component?.definition?.styles ?? {};
-
-      const resolvedWidth = resolveReferences(width?.value, currentState, null, customResolvables);
-      const resolvedAuto = resolveReferences(auto?.value, currentState, null, customResolvables);
       if (
         component.component == 'TextInput' ||
         component.component == 'PasswordInput' ||
         component.component == 'NumberInput'
       ) {
         const { alignment = { value: null } } = component?.definition?.styles ?? {};
-        if (
-          alignment?.value &&
-          resolveReferences(alignment?.value, currentState, null, customResolvables) === 'top' &&
-          ((label?.value?.length > 0 && resolvedWidth > 0) ||
-            (resolvedAuto && resolvedWidth == 0 && label?.value && label?.value?.length != 0))
-        ) {
-          setboxHeight(layoutData?.height + 20);
+        let newHeight = layoutData?.height;
+        if (alignment?.value && resolveReferences(alignment?.value, currentState, null, customResolvables) === 'top') {
+          const { width = { value: null } } = component?.definition?.styles ?? {};
+          const { auto = { value: null } } = component?.definition?.styles ?? {};
+          const resolvedWidth = resolveReferences(width?.value, currentState, null, customResolvables);
+          const resolvedAuto = resolveReferences(auto?.value, currentState, null, customResolvables);
+          if (
+            (label?.value?.length > 0 && resolvedWidth > 0) ||
+            (resolvedAuto && resolvedWidth == 0 && label?.value && label?.value?.length != 0)
+          ) {
+            newHeight = layoutData?.height + 20;
+          }
         }
+        setboxHeight(newHeight);
       }
     }, [layoutData?.height, label?.value?.length, currentLayout, isResizing]);
 
@@ -339,7 +339,7 @@ export const DraggableBox = React.memo(
                     component={component}
                     id={id}
                     width={width}
-                    height={layoutData.height - 2}
+                    height={layoutData.height - 4}
                     mode={mode}
                     changeCanDrag={changeCanDrag}
                     inCanvas={inCanvas}
