@@ -4,6 +4,9 @@ import { components } from 'react-select';
 import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Checkbox } from '@/_ui/CheckBox/CheckBox';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { Tooltip } from 'react-tooltip';
+
 const { MenuList } = components;
 export const CustomSelect = ({
   options,
@@ -17,6 +20,7 @@ export const CustomSelect = ({
   defaultOptionsList,
   textColor,
   isMulti,
+  containerWidth,
 }) => {
   const containerRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -42,44 +46,66 @@ export const CustomSelect = ({
       ...provided,
       color: textColor,
     }),
+    multiValue: (provided) => ({
+      ...provided,
+      display: 'inline-block', // Display selected options inline
+      marginRight: '4px', // Add some space between options
+    }),
+    valueContainer: (provided, _state) => ({
+      ...provided,
+      marginBottom: '0',
+      display: 'flex',
+      flexWrap: 'no-wrap',
+      overflow: 'hidden',
+      flexDirection: 'row',
+    }),
   };
 
   const defaultValue = defaultOptionsList.length >= 1 ? defaultOptionsList[defaultOptionsList.length - 1] : null;
-
   return (
-    <div className="w-100">
-      <Select
-        options={options}
-        hasSearch={false}
-        fuzzySearch={fuzzySearch}
-        isDisabled={disabled}
-        className={className}
-        components={{
-          MenuList: CustomMenuList,
-          Option: CustomMultiSelectOption,
-        }}
-        value={value}
-        onMenuInputFocus={() => setIsFocused(true)}
-        onChange={(value) => {
-          onChange(value);
-          setIsFocused(false);
-        }}
-        onInputChange={(val) => {
-          setInputValue(val);
-        }}
-        {...{
-          menuIsOpen: isFocused || undefined,
-          isFocused: isFocused || undefined,
-        }}
-        useCustomStyles={true}
-        styles={customStyles}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-        isMulti={isMulti}
-        hideSelectedOptions={false}
-        isClearable={false}
-      />
-    </div>
+    <OverlayTrigger
+      placement="bottom"
+      overlay={getOverlay(value, containerWidth)}
+      trigger={['hover', 'focus']}
+      rootClose={true}
+    >
+      <div className="w-100 h-100 d-flex align-items-center">
+        <Select
+          options={options}
+          hasSearch={false}
+          fuzzySearch={fuzzySearch}
+          isDisabled={disabled}
+          className={className}
+          components={{
+            MenuList: CustomMenuList,
+            Option: CustomMultiSelectOption,
+            MultiValueRemove,
+            MultiValueContainer: customMultiValueContainer,
+          }}
+          value={value}
+          onMenuInputFocus={() => setIsFocused(true)}
+          onChange={(value) => {
+            onChange(value);
+            setIsFocused(false);
+          }}
+          onInputChange={(val) => {
+            setInputValue(val);
+          }}
+          {...{
+            menuIsOpen: isFocused || undefined,
+            isFocused: isFocused || undefined,
+          }}
+          useCustomStyles={true}
+          styles={customStyles}
+          defaultValue={defaultValue}
+          placeholder={placeholder}
+          isMulti={isMulti}
+          hideSelectedOptions={false}
+          isClearable={false}
+          clearIndicator={false}
+        />
+      </div>
+    </OverlayTrigger>
   );
 };
 
@@ -129,5 +155,60 @@ const CustomMultiSelectOption = ({ innerRef, innerProps, children, isSelected, .
       <Checkbox label="" isChecked={isSelected} onChange={(e) => e.stopPropagation()} key="" value={children} />
       {children}
     </div>
+  );
+};
+const MultiValueRemove = (props) => {
+  const { innerProps } = props;
+  return <div {...innerProps} />;
+};
+
+const customMultiValueContainer = (props) => {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        padding: '2px 6px',
+        background: 'var(--slate3)',
+        margin: '0 5px',
+        borderRadius: '6px',
+        color: 'var(--slate12)',
+      }}
+    >
+      {props.children}
+    </div>
+  );
+};
+
+const getOverlay = (value, containerWidth) => {
+  return Array.isArray(value) ? (
+    <div
+      style={{
+        height: 'fit-content',
+        maxWidth: containerWidth,
+        width: containerWidth,
+        background: 'var(--base)',
+        display: 'inline-flex',
+        flexWrap: 'wrap',
+        gap: '10px',
+        padding: '16px',
+        borderRadius: '6px',
+        boxShadow: '0px 8px 16px 0px rgba(48, 50, 51, 0.05)',
+      }}
+    >
+      {value?.map((option) => {
+        return (
+          <span
+            style={{ padding: '2px 6px', background: 'var(--slate3)', borderRadius: '6px', color: 'var(--slate12)' }}
+            key={option.label}
+          >
+            {option.label}
+          </span>
+        );
+      })}
+    </div>
+  ) : (
+    <div></div>
   );
 };

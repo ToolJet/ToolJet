@@ -382,6 +382,7 @@ export default function generateColumnsData({
                     defaultOptionsList={column?.defaultOptionsList || []}
                     textColor={column?.textColor || 'var(--slate12)'}
                     isMulti={columnType === 'newMultiSelect' ? true : false}
+                    containerWidth={width}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>
