@@ -290,7 +290,7 @@ const DynamicEditorBridge = (props) => {
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
 
   return (
-    <div className={cx({ 'codeShow-active': codeShow })}>
+    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
         {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
         {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
@@ -307,9 +307,9 @@ const DynamicEditorBridge = (props) => {
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} `}>
           <div
             style={{ width: paramType, marginBottom: codeShow ? '0.5rem' : '0px' }}
-            className="d-flex align-items-center"
+            className="d-flex align-items-center "
           >
-            <div className="col-auto pt-0 fx-common">
+            <div className="col-auto pt-0 fx-common fx-button-container">
               {paramLabel !== 'Type' && (
                 <FxButton
                   active={codeShow}

@@ -12681,3 +12681,12 @@ tbody {
     word-wrap: break-word;
   }
 }
+
+.fx-button-container {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.wrapper-div-code-editor:hover .fx-button-container {
+  opacity: 1;
+}
