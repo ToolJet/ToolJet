@@ -412,6 +412,8 @@ export default function DragContainer({
         resizable={{
           edge: ['e', 'w', 'n', 's'],
           renderDirections: ['e', 'w', 'n', 's'],
+          // edge: ['e', 'w', 'n', 's'],
+          // renderDirections: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
         }}
         keepRatio={false}
         // key={list.length}
@@ -560,13 +562,10 @@ export default function DragContainer({
           //   return false;
           // }
         }}
-        // onResizeGroupStart={(e) => {
-        //   console.log('heree--- onResizeGroupStart');
-        //   if (currentLayout === 'mobile' && autoComputeLayout) {
-        //     turnOffAutoLayout();
-        //     return false;
-        //   }
-        // }}
+        onResizeGroupStart={({ events }) => {
+          const parentElm = events[0].target.closest('.real-canvas');
+          parentElm.classList.add('show-grid');
+        }}
         onResizeGroup={({ events }) => {
           console.log('heree--- onResizeGroup');
           const newBoxs = [];
@@ -587,17 +586,29 @@ export default function DragContainer({
         onResizeGroupEnd={({ events }) => {
           console.log('onResizeGroup---', events);
           const newBoxs = [];
+
+          const parentElm = events[0].target.closest('.real-canvas');
+          parentElm.classList.remove('show-grid');
+
           events.forEach((ev) => {
             console.log('resizeevents', events);
-            ev.target.style.width = `${ev.lastEvent.width}px`;
-            ev.target.style.height = `${ev.lastEvent.height}px`;
+            const currentWidget = boxes.find(({ id }) => {
+              return id === ev.target.id;
+            });
+            let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
+            let width = Math.round(ev.lastEvent.width / _gridWidth) * _gridWidth;
+            const height = Math.round(ev.lastEvent.height / 10) * 10;
+
+            ev.target.style.width = `${width}px`;
+            ev.target.style.height = `${height}px`;
             ev.target.style.transform = ev.lastEvent.drag.transform;
             newBoxs.push({
               id: ev.target.id,
-              height: ev.lastEvent.height,
-              width: ev.lastEvent.width,
+              height: height,
+              width: width,
               x: ev.lastEvent.drag.translate[0],
               y: ev.lastEvent.drag.translate[1],
+              gw: _gridWidth,
             });
           });
           onResizeStop(newBoxs);
@@ -610,7 +621,7 @@ export default function DragContainer({
           //   return false;
           // }
           const box = boxes.find((box) => box.id === e.target.id);
-          if (['RangeSlider', 'Container', 'BoundedBox'].includes(box?.component?.component)) {
+          if (['RangeSlider', 'Container', 'BoundedBox', 'Kanban'].includes(box?.component?.component)) {
             const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
             const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
             if (!isHandle) {
@@ -644,9 +655,10 @@ export default function DragContainer({
             console.log('timeDifference2', performance.now() - startTime);
             let draggedOverElemId = widgets[e.target.id]?.component?.parent;
             const parentComponent = widgets[widgets[e.target.id]?.component?.parent];
+            let draggedOverElem;
             if (document.elementFromPoint(e.clientX, e.clientY) && parentComponent?.component?.component !== 'Modal') {
               const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-              const draggedOverElem = targetElems.find((ele) => {
+              draggedOverElem = targetElems.find((ele) => {
                 const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
                 if (isOwnChild) return false;
 
@@ -691,7 +703,12 @@ export default function DragContainer({
             const restrictedWidgets = restrictedWidgetsObj?.[parentWidget] || [];
             const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
             if (draggedOverElemId !== currentParentId && isParentChangeAllowed) {
-              let { left: _left, top: _top } = getMouseDistanceFromParentDiv(e, draggedOverElemId);
+              // debugger;
+              const draggedOverWidget = widgets[draggedOverElemId];
+              let { left: _left, top: _top } = getMouseDistanceFromParentDiv(
+                e,
+                draggedOverWidget?.component?.component === 'Kanban' ? draggedOverElem : draggedOverElemId
+              );
               left = _left;
               top = _top;
             } else {
@@ -795,15 +812,18 @@ export default function DragContainer({
           });
           debouncedOnDrag(events);
         }}
-        // onDragGroupStart={() => {
-        //   // if (currentLayout === 'mobile' && autoComputeLayout) {
-        //   //   turnOffAutoLayout();
-        //   //   return false;
-        //   // }
-        // }}
+        onDragGroupStart={({ events }) => {
+          const parentElm = events[0].target.closest('.real-canvas');
+          parentElm.classList.add('show-grid');
+        }}
         onDragGroupEnd={(e) => {
           const { events } = e;
           const parentId = widgets[events[0]?.target?.id]?.component?.parent;
+          // setIsDragging(false);
+
+          const parentElm = events[0].target.closest('.real-canvas');
+          parentElm.classList.remove('show-grid');
+
           onDrag(
             events.map((ev) => ({
               id: ev.target.id,
@@ -847,7 +867,11 @@ export default function DragContainer({
 
 function getMouseDistanceFromParentDiv(event, id) {
   // Get the parent div element.
-  const parentDiv = id ? document.getElementById(id) : document.getElementsByClassName('real-canvas')[0];
+  const parentDiv = id
+    ? typeof id === 'string'
+      ? document.getElementById(id)
+      : id
+    : document.getElementsByClassName('real-canvas')[0];
 
   // Get the bounding rectangle of the parent div.
   const parentDivRect = parentDiv.getBoundingClientRect();

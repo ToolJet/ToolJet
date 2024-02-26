@@ -983,7 +983,7 @@ const SubWidgetWrapper = ({
         isGhostComponent
           ? ''
           : readOnly
-          ? `ele-${id} nested-target moveable-box`
+          ? `moveable-box position-absolute`
           : `target-${parent} target1-${parent} ele-${id} nested-target moveable-box target`
       }
       key={id}

@@ -388,7 +388,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, mode, id }) 
                           parentRef={parentRef}
                           isDragActive={activeId !== null}
                           isFirstItem={index === 0 && droppableItemsColumnId.current === columnId}
-                          setShowModal={setShowModal}
+                          // setShowModal={setShowModal}
                           cardDataAsObj={cardDataAsObj}
                           setLastSelectedCard={setLastSelectedCard}
                         />
