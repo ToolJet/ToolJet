@@ -696,6 +696,14 @@ export default function DragContainer({
             const currentParentId = boxes.find(({ id: widgetId }) => e.target.id === widgetId)?.component?.parent;
             let left = e.lastEvent.translate[0];
             let top = e.lastEvent.translate[1];
+
+            if (['Listview', 'Kanban'].includes(widgets[draggedOverElemId]?.component?.component)) {
+              const elemContainer = e.target.closest('.real-canvas');
+              const containerHeight = elemContainer.clientHeight;
+              const maxY = containerHeight - e.target.clientHeight;
+              top = top > maxY ? maxY : top;
+            }
+
             const currentWidget = boxes.find(({ id }) => id === e.target.id)?.component?.component;
             const parentWidget = parentElem
               ? boxes.find(({ id }) => id === parentElem.id)?.component?.component
