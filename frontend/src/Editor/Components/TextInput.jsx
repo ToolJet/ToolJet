@@ -189,7 +189,7 @@ export const TextInput = function TextInput({
       adjustHeightBasedOnAlignment(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length, currentLayout, isResizing]);
+  }, [alignment, label?.length, currentLayout, width, auto]);
 
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
