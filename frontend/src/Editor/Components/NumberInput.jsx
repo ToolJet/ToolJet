@@ -163,7 +163,7 @@ export const NumberInput = function NumberInput({
   }, [isValid]);
 
   const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '36px' : '38px') : padding == 'default' ? height : height + 2,
+    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: isFocused
