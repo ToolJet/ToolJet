@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
-import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { authenticationService } from '@/_services';
 import { CopilotSetting } from '@/CopilotSettings';
