@@ -460,8 +460,6 @@ Cypress.Commands.add("skipWalkthrough", () => {
     win.localStorage.setItem("walkthroughCompleted", "true");
   });
 });
-<<<<<<< HEAD
-=======
 
 Cypress.Commands.add("appPrivacy", (appName, isPublic) => {
   const isPublicValue = isPublic ? "true" : "false";
@@ -470,4 +468,3 @@ Cypress.Commands.add("appPrivacy", (appName, isPublic) => {
     sql: `UPDATE apps SET is_public = ${isPublicValue} WHERE name = '${appName}';`,
   });
 });
->>>>>>> e867aa124 (test: Marketplace 1.6 Cypress automation fixed (#1053))
