@@ -30,7 +30,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
 
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
-
   //! Re render the component when the componentName changes as the initialValue is not updated
 
   useEffect(() => {
@@ -63,7 +62,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
 
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
-
   return (
     <div
       ref={wrapperRef}
@@ -279,24 +277,21 @@ const DynamicEditorBridge = (props) => {
     className,
     onFxPress,
     cyLabel = '',
-    verticalLine = false,
     onChange,
     styleDefinition,
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
-
-  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'TextComponentTextInput'];
-
+  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
+  const { isFxNotRequired } = fieldMeta;
   const { t } = useTranslation();
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
 
   return (
-    <div className={cx({ 'codeShow-active': codeShow })}>
+    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
-        {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
-        {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
+        {paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
@@ -307,13 +302,13 @@ const DynamicEditorBridge = (props) => {
             />
           </div>
         )}
-        <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} `}>
+        <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div
-            style={{ width: paramType, marginBottom: codeShow ? '0.5rem' : '0px' }}
-            className="d-flex align-items-center"
+            style={{ marginBottom: codeShow ? '0.5rem' : '0px' }}
+            className="d-flex align-items-center justify-content-end "
           >
-            <div className="col-auto pt-0 fx-common">
-              {paramLabel !== 'Type' && (
+            {paramLabel !== 'Type' && isFxNotRequired === undefined && (
+              <div className="col-auto pt-0 fx-common fx-button-container">
                 <FxButton
                   active={codeShow}
                   onPress={() => {
@@ -327,8 +322,9 @@ const DynamicEditorBridge = (props) => {
                   }}
                   dataCy={cyLabel}
                 />
-              )}
-            </div>
+              </div>
+            )}
+
             {!codeShow && (
               <DynamicFxTypeRenderer
                 value={!error ? value : ''}
@@ -352,7 +348,6 @@ const DynamicEditorBridge = (props) => {
         <div className={`row custom-row`} style={{ display: codeShow ? 'flex' : 'none' }}>
           <div className={`col code-hinter-col`}>
             <div className="d-flex">
-              <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div>
               <SingleLineCodeEditor initialValue {...props} />
             </div>
           </div>

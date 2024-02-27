@@ -17,7 +17,6 @@ export const Code = ({
   onFxPress,
   fxActive,
   component,
-  verticalLine,
   accordian,
   placeholder,
 }) => {
@@ -45,23 +44,23 @@ export const Code = ({
   }
 
   return (
-    <div className={`field ${options.className}`} style={{ marginBottom: '20px' }}>
+    <div className={`field ${options.className}`} style={{ marginBottom: '8px' }}>
       <CodeEditor
         type="fxEditor"
         initialValue={initialValue}
         paramName={param.name}
-        paramLabel={displayName}
+        paramLabel={paramMeta?.showLabel !== false ? displayName : ' '}
         paramType={paramMeta.type}
         fieldMeta={paramMeta}
         onFxPress={onFxPress}
         fxActive={CLIENT_SERVER_TOGGLE_FIELDS.includes(param.name) ? false : fxActive} // Client Server Toggle don't support Fx
         componentName={`component/${componentName}::${getfieldName}`}
         onChange={(value) => handleCodeChanged(value)}
-        verticalLine={verticalLine}
         className={options?.className}
         componentId={component?.id}
         styleDefinition={component?.component?.definition?.styles ?? {}}
         onVisibilityChange={onVisibilityChange}
+        placeholder={placeholder}
       />
     </div>
   );

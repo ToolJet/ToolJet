@@ -188,7 +188,7 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
       bsPrefix="codehinter-preview-popover"
       id="popover-basic"
       className={`${darkMode && 'dark-theme'}`}
-      style={{ width: '250px', maxWidth: '350px', marginRight: 10, zIndex: 111 }}
+      style={{ width: '250px', maxWidth: '350px', marginRight: 10, zIndex: 1200 }}
       onMouseEnter={() => setCursorInsidePreview(true)}
       onMouseLeave={() => setCursorInsidePreview(false)}
     >

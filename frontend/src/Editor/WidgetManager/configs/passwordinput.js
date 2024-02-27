@@ -110,6 +110,7 @@ export const passinputConfig = {
         { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
       ],
       accordian: 'label',
+      isFxNotRequired: true,
     },
     width: {
       type: 'slider',
@@ -119,6 +120,7 @@ export const passinputConfig = {
         key: 'alignment',
         value: 'side',
       },
+      isFxNotRequired: true,
     },
     auto: {
       type: 'checkbox',
@@ -130,6 +132,7 @@ export const passinputConfig = {
         key: 'alignment',
         value: 'side',
       },
+      isFxNotRequired: true,
     },
 
     backgroundColor: {
@@ -204,6 +207,7 @@ export const passinputConfig = {
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },
       ],
+      isFxNotRequired: true,
       accordian: 'container',
     },
   },
