@@ -22,7 +22,7 @@ import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
-import { promoteApp, releaseApp } from "Support/utils/multiEnv";
+import { appPromote } from "Support/utils/multiEnv";
 
 export const oidcSSOPageElements = () => {
   cy.get(ssoEeSelector.oidcToggle).then(($el) => {
@@ -484,9 +484,7 @@ export const createAnAppWithSlug = (appName, slug) => {
   cy.apiCreateApp(appName);
   cy.openApp();
   cy.dragAndDropWidget("Table", 250, 250);
-  promoteApp();
-  promoteApp();
-  releaseApp();
+  appPromote('development', 'release')
   cy.get(commonWidgetSelector.shareAppButton).click();
   cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
   cy.wait(2000);
