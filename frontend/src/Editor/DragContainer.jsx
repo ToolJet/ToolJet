@@ -446,8 +446,6 @@ export default function DragContainer({
             `translate(${currentLayout.left * _gridWidth - diffWidth}px, ${currentLayout.top}px)`
           );
 
-          e.target.style.width = `${e.width}px`;
-          e.target.style.height = `${e.height}px`;
           let transformX = currentLayout.left * _gridWidth;
           let transformY = currentLayout.top;
           console.log(
@@ -461,6 +459,24 @@ export default function DragContainer({
           }
           if (isTopChanged) {
             transformY = currentLayout.top - diffHeight;
+          }
+
+          const elemContainer = e.target.closest('.real-canvas');
+          const containerHeight = elemContainer.clientHeight;
+          const containerWidth = elemContainer.clientWidth;
+          const maxY = containerHeight - e.target.clientHeight;
+          const maxLeft = containerWidth - e.target.clientWidth;
+          const maxWidthHit = transformX < 0 || transformX >= maxLeft;
+          const maxHeightHit = transformY < 0 || transformY >= maxY;
+          transformY = transformY < 0 ? 0 : transformY > maxY ? maxY : transformY;
+          transformX = transformX < 0 ? 0 : transformX > maxLeft ? maxLeft : transformX;
+          console.log('e.target.style.transform', `translate(${transformX}px, ${transformY}px)`);
+
+          if (!maxWidthHit || e.width < e.target.clientWidth) {
+            e.target.style.width = `${e.width}px`;
+          }
+          if (!maxHeightHit || e.height < e.target.clientHeight) {
+            e.target.style.height = `${e.height}px`;
           }
           e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
 
@@ -533,9 +549,25 @@ export default function DragContainer({
 
             // e.target.style.transform = e.drag.transform;
             width = adjustWidth(width, transformX, _gridWidth);
-            e.target.style.width = `${width}px`;
-            e.target.style.height = `${height}px`;
+            // e.target.style.width = `${width}px`;
+            // e.target.style.height = `${height}px`;
+            const elemContainer = e.target.closest('.real-canvas');
+            const containerHeight = elemContainer.clientHeight;
+            const containerWidth = elemContainer.clientWidth;
+            const maxY = containerHeight - e.target.clientHeight;
+            const maxLeft = containerWidth - e.target.clientWidth;
+            const maxWidthHit = transformX < 0 || transformX >= maxLeft;
+            const maxHeightHit = transformY < 0 || transformY >= maxY;
+            transformY = transformY < 0 ? 0 : transformY > maxY ? maxY : transformY;
+            transformX = transformX < 0 ? 0 : transformX > maxLeft ? maxLeft : transformX;
+
             e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
+            if (!maxWidthHit || e.width < e.target.clientWidth) {
+              e.target.style.width = `${e.width}px`;
+            }
+            if (!maxHeightHit || e.height < e.target.clientHeight) {
+              e.target.style.height = `${e.height}px`;
+            }
             console.log('onResizeEnd---Newtransform', `translate(${transformX}px, ${transformY}px)`);
             const resizeData = {
               id: e.target.id,
