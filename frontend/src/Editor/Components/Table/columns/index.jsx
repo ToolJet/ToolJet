@@ -114,9 +114,10 @@ export default function generateColumnsData({
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
         cellValue = cellValue === undefined ? '' : cellValue;
-        if (!isEditable && cellValue === null) {
-          return <NullRenderer />;
-        }
+        // if (cellValue === null) {
+        //   return <NullRenderer />;
+        // }
+        // console.log(isEditable, "isEdit")
         switch (columnType) {
           case 'string':
           case undefined:
