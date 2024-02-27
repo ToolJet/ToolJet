@@ -122,7 +122,7 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false,
-          lastVersion: '2.27.0',
+          lastVersion: '2.30.0',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
