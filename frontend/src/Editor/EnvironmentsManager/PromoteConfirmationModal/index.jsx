@@ -40,19 +40,21 @@ export default function EnvironmontConfirmationModal(props) {
         toast.success(`${editingVersion.name} has been promoted to ${data.target.name}!`);
         fetchEnvironments();
         if (data?.current?.name == 'development') {
-          const gitData = await gitSyncService.getAppConfig(current_organization_id, editingVersion?.id);
-          const appGit = gitData?.app_git;
-          if (appGit && appGit?.org_git?.auto_commit) {
-            try {
-              const body = {
-                gitAppName: appGit?.git_app_name,
-                versionId: editingVersion?.id,
-                lastCommitMessage: ` ${editingVersion.name} Version of app ${appGit?.git_app_name} promoted from development to staging`,
-                gitVersionName: editingVersion?.name,
-              };
-              await gitSyncService.gitPush(body, appGit?.id, editingVersion?.id);
-              toast.success('Changes committed successfully');
-            } catch (err) {
+          try {
+            const gitData = await gitSyncService.getAppConfig(current_organization_id, editingVersion?.id);
+            const appGit = gitData?.app_git;
+            const body = {
+              gitAppName: appGit?.git_app_name,
+              versionId: editingVersion?.id,
+              lastCommitMessage: ` ${editingVersion.name} Version of app ${appGit?.git_app_name} promoted from development to staging`,
+              gitVersionName: editingVersion?.name,
+            };
+            await gitSyncService.gitPush(body, appGit?.id, editingVersion?.id);
+            toast.success('Changes committed successfully');
+          } catch (err) {
+            const status = err?.statusCode;
+            const error = err?.error;
+            if (!(status === 404 && error === 'Git Configuration not found')) {
               toast.error(err?.error);
             }
           }

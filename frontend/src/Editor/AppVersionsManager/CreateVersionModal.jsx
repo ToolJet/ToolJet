@@ -75,7 +75,7 @@ export const CreateVersion = ({
               const body = {
                 gitAppName: orgGit?.git_app_name,
                 versionId: data?.editing_version?.id,
-                lastCommitMessage: `Version ${data?.editing_version?.name} Created of app ${orgGit?.name}`,
+                lastCommitMessage: `Version ${data?.editing_version?.name} Created of app ${orgGit?.git_app_name}`,
                 gitVersionName: data?.editing_version?.name,
               };
               gitSyncService

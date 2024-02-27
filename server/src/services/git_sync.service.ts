@@ -431,9 +431,9 @@ export class GitSyncService {
 
     const appGitPushBody: AppGitPushDto = {
       gitAppName: appGit.gitAppName,
-      lastCommitMessage: `${renameVersionFlag ? `Version` : `App`} ${prevName} is renamed to ${
-        renameVersionFlag ? appGit.gitVersionName : appGit.gitAppName
-      }`,
+      lastCommitMessage: `${
+        renameVersionFlag ? `Version ${prevName} of app ${appGit.gitAppName} ` : `App ${prevName}`
+      }  is renamed to ${renameVersionFlag ? appGit.gitVersionName : appGit.gitAppName}`,
       versionId: appGit.gitVersionId,
       gitVersionName: appGit.gitVersionName,
     };
@@ -477,10 +477,11 @@ export class GitSyncService {
       }`,
       `${commitingUser.email}`
     );
+    const commitMessageWithDesc = `Version ${appGit.gitVersionName} Of ${appGit.gitAppName}: ${commitMessage}`;
     try {
       const head = await NodeGit.Reference.nameToId(repo, 'HEAD');
       const parent = await repo.getCommit(head);
-      await repo.createCommit('HEAD', author, committer, commitMessage, oid, [parent]).then((commitId) => {
+      await repo.createCommit('HEAD', author, committer, commitMessageWithDesc, oid, [parent]).then((commitId) => {
         appGit.lastCommitId = commitId.tostrS();
         appGit.lastCommitMessage = commitMessage;
 
@@ -492,7 +493,7 @@ export class GitSyncService {
       await repo
         .createCommit('HEAD', author, committer, commitMessage, oid, [])
         .then((commitId) => {
-          appGit.lastCommitId = commitId.tostrS();
+          appGit.lastCommitId = commitId.toString();
           appGit.lastCommitMessage = commitMessage;
           appGit.lastCommitUser = `${commitingUser.firstName ? commitingUser.firstName : ''} ${
             commitingUser.lastName ? commitingUser.lastName : ''

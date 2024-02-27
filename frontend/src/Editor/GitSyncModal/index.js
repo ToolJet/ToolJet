@@ -432,7 +432,7 @@ export default function GitSyncModal({
       const body = {
         gitAppName: appGitData.git_app_name,
         versionId: editingVersion?.id,
-        lastCommitMessage: type === 'version' ? 'Version creation' : 'App creation',
+        lastCommitMessage: type === 'version' ? `Version creation` : `App ${appGitData.git_app_name} created`,
         gitVersionName: editingVersion?.name,
       };
       setAppPushLoading(true);

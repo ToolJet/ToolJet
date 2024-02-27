@@ -47,6 +47,9 @@ const EnvironmentManager = (props) => {
     if (currentAppVersionEnvironment.name === 'production' || currentAppVersionEnvironment.name === 'staging') {
       onEditorFreeze(true);
       setCurrentAppVersionPromoted(true);
+    } else {
+      onEditorFreeze(false);
+      setCurrentAppVersionPromoted(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentAppVersionEnvironment, editingVersion.id, environments.length]);
