@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import {
   authenticationService,
   orgEnvironmentVariableService,
@@ -619,7 +620,7 @@ class ViewerComponent extends React.Component {
     const isMobilePreviewMode = this.props.versionId && this.props.currentLayout === 'mobile';
     if (this.state.app?.isLoading) {
       return (
-        <div className="tooljet-logo-loader">
+        <div className={cx('tooljet-logo-loader', { 'theme-dark': this.props.darkMode })}>
           <div>
             <div className="loader-logo">
               <ViewerLogoIcon />

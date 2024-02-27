@@ -173,15 +173,6 @@
         {
           "type": "category",
           "label": "Actions Reference",
-          "link": {
-            "type": "generated-index",
-            "title": "Actions Reference",
-            "description": "All the actions that can be performed through event handlers",
-            "keywords": [
-              "actions",
-              "events"
-            ]
-          },
           "items": [
             "actions/show-alert",
             "actions/logout",
@@ -239,15 +230,6 @@
         {
           "type": "category",
           "label": "User Authentication",
-          "link": {
-            "type": "generated-index",
-            "title": "User Authentication",
-            "description": "Guides for setting up User Authentication and managing Single Sign-On",
-            "keywords": [
-              "SSO",
-              "authentication"
-            ]
-          },
           "collapsed": true,
           "items": [
             "user-authentication/user-lifecycle",
@@ -262,16 +244,6 @@
                 {
                   "type": "category",
                   "label": "OpenId Connect",
-                  "link": {
-                    "type": "generated-index",
-                    "title": "OpenId Connect",
-                    "description": " ",
-                    "keywords": [
-                      "okta",
-                      "openid",
-                      "azureAD"
-                    ]
-                  },
                   "collapsed": false,
                   "items": [
                     "user-authentication/sso/openid/setup",
@@ -315,16 +287,6 @@
     {
       "type": "category",
       "label": "Marketplace",
-      "link": {
-        "type": "generated-index",
-        "title": "Marketplace",
-        "keywords": [
-          "Marketplace",
-          "Marketplace for plugins",
-          "Using Marketplace",
-          "Build plugins for marketplace"
-        ]
-      },
       "collapsed": true,
       "items": [
         "marketplace/marketplace-overview",
@@ -344,18 +306,12 @@
     {
       "type": "category",
       "label": "How To",
-      "link": {
-        "type": "generated-index",
-        "title": "How To Guides",
-        "description": "How To Guides for all the things ToolJet",
-        "keywords": [
-          "how to"
-        ]
-      },
       "items": [
+        "how-to/setup-rsyslog",
         "how-to/use-inspector",
         "how-to/use-form-component",
         "how-to/access-cellvalue-rowdata",
+        "how-to/conditionally-format-table",
         "how-to/bulk-update-multiple-rows",
         "how-to/delete-multiple-rows",
         "how-to/use-server-side-pagination",
@@ -372,21 +328,13 @@
         "how-to/s3-custom-endpoints",
         "how-to/upload-files-aws",
         "how-to/upload-files-gcs",
-        "how-to/loading-image-pdf-from-db"
+        "how-to/loading-image-pdf-from-db",
+        "how-to/print-multi-tabs-report"
       ]
     },
     {
       "type": "category",
       "label": "Contributing Guide",
-      "link": {
-        "type": "generated-index",
-        "title": "Contributing Guide",
-        "description": "Guides for contributing to ToolJet",
-        "keywords": [
-          "contribute",
-          "contributing"
-        ]
-      },
       "collapsed": false,
       "items": [
         "contributing-guide/setup/architecture",

@@ -20,7 +20,6 @@ const Card = ({
       const Icon = allSvgs[src];
       return <Icon style={{ height, width }} className="card-icon" />;
     }
-
     return <img src={src} width={width} height={height} alt={title} />;
   };
 

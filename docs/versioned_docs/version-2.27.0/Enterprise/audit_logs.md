@@ -3,8 +3,9 @@ id: audit_logs
 title: Audit logs
 ---
 
+<a href="https://www.tooljet.com/pricing">
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
-
+</a>
 
 The audit log is the report of all the activities done in your ToolJet account. It will capture and display events automatically by recording who performed an activity, what when, and where the activity was performed, along with other information such as IP address.
 
@@ -95,6 +96,8 @@ The dropdown will display all the apps associated with your account. Select an a
 ### Log file
 
 The file will contain all the data from audit logs. The log file can be created by specifying the path in the [environment variables](/docs/setup/env-vars). The log file is rotated on a daily basis and is updated dynamically every time a new audit log is generated.
+
+Learn more about **setting up the log file generation** [here](/docs/how-to/setup-rsyslog).
 
 #### Log Rotation
 

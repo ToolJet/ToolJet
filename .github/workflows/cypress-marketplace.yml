@@ -37,12 +37,30 @@ jobs:
       - name: use mybuilder buildx
         run: docker buildx use mybuilder
 
-      - name: Build docker image
-        run: docker buildx build --platform=linux/amd64 -f docker/production.Dockerfile  . -t tooljet/tj-osv:cypressplaform
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/production.Dockerfile
+          push: true
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set up environment variables
         run: |
-          echo "TOOLJET_HOST=http://localhost:80" >> .env
+          echo "TOOLJET_HOST=http://localhost:3000" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
           echo "PG_DB=tooljet_development" >> .env
@@ -62,9 +80,17 @@ jobs:
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+
+
+      - name: Update docker-compose file
+        run: |
+            # Update docker-compose.yaml with the new image
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
 
       - name: Run docker-compose file
         run: docker-compose up -d
@@ -78,7 +104,7 @@ jobs:
       - name: Wait for the server to be ready
         run: |
           timeout 1500 bash -c '
-          until curl --silent --fail http://localhost:80; do
+          until curl --silent --fail http://localhost:3000; do
             sleep 5
           done'
 
@@ -97,7 +123,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:80"
+          config: "baseUrl=http://localhost:3000"
           config-file: cypress-marketplace.config.js
 
       - name: Capture Screenshots
@@ -106,6 +132,7 @@ jobs:
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
+
 
   Cypress-Marketplace-Subpath:
     runs-on: ubuntu-22.04
