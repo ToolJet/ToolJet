@@ -79,6 +79,61 @@
     --text-default: #1B1F24;
 
 
+    // new design theme
+    --primary-brand: #4368E3;
+    --primary-accent-strong: #4368E3;
+    --primary-accent-subtle: #4368E34D;
+    --primary-white: #FFFFFF;
+    --primary-black: #1B1F24;
+
+    // text
+    --text-primary: #1B1F24;
+    --text-placeholder: #6A727C;
+    --text-disbled: #ACB2B9;
+    --text-on-solid: #FFFFFF;
+
+
+    // status
+    --staus-error-strong: #D72D39;
+    --staus-error-subtle: #D72D394D;
+    --staus-warning-strong: #BF4F03;
+    --staus-warning-subtle: #BF4F034D;
+    --staus-suceess-strong: #1E823B;
+    --staus-suceess-subtle: #1E823B4D;
+
+    //icon 
+    --icons-strong: #6A727C;
+    --icons-default: #6A727C;
+    --icons-weak-disabled: #6A727C;
+    --icons-disabled-on-white: #6A727C;
+    --icons-on-solid: #6A727C;
+
+    // borders
+    --borders-strong: #ACB2B9;
+    --borders-default: #CCD1D5;
+    --borders-weak-disabled: #E4E7EB;
+    --borders-disabled-on-white: #F6F8FA;
+
+    // interactive overlays
+    --interactive-overlays-fill-hover: #1B1F2414;
+    --interactive-overlays-fill-pressed: #1B1F241A;
+    --interactive-overlays-border-hover: #1B1F241F;
+    --interactive-overlays-border-pressed: #1B1F2429;
+    --interactive-overlays-focus-outline: #4368E3;
+    --interactive-overlays-focus-inner-shadow: #FFFFFF;
+    --interactive-overlays-column-resize: #1B1F244D;
+
+
+    //surfaces
+    --surface-app-bg-default: #F6F6F6;
+    --surface-app-bg-default: #FFFFFF;
+    --surface-surface-02: #F6F8FA;
+    --surface-surface-03: #E4E7EB;
+
+    // utilities
+    --utilities-scrollbar: #6A727C1F;
+
+
 }
 
 .dark-theme {
@@ -100,4 +155,59 @@
     --text-disabled: #6D757D;
     --text-default: #FAFCFF;
 
+
+    // new design theme
+    --primary-brand: #4A6DD9;
+    --primary-accent-strong: #4A6DD9;
+    --primary-accent-subtle: #4A6DD94D;
+    --primary-white: #FAFCFF;
+    --primary-black: #121518;
+
+    // text
+    --text-primary: #CFD3D8;
+    --text-placeholder: #858C94;
+    --text-disbled: #545B64;
+    --text-on-solid: #FAFCFF;
+
+
+    // status
+    --staus-error-strong: #D03F43;
+    --staus-error-subtle: #D03F434D;
+    --staus-warning-strong: #BA5722;
+    --staus-warning-subtle: #BA57224D;
+    --staus-suceess-strong: #318344;
+    --staus-suceess-subtle: #3183444D;
+
+    //icon 
+    --icons-strong: #CFD3D8E5;
+    --icons-default: #CFD3D8A6;
+    --icons-weak-disabled: #CFD3D859;
+    --icons-disabled-on-white: #CFD3D833;
+    --icons-on-solid: #FAFCFF;
+
+    // borders
+    --borders-strong: #545B64;
+    --borders-default: #3C434B;
+    --borders-weak-disabled: #2B3036;
+    --borders-disabled-on-white: #2B303633;
+
+    // interactive overlays
+
+    --interactive-overlays-fill-hover: #FFFFFF1F;
+    --interactive-overlays-fill-pressed: #FFFFFF33;
+    --interactive-overlays-border-hover: #FFFFFF33;
+    --interactive-overlays-border-pressed: #FFFFFF47;
+    --interactive-overlays-focus-outline: #4A6DD9;
+    --interactive-overlays-focus-inner-shadow: #121518;
+    --interactive-overlays-column-resize: #FFFFFF80;
+
+
+    //    surfaces
+    --surface-app-bg-default: #121518;
+    --surface-app-bg-default: #1E2226;
+    --surface-surface-02: #2B3036;
+    --surface-surface-03: #3C434B;
+
+    // utilities
+    --utilities-scrollbar: #6D757D29;
 }
