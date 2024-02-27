@@ -19,14 +19,14 @@ import {
   selectCSA,
   selectEvent,
 } from "Support/utils/events";
-import { randomString } from "Support/utils/textInput";
+import { randomString } from "Support/utils/editor/textInput";
 import { buttonText } from "Texts/button";
 
 describe("Text Input", () => {
   const data = {};
   beforeEach(() => {
     cy.viewport(1200, 1200);
-    data.appName = `${fake.companyName}-text-App1`;
+    data.appName = `${fake.companyName}-text-App`;
     cy.apiLogin();
     cy.apiCreateApp(data.appName);
     cy.openApp();
@@ -56,7 +56,7 @@ describe("Text Input", () => {
     ).verifyVisibleElement("have.text", "Cypress testing text component");
   });
 
-  it.only("should verify styles of text component", () => {
+  it("should verify styles of text component", () => {
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     selectFromSidebarDropdown("Weight", "bolder");
     selectFromSidebarDropdown("Font variant", "initial");
@@ -90,7 +90,7 @@ describe("Text Input", () => {
 
   it("should verify preview of text component", () => {});
 
-  it("should verify CSA", () => {
+  it.only("should verify CSA", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -120,13 +120,13 @@ describe("Text Input", () => {
       "not.be.visible"
     );
   });
-  it("should verify expossed values", () => {
+  it.only("should verify expossed values", () => {
     cy.get(commonWidgetSelector.sidebarinspector).click();
     verifyNodeData("components", "Object", "1 entry ");
     openNode("components");
     openNode("text1");
 
-    verifyValue("text", "String", `"Hello World👋"`);
+    verifyValue("text", "String", `"Hello The👋"`);
     verifyValue("isVisible", "Boolean", "true");
     verifyValue("isLoading", "Boolean", "false");
     verifyValue("isDisabled", "Boolean", "false");
@@ -134,8 +134,8 @@ describe("Text Input", () => {
     verifyfunctions("clear", "Function");
     verifyfunctions("setText", "Function");
     verifyfunctions("visibility", "Function");
-    verifyfunctions("setDisabled", "Function");
+    verifyfunctions("setDisable", "Function");
     verifyfunctions("setVisibility", "Function");
-    verifyfunctions("setLoadingState", "Function");
+    verifyfunctions("setLoading", "Function");
   });
 });

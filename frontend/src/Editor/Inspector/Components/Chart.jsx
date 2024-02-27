@@ -236,7 +236,7 @@ class Chart extends React.Component {
     });
 
     items.push({
-      title: 'Layout',
+      title: 'Devices',
       children: (
         <>
           {renderElement(
