@@ -40,8 +40,8 @@ jobs:
       - name: Docker Login
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKER_USERNAME_MARK }}
+          password: ${{ secrets.DOCKER_PASSWORD_MARK }}
 
       - name: Set SAFE_BRANCH_NAME
         run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
@@ -55,8 +55,8 @@ jobs:
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
           platforms: linux/amd64
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME_MARK }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD_MARK }}
 
       - name: Set up environment variables
         run: |
