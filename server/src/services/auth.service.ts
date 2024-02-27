@@ -20,7 +20,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, EntityManager, Repository, getManager } from 'typeorm';
+import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateAdminDto, CreateUserDto, TelemetryDataDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
@@ -467,8 +467,6 @@ export class AuthService {
     const { id: customerId } = metadata;
     const otherData = { companySize, role, phoneNumber };
 
-    const { editor, viewer } = await this.licenseService.fetchTotalViewerEditorCount(getManager());
-
     const body = {
       hostname,
       subpath,
@@ -476,10 +474,6 @@ export class AuthService {
       email,
       companyName,
       version: '2',
-      user: {
-        editor,
-        viewer,
-      },
       ...this.splitName(name),
       otherData,
     };
