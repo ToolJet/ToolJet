@@ -44,7 +44,7 @@ export const Code = ({
   }
 
   return (
-    <div className={`field ${options.className}`} style={{ marginBottom: '20px' }}>
+    <div className={`field ${options.className}`} style={{ marginBottom: '8px' }}>
       <CodeEditor
         type="fxEditor"
         initialValue={initialValue}

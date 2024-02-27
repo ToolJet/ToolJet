@@ -291,7 +291,6 @@ const DynamicEditorBridge = (props) => {
   return (
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
-        {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
         {paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
@@ -303,7 +302,7 @@ const DynamicEditorBridge = (props) => {
             />
           </div>
         )}
-        <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} `} style={{ width: '100%' }}>
+        <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div
             style={{ marginBottom: codeShow ? '0.5rem' : '0px' }}
             className="d-flex align-items-center justify-content-end "
