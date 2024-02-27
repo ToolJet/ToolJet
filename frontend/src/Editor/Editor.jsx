@@ -1202,7 +1202,6 @@ const EditorComponent = (props) => {
     const _appDefinition = _.cloneDeep(appDefinition);
     let newComponents = _appDefinition?.pages[currentPageId].components;
     const selectedComponents = useEditorStore.getState()?.selectedComponents;
-
     for (const selectedComponent of selectedComponents) {
       let top = newComponents[selectedComponent.id].layouts[currentLayout].top;
       let left = newComponents[selectedComponent.id].layouts[currentLayout].left;
@@ -1224,6 +1223,12 @@ const EditorComponent = (props) => {
       }
 
       if (left < 0 || top < 0 || left + width > noOfGrids) {
+        return;
+      }
+
+      const movedElement = document.getElementById(selectedComponent.id);
+      const parentElm = movedElement.closest('.real-canvas');
+      if (selectedComponent?.component?.parent && parentElm.clientHeight < top + movedElement.clientHeight) {
         return;
       }
 
