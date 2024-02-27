@@ -25,11 +25,12 @@ describe("App Export Functionality", () => {
   let currentVersion = "";
   let otherVersions = [];
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
   });
 
   it("Verify the elements of export dialog box", () => {
-    cy.createApp(data.appName1);
+    cy.apiCreateApp(data.appName1);
+    cy.openApp();
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
     cy.renameApp(data.appName1);
@@ -55,6 +56,7 @@ describe("App Export Functionality", () => {
   });
 
   it("Verify 'Export app' functionality of an application", () => {
+    cy.visit("/");
     cy.get(commonSelectors.appHeaderLable).should("be.visible");
 
     selectAppCardOption(

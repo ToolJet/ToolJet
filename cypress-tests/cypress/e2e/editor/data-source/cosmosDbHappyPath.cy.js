@@ -17,11 +17,13 @@ import {
 } from "Support/utils/postgreSql";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on connection form", () => {
@@ -43,7 +45,7 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.allCloudStorage
     );
-    selectAndAddDataSource("databases", "CosmosDB", data.lastName);
+    selectAndAddDataSource("databases", "CosmosDB", data.dataSourceName);
 
     cy.get('[data-cy="label-end-point"]').verifyVisibleElement(
       "have.text",
@@ -82,11 +84,11 @@ describe("Data sources", () => {
       "have.text",
       "Invalid URL"
     );
+    deleteDatasource(`cypress-${data.dataSourceName}-cosmosdb`);
   });
 
   it.only("Should verify the functionality of CosmosDB connection form.", () => {
-    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    selectAndAddDataSource("databases", "CosmosDB", data.lastName);
+    selectAndAddDataSource("databases", "CosmosDB", data.dataSourceName);
 
     fillDataSourceTextField(
       "End point",
@@ -111,8 +113,11 @@ describe("Data sources", () => {
     );
 
     cy.get(
-      `[data-cy="cypress-${data.lastName}-cosmosdb-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-cosmosdb`);
-    deleteDatasource(`cypress-${data.lastName}-cosmosdb`);
+      `[data-cy="cypress-${data.dataSourceName}-cosmosdb-button"]`
+    ).verifyVisibleElement(
+      "have.text",
+      `cypress-${data.dataSourceName}-cosmosdb`
+    );
+    deleteDatasource(`cypress-${data.dataSourceName}-cosmosdb`);
   });
 });

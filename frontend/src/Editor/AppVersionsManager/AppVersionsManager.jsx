@@ -18,6 +18,7 @@ export const AppVersionsManager = function ({
   appCreationMode,
   isEditable = true,
   isViewer,
+  fetchEnvironments,
 }) {
   const [appVersions, setAppVersions] = useState([]);
   const [appVersionStatus, setGetAppVersionStatus] = useState('');
@@ -80,11 +81,12 @@ export const AppVersionsManager = function ({
         if (data.appVersions && data.appVersions.length === 0) {
           // if no versions in the current environment, then set the current environment to null
           // it will reset the current selected environment as development.
-          return setCurrentEnvironment(null);
+          fetchEnvironments(appId);
+          return;
         }
         // if current selected version is not present in the current environment, then select the first version
         if (!data.appVersions.find((version) => version.id === editingVersion.id)) {
-          selectVersion(data.appVersions[0].id, true);
+          selectVersion(data.appVersions[0].id, false, false, true);
         }
       })
       .catch((error) => {
@@ -99,7 +101,12 @@ export const AppVersionsManager = function ({
     }
   }, [currentEnvironment, appId]);
 
-  const selectVersion = (id, isCurrentVersionNotUpgradedYet = false, isUserSwitchedVersion = false) => {
+  const selectVersion = (
+    id,
+    isCurrentVersionNotUpgradedYet = false,
+    isUserSwitchedVersion = false,
+    canLoadSameEnv = false
+  ) => {
     return appVersionService
       .getAppVersionData(appId, id)
       .then((data) => {
@@ -107,7 +114,8 @@ export const AppVersionsManager = function ({
           data,
           isUserSwitchedVersion,
           isCurrentVersionNotUpgradedYet,
-          currentEnvironment?.id
+          currentEnvironment?.id,
+          { canLoadSameEnv }
         );
       })
       .catch((error) => {

@@ -21,10 +21,9 @@ export class TooljetDbGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const dataQueryId = request.headers['data-query-id'];
     const organizationId = request.headers['tj-workspace-id'] == 'null' ? null : request.headers['tj-workspace-id'];
-    const isPublicAppRequest = isEmpty(organizationId);
 
     let dataQuery: DataQuery;
-    if (isPublicAppRequest && !isEmpty(dataQueryId)) {
+    if (!isEmpty(dataQueryId)) {
       dataQuery = await this.manager.findOne(DataQuery, {
         where: { id: dataQueryId },
         relations: ['apps'],

@@ -18,7 +18,14 @@ import Settings from '@/_components/Settings';
 import './styles.scss';
 import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 
-function Layout({ children, switchDarkMode, darkMode }) {
+function Layout({
+  children,
+  switchDarkMode,
+  darkMode,
+  enableCollapsibleSidebar = false,
+  collapseSidebar = false,
+  toggleCollapsibleSidebar = () => {},
+}) {
   const router = useRouter();
   const [featureAccess, setFeatureAccess] = useState({});
   const [whiteLabelLogo, setWhiteLabelLogo] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_LOGO);
@@ -277,7 +284,12 @@ function Layout({ children, switchDarkMode, darkMode }) {
         </aside>
       </div>
       <div style={{ paddingLeft: 48, paddingRight: 0 }} className="col">
-        <Header featureAccess={featureAccess} />
+        <Header
+          featureAccess={featureAccess}
+          enableCollapsibleSidebar={enableCollapsibleSidebar}
+          collapseSidebar={collapseSidebar}
+          toggleCollapsibleSidebar={toggleCollapsibleSidebar}
+        />
         <div style={{ paddingTop: 64 }}>{children}</div>
       </div>
       <ConfirmDialog

@@ -37,6 +37,7 @@ import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import * as cookieParser from 'cookie-parser';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
+import { LicenseService } from '@services/license.service';
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -846,3 +847,86 @@ export const getAppEnvironment = async (id: string, priority: number) => {
     where: { ...(id && { id }), ...(priority && { priority }) },
   });
 };
+
+export const getWorkflowWebhookApiToken = async (appId: string) => {
+  const app = await getManager().createQueryBuilder(App, 'app').where('app.id = :id', { id: appId }).getOneOrFail();
+  return app?.workflowApiToken ?? '';
+};
+
+export const enableWebhookForWorkflows = async (workflowId: string, status = true) => {
+  await getManager()
+    .createQueryBuilder()
+    .update(App)
+    .set({ workflowEnabled: status, workflowApiToken: uuidv4() })
+    .where('id = :id', { id: workflowId })
+    .execute();
+};
+
+export const triggerWorkflowViaWebhook = async (
+  app: INestApplication,
+  apiToken: string,
+  workflowId: string,
+  environment = 'development',
+  bodyJson: any = {}
+) => {
+  return await request(app.getHttpServer())
+    .post(`/api/v2/webhooks/workflows/${workflowId}/trigger?environment=${environment}`)
+    .set('Authorization', `Bearer ${apiToken}`)
+    .set('Content-Type', 'application/json')
+    .send(bodyJson);
+};
+
+export const enableWorkflowStatus = async (
+  app: INestApplication,
+  workflowId: string,
+  orgId: string,
+  tokenCookie: any,
+  isMaintenanceOn = true
+) => {
+  return await request(app.getHttpServer())
+    .put(`/api/apps/${workflowId}`)
+    .set('tj-workspace-id', orgId)
+    .set('Cookie', tokenCookie)
+    .send({
+      app: {
+        is_maintenance_on: isMaintenanceOn,
+      },
+    });
+};
+
+export async function createNestAppInstanceWithServiceMocks({ shouldMockLicenseService = false }): Promise<{
+  app: INestApplication;
+  licenseServiceMock?: DeepMocked<LicenseService>;
+  configServiceMock?: DeepMocked<ConfigService>;
+}> {
+  let app: INestApplication;
+
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule],
+    providers: [
+      {
+        ...(shouldMockLicenseService && {
+          provide: LicenseService,
+          useValue: createMock<LicenseService>(),
+        }),
+      },
+    ],
+  }).compile();
+
+  app = moduleRef.createNestApplication();
+  app.setGlobalPrefix('api');
+  app.use(cookieParser());
+  app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useWebSocketAdapter(new WsAdapter(app));
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: VERSION_NEUTRAL,
+  });
+  await app.init();
+
+  return {
+    app,
+    ...(shouldMockLicenseService && { licenseServiceMock: moduleRef.get(LicenseService) }),
+  };
+}

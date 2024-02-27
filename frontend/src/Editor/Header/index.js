@@ -216,6 +216,7 @@ export default function EditorHeader({
                       setCurrentEnvironment={setCurrentAppEnvironmentId}
                       isPublic={isPublic ?? false}
                       appCreationMode={creationMode}
+                      fetchEnvironments={fetchEnvironments}
                     />
                   )}
                 </div>

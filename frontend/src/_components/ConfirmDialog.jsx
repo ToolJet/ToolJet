@@ -21,6 +21,7 @@ export function ConfirmDialog({
   confirmButtonIcon,
   confirmButtonIconWidth = '',
   confirmButtonIconFill,
+  confirmIcon,
 }) {
   darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(show);
@@ -90,6 +91,7 @@ export function ConfirmDialog({
           iconWidth={confirmButtonIconWidth}
           fill={confirmButtonIconFill}
         >
+          {confirmIcon && confirmIcon}
           {buttonText}
         </ButtonSolid>
       </Modal.Footer>

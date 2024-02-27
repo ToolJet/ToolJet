@@ -885,6 +885,7 @@ class HomePageComponent extends React.Component {
               isLoading: importingApp,
               disabled: importingApp || !selectedAppRepo || importingGitAppOperations?.message,
             }}
+            darkMode={this.props.darkMode}
           >
             {fetchingAppsFromRepos ? (
               <div className="loader-container">
@@ -904,6 +905,8 @@ class HomePageComponent extends React.Component {
                         this.setState({ selectedAppRepo: newVal }, () => {
                           if (appsFromRepos[newVal]?.app_name_exist === 'EXIST') {
                             this.setState({ importingGitAppOperations: { message: 'App name already exists' } });
+                          } else {
+                            this.setState({ importingGitAppOperations: {} });
                           }
                         });
                       }}
