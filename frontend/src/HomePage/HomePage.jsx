@@ -259,14 +259,8 @@ class HomePageComponent extends React.Component {
       });
       if (error.statusCode === 409) {
         return false;
-      } else if (
-        error.statusCode === 400 &&
-        error?.error == APP_ERROR_TYPE.IMPORT_EXPORT_SERVICE.UNSUPPORTED_VERSION_ERROR
-      )
-        toast.error(APP_ERROR_TYPE.IMPORT_EXPORT_SERVICE.UNSUPPORTED_VERSION_ERROR);
-      else {
-        toast.error(error?.error);
       }
+      toast.error(error?.error || 'App import failed');
     }
   };
 
