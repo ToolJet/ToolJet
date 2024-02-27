@@ -273,7 +273,7 @@ Cypress.Commands.add("waitForAppLoad", () => {
   const API_ENDPOINT =
     Cypress.env("environment") === "Community"
       ? "/api/v2/data_sources"
-      : "/api/app-environments/**";
+      : "/api/app-environments**";
 
   const TIMEOUT = 15000;
 
@@ -462,7 +462,7 @@ Cypress.Commands.add("skipWalkthrough", () => {
 });
 
 Cypress.Commands.add("appPrivacy", (appName, isPublic) => {
-  const isPublicValue = isPublic ? 'true' : 'false';
+  const isPublicValue = isPublic ? "true" : "false";
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
     sql: `UPDATE apps SET is_public = ${isPublicValue} WHERE name = '${appName}';`,

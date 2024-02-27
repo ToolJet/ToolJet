@@ -100,7 +100,7 @@ describe("Chaining of queries", () => {
       .find("input")
       .type(`{selectAll}{backspace}psql{enter}`);
     cy.forceClickOnCanvas();
-
+    cy.wait(2500)
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "psql");
     cy.verifyToastMessage(commonSelectors.toastMessage, "runjs");
@@ -140,7 +140,7 @@ describe("Chaining of queries", () => {
       .find("input")
       .type(`{selectAll}{backspace}runjs{enter}`);
     cy.forceClickOnCanvas();
-
+    cy.wait(2500)
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "runjs");
     cy.verifyToastMessage(commonSelectors.toastMessage, "runpy");
