@@ -563,10 +563,10 @@ export default function DragContainer({
 
             e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
             if (!maxWidthHit || e.width < e.target.clientWidth) {
-              e.target.style.width = `${Math.round((e.width / _gridWidth) * _gridWidth)}px`;
+              e.target.style.width = `${Math.round(e.lastEvent.width / _gridWidth) * _gridWidth}px`;
             }
             if (!maxHeightHit || e.height < e.target.clientHeight) {
-              e.target.style.height = `${Math.round((e.height / 10) * 10)}px`;
+              e.target.style.height = `${Math.round(e.lastEvent.height / 10) * 10}px`;
             }
             console.log('onResizeEnd---Newtransform', `translate(${transformX}px, ${transformY}px)`);
             const resizeData = {
