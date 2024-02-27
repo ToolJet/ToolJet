@@ -502,7 +502,10 @@ class ViewerComponent extends React.Component {
       this.setState({ isLoading: true });
       this.loadApplicationBySlug(this.props.params.slug);
     }
-    if (prevProps.currentLayout !== this.props.currentLayout) {
+    if (
+      prevProps.currentLayout !== this.props.currentLayout ||
+      prevProps.currentAppVersionEnvironment !== this.props.currentAppVersionEnvironment
+    ) {
       if (this.props.id && useAppVersionStore.getState()?.editingVersion?.id) {
         this.loadApplicationByVersion(this.props.id, useAppVersionStore.getState().editingVersion.id);
       }
@@ -913,6 +916,12 @@ const withStore = (Component) => (props) => {
     }),
     shallow
   );
+  const { currentAppVersionEnvironment } = useAppVersionStore(
+    (state) => ({
+      currentAppVersionEnvironment: state?.currentAppVersionEnvironment,
+    }),
+    shallow
+  );
   const { updateState } = useAppDataActions();
   return (
     <Component
@@ -922,6 +931,7 @@ const withStore = (Component) => (props) => {
       currentLayout={currentLayout}
       updateState={updateState}
       queryConfirmationList={queryConfirmationList}
+      currentAppVersionEnvironment={currentAppVersionEnvironment}
     />
   );
 };
