@@ -178,23 +178,9 @@
 
 
     .cm-tooltip-autocomplete {
-
-        // position: absolute !important;
-        // top: 0px;
-        // left: 0px;
-        // z-index: 10000000 !important;
-
-        // ul {
-        //     position: absolute !important;
-        //     top: 0px;
-        //     left: 0px;
-        //     z-index: 10000000 !important;
-        // }
-
         @extend .cm-base-autocomplete;
         left: 0 !important;
         top: 35px !important;
-        // z-index: 10000000 !important;
     }
 
     .cm-editor {
