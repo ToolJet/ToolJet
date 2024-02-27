@@ -18,13 +18,13 @@ import Skeleton from 'react-loading-skeleton';
 const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
   const { organizationId, setSelectedTable, setTables, selectedTable, loadingState } =
     useContext(TooljetDatabaseContext);
-  const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const emptyMessage = "You don't have any tables yet.";
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const emptyHeader = Array.from({ length: 5 }, (_, index) => index + 1);
   const emptyTableData = Array.from({ length: 10 }, (_, index) => index + 1);
   const EmptyState = () => {
+    const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
     return (
       <>
         <div className="empty-table-container">
