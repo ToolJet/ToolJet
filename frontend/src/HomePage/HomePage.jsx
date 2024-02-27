@@ -265,7 +265,7 @@ class HomePageComponent extends React.Component {
       )
         toast.error(APP_ERROR_TYPE.IMPORT_EXPORT_SERVICE.UNSUPPORTED_VERSION_ERROR);
       else {
-        toast.error(error?.erro);
+        toast.error(error?.error);
       }
     }
   };
