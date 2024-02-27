@@ -1001,6 +1001,8 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
     shallow
   );
 
+  const isDragging = useGridStore((state) => state?.draggingComponentId === id);
+
   let layoutData = layouts?.[currentLayout];
   if (isEmpty(layoutData)) {
     layoutData = layouts?.['desktop'];
@@ -1025,7 +1027,7 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
         style={{
           transform: `translate(332px, -134px)`,
           ...styles,
-          ...(hoveredComponent === id && mode !== 'view' ? { zIndex: 3 } : {}),
+          ...((hoveredComponent === id || isDragging) && mode !== 'view' ? { zIndex: 3 } : {}),
         }}
       >
         {children}
