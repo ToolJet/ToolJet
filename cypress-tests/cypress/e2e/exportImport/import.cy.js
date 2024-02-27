@@ -28,7 +28,7 @@ describe("App Import Functionality", () => {
   let exportedFilePath;
 
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
   });
   before(() => {
     cy.fixture("templates/test-app.json").then((app) => {
@@ -39,6 +39,7 @@ describe("App Import Functionality", () => {
     });
   });
   it("Verify the Import functionality of an Application", () => {
+    cy.visit("/");
     cy.get("body").then(($title) => {
       if ($title.text().includes(commonText.welcomeTooljetWorkspace)) {
         cy.get(dashboardSelector.importAppButton).click();
@@ -73,6 +74,7 @@ describe("App Import Functionality", () => {
       .and("have.text", importText.appImportedToastMessage);
 
     cy.get(".driver-close-btn").click();
+    cy.wait(500);
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
       "contain.value",
       appData.name.toLowerCase()

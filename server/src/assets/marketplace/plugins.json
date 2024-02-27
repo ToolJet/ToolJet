@@ -47,5 +47,13 @@
     "id": "awsredshift",
     "author": "Tooljet",
     "timestamp": "Wed, 17 Jan 2024 20:05:16 GMT"
+  },
+  {
+    "name": "aws-lambda",
+    "description": "Plugin for aws-lambda",
+    "version": "1.0.0",
+    "id": "aws-lambda",
+    "author": "Tooljet",
+    "timestamp": "Tue, 05 Dec 2023 00:27:16 GMT"
   }
 ]
