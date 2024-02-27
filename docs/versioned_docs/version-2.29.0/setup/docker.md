@@ -38,16 +38,17 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose-db.yaml
   mv docker-compose-db.yaml docker-compose.yaml
   mkdir postgres_data
-  mkdir redis_data
   ```
 
   2. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
 
-  ```bash
+   ```bash
   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/.env.internal.example
   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/internal.sh && chmod +x internal.sh
   mv .env.internal.example .env && ./internal.sh
   ```
+
+  `internal.sh` helps to generate the basic .env variables such as the LOCKBOX_MASTER_KEY, SECRET_KEY_BASE, and the password for postgreSQL database.
 
   3. To start the docker container, use the following command:
 
