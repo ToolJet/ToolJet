@@ -879,6 +879,7 @@ export const Container = ({
                   id={id}
                   gridWidth={gridWidth}
                   currentLayout={currentLayout}
+                  mode={mode}
                 >
                   <DraggableBox
                     className={showComments && 'pointer-events-none'}
@@ -987,7 +988,7 @@ export const Container = ({
   );
 };
 
-const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResizing }) => {
+const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResizing, mode }) => {
   const isGhostComponent = id === 'resizingComponentId';
   const {
     component: { parent },
@@ -1024,7 +1025,7 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
         style={{
           transform: `translate(332px, -134px)`,
           ...styles,
-          ...(hoveredComponent === id ? { zIndex: 3 } : {}),
+          ...(hoveredComponent === id && mode !== 'view' ? { zIndex: 3 } : {}),
         }}
       >
         {children}
