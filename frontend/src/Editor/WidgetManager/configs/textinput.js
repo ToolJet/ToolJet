@@ -106,6 +106,7 @@ export const textinputConfig = {
         { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
       ],
       accordian: 'label',
+      isFxNotRequired: true,
     },
     width: {
       type: 'slider',
@@ -115,6 +116,7 @@ export const textinputConfig = {
         key: 'alignment',
         value: 'side',
       },
+      isFxNotRequired: true,
     },
     auto: {
       type: 'checkbox',
@@ -126,6 +128,7 @@ export const textinputConfig = {
         key: 'alignment',
         value: 'side',
       },
+      isFxNotRequired: true,
     },
 
     backgroundColor: {
@@ -195,6 +198,7 @@ export const textinputConfig = {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: 'default',
       },
+      isFxNotRequired: true,
       options: [
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },

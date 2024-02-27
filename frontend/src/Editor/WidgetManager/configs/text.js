@@ -27,6 +27,7 @@ export const textConfig = {
         schema: { type: 'string' },
         defaultValue: 'Hello, there!',
       },
+      showLabel: false,
     },
     loadingState: {
       type: 'toggle',
@@ -143,6 +144,7 @@ export const textConfig = {
         { displayName: 'alignverticallybottom', value: 'bottom', iconName: 'alignverticallybottom' },
       ],
       accordian: 'Text',
+      isFxNotRequired: true,
     },
     decoration: {
       type: 'switch',
@@ -226,6 +228,7 @@ export const textConfig = {
         { displayName: 'None', value: 'none' },
       ],
       accordian: 'Container',
+      isFxNotRequired: true,
     },
   },
   exposedVariables: {

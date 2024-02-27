@@ -49,7 +49,7 @@ export const Code = ({
         type="fxEditor"
         initialValue={initialValue}
         paramName={param.name}
-        paramLabel={displayName}
+        paramLabel={paramMeta?.showLabel !== false ? displayName : ' '}
         paramType={paramMeta.type}
         fieldMeta={paramMeta}
         onFxPress={onFxPress}

@@ -101,6 +101,7 @@ export const numberinputConfig = {
         { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
       ],
       accordian: 'label',
+      isFxNotRequired: true,
     },
     width: {
       type: 'slider',
@@ -110,6 +111,7 @@ export const numberinputConfig = {
         key: 'alignment',
         value: 'side',
       },
+      isFxNotRequired: true,
     },
     auto: {
       type: 'checkbox',
@@ -121,6 +123,7 @@ export const numberinputConfig = {
         key: 'alignment',
         value: 'side',
       },
+      isFxNotRequired: true,
     },
 
     backgroundColor: {
@@ -190,6 +193,7 @@ export const numberinputConfig = {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: 'default',
       },
+      isFxNotRequired: true,
       options: [
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },

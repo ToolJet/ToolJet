@@ -284,7 +284,7 @@ const DynamicEditorBridge = (props) => {
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
   const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
-
+  const { isFxNotRequired } = fieldMeta;
   const { t } = useTranslation();
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
 
@@ -292,7 +292,7 @@ const DynamicEditorBridge = (props) => {
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
         {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
-        {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
+        {paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
@@ -303,13 +303,13 @@ const DynamicEditorBridge = (props) => {
             />
           </div>
         )}
-        <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} `}>
+        <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} `} style={{ width: '100%' }}>
           <div
-            style={{ width: paramType, marginBottom: codeShow ? '0.5rem' : '0px' }}
-            className="d-flex align-items-center "
+            style={{ marginBottom: codeShow ? '0.5rem' : '0px' }}
+            className="d-flex align-items-center justify-content-end "
           >
-            <div className="col-auto pt-0 fx-common fx-button-container">
-              {paramLabel !== 'Type' && fieldMeta?.isFxNotRequired === undefined && (
+            {paramLabel !== 'Type' && isFxNotRequired === undefined && (
+              <div className="col-auto pt-0 fx-common fx-button-container">
                 <FxButton
                   active={codeShow}
                   onPress={() => {
@@ -323,8 +323,9 @@ const DynamicEditorBridge = (props) => {
                   }}
                   dataCy={cyLabel}
                 />
-              )}
-            </div>
+              </div>
+            )}
+
             {!codeShow && (
               <DynamicFxTypeRenderer
                 value={!error ? value : ''}
