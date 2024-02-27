@@ -136,12 +136,16 @@ export const verifyAndModifyToggleFx = (
   paramName,
   defaultValue,
   toggleModification = true,
-  helper = ""
+  helper = "",
+  hiddenFx = true
 ) => {
   cy.get(`[data-cy="label-${cyParamName(paramName)}"]`).should(
     "have.text",
     paramName
   );
+  if (hiddenFx) {
+    cy.get(commonWidgetSelector.parameterTogglebutton(paramName)).realHover();
+  }
   cy.get(commonWidgetSelector.parameterFxButton(paramName, "> svg"))
     .scrollIntoView()
     .click();

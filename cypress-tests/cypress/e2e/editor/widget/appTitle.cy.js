@@ -6,7 +6,7 @@ import { buttonText } from "Texts/button";
 import {
   verifyControlComponentAction,
   randomString,
-} from "Support/utils/textInput";
+} from "Support/utils/editor/textInput";
 import {
   openAccordion,
   verifyAndModifyParameter,
@@ -44,17 +44,17 @@ describe("Editor title", () => {
   });
   it("should verify titles", () => {
     cy.url().should("include", "/my-workspace");
-    cy.title().should("eq", "ToolJet - Dashboard");
+    cy.title().should("eq", "Dashboard | ToolJet");
     cy.log(data.appName);
 
     cy.openApp();
     cy.url().should("include", Cypress.env("appId"));
-    cy.title().should("eq", `${data.appName} - Tooljet`);
+    cy.title().should("eq", `${data.appName} | ToolJet`);
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
 
     cy.url().should("include", `/applications/${Cypress.env("appId")}`);
-    cy.title().should("eq", `${data.appName}`);
+    cy.title().should("eq", `Preview - ${data.appName} | ToolJet`);
     cy.go("back");
     cy.releaseApp();
     cy.url().then((url) => cy.visit(`/applications/${url.split("/").pop()}`));

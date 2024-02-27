@@ -90,7 +90,7 @@ export const TreeSelect = ({
       checkedPathStrings: checkedPathString,
       checked: checked,
     };
-    setExposedVariable(exposedVariables);
+    setExposedVariables(exposedVariables);
 
     updatedNode.checked ? fireEvent('onCheck') : fireEvent('onUnCheck');
     fireEvent('onChange');
