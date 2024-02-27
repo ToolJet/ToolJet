@@ -24,10 +24,6 @@ class SSOConfiguration extends React.Component {
     };
   }
 
-  handleSelect = (eventKey) => {
-    console.log(`Selected ${eventKey}`);
-  };
-
   setShowDropdown = (show) => {
     this.setState({ showDropdown: show });
   };
@@ -59,18 +55,22 @@ class SSOConfiguration extends React.Component {
           } else {
             updatedSSOOptions = [...prevState.ssoOptions, { sso: ssoType, ...newSettings }];
           }
-          this.props.onUpdateAnySSOEnabled(
-            updatedSSOOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
-              (this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
-          );
           return {
             ssoOptions: updatedSSOOptions,
             [isEnabledKey]: newSettings?.enabled,
           };
         },
-        () => {
-          const enabledSSOCount = this.getCountOfEnabledSSO();
-          this.setState({ inheritedInstanceSSO: enabledSSOCount });
+        async () => {
+          try {
+            await this.props.onUpdateAnySSOEnabled(
+              this.state.ssoOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
+                (this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
+            );
+            const enabledSSOCount = this.getCountOfEnabledSSO();
+            this.setState({ inheritedInstanceSSO: enabledSSOCount });
+          } catch (error) {
+            toast.error('Error while updating SSO configuration', { position: 'top-center' });
+          }
         }
       );
     } catch (error) {
@@ -121,7 +121,7 @@ class SSOConfiguration extends React.Component {
   toggleDefaultSSO = async () => {
     try {
       await organizationService.editOrganization({ inheritSSO: !this.state.defaultSSO });
-      this.props.onUpdateAnySSOEnabled(
+      await this.props.onUpdateAnySSOEnabled(
         this.state.ssoOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
           (!this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
       );
@@ -139,7 +139,6 @@ class SSOConfiguration extends React.Component {
     const enabledStatus = !this.state[isEnabledKey];
     try {
       await this.changeStatus(key, enabledStatus);
-
       this.setState(
         (prevState) => {
           const updatedSSOOptions = prevState.ssoOptions.map((option) => {
@@ -148,10 +147,6 @@ class SSOConfiguration extends React.Component {
             }
             return option;
           });
-          this.props.onUpdateAnySSOEnabled(
-            updatedSSOOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
-              (this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
-          );
           return {
             ssoOptions: updatedSSOOptions,
             showModal: enabledStatus,
@@ -159,9 +154,17 @@ class SSOConfiguration extends React.Component {
             [isEnabledKey]: enabledStatus,
           };
         },
-        () => {
-          const enabledSSOCount = this.getCountOfEnabledSSO();
-          this.setState({ inheritedInstanceSSO: enabledSSOCount });
+        async () => {
+          try {
+            await this.props.onUpdateAnySSOEnabled(
+              this.state.ssoOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
+                (this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
+            );
+            const enabledSSOCount = this.getCountOfEnabledSSO();
+            this.setState({ inheritedInstanceSSO: enabledSSOCount });
+          } catch (error) {
+            toast.error('Error while updating SSO configuration', { position: 'top-center' });
+          }
         }
       );
     } catch (error) {
@@ -307,7 +310,6 @@ class SSOConfiguration extends React.Component {
             <Dropdown.Menu style={{ width: '100%' }}>
               <Dropdown.Item
                 eventKey="Google"
-                onSelect={this.handleSelect}
                 disabled={!defaultSSO || this.isOptionEnabled('google') || !this.isInstanceOptionEnabled('google')} // Disable the item if defaultSSO is false
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -317,7 +319,6 @@ class SSOConfiguration extends React.Component {
               </Dropdown.Item>
               <Dropdown.Item
                 eventKey="GitHub"
-                onSelect={this.handleSelect}
                 disabled={!defaultSSO || this.isOptionEnabled('git') || !this.isInstanceOptionEnabled('git')} // Disable the item if defaultSSO is false
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

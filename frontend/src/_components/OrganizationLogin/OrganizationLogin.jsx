@@ -89,7 +89,10 @@ class OrganizationLogin extends React.Component {
     });
   }
 
-  updateAnySSOEnabled = (isAnySSOEnabled) => {
+  updateAnySSOEnabled = async (isAnySSOEnabled) => {
+    if (!isAnySSOEnabled) {
+      await this.enablePasswordLogin();
+    }
     this.setState({ isAnySSOEnabled });
   };
 
@@ -114,6 +117,28 @@ class OrganizationLogin extends React.Component {
       toast.success('Password login disabled successfully!', { position: 'top-center' });
     } catch (error) {
       toast.error('Password login could not be disabled. Please try again!', { position: 'top-center' });
+    } finally {
+      this.setState({ isSaving: false });
+    }
+  };
+
+  enablePasswordLogin = async () => {
+    this.setState({ isSaving: true });
+    const { options } = this.state;
+    options.passwordLoginEnabled = true;
+    const passwordLoginData = {
+      type: 'form',
+      enabled: true,
+    };
+    try {
+      await organizationService.editOrganizationConfigs(passwordLoginData);
+      this.setState({
+        initialOptions: options,
+        hasChanges: false,
+      });
+      toast.success('Password login enabled successfully!', { position: 'top-center' });
+    } catch (error) {
+      toast.error('Password login could not be enabled. Please try again!', { position: 'top-center' });
     } finally {
       this.setState({ isSaving: false });
     }
