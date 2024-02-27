@@ -77,11 +77,11 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
 The setup above is just a template. Feel free to update the task definition and configure parameters for resources and environment variables according to your needs.
 :::
 
-## Upgrading to v2.24.3-ee2.10.2
+## Upgrading to the Latest Version
 
-Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
+The latest version includes architectural changes and, hence, comes with new migrations.
 
-If this is a new installation of the application, you may start directly with version v2.24.3-ee2.10.2. This guide is not required for new installations.
+If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
 
 #### Prerequisites for Upgrading to the Latest Version:
 
@@ -89,6 +89,6 @@ If this is a new installation of the application, you may start directly with ve
 
 - Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
 
-- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to v2.24.3-ee2.10.2.
+- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
 
 For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
