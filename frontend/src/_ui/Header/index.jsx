@@ -3,6 +3,9 @@ import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
 
+// eslint-disable-next-line import/no-unresolved
+import i18next from 'i18next';
+
 function Header() {
   const currentVersion = localStorage.getItem('currentVersion');
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -10,21 +13,21 @@ function Header() {
   const routes = (path) => {
     switch (path) {
       case 'workspaceId':
-        return 'Applications';
+        return i18next.t('_ui.breadcrumbs.apps', 'Applications');
       case 'database':
-        return 'Database';
+        return i18next.t('_ui.breadcrumbs.apps', 'Database');
       case 'workspace-settings':
-        return 'Workspace settings';
+        return i18next.t('_ui.breadcrumbs.workspaceSettings', 'Workspace settings');
       case 'data-sources':
-        return 'Data sources';
+        return i18next.t('_ui.breadcrumbs.ds', 'Data sources');
       case 'settings':
-        return 'Profile settings';
+        return i18next.t('_ui.breadcrumbs.profileSettings', 'Profile settings');
       case 'integrations':
-        return 'Integrations';
+        return i18next.t('_ui.breadcrumbs.integrations', 'Integrations');
       case 'workspace-constants':
-        return 'Workspace constants';
+        return i18next.t('_ui.breadcrumbs.worspaceCont', 'Workspace constants');
       default:
-        return 'Applications';
+        return i18next.t('_ui.breadcrumbs.apps', 'Applications');
     }
   };
   const location = useLocation();
@@ -50,7 +53,7 @@ function Header() {
               })}
               data-cy="version-label"
             >
-              Version {currentVersion}
+              {i18next.t('_ui.header.version', 'Version')} {currentVersion}
             </div>
           </div>
         </div>
