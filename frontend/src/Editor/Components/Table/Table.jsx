@@ -53,7 +53,7 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import { format } from 'date-fns';
+import moment from 'moment';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -344,7 +344,7 @@ export function Table({
   }
 
   function getExportFileName() {
-    return `${component?.name}_${format(new Date(), 'dd-MM-yyyy_HH-mm')}`;
+    return `${component?.name}_${moment().format('DD-MM-YYYY_HH-mm')}`;
   }
 
   function onPageIndexChanged(page) {
