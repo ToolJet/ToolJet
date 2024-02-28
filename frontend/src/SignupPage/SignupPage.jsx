@@ -17,12 +17,14 @@ import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 import { withRouter } from '@/_hoc/withRouter';
 import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { isEmpty } from 'lodash';
+import { EmailComponent } from './EmailComponent';
 class SignupPageComponent extends React.Component {
   constructor(props) {
     super(props);
     /* Need these params to organization signup work */
     const routeState = this.props?.location?.state;
     this.organizationToken = routeState?.organizationToken;
+    this.inviteeEmail = routeState?.inviteeEmail;
     this.inviteOrganizationId = props.organizationId;
     this.paramInviteOrganizationSlug = props.params.organizationId;
 
@@ -31,6 +33,7 @@ class SignupPageComponent extends React.Component {
       showPassword: false,
       emailError: '',
       disableOnEdit: false,
+      email: this.inviteeEmail || '',
     };
   }
 
@@ -101,9 +104,7 @@ class SignupPageComponent extends React.Component {
 
   isFormSignUpEnabled = () => {
     const { configs } = this.props;
-    return this.inviteOrganizationId
-      ? configs?.form?.enabled && configs?.enable_sign_up
-      : configs?.form?.enable_sign_up;
+    return this.inviteOrganizationId ? configs?.form?.enabled : configs?.form?.enable_sign_up;
   };
 
   setSignupOrganizationDetails = () => {
@@ -124,6 +125,12 @@ class SignupPageComponent extends React.Component {
       !this.state.password ||
       (isEmpty(this.state.name) && !comingFromInviteFlow) ||
       this.state.password.length < 5;
+
+    const isAllSSODisabled = !configs?.git?.enabled && !configs?.google?.enabled;
+    const isSignUpDisabled = !this.organizationToken && !configs?.enable_sign_up && !configs?.form?.enable_sign_up;
+    const shouldShowSignupDisabledCard =
+      isSignUpDisabled || (!configs?.form?.enable_sign_up && configs?.enable_sign_up && isAllSSODisabled);
+    const passwordLabelText = this.organizationToken ? 'Create a password' : 'Password';
 
     return (
       <div className="page common-auth-section-whole-wrapper">
@@ -155,15 +162,11 @@ class SignupPageComponent extends React.Component {
                             {this.props.t('loginSignupPage.signIn', `Sign in`)}
                           </Link>
                         </div>
-                        {((!configs?.enable_sign_up && !configs?.form?.enable_sign_up) ||
-                          (!configs?.form?.enable_sign_up &&
-                            configs?.enable_sign_up &&
-                            !configs?.git?.enabled &&
-                            !configs?.google?.enabled)) && (
+                        {shouldShowSignupDisabledCard && (
                           <SignupStatusCard text={'Signup has been disabled by your workspace admin.'} />
                         )}
 
-                        {configs?.enable_sign_up && (
+                        {(configs?.enable_sign_up || !this.organizationToken) && (
                           <div>
                             {configs?.git?.enabled && (
                               <div className="login-sso-wrapper">
@@ -216,27 +219,15 @@ class SignupPageComponent extends React.Component {
                                   />{' '}
                                 </>
                               )}
-                              <div className="signup-password-wrap">
-                                <label className="tj-text-input-label" data-cy="email-input-label">
-                                  Email address
-                                </label>
-                                <input
-                                  onChange={this.handleChange}
-                                  name="email"
-                                  type="email"
-                                  className="tj-text-input"
-                                  placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your email')}
-                                  style={{ marginBottom: '0px' }}
-                                  value={this.state.email || ''}
-                                  data-cy="email-input-field"
-                                  autoComplete="off"
-                                />
-                                {this.state.emailError && (
-                                  <span className="tj-text-input-error-state">{this.state.emailError}</span>
-                                )}
-                              </div>
+                              <EmailComponent
+                                prefilledEmail={this.inviteeEmail}
+                                email={this.state.email}
+                                handleChange={this.handleChange}
+                                emailError={this.state.emailError}
+                                t={this.props.t}
+                              />
                               <label className="tj-text-input-label" data-cy="passwor-label">
-                                Password
+                                {passwordLabelText}
                               </label>
                               <div className="login-password signup-password-wrapper">
                                 <input

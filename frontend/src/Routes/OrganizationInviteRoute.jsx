@@ -58,13 +58,14 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
           const isAccountNotActivated = errorObj?.error?.isAccountNotActivated;
           const redirectPath = errorObj?.error?.redirectPath;
           if (isAccountNotActivated && redirectPath) {
+            const inviteeEmail = errorObj?.error?.inviteeEmail;
             /* Account is not activated yet. Logout and redirect to signup page */
             toast.error(errorMessage);
             updateCurrentSession({
               authentication_status: false,
             });
             navigate(redirectPath, {
-              state: { organizationToken },
+              state: { organizationToken, inviteeEmail },
             });
           }
           break;
