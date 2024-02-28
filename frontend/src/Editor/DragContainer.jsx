@@ -923,24 +923,24 @@ export default function DragContainer({
         }}
         //snap settgins
         snappable={true}
-        snapDirections={{
-          top: true,
-          left: true,
-          bottom: true,
-          right: true,
-          center: true,
-          middle: true,
-        }}
-        elementSnapDirections={{
-          top: true,
-          left: true,
-          bottom: true,
-          right: true,
-          center: true,
-          middle: true,
-        }}
+        // snapDirections={{
+        //   top: true,
+        //   left: true,
+        //   bottom: true,
+        //   right: true,
+        //   center: true,
+        //   middle: true,
+        // }}
+        // elementSnapDirections={{
+        //   top: true,
+        //   left: true,
+        //   bottom: true,
+        //   right: true,
+        //   center: true,
+        //   middle: true,
+        // }}
         snapThreshold={5}
-        elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
+        // elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
         isDisplaySnapDigit={false}
         // snapGridWidth={gridWidth}
         bounds={{ left: 0, top: 0, right: 0, bottom: 0, position: 'css' }}
