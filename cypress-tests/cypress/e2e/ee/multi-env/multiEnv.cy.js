@@ -2,7 +2,10 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonEeText, ssoEeText } from "Texts/eeCommon";
 import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
-import { verifyPromoteModalUI, verifyTooltipDisabled } from "Support/utils/eeCommon";
+import {
+  verifyPromoteModalUI,
+  verifyTooltipDisabled,
+} from "Support/utils/eeCommon";
 import { dataSourceSelector } from "Selectors/dataSource";
 import {
   navigateToAppEditor,
@@ -10,10 +13,17 @@ import {
   verifyTooltip,
 } from "Support/utils/common";
 import { addQuery, selectDatasource } from "Support/utils/dataSource";
-
 import {
-  editAndVerifyWidgetName,
-} from "Support/utils/commonWidget";
+  appPromote,
+  createNewVersion,
+  selectVersion,
+  selectEnv,
+} from "Support/utils/multiEnv";
+import { appVersionSelectors } from "Selectors/exportImport";
+
+import { editAndVerifyWidgetName } from "Support/utils/commonWidget";
+import { deleteVersionAndVerify } from "Support/utils/version";
+import { deleteVersionText } from "Texts/version";
 
 describe("Multi env", () => {
   const data = {};
@@ -21,6 +31,9 @@ describe("Multi env", () => {
   data.ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
   const slug = data.appName.toLowerCase().replace(/\s+/g, "-");
+  let currentVersion = "";
+  let newVersion = [];
+  let versionFrom = "";
 
   beforeEach(() => {
     cy.apiLogin();
@@ -485,4 +498,154 @@ describe("Multi env", () => {
     cy.get(".components-container").should("have.class", "disabled");
     cy.get(commonSelectors.releaseButton).should("be.disabled");
   });
+
+  it("should verify edit privilages of a promoted version", () => {
+    data.appName = `${fake.companyName} App`;
+    cy.apiCreateApp(data.appName);
+    cy.openApp();
+    cy.dragAndDropWidget("Text", 550, 650);
+    appPromote("development", "production");
+
+    createNewVersion(
+      (currentVersion = "v1"),
+      (newVersion = ["v2"]),
+      (versionFrom = "v1")
+    );
+    appPromote("development", "release");
+
+    createNewVersion(
+      (currentVersion = "v2"),
+      (newVersion = ["v3"]),
+      (versionFrom = "v2")
+    );
+    appPromote("development", "staging");
+
+    selectVersion((currentVersion = "v3"), (newVersion = ["v1"]));
+    cy.get(commonSelectors.warningText).verifyVisibleElement(
+      "have.text",
+      "App cannot be edited after promotion. Please create a new version from Development to make any changes."
+    );
+    cy.get(".datasource-picker").should("have.class", "disabled");
+    cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
+    cy.get(".components-container").should("have.class", "disabled");
+
+    cy.wait(1000);
+    selectEnv("development");
+    cy.get(commonSelectors.warningText).verifyVisibleElement(
+      "have.text",
+      "App cannot be edited after promotion. Please create a new version from Development to make any changes."
+    );
+    cy.get(".datasource-picker").should("have.class", "disabled");
+    cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
+    cy.get(".components-container").should("have.class", "disabled");
+
+    selectVersion((currentVersion = "v1"), (newVersion = ["v2"]));
+    cy.get(commonSelectors.warningText).verifyVisibleElement(
+      "have.text",
+      "App cannot be edited after promotion. Please create a new version from Development to make any changes."
+    );
+    cy.get(".datasource-picker").should("have.class", "disabled");
+    cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
+    cy.get(".components-container").should("have.class", "disabled");
+
+    cy.wait(1000);
+    selectEnv("staging");
+    cy.get(commonSelectors.warningText).verifyVisibleElement(
+      "have.text",
+      "This version of the app is released. Please create a new version in development to make any changes."
+    );
+    cy.get(".datasource-picker").should("have.class", "disabled");
+    cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
+    cy.get(".components-container").should("have.class", "disabled");
+
+    cy.wait(1000);
+    selectEnv("production");
+    cy.get(commonSelectors.warningText).verifyVisibleElement(
+      "have.text",
+      "This version of the app is released. Please create a new version in development to make any changes."
+    );
+    cy.get(".datasource-picker").should("have.class", "disabled");
+    cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
+    cy.get(".components-container").should("have.class", "disabled");
+    cy.get(commonSelectors.releaseButton).should("be.disabled");
+  });
+
+  it("Should verify last exisiting version", () => {
+    data.appName = `${fake.companyName} App`;
+    cy.apiCreateApp(data.appName);
+    cy.openApp();
+    cy.dragAndDropWidget("Text", 550, 650);
+
+    appPromote("development", "staging");
+    createNewVersion(
+      (currentVersion = "v1"),
+      (newVersion = ["v2"]),
+      (versionFrom = "v1")
+    );
+
+    selectVersion((currentVersion = "v2"), (newVersion = ["v1"]));
+
+    cy.wait(1000);
+    selectEnv("staging");
+
+    cy.get(appVersionSelectors.currentVersionField(newVersion[0]))
+      .should("be.visible")
+      .and("have.text", "v1");
+
+    appPromote("staging", "production");
+
+    deleteVersionAndVerify(
+      (currentVersion = "v1"),
+      deleteVersionText.deleteToastMessage((currentVersion = "v1"))
+    );
+
+    cy.wait(2000);
+    cy.get('[data-cy="list-current-env-name"]').click();
+    verifyTooltip(
+      '[data-cy="env-name-dropdown"]:eq(1)',
+      "There are no versions in this environment"
+    );
+    verifyTooltip(
+      '[data-cy="env-name-dropdown"]:eq(2)',
+      "There are no versions in this environment"
+    );
+  });
+
+  it("Should verify version deletion", () => {
+    data.appName = `${fake.companyName} App`;
+    cy.apiCreateApp(data.appName);
+    cy.openApp();
+    cy.dragAndDropWidget("Text", 550, 650);
+
+    appPromote("development", "staging");
+    createNewVersion(
+      (currentVersion = "v1"),
+      (newVersion = ["v2"]),
+      (versionFrom = "v1")
+    );
+    appPromote("development", "staging");
+
+    createNewVersion(
+      (currentVersion = "v2"),
+      (newVersion = ["v3"]),
+      (versionFrom = "v2")
+    );
+    appPromote("development", "production");
+
+    selectEnv("staging");
+    selectVersion((currentVersion = "v3"), (newVersion = ["v2"]));
+    deleteVersionAndVerify(
+      (currentVersion = "v2"),
+      deleteVersionText.deleteToastMessage((currentVersion = "v2"))
+    );
+
+    cy.get('[data-cy="v3-current-version-text"]')
+      .should("be.visible")
+      .and("have.text", "v3");
+
+    cy.get('[data-cy="list-current-env-name"]').verifyVisibleElement(
+      "have.text",
+      " Staging"
+    );
+  })
 });

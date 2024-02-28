@@ -129,12 +129,13 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="Try-ToolJet image published:\n`tooljet/try:${{ github.event.release.tag_name }}`\"
+            message="Try-ToolJet image published:\\n\`tooljet/try:${{ github.event.release.tag_name }}\`"
           else
             message="Job '${{ env.JOB_NAME }}' failed! tooljet/try:${{ github.event.release.tag_name }}"
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+
 
   #Below code helps to trigger the workflow manually
 

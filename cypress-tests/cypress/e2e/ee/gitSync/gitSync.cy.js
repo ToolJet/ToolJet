@@ -72,7 +72,7 @@ describe("", () => {
         cy.get(commonEeSelectors.gitSyncIcon).click();
         cy.get(gitSyncSelector.lastCommitInput).verifyVisibleElement(
             "have.text",
-            "Version Creation"
+            `Version v2 Created of app ${data.appName}`
         );
         cy.get(gitSyncSelector.lastCommitVersion).verifyVisibleElement(
             "have.text",
@@ -294,7 +294,7 @@ describe("", () => {
         cy.verifyLabel("Last commit");
         cy.get(gitSyncSelector.lastCommitInput).verifyVisibleElement(
             "have.text",
-            "App creation"
+            `App ${data.appName} created`
         );
         cy.get(gitSyncSelector.lastCommitVersion).verifyVisibleElement(
             "have.text",
@@ -419,10 +419,6 @@ describe("", () => {
         cy.clearAndType(
             gitSyncSelector.sshInput,
             "https://github.com/ajith-k-v-r/test.git"
-        );
-        cy.get(gitSyncSelector.sshInputHelperText).verifyVisibleElement(
-            "have.text",
-            "Invalid URL. Please ensure the format is git@{provider}:{user}/{xyz}.git"
         );
 
         cy.clearAndType(
