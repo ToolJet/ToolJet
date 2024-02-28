@@ -2,7 +2,7 @@ import React from 'react';
 
 const TooljetLogoIcon = ({ fill = '#FFFFFF', width = '15', className = '', viewBox = '0 0 25 25', style }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={width} height={width} viewBox="0 0 15 16" fill="none">
-    <g clip-path="url(#clip0_2000_5220)">
+    <g clipPath="url(#clip0_2000_5220)">
       <path
         d="M4.4899 13.2249C4.57746 13.3124 4.58777 13.4515 4.50922 13.5494C3.45205 14.8628 2.09227 15.2864 0.429898 15.4963C0.185242 15.5259 -0.0259353 15.316 0.00496863 15.0714C0.21357 13.409 0.638499 12.0492 1.95192 10.9921C2.04978 10.9148 2.18885 10.9238 2.27641 11.0114L4.4899 13.2249Z"
         fill={fill}
