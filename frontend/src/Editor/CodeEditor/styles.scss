@@ -156,10 +156,19 @@
 
 
 .widget-code-editor {
+    height: 100%;
+
     .cm-content>.cm-line {
         max-width: 220px !important;
         white-space: pre-wrap;
         word-wrap: break-word;
+    }
+}
+
+.code-hinter-wrapper {
+    .cm-editor {
+        min-height: 32px;
+        max-height: 220px;
     }
 }
 
@@ -185,7 +194,6 @@
 
     .cm-editor {
         min-height: 32px;
-        max-height: 220px;
     }
 }
 
@@ -317,4 +325,10 @@
 
 .code-hinter-preview-card-body>.codehinter-popup-icon {
     left: 2px !important;
+}
+
+.editor-container {
+    .codehinter-input .cm-editor {
+        max-height: auto !important;
+    }
 }
