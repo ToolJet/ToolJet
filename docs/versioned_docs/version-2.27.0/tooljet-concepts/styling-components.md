@@ -6,7 +6,7 @@ title: Styling Components
 <div style={{marginLeft: "40px", marginRight: "40px"}}>
 
 
-Styling components in ToolJet is a straightforward yet powerful way to enhance the visual appeal and usability of your application. Once you've dragged and dropped a component onto the canvas in the App-Builder, you can access its styling options through the configuration panel on the right side. 
+Styling components in ToolJet is a straightforward yet powerful way to enhance the visual appeal and usability of your application. Once you've dragged and dropped a component onto the canvas in the App-Builder, you can access its styling options through the properties panel on the right side. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/tooljet-concepts/styling-components/styles-tab.png" alt="Styles Tab" />
