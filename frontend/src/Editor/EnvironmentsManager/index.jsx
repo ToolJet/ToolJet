@@ -7,6 +7,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { useEditorStore } from '@/_stores/editorStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 const EnvironmentManager = (props) => {
   const {
@@ -37,6 +38,13 @@ const EnvironmentManager = (props) => {
     shallow
   );
 
+  const { creationMode } = useAppDataStore(
+    (state) => ({
+      creationMode: state.creationMode,
+    }),
+    shallow
+  );
+
   /**
    * if the current promoted environment is production or staging, then we need to freeze the editor
    */
@@ -44,7 +52,11 @@ const EnvironmentManager = (props) => {
   useEffect(() => {
     if (!currentAppVersionEnvironment || !environments.length) return;
 
-    if (currentAppVersionEnvironment.name === 'production' || currentAppVersionEnvironment.name === 'staging') {
+    if (
+      creationMode == 'GIT' ||
+      currentAppVersionEnvironment.name === 'production' ||
+      currentAppVersionEnvironment.name === 'staging'
+    ) {
       onEditorFreeze(true);
       setCurrentAppVersionPromoted(true);
     } else {
