@@ -12578,7 +12578,7 @@ tbody {
   z-index: 2;
 
   &:disabled {
-    background-color: var(--surfaces-surface-03) !important;
+    background-color: var(--surfaces-surface-03);
   }
 
   &:hover:not(:focus) {

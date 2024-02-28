@@ -65,9 +65,18 @@ export const TextInput = function TextInput({
         : 'var(--primary-accent-strong)'
       : borderColor != '#CCD1D5'
       ? borderColor
+      : disable || loading
+      ? '1px solid var(--borders-disabled-on-white)'
       : 'var(--borders-default)',
     '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
-    backgroundColor: backgroundColor != '#fff' ? backgroundColor : 'var(--surfaces-surface-01)',
+    backgroundColor:
+      backgroundColor != '#fff'
+        ? backgroundColor
+        : disable || loading
+        ? darkMode
+          ? 'var(--surfaces-app-bg-default)'
+          : 'var(--surfaces-surface-03)'
+        : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
     padding: styles.iconVisibility
       ? height < 20

@@ -182,10 +182,16 @@ export const NumberInput = function NumberInput({
         : 'var(--primary-accent-strong)'
       : borderColor != '#CCD1D5'
       ? borderColor
+      : disable || loading
+      ? '1px solid var(--borders-disabled-on-white)'
       : 'var(--borders-default)',
     '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
     backgroundColor: !['#ffffff', '#ffffffff', '#fff'].includes(backgroundColor)
       ? backgroundColor
+      : disable || loading
+      ? darkMode
+        ? 'var(--surfaces-app-bg-default)'
+        : 'var(--surfaces-surface-03)'
       : 'var(--surfaces-surface-01)',
   };
 
@@ -383,10 +389,21 @@ export const NumberInput = function NumberInput({
                         : alignment == 'side' && direction === 'right'
                         ? `${labelWidth + 1}px`
                         : '1px',
-                    borderLeft: '1px solid var(--borders-default)',
-                    borderBottom: '.5px solid var(--borders-default)',
+                    borderLeft:
+                      disable || loading
+                        ? '1px solid var(--borders-disabled-on-white)'
+                        : '1px solid var(--borders-default)',
+                    borderBottom:
+                      disable || loading
+                        ? '1px solid var(--borders-disabled-on-white)'
+                        : '.5px solid var(--borders-default)',
                     borderTopRightRadius: borderRadius - 1,
-                    backgroundColor: loading || disable ? 'var(--surfaces-surface-03)' : ' var(--surfaces-surface-01)',
+                    backgroundColor:
+                      loading || disable
+                        ? darkMode
+                          ? 'var(--surfaces-app-bg-default)'
+                          : 'var(--surfaces-surface-03)'
+                        : ' var(--surfaces-surface-01)',
                     zIndex: 3,
                   }}
                   className="numberinput-up-arrow arrow"
@@ -404,10 +421,21 @@ export const NumberInput = function NumberInput({
                         ? `${labelWidth + 1}px`
                         : '1px',
                     bottom: '1px',
-                    borderLeft: '1px solid var(--borders-default)',
-                    borderTop: '.5px solid var(--borders-default)',
+                    borderLeft:
+                      disable || loading
+                        ? '1px solid var(--borders-disabled-on-white)'
+                        : '1px solid var(--borders-default)',
+                    borderTop:
+                      disable || loading
+                        ? '1px solid var(--borders-disabled-on-white)'
+                        : '.5px solid var(--borders-default)',
                     borderBottomRightRadius: borderRadius - 1,
-                    backgroundColor: loading || disable ? 'var(--surfaces-surface-03)' : ' var(--surfaces-surface-01)',
+                    backgroundColor:
+                      loading || disable
+                        ? darkMode
+                          ? 'var(--surfaces-app-bg-default)'
+                          : 'var(--surfaces-surface-03)'
+                        : ' var(--surfaces-surface-01)',
                     zIndex: 3,
                   }}
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}

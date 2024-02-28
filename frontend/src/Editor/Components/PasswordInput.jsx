@@ -60,7 +60,13 @@ export const PasswordInput = function PasswordInput({
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
-    backgroundColor: !['#ffffff', '#fff'].includes(backgroundColor) ? backgroundColor : 'var(--surfaces-surface-01)',
+    backgroundColor: !['#ffffff', '#fff'].includes(backgroundColor)
+      ? backgroundColor
+      : disable || loading
+      ? darkMode
+        ? 'var(--surfaces-app-bg-default)'
+        : 'var(--surfaces-surface-03)'
+      : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
     padding: styles.iconVisibility
       ? height < 20
@@ -79,6 +85,8 @@ export const PasswordInput = function PasswordInput({
         : 'var(--primary-accent-strong)'
       : borderColor != '#CCD1D5'
       ? borderColor
+      : disable || loading
+      ? '1px solid var(--borders-disabled-on-white)'
       : 'var(--borders-default)',
     '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
   };
