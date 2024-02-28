@@ -58,16 +58,17 @@ export const TextInput = function TextInput({
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
-    color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
+    color: textColor !== '#1B1F24' ? textColor : disabledState ? 'var(--text-disabled)' : 'var(--text-primary)',
     borderColor: isFocused
-      ? accentColor
-      : ['#D7DBDF'].includes(borderColor)
-      ? darkMode
-        ? '#6D757D7A'
-        : '#6A727C47'
-      : borderColor,
+      ? accentColor != '4368E3'
+        ? accentColor
+        : 'var(--primary-accent-strong)'
+      : borderColor != '#CCD1D5'
+      ? borderColor
+      : 'var(--borders-default)',
     '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
-    backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
+    borderWidth: isFocused && '2px',
+    backgroundColor: backgroundColor != '#fff' ? backgroundColor : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
     padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
     overflow: 'hidden',
@@ -238,8 +239,7 @@ export const TextInput = function TextInput({
   const renderInput = () => (
     <>
       <div
-        data-cy={`label-${String(component.name).toLowerCase()}`}
-        data-disabled={disable || loading}
+        data-cy={`label-${String(component.name).toLowerCase()} `}
         className={`text-input  d-flex  ${
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
@@ -297,6 +297,7 @@ export const TextInput = function TextInput({
         )}
         <input
           data-cy={dataCy}
+          data-disabled={disable || loading}
           ref={textInputRef}
           className={`tj-text-input-widget ${
             !isValid && showValidationError ? 'is-invalid' : ''
@@ -338,11 +339,13 @@ export const TextInput = function TextInput({
       </div>
       {showValidationError && visibility && (
         <div
-          className="tj-text-sm"
           data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
           style={{
             color: errTextColor,
             textAlign: direction == 'left' && 'end',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
           }}
         >
           {showValidationError && validationError}

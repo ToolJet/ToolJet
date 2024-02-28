@@ -39,7 +39,7 @@ export const NumberInput = function NumberInput({
     accentColor,
   } = styles;
 
-  const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
+  const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#CFD3D8' : styles.textColor;
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState) ?? false;
   const minValue = resolveReferences(component?.definition?.validation?.minValue?.value, currentState) ?? null;
   const maxValue = resolveReferences(component?.definition?.validation?.maxValue?.value, currentState) ?? null;
@@ -165,22 +165,23 @@ export const NumberInput = function NumberInput({
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
-    color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
-    borderColor: isFocused
-      ? accentColor
-      : ['#D7DBDF'].includes(borderColor)
-      ? darkMode
-        ? '#6D757D7A'
-        : '#6A727C47'
-      : borderColor,
-    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
-    backgroundColor:
-      darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-
     boxShadow: boxShadow,
     padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    color: textColor !== '#1B1F24' ? textColor : disabledState ? 'var(--text-disabled)' : 'var(--text-primary)',
+    borderColor: isFocused
+      ? accentColor != '4368E3'
+        ? accentColor
+        : 'var(--primary-accent-strong)'
+      : borderColor != '#CCD1D5'
+      ? borderColor
+      : 'var(--borders-default)',
+    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
+    borderWidth: isFocused && '2px',
+    backgroundColor: !['#ffffff', '#ffffffff', '#fff'].includes(backgroundColor)
+      ? backgroundColor
+      : 'var(--surfaces-surface-01)',
   };
 
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
@@ -413,16 +414,17 @@ export const NumberInput = function NumberInput({
               </div>
             </>
           )}
-
           {loading && <Loader style={{ ...loaderStyle }} width="16" />}
         </div>
         {showValidationError && visibility && (
           <div
-            className="tj-text-sm"
             data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
             style={{
-              color: errTextColor,
+              color: errTextColor !== '#D72D39' ? errTextColor : 'var(--status-error-strong)',
               textAlign: direction == 'left' && 'end',
+              fontSize: '11px',
+              fontWeight: '400',
+              lineHeight: '16px',
             }}
           >
             {showValidationError && validationError}

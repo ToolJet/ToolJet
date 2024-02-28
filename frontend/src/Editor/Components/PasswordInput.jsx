@@ -60,21 +60,22 @@ export const PasswordInput = function PasswordInput({
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
-    color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
-    borderColor: isFocused
-      ? accentColor
-      : ['#D7DBDF'].includes(borderColor)
-      ? darkMode
-        ? '#6D757D7A'
-        : '#6A727C47'
-      : borderColor,
-    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
-    backgroundColor: darkMode && ['#fff', '#ffffff'].includes(backgroundColor) ? '#313538' : backgroundColor,
+    backgroundColor: !['#ffffff', '#fff'].includes(backgroundColor) ? backgroundColor : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
     padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
 
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    color: textColor !== '#1B1F24' ? textColor : disabledState ? 'var(--text-disabled)' : 'var(--text-primary)',
+    borderColor: isFocused
+      ? accentColor != '4368E3'
+        ? accentColor
+        : 'var(--primary-accent-strong)'
+      : borderColor != '#CCD1D5'
+      ? borderColor
+      : 'var(--borders-default)',
+    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
+    borderWidth: isFocused && '2px',
   };
 
   const loaderStyle = {
@@ -363,11 +364,13 @@ export const PasswordInput = function PasswordInput({
       </div>
       {showValidationError && visibility && (
         <div
-          className="tj-text-sm"
           data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
           style={{
-            color: errTextColor,
-            textAlign: direction === 'left' && 'end',
+            color: errTextColor !== '#D72D39' ? errTextColor : 'var(--status-error-strong)',
+            textAlign: direction == 'left' && 'end',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
           }}
         >
           {showValidationError && validationError}
