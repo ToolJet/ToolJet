@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import { ToolTip } from '@/_components/ToolTip';
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -24,7 +23,7 @@ export const PasswordInput = function PasswordInput({
   const textInputRef = useRef();
   const labelRef = useRef();
 
-  const { loadingState, tooltip, disabledState, label, placeholder } = properties;
+  const { loadingState, disabledState, label, placeholder } = properties;
   const {
     padding,
     borderRadius,
@@ -59,7 +58,7 @@ export const PasswordInput = function PasswordInput({
   const _width = (width / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
 
   const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '36px' : '38px') : padding == 'default' ? height : height + 2,
+    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: isFocused
@@ -73,7 +72,7 @@ export const PasswordInput = function PasswordInput({
     backgroundColor: darkMode && ['#fff', '#ffffff'].includes(backgroundColor) ? '#313538' : backgroundColor,
     boxShadow: boxShadow,
     padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
-    // flex: padding !== 'none' && 1,
+
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   };
