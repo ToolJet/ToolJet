@@ -256,8 +256,7 @@ export const commonSelectors = {
       .toLowerCase()}-label"]`;
   },
   defaultModalTitle: '[data-cy="modal-title"]',
-  workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]'
-
+  workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
 };
 
 export const commonWidgetSelector = {
@@ -268,7 +267,9 @@ export const commonWidgetSelector = {
   draggableWidget: (widgetName) => {
     return `[data-cy=draggable-widget-${cyParamName(widgetName)}]`;
   },
-
+  textInputInputField: (widgetName) => {
+    return `[data-cy=input-${cyParamName(widgetName)}]`;
+  },
   parameterLabel: (paramName) => {
     return `[data-cy="${cyParamName(paramName)}-widget-parameter-label"]`;
   },

@@ -15,11 +15,10 @@ import {
 } from "Support/utils/dataSource";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-
 describe("Data source Elasticsearch", () => {
   beforeEach(() => {
     cy.appUILogin();
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on Elasticsearch connection form", () => {
