@@ -16,11 +16,13 @@ import { fake } from "Fixtures/fake";
 import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on connection form", () => {
@@ -43,7 +45,7 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "MariaDB", data.lastName);
+    selectAndAddDataSource("databases", "MariaDB", data.dataSourceName);
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -105,11 +107,11 @@ describe("Data sources", () => {
       postgreSqlText.buttonTextSave
     );
     // cy.get('[data-cy="connection-alert-text"]').should("be.visible")
+    deleteDatasource(`cypress-${data.dataSourceName}-mariadb`);
   });
 
   it("Should verify the functionality of MariaDB connection form.", () => {
-    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    selectAndAddDataSource("databases", "MariaDB", data.lastName);
+    selectAndAddDataSource("databases", "MariaDB", data.dataSourceName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -160,9 +162,12 @@ describe("Data sources", () => {
     );
 
     cy.get(
-      `[data-cy="cypress-${data.lastName}-mariadb-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-mariadb`);
+      `[data-cy="cypress-${data.dataSourceName}-mariadb-button"]`
+    ).verifyVisibleElement(
+      "have.text",
+      `cypress-${data.dataSourceName}-mariadb`
+    );
 
-    deleteDatasource(`cypress-${data.lastName}-mariadb`);
+    deleteDatasource(`cypress-${data.dataSourceName}-mariadb`);
   });
 });

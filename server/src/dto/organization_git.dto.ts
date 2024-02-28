@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsIn } from 'class-validator';
 
 export class OrganizationGitCreateDto {
   @IsString()
@@ -30,4 +30,13 @@ export class OrganizationGitUpdateDto {
   @IsOptional()
   @IsBoolean()
   isEnabled: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  autoCommit: boolean;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['ed25519', 'rsa'])
+  keyType: 'ed25519' | 'rsa';
 }

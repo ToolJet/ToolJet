@@ -17,11 +17,13 @@ import {
 } from "Support/utils/postgreSql";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on connection form", () => {
@@ -44,7 +46,13 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "ClickHouse", data.lastName);
+    selectAndAddDataSource("databases", "ClickHouse", data.dataSourceName);
+
+    // cy.get(postgreSqlSelector.dataSourceNameInputField).should(
+    //   //username,password,host,port,protocol,dbname,usepost, trimquery,gzip,debug,raw
+    //   "have.value",
+    //   "ClickHouse"
+    // );
     cy.get(postgreSqlSelector.labelUserName).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelUserName
@@ -115,11 +123,11 @@ describe("Data sources", () => {
     cy.get('[data-cy="connection-alert-text"]', { timeout: 60000 })
       .scrollIntoView()
       .verifyVisibleElement("have.text", "getaddrinfo ENOTFOUND undefined");
+    deleteDatasource(`cypress-${data.dataSourceName}-clickhouse`);
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
-    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    selectAndAddDataSource("databases", "ClickHouse", data.lastName);
+    selectAndAddDataSource("databases", "ClickHouse", data.dataSourceName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -155,8 +163,11 @@ describe("Data sources", () => {
     );
 
     cy.get(
-      `[data-cy="cypress-${data.lastName}-clickhouse-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-clickhouse`);
-    deleteDatasource(`cypress-${data.lastName}-clickhouse`);
+      `[data-cy="cypress-${data.dataSourceName}-clickhouse-button"]`
+    ).verifyVisibleElement(
+      "have.text",
+      `cypress-${data.dataSourceName}-clickhouse`
+    );
+    deleteDatasource(`cypress-${data.dataSourceName}-clickhouse`);
   });
 });

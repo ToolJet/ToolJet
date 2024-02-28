@@ -730,8 +730,11 @@ const EditorComponent = (props) => {
     startingPageHandle,
     versionSwitched = false,
     environmentSwitch = false,
-    selectedEnvironmentId = null
+    selectedEnvironmentId = null,
+    //Temporary fix for the issue of not getting the selected environment id. Will be removed once the multi-env decouple is done
+    extraProps = {}
   ) => {
+    const { canLoadSameEnv } = extraProps;
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
 
@@ -745,19 +748,20 @@ const EditorComponent = (props) => {
 
     const currentOrgId = data?.organization_id || data?.organizationId;
 
-    const currentEnvironmentId =
-      !environmentSwitch && !versionSwitched ? currentAppVersionEnvId : selectedEnvironmentId;
+    const shouldChangeEnvToAppVersionEnv = !environmentSwitch && !versionSwitched && !canLoadSameEnv;
+    const currentEnvironmentId = shouldChangeEnvToAppVersionEnv ? currentAppVersionEnvId : selectedEnvironmentId;
     await fetchOrgEnvironmentConstants(currentEnvironmentId);
 
     let envDetails = useEditorStore.getState().currentAppEnvironment;
     if (!environmentSwitch) {
       setCurrentAppEnvironmentId(currentEnvironmentId);
-
-      const { environment } = await getEnvironmentDetails(currentEnvironmentId);
-      envDetails = environment;
-
-      setCurrentAppEnvironmentDetails(environment);
-      setAppVersionCurrentEnvironment(environment);
+      /* Editor environment */
+      const editorEnvironment = await fetchEnvironment(currentEnvironmentId);
+      envDetails = editorEnvironment;
+      setCurrentAppEnvironmentDetails(editorEnvironment);
+      /* App version's environment */
+      const appVersionEnvironment = await fetchEnvironment(currentAppVersionEnvId);
+      setAppVersionCurrentEnvironment(appVersionEnvironment);
     }
     updateState({
       slug: environmentSwitch ? slug : data.slug,
@@ -835,6 +839,11 @@ const EditorComponent = (props) => {
     }
   };
 
+  const fetchEnvironment = async (currentEnvironmentId) => {
+    const { environment } = await getEnvironmentDetails(currentEnvironmentId);
+    return environment;
+  };
+
   const fetchApp = async (startingPageHandle) => {
     /* id of an app will be there if the user is trying to load app editor with slug. fetchApp api needs id. */
     const _appId = props?.id;
@@ -845,7 +854,8 @@ const EditorComponent = (props) => {
     appData,
     versionSwitched = false,
     isEnvironmentSwitched = false,
-    selectedEnvironmentId = null
+    selectedEnvironmentId = null,
+    extraProps = {}
   ) => {
     const version = appData?.editing_version?.id;
     if (version?.id !== editingVersionId) {
@@ -858,9 +868,9 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
-      onEditorFreeze(false);
+      if (appData.creationMode !== 'GIT') onEditorFreeze(false);
       setAppVersionPromoted(false);
-      callBack(appData, null, versionSwitched, isEnvironmentSwitched, selectedEnvironmentId);
+      callBack(appData, null, versionSwitched, isEnvironmentSwitched, selectedEnvironmentId, extraProps);
       initComponentVersioning();
     }
   };

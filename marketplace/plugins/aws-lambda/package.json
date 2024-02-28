@@ -1,0 +1,26 @@
+{
+  "name": "@tooljet-plugins/aws-lambda",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "build": "ncc build lib/index.ts -o dist",
+    "watch": "ncc build lib/index.ts -o dist --watch"
+  },
+  "homepage": "https://github.com/tooljet/tooljet#readme",
+  "dependencies": {
+    "@aws-sdk/client-lambda": "3.461.0",
+    "@tooljet-plugins/common": "file:../common",
+    "aws-sdk": "^2.1507.0",
+    "react": "^17.0.2",
+    "rimraf": "^3.0.2"
+  }
+}

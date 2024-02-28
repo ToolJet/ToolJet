@@ -23,6 +23,8 @@ export class WorkflowCountGuard implements CanActivate {
     }
 
     const workflowsLimit = await this.licenseService.getLicenseTerms(LICENSE_FIELD.WORKFLOWS);
+    if (!workflowsLimit?.workspace || !workflowsLimit?.instance)
+      throw new HttpException('Workflow is not enabled in the license, contact admin', 404);
 
     if (request?.headers['tj-workspace-id']) {
       // Workspace Level - Total Workflows

@@ -39,6 +39,7 @@ import EnterpriseSmall from './EnterpriseSmall.jsx';
 import Eye from './Eye.jsx';
 import Eye1 from './Eye1.jsx';
 import EyeDisable from './EyeDisable.jsx';
+import Expand from './Expand.jsx';
 import File01 from './File01.jsx';
 import FileDownload from './FileDownload.jsx';
 import FileUpload from './FileUpload.jsx';
@@ -162,6 +163,7 @@ import InformationPrimary from './InformationPrimary.jsx';
 import Support from './Support.jsx';
 import Danger from './Danger.jsx';
 import DangerDark from './DangerDark.jsx';
+import EnterButtonIcon from './EnterButtonIcon.jsx';
 import WorkspaceConstants from './WorkspaceConstants.jsx';
 import ArrowBackDown from './ArrowBackDown.jsx';
 import AlignRightinspector from './AlignRightinspector.jsx';
@@ -286,12 +288,16 @@ const Icon = (props) => {
       return <LockGradient {...props} />;
     case 'datasourceGradient':
       return <DatasourceGradient {...props} />;
+    case 'enterbutton':
+      return <EnterButtonIcon {...props} />;
     case 'eye':
       return <Eye {...props} />;
     case 'eye1':
       return <Eye1 {...props} />;
     case 'eyedisable':
       return <EyeDisable {...props} />;
+    case 'expand':
+      return <Expand {...props} />;
     case 'file01':
       return <File01 {...props} />;
     case 'filedownload':

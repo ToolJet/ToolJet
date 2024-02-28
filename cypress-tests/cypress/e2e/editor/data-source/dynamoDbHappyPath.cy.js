@@ -16,11 +16,13 @@ import {
 } from "Support/utils/dataSource";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source DynamoDB", () => {
   beforeEach(() => {
     cy.appUILogin();
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on DynamoDB connection form", () => {
@@ -42,7 +44,11 @@ describe("Data source DynamoDB", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", dynamoDbText.dynamoDb, data.lastName);
+    selectAndAddDataSource(
+      "databases",
+      dynamoDbText.dynamoDb,
+      data.dataSourceName
+    );
 
     cy.get('[data-cy="label-region"]').verifyVisibleElement(
       "have.text",
@@ -88,11 +94,15 @@ describe("Data source DynamoDB", () => {
       "have.text",
       dynamoDbText.errorMissingRegion
     );
+    deleteDatasource(`cypress-${data.dataSourceName}-dynamodb`);
   });
 
   it("Should verify the functionality of DynamoDB connection form.", () => {
-    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    selectAndAddDataSource("databases", dynamoDbText.dynamoDb, data.lastName);
+    selectAndAddDataSource(
+      "databases",
+      dynamoDbText.dynamoDb,
+      data.dataSourceName
+    );
 
     cy.get('[data-cy="label-region"]')
       .parent()
@@ -145,9 +155,12 @@ describe("Data source DynamoDB", () => {
     );
 
     cy.get(
-      `[data-cy="cypress-${data.lastName}-dynamodb-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-dynamodb`);
+      `[data-cy="cypress-${data.dataSourceName}-dynamodb-button"]`
+    ).verifyVisibleElement(
+      "have.text",
+      `cypress-${data.dataSourceName}-dynamodb`
+    );
 
-    deleteDatasource(`cypress-${data.lastName}-dynamodb`);
+    deleteDatasource(`cypress-${data.dataSourceName}-dynamodb`);
   });
 });

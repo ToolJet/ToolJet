@@ -31,9 +31,12 @@ function create(organizationId, gitUrl) {
   return fetch(`${config.apiUrl}/gitsync/workspace`, requestOptions).then(handleResponse);
 }
 
-function updateConfig(organizationGitId, gitUrl) {
+function updateConfig(organizationGitId, updateParam) {
+  const { gitUrl, autoCommit, keyType } = updateParam;
   const body = {
-    gitUrl,
+    ...(gitUrl && { gitUrl }),
+    ...(autoCommit != null && { autoCommit }),
+    ...(keyType && { keyType }),
   };
   const requestOptions = {
     method: 'PUT',

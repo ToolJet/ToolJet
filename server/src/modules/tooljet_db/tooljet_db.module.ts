@@ -11,6 +11,8 @@ import { InternalTable } from 'src/entities/internal_table.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { TableCountGuard } from '@ee/licensing/guards/table.guard';
 import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.service';
+import { AuditLoggerService } from '@services/audit_logger.service';
+import { AuditLogsListener } from 'src/listeners/audit_logs.listener';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Credential, InternalTable, AppUser]), CaslModule],
@@ -22,6 +24,8 @@ import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.ser
     EncryptionService,
     CredentialsService,
     TableCountGuard,
+    AuditLoggerService,
+    AuditLogsListener,
   ],
 })
 export class TooljetDbModule {}

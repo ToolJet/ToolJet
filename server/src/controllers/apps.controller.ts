@@ -286,6 +286,7 @@ export class AppsController {
   @Put(':id')
   async update(@User() user, @AppDecorator() app: App, @Body('app') appUpdateDto: AppUpdateDto) {
     const { id: userId, organizationId } = user;
+    const prevName = app.name;
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
     const { name } = appUpdateDto;
     if (!ability.can('updateParams', app)) {
@@ -293,7 +294,8 @@ export class AppsController {
     }
 
     const result = await this.appsService.update(app, appUpdateDto, organizationId);
-    if (name && app.creationMode != 'GIT' && name != app.name) this.gitSyncService.renameAppOrVersion(user, app.id);
+    if (name && app.creationMode != 'GIT' && name != app.name)
+      this.gitSyncService.renameAppOrVersion(user, app.id, prevName);
 
     await this.auditLoggerService.perform({
       userId,
@@ -495,6 +497,8 @@ export class AppsController {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
 
+    const prevName = version.name;
+
     if (app.id !== id) {
       throw new BadRequestException();
     }
@@ -511,7 +515,7 @@ export class AppsController {
       const { name } = versionEditDto;
       console.log(`Rename is goign to work for ${name} and to change ${version.name} `);
       if (name && app.creationMode != 'GIT' && name != version.name)
-        this.gitSyncService.renameAppOrVersion(user, app.id, true);
+        this.gitSyncService.renameAppOrVersion(user, app.id, prevName, true);
     }
 
     return;
