@@ -10,6 +10,9 @@
 .table-editor-component-row {
     &:hover {
         .null-renderer-text {
+            &.dark-theme {
+                background-color: #1E2226 !important
+            }
             background-color: #FFFFFF !important
         }
     }
