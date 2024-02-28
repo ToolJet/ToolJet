@@ -9,7 +9,6 @@ import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
 import { Link } from '../Link';
 import moment from 'moment';
-import NullRenderer from '../NullRenderer/NullRenderer';
 
 export default function generateColumnsData({
   columnProperties,
@@ -114,10 +113,6 @@ export default function generateColumnsData({
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
         cellValue = cellValue === undefined ? '' : cellValue;
-        // if (cellValue === null) {
-        //   return <NullRenderer />;
-        // }
-        // console.log(isEditable, "isEdit")
         switch (columnType) {
           case 'string':
           case undefined:
