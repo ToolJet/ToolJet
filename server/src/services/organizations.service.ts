@@ -5,7 +5,14 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { catchDbException, cleanObject, dbTransactionWrap, isPlural, fullName } from 'src/helpers/utils.helper';
+import {
+  catchDbException,
+  cleanObject,
+  dbTransactionWrap,
+  isPlural,
+  fullName,
+  generateNextNameAndSlug,
+} from 'src/helpers/utils.helper';
 import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
@@ -588,7 +595,8 @@ export class OrganizationsService {
       if (user?.status === USER_STATUS.ARCHIVED) {
         throw new BadRequestException(getUserErrorMessages(user.status));
       }
-      let shouldSendWelcomeMail = false;
+      let defaultOrganization: Organization,
+        shouldSendWelcomeMail = false;
 
       if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
         throw new BadRequestException('Duplicate email found. Please provide a unique email address.');
@@ -603,8 +611,14 @@ export class OrganizationsService {
         );
       }
 
-      if (!user || user.invitationToken) {
-        // User not exist | user isn't activated the accout yet.
+      if (!user) {
+        // User not exist
+        shouldSendWelcomeMail = true;
+        // Create default organization if user not exist
+        const { name, slug } = generateNextNameAndSlug('My workspace');
+        defaultOrganization = await this.create(name, slug, null, manager);
+      } else if (user.invitationToken) {
+        // User not setup
         shouldSendWelcomeMail = true;
       }
 
@@ -614,10 +628,15 @@ export class OrganizationsService {
         ['all_users', ...groups],
         user,
         true,
-        null,
-        manager,
-        !user
+        defaultOrganization?.id,
+        manager
       );
+
+      if (defaultOrganization) {
+        // Setting up default organization
+        await this.organizationUserService.create(user, defaultOrganization, true, manager);
+        await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
+      }
 
       const currentOrganization: Organization = await this.organizationsRepository.findOneOrFail({
         where: { id: currentUser.organizationId },

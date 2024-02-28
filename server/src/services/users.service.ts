@@ -80,8 +80,7 @@ export class UsersService {
     existingUser?: User,
     isInvite?: boolean,
     defaultOrganizationId?: string,
-    manager?: EntityManager,
-    shouldNotAttachWorkspace = false
+    manager?: EntityManager
   ): Promise<User> {
     const { email, firstName, lastName, password, source, status, phoneNumber } = userParams;
     let user: User;
@@ -97,7 +96,7 @@ export class UsersService {
           source,
           status,
           invitationToken: isInvite ? uuid.v4() : null,
-          defaultOrganizationId: !shouldNotAttachWorkspace ? defaultOrganizationId || organizationId : null,
+          defaultOrganizationId: defaultOrganizationId || organizationId,
           createdAt: new Date(),
           updatedAt: new Date(),
         });

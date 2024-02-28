@@ -557,6 +557,16 @@ export class AuthService {
     const lifecycleParams = getUserStatusAndSource(lifecycleEvents.USER_REDEEM, SOURCE.INVITE);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Activate default workspace if user has one
+      const defaultOrganizationUser: OrganizationUser = signupUser.organizationUsers.find(
+        (ou) => ou.organizationId === signupUser.defaultOrganizationId
+      );
+      let defaultOrganization: Organization;
+      if (defaultOrganizationUser) {
+        await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
+        defaultOrganization = await this.organizationsService.fetchOrganization(defaultOrganizationUser.organizationId);
+      }
+
       await this.usersService.updateUser(
         signupUser.id,
         {
@@ -578,7 +588,8 @@ export class AuthService {
         response,
         signupUser,
         { invitationToken: organizationToken, organizationId: invitedUser['invitedOrganizationId'] },
-        manager
+        manager,
+        defaultOrganization
       );
     });
   }
@@ -963,6 +974,7 @@ export class AuthService {
         message: {
           error: 'Account is not activated yet',
           isAccountNotActivated: true,
+          inviteeEmail: invitedUser.email,
           redirectPath: `/signup/${invitedOrganizationSlug ?? invitedOrganizationId}`,
         },
       };
@@ -978,9 +990,8 @@ export class AuthService {
       ? generateOrgInviteURL(organizationToken, invitedOrganizationId, false)
       : null;
 
-    const activeOrganization = user?.organizationId
-      ? await this.organizationsService.fetchOrganization(user?.organizationId)
-      : null;
+    const organzationId = user?.organizationId || user?.defaultOrganizationId;
+    const activeOrganization = organzationId ? await this.organizationsService.fetchOrganization(organzationId) : null;
     const payload = await this.generateSessionPayload(user, activeOrganization);
     const responseObj = {
       ...payload,
