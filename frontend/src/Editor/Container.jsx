@@ -1027,7 +1027,7 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
         style={{
           transform: `translate(332px, -134px)`,
           ...styles,
-          ...((hoveredComponent === id || isDragging) && mode !== 'view' ? { zIndex: 100000 } : {}),
+          ...((hoveredComponent === id || isDragging) && mode !== 'view' ? { zIndex: 3 } : {}),
         }}
       >
         {children}
