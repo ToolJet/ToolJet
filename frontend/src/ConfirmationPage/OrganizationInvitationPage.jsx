@@ -62,7 +62,20 @@ class OrganizationInvitationPageComponent extends React.Component {
           this.setState({ fallBack: true });
         }
       });
+
+    document.addEventListener('keydown', this.handleEnterKey);
   }
+
+  handleEnterKey = (e) => {
+    if (e.key === 'Enter') {
+      this.acceptInvite(e);
+    }
+  };
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleEnterKey);
+  }
+
   handleOnCheck = () => {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));
   };
