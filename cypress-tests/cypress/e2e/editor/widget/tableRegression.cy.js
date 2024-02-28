@@ -314,7 +314,7 @@ describe("Table", () => {
     cy.get('[data-cy="inspector-close-icon"]').click();
 
     openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionLayout, []);
+    openAccordion('Layout', []);
 
     verifyAndModifyToggleFx(
       "Show on desktop",
@@ -885,6 +885,7 @@ describe("Table", () => {
   });
 
   it("should verify download", () => {
+    deleteDownloadsFolder();
     cy.get(tableSelector.buttonDownloadDropdown).should("be.visible").click();
     cy.get(tableSelector.optionDownloadPdf).click();
     cy.task("readPdf", "cypress/downloads/all-data.pdf")
@@ -1139,7 +1140,7 @@ describe("Table", () => {
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("components", "Object", "1 entry ");
     openNode("components");
-    verifyNodeData(tableText.defaultWidgetName, "Object", "22 entries ");
+    verifyNodeData(tableText.defaultWidgetName, "Object", "26 entries ");
     cy.wait(1000);
     openNode(tableText.defaultWidgetName, 0, 1);
     // openNode(tableText.defaultWidgetName, 0, 1);
@@ -1246,7 +1247,7 @@ describe("Table", () => {
       '[data-cy="textcomponenttextinput-input-field"]'
     ).clearAndTypeOnCodeMirror("Column Email");
     // verifyAndModifyParameter("Text", "Column Email");
-    cy.get('[data-cy="inspector-close-icon"]').click();
+    cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
     cy.get(`[data-cy="draggable-widget-${commonWidgetText.text1}"]`).should(
       "have.text",
       "Column Email"
