@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: postgrest
-        image: postgrest/postgrest:v10.1.1.20221215
+        image: postgrest/postgrest
         ports:
         - containerPort: 3000
         env:
