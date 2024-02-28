@@ -36,6 +36,12 @@
     },
     "secret_key": {
       "value": ""
+    },
+    "database": {
+      "value": "dev"
+    },
+    "port":{
+      "value": "5439"
     }
   },
   "properties": {
@@ -158,6 +164,12 @@
               "value": "us-gov-west-1"
             }
           ]
+        },
+        "port": {
+          "label": "Port",
+          "key": "port",
+          "type": "text",
+          "description": "Enter port"
         },
         "workgroup_name": {
           "label": "Workgroup Name",
