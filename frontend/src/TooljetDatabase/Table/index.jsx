@@ -56,8 +56,6 @@ const Table = ({ collapseSidebar }) => {
     columnEditPopover: false,
   });
 
-  // const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
-  // const [wholeScreenWidth, setWholeScreenWidth] = useState(window.innerWidth);
   const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
   const [selectedRowIds, setSelectedRowIds] = useState({});
   const [cellClick, setCellClick] = useState({
@@ -224,6 +222,15 @@ const Table = ({ collapseSidebar }) => {
   const patchCellNavigationRef = (index, type, cellEditable = null) => {
     // type - row | column
     if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null) {
+      if (cellClick.cellIndex !== null && cellClick.rowIndex !== null) {
+        setCellClick({
+          rowIndex: null,
+          cellIndex: null,
+          editable: false,
+          errorState: false,
+        });
+      }
+
       const { rowIndex, columnIndex } = selectedCellRef.current;
       if (type === 'row') {
         toggleCellSelectionClassNames(rowIndex, columnIndex, index, columnIndex);
@@ -419,19 +426,6 @@ const Table = ({ collapseSidebar }) => {
         if (Object.keys(selectedRowIds).length > 0) setSelectedRowIds({});
         if (editPopover) setEditPopover(false);
 
-        // const cellIndexValue =
-        //   cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
-        // const cellValue = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
-        // const newIndex =
-        //   cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
-        // setCellClick((prevState) => ({
-        //   ...prevState,
-        //   cellIndex: newIndex,
-        // }));
-        // setCellVal(cellValue);
-        // cellValue === null ? setNullValue(true) : setNullValue(false);
-        // setDefaultValue(false);
-
         const newIndex =
           selectedCellRef.current.columnIndex === columHeaderLength - 1
             ? columHeaderLength - 1
@@ -442,17 +436,6 @@ const Table = ({ collapseSidebar }) => {
         if (Object.keys(selectedRowIds).length > 0) setSelectedRowIds({});
         if (editPopover) setEditPopover(false);
 
-        // const cellIndexValue = cellClick.cellIndex === 0 ? 0 : cellClick.cellIndex - 1;
-        // const cellValue = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
-        // const newIndex = cellClick.cellIndex === 0 ? 0 : cellClick.cellIndex - 1;
-        // setCellClick((prevState) => ({
-        //   ...prevState,
-        //   cellIndex: newIndex,
-        // }));
-        // setCellVal(cellValue);
-        // cellValue === null ? setNullValue(true) : setNullValue(false);
-        // setDefaultValue(false);
-
         const newIndex = selectedCellRef.current.columnIndex === 0 ? 0 : selectedCellRef.current.columnIndex - 1;
         patchCellNavigationRef(newIndex, 'column', true);
       } else if (e.key === 'ArrowUp') {
@@ -460,32 +443,12 @@ const Table = ({ collapseSidebar }) => {
         if (Object.keys(selectedRowIds).length > 0) setSelectedRowIds({});
         if (editPopover) setEditPopover(false);
 
-        // const cellValue = rows[cellClick.rowIndex - 1].cells[cellClick.cellIndex].value; // row Index's value
-        // const newRowIndex = cellClick.rowIndex === 0 ? 0 : cellClick.rowIndex - 1;
-        // setCellClick((prevState) => ({
-        //   ...prevState,
-        //   rowIndex: newRowIndex,
-        // }));
-        // setCellVal(cellValue);
-        // cellValue === null ? setNullValue(true) : setNullValue(false);
-        // setDefaultValue(false);
-
         const newRowIndex = selectedCellRef.current.rowIndex === 0 ? 0 : selectedCellRef.current.rowIndex - 1;
         patchCellNavigationRef(newRowIndex, 'row', true);
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
         if (Object.keys(selectedRowIds).length > 0) setSelectedRowIds({});
         if (editPopover) setEditPopover(false);
-
-        // const cellValue = rows[cellClick.rowIndex + 1].cells[cellClick.cellIndex].value; // row Index's value
-        // const newRowIndex = cellClick.rowIndex === rows.length - 1 ? rows.length - 1 : cellClick.rowIndex + 1;
-        // setCellClick((prevState) => ({
-        //   ...prevState,
-        //   rowIndex: newRowIndex,
-        // }));
-        // setCellVal(cellValue);
-        // cellValue === null ? setNullValue(true) : setNullValue(false);
-        // setDefaultValue(false);
 
         const newRowIndex =
           selectedCellRef.current.rowIndex === rows.length - 1 ? rows.length - 1 : selectedCellRef.current.rowIndex + 1;
@@ -529,45 +492,6 @@ const Table = ({ collapseSidebar }) => {
   useEffect(() => {
     if (!editPopover) {
       document.addEventListener('keydown', handleKeyDown);
-
-      // Table Scroll based on Content overlfow is handled here
-      // const selectedCellElem = document.querySelector('.tjdb-selected-cell');
-      // if (selectedCellElem && tooljetDbTableRef.current) {
-      //   const tableBoundingRect = tooljetDbTableRef?.current?.getBoundingClientRect();
-      //   const cellBoundingRect = selectedCellElem.getBoundingClientRect();
-
-      //   // Scroll when we reach the bottom of the table and when content overflows
-      //   if (cellBoundingRect.bottom > tableBoundingRect.bottom) {
-      //     tooljetDbTableRef.current.scrollTo({
-      //       top: tooljetDbTableRef.current.scrollTop + (cellBoundingRect.bottom - tableBoundingRect.bottom),
-      //       behavior: 'instant',
-      //     });
-      //   }
-
-      //   // Scroll when we reach the top of the table. Added 32 for considering table header space
-      //   if (cellBoundingRect.top < tableBoundingRect.top + 32) {
-      //     tooljetDbTableRef.current.scrollTo({
-      //       top: tooljetDbTableRef.current.scrollTop + (cellBoundingRect.top - (tableBoundingRect.top + 32)),
-      //       behavior: 'instant',
-      //     });
-      //   }
-
-      //   // Scroll when we reach right end of the table and if content gets overflow
-      //   if (cellBoundingRect.right > tableBoundingRect.right) {
-      //     tooljetDbTableRef.current.scrollTo({
-      //       left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.right - tableBoundingRect.right),
-      //       behavior: 'instant',
-      //     });
-      //   }
-
-      //   // Scroll when we reach left end of the table and if content gets overflow. Added 296 for width of two sticky columns
-      //   if (cellBoundingRect.left < tableBoundingRect.left + 296) {
-      //     tooljetDbTableRef.current.scrollTo({
-      //       left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.left - (tableBoundingRect.left + 296)),
-      //       behavior: 'instant',
-      //     });
-      //   }
-      // }
     }
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
@@ -759,11 +683,14 @@ const Table = ({ collapseSidebar }) => {
 
   const handleMouseOver = (index) => {
     if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null) {
+      const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.value;
+      setCellVal(cellValue);
       setCellClick((prevState) => ({
         ...prevState,
         rowIndex: selectedCellRef.current.rowIndex,
         cellIndex: selectedCellRef.current.columnIndex,
       }));
+      cellValue === null ? setNullValue(true) : setNullValue(false);
     }
 
     setEditColumnHeader((prevState) => ({
