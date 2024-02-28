@@ -29,8 +29,9 @@ export default class Awsredshift implements QueryService {
           const describeCommand = new DescribeStatementCommand(describeInput);
           const describeResult = await client.send(describeCommand);
           status = describeResult.Status;
-          if (status === 'FAILED' || status === 'ABORTED') {
-            throw new Error(`Query execution failed with status: ${status}`);
+          const error = describeResult.Error;
+          if (status === 'FAILED' || (status === 'ABORTED' && describeResult.ResultSize === -1)) {
+            throw new Error(`Query execution failed with error: ${error}`);
           }
           await new Promise((resolve) => setTimeout(resolve, 50));
         }
@@ -56,7 +57,6 @@ export default class Awsredshift implements QueryService {
     const client = await this.getConnection(sourceOptions);
     const input = {
       Sql: 'SELECT 1',
-      SecretArn: sourceOptions.secretARN,
       Database: sourceOptions.database,
       WithEvent: true,
       WorkgroupName: sourceOptions.workgroup_name,

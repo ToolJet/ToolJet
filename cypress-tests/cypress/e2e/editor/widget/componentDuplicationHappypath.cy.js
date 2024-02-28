@@ -25,7 +25,9 @@ describe("Editor- component duplication", () => {
     data.boxShadowParam = fake.boxShadowParam;
     data.tooltipText = fake.randomSentence;
   });
-
+  afterEach(() => {
+    cy.apiDeleteApp(`${fake.companyName}-App`);
+  });
   it("should verify duplication using copy and paste", () => {
     addBasicData(data);
     cy.forceClickOnCanvas();
