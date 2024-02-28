@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { validateWidget } from '@/_helpers/utils';
 import { useMounted } from '@/_hooks/use-mount';
 import NullRenderer from './NullRenderer/NullRenderer';
+import ReactDOMServer from 'react-dom/server';
 
 export default function GenerateEachCellValue({
   cellValue,
@@ -16,6 +17,9 @@ export default function GenerateEachCellValue({
   cellTextColor,
   cell,
   currentState,
+  isCellValueChanged,
+  setIsCellValueChanged,
+  darkMode,
 }) {
   const mounted = useMounted();
   const updateCellValue = useRef();
@@ -34,9 +38,7 @@ export default function GenerateEachCellValue({
   };
 
   const handleCellBlur = (e) => {
-    console.log(e, 'e');
     e.stopPropagation();
-    setIsNullCellClicked(false);
     if (isTabKeyPressed.current) {
       isTabKeyPressed.current = false;
       return;
@@ -107,8 +109,8 @@ export default function GenerateEachCellValue({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rowData, rowChangeSet]);
 
-  // console.log(updateCellValue, "updateCellValue")
-  let htmlElement = cellValue;
+  const nullRendererHtml = ReactDOMServer.renderToString(<NullRenderer darkMode={darkMode} />);
+  let htmlElement = cellValue === null ? nullRendererHtml : cellValue;
   if (cellValue?.toString()?.toLowerCase().includes(globalFilter?.toLowerCase())) {
     if (globalFilter) {
       var normReq = globalFilter
@@ -151,19 +153,41 @@ export default function GenerateEachCellValue({
     );
   };
 
+  const _renderNullCell = () => {
+    if (isEditable) {
+      if (!isNullCellClicked && !updateCellValue.current) {
+        return <NullRenderer darkMode={darkMode} />;
+      } else return cellRender;
+    } else {
+      return <NullRenderer darkMode={darkMode} />;
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
-      console.log(event.target.value);
-      if (cellRef.current && !cellRef.current.contains(event.target)) {
-        setIsNullCellClicked(false);
+      if (cellRef.current && !cellRef.current.contains(event.target) && !isCellValueChanged) {
+        // Adding setTimeout to avoid this event to be executed before input's blur event
+        setTimeout(() => {
+          setIsNullCellClicked(false);
+          setIsCellValueChanged(false);
+        }, 100);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [isCellValueChanged, setIsCellValueChanged]);
+
+  useEffect(() => {
+    if (isNullCellClicked) {
+      const inputElement = document.getElementById(`table-input-${cell.column.id}`);
+      if (inputElement) {
+        inputElement.focus();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNullCellClicked]);
 
   return (
     <div
@@ -173,13 +197,11 @@ export default function GenerateEachCellValue({
       className={`w-100 h-100 ${columnType === 'selector' && 'd-flex align-items-center justify-content-center'}`}
       ref={cellRef}
     >
-      {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
-        _renderCellWhenHighlighted()
-      ) : cellValue === null && !isNullCellClicked && !updateCellValue.current ? (
-        <NullRenderer />
-      ) : (
-        cellRender
-      )}
+      {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells
+        ? _renderCellWhenHighlighted()
+        : cellValue === null
+        ? _renderNullCell()
+        : cellRender}
     </div>
   );
 }

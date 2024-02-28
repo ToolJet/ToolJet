@@ -157,6 +157,7 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="text"
+                    id={`table-input-${column.id}`}
                     style={{ ...cellStyles }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -229,6 +230,7 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="number"
+                    id={`table-input-${column.id}`}
                     style={{ ...cellStyles }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
