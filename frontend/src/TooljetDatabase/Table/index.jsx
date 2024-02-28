@@ -81,6 +81,8 @@ const Table = ({ collapseSidebar }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const updateCellNavigationRefToDefault = () => {
+    if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null)
+      removeCellSelectionClassNames(selectedCellRef.current.rowIndex, selectedCellRef.current.columnIndex);
     selectedCellRef.current = { rowIndex: null, columnIndex: null, editable: false };
   };
 
@@ -185,6 +187,17 @@ const Table = ({ collapseSidebar }) => {
       columnIndex: columnIndex,
       editable: cellEditable,
     };
+  };
+
+  const removeCellSelectionClassNames = (prevRowIndex, prevColumnIndex) => {
+    const selectedElementTd = document.getElementById(`tjdb-td-row${prevRowIndex}-column${prevColumnIndex}`);
+    const selectedElementCell = document.getElementById(`tjdb-cell-row${prevRowIndex}-column${prevColumnIndex}`);
+
+    if (selectedElementCell) selectedElementCell.classList.remove('tjdb-selected-cell');
+    if (selectedElementTd) {
+      selectedElementTd.classList.remove('table-editable-parent-cell');
+      selectedElementTd.classList.add('table-cell');
+    }
   };
 
   const toggleCellSelectionClassNames = (prevRowIndex, prevColumnIndex, currentRowIndex, currentColumnIndex) => {
@@ -745,6 +758,14 @@ const Table = ({ collapseSidebar }) => {
   if (!selectedTable) return null;
 
   const handleMouseOver = (index) => {
+    if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null) {
+      setCellClick((prevState) => ({
+        ...prevState,
+        rowIndex: selectedCellRef.current.rowIndex,
+        cellIndex: selectedCellRef.current.columnIndex,
+      }));
+    }
+
     setEditColumnHeader((prevState) => ({
       ...prevState,
       hoveredColumn: index,

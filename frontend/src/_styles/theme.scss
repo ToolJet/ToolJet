@@ -6929,6 +6929,7 @@ tbody {
   }
 
   .table-editable-parent-cell {
+    max-width: 230px;
     background-color: var(--indigo2);
     cursor: pointer;
     padding: 0rem;
