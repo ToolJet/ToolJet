@@ -195,6 +195,9 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   <label className={`form-switch`}>
                     <input
                       className="form-check-input"
+                      data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
+                        .toLowerCase()
+                        .replace(/\s+/g, '-')}-checkbox`}
                       type="checkbox"
                       checked={columns[index]?.constraints_type?.is_not_null ?? false}
                       onChange={(e) => {
@@ -206,7 +209,13 @@ const ColumnsForm = ({ columns, setColumns }) => {
                       }}
                     />
                   </label>
-                  <span>{columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL'}</span>
+                  <span
+                    data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
+                      .toLowerCase()
+                      .replace(/\s+/g, '-')}-text`}
+                  >
+                    {columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL'}
+                  </span>
                 </div>
               )}
               <div

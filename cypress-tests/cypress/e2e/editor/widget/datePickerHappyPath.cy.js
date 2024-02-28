@@ -33,7 +33,7 @@ import {
 describe("Date Picker widget", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-datepicker-App`);
     cy.openApp();
     cy.dragAndDropWidget("Date Picker");
   });
@@ -60,21 +60,27 @@ describe("Date Picker widget", () => {
     verifyAndModifyParameter(datePickerText.labelDefaultValue, data.date);
     verifyComponentValueFromInspector(data.widgetName, data.date);
 
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     verifyDate(data.widgetName, data.date);
     data.date = randomDateOrTime();
     selectAndVerifyDate(data.widgetName, data.date);
 
     openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(datePickerText.labelformat, "DD/MM/YY");
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     verifyDate(data.widgetName, data.date, "DD/MM/YY");
     verifyComponentValueFromInspector(data.widgetName, data.date);
     cy.get(commonSelectors.canvas).click({ force: true });
 
     openEditorSidebar(data.widgetName);
 
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     // verifyDate(data.widgetName, "");
     openEditorSidebar(data.widgetName);
     verifyAndModifyToggleFx(
@@ -90,7 +96,9 @@ describe("Date Picker widget", () => {
     );
     openEditorSidebar(data.widgetName);
 
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     verifyDate(data.widgetName, datePickerText.defaultTime, "hh:mm A");
     selectAndVerifyTime(data.widgetName, data.randomTime);
     verifyAndModifyToggleFx(
@@ -103,7 +111,9 @@ describe("Date Picker widget", () => {
       "{{",
       "[05-01]}}",
     ]); //WIP
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     openEditorSidebar(data.widgetName);
 
     openAccordion(commonWidgetText.accordionProperties, [
@@ -124,7 +134,9 @@ describe("Date Picker widget", () => {
       datePickerText.noEventMessage
     );
     addDefaultEventHandler(data.alertMessage);
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     data.date = randomDateOrTime();
     selectAndVerifyDate(data.widgetName, data.date, "DD/MM/YY");
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
@@ -202,7 +214,9 @@ describe("Date Picker widget", () => {
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput
     );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.get(commonWidgetSelector.draggableWidget(datePickerText.datepicker1))
       .find("input")
       .should("have.css", "border-radius", "20px");

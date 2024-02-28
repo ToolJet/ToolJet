@@ -10,8 +10,12 @@ export default function TemplateDisplay(props) {
     <div className="template-display">
       <Container fluid className="pt-2">
         <Row style={{ height: '10%' }}>
-          <h3 className="title">{name}</h3>
-          <p className="description">{description}</p>
+          <h3 className="title" data-cy={`${String(name).toLowerCase().replace(/\s+/g, '-')}`}>
+            {name}
+          </h3>
+          <p className="description" data-cy="description-text">
+            {description}
+          </p>
           <span>
             {sources?.map((source) => (
               <Badge
@@ -34,13 +38,22 @@ export default function TemplateDisplay(props) {
                   >
                     {getSvgIcon(source.id, 14, 14)}
                   </div>
-                  <div className="d-flex flex-rows align-items-center ms-1 template-source-name">{source.name}</div>
+                  <div
+                    className="d-flex flex-rows align-items-center ms-1 template-source-name"
+                    data-cy={`${String(source.name).toLowerCase().replace(/\s+/g, '-')}-template-source-name`}
+                  >
+                    {source.name}
+                  </div>
                 </div>
               </Badge>
             ))}
           </span>
         </Row>
-        <Row className="align-items-center justify-content-center" style={{ height: '88%', position: 'relative' }}>
+        <Row
+          className="align-items-center justify-content-center"
+          style={{ height: '88%', position: 'relative' }}
+          data-cy="template-image"
+        >
           <ImageWithSpinner
             src={`assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`}
             className="template-image"
