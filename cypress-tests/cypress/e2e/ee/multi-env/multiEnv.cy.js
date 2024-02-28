@@ -643,9 +643,9 @@ describe("Multi env", () => {
       .should("be.visible")
       .and("have.text", "v3");
 
-    cy.get('[data-cy="list-current-env-name"]').verifyVisibleElement(
+    cy.get('[data-cy="list-current-env-name"]').should(
       "have.text",
-      " Staging"
+      "Staging"
     );
   })
 });
