@@ -106,7 +106,7 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     ```
 
 
-    The client will start running on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082)
+    The client will start running on the port 8082, you can access the client by visiting:  [http://localhost:8082](http://localhost:8082)
 
 9. Create login credentials
 

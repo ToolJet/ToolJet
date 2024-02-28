@@ -46,12 +46,24 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
   <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
   </div>
 
-4. Under containers tab, please make sure the port is set 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity is set to 2GiB.
+4. Under containers tab, please make sure the port is set to 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity set to 2GiB:
 
   <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest.png" alt="port-and-capacity-tooljet" />
+  <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-v2.png" alt="port-and-capacity-tooljet" />
   </div>
 
+
+- If the command mentioned above is not compatible, please use the following command structure instead:
+
+ <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-alternative-command.png" alt="port-and-capacity-tooljet-alternative-command" />
+  </div>
+
+- Should you encounter any migration issues, please execute the following command. Be aware that executing this command may cause the revision to break. However, modifying the command back to `npm, run, start:prod` will successfully reboot the instance:
+
+ <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-migration-fix-command.png" alt="port-and-capacity-tooljet-migration-fix-command" />
+  </div>
 
 5. Under environmental variable please add the below Tooljet application variables. You can also refer env variable [**here**](/docs/setup/env-vars). 
 
@@ -153,11 +165,11 @@ Once the Service is created and live, to make the  Cloud Service URL public. Ple
   </div>
 
 
-## Upgrading to v2.24.3-ee2.10.2
+## Upgrading to the Latest Version
 
-Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
+The latest version includes architectural changes and, hence, comes with new migrations.
 
-If this is a new installation of the application, you may start directly with version v2.24.3-ee2.10.2. This guide is not required for new installations.
+If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
 
 #### Prerequisites for Upgrading to the Latest Version:
 
@@ -165,6 +177,6 @@ If this is a new installation of the application, you may start directly with ve
 
 - Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
 
-- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to v2.24.3-ee2.10.2.
+- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
 
 For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
