@@ -238,7 +238,6 @@ export const PasswordInput = function PasswordInput({
     <>
       <div
         data-cy={`label-${String(component.name).toLowerCase()}`}
-        data-disabled={disable || loading}
         className={`text-input  d-flex  ${
           defaultAlignment === 'top' &&
           ((width != 0 && label && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
@@ -289,7 +288,7 @@ export const PasswordInput = function PasswordInput({
                   : '50%'
               }`,
               transform: ' translateY(-50%)',
-              color: iconColor,
+              color: iconColor !== '#CCD1D5' ? iconColor : 'var(--icons-weak-disabled)',
               zIndex: 3,
             }}
             stroke={1.5}

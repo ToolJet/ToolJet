@@ -294,7 +294,7 @@ export const TextInput = function TextInput({
                   : '50%'
               }`,
               transform: ' translateY(-50%)',
-              color: iconColor,
+              color: iconColor !== '#CCD1D5' ? iconColor : 'var(--icons-weak-disabled)',
               zIndex: 3,
             }}
             stroke={1.5}
@@ -302,7 +302,6 @@ export const TextInput = function TextInput({
         )}
         <input
           data-cy={dataCy}
-          data-disabled={disable || loading}
           ref={textInputRef}
           className={`tj-text-input-widget ${
             !isValid && showValidationError ? 'is-invalid' : ''

@@ -284,7 +284,6 @@ export const NumberInput = function NumberInput({
       <>
         <div
           data-cy={`label-${String(component.name).toLowerCase()}`}
-          data-disabled={disable || loading}
           className={`text-input tj-number-input-widget  d-flex  ${
             defaultAlignment === 'top' &&
             ((width != 0 && label && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
@@ -336,7 +335,7 @@ export const NumberInput = function NumberInput({
                     : '50%'
                 }`,
                 transform: ' translateY(-50%)',
-                color: iconColor,
+                color: iconColor !== '#CCD1D5' ? iconColor : 'var(--icons-weak-disabled)',
                 zIndex: 3,
               }}
               stroke={1.5}
