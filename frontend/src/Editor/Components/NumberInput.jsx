@@ -166,10 +166,16 @@ export const NumberInput = function NumberInput({
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     boxShadow: boxShadow,
-    padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
+    padding: styles.iconVisibility
+      ? height < 20
+        ? '0px 10px 0px 29px'
+        : '8px 10px 8px 29px'
+      : height < 20
+      ? '0px 10px'
+      : '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    color: textColor !== '#1B1F24' ? textColor : disabledState ? 'var(--text-disabled)' : 'var(--text-primary)',
+    color: textColor !== '#1B1F24' ? textColor : disable ? 'var(--text-disabled)' : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
@@ -178,7 +184,6 @@ export const NumberInput = function NumberInput({
       ? borderColor
       : 'var(--borders-default)',
     '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
-    borderWidth: isFocused && '2px',
     backgroundColor: !['#ffffff', '#ffffffff', '#fff'].includes(backgroundColor)
       ? backgroundColor
       : 'var(--surfaces-surface-01)',
@@ -321,7 +326,7 @@ export const NumberInput = function NumberInput({
                     ? '11px'
                     : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
                     ? `${labelWidth + 11}px`
-                    : '11px', //23 ::  is 10 px inside the input + 1 px border + 12px margin right
+                    : '11px', //11 ::  is 10 px inside the input + 1 px border + 12px margin right
                 position: 'absolute',
                 top: `${
                   defaultAlignment === 'side'
@@ -370,7 +375,7 @@ export const NumberInput = function NumberInput({
               <div onClick={(e) => handleIncrement(e)}>
                 <SolidIcon
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  height={`${height / 2}px`}
+                  height={`${padding == 'default' ? `${height / 2}px` : `${height / 2 + 2}px`}`}
                   style={{
                     top: defaultAlignment === 'top' && label?.length > 0 && width > 0 ? '21px' : '1px',
                     right:
@@ -379,10 +384,10 @@ export const NumberInput = function NumberInput({
                         : alignment == 'side' && direction === 'right'
                         ? `${labelWidth + 1}px`
                         : '1px',
-                    borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                    borderBottom: darkMode ? '.5px solid #313538' : '0.5px solid #D7D7D7',
+                    borderLeft: '1px solid var(--borders-default)',
+                    borderBottom: '.5px solid var(--borders-default)',
                     borderTopRightRadius: borderRadius - 1,
-                    backgroundColor: !darkMode ? 'white' : 'black',
+                    backgroundColor: loading || disable ? 'var(--surfaces-surface-03)' : ' var(--surfaces-surface-01)',
                     zIndex: 3,
                   }}
                   className="numberinput-up-arrow arrow"
@@ -400,14 +405,14 @@ export const NumberInput = function NumberInput({
                         ? `${labelWidth + 1}px`
                         : '1px',
                     bottom: '1px',
-                    borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                    borderTop: darkMode ? '0.5px solid #313538' : '0.5px solid #D7D7D7',
+                    borderLeft: '1px solid var(--borders-default)',
+                    borderTop: '.5px solid var(--borders-default)',
                     borderBottomRightRadius: borderRadius - 1,
-                    backgroundColor: !darkMode ? 'white' : 'black',
+                    backgroundColor: loading || disable ? 'var(--surfaces-surface-03)' : ' var(--surfaces-surface-01)',
                     zIndex: 3,
                   }}
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  height={`${height / 2}px`}
+                  height={`${padding == 'default' ? `${height / 2}px` : `${height / 2 + 2}px`}`}
                   className="numberinput-down-arrow arrow"
                   name="cheverondown"
                 ></SolidIcon>

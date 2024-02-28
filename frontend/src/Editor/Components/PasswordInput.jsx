@@ -62,11 +62,17 @@ export const PasswordInput = function PasswordInput({
     borderRadius: `${borderRadius}px`,
     backgroundColor: !['#ffffff', '#fff'].includes(backgroundColor) ? backgroundColor : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
-    padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
+    padding: styles.iconVisibility
+      ? height < 20
+        ? '0px 10px 0px 29px'
+        : '8px 10px 8px 29px'
+      : height < 20
+      ? '0px 10px'
+      : '8px 10px',
 
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    color: textColor !== '#1B1F24' ? textColor : disabledState ? 'var(--text-disabled)' : 'var(--text-primary)',
+    color: textColor !== '#1B1F24' ? textColor : disable ? 'var(--text-disabled)' : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
@@ -75,7 +81,6 @@ export const PasswordInput = function PasswordInput({
       ? borderColor
       : 'var(--borders-default)',
     '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
-    borderWidth: isFocused && '2px',
   };
 
   const loaderStyle = {
@@ -327,7 +332,7 @@ export const PasswordInput = function PasswordInput({
           data-cy={dataCy}
           className={`tj-text-input-widget ${
             !isValid && showValidationError ? 'is-invalid' : ''
-          } validation-without-icon ${darkMode && 'dark-theme-placeholder'}`}
+          } validation-without-icon `}
           ref={textInputRef}
           onKeyUp={(e) => {
             if (e.key === 'Enter') {

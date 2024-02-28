@@ -58,7 +58,7 @@ export const TextInput = function TextInput({
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
-    color: textColor !== '#1B1F24' ? textColor : disabledState ? 'var(--text-disabled)' : 'var(--text-primary)',
+    color: textColor !== '#1B1F24' ? textColor : disable ? 'var(--text-disabled)' : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
@@ -67,10 +67,15 @@ export const TextInput = function TextInput({
       ? borderColor
       : 'var(--borders-default)',
     '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
-    borderWidth: isFocused && '2px',
     backgroundColor: backgroundColor != '#fff' ? backgroundColor : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
-    padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
+    padding: styles.iconVisibility
+      ? height < 20
+        ? '0px 10px 0px 29px'
+        : '8px 10px 8px 29px'
+      : height < 20
+      ? '0px 10px'
+      : '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   };
@@ -279,7 +284,7 @@ export const TextInput = function TextInput({
                   ? '11px'
                   : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
                   ? `${labelWidth + 11}px`
-                  : '11px', //23 ::  is 10 px inside the input + 1 px border + 12px margin right
+                  : '11px', //11 ::  is 10 px inside the input + 1 px border + 12px margin right
               position: 'absolute',
               top: `${
                 defaultAlignment === 'side'
@@ -301,7 +306,7 @@ export const TextInput = function TextInput({
           ref={textInputRef}
           className={`tj-text-input-widget ${
             !isValid && showValidationError ? 'is-invalid' : ''
-          } validation-without-icon ${darkMode && 'dark-theme-placeholder'}`}
+          } validation-without-icon`}
           onKeyUp={(e) => {
             if (e.key === 'Enter') {
               setValue(e.target.value);
