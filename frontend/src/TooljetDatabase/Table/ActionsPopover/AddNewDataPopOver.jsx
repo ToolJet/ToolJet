@@ -27,6 +27,7 @@ export const AddNewDataPopOver = ({
           </div>
           <div
             className="col text-truncate tj-text-xsm font-weight-500"
+            data-cy="add-new-row-option"
             onClick={(event) => {
               event.stopPropagation();
               toggleAddNewDataMenu(false);
@@ -42,6 +43,7 @@ export const AddNewDataPopOver = ({
           </div>
           <div
             className="col text-truncate tj-text-xsm font-weight-500"
+            data-cy="bulk-upload-data-option"
             onClick={(event) => {
               event.stopPropagation();
               toggleAddNewDataMenu(false);

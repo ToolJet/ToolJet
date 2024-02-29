@@ -35,7 +35,7 @@ import {
 describe("Editor- Test Button widget", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.apiCreateApp(`${fake.companyName}-button-App`);
     cy.openApp();
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
   });
@@ -352,7 +352,7 @@ describe("Editor- Test Button widget", () => {
     cy.wait(500);
 
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
-    cy.get('[data-cy="input-textinput1"]').should(
+    cy.get(commonWidgetSelector.draggableWidget('textinput1')).should(
       "have.value",
       data.customMessage
     );
@@ -452,6 +452,7 @@ describe("Editor- Test Button widget", () => {
     cy.apiDeleteApp();
   });
   it("Should verify deletion of button component from right side panel", () => {
+    openEditorSidebar(buttonText.defaultWidgetName);
     cy.get('[data-cy="component-inspector-options"]').click();
     cy.get('[data-cy="component-inspector-delete-button"]').click();
     cy.get('[data-cy="yes-button"]').click();

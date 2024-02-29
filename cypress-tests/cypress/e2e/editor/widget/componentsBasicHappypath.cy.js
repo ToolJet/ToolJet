@@ -417,7 +417,7 @@ describe("Basic components", () => {
     cy.resizeWidget("form1", 650, 400, false);
 
     openEditorSidebar("form1");
-    editAndVerifyWidgetName("form2");
+    editAndVerifyWidgetName("form2", []);
 
     cy.waitForAutoSave();
 
