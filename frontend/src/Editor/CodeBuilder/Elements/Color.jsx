@@ -38,7 +38,7 @@ export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowP
   };
   const eventPopover = () => {
     return (
-      <Popover className={`${darkMode && ' dark-theme'}`}>
+      <Popover className={`${darkMode && ' dark-theme'}`} style={{ zIndex: 10000 }}>
         <Popover.Body className={!asBoxShadowPopover && 'boxshadow-picker'}>
           <>{ColorPicker()}</>
         </Popover.Body>
@@ -110,7 +110,7 @@ export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowP
               }}
               show={showPicker}
               trigger="click"
-              placement={'left'}
+              placement={'bottom'}
               rootClose={true}
               overlay={eventPopover()}
             >
