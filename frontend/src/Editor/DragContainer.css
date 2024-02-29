@@ -118,10 +118,19 @@
     border: 5px solid #fff0;
 }
 
-.moveable-resizable[data-rotation="0"], .moveable-resizable[data-rotation="90"] {
+.moveable-line.moveable-n {
+    border-bottom: 5px solid #fff0;
+}
+
+.moveable-line.moveable-s {
+    border-bottom: 5px solid #fff0;
+}
+
+.moveable-control[data-rotation="0"], .moveable-control[data-rotation="90"],
+.moveable-around-control[data-rotation="0"], .moveable-around-control[data-rotation="90"] {
     opacity: 0;
-    width: 1px;
-    height: 1px;
+    width: 0px !important;
+    height: 0px !important;
 }
 
 .resizing-target * {
