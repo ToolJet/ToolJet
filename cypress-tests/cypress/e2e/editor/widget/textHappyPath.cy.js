@@ -1,39 +1,34 @@
 import { fake } from "Fixtures/fake";
-import { textInputText } from "Texts/textInput";
-import { commonWidgetText, widgetValue, customValidation } from "Texts/common";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { buttonText } from "Texts/button";
 import {
-  verifyControlComponentAction,
-  randomString,
-} from "Support/utils/textInput";
+  verifyNodeData,
+  openNode,
+  verifyValue,
+  deleteComponentFromInspector,
+  verifyfunctions,
+} from "Support/utils/inspector";
+import { commonWidgetSelector } from "Selectors/common";
 import {
-  openAccordion,
-  verifyAndModifyParameter,
-  openEditorSidebar,
-  verifyAndModifyToggleFx,
-  addDefaultEventHandler,
-  verifyComponentValueFromInspector,
-  selectColourFromColourPicker,
-  verifyBoxShadowCss,
-  verifyLayout,
-  verifyTooltip,
   editAndVerifyWidgetName,
-  verifyPropertiesGeneralAccordion,
+  selectFromSidebarDropdown,
+  addValueOnInput,
+  selectColourFromColourPicker,
   verifyStylesGeneralAccordion,
-  randomNumber,
-  closeAccordions,
 } from "Support/utils/commonWidget";
 import {
+  addSupportCSAData,
   selectCSA,
   selectEvent,
-  addSupportCSAData,
 } from "Support/utils/events";
+import { randomString } from "Support/utils/editor/textInput";
+import { buttonText } from "Texts/button";
 
 describe("Text Input", () => {
+  const data = {};
   beforeEach(() => {
+    cy.viewport(1200, 1200);
+    data.appName = `${fake.companyName}-text-App`;
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(data.appName);
     cy.openApp();
     cy.dragAndDropWidget("Text");
   });
@@ -41,7 +36,61 @@ describe("Text Input", () => {
   afterEach(() => {
     cy.apiDeleteApp();
   });
-  it("should verify CSA", () => {
+
+  it("should verify properties of text component", () => {
+    data.componentName = fake.widgetName;
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+
+    editAndVerifyWidgetName(data.componentName, [
+      "Data",
+      "Events",
+      "Additional Actions",
+      "Devices",
+    ]);
+    cy.get(
+      '[data-cy="textcomponenttextinput-input-field"]'
+    ).clearAndTypeOnCodeMirror("Cypress testing text component");
+    cy.forceClickOnCanvas();
+    cy.get(
+      commonWidgetSelector.draggableWidget(data.componentName)
+    ).verifyVisibleElement("have.text", "Cypress testing text component");
+  });
+
+  it("should verify styles of text component", () => {
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+    selectFromSidebarDropdown("Weight", "bolder");
+    selectFromSidebarDropdown("Font variant", "initial");
+    addValueOnInput("Size", 25);
+    addValueOnInput("Line Height", 3);
+    addValueOnInput("Text Indent", 2);
+    addValueOnInput("Letter Spacing", 2);
+    addValueOnInput("Word Spacing", 2);
+    addValueOnInput("Border radius", 2);
+
+    data.textColor = fake.randomRgba;
+    data.backgroundColor = fake.randomRgba;
+    data.borderColor = fake.randomRgba;
+    data.boxShadowColor = fake.randomRgba;
+    data.boxShadowParam = fake.boxShadowParam;
+
+    selectColourFromColourPicker("color", data.textColor);
+    selectColourFromColourPicker("background", data.backgroundColor);
+    selectColourFromColourPicker("border", data.borderColor);
+
+    data.colourHex = fake.randomRgbaHex;
+    verifyStylesGeneralAccordion(
+      "text1",
+      data.boxShadowParam,
+      data.colourHex,
+      data.boxShadowColor,
+      4,
+      "#00000090"
+    );
+  });
+
+  it("should verify preview of text component", () => {});
+
+  it.only("should verify CSA", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -70,5 +119,23 @@ describe("Text Input", () => {
     cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
       "not.be.visible"
     );
+  });
+  it.only("should verify expossed values", () => {
+    cy.get(commonWidgetSelector.sidebarinspector).click();
+    verifyNodeData("components", "Object", "1 entry ");
+    openNode("components");
+    openNode("text1");
+
+    verifyValue("text", "String", `"Hello The👋"`);
+    verifyValue("isVisible", "Boolean", "true");
+    verifyValue("isLoading", "Boolean", "false");
+    verifyValue("isDisabled", "Boolean", "false");
+
+    verifyfunctions("clear", "Function");
+    verifyfunctions("setText", "Function");
+    verifyfunctions("visibility", "Function");
+    verifyfunctions("setDisable", "Function");
+    verifyfunctions("setVisibility", "Function");
+    verifyfunctions("setLoading", "Function");
   });
 });

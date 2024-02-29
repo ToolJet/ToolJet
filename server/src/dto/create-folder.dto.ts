@@ -14,12 +14,8 @@ class AllowedCharactersValidator implements ValidatorConstraintInterface {
   private errorMsg: string;
 
   validate(value: string) {
-    if (value.match(/^[a-z0-9 -]+$/) === null) {
-      if (/[A-Z]/.test(value)) {
-        this.errorMsg = 'Only lowercase letters are accepted.';
-      } else {
-        this.errorMsg = 'Special characters are not accepted.';
-      }
+    if (value.match(/^[a-zA-Z0-9 -]+$/) === null) {
+      this.errorMsg = 'Special characters are not accepted.';
       return false;
     }
     return true;

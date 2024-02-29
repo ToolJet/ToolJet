@@ -7,6 +7,7 @@ import Select, { components } from 'react-select';
 export function UserGroupsSelect(props) {
   const navigate = useNavigate();
   const workspaceId = getWorkspaceId();
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   //Will be used when workspace routing settings have been merged
   const Menu = (props) => {
@@ -65,6 +66,7 @@ export function UserGroupsSelect(props) {
           type="checkbox"
           className="form-check-input"
           checked={isSelected}
+          data-cy="group-check-input"
         />
         <div className="select-option">{children}</div>
       </components.Option>
@@ -92,8 +94,10 @@ export function UserGroupsSelect(props) {
       ...base,
       borderRadius: '6px',
       backgroundColor: 'var(--slate3)',
+      color: 'var(--slate11)',
       '.selected-value': {
         padding: '0px 6px 1px 3px',
+        color: 'var(--slate11)',
       },
     }),
     multiValueRemove: (base, state) => ({
@@ -105,14 +109,11 @@ export function UserGroupsSelect(props) {
       paddingLeft: '0px',
       ...(state.data.isFixed && { display: 'none' }),
     }),
-    multiValueGeneric: (base) => ({
-      ...base,
-      padding: '3px 8px',
-    }),
     input: (base) => ({
       ...base,
       input: {
         height: '25px !important',
+        color: 'var(--slate11) !important',
       },
     }),
     control: (base) => ({
@@ -121,12 +122,14 @@ export function UserGroupsSelect(props) {
       border: '1px solid var(--slate7)',
       boxShadow: 'none',
       borderRadius: '6px',
+      background: 'unset',
       '&:hover': {
         border: '1px solid var(--slate8)',
       },
     }),
     menu: (base) => ({
       ...base,
+      background: 'unset',
       '.add-group-btn': {
         display: 'flex',
         justifyContent: 'flex-end',
@@ -151,6 +154,7 @@ export function UserGroupsSelect(props) {
       hasSearch={true}
       closeMenuOnSelect={false}
       hideSelectedOptions={false}
+      className={darkMode && 'theme-dark dark-theme'}
       components={{ Option: InputOption, MultiValue, IndicatorSeparator: null }}
       {...props}
       styles={selectStyles}

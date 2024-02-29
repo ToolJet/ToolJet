@@ -264,17 +264,15 @@ export const fillUserInviteForm = (firstName, email) => {
 
 export const selectUserGroup = (groupName) => {
   cy.wait(1500);
-
   cy.get("body").then(($body) => {
     const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
 
     if (selectDropdown.length === 0) {
       cy.get('[data-cy="user-group-select"]>>>>>').click();
     }
-
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName);
     cy.wait(1000);
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(2).click();
+    cy.get('[data-cy="group-check-input"]').eq(0).check()
   });
 };
 
@@ -296,11 +294,11 @@ export const inviteUserWithUserGroups = (
     }
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName1);
     cy.wait(1000);
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(2).click();
+    cy.get('[data-cy="group-check-input"]').eq(0).check()
     cy.wait(1000);
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName2);
     cy.wait(1000);
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(4).click();
+    cy.get('[data-cy="group-check-input"]').eq(0).check()
   });
 
   cy.get(usersSelector.buttonInviteUsers).click();
