@@ -42,3 +42,10 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
     navigate(path);
   }
 };
+
+export const extractErrorObj = (errorResponse) => {
+  const errorDetails = errorResponse?.data?.message;
+  const message =
+    errorDetails?.message?.message || errorDetails?.error || errorResponse?.error || 'something went wrong';
+  return { ...errorDetails, message };
+};

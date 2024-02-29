@@ -15,7 +15,7 @@ import { withTranslation } from 'react-i18next';
 import Spinner from '@/_ui/Spinner';
 import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 import { withRouter } from '@/_hoc/withRouter';
-import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
+import { extractErrorObj, onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { isEmpty } from 'lodash';
 import { EmailComponent } from './EmailComponent';
 class SignupPageComponent extends React.Component {
@@ -78,8 +78,12 @@ class SignupPageComponent extends React.Component {
         .activateAccountWithToken(email, password, organizationToken)
         .then((response) => onInvitedUserSignUpSuccess(response, this.props.navigate))
         .catch((errorObj) => {
-          const emailError = errorObj?.error?.inputError;
-          this.setState({ isLoading: false, emailError });
+          const errorDetails = extractErrorObj(errorObj);
+          const message = errorDetails.message;
+          toast.error(message, {
+            position: 'top-center',
+          });
+          this.setState({ isLoading: false });
         });
     } else {
       authenticationService
@@ -94,7 +98,8 @@ class SignupPageComponent extends React.Component {
           this.setState({ isLoading: false, signupSuccess: true });
         })
         .catch((e) => {
-          toast.error(e?.error || 'Something went wrong!', {
+          const errorDetails = extractErrorObj(e);
+          toast.error(errorDetails?.message, {
             position: 'top-center',
           });
           this.setState({ isLoading: false });
