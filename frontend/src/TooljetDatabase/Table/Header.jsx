@@ -251,7 +251,7 @@ const Header = ({
                         fontWeight: 500,
                       }}
                     >
-                      <span>{totalRecords} records</span>
+                      <span data-cy="total-records">{totalRecords} records</span>
                     </div>
                   )}
 
@@ -263,7 +263,7 @@ const Header = ({
                         fontWeight: 500,
                       }}
                     >
-                      <span>
+                      <span data-cy="total-records-selected">
                         {Object.keys(selectedRowIds).length}{' '}
                         {Object.keys(selectedRowIds).length > 1 ? 'records' : 'record'} selected
                       </span>

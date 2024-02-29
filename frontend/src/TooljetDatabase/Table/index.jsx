@@ -613,7 +613,7 @@ const Table = ({ collapseSidebar }) => {
             </span>
             {column.render('Header')}
           </div>
-          <div className="tjdb-primary-key-parent">
+          <div className="tjdb-primary-key-parent" data-cy="primary-key-label">
             <span className="primary-key-text">Primary key</span>
           </div>
         </div>
@@ -860,6 +860,7 @@ const Table = ({ collapseSidebar }) => {
                               setTimeout(() => setIsEditRowDrawerOpen(true), 100);
                             }}
                             className="tjdb-checkbox-cell"
+                            data-cy="edit-cell-expand"
                             style={{
                               display: 'none',
                             }}

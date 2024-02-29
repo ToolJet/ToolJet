@@ -52,8 +52,10 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
   let result = '';
   let error;
 
-  // dont resolve if code starts with "queries." and ends with "run()"
-  if (code.startsWith('queries.') && code.endsWith('run()')) {
+  if (code === '_' || code.includes('this._')) {
+    error = `Cannot resolve circular reference ${code}`;
+  } else if (code.startsWith('queries.') && code.endsWith('run()')) {
+    //! dont resolve if code starts with "queries." and ends with "run()"
     error = `Cannot resolve function call ${code}`;
   } else {
     try {
@@ -156,7 +158,7 @@ export function resolveReferences(
   forPreviewBox = false
 ) {
   if (object === '{{{}}}') return '';
-  const reservedKeyword = ['app']; //Keywords that slows down the app
+  const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
   object = _.clone(object);
   const objectType = typeof object;
   let error;
@@ -816,7 +818,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
 
 export const loadPyodide = async () => {
   try {
-    const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.2/full/' });
+    const pyodide = await window.loadPyodide({ indexURL: '/assets/libs/pyodide-0.23.2/' });
     return pyodide;
   } catch (error) {
     console.log('loadPyodide error', error);

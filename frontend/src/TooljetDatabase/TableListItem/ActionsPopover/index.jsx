@@ -28,7 +28,7 @@ export const ListItemPopover = ({
           </div>
           <div
             className="col text-truncate"
-            data-cy="edit-option"
+            data-cy="rename-table-option"
             onClick={(event) => {
               event.stopPropagation();
               closeMenu();
@@ -39,11 +39,12 @@ export const ListItemPopover = ({
           </div>
         </div>
         <div className={`row mt-3 cursor-pointer`}>
-          <div className="col-auto">
+          <div className="col-auto" data-cy="add-new-column-icon">
             <SolidIcon name="column" width="14" />
           </div>
           <div
             className="col text-truncate"
+            data-cy="add-new-column-option"
             onClick={(event) => {
               event.stopPropagation();
               closeMenu();
@@ -54,12 +55,12 @@ export const ListItemPopover = ({
           </div>
         </div>
         <div className="row mt-3 cursor-pointer">
-          <div className="col-auto" data-cy="export-option-icon">
+          <div className="col-auto" data-cy="export-schema-option-icon">
             <SolidIcon name="filedownload" width="14" viewBox="0 0 25 25" />
           </div>
           <div
             className="col text-truncate"
-            data-cy="export-table-option"
+            data-cy="export-schema-option"
             onClick={() => {
               closeMenu();
               handleExportTable();
@@ -75,12 +76,12 @@ export const ListItemPopover = ({
           <div className="col text-truncate">Duplicate</div>
         </div> */}
         <div className="row mt-3 cursor-pointer">
-          <div className="col-auto" data-cy="delete-option-icon">
+          <div className="col-auto" data-cy="delete-table-option-icon">
             <DeleteIcon />
           </div>
           <div
             className="col text-truncate"
-            data-cy="delete-option"
+            data-cy="delete-table-option"
             onClick={() => {
               closeMenu();
               onDelete();
