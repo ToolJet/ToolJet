@@ -309,7 +309,7 @@ export const Box = memo(
           style={{
             ...styles,
             backgroundColor,
-            padding: validatedStyles?.padding ? (validatedStyles?.padding == 'default' ? '2px' : '0px') : '2px',
+            padding: validatedStyles?.padding == 'none' ? '0px' : '2px', //chart and image has a padding property other than container padding
           }}
           role={preview ? 'BoxPreview' : 'Box'}
           className={inCanvas ? `_tooljet-${component.component} _tooljet-${component.name}` : ''}
