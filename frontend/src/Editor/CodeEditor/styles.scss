@@ -158,7 +158,7 @@
 .widget-code-editor {
     height: 100%;
 
-    .cm-content>.cm-line {
+    .cm-content {
         max-width: 220px !important;
         white-space: pre-wrap;
         word-wrap: break-word;
