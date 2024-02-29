@@ -65,8 +65,12 @@ const Search = ({
           placeholder="Search table"
           onFocus={() => setFocussed(true)}
           onBlur={() => {
-            setFocussed(false);
-            setShowInput(false);
+            if (searchText.length > 0) {
+              setFocussed(false);
+            } else {
+              setFocussed(false);
+              setShowInput(false);
+            }
           }}
           data-cy={`${dataCy}-search-bar`}
           autoFocus={autoFocus}
