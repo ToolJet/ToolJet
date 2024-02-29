@@ -63,6 +63,7 @@ export const SubContainer = ({
   setSubContainerWidths,
   parentGridWidth,
   subContainerWidths,
+  parentWidgetId,
   // turnOffAutoLayout,
 }) => {
   //Todo add custom resolve vars for other widgets too
@@ -733,6 +734,7 @@ export const SubContainer = ({
       isResizing={isResizing}
       isGridActive={isGridActive}
       readOnly={readOnly}
+      parentWidgetId={parentWidgetId}
     >
       {/* <DragContainerNested
         boxes={Object.keys(childWidgets).map((key) => ({ ...boxes[key], id: key }))}
@@ -774,6 +776,7 @@ export const SubContainer = ({
                     canvasWidth={_containerCanvasWidth}
                     gridWidth={gridWidth}
                     isGhostComponent={key === 'resizingComponentId'}
+                    mode={mode}
                   >
                     <DraggableBox
                       onComponentClick={onComponentClick}
@@ -967,19 +970,30 @@ const SubWidgetWrapper = ({
   children,
   isResizing,
   isGhostComponent,
+  mode,
 }) => {
   const { layouts } = widget;
   const layoutData = layouts?.[currentLayout] || layouts?.['desktop'];
+  const isSelected = useEditorStore((state) => {
+    const isSelected = (state.selectedComponents || []).length === 1 && state?.selectedComponents?.[0]?.id === id;
+    return state?.hoveredComponent == id || isSelected;
+  }, shallow);
+
+  const isDragging = useGridStore((state) => state?.draggingComponentId === id);
   if (isEmpty(layoutData)) {
     return {};
   }
+
   const width = (canvasWidth * layoutData.width) / 43;
   const styles = {
     width: width + 'px',
     height: layoutData.height + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
-    ...(isGhostComponent ? { opacity: 0.5 } : isResizing ? { opacity: 0 } : {}),
+    // ...(isGhostComponent ? { opacity: 0.5 } : isResizing ? { opacity: 0 } : {}),
+    ...(isGhostComponent ? { opacity: 0.5 } : {}),
   };
+
+  const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
 
   return (
     <div
@@ -988,7 +1002,9 @@ const SubWidgetWrapper = ({
           ? ''
           : readOnly
           ? `moveable-box position-absolute`
-          : `target-${parent} target1-${parent} ele-${id} nested-target moveable-box target`
+          : `target-${parent} target1-${parent} ele-${id} nested-target moveable-box target  ${
+              isResizing ? 'resizing-target' : ''
+            } ${isWidgetActive ? 'active-target' : ''}`
       }
       key={id}
       id={id}
@@ -1001,13 +1017,24 @@ const SubWidgetWrapper = ({
   );
 };
 
-const SubContianerWrapper = ({ children, isDragging, isResizing, isGridActive, readOnly, drop, styles, parent }) => {
+const SubContianerWrapper = ({
+  children,
+  isDragging,
+  isResizing,
+  isGridActive,
+  readOnly,
+  drop,
+  styles,
+  parent,
+  parentWidgetId,
+}) => {
   // const [dragTarget] = useDragTarget();
   return (
     <div
       ref={drop}
       style={styles}
       id={`canvas-${parent}`}
+      data-parent={parent}
       className={`sub-canvas real-canvas ${
         // (isDragging || isResizing || dragTarget === parent || isGridActive) && !readOnly ? 'show-grid' : 'hide-grid'
         (isDragging || isResizing || isGridActive) && !readOnly ? 'show-grid' : 'hide-grid'

@@ -34,6 +34,14 @@ export const useGridStore = create(
   )
 );
 
+useGridStore.subscribe(({ draggingComponentId }) => {
+  if (draggingComponentId) {
+    document.querySelector(`[target-id='${draggingComponentId}']`).classList.add('visible-movable-control-box');
+  } else if (document.querySelector(`.visible-movable-control-box`)) {
+    document.querySelector(`.visible-movable-control-box`).classList.remove('visible-movable-control-box');
+  }
+});
+
 export const useActiveGrid = () => useGridStore((state) => state.activeGrid, shallow);
 export const useNoOfGrid = () => useGridStore((state) => state.noOfGrid, shallow);
 export const useDraggedSubContainer = () => useGridStore((state) => state.draggedSubContainer, shallow);

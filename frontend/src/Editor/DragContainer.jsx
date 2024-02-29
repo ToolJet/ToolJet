@@ -415,8 +415,8 @@ export default function DragContainer({
         individualGroupable={groupedTargets.length <= 1}
         draggable={true}
         resizable={{
-          edge: ['e', 'w', 'n', 's'],
-          renderDirections: ['e', 'w', 'n', 's'],
+          edge: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
+          renderDirections: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
           // edge: ['e', 'w', 'n', 's'],
           // renderDirections: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
         }}
