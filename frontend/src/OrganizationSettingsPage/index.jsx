@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
-import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { authenticationService } from '@/_services';
 import { CopilotSetting } from '@/CopilotSettings';
@@ -12,6 +11,7 @@ import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
 import { getWorkspaceId } from '@/_helpers/utils';
+import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
@@ -19,15 +19,15 @@ export function OrganizationSettings(props) {
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables'];
+  const sideBarNavs = ['Users', 'Groups', 'Workspace login', 'Workspace variables'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'Users':
         return 'Users & permissions';
       case 'Groups':
         return 'manageGroups';
-      case 'SSO':
-        return 'manageSSO';
+      case 'Workspace login':
+        return 'manageWorkspaceLogin';
       case 'Workspace variables':
         return 'manageEnvVars';
       default:
@@ -97,7 +97,7 @@ export function OrganizationSettings(props) {
             <div className="w-100">
               {selectedTab === 'Users & permissions' && <ManageOrgUsers darkMode={props.darkMode} />}
               {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
-              {selectedTab === 'manageSSO' && <ManageSSO />}
+              {selectedTab === 'manageWorkspaceLogin' && <OrganizationLogin />}
               {selectedTab === 'manageEnvVars' && (
                 <ManageOrgVars darkMode={props.darkMode} goTooOrgConstantsDashboard={goTooOrgConstantsDashboard} />
               )}
