@@ -4,5 +4,5 @@
   "widgets": ["Table", "Chart"],
   "sources": [{ "name": "ToolJet Database", "id": "tooljetdb" }],
   "id": "sales-analytics-dashboard-tooljet-db",
-  "category": "sales"
+  "category": "business-analytics"
 }

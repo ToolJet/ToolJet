@@ -1,0 +1,15 @@
+{
+  "name": "Image converter",
+  "description": "Optimize image processing, switch between WebP, PNG, and JPEG, reduce file sizes, and rename files in one step.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "image-converter",
+  "category": "utilities"
+}

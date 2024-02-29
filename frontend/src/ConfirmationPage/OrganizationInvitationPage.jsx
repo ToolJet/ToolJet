@@ -23,6 +23,47 @@ class OrganizationInvitationPageComponent extends React.Component {
 
   componentDidMount() {
     authenticationService.deleteLoginOrganizationId();
+
+    if (this.organizationId) {
+      authenticationService.saveLoginOrganizationId(this.organizationId);
+      this.organizationId &&
+        authenticationService.getOrganizationConfigs(this.organizationId).then(
+          (configs) => {
+            this.setState({ isGettingConfigs: false, configs });
+          },
+          () => {
+            this.setState({ isGettingConfigs: false });
+          }
+        );
+    } else {
+      this.setState({ isGettingConfigs: false });
+    }
+
+    authenticationService
+      .verifyOrganizationToken(this.props?.params?.token)
+      .then((data) => {
+        this.setState({ userDetails: data });
+        if (data?.email !== '') {
+          this.setState({ verifiedToken: true });
+        }
+      })
+      .catch((err) => {
+        if (err?.data.statusCode == 400) {
+          this.setState({ fallBack: true });
+        }
+      });
+
+    document.addEventListener('keydown', this.handleEnterKey);
+  }
+
+  handleEnterKey = (e) => {
+    if (e.key === 'Enter') {
+      this.acceptInvite(e);
+    }
+  };
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleEnterKey);
   }
 
   acceptInvite = (e) => {

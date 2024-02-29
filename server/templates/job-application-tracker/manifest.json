@@ -4,5 +4,5 @@
   "widgets": ["Table", "Chart"],
   "sources": [{ "name": "Google Sheets", "id": "googlesheets" }],
   "id": "job-application-tracker",
-  "category": "operations"
+  "category": "application-development"
 }

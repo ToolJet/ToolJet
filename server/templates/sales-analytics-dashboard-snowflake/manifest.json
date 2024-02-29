@@ -4,5 +4,5 @@
   "widgets": ["Table", "Chart"],
   "sources": [{ "name": "Snowflake", "id": "snowflake" }],
   "id": "sales-analytics-dashboard-snowflake",
-  "category": "sales"
+  "category": "business-analytics"
 }
