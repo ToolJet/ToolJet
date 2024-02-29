@@ -4,5 +4,5 @@
   "widgets": ["Table", "Chart"],
   "sources": [{ "name": "ToolJet Database", "id": "tooljetdb" }],
   "id": "employee-directory",
-  "category": "operations"
+  "category": "human-resources"
 }

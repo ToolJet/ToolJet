@@ -186,6 +186,7 @@ const Header = ({
                                 onClick={() => toggleAddNewDataMenu(true)}
                                 size="sm"
                                 className="px-1 pe-3 ps-2 gap-0"
+                                data-cy="add-new-data-button"
                               >
                                 <Plus fill="#697177" style={{ height: '16px' }} />
                                 Add new data
@@ -250,7 +251,7 @@ const Header = ({
                         fontWeight: 500,
                       }}
                     >
-                      <span>{totalRecords} records</span>
+                      <span data-cy="total-records">{totalRecords} records</span>
                     </div>
                   )}
 
@@ -262,7 +263,7 @@ const Header = ({
                         fontWeight: 500,
                       }}
                     >
-                      <span>
+                      <span data-cy="total-records-selected">
                         {Object.keys(selectedRowIds).length}{' '}
                         {Object.keys(selectedRowIds).length > 1 ? 'records' : 'record'} selected
                       </span>

@@ -4,5 +4,5 @@
   "widgets": ["Table", "Chart"],
   "sources": [{ "name": "Airtable", "id": "airtable" }],
   "id": "kpi-management-dashboard-airtable",
-  "category": "data-and-analytics"
+  "category": "business-analytics"
 }

@@ -17,7 +17,7 @@ https://fakestoreapi.com/products
 
 ## 2. Display Data on the Table
 
-- Hide the Query Panel and click on the Table component to open its configuration panel on the right.
+- Hide the Query Panel and click on the Table component to open its properties panel on the right.
 - Under Table Data, enter the below code:
 ```
 {{queries.restapi1.data}}

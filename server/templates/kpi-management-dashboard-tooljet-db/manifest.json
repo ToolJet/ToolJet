@@ -4,5 +4,5 @@
   "widgets": ["Table", "Chart"],
   "sources": [{ "name": "ToolJet Database", "id": "tooljetdb" }],
   "id": "kpi-management-dashboard-tooljet-db",
-  "category": "data-and-analytics"
+  "category": "business-analytics"
 }
