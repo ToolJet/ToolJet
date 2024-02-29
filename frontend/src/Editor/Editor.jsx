@@ -47,7 +47,13 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId, setWindowTitle, defaultWhiteLabellingSettings, pageTitles } from '@/_helpers/utils';
+import {
+  getWorkspaceId,
+  isValidUUID,
+  setWindowTitle,
+  defaultWhiteLabellingSettings,
+  pageTitles,
+} from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -56,7 +62,13 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
-import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, resetAllStores } from '@/_stores/utils';
+import {
+  computeAppDiff,
+  computeComponentPropertyDiff,
+  findAllEntityReferences,
+  isParamFromTableColumn,
+  resetAllStores,
+} from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { EMPTY_ARRAY, useEditorActions, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
@@ -72,6 +84,7 @@ import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
 import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
+import { dfs } from '@/_stores/handleReferenceTransactions';
 // import { createJavaScriptSuggestions } from './CodeEditor/utils';
 
 setAutoFreeze(false);
@@ -736,6 +749,43 @@ const EditorComponent = (props) => {
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
 
     await handleEvent('onPageLoad', currentPageEvents, {}, true);
+
+    const refsExistsInStore = useResolveStore.getState()?.referenceMapper?.getAll()?.length > 0;
+
+    if (refsExistsInStore) {
+      const currentComponents = appJson.pages[homePageId]?.components;
+
+      const entityReferences = findAllEntityReferences(currentComponents, [])
+        ?.map((entity) => {
+          if (entity && isValidUUID(entity)) {
+            return entity;
+          }
+        })
+        ?.filter((e) => e !== undefined);
+
+      if (Array.isArray(entityReferences) && entityReferences?.length > 0) {
+        const manager = useResolveStore.getState().referenceMapper;
+
+        let newComponentDefinition = _.cloneDeep(currentComponents);
+        entityReferences.forEach((entity) => {
+          const entityrefExists = manager.has(entity);
+
+          if (entityrefExists) {
+            const value = manager.get(entity);
+            newComponentDefinition = dfs(newComponentDefinition, entity, value);
+          }
+        });
+
+        const newAppDefinition = produce(appJson, (draft) => {
+          draft.pages[homePageId].components = newComponentDefinition;
+        });
+
+        updateEditorState({
+          isUpdatingEditorStateInProcess: false,
+          appDefinition: newAppDefinition,
+        });
+      }
+    }
   };
 
   const fetchApp = async (startingPageHandle, onMount = false) => {
@@ -808,15 +858,6 @@ const EditorComponent = (props) => {
         const finalComponents = _.merge(draft?.pages[_currentPageId]?.components, currentPageComponents);
 
         draft.pages[_currentPageId].components = finalComponents;
-        // else if (opts?.componentAdding) {
-        //   const currentPageComponents = newDefinition.pages[_currentPageId]?.components;
-
-        //   const finalComponents = _.merge(draft?.pages[_currentPageId]?.components, currentPageComponents);
-
-        //   draft.pages[_currentPageId].components = finalComponents;
-        // } else {
-        //   Object.assign(draft, newDefinition);
-        // }
       });
     } else {
       updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
@@ -1188,6 +1229,10 @@ const EditorComponent = (props) => {
         componentDefinitionChanged: true,
         componentDeleted: true,
       });
+
+      const deleteFromMap = [componentId, ...childComponents];
+
+      useResolveStore.getState().actions.removeEntitiesFromMap(deleteFromMap);
     } else {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }

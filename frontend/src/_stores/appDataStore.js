@@ -1,6 +1,11 @@
 import { appVersionService } from '@/_services';
 import { create, zustandDevTools } from './utils';
 import { shallow } from 'zustand/shallow';
+import { useResolveStore } from './resolverStore';
+import { useEditorStore } from './editorStore';
+import { useDataQueriesStore } from './dataQueriesStore';
+import _ from 'lodash';
+import { handleReferenceTransactions } from './handleReferenceTransactions';
 
 const initialState = {
   editingVersion: null,
@@ -47,11 +52,17 @@ export const useAppDataStore = create(
             useAppDataStore.getState().actions.setIsSaving(true);
             const isComponentCutProcess = get().appDiffOptions?.componentCut === true;
 
+            let updateDiff = appDefinitionDiff.updateDiff;
+
+            if (appDefinitionDiff.operation === 'update') {
+              updateDiff = useResolveStore.getState().actions.findReferences(updateDiff);
+            }
+
             appVersionService
               .autoSaveApp(
                 appId,
                 versionId,
-                appDefinitionDiff.updateDiff,
+                updateDiff,
                 appDefinitionDiff.type,
                 pageId,
                 appDefinitionDiff.operation,
@@ -141,12 +152,60 @@ export const useAppDataStore = create(
         setIsSaving: (isSaving) => set(() => ({ isSaving })),
         setAppId: (appId) => set(() => ({ appId })),
         setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),
+        setComponents: (components) => set(() => ({ components })),
         setMetadata: (metadata) => set(() => ({ metadata })),
         setEventToDeleteLoaderIndex: (index) => set(() => ({ eventToDeleteLoaderIndex: index })),
       },
     }),
     { name: 'App Data Store' }
   )
+);
+
+const itemToObserve = 'appDiffOptions';
+
+useAppDataStore.subscribe(
+  (state) => {
+    const isComponentNameUpdated = state[itemToObserve]?.componentNameUpdated;
+
+    const { appDefinition, currentPageId, isUpdatingEditorStateInProcess } = useEditorStore.getState();
+    const { dataQueries } = useDataQueriesStore.getState();
+
+    if (isComponentNameUpdated && !isUpdatingEditorStateInProcess) {
+      const components = JSON.parse(JSON.stringify(state.components));
+      const _dataQueries = JSON.parse(JSON.stringify(dataQueries));
+      const currentAppEvents = JSON.parse(JSON.stringify(state.events));
+      const updatedNames = [];
+
+      const referenceManager = useResolveStore.getState().referenceMapper;
+
+      components.forEach((component) => {
+        const existingName = referenceManager.get(component.id);
+
+        if (existingName === component.name) {
+          return;
+        }
+
+        referenceManager.update(component.id, component.name);
+
+        updatedNames.push({
+          id: component.id,
+          name: existingName,
+          newName: component.name,
+        });
+      });
+
+      handleReferenceTransactions(
+        components,
+        _dataQueries,
+        currentAppEvents,
+        appDefinition,
+        currentPageId,
+        state.currentVersionId,
+        updatedNames
+      );
+    }
+  },
+  (state) => [state[itemToObserve]]
 );
 
 export const useEditingVersion = () => useAppDataStore((state) => state.editingVersion, shallow);

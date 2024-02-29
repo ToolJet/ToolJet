@@ -331,6 +331,12 @@ export const Container = ({
       // const currentTopOffset = boxes[componentId].layouts[currentLayout].top;
       const topDiff = boxes[componentId].layouts[currentLayout].top - (nodeBounds.y - canvasBounds.y);
 
+      const difference = Math.abs(Math.floor(leftDiff));
+
+      if (difference === 0 && topDiff === 0) {
+        return;
+      }
+
       let newBoxes = { ...boxes };
 
       for (const selectedComponent of useEditorStore.getState().selectedComponents) {
