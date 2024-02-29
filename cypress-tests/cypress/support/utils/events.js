@@ -35,7 +35,6 @@ export const selectCSA = (
     .type(`{selectAll}{backspace}${componentAction}{enter}`);
   cy.wait("@events");
   cy.get('[data-cy="debounce-input-field"]')
-    .eq(1)
     .click()
     .type(`{selectAll}{backspace}${debounce}{enter}`);
   cy.wait("@events");
