@@ -166,7 +166,7 @@ class SignupPageComponent extends React.Component {
                           <SignupStatusCard text={'Signup has been disabled by your workspace admin.'} />
                         )}
 
-                        {(configs?.enable_sign_up || !this.organizationToken) && (
+                        {(configs?.enable_sign_up || !!this.organizationToken) && (
                           <div>
                             {configs?.git?.enabled && (
                               <div className="login-sso-wrapper">
