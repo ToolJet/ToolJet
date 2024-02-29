@@ -635,9 +635,11 @@ export default function DragContainer({
               });
               let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
               let width = Math.round(ev.lastEvent.width / _gridWidth) * _gridWidth;
+              width = width < _gridWidth ? _gridWidth : width;
               let posX = Math.round(ev.lastEvent.drag.translate[0] / _gridWidth) * _gridWidth;
               let posY = Math.round(ev.lastEvent.drag.translate[1] / 10) * 10;
-              const height = Math.round(ev.lastEvent.height / 10) * 10;
+              let height = Math.round(ev.lastEvent.height / 10) * 10;
+              height = height < 10 ? 10 : height;
 
               ev.target.style.width = `${width}px`;
               ev.target.style.height = `${height}px`;
@@ -733,10 +735,8 @@ export default function DragContainer({
               draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
               draggedOverElemIdType = draggedOverElem?.getAttribute('data-parent-type');
             }
-            console.log('timeDifference3', performance.now() - startTime);
             // console.log("draggedOverElemId", draggedOverElemId);
 
-            console.log('draggedOverElemId->', draggedOverElemId);
             const _gridWidth = subContainerWidths[draggedOverElemId] || gridWidth;
             const parentElem = list.find(({ id }) => id === draggedOverElemId);
             const currentParentId = boxes.find(({ id: widgetId }) => e.target.id === widgetId)?.component?.parent;
