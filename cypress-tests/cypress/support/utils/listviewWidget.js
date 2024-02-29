@@ -84,11 +84,21 @@ export const addDataToListViewInputs = (listviewName, childName, data) => {
   });
 };
 
-export const verifyValuesOnList = (listviewName, childName, type, value) => {
+export const verifyValuesOnList = (
+  listviewName,
+  childName,
+  type,
+  value,
+  isChild = false
+) => {
   cy.get(commonWidgetSelector.draggableWidget(listviewName)).within(() => {
     cy.get(commonWidgetSelector.draggableWidget(childName)).each(
       ($element, i) => {
-        cy.wrap($element).should(`have.${type}`, value[i]);
+        if (isChild) {
+          cy.wrap($element).find("input").should(`have.${type}`, value[i]);
+        } else {
+          cy.wrap($element).should(`have.${type}`, value[i]);
+        }
       }
     );
   });
