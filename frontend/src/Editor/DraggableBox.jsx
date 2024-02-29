@@ -310,7 +310,7 @@ export const DraggableBox = React.memo(
                   component={component}
                   id={id}
                   width={width}
-                  height={layoutData.height}
+                  height={layoutData.height - 4}
                   mode={mode}
                   changeCanDrag={changeCanDrag}
                   inCanvas={inCanvas}
@@ -319,7 +319,7 @@ export const DraggableBox = React.memo(
                   onComponentOptionChanged={onComponentOptionChanged}
                   onComponentOptionsChanged={onComponentOptionsChanged}
                   onComponentClick={onComponentClick}
-                  currentState={currentState}
+                  // currentState={currentState}
                   containerProps={containerProps}
                   darkMode={darkMode}
                   removeComponent={removeComponent}
@@ -330,6 +330,8 @@ export const DraggableBox = React.memo(
                   allComponents={allComponents}
                   sideBarDebugger={sideBarDebugger}
                   childComponents={childComponents}
+                  isResizing={isResizing}
+                  adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
                 />
               </Sentry.ErrorBoundary>
             </div>
