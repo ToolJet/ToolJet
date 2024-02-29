@@ -2076,10 +2076,10 @@ export const removeFunctionObjects = (obj) => {
 
 export const checkIfLicenseNotValid = () => {
   const licenseStatus = useEditorStore.getState().featureAccess?.licenseStatus;
-  // When purchased, then isExpired key is also avialale else its not available
   if (licenseStatus) {
+    // When purchased, then isExpired key is also avialale else its not available
     if (_.has(licenseStatus, 'isExpired')) {
-      return licenseStatus?.isExpired && !licenseStatus?.isLicenseValid;
+      return licenseStatus?.isExpired || !licenseStatus?.isLicenseValid;
     }
     return !licenseStatus?.isLicenseValid;
   }
