@@ -4,5 +4,5 @@
   "widgets": ["Table", "Chart"],
   "sources": [{ "name": "ToolJet Database", "id": "tooljetdb" }],
   "id": "lead-management-system",
-  "category": "sales"
+  "category": "customer-relationship-management"
 }

@@ -3,10 +3,16 @@ import FolderList from '@/_ui/FolderList/FolderList';
 
 const categoryTitles = {
   all: 'All categories',
-  sales: 'Sales',
-  'product-management': 'Product management',
+  'human-resources': 'Human resources',
+  'business-analytics': 'Business analytics',
+  'customer-relationship-management': 'Customer relationship management (CRM)',
+  'financial-management': 'Financial management',
+  'data-management': 'Data management',
   operations: 'Operations',
-  'data-and-analytics': 'Data and Analytics',
+  'application-development': 'Application development',
+  marketing: 'Marketing',
+  utilities: 'Utilities',
+  'license-management': 'License management',
 };
 
 export default function Categories(props) {

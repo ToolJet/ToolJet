@@ -7,5 +7,5 @@
     { "name": "SMTP", "id": "smtp" }
   ],
   "id": "customer-support-admin",
-  "category": "operations"
+  "category": "customer-relationship-management"
 }
