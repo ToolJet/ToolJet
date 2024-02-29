@@ -29,11 +29,16 @@ export const AuthRoute = ({ children, navigate }) => {
 
   useEffect(
     () => {
-      authenticationService.deleteAllAuthCookies();
-      fetchOrganizationDetails();
+      const isInviteFlow = !!location.state?.organizationToken;
+      if (organizationSlug && !isInviteFlow) {
+        console.log('inside-navigate');
+      } else {
+        authenticationService.deleteAllAuthCookies();
+        fetchOrganizationDetails();
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [location.pathname]
   );
 
   useEffect(

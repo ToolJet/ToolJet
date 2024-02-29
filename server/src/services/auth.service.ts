@@ -424,8 +424,7 @@ export class AuthService {
     const didInstanceSignUpAlreadyButNotActive = !!existingUser?.invitationToken && personalWorkspaceCount > 0;
     const activatedAccountNoActiveWorkspaces = !existingUser?.invitationToken && hasSomeWorkspaceInvites;
     /* Personal workspace case */
-    const adminInvitedButUserWantsInstanceSignup =
-      !!existingUser?.invitationToken && hasSomeWorkspaceInvites && personalWorkspaceCount === 0;
+    const adminInvitedButUserWantsInstanceSignup = !!existingUser?.invitationToken && hasSomeWorkspaceInvites;
     const isUserAlreadyExisted = !!isAlreadyActiveInWorkspace || hasActiveWorkspaces;
 
     switch (true) {
@@ -484,10 +483,26 @@ export class AuthService {
         break;
       }
       case adminInvitedButUserWantsInstanceSignup: {
-        await this.createUserOrPersonalWorkspace(
-          { email: existingUser.email, password, firstName, lastName },
-          existingUser
-        );
+        if (personalWorkspaceCount === 0) {
+          await this.createUserOrPersonalWorkspace(
+            { email: existingUser.email, password, firstName, lastName },
+            existingUser,
+            null,
+            response
+          );
+        } else {
+          /* Update username and  password, resend the email */
+          await this.usersService.updateUser(existingUser.id, {
+            ...(firstName && { firstName }),
+            lastName: lastName ?? '',
+            password,
+            source: SOURCE.SIGNUP,
+          });
+          this.emailService
+            .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
+            .catch((err) => console.error(err));
+        }
+
         break;
       }
       case activatedAccountNoActiveWorkspaces:
