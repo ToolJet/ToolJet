@@ -97,10 +97,9 @@ export const generateHints = (hints, isFxHinter = false, totalReferences = 1) =>
 
         if (completion.type === 'js_methods') {
           pickedCompletionConfig.from = from;
-          anchorSelection = anchorSelection + to;
         }
 
-        if (totalReferences > 1) {
+        if (totalReferences > 1 && completion.type !== 'js_methods') {
           let queryInput = view.state.doc.toString();
           const currentWord = queryInput.split('{{').pop().split('}}')[0];
           pickedCompletionConfig.from = from !== to ? from : from - currentWord.length;
@@ -132,6 +131,11 @@ function filterHintsByDepth(input, hints) {
   if (input === '') return hints;
 
   const inputDepth = input.split('.').length;
+
+  if (inputDepth === 1) {
+    return findRelativeHints(input, hints);
+  }
+
   const filteredHints = hints.filter((cm) => {
     const hintParts = cm.hint.split('.');
 
@@ -143,5 +147,13 @@ function filterHintsByDepth(input, hints) {
 
     return shouldInclude;
   });
+  return filteredHints;
+}
+
+function findRelativeHints(input, hints) {
+  const filteredHints = hints.filter(({ hint }) => {
+    return hint.includes(input);
+  });
+
   return filteredHints;
 }
