@@ -19,8 +19,12 @@ export const ValidationProperties = ({
       case 'string':
       case undefined:
       case 'default':
-        return [
-          { property: 'regex', dateCy: 'input-and-label-regex', label: 'Regex' },
+      case 'text': {
+        const properties = [];
+        if (column.columnType !== 'text') {
+          properties.push({ property: 'regex', dateCy: 'input-and-label-regex', label: 'Regex' });
+        }
+        properties.push(
           [
             {
               property: 'minLength',
@@ -35,13 +39,17 @@ export const ValidationProperties = ({
               placeholder: 'Enter max length',
             },
           ],
+
           {
             property: 'customRule',
             dateCy: 'input-and-label-custom-rule',
             label: 'Custom rule',
             placeholder: 'eg. {{ 1 < 2 }}',
-          },
-        ];
+          }
+        );
+
+        return properties;
+      }
       case 'number':
         return [
           { property: 'regex', dateCy: 'input-and-label-regex', label: 'Regex' },
