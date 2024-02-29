@@ -256,13 +256,11 @@ export const Box = memo(
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(customResolvables), readOnly]);
-
     useEffect(() => {
       if (resetComponent) setResetStatus(false);
     }, [resetComponent]);
 
     let exposedVariables = currentState?.components[component.name] ?? {};
-
     const fireEvent = (eventName, options) => {
       if (mode === 'edit' && eventName === 'onClick') {
         onComponentClick(id, component);
@@ -309,7 +307,7 @@ export const Box = memo(
           style={{
             ...styles,
             backgroundColor,
-            padding: validatedStyles?.padding ? (validatedStyles?.padding == 'default' ? '2px' : '0px') : '2px',
+            padding: validatedStyles?.padding == 'none' ? '0px' : '2px', //chart and image has a padding property other than container padding
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >
