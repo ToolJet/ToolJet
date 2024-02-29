@@ -35,7 +35,7 @@ import {
 describe("Editor- Test Button widget", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.apiCreateApp(`${fake.companyName}-button-App`);
     cy.openApp();
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
   });
@@ -234,7 +234,7 @@ describe("Editor- Test Button widget", () => {
     ).should("have.attr", "disabled");
 
     cy.get(commonWidgetSelector.parameterTogglebutton("Disable")).click();
-
+    cy.get('[data-cy="border-radius-input-field"]').realHover();
     cy.get(
       commonWidgetSelector.parameterFxButton(
         commonWidgetText.parameterBorderRadius
@@ -248,7 +248,9 @@ describe("Editor- Test Button widget", () => {
       buttonText.borderRadiusInput
     );
 
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.get(
       commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
     ).should("have.css", "border-radius", "20px");
@@ -350,7 +352,7 @@ describe("Editor- Test Button widget", () => {
     cy.wait(500);
 
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
-    cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
+    cy.get(commonWidgetSelector.draggableWidget('textinput1')).should(
       "have.value",
       data.customMessage
     );
@@ -400,9 +402,13 @@ describe("Editor- Test Button widget", () => {
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 150);
     selectEvent("On click", "Control Component");
+    cy.wait("@events");
     selectCSA("button1", "Disable");
-    cy.get('[data-cy="Value-fx-button"]').realClick();
-    cy.get('[data-cy="Value-input-field"]').clearAndTypeOnCodeMirror(`{{true`);
+    cy.wait("@events");
+    cy.get('[data-cy="event-Value-fx-button"]').realClick();
+    cy.get('[data-cy="event-Value-input-field"]').clearAndTypeOnCodeMirror(
+      `{{true`
+    );
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 200);
@@ -414,8 +420,10 @@ describe("Editor- Test Button widget", () => {
     selectEvent("On click", "Control Component");
     selectCSA("button1", "Loading");
     cy.wait(500);
-    cy.get('[data-cy="Value-fx-button"]').realClick();
-    cy.get('[data-cy="Value-input-field"]').clearAndTypeOnCodeMirror(`{{true`);
+    cy.get('[data-cy="event-Value-fx-button"]').realClick();
+    cy.get('[data-cy="event-Value-input-field"]').clearAndTypeOnCodeMirror(
+      `{{true`
+    );
 
     cy.get(commonWidgetSelector.draggableWidget("textinput1")).type("testBtn");
     cy.wait(500);
@@ -442,5 +450,29 @@ describe("Editor- Test Button widget", () => {
       commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
     ).should("not.be.visible");
     cy.apiDeleteApp();
+  });
+  it("Should verify deletion of button component from right side panel", () => {
+    openEditorSidebar(buttonText.defaultWidgetName);
+    cy.get('[data-cy="component-inspector-options"]').click();
+    cy.get('[data-cy="component-inspector-delete-button"]').click();
+    cy.get('[data-cy="yes-button"]').click();
+    cy.verifyToastMessage(
+      `[class=go3958317564]`,
+      "Component deleted! (⌘ + Z to undo)"
+    );
+    cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
+    cy.reload();
+    cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
+  });
+  it("Should delete button via keyboard action", () => {
+    cy.realPress("Backspace");
+    cy.get('[data-cy="yes-button"]').click();
+    cy.verifyToastMessage(
+      `[class=go3958317564]`,
+      "Component deleted! (⌘ + Z to undo)"
+    );
+    cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
+    cy.reload();
+    cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
   });
 });

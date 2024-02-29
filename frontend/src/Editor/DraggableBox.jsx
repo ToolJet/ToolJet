@@ -7,7 +7,7 @@ import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
 import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveWidgetFieldValue, resolveReferences } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
@@ -24,33 +24,6 @@ const resizerClasses = {
   bottomRight: 'bottom-right',
   bottomLeft: 'bottom-left',
   topLeft: 'top-left',
-};
-
-const resizerStyles = {
-  topRight: {
-    width: '8px',
-    height: '8px',
-    right: '-4px',
-    top: '-4px',
-  },
-  bottomRight: {
-    width: '8px',
-    height: '8px',
-    right: '-4px',
-    bottom: '-4px',
-  },
-  bottomLeft: {
-    width: '8px',
-    height: '8px',
-    left: '-4px',
-    bottom: '-4px',
-  },
-  topLeft: {
-    width: '8px',
-    height: '8px',
-    left: '-4px',
-    top: '-4px',
-  },
 };
 
 function computeWidth(currentLayoutOptions) {
@@ -124,6 +97,35 @@ export const DraggableBox = React.memo(
       shallow
     );
     const currentState = useCurrentState();
+    const [boxHeight, setboxHeight] = useState(layoutData?.height); // height for layouting with top and side values
+
+    const resizerStyles = {
+      topRight: {
+        width: '8px',
+        height: '8px',
+        right: '-4px',
+        top: '-4px',
+      },
+      bottomRight: {
+        width: '8px',
+        height: '8px',
+        right: '-4px',
+        bottom: '-4px',
+      },
+      bottomLeft: {
+        width: '8px',
+        height: '8px',
+        left: '-4px',
+        bottom: '-4px',
+      },
+      topLeft: {
+        width: '8px',
+        height: '8px',
+        left: '-4px',
+        top: '-4px',
+      },
+    };
+
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({
         type: ItemTypes.BOX,
@@ -169,7 +171,6 @@ export const DraggableBox = React.memo(
       display: 'inline-block',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '0px',
     };
 
     let _refProps = {};
@@ -193,7 +194,6 @@ export const DraggableBox = React.memo(
       width: 445,
       height: 500,
     };
-
     const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
     const gridWidth = canvasWidth / noOfGrid;
     const width = (canvasWidth * layoutData.width) / noOfGrid;
@@ -208,6 +208,36 @@ export const DraggableBox = React.memo(
       setHoveredComponent(id);
     };
 
+    const { label = { value: null } } = component?.definition?.properties ?? {};
+
+    useEffect(() => {
+      if (
+        component.component == 'TextInput' ||
+        component.component == 'PasswordInput' ||
+        component.component == 'NumberInput'
+      ) {
+        const { alignment = { value: null } } = component?.definition?.styles ?? {};
+        let newHeight = layoutData?.height;
+        if (alignment?.value && resolveReferences(alignment?.value, currentState, null, customResolvables) === 'top') {
+          const { width = { value: null } } = component?.definition?.styles ?? {};
+          const { auto = { value: null } } = component?.definition?.styles ?? {};
+          const resolvedWidth = resolveReferences(width?.value, currentState, null, customResolvables);
+          const resolvedAuto = resolveReferences(auto?.value, currentState, null, customResolvables);
+          if (
+            (label?.value?.length > 0 && resolvedWidth > 0) ||
+            (resolvedAuto && resolvedWidth == 0 && label?.value && label?.value?.length != 0)
+          ) {
+            newHeight = layoutData?.height + 20;
+          }
+        }
+        setboxHeight(newHeight);
+      }
+    }, [layoutData?.height, label?.value?.length, currentLayout]);
+
+    const adjustHeightBasedOnAlignment = (increase) => {
+      if (increase) return setboxHeight(layoutData?.height + 20);
+      else return setboxHeight(layoutData?.height);
+    };
     return (
       <div
         className={
@@ -250,21 +280,26 @@ export const DraggableBox = React.memo(
             style={getStyles(isDragging, isSelectedComponent)}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-              {mode === 'edit' && !readOnly && (
-                <ConfigHandle
-                  id={id}
-                  removeComponent={removeComponent}
-                  component={component}
-                  position={layoutData.top < 15 ? 'bottom' : 'top'}
-                  widgetTop={layoutData.top}
-                  widgetHeight={layoutData.height}
-                  isMultipleComponentsSelected={isMultipleComponentsSelected}
-                  configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
-                  mouseOver={mouseOver}
-                  isSelectedComponent={isSelectedComponent}
-                  showHandle={(configWidgetHandlerForModalComponent || mouseOver || isSelectedComponent) && !isResizing}
-                />
-              )}
+              {mode === 'edit' &&
+                !readOnly &&
+                // (configWidgetHandlerForModalComponent || mouseOver || isSelectedComponent) &&
+                !isResizing && (
+                  <ConfigHandle
+                    id={id}
+                    removeComponent={removeComponent}
+                    component={component}
+                    position={layoutData.top < 15 ? 'bottom' : 'top'}
+                    widgetTop={layoutData.top}
+                    widgetHeight={layoutData.height}
+                    isMultipleComponentsSelected={isMultipleComponentsSelected}
+                    configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
+                    mouseOver={mouseOver}
+                    isSelectedComponent={isSelectedComponent}
+                    showHandle={
+                      (configWidgetHandlerForModalComponent || mouseOver || isSelectedComponent) && !isResizing
+                    }
+                  />
+                )}
               <Sentry.ErrorBoundary
                 fallback={<h2>Something went wrong.</h2>}
                 beforeCapture={(scope) => {

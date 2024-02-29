@@ -356,14 +356,14 @@ describe("Basic components", () => {
     verifyComponent("container1");
 
     openEditorSidebar("container1");
-    editAndVerifyWidgetName("container2", ["Layout"]);
+    editAndVerifyWidgetName("container2", ["Devices"]);
 
     cy.forceClickOnCanvas();
     cy.resizeWidget("container2", 650, 400, false);
     cy.waitForAutoSave();
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
-    verifyComponent("container2", ["Layout"]);
+    verifyComponent("container2", ["Devices"]);
 
     cy.go("back");
     resizeQueryPanel(0);
@@ -417,7 +417,7 @@ describe("Basic components", () => {
     cy.resizeWidget("form1", 650, 400, false);
 
     openEditorSidebar("form1");
-    editAndVerifyWidgetName("form2");
+    editAndVerifyWidgetName("form2", []);
 
     cy.waitForAutoSave();
 

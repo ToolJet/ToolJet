@@ -10,7 +10,6 @@ import {
 } from "Support/utils/workspaceConstants";
 import { buttonText } from "Texts/button";
 import {
-    verifyAndModifyParameter,
     editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
 import { verifypreview } from "Support/utils/dataSource";
@@ -276,10 +275,12 @@ describe("Workspace constants", () => {
         verifypreview("raw", "dJ_8Q~BcaMPd");
 
         cy.dragAndDropWidget("Text", 550, 350);
-        editAndVerifyWidgetName(data.constantsName);
+        editAndVerifyWidgetName(data.constantsName, []);
         cy.waitForAutoSave();
 
-        verifyAndModifyParameter("Text", `{{constants.${data.constantsName}`);
+        cy.get(
+            '[data-cy="textcomponenttextinput-input-field"]'
+        ).clearAndTypeOnCodeMirror(`{{constants.${data.constantsName}`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
 

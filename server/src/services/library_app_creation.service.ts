@@ -5,6 +5,7 @@ import { Logger } from 'nestjs-pino';
 import { ImportExportResourcesService } from './import_export_resources.service';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
 import { AppImportExportService } from './app_import_export.service';
+import { isVersionGreaterThanOrEqual } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class LibraryAppCreationService {
@@ -22,7 +23,7 @@ export class LibraryAppCreationService {
     importDto.tooljet_database = templateDefinition.tooljet_database;
     importDto.tooljet_version = templateDefinition.tooljet_version;
 
-    if (this.isVersionGreaterThanOrEqual(templateDefinition.tooljet_version, '2.16.0')) {
+    if (isVersionGreaterThanOrEqual(templateDefinition.tooljet_version, '2.16.0')) {
       importDto.app[0].appName = appName;
       return await this.importExportResourcesService.import(currentUser, importDto);
     } else {
@@ -41,25 +42,5 @@ export class LibraryAppCreationService {
       this.logger.error(err);
       throw new BadRequestException('App definition not found');
     }
-  }
-
-  isVersionGreaterThanOrEqual(version1: string, version2: string) {
-    if (!version1) return false;
-
-    const v1Parts = version1.split('-')[0].split('.').map(Number);
-    const v2Parts = version2.split('-')[0].split('.').map(Number);
-
-    for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
-      const v1Part = +v1Parts[i] || 0;
-      const v2Part = +v2Parts[i] || 0;
-
-      if (v1Part < v2Part) {
-        return false;
-      } else if (v1Part > v2Part) {
-        return true;
-      }
-    }
-
-    return true;
   }
 }

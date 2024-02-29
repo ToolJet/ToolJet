@@ -34,6 +34,7 @@ import EditRectangle from './EditRectangle.jsx';
 import Eye from './Eye.jsx';
 import Eye1 from './Eye1.jsx';
 import EyeDisable from './EyeDisable.jsx';
+import Expand from './Expand.jsx';
 import File01 from './File01.jsx';
 import FileDownload from './FileDownload.jsx';
 import FileUpload from './FileUpload.jsx';
@@ -141,13 +142,37 @@ import Check from './Check.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
+import EnterButtonIcon from './EnterButtonIcon.jsx';
 import WorkspaceConstants from './WorkspaceConstants.jsx';
 import ArrowBackDown from './ArrowBackDown.jsx';
+import AlignRightinspector from './AlignRightinspector.jsx';
+import AlignLeftinspector from './AlignLeftinspector.jsx';
+import AlignVerticallyTop from './AlignVerticallyTop.jsx';
+import AlignVerticallyBottom from './AlignVerticallyBottom.jsx';
+import AlignVerticallyCenter from './AlignVerticallyCenter.jsx';
+import Italic from './Italic.jsx';
+import Underline from './Underline.jsx';
+import Overline from './Overline.jsx';
+import Linethrough from './Linethrough.jsx';
+import Uppercase from './Uppercase.jsx';
+import Lowercase from './Lowercase.jsx';
+import Capitalize from './Capitalize.jsx';
+import Oblique from './Oblique.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
     case 'addrectangle':
       return <AddRectangle {...props} />;
+    case 'alignleftinspector':
+      return <AlignRightinspector {...props} />;
+    case 'alignrightinspector':
+      return <AlignLeftinspector {...props} />;
+    case 'alignverticallytop':
+      return <AlignVerticallyTop {...props} />;
+    case 'alignverticallybottom':
+      return <AlignVerticallyBottom {...props} />;
+    case 'alignverticallycenter':
+      return <AlignVerticallyCenter {...props} />;
     case 'alignright':
       return <AlignRight {...props} />;
     case 'apps':
@@ -222,12 +247,16 @@ const Icon = (props) => {
       return <Delete {...props} />;
     case 'editrectangle':
       return <EditRectangle {...props} />;
+    case 'enterbutton':
+      return <EnterButtonIcon {...props} />;
     case 'eye':
       return <Eye {...props} />;
     case 'eye1':
       return <Eye1 {...props} />;
     case 'eyedisable':
       return <EyeDisable {...props} />;
+    case 'expand':
+      return <Expand {...props} />;
     case 'file01':
       return <File01 {...props} />;
     case 'filedownload':
@@ -262,6 +291,8 @@ const Icon = (props) => {
       return <InRectangle {...props} />;
     case 'interactive':
       return <Interactive {...props} />;
+    case 'italic':
+      return <Italic {...props} />;
     case 'layers':
       return <Layers {...props} />;
     case 'leftarrow':
@@ -434,6 +465,20 @@ const Icon = (props) => {
       return <Save {...props} />;
     case 'cross':
       return <Cross {...props} />;
+    case 'underline':
+      return <Underline {...props} />;
+    case 'overline':
+      return <Overline {...props} />;
+    case 'linethrough':
+      return <Linethrough {...props} />;
+    case 'uppercase':
+      return <Uppercase {...props} />;
+    case 'lowercase':
+      return <Lowercase {...props} />;
+    case 'capitalize':
+      return <Capitalize {...props} />;
+    case 'oblique':
+      return <Oblique {...props} />;
     default:
       return <Apps {...props} />;
   }
