@@ -78,3 +78,52 @@
 .grid-guide-lines {
 	background: #8DA4EF !important;
 }
+
+
+
+/* Hides all the control lines*/
+/* .moveable-line {
+    color: transparent !important;
+    --moveable-color: transparent !important;
+}
+
+.moveable-control {
+    visibility: hidden;
+}
+
+.target {
+    outline: 1px solid #4af;
+} */
+
+.active-target, .resizing-target {
+    outline: 1px solid #4af;
+    /* z-index: 1000000 !important; */
+} 
+
+.hovered-target {
+    outline: 1px solid #4af;
+    z-index: 4 !important;
+}
+
+.moveable-control-box:not([data-able-groupable]) .moveable-control-box:not(:hover) {
+    opacity: 0;
+}
+
+.visible-movable-control-box {
+    opacity: 1 !important;
+}
+
+.moveable-line.moveable-e,
+.moveable-line.moveable-w {
+    border: 5px solid #fff0;
+}
+
+.moveable-resizable {
+    opacity: 0;
+}
+
+.resizing-target * {
+    opacity: 0;
+}
+
+/*  */

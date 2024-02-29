@@ -59,7 +59,13 @@ export const Container = ({
   const noOfGrids = 43;
   const [subContainerWidths, setSubContainerWidths] = useState({});
   const draggedSubContainer = useDraggedSubContainer(false);
-  const resizingComponentId = useResizingComponentId();
+  const { resizingComponentId } = useGridStore(
+    (state) => ({
+      resizingComponentId: state?.resizingComponentId,
+      // draggingComponentId: state?.draggingComponentId,
+    }),
+    shallow
+  );
   // const [dragTarget] = useDragTarget();
 
   const { showComments, currentLayout, selectedComponents } = useEditorStore(
@@ -409,8 +415,8 @@ export const Container = ({
             ...boxes[id]['layouts'],
             [currentLayout]: {
               ...boxes[id]['layouts'][currentLayout],
-              width: newWidth,
-              height,
+              width: newWidth ? newWidth : 1,
+              height: height ? height : 10,
               top: y,
               left: Math.round(x / gw),
             },
@@ -430,11 +436,9 @@ export const Container = ({
   function onDragStop(boxPositions) {
     const startTime = performance.now();
     const updatedBoxes = boxPositions.reduce((boxesObj, { id, x, y, parent }) => {
-      console.log('timeRifference0', performance.now() - startTime);
       let _width = boxes[id]['layouts'][currentLayout].width;
       let _height = boxes[id]['layouts'][currentLayout].height;
       const containerWidth = parent ? subContainerWidths[parent] : gridWidth;
-      console.log('timeRifference1', performance.now() - startTime);
       if (parent !== boxes[id]['component']?.parent) {
         if (boxes[id]['component']?.parent) {
           _width = Math.round(
@@ -445,7 +449,6 @@ export const Container = ({
           _width = Math.round((boxes[id]['layouts'][currentLayout].width * gridWidth) / containerWidth);
         }
       }
-      console.log('timeRifference1', performance.now() - startTime);
       if (_width === 0) {
         _width = 1;
       }
@@ -462,11 +465,9 @@ export const Container = ({
           _width = noOfGrids;
         }
       }
-      console.log('timeRifference2', performance.now() - startTime);
       if (y < 0) {
         y = 0;
       }
-      console.log('timeRifference3', performance.now() - startTime);
 
       if (parent) {
         const parentElem = document.getElementById(`canvas-${parent}`);
@@ -479,7 +480,6 @@ export const Container = ({
         }
       }
 
-      console.log('timeRifference4', performance.now() - startTime);
       return {
         ...boxesObj,
         [id]: {
@@ -505,7 +505,6 @@ export const Container = ({
         },
       };
     }, {});
-    console.log('timeRifference5', performance.now() - startTime);
     let newBoxes = {
       ...boxes,
       ...updatedBoxes,
@@ -523,11 +522,8 @@ export const Container = ({
       //   parent: parent ? parent : boxes[id].parent,
       // },
     };
-    console.log('timeRifference6', performance.now() - startTime);
     setBoxes(newBoxes);
-    console.log('timeRifference7', performance.now() - startTime);
     updateCanvasHeight(newBoxes);
-    console.log('timeRifference8', performance.now() - startTime);
   }
 
   const paramUpdated = useCallback(
@@ -801,7 +797,7 @@ export const Container = ({
     return '';
   };
 
-  console.log('IrenderrrrC');
+  // console.log('isDragging----', draggingComponentId);
 
   return (
     // <div
@@ -947,6 +943,82 @@ export const Container = ({
                 </WidgetWrapper>
               );
             })}
+          {/* {draggingComponentId && (
+            <WidgetWrapper
+              isResizing={false}
+              widget={boxes[draggingComponentId]}
+              id={draggingComponentId}
+              gridWidth={gridWidth}
+              currentLayout={currentLayout}
+              mode={mode}
+            >
+              <DraggableBox
+                className={showComments && 'pointer-events-none'}
+                canvasWidth={canvasWidth}
+                onComponentClick={
+                  config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
+                }
+                onEvent={onEvent}
+                // height={height}
+                onComponentOptionChanged={onComponentOptionChanged}
+                onComponentOptionsChanged={onComponentOptionsChanged}
+                key={draggingComponentId}
+                paramUpdated={paramUpdated}
+                id={draggingComponentId}
+                {...boxes[draggingComponentId]}
+                mode={mode}
+                resizingStatusChanged={(status) => setIsResizing(status)}
+                draggingStatusChanged={(status) => setIsDragging(status)}
+                inCanvas={true}
+                zoomLevel={zoomLevel}
+                setSelectedComponent={setSelectedComponent}
+                removeComponent={removeComponent}
+                deviceWindowWidth={deviceWindowWidth}
+                isSelectedComponent={
+                  mode === 'edit' ? selectedComponents.find((component) => component.id === id) : false
+                }
+                darkMode={darkMode}
+                // onComponentHover={onComponentHover}
+                // hoveredComponent={hoveredComponent}
+                sideBarDebugger={sideBarDebugger}
+                isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+                childComponents={childComponents[draggingComponentId]}
+                containerProps={{
+                  // turnOffAutoLayout,
+                  mode,
+                  snapToGrid,
+                  onComponentClick,
+                  onEvent,
+                  appDefinition,
+                  appDefinitionChanged,
+                  currentState,
+                  onComponentOptionChanged,
+                  onComponentOptionsChanged,
+                  appLoading,
+                  zoomLevel,
+                  setSelectedComponent,
+                  removeComponent,
+                  currentLayout,
+                  deviceWindowWidth,
+                  selectedComponents,
+                  darkMode,
+                  // onComponentHover,
+                  // hoveredComponent,
+                  sideBarDebugger,
+                  addDefaultChildren: boxes[draggingComponentId].withDefaultChildren,
+                  currentPageId,
+                  childComponents,
+                  // setIsChildDragged,
+                  setSubContainerWidths: (id, width) => setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
+                  parentGridWidth: gridWidth,
+                  subContainerWidths,
+                  draggedSubContainer,
+                }}
+                isVersionReleased={isVersionReleased}
+              />
+            </WidgetWrapper>
+          )} */}
+
           <DragContainer
             widgets={boxes}
             onResizeStop={onResizeStop}
@@ -992,12 +1064,14 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
     component: { parent },
     layouts,
   } = widget;
-  const { hoveredComponent } = useEditorStore(
-    (state) => ({
-      hoveredComponent: state?.hoveredComponent,
-    }),
-    shallow
-  );
+  const { isSelected, isHovered } = useEditorStore((state) => {
+    if (state?.selectedComponents?.length > 1) {
+      return false;
+    }
+    const isSelected = (state.selectedComponents || []).length === 1 && state?.selectedComponents?.[0]?.id === id;
+    const isHovered = state?.hoveredComponent == id;
+    return { isSelected, isHovered };
+  }, shallow);
 
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
 
@@ -1012,20 +1086,29 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
     width: width + 'px',
     height: layoutData.height + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
-    ...(isGhostComponent ? { opacity: 0.5 } : isResizing ? { opacity: 0 } : {}),
+    // ...(isGhostComponent ? { opacity: 0.5 } : isResizing ? { opacity: 0 } : {}),
+    ...(isGhostComponent ? { opacity: 0.5 } : {}),
   };
+
+  const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
 
   return (
     <>
       <div
-        className={isGhostComponent ? `` : `target widget-target target1 ele-${id} moveable-box`}
+        className={
+          isGhostComponent
+            ? `ghost-target`
+            : `target widget-target target1 ele-${id} moveable-box ${isResizing ? 'resizing-target' : ''} ${
+                isWidgetActive ? 'active-target' : ''
+              } ${isHovered ? 'hovered-target' : ''}`
+        }
         data-id={`${parent}`}
         id={id}
         widgetid={id}
         style={{
           transform: `translate(332px, -134px)`,
           ...styles,
-          ...((hoveredComponent === id || isDragging) && mode !== 'view' ? { zIndex: 3 } : {}),
+          ...(isWidgetActive ? { zIndex: 3 } : {}),
         }}
       >
         {children}
