@@ -94,8 +94,8 @@ export const Container = ({
   const paramUpdatesOptsRef = useRef({});
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
-  useHotkeys('meta+z, control+z', () => handleUndo());
-  useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
+  useHotkeys('meta+z, control+z', () => handleUndo(), { scopes: 'editor' });
+  useHotkeys('meta+shift+z, control+shift+z', () => handleRedo(), { scopes: 'editor' });
   useHotkeys(
     'meta+v, control+v',
     async () => {
@@ -121,7 +121,8 @@ export const Container = ({
       }
       enableReleasedVersionPopupState();
     },
-    [isContainerFocused, appDefinition, focusedParentIdRef.current]
+    [isContainerFocused, appDefinition, focusedParentIdRef.current],
+    { scopes: 'editor' }
   );
 
   useEffect(() => {
@@ -329,6 +330,12 @@ export const Container = ({
       // Computing the top offset
       // const currentTopOffset = boxes[componentId].layouts[currentLayout].top;
       const topDiff = boxes[componentId].layouts[currentLayout].top - (nodeBounds.y - canvasBounds.y);
+
+      const difference = Math.abs(Math.floor(leftDiff));
+
+      if (difference === 0 && topDiff === 0) {
+        return;
+      }
 
       let newBoxes = { ...boxes };
 

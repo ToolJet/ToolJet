@@ -1,6 +1,7 @@
 import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
 import { omit } from 'lodash';
+import { useResolveStore } from './resolverStore';
 
 const initialState = {
   queries: {},
@@ -54,6 +55,13 @@ export const useCurrentState = () =>
       layout: state.layout,
     };
   }, shallow);
+
+useCurrentStateStore.subscribe(
+  (state) => {
+    useResolveStore.getState().actions.updateAppSuggestions(state);
+  },
+  (state) => [state]
+);
 
 export const getCurrentState = () => {
   return omit(useCurrentStateStore.getState(), 'actions');

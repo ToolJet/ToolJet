@@ -4,9 +4,10 @@ import CustomInput from '@/_ui/CustomInput';
 import * as Slider from '@radix-ui/react-slider';
 import './Slider.scss';
 
-function Slider1({ value, onChange, component }) {
+function Slider1({ value, onChange, styleDefinition }) {
   const [sliderValue, setSliderValue] = useState(value ? value : 33); // Initial value of the slider
 
+  const isDisbaled = styleDefinition?.auto?.value || false;
   useEffect(() => {
     setSliderValue(value);
   }, [value]);
@@ -27,7 +28,7 @@ function Slider1({ value, onChange, component }) {
   return (
     <div className="d-flex flex-column " style={{ width: '142px', position: 'relative' }}>
       <CustomInput
-        disabled={component.component.definition.styles.auto.value}
+        disabled={isDisbaled}
         value={sliderValue}
         staticText="% of the field"
         onInputChange={onInputChange}
@@ -41,7 +42,7 @@ function Slider1({ value, onChange, component }) {
           step={1}
           value={[sliderValue]}
           onValueChange={handleSliderChange}
-          disabled={component.component.definition.styles.auto.value}
+          disabled={isDisbaled}
         >
           <Slider.Track className="SliderTrack">
             <Slider.Range className="SliderRange" />

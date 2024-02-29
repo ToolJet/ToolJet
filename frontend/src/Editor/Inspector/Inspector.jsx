@@ -92,11 +92,17 @@ export const Inspector = ({
     shallow
   );
   const { t } = useTranslation();
-  useHotkeys('backspace', () => {
-    if (isVersionReleased) return;
-    setWidgetDeleteConfirmation(true);
+  useHotkeys(
+    'backspace',
+    () => {
+      if (isVersionReleased) return;
+      setWidgetDeleteConfirmation(true);
+    },
+    { scopes: 'editor' }
+  );
+  useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY), {
+    scopes: 'editor',
   });
-  useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY));
 
   const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component.component === comp.component));
 
