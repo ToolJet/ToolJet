@@ -29,7 +29,7 @@ export const ProgramaticallyHandleProperties = ({
       case 'makeDefaultOption':
         return props?.[index]?.makeDefaultOption;
       case 'textColor':
-        return props?.textColorl;
+        return props?.textColor;
       case 'cellBackgroundColor':
         return props?.cellBackgroundColor;
       default:
@@ -65,7 +65,6 @@ export const ProgramaticallyHandleProperties = ({
     definition = { value, fxActive: props.fxActive };
     initialValue = getInitialValue(property, definition);
   }
-
   const options = {};
   return (
     <div className={`field ${options.className}`} onClick={(e) => e.stopPropagation()}>

@@ -55,7 +55,7 @@ export default function generateColumnsData({
         });
       }
     }
-    if (columnType === 'select') {
+    if (columnType === 'select' || columnType === 'newMultiSelect') {
       columnOptions.selectOptions = [];
       const useDynamicOptions = resolveReferences(column?.useDynamicOptions, currentState);
       if (useDynamicOptions) {
@@ -369,7 +369,8 @@ export default function generateColumnsData({
             );
           }
           case 'dropdown':
-          case 'select': {
+          case 'select':
+          case 'newMultiSelect': {
             const validationData = validateWidget({
               validationObject: {
                 regex: {
@@ -411,7 +412,7 @@ export default function generateColumnsData({
                     className="select-search"
                   />
                 )}
-                {columnType === 'select' && (
+                {['newMultiSelect', 'select'].includes(columnType) && (
                   <CustomSelect
                     options={columnOptions.selectOptions}
                     value={cellValue}
@@ -426,6 +427,8 @@ export default function generateColumnsData({
                     darkMode={darkMode}
                     defaultOptionsList={column?.defaultOptionsList || []}
                     textColor={column?.textColor || 'var(--slate12)'}
+                    isMulti={columnType === 'newMultiSelect' ? true : false}
+                    containerWidth={width}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>

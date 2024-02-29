@@ -139,6 +139,8 @@ import Check from './Check.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
+import ArrowUpTriangle from './ArrowUpTriangle.jsx';
+import ArrowDownTriangle from './ArrowDownTriangle.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -422,6 +424,10 @@ const Icon = (props) => {
       return <Save {...props} />;
     case 'cross':
       return <Cross {...props} />;
+    case 'arrowUpTriangle':
+      return <ArrowUpTriangle {...props} />;
+    case 'arrowDownTriangle':
+      return <ArrowDownTriangle {...props} />;
     default:
       return <Apps {...props} />;
   }

@@ -749,7 +749,7 @@
         background-color: var(--indigo1) !important; 
         .table-select-search{
           .react-select__indicators{
-            display: none !important;
+            // display: none !important;
           }
         }
       }
@@ -845,5 +845,30 @@
   .accordian-item{
     border: solid var(--slate5);
     border-width: 1px 0px 0px 0px;
+  }
+}
+
+.table-select-custom-menu-list{
+  .react-select__menu-list{
+    display: flex;
+    flex-direction: column;
+    .option-wrapper{
+      align-items: center;
+      padding: 12px 8px;
+      .form-check{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0 !important;
+        input[type=checkbox]{
+          width: 18px !important;
+          height: 18px !important;
+        }
+        input[type=checkbox]:checked{
+          background-color: var(--indigo9) !important;
+          
+        }
+      }
+    }
   }
 }
