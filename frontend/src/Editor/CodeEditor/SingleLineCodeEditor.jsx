@@ -135,7 +135,8 @@ const EditorInput = ({
     let queryInput = context.state.doc.toString();
 
     if (totalReferences > 1) {
-      queryInput = fxActive ? word?.text : `{{${word?.text}}}`;
+      const currentWord = queryInput.split('{{').pop().split('}}')[0];
+      queryInput = fxActive ? currentWord : `{{${currentWord}}}`;
     }
 
     let completions = getAutocompletion(queryInput, validationType, hints, fxActive, totalReferences);

@@ -101,14 +101,26 @@ export const generateHints = (hints, isFxHinter = false, totalReferences = 1) =>
         }
 
         if (totalReferences > 1) {
-          pickedCompletionConfig.from = from;
-          anchorSelection = anchorSelection + from;
+          let queryInput = view.state.doc.toString();
+          const currentWord = queryInput.split('{{').pop().split('}}')[0];
+          pickedCompletionConfig.from = from !== to ? from : from - currentWord.length;
+
+          anchorSelection = queryInput.length + currentWord.length;
         }
 
-        view.dispatch({
+        const dispatchConfig = {
           changes: pickedCompletionConfig,
-          selection: { anchor: anchorSelection },
-        });
+        };
+
+        const actualInput = doc.toString().replace(/{{|}}/g, '');
+
+        if (actualInput.length === 0) {
+          dispatchConfig.selection = {
+            anchor: anchorSelection,
+          };
+        }
+
+        view.dispatch(dispatchConfig);
       },
     };
   });
