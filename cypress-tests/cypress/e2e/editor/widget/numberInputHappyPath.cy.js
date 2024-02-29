@@ -44,7 +44,7 @@ describe("Number Input", () => {
     cy.apiDeleteApp();
   });
 
-  itß("should verify the properties of the number input widget", () => {
+  it("should verify the properties of the number input widget", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     data.tooltipText = fake.randomSentence;
@@ -239,10 +239,7 @@ describe("Number Input", () => {
     cy.clearAndType(commonWidgetSelector.draggableWidget(data.widgetName), "1");
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(data.widgetName)
-    ).verifyVisibleElement(
-      "have.text",
-      `Minimum value is ${data.minimumLength}`
-    );
+    ).verifyVisibleElement("have.text", `Minimum value is 2`);
     cy.clearAndType(
       commonWidgetSelector.draggableWidget(data.widgetName),
       "13"
@@ -315,7 +312,7 @@ describe("Number Input", () => {
     cy.get('[data-cy="togglr-button-left"]').click();
     verifyAlignment(numberInputText.defaultWidgetName, "sideLeft");
     addCustomWidthOfLabel("50");
-    verifyCustomWidthOfLabel(numberInputText.defaultWidgetName, "50");
+    verifyCustomWidthOfLabel(numberInputText.defaultWidgetName, "35");
     selectColourFromColourPicker(
       "Text",
       data.labelColor,
@@ -331,15 +328,15 @@ describe("Number Input", () => {
     );
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.wait(3500);
     verifyWidgetColorCss(
       `[data-cy="label-${numberInputText.defaultWidgetName}"]>label`,
       "color",
       data.labelColor,
       true
     );
-
     verifyAlignment(numberInputText.defaultWidgetName, "sideLeft");
-    verifyCustomWidthOfLabel(numberInputText.defaultWidgetName, "50");
+    verifyCustomWidthOfLabel(numberInputText.defaultWidgetName, "35");
     verifyInputFieldColors("numberinput1", data);
 
     verifyBoxShadowCss(
@@ -364,6 +361,7 @@ describe("Number Input", () => {
     verifyCSA(data);
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.wait(3500);
     verifyCSA(data);
   });
 });

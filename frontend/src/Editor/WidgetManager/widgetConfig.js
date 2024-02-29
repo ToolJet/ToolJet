@@ -1155,7 +1155,7 @@ export const widgets = [
           transformation: 'none',
           fontStyle: 'normal',
           lineHeight: 1.5,
-          textIndent: '0',
+          textIndent: '-1',
           letterSpacing: '0',
           wordSpacing: '0',
           fontVariant: 'normal',
