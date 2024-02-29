@@ -7,14 +7,13 @@ import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
 import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveWidgetFieldValue, resolveReferences } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import WidgetBox from './WidgetBox';
 import * as Sentry from '@sentry/react';
-
 const NO_OF_GRIDS = 43;
 
 const resizerClasses = {
@@ -22,33 +21,6 @@ const resizerClasses = {
   bottomRight: 'bottom-right',
   bottomLeft: 'bottom-left',
   topLeft: 'top-left',
-};
-
-const resizerStyles = {
-  topRight: {
-    width: '8px',
-    height: '8px',
-    right: '-4px',
-    top: '-4px',
-  },
-  bottomRight: {
-    width: '8px',
-    height: '8px',
-    right: '-4px',
-    bottom: '-4px',
-  },
-  bottomLeft: {
-    width: '8px',
-    height: '8px',
-    left: '-4px',
-    bottom: '-4px',
-  },
-  topLeft: {
-    width: '8px',
-    height: '8px',
-    left: '-4px',
-    top: '-4px',
-  },
 };
 
 function computeWidth(currentLayoutOptions) {
@@ -121,6 +93,35 @@ export const DraggableBox = React.memo(
       shallow
     );
     const currentState = useCurrentState();
+    const [boxHeight, setboxHeight] = useState(layoutData?.height); // height for layouting with top and side values
+
+    const resizerStyles = {
+      topRight: {
+        width: '8px',
+        height: '8px',
+        right: '-4px',
+        top: '-4px',
+      },
+      bottomRight: {
+        width: '8px',
+        height: '8px',
+        right: '-4px',
+        bottom: '-4px',
+      },
+      bottomLeft: {
+        width: '8px',
+        height: '8px',
+        left: '-4px',
+        bottom: '-4px',
+      },
+      topLeft: {
+        width: '8px',
+        height: '8px',
+        left: '-4px',
+        top: '-4px',
+      },
+    };
+
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({
         type: ItemTypes.BOX,
@@ -165,7 +166,6 @@ export const DraggableBox = React.memo(
       display: 'inline-block',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '0px',
     };
 
     let _refProps = {};
@@ -189,11 +189,9 @@ export const DraggableBox = React.memo(
       width: 445,
       height: 500,
     };
-
     const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
     const gridWidth = canvasWidth / NO_OF_GRIDS;
     const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
-
     const configWidgetHandlerForModalComponent =
       !isSelectedComponent &&
       component.component === 'Modal' &&
@@ -204,6 +202,36 @@ export const DraggableBox = React.memo(
       setHoveredComponent(id);
     };
 
+    const { label = { value: null } } = component?.definition?.properties ?? {};
+
+    useEffect(() => {
+      if (
+        component.component == 'TextInput' ||
+        component.component == 'PasswordInput' ||
+        component.component == 'NumberInput'
+      ) {
+        const { alignment = { value: null } } = component?.definition?.styles ?? {};
+        let newHeight = layoutData?.height;
+        if (alignment?.value && resolveReferences(alignment?.value, currentState, null, customResolvables) === 'top') {
+          const { width = { value: null } } = component?.definition?.styles ?? {};
+          const { auto = { value: null } } = component?.definition?.styles ?? {};
+          const resolvedWidth = resolveReferences(width?.value, currentState, null, customResolvables);
+          const resolvedAuto = resolveReferences(auto?.value, currentState, null, customResolvables);
+          if (
+            (label?.value?.length > 0 && resolvedWidth > 0) ||
+            (resolvedAuto && resolvedWidth == 0 && label?.value && label?.value?.length != 0)
+          ) {
+            newHeight = layoutData?.height + 20;
+          }
+        }
+        setboxHeight(newHeight);
+      }
+    }, [layoutData?.height, label?.value?.length, currentLayout]);
+
+    const adjustHeightBasedOnAlignment = (increase) => {
+      if (increase) return setboxHeight(layoutData?.height + 20);
+      else return setboxHeight(layoutData?.height);
+    };
     return (
       <div
         className={
@@ -240,7 +268,7 @@ export const DraggableBox = React.memo(
               dragGrid={[gridWidth, 10]}
               size={{
                 width: width,
-                height: layoutData.height,
+                height: boxHeight,
               }}
               position={{
                 x: layoutData ? (layoutData.left * canvasWidth) / 100 : 0,
@@ -260,7 +288,16 @@ export const DraggableBox = React.memo(
               }}
               resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
               resizeHandleStyles={resizerStyles}
-              enableResizing={mode === 'edit' && !readOnly}
+              enableResizing={{
+                top: mode == 'edit' && !readOnly,
+                right: mode == 'edit' && !readOnly && true,
+                bottom: mode == 'edit' && !readOnly,
+                left: mode == 'edit' && !readOnly && true,
+                topRight: mode == 'edit' && !readOnly,
+                bottomRight: mode == 'edit' && !readOnly,
+                bottomLeft: mode == 'edit' && !readOnly,
+                topLeft: mode == 'edit' && !readOnly,
+              }}
               disableDragging={mode !== 'edit' || readOnly}
               onDragStop={(e, direction) => {
                 setDragging(false);
@@ -320,6 +357,9 @@ export const DraggableBox = React.memo(
                     allComponents={allComponents}
                     sideBarDebugger={sideBarDebugger}
                     childComponents={childComponents}
+                    isResizing={isResizing}
+                    adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
+                    currentLayout={currentLayout}
                   />
                 </Sentry.ErrorBoundary>
               </div>

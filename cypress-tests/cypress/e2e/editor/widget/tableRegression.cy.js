@@ -52,11 +52,12 @@ import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
 import { textInputText } from "Texts/textInput";
 import { deleteDownloadsFolder } from "Support/utils/common";
 import { resizeQueryPanel } from "Support/utils/dataSource";
+import { waitForQueryAction } from "Support/utils/queries";
 
 describe("Table", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.apiCreateApp(`${fake.companyName}-table-App`);
     cy.openApp();
     deleteDownloadsFolder();
     cy.viewport(1400, 2200);
@@ -339,12 +340,39 @@ describe("Table", () => {
     openEditorSidebar(tableText.defaultWidgetName);
     editAndVerifyWidgetName(data.widgetName, []);
 
+    openEditorSidebar(data.widgetName);
+    cy.wait(500);
+    addAndOpenColumnOption("Fake-Link", `link`);
+    verifyAndEnterColumnOptionInput("key", "name");
+    cy.get('[data-cy="dropdown-link-target"] >>:eq(0)')
+      .click()
+      .find("input")
+      .type(`{selectAll}{backspace}new window{enter}`);
+
+    cy.forceClickOnCanvas();
+    cy.get('[data-cy="linksarah-cell-3"]')
+      .contains("a", "Sarah")
+      .should("have.attr", "target", "_blank");
+
+    openEditorSidebar(data.widgetName);
+    cy.get('[data-cy*="column-Fake-Link"]').click();
+
+    cy.get('[data-cy="dropdown-link-target"] >>:eq(0)')
+      .click()
+      .find("input")
+      .type(`{selectAll}{backspace}same window{enter}`);
+    cy.forceClickOnCanvas();
+    cy.get('[data-cy="linksarah-cell-3"]')
+      .contains("a", "Sarah")
+      .should("have.attr", "target", "_self");
+
     //String/default
     openEditorSidebar(data.widgetName);
     cy.wait(500);
     deleteAndVerifyColumn("id");
     deleteAndVerifyColumn("name");
     deleteAndVerifyColumn("email");
+    deleteAndVerifyColumn("fake-link");
     cy.wait(500);
     addAndOpenColumnOption("Fake-String", `string`);
     selectDropdownOption('[data-cy="input-overflow"] >>:eq(0)', `wrap`);
@@ -361,10 +389,13 @@ describe("Table", () => {
       .eq(0)
       .should("have.css", "background-color", "rgb(255, 255, 0)", {
         timeout: 10000,
-      })
+      });
+    cy.get(tableSelector.column(0))
+      .eq(0)
+      .find(".align-items-center")
       .last()
-      .should("have.css", "color", "rgb(62, 82, 91)")
-      .and("have.text", "Sarah");
+      .should("have.text", "Sarah")
+      .and("have.css", "color", "rgb(255, 0, 0)");
 
     cy.get('[data-cy="make-editable-toggle-button"]').click();
     cy.get('[data-cy="header-validation"]').verifyVisibleElement(
@@ -651,7 +682,9 @@ describe("Table", () => {
       commonWidgetText.borderRadiusInput
     );
 
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     openEditorSidebar(tableText.defaultWidgetName);
     openAccordion("Columns");
     deleteAndVerifyColumn("email");
@@ -671,7 +704,9 @@ describe("Table", () => {
       "Border radius",
       commonWidgetText.borderRadiusInput
     );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
 
     cy.get(
       commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
@@ -685,7 +720,8 @@ describe("Table", () => {
       commonWidgetText.parameterBoxShadow,
       commonWidgetText.boxShadowDefaultValue,
       false,
-      "0px 0px 0px 0px "
+      "0px 0px 0px 0px ",
+      false
     );
 
     cy.get(commonWidgetSelector.boxShadowColorPicker).click();
@@ -710,6 +746,7 @@ describe("Table", () => {
       "have.text",
       "Table type"
     );
+    cy.get('[data-cy="dropdown-table-type"]').realHover();
     cy.get('[data-cy="table-type-fx-button"] > svg').click();
     cy.get('[data-cy="table-type-input-field"]').clearAndTypeOnCodeMirror(
       `randomText`
@@ -1068,7 +1105,7 @@ describe("Table", () => {
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("components", "Object", "9 entries ");
     openNode("components");
-    verifyNodeData(tableText.defaultWidgetName, "Object", "23 entries ");
+    verifyNodeData(tableText.defaultWidgetName, "Object", "27 entries ");
     openNode(tableText.defaultWidgetName);
     verifyNodeData("newRows", "Array", "0 item ");
 
@@ -1205,7 +1242,10 @@ describe("Table", () => {
     cy.get('[data-cy="inspector-close-icon"]').click();
     cy.dragAndDropWidget("Text", 800, 200);
     openEditorSidebar(commonWidgetText.text1);
-    verifyAndModifyParameter("Text", "Column Email");
+    cy.get(
+      '[data-cy="textcomponenttextinput-input-field"]'
+    ).clearAndTypeOnCodeMirror("Column Email");
+    // verifyAndModifyParameter("Text", "Column Email");
     cy.get('[data-cy="inspector-close-icon"]').click();
     cy.get(`[data-cy="draggable-widget-${commonWidgetText.text1}"]`).should(
       "have.text",
@@ -1258,5 +1298,71 @@ describe("Table", () => {
     cy.get('[data-cy*="-cell-1"] [type="text"]')
       .eq(0)
       .verifyVisibleElement("have.value", "Jack");
+  });
+
+  it("should verify server-side paginaion", () => {
+    let dsName = fake.companyName;
+    cy.apiCreateGDS(
+      "http://localhost:3000/api/v2/data_sources",
+      `cypress-${dsName}-postgresql`,
+      "postgresql",
+      [
+        { key: "host", value: Cypress.env("pg_host") },
+        { key: "port", value: 5432 },
+        { key: "database", value: Cypress.env("pg_user") },
+        { key: "username", value: Cypress.env("pg_user") },
+        { key: "password", value: Cypress.env("pg_password"), encrypted: true },
+        { key: "ssl_enabled", value: false, encrypted: false },
+        { key: "ssl_certificate", value: "none", encrypted: false },
+      ]
+    );
+    cy.apiAddQueryToApp(
+      "q112",
+      {
+        mode: "sql",
+        transformationLanguage: "javascript",
+        enableTransformation: false,
+        query: `SELECT *
+        FROM server_side_pagination
+        ORDER BY id
+        LIMIT 10 OFFSET {{(components.table1.pageIndex-1)*10}};`,
+      },
+      `cypress-${dsName}-postgresql`,
+      "postgresql"
+    );
+    cy.reload();
+    openEditorSidebar(tableText.defaultWidgetName);
+    cy.get("[data-state=off]:eq(3)").click();
+    cy.get(
+      '[data-cy="total-records-server-side-input-field"]'
+    ).clearAndTypeOnCodeMirror("50");
+
+    selectEvent("Page changed", "Run Query", 1);
+    cy.get('[data-cy="query-selection-field"]')
+      .click()
+      .find("input")
+      .type(`{selectAll}{backspace}q112{enter}`);
+    cy.get('[data-cy="table-data-input-field"]').clearAndTypeOnCodeMirror(
+      `{{queries.q112.data`
+    );
+    cy.get('[data-cy="pagination-button-to-next"]').click();
+    waitForQueryAction("run");
+    cy.get('[data-cy="11-cell-0"]').verifyVisibleElement("have.text", "11");
+    cy.get('[data-cy="pagination-button-to-previous"]').click();
+    waitForQueryAction("run");
+    cy.get('[data-cy="1-cell-0"]').verifyVisibleElement("have.text", "1");
+
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.wait(4000);
+    cy.get('[data-cy="pagination-button-to-next"]').click();
+    cy.get('[data-cy="11-cell-0"]', { timeout: 10000 }).verifyVisibleElement(
+      "have.text",
+      "11"
+    );
+    cy.get('[data-cy="pagination-button-to-previous"]').click();
+    cy.get('[data-cy="1-cell-0"]', { timeout: 10000 }).verifyVisibleElement(
+      "have.text",
+      "1"
+    );
   });
 });

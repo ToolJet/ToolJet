@@ -102,7 +102,8 @@ module.exports = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc.`,
+      copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc.
+      <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=4f00afac-ae1f-4cf6-8c53-8a2c7b3ca206" />`,
     },
     algolia: {
       appId: 'O8HQRLI0WA',
@@ -121,12 +122,17 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false,
-          lastVersion: '2.25.0',
+          lastVersion: '2.30.0',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
-        sitemap: {},
+        sitemap: {
+          changefreq: 'weekly',
+          priority: 0.5,
+          ignorePatterns: ['/docs/1.x.x/**'],
+          filename: 'sitemap.xml',
+        },
         googleTagManager: isProd
           ? {
             containerId: process.env.GTM,

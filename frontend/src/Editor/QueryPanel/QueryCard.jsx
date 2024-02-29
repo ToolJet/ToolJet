@@ -10,8 +10,10 @@ import { shallow } from 'zustand/shallow';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { isQueryRunnable } from '@/_helpers/utils';
+import { useModuleName } from '@/_contexts/ModuleContext';
 
 export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => {
+  const moduleName = useModuleName();
   const selectedQuery = useSelectedQuery();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
   const { deleteDataQueries, renameQuery, duplicateQuery } = useDataQueriesActions();
@@ -42,7 +44,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
     if (name === newName) {
       return setRenamingQuery(false);
     }
-    const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
+    const isNewQueryNameAlreadyExists = checkExistingQueryName(newName, moduleName);
     if (newName && !isNewQueryNameAlreadyExists) {
       renameQuery(dataQuery?.id, newName, editorRef);
       setRenamingQuery(false);
@@ -117,8 +119,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
               <span className="d-flex" data-tooltip-id="query-card-btn-tooltip" data-tooltip-content="Rename query">
                 <svg
                   data-cy={`edit-query-${dataQuery.name.toLowerCase()}`}
-                  width="auto"
-                  height="auto"
+                  width="100%"
+                  height="100%"
                   viewBox="0 0 19 20"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -152,8 +154,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
                   <span className="d-flex">
                     <svg
                       data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
-                      width="auto"
-                      height="auto"
+                      width="100%"
+                      height="100%"
                       viewBox="0 0 18 20"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"

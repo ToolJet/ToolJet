@@ -164,7 +164,6 @@ export const DropDown = function DropDown({
       boxShadow: state.isFocused ? boxShadow : boxShadow,
       borderRadius: Number.parseFloat(borderRadius),
     }),
-
     valueContainer: (provided, _state) => ({
       ...provided,
       height: height,

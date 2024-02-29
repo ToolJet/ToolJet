@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useRef, useMemo, useContext } from 'react';
 import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
@@ -17,8 +17,10 @@ import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useSuperStore } from '@/_stores/superStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
+import { ModuleContext } from '../_contexts/ModuleContext';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
@@ -51,6 +53,8 @@ export const Container = ({
   // redundant save on app definition load
   const firstUpdate = useRef(true);
 
+  const moduleName = useContext(ModuleContext);
+
   const { showComments, currentLayout } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
@@ -74,7 +78,7 @@ export const Container = ({
   const gridWidth = canvasWidth / NO_OF_GRIDS;
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
-    maxWidth: `${canvasWidth}px`,
+    maxWidth: currentLayout === 'mobile' ? deviceWindowWidth : `${canvasWidth}px`,
     backgroundSize: `${gridWidth}px 10px`,
   };
 
@@ -240,7 +244,6 @@ export const Container = ({
 
       const bottomPadding = mode === 'view' ? 100 : 300;
       const frameHeight = mode === 'view' ? 45 : 85;
-
       setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`);
     },
     [setCanvasHeight, currentLayout, mode]
@@ -334,7 +337,8 @@ export const Container = ({
 
       let newBoxes = { ...boxes };
 
-      for (const selectedComponent of useEditorStore.getState().selectedComponents) {
+      for (const selectedComponent of useSuperStore.getState().modules[moduleName].useEditorStore.getState()
+        .selectedComponents) {
         newBoxes = produce(newBoxes, (draft) => {
           if (draft[selectedComponent.id]) {
             const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
@@ -562,7 +566,6 @@ export const Container = ({
     },
     [setIsDragging]
   );
-
   const containerProps = useMemo(() => {
     return {
       mode,

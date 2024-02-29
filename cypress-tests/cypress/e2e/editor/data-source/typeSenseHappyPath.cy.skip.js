@@ -17,11 +17,13 @@ import {
 } from "Support/utils/postgreSql";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on connection form", () => {
@@ -30,11 +32,11 @@ describe("Data sources", () => {
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources
+      postgreSqlText.allDataSources()
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase
+      postgreSqlText.allDatabase()
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -45,7 +47,7 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "TypeSense", data.lastName);
+    selectAndAddDataSource("databases", "TypeSense", data.dataSourceName);
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -94,11 +96,11 @@ describe("Data sources", () => {
       "have.text",
       "Ensure that apiKey is set"
     );
-    deleteDatasource(`cypress-${data.lastName}-typesense`);
+    deleteDatasource(`cypress-${data.dataSourceName}-typesense`);
   });
 
   it("Should verify the functionality of TypeSense connection form.", () => {
-    selectAndAddDataSource("databases", "TypeSense", data.lastName);
+    selectAndAddDataSource("databases", "TypeSense", data.dataSourceName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -130,9 +132,12 @@ describe("Data sources", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.lastName}-typesense-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-typesense`);
+      `[data-cy="cypress-${data.dataSourceName}-typesense-button"]`
+    ).verifyVisibleElement(
+      "have.text",
+      `cypress-${data.dataSourceName}-typesense`
+    );
 
-    deleteDatasource(`cypress-${data.lastName}-typesense`);
+    deleteDatasource(`cypress-${data.dataSourceName}-typesense`);
   });
 });

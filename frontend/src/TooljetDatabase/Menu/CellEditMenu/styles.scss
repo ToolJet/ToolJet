@@ -1,0 +1,53 @@
+.tjdb-table-cell-edit-popover {
+    min-width: 300px;
+    height: auto;
+    margin-top: 2px;
+
+    .tjdb-bool-cell-menu-badge-default {
+        padding: 2px 12px;
+        border-radius: 20px;
+        background: var(--slate3);
+        color: #687076;
+        font-size: 14px;
+        height: 26px;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+    .boolean-state-selected {
+        border-color:#3E63DD;
+        background: var(--indigo3);
+        color: #3E63DD;
+    }
+
+    .tjdb-cell-menu-shortcuts-info {
+        display: flex;
+        justify-content: center;
+        width: 24px;
+        border-radius: 4px;
+        border: 1px solid #D7DBDF;
+        padding: 4px;
+        font-size: 8px;
+        color: #889096;
+    }
+
+    .tjdb-cell-menu-shortcuts-text {
+        font-size: 10px;
+        color: #7E868C;
+    }
+
+    .cell-editmenu-keyActions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 5px;
+  
+      .leftNav-parent-container,
+      .rightNav-parent-container {
+        border-radius: 6px;
+        border: 1px solid var(--slate7);
+        width: 24px;
+        text-align: center;
+      }
+    }
+}

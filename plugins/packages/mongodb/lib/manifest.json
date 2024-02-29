@@ -111,6 +111,7 @@
         "label": "Connection string",
         "key": "connection_string",
         "type": "text",
+        "encrypted": true,
         "description": "mongodb+srv://tooljet:<password>@cluster0.i1vq4.mongodb.net/mydb?retryWrites=true&w=majority"
       }
     }

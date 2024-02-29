@@ -9,17 +9,28 @@
   <% } %>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ToolJet - Dashboard</title>
+  <title>ToolJet</title>
 
   <style>
     a {
       cursor: pointer;
     }
 
+    body {
+      margin: 0;
+    }
+
     .load {
-      display: flex;
+      display: none;
       justify-content: center;
-      margin: 200px auto;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .load.dark-loader {
+      display: flex;
+      background-color: #1f2936;
+      margin: 0;
     }
 
     .load div {
@@ -107,13 +118,13 @@
   </style>
 
   <link rel="icon" href="assets/images/logo.svg" sizes="any" type="image/svg+xml" />
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.2/full/pyodide.js"></script>
+  <script src="assets/libs/pyodide-0.23.2/pyodide.js"></script>
 </head>
 
 <body>
   <div id="app">
     <div style="width: 100%">
-      <div class="load">
+      <div id="app-loader" class="load">
         <div class="one"></div>
         <div class="two"></div>
         <div class="three"></div>
@@ -121,5 +132,15 @@
     </div>
   </div>
 </body>
-
+<script>
+  if (typeof localStorage !== 'undefined') {
+      const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
+      const loaderElement = document.getElementById('app-loader');
+      if (darkModeEnabled) {
+        loaderElement.classList.add('dark-loader');
+      } else {
+        loaderElement.style.display = 'flex';
+      }
+  }
+</script>
 </html>

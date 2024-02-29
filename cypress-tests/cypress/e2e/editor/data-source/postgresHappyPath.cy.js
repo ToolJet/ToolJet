@@ -16,24 +16,28 @@ import {
 import { deleteDatasource } from "Support/utils/dataSource";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on connection form", () => {
+    cy.log(process.env.NODE_ENV);
+    cy.log(postgreSqlText.allDatabase());
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.wait(1000);
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources
+      postgreSqlText.allDataSources()
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase
+      postgreSqlText.allDatabase()
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -47,7 +51,7 @@ describe("Data sources", () => {
     selectAndAddDataSource(
       "databases",
       postgreSqlText.postgreSQL,
-      data.lastName
+      data.dataSourceName
     );
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
@@ -106,14 +110,14 @@ describe("Data sources", () => {
       postgreSqlText.buttonTextSave
     );
     cy.get('[data-cy="connection-alert-text"]').should("be.visible");
-    deleteDatasource(`cypress-${data.lastName}-postgresql`);
+    deleteDatasource(`cypress-${data.dataSourceName}-postgresql`);
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
     selectAndAddDataSource(
       "databases",
       postgreSqlText.postgreSQL,
-      data.lastName
+      data.dataSourceName
     );
 
     fillDataSourceTextField(
@@ -143,7 +147,7 @@ describe("Data sources", () => {
     );
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       Cypress.env("pg_password")
     );
 
@@ -160,17 +164,20 @@ describe("Data sources", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.lastName}-postgresql-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-postgresql`);
+      `[data-cy="cypress-${data.dataSourceName}-postgresql-button"]`
+    ).verifyVisibleElement(
+      "have.text",
+      `cypress-${data.dataSourceName}-postgresql`
+    );
 
-    deleteDatasource(`cypress-${data.lastName}-postgresql`);
+    deleteDatasource(`cypress-${data.dataSourceName}-postgresql`);
   });
 
   it.skip("Should verify elements of the Query section.", () => {
     selectAndAddDataSource(
       "databases",
       postgreSqlText.postgreSQL,
-      data.lastName
+      data.dataSourceName
     );
     fillConnectionForm(
       {
@@ -365,7 +372,7 @@ describe("Data sources", () => {
     selectAndAddDataSource(
       "databases",
       postgreSqlText.postgreSQL,
-      data.lastName
+      data.dataSourceName
     );
 
     cy.clearAndType(
@@ -456,7 +463,7 @@ describe("Data sources", () => {
     selectAndAddDataSource(
       "databases",
       postgreSqlText.postgreSQL,
-      data.lastName
+      data.dataSourceName
     );
     fillConnectionForm({
       Host: Cypress.env("pg_host"),

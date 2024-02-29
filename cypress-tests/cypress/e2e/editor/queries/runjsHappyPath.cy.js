@@ -7,7 +7,7 @@ import { buttonText } from "Texts/button";
 import {
   verifyControlComponentAction,
   randomString,
-} from "Support/utils/textInput";
+} from "Support/utils/editor/textInput";
 import {
   openAccordion,
   verifyAndModifyParameter,
@@ -64,11 +64,12 @@ import { deleteDownloadsFolder } from "Support/utils/common";
 describe("RunJS", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.apiCreateApp(`${fake.companyName}-runjs-App`);
     cy.openApp();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
     resizeQueryPanel("80");
+    deleteDownloadsFolder();
   });
 
   it("should verify basic runjs", () => {
@@ -91,7 +92,6 @@ describe("RunJS", () => {
 
   it("should verify actions", () => {
     const data = {};
-    deleteDownloadsFolder();
     data.customText = randomString(12);
 
     selectQueryFromLandingPage("runjs", "JavaScript");
@@ -146,7 +146,7 @@ describe("RunJS", () => {
     cy.url().should("contain", "/home");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Modal");
+    cy.dragAndDropWidget("Modal", 200, 300);
     cy.waitForAutoSave();
     addInputOnQueryField("runjs", "actions.showModal('modal1');");
     query("run");
@@ -201,6 +201,7 @@ describe("RunJS", () => {
     cy.get('[data-cy="sign-in-header"]').should("be.visible");
     cy.apiLogin();
     cy.openApp(
+      Cypress.env("workspaceId"),
       Cypress.env("appId"),
       '[data-cy="draggable-widget-modal1-launch-button"]'
     );

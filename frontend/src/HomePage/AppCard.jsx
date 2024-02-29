@@ -80,7 +80,7 @@ export default function AppCard({
                 </div>
               </div>
             </div>
-            <div visible={focused}>
+            <div visible={focused ? true : undefined}>
               {(canCreateApp(app) || canDeleteApp(app) || canUpdateApp(app)) && (
                 <AppMenu
                   onMenuOpen={onMenuToggle}
@@ -99,7 +99,7 @@ export default function AppCard({
           </div>
         </div>
         <div>
-          <ToolTip message={app.name}>
+          <ToolTip trigger={['hover']} message={app.name}>
             <h3
               className="app-card-name font-weight-500 tj-text-md"
               data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}

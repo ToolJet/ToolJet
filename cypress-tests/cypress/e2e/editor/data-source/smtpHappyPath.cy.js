@@ -10,11 +10,13 @@ import {
 import { deleteDatasource, closeDSModal } from "Support/utils/dataSource";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source SMTP", () => {
   beforeEach(() => {
     cy.appUILogin();
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on  SMTP connection form", () => {
@@ -22,11 +24,11 @@ describe("Data source SMTP", () => {
     closeDSModal();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources
+      postgreSqlText.allDataSources()
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase
+      postgreSqlText.allDatabase()
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -37,7 +39,7 @@ describe("Data source SMTP", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("apis", "SMTP", data.lastName);
+    selectAndAddDataSource("apis", "SMTP", data.dataSourceName);
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -84,11 +86,11 @@ describe("Data source SMTP", () => {
       "have.text",
       "Invalid credentials"
     );
-    deleteDatasource(`cypress-${data.lastName}-smtp`);
+    deleteDatasource(`cypress-${data.dataSourceName}-smtp`);
   });
 
   it("Should verify the functionality of SMTP connection form.", () => {
-    selectAndAddDataSource("apis", "SMTP", data.lastName);
+    selectAndAddDataSource("apis", "SMTP", data.dataSourceName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -109,7 +111,7 @@ describe("Data source SMTP", () => {
 
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       Cypress.env("smtp_password")
     );
 
@@ -128,8 +130,8 @@ describe("Data source SMTP", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.lastName}-smtp-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-smtp`);
-    deleteDatasource(`cypress-${data.lastName}-smtp`);
+      `[data-cy="cypress-${data.dataSourceName}-smtp-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.dataSourceName}-smtp`);
+    deleteDatasource(`cypress-${data.dataSourceName}-smtp`);
   });
 });
