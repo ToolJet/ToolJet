@@ -9,6 +9,7 @@ import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/
 
 export function Authorize({ navigate }) {
   const [error, setError] = useState('');
+  const [inviteeEmail, setInviteeEmail] = useState();
   const router = useRouter();
 
   const organizationId = authenticationService.getLoginOrganizationId();
@@ -75,7 +76,13 @@ export function Authorize({ navigate }) {
           onLoginSuccess(restResponse, navigate);
         }
       })
-      .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));
+      .catch((err) => {
+        const details = err?.data?.message;
+        const inviteeEmail = details?.inviteeEmail;
+        if (inviteeEmail) setInviteeEmail(inviteeEmail);
+        const errMessage = details?.message || err?.error || 'something went wrong';
+        setError(`${configs.name} login failed - ${errMessage}`);
+      });
   };
 
   const baseRoute = signupOrganizationSlug ? '/signup' : '/login';
@@ -92,7 +99,7 @@ export function Authorize({ navigate }) {
           to={errorURL}
           state={{
             errorMessage: error && error,
-            ...(inviteFlowIdentifier ? { organizationToken: inviteFlowIdentifier } : {}),
+            ...(inviteFlowIdentifier ? { organizationToken: inviteFlowIdentifier, inviteeEmail } : {}),
           }}
         />
       )}
