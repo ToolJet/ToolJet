@@ -1,7 +1,6 @@
 import React from 'react';
 import _, { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
-import LogoIcon from '@assets/images/rocket.svg';
 import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
@@ -10,6 +9,7 @@ import { redirectToDashboard } from '@/_helpers/routes';
 import classNames from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import PreviewSettings from './PreviewSettings';
+import AppLogo from '@/_components/AppLogo';
 
 const DesktopHeader = ({
   showHeader,
@@ -38,7 +38,7 @@ const DesktopHeader = ({
             redirectToDashboard();
           }}
         >
-          <LogoIcon />
+          <AppLogo isLoadingFromHeader={false} />
         </Link>
       </h1>
       <div className="navbar-seperator" style={{ margin: '0px 1.375rem' }}></div>
