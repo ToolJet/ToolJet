@@ -109,7 +109,7 @@
     opacity: 0;
 }
 
-.visible-movable-control-box {
+.dragged-movable-control-box, [data-hovered-control="true"] {
     opacity: 1 !important;
 }
 
@@ -118,12 +118,23 @@
     border: 5px solid #fff0;
 }
 
-.moveable-resizable {
+.moveable-resizable[data-rotation="0"], .moveable-resizable[data-rotation="90"] {
     opacity: 0;
+    width: 1px;
+    height: 1px;
 }
 
 .resizing-target * {
     opacity: 0;
 }
 
+
+.moveable-control {
+    width: 8px !important;
+    height: 8px !important;
+    border: 1px solid var(--moveable-color) !important;
+    background: #fff !important;
+    margin-top: -4px !important;
+    margin-left: -4px !important;
+}
 /*  */

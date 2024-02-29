@@ -1,3 +1,4 @@
+import { useEditorStore } from './editorStore';
 import { create, zustandDevTools } from './utils';
 import { shallow } from 'zustand/shallow';
 
@@ -36,11 +37,22 @@ export const useGridStore = create(
 
 useGridStore.subscribe(({ draggingComponentId }) => {
   if (draggingComponentId) {
-    document.querySelector(`[target-id='${draggingComponentId}']`).classList.add('visible-movable-control-box');
-  } else if (document.querySelector(`.visible-movable-control-box`)) {
-    document.querySelector(`.visible-movable-control-box`).classList.remove('visible-movable-control-box');
+    document.querySelector(`.dragged-movable-control-box`)?.classList?.remove('dragged-movable-control-box');
+    document.querySelector(`[target-id='${draggingComponentId}']`).classList.add('dragged-movable-control-box');
+  } else if (document.querySelector(`.dragged-movable-control-box`)) {
+    document.querySelector(`.dragged-movable-control-box`)?.classList.remove('dragged-movable-control-box');
   }
 });
+
+// useEditorStore.subscribe(({ hoveredComponent }) => {
+//   console.log('hoveredComponent--', hoveredComponent);
+//   if (hoveredComponent) {
+//     document.querySelector(`[data-hovered-control]`)?.removeAttribute('data-hovered-control');
+//     document.querySelector(`[target-id='${hoveredComponent}']`)?.setAttribute('data-hovered-control', true);
+//   } else if (document.querySelector(`[data-hovered-control]`)) {
+//     document.querySelector(`[data-hovered-control]`)?.removeAttribute('data-hovered-control');
+//   }
+// });
 
 export const useActiveGrid = () => useGridStore((state) => state.activeGrid, shallow);
 export const useNoOfGrid = () => useGridStore((state) => state.noOfGrid, shallow);
