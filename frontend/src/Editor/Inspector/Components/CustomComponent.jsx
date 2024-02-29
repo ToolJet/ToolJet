@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderElement } from '../Utils';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import Accordion from '@/_ui/Accordion';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const CustomComponent = function CustomComponent({
   dataQueries,
@@ -20,8 +20,8 @@ export const CustomComponent = function CustomComponent({
     title: 'Data',
     children: (
       <CodeHinter
+        type="basic"
         initialValue={args.value ?? {}}
-        theme={darkMode ? 'monokai' : 'base16-light'}
         onChange={(value) => paramUpdated({ name: 'data' }, 'value', value, 'properties')}
         componentName={`component/${component.component.name}/data`}
       />
@@ -32,16 +32,16 @@ export const CustomComponent = function CustomComponent({
     title: 'Code',
     children: (
       <CodeHinter
+        type="basic"
         initialValue={code.value ?? {}}
         theme={darkMode ? 'monokai' : 'base16-light'}
-        mode="jsx"
-        lineNumbers
+        lang="jsx"
+        lineNumbers={true}
         className="custom-component"
         onChange={(value) => paramUpdated({ name: 'code' }, 'value', value, 'properties')}
         componentName={`component/${component.component.name}/code`}
-        enablePreview={false}
         height={400}
-        hideSuggestion
+        hideSuggestion={true}
       />
     ),
   });

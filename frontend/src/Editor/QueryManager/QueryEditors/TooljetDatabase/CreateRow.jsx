@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import Select from '@/_ui/Select';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
   const mounted = useMounted();
@@ -148,10 +148,9 @@ const RenderColumnOptions = ({
 
         <div className="field col-6 mx-1">
           <CodeHinter
+            type="basic"
             initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
             className="codehinter-plugins"
-            theme={darkMode ? 'monokai' : 'default'}
-            height={'32px'}
             placeholder="key"
             onChange={(newValue) => handleValueChange(newValue)}
           />

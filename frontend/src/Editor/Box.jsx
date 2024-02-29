@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext, useRef, memo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useContext, memo } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -167,10 +167,9 @@ export const Box = memo(
     const [resetComponent, setResetStatus] = useState(false);
 
     const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
-    const [validatedProperties, propertyErrors] =
-      mode === 'edit' && component.validate
-        ? validateProperties(resolvedProperties, componentMeta.properties)
-        : [resolvedProperties, []];
+    const [validatedProperties, propertyErrors] = component.validate
+      ? validateProperties(resolvedProperties, componentMeta.properties)
+      : [resolvedProperties, []];
 
     const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
 
@@ -178,19 +177,18 @@ export const Box = memo(
       mode === 'edit' && component.validate
         ? validateProperties(resolvedStyles, componentMeta.styles)
         : [resolvedStyles, []];
+    validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
 
     const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
-    const [validatedGeneralProperties, generalPropertiesErrors] =
-      mode === 'edit' && component.validate
-        ? validateProperties(resolvedGeneralProperties, componentMeta.general)
-        : [resolvedGeneralProperties, []];
+    const [validatedGeneralProperties, generalPropertiesErrors] = component.validate
+      ? validateProperties(resolvedGeneralProperties, componentMeta.general)
+      : [resolvedGeneralProperties, []];
 
     const resolvedGeneralStyles = resolveGeneralStyles(component, currentState, null, customResolvables);
     resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
-    const [validatedGeneralStyles, generalStylesErrors] =
-      mode === 'edit' && component.validate
-        ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
-        : [resolvedGeneralStyles, []];
+    const [validatedGeneralStyles, generalStylesErrors] = component.validate
+      ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
+      : [resolvedGeneralStyles, []];
 
     const darkMode = localStorage.getItem('darkMode') === 'true';
     const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
@@ -246,7 +244,7 @@ export const Box = memo(
       }
 
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
+    }, [JSON.stringify({ validatedProperties, validatedStyles })]);
 
     useEffect(() => {
       if (customResolvables && !readOnly && mode === 'edit') {

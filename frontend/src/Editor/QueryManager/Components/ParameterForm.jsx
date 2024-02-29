@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Form, Popover, Row, Col, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import Information from '@/_ui/Icon/solidIcons/Information';
+import CodeHinter from '@/Editor/CodeEditor';
 
 const isValidVariableName = (str) => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(str);
 
