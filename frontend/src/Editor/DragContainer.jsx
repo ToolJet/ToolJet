@@ -48,6 +48,10 @@ export default function DragContainer({
           if (useGridStore.getState().isGroupHandleHoverd) {
             useGridStore.getState().actions.setIsGroupHandleHoverd(false);
           }
+          const parentElm = lastDraggedEventsRef?.current?.events?.[0]?.target?.closest('.real-canvas');
+          if (parentElm && parentElm?.classList?.contains('show-grid')) {
+            parentElm?.classList?.remove('show-grid');
+          }
         }}
         onMouseDownCapture={() => {
           console.log('components>>>onMouseDownCapture');
@@ -97,7 +101,7 @@ export default function DragContainer({
     events: {},
     mouseEnter(e) {
       const controlBoxes = document.getElementsByClassName('moveable-control-box');
-      console.log('MouseCustomAble ENTER', e._dragTarget.id);
+      console.log('MouseCustomAble ENTER', e._dragTarget);
       for (const element of controlBoxes) {
         element.classList.remove('moveable-control-box-d-block');
       }
@@ -105,7 +109,7 @@ export default function DragContainer({
       e.controlBox.classList.add('moveable-control-box-d-block');
     },
     mouseLeave(e) {
-      console.log('MouseCustomAble LEAVE', e._dragTarget.id);
+      console.log('MouseCustomAble LEAVE', e._dragTarget);
       e.props.target.classList.remove('hovered');
       e.controlBox.classList.remove('moveable-control-box-d-block');
     },
@@ -875,9 +879,17 @@ export default function DragContainer({
               element.classList.remove('show-grid');
               element.classList.add('hide-grid');
             });
-            document.getElementById('canvas-' + draggedOverElem?.id)?.classList.add('show-grid');
+            const parentWidgetId = draggedOverContainer.getAttribute('data-parent') || draggedOverElem?.id;
+            console.log('parentWidgetId-->', draggedOverContainer, parentWidgetId);
+            document.getElementById('canvas-' + parentWidgetId)?.classList.add('show-grid');
 
             draggedOverElemId = draggedOverElem?.id;
+            console.log(
+              'draggedOverElemRef=>',
+              draggedOverContainer,
+              draggedOverElemRef.current?.id !== draggedOverContainer?.id,
+              !draggedOverContainer.classList.contains('hide-grid')
+            );
             if (
               draggedOverElemRef.current?.id !== draggedOverContainer?.id &&
               !draggedOverContainer.classList.contains('hide-grid')
@@ -897,8 +909,8 @@ export default function DragContainer({
           debouncedOnDrag(events);
         }}
         onDragGroupStart={({ events }) => {
-          const parentElm = events[0].target.closest('.real-canvas');
-          parentElm.classList.add('show-grid');
+          const parentElm = events[0]?.target?.closest('.real-canvas');
+          parentElm?.classList?.add('show-grid');
         }}
         onDragGroupEnd={(e) => {
           try {
@@ -939,13 +951,14 @@ export default function DragContainer({
         //   center: true,
         //   middle: true,
         // }}
-        snapThreshold={5}
+        snapThreshold={10}
         // elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
         isDisplaySnapDigit={false}
         // snapGridWidth={gridWidth}
         bounds={{ left: 0, top: 0, right: 0, bottom: 0, position: 'css' }}
         displayAroundControls={true}
-        controlPadding={10}
+        controlPadding={20}
+        // hideDefaultLines
       />
     </>
   ) : (
