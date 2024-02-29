@@ -5,7 +5,6 @@ import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Checkbox } from '@/_ui/CheckBox/CheckBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import { Tooltip } from 'react-tooltip';
 
 const { MenuList } = components;
 export const CustomSelect = ({
@@ -46,18 +45,29 @@ export const CustomSelect = ({
       ...provided,
       color: textColor,
     }),
-    multiValue: (provided) => ({
-      ...provided,
-      display: 'inline-block', // Display selected options inline
-      marginRight: '4px', // Add some space between options
+    ...(isMulti && {
+      multiValue: (provided) => ({
+        ...provided,
+        display: 'inline-block', // Display selected options inline
+        marginRight: '4px', // Add some space between options
+      }),
+      valueContainer: (provided, _state) => ({
+        ...provided,
+        marginBottom: '0',
+        display: 'flex',
+        flexWrap: 'no-wrap',
+        overflow: 'hidden',
+        flexDirection: 'row',
+      }),
     }),
-    valueContainer: (provided, _state) => ({
-      ...provided,
-      marginBottom: '0',
-      display: 'flex',
-      flexWrap: 'no-wrap',
-      overflow: 'hidden',
-      flexDirection: 'row',
+  };
+  const customCustomComponents = {
+    MenuList: CustomMenuList,
+    Option: CustomMultiSelectOption,
+    DropdownIndicator,
+    ...(isMulti && {
+      MultiValueRemove,
+      MultiValueContainer: customMultiValueContainer,
     }),
   };
 
@@ -65,8 +75,8 @@ export const CustomSelect = ({
   return (
     <OverlayTrigger
       placement="bottom"
-      overlay={getOverlay(value, containerWidth)}
-      trigger={['hover', 'focus']}
+      overlay={isMulti && getOverlay(value, containerWidth, isMulti)}
+      trigger={isMulti && ['hover', 'focus']}
       rootClose={true}
     >
       <div className="w-100 h-100 d-flex align-items-center">
@@ -76,12 +86,7 @@ export const CustomSelect = ({
           fuzzySearch={fuzzySearch}
           isDisabled={disabled}
           className={className}
-          components={{
-            MenuList: CustomMenuList,
-            Option: CustomMultiSelectOption,
-            MultiValueRemove,
-            MultiValueContainer: customMultiValueContainer,
-          }}
+          components={customCustomComponents}
           value={value}
           onMenuInputFocus={() => setIsFocused(true)}
           onChange={(value) => {
@@ -152,11 +157,18 @@ const CustomMenuList = ({ selectProps, ...props }) => {
 const CustomMultiSelectOption = ({ innerRef, innerProps, children, isSelected, ...props }) => {
   return (
     <div ref={innerRef} {...innerProps} className="option-wrapper d-flex">
-      <Checkbox label="" isChecked={isSelected} onChange={(e) => e.stopPropagation()} key="" value={children} />
+      {props.isMulti ? (
+        <Checkbox label="" isChecked={isSelected} onChange={(e) => e.stopPropagation()} key="" value={children} />
+      ) : (
+        <div style={{ visibility: isSelected ? 'visible' : 'hidden' }}>
+          <Checkbox label="" isChecked={isSelected} onChange={(e) => e.stopPropagation()} key="" value={children} />
+        </div>
+      )}
       {children}
     </div>
   );
 };
+
 const MultiValueRemove = (props) => {
   const { innerProps } = props;
   return <div {...innerProps} />;
@@ -210,5 +222,18 @@ const getOverlay = (value, containerWidth) => {
     </div>
   ) : (
     <div></div>
+  );
+};
+
+const DropdownIndicator = (props) => {
+  return (
+    <div {...props}>
+      {/* Your custom SVG */}
+      {props.selectProps.menuIsOpen ? (
+        <SolidIcon name="arrowUpTriangle" width="16" height="16" fill={'#6A727C'} />
+      ) : (
+        <SolidIcon name="arrowDownTriangle" width="16" height="16" fill={'#6A727C'} />
+      )}
+    </div>
   );
 };
