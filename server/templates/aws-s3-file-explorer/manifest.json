@@ -4,5 +4,5 @@
   "widgets": ["Table", "Chart"],
   "sources": [{ "name": "AWS S3", "id": "s3" }],
   "id": "aws-s3-file-explorer",
-  "category": "product-management"
+  "category": "data-management"
 }
