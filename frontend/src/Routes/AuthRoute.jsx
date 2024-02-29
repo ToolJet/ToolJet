@@ -30,8 +30,11 @@ export const AuthRoute = ({ children, navigate }) => {
   useEffect(
     () => {
       const isInviteFlow = !!location.state?.organizationToken;
-      if (organizationSlug && !isInviteFlow) {
-        console.log('inside-navigate');
+      const isSignUpRoute = location.pathname.startsWith('/signup');
+      const shouldRedirectToSignup = isSignUpRoute && organizationSlug && !isInviteFlow;
+      if (shouldRedirectToSignup) {
+        /* workspace signup is now allowed only for invite flow */
+        navigate('/signup');
       } else {
         authenticationService.deleteAllAuthCookies();
         fetchOrganizationDetails();
