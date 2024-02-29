@@ -82,7 +82,7 @@ jobs:
         run: |
           sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
           -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
-          postgrest/postgrest:v10.1.1.20221215
+          postgrest/postgrest
 
       - name: Run plugins compilation in watch mode
         run: cd plugins && npm start &
