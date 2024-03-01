@@ -32,9 +32,14 @@ jobs:
           project_id: tooljet-us
           version: '>= 363.0.0'
 
+      - name: Installing Kubectl
+        run: |
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+          sudo apt-get update
+          sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
+
       - name: Connect to GKE Cluster
         run: |
-          sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
           gcloud container clusters get-credentials tj-stage --region us-central1 --project tooljet-us
 
       - name:  View the pods
