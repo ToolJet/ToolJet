@@ -325,6 +325,7 @@ export class OauthService {
           const updatableUserParams = {
             ...getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso),
             ...{ invitationToken: null },
+            ...(!userDetails?.password && { password: uuid.v4() }), // Default password for sso-signed workspace user
           };
           // User account setup not done, updating source and status
           await this.usersService.updateUser(userDetails.id, updatableUserParams, manager);
