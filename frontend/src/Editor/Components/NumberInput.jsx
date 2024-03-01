@@ -166,13 +166,7 @@ export const NumberInput = function NumberInput({
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     boxShadow: boxShadow,
-    padding: styles.iconVisibility
-      ? height < 20
-        ? '0px 10px 0px 29px'
-        : '8px 10px 8px 29px'
-      : height < 20
-      ? '0px 10px'
-      : '8px 10px',
+    padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     color: textColor !== '#1B1F24' ? textColor : disable ? 'var(--text-disabled)' : 'var(--text-primary)',
@@ -380,7 +374,7 @@ export const NumberInput = function NumberInput({
               <div onClick={(e) => handleIncrement(e)}>
                 <SolidIcon
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  height={`${padding == 'default' ? `${height / 2}px` : `${height / 2 + 2}px`}`}
+                  height={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
                   style={{
                     top: defaultAlignment === 'top' && label?.length > 0 && width > 0 ? '21px' : '1px',
                     right:
@@ -398,12 +392,7 @@ export const NumberInput = function NumberInput({
                         ? '1px solid var(--borders-disabled-on-white)'
                         : '.5px solid var(--borders-default)',
                     borderTopRightRadius: borderRadius - 1,
-                    backgroundColor:
-                      loading || disable
-                        ? darkMode
-                          ? 'var(--surfaces-app-bg-default)'
-                          : 'var(--surfaces-surface-03)'
-                        : ' var(--surfaces-surface-01)',
+                    backgroundColor: 'transparent',
                     zIndex: 3,
                   }}
                   className="numberinput-up-arrow arrow"
@@ -430,16 +419,11 @@ export const NumberInput = function NumberInput({
                         ? '1px solid var(--borders-disabled-on-white)'
                         : '.5px solid var(--borders-default)',
                     borderBottomRightRadius: borderRadius - 1,
-                    backgroundColor:
-                      loading || disable
-                        ? darkMode
-                          ? 'var(--surfaces-app-bg-default)'
-                          : 'var(--surfaces-surface-03)'
-                        : ' var(--surfaces-surface-01)',
+                    backgroundColor: 'transparent',
                     zIndex: 3,
                   }}
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  height={`${padding == 'default' ? `${height / 2}px` : `${height / 2 + 2}px`}`}
+                  height={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
                   className="numberinput-down-arrow arrow"
                   name="cheverondown"
                 ></SolidIcon>

@@ -68,14 +68,7 @@ export const PasswordInput = function PasswordInput({
         : 'var(--surfaces-surface-03)'
       : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
-    padding: styles.iconVisibility
-      ? height < 20
-        ? '0px 10px 0px 29px'
-        : '8px 10px 8px 29px'
-      : height < 20
-      ? '0px 10px'
-      : '8px 10px',
-
+    padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     color: textColor !== '#1B1F24' ? textColor : disable ? 'var(--text-disabled)' : 'var(--text-primary)',
