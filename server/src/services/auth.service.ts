@@ -132,7 +132,8 @@ export class AuthService {
           // default organization form login not enabled, picking first one from form enabled list
           organization = organizationList[0];
         } else {
-          const isInviteRedirect = redirectTo.startsWith('/organization-invitations/');
+          const isInviteRedirect =
+            redirectTo.startsWith('/organization-invitations/') || redirectTo.startsWith('/invitations/');
           // no form login enabled organization available for user - creating new one
           if (!isInviteRedirect) {
             const { name, slug } = generateNextNameAndSlug('My workspace');
