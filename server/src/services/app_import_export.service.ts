@@ -1693,7 +1693,7 @@ function migrateProperties(
   componentTypes: NewRevampedComponent[],
   tooljetVersion: string
 ) {
-  const shouldHandleBackwardCompatibility = isVersionGreaterThanOrEqual(tooljetVersion, '2.32.0');
+  const shouldHandleBackwardCompatibility = isVersionGreaterThanOrEqual(tooljetVersion, '2.29.0');
   const properties = { ...component.properties };
   const styles = { ...component.styles };
   const general = { ...component.general };
