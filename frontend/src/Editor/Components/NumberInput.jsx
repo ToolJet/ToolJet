@@ -386,11 +386,11 @@ export const NumberInput = function NumberInput({
                         : '1px',
                     borderLeft:
                       disable || loading
-                        ? '1px solid var(--borders-disabled-on-white)'
+                        ? '1px solid var(--borders-weak-disabled)'
                         : '1px solid var(--borders-default)',
                     borderBottom:
                       disable || loading
-                        ? '1px solid var(--borders-disabled-on-white)'
+                        ? '1px solid var(--borders-weak-disabled)'
                         : '.5px solid var(--borders-default)',
                     borderTopRightRadius: borderRadius - 1,
                     backgroundColor: 'transparent',
@@ -414,11 +414,11 @@ export const NumberInput = function NumberInput({
                     bottom: '1px',
                     borderLeft:
                       disable || loading
-                        ? '1px solid var(--borders-disabled-on-white)'
+                        ? '1px solid var(--borders-weak-disabled)'
                         : '1px solid var(--borders-default)',
                     borderTop:
                       disable || loading
-                        ? '1px solid var(--borders-disabled-on-white)'
+                        ? '1px solid var(--borders-weak-disabled)'
                         : '.5px solid var(--borders-default)',
                     borderBottomRightRadius: borderRadius - 1,
                     backgroundColor: 'transparent',
