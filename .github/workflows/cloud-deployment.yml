@@ -2,11 +2,14 @@ name: Cloud deployment
 
 on:
 
+  pull_request_target:
+    types: [labeled, unlabeled, closed]
+
   workflow_dispatch:
     inputs:
       image-tag:
         description: Enter the image tag
-        required: false
+        required: true
 
 jobs:
   Deploying:
@@ -14,6 +17,8 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.image-tag != '' }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Authenticate profile
         uses: 'google-github-actions/auth@v2'
@@ -26,6 +31,11 @@ jobs:
           project_id: tooljet-us
           version: '>= 363.0.0'
 
+      - name: Install Google Cloud SDK and components
+        run: |
+          gcloud components install gke-gcloud-auth-plugin
+          gcloud init
+
       - name: Connect to GKE Cluster
         run: |
           gcloud container clusters get-credentials tj-stage --region us-central1 --project tooljet-us
@@ -34,5 +44,8 @@ jobs:
         run: |
           kubectl get pods
 
+      - name: Apply new deployment
+        run: |
+          kubectl set image deployment/tooljet-deployment container=${{ github.event.inputs.image-tag }}
 
 
