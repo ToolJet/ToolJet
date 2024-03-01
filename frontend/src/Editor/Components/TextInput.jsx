@@ -297,7 +297,7 @@ export const TextInput = function TextInput({
                   : '50%'
               }`,
               transform: ' translateY(-50%)',
-              color: iconColor !== '#CCD1D5' ? iconColor : 'var(--icons-weak-disabled)',
+              color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
               zIndex: 3,
             }}
             stroke={1.5}
