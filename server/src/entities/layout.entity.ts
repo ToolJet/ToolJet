@@ -24,6 +24,9 @@ export class Layout {
   @Column({ name: 'component_id' })
   componentId: string;
 
+  @Column({ name: 'dimension_unit' })
+  dimensionUnit: string;
+
   @ManyToOne(() => Component, (component) => component.layouts)
   @JoinColumn({ name: 'component_id' })
   component: Component;

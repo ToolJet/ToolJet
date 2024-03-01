@@ -190,7 +190,7 @@ export class ComponentsService {
             const componentData = component;
             const componentLayout = component.layouts;
 
-            const transformedData = this.createComponentWithLayout(componentData, componentLayout);
+            const transformedData = this.createComponentWithLayout(componentData, componentLayout, manager);
 
             acc[componentId] = transformedData[componentId];
 
@@ -224,14 +224,28 @@ export class ComponentsService {
     return transformedComponents;
   }
 
-  createComponentWithLayout(componentData: Component, layoutData = []) {
+  createComponentWithLayout(componentData: Component, layoutData = [], manager: EntityManager) {
     const { id, name, properties, styles, generalStyles, validation, parent, displayPreferences, general } =
       componentData;
 
     const layouts = {};
 
     layoutData.forEach((layout) => {
-      const { type, top, left, width, height } = layout;
+      const { type, top, left, width, height, dimensionUnit, id } = layout;
+
+      if (dimensionUnit === 'percent') {
+        const adjustedLeftValue = resolveGridPositionForComponent(left, type);
+        manager.update(
+          Layout,
+          {
+            id,
+          },
+          {
+            dimensionUnit: 'count',
+            left: adjustedLeftValue,
+          }
+        );
+      }
 
       layouts[type] = {
         top,
@@ -264,4 +278,10 @@ export class ComponentsService {
 
     return componentWithLayout;
   }
+}
+
+function resolveGridPositionForComponent(dimension: number, type: string) {
+  // const numberOfGrids = type === 'desktop' ? 43 : 12;
+  const numberOfGrids = 43;
+  return Math.round((dimension * numberOfGrids) / 100);
 }
