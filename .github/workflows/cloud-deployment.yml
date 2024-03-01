@@ -6,11 +6,7 @@ on:
     inputs:
       image-tag:
         description: Enter the image tag
-        required: true
-
-env:
-  PROJECT_ID: tooljet-us
-  CLUSTER_NAME: tj-stage
+        required: false
 
 jobs:
   Deploying:
@@ -18,16 +14,21 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.image-tag != '' }}
 
     steps:
+
+      - name: Authenticate profile
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
       - name: Connect to GCP
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: $PROJECT_ID
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
+          project_id: tooljet-us
+          version: '>= 363.0.0'
 
       - name: Connect to GKE Cluster
         run: |
-          gcloud container clusters get-credentials $CLUSTER_NAME --zone ZONE --project $PROJECT_ID
+          gcloud container clusters get-credentials tj-stage --region us-central1 --project tooljet-us
 
       - name:  View the pods
         run: |
