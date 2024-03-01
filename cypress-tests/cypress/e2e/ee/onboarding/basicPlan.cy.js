@@ -56,6 +56,7 @@ describe("", () => {
 
         cy.apiCreateApp(data.appName);
         cy.openApp();
+        cy.waitForAppLoad();
         cy.get(commonSelectors.releaseButton).verifyVisibleElement(
             "have.text",
             "Release"

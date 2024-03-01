@@ -1,12 +1,11 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import {
-    logout,
-    verifyTooltip,
-} from "Support/utils/common";
+import { logout, verifyTooltip } from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { userSignUp } from "Support/utils/onboarding";
-import { promoteApp, releaseApp } from "Support/utils/multiEnv";
+import {
+    promoteApp, appPromote
+} from "Support/utils/multiEnv";
 
 describe("App slug", () => {
     const data = {};
@@ -26,6 +25,8 @@ describe("App slug", () => {
     it("Verify app slug cases in global settings", () => {
         cy.wait(2000);
         cy.openApp("my-workspace");
+        cy.waitForAppLoad();
+
         cy.get(commonSelectors.leftSideBarSettingsButton).click();
         cy.get(commonWidgetSelector.appSlugLabel).verifyVisibleElement(
             "have.text",
@@ -98,6 +99,7 @@ describe("App slug", () => {
             `http://localhost:8082/applications/${data.slug}/home?env=development&version=v1`
         );
         cy.go("back");
+        cy.waitForAppLoad();
         cy.wait(2000);
 
         promoteApp();
@@ -107,6 +109,7 @@ describe("App slug", () => {
             `http://localhost:8082/applications/${data.slug}/home?env=staging&version=v1`
         );
         cy.go("back");
+        cy.waitForAppLoad();
         cy.wait(2000);
 
         promoteApp();
@@ -116,6 +119,7 @@ describe("App slug", () => {
             `http://localhost:8082/applications/${data.slug}/home?env=production&version=v1`
         );
         cy.go("back");
+        cy.waitForAppLoad();
         cy.wait(2000);
 
         releaseApp();
@@ -132,6 +136,7 @@ describe("App slug", () => {
 
         cy.apiCreateApp(data.slug);
         cy.openApp("my-workspace");
+        cy.waitForAppLoad();
 
         cy.get(commonSelectors.leftSideBarSettingsButton).click();
         cy.get(commonWidgetSelector.appSlugInput).clear();
@@ -148,15 +153,15 @@ describe("App slug", () => {
 
         cy.apiCreateApp(data.appName);
         cy.openApp("my-workspace");
+        cy.waitForAppLoad();
 
         cy.get(commonSelectors.leftSideBarSettingsButton).click();
         cy.get(commonWidgetSelector.appSlugInput).clear();
         cy.clearAndType(commonWidgetSelector.appSlugInput, data.slug);
         cy.wait(1000);
 
-        promoteApp();
-        promoteApp();
-        releaseApp();
+        appPromote("development", "release");
+
 
         cy.get(commonWidgetSelector.shareAppButton).click();
         cy.get(commonWidgetSelector.appNameSlugInput).should(
@@ -208,6 +213,7 @@ describe("App slug", () => {
             `http://localhost:8082/applications/${data.slug}/home?env=production&version=v1`
         );
         cy.go("back");
+        cy.waitForAppLoad();
         cy.wait(2000);
 
         cy.visitSlug({
@@ -222,9 +228,8 @@ describe("App slug", () => {
 
         cy.apiCreateApp(data.slug);
         cy.openApp("my-workspace");
-        promoteApp();
-        promoteApp();
-        releaseApp();
+        cy.waitForAppLoad();
+        appPromote("development", "release");
         cy.get(commonWidgetSelector.shareAppButton).click();
         cy.clearAndType(commonWidgetSelector.appNameSlugInput, data.slug);
         cy.get(commonWidgetSelector.appSlugErrorLabel).verifyVisibleElement(

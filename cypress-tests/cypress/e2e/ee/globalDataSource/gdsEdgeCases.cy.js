@@ -107,6 +107,7 @@ describe("Global Datasource Manager", () => {
         );
 
         cy.openApp();
+        cy.waitForAppLoad();
 
         addQuery(
             "table_preview",

@@ -200,6 +200,7 @@ describe("Global Datasource Manager", () => {
         cy.wait(1000);
 
         cy.openApp();
+        cy.waitForAppLoad();
 
         addQuery(
             "table_preview",
@@ -292,6 +293,8 @@ describe("Global Datasource Manager", () => {
         addDsToGroup(data.groupName, `cypress-${data.ds2}-postgresql`);
 
         cy.openApp();
+        cy.waitForAppLoad();
+
         addQuery(
             "table_preview",
             `SELECT * FROM persons;`,
@@ -396,6 +399,7 @@ describe("Global Datasource Manager", () => {
         cy.apiLogin("test@tooljet.com", "password");
         cy.apiCreateApp(data.appName);
         cy.openApp();
+        cy.waitForAppLoad();
 
         addQueryAndOpenEditor(
             "table_preview",
