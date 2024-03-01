@@ -2,6 +2,9 @@ name: Cloud deployment
 
 on:
 
+  pull_request_target:
+    types: [labeled, unlabeled, closed]
+
   workflow_dispatch:
     inputs:
       image-tag:
@@ -11,9 +14,12 @@ on:
 jobs:
   Deploying:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.image-tag != '' }}
+    # if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.image-tag != '' }}
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'auto-cloud' }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Authenticate profile
         uses: 'google-github-actions/auth@v2'
@@ -28,6 +34,7 @@ jobs:
 
       - name: Connect to GKE Cluster
         run: |
+          sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
           gcloud container clusters get-credentials tj-stage --region us-central1 --project tooljet-us
 
       - name:  View the pods
