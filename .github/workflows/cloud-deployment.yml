@@ -1,0 +1,37 @@
+name: Cloud deployment
+
+on:
+
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        description: Enter the image tag
+        required: true
+
+env:
+  PROJECT_ID: tooljet-us
+  CLUSTER_NAME: tj-stage
+
+jobs:
+  Deploying:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.image-tag != '' }}
+
+    steps:
+      - name: Connect to GCP
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: $PROJECT_ID
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Connect to GKE Cluster
+        run: |
+          gcloud container clusters get-credentials $CLUSTER_NAME --zone ZONE --project $PROJECT_ID
+
+      - name:  View the pods
+        run: |
+          kubectl get pods
+
+
+
