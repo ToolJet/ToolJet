@@ -177,7 +177,7 @@ export const NumberInput = function NumberInput({
       : borderColor != '#CCD1D5'
       ? borderColor
       : disable || loading
-      ? '1px solid var(--borders-disabled-on-white)'
+      ? 'var(--borders-disabled-on-white-dimmed)'
       : 'var(--borders-default)',
     '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
     backgroundColor: !['#ffffff', '#ffffffff', '#fff'].includes(backgroundColor)
@@ -397,7 +397,7 @@ export const NumberInput = function NumberInput({
                     zIndex: 3,
                   }}
                   className="numberinput-up-arrow arrow"
-                  name="cheveronup"
+                  name="traingledowncenter"
                 ></SolidIcon>
               </div>
 
@@ -427,7 +427,7 @@ export const NumberInput = function NumberInput({
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
                   height={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
                   className="numberinput-down-arrow arrow"
-                  name="cheverondown"
+                  name="traingleupcenter"
                 ></SolidIcon>
               </div>
             </>

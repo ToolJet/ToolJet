@@ -105,8 +105,9 @@
     // borders
     --borders-strong: #ACB2B9;
     --borders-default: #CCD1D5;
-    --borders-weak-disabled: #E4E7EB;
-    --borders-disabled-on-white: #F6F8FA;
+    --borders-weak-disabled: #CCD1D5;
+    --borders-disabled-on-white: #f6f8fa;
+    --borders-disabled-on-white-dimmed: rgba(246, 248, 250, 80%);
 
     // interactive overlays
     --interactive-overlays-fill-hover: #1B1F2414;
@@ -178,6 +179,8 @@
     --borders-default: #3C434B;
     --borders-weak-disabled: #2B3036;
     --borders-disabled-on-white: #2B303633;
+    --borders-disabled-on-white-dimmed: rgba(43, 48, 54, 20%);
+
 
     // interactive overlays
 
