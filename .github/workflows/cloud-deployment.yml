@@ -9,13 +9,12 @@ on:
     inputs:
       image-tag:
         description: Enter the image tag
-        required: false
+        required: true
 
 jobs:
   Deploying:
     runs-on: ubuntu-latest
-    # if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.image-tag != '' }}
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'auto-cloud' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.image-tag != '' }}
 
     steps:
       - name: Checkout
@@ -47,6 +46,6 @@ jobs:
 
       - name: Apply new deployment
         run: |
-          kubectl set image deployment/tooljet-deployment container=tooljet/saas2:v2.30.3-ee2.15.7-cloud2.3.5
+          kubectl set image deployment/tooljet-deployment container=${{ github.event.inputs.image-tag }}
 
 
