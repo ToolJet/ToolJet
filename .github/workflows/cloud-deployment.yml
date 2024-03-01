@@ -45,5 +45,8 @@ jobs:
         run: |
           kubectl get pods
 
+      - name: Apply new deployment
+        run: |
+          kubectl set image deployment/tooljet-deployment container=tooljet/saas2:v2.30.3-ee2.15.7-cloud2.3.5
 
 
