@@ -244,7 +244,8 @@ export class AppImportExportService {
       schemaUnifiedAppParams,
       user,
       externalResourceMappings,
-      isNormalizedAppDefinitionSchema
+      isNormalizedAppDefinitionSchema,
+      tooljetVersion
     );
     await this.createAdminGroupPermissions(this.entityManager, importedApp);
 
@@ -322,7 +323,8 @@ export class AppImportExportService {
     appParams: any,
     user: User,
     externalResourceMappings: Record<string, unknown>,
-    isNormalizedAppDefinitionSchema: boolean
+    isNormalizedAppDefinitionSchema: boolean,
+    tooljetVersion: string
   ) {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -386,7 +388,7 @@ export class AppImportExportService {
         importingPages,
         importingComponents,
         importingEvents,
-        appParams.tooljet_version
+        tooljetVersion
       );
 
       if (!isNormalizedAppDefinitionSchema) {
@@ -416,7 +418,7 @@ export class AppImportExportService {
                 componentEvents,
                 appResourceMappings.componentsMapping,
                 isNormalizedAppDefinitionSchema,
-                appParams.tooljet_version
+                tooljetVersion
               );
 
               const componentLayouts = [];
@@ -1693,7 +1695,8 @@ function migrateProperties(
   componentTypes: NewRevampedComponent[],
   tooljetVersion: string
 ) {
-  const shouldHandleBackwardCompatibility = isVersionGreaterThanOrEqual(tooljetVersion, '2.29.0');
+  const shouldHandleBackwardCompatibility = isVersionGreaterThanOrEqual(tooljetVersion, '2.29.0') ? false : true;
+
   const properties = { ...component.properties };
   const styles = { ...component.styles };
   const general = { ...component.general };
