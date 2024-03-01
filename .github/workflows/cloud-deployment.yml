@@ -15,7 +15,7 @@ jobs:
   Deploying:
     runs-on: ubuntu-latest
     # if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.image-tag != '' }}
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'auto-cloud' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'auto-cloud' }}
 
     steps:
       - name: Checkout
