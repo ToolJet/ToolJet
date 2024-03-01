@@ -169,7 +169,7 @@ export const NumberInput = function NumberInput({
     padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    color: textColor !== '#1B1F24' ? textColor : disable ? 'var(--text-disabled)' : 'var(--text-primary)',
+    color: textColor !== '#1B1F24' ? textColor : disable || loading ? 'var(--text-disabled)' : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
@@ -375,6 +375,7 @@ export const NumberInput = function NumberInput({
                 <SolidIcon
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
                   height={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  fill={'var(--icons-weak-disabled)'}
                   style={{
                     top: defaultAlignment === 'top' && label?.length > 0 && width > 0 ? '21px' : '1px',
                     right:
@@ -402,6 +403,7 @@ export const NumberInput = function NumberInput({
 
               <div onClick={(e) => handleDecrement(e)}>
                 <SolidIcon
+                  fill={'var(--icons-weak-disabled)'}
                   style={{
                     right:
                       labelWidth == 0

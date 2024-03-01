@@ -71,7 +71,7 @@ export const PasswordInput = function PasswordInput({
     padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    color: textColor !== '#1B1F24' ? textColor : disable ? 'var(--text-disabled)' : 'var(--text-primary)',
+    color: textColor !== '#1B1F24' ? textColor : disable || loading ? 'var(--text-disabled)' : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
@@ -325,7 +325,12 @@ export const PasswordInput = function PasswordInput({
             }}
             stroke={1.5}
           >
-            <SolidIcon width={16} className="password-component-eye" name={!iconVisibility ? 'eye1' : 'eyedisable'} />
+            <SolidIcon
+              width={16}
+              fill={'var(--icons-weak-disabled)'}
+              className="password-component-eye"
+              name={!iconVisibility ? 'eye1' : 'eyedisable'}
+            />
           </div>
         )}
         <input
