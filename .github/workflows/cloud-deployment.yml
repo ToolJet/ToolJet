@@ -32,11 +32,15 @@ jobs:
           project_id: tooljet-us
           version: '>= 363.0.0'
 
-      - name: Installing Kubectl
+      - name: Install Google Cloud SDK and components
         run: |
-          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-          sudo apt-get update
-          sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
+          # Install Google Cloud SDK
+          curl https://sdk.cloud.google.com | bash
+          exec -l $SHELL
+
+          # Install kubectl and beta components
+          gcloud components install kubectl
+          gcloud components install beta
 
       - name: Connect to GKE Cluster
         run: |
