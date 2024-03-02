@@ -146,4 +146,27 @@
     margin-top: -4px !important;
     margin-left: -4px !important;
 }
+
+.moveable-around-control{
+    height: 10px !important;
+    width: 10px !important;
+}
+
+.moveable-around-control[data-direction*="nw"] {
+    left: -11px;
+    top: -11px;
+}
+
+.moveable-around-control[data-direction*="ne"] {
+    top: -11px;
+}
+
+.moveable-around-control[data-direction*="ne"] {
+    top: -11px;
+}
+
+.moveable-around-control[data-direction*="sw"] {
+    left: -11px;
+    top: -1px;
+}
 /*  */
