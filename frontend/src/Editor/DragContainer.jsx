@@ -902,11 +902,35 @@ export default function DragContainer({
           console.log('timeDiff->6', performance.now() - startTime);
           console.log('draggedOverElemId parent', draggedOverElemId, parent);
         }}
-        onDragGroup={({ events }) => {
+        onDragGroup={(ev) => {
+          const { events } = ev;
+          console.log('onDragGroup---', ev);
+          const parentElm = events[0]?.target?.closest('.real-canvas');
+          const parentWidth = parentElm?.clientWidth;
+          const parentHeight = parentElm?.clientHeight;
+
+          const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
+
           events.forEach((ev) => {
-            ev.target.style.transform = ev.transform;
+            let posX = ev.translate[0];
+            let posY = ev.translate[1];
+            // if (posLeft < 0) {
+            //   posX = ev.translate[0] - posLeft;
+            // }
+            // if (posTop < 0) {
+            //   posY = ev.translate[1] - posTop;
+            // }
+            // if (posRight < 0) {
+            //   posX = ev.translate[0] + posRight;
+            // }
+            // if (posBottom < 0) {
+            //   posY = ev.translate[1] + posBottom;
+            // }
+
+            ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
           });
           debouncedOnDrag(events);
+          // }
         }}
         onDragGroupStart={({ events }) => {
           const parentElm = events[0]?.target?.closest('.real-canvas');
@@ -921,13 +945,34 @@ export default function DragContainer({
             const parentElm = events[0].target.closest('.real-canvas');
             parentElm.classList.remove('show-grid');
 
+            const parentWidth = parentElm?.clientWidth;
+            const parentHeight = parentElm?.clientHeight;
+
+            const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
+
             onDrag(
-              events.map((ev) => ({
-                id: ev.target.id,
-                x: ev.lastEvent.translate[0],
-                y: ev.lastEvent.translate[1],
-                parent: parentId,
-              }))
+              events.map((ev) => {
+                let posX = ev.lastEvent.translate[0];
+                let posY = ev.lastEvent.translate[1];
+                if (posLeft < 0) {
+                  posX = ev.lastEvent.translate[0] - posLeft;
+                }
+                if (posTop < 0) {
+                  posY = ev.lastEvent.translate[1] - posTop;
+                }
+                if (posRight < 0) {
+                  posX = ev.lastEvent.translate[0] + posRight;
+                }
+                if (posBottom < 0) {
+                  posY = ev.lastEvent.translate[1] + posBottom;
+                }
+                return {
+                  id: ev.target.id,
+                  x: posX,
+                  y: posY,
+                  parent: parentId,
+                };
+              })
             );
           } catch (error) {
             console.error('Error dragging group', error);
@@ -1081,4 +1126,25 @@ function adjustWidth(width, posX, gridWidth) {
     width = 43 - posX;
   }
   return width * gridWidth;
+}
+
+function getPositionForGroupDrag(events, parentWidth, parentHeight) {
+  return events.reduce((positions, ev) => {
+    const {
+      translate: [elemPosX, elemPosY],
+      width,
+      height,
+    } = ev.lastEvent ? ev.lastEvent : ev;
+
+    return {
+      ...positions,
+      posRight: Math.min(
+        positions.posRight ?? Infinity, // Handle potential initial undefined value
+        parentWidth - (width + elemPosX)
+      ),
+      posBottom: Math.min(positions.posBottom ?? Infinity, parentHeight - (height + elemPosY)),
+      posLeft: Math.min(positions.posLeft ?? Infinity, elemPosX),
+      posTop: Math.min(positions.posTop ?? Infinity, elemPosY),
+    };
+  }, {});
 }
