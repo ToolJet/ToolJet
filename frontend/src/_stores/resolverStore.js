@@ -153,15 +153,6 @@ export const useResolveStore = create(
         set(() => ({ suggestions: { ...get().suggestions, jsHints: hints } }));
       },
 
-      updateComponentDefaultValues: (componentDefaultValues) => {
-        set(() => ({ componentDefaultValues }));
-      },
-
-      getDefaultComponentValue: (componentName) => {
-        const { componentDefaultValues } = get();
-        return componentDefaultValues[componentName];
-      },
-
       addEntitiesToMap: (entities) => {
         const { referenceMapper } = get();
         entities.forEach((entity) => {

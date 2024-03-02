@@ -5,7 +5,7 @@ import { useDataQueriesStore } from './dataQueriesStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
-//* finding references within deeply nested objects using Depth-First Search (DFS) traversal
+//* finding references and update within deeply nested objects using Depth-First Search (DFS) traversal
 export function dfs(node, oldRef, newRef) {
   if (typeof node === 'object') {
     for (let key in node) {
