@@ -86,7 +86,17 @@ export const useResolveStore = create(
         const lookupResolvedRefs = new Map([...get().lookupTable.resolvedRefs]);
 
         hintsMap.forEach((value, key) => {
-          lookupHintsMap.set(key, value);
+          const alreadyExists = lookupHintsMap.has(key);
+
+          if (!alreadyExists) {
+            lookupHintsMap.set(key, value);
+          } else {
+            const existingLookupId = lookupHintsMap.get(key);
+            const newResolvedRef = resolvedRefs.get(value);
+
+            resolvedRefs.delete(value);
+            resolvedRefs.set(existingLookupId, newResolvedRef);
+          }
         });
 
         resolvedRefs.forEach((value, key) => {

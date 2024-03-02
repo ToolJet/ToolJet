@@ -5,6 +5,37 @@ import { useDataQueriesStore } from './dataQueriesStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
+//*  using binary search to find and remove it from the currentSuggestions array
+
+function binarySearchDelete(array, key) {
+  let start = 0;
+  let end = array.length - 1;
+  while (start <= end) {
+    let middle = Math.floor((start + end) / 2);
+    if (array[middle].hint === key) {
+      // Delete the item at the found index
+      array.splice(middle, 1);
+      return; // Exit after deletion
+    } else if (array[middle].hint < key) {
+      start = middle + 1;
+    } else {
+      end = middle - 1;
+    }
+  }
+}
+
+export function removeAppSuggestions(suggestionsArray, deleteSuggestionsArray) {
+  const sortedSuggestionsArray = JSON.parse(
+    JSON.stringify(suggestionsArray.sort((a, b) => a.hint.localeCompare(b.hint)))
+  );
+
+  deleteSuggestionsArray.forEach((suggestion) => {
+    binarySearchDelete(sortedSuggestionsArray, suggestion);
+  });
+
+  return sortedSuggestionsArray;
+}
+
 //* finding references and update within deeply nested objects using Depth-First Search (DFS) traversal
 export function dfs(node, oldRef, newRef) {
   if (typeof node === 'object') {
