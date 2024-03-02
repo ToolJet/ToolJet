@@ -233,8 +233,9 @@ export class ComponentsService {
     layoutData.forEach((layout) => {
       const { type, top, left, width, height, dimensionUnit, id } = layout;
 
+      let adjustedLeftValue = left;
       if (dimensionUnit === 'percent') {
-        const adjustedLeftValue = resolveGridPositionForComponent(left, type);
+        adjustedLeftValue = resolveGridPositionForComponent(left, type);
         manager.update(
           Layout,
           {
@@ -249,7 +250,7 @@ export class ComponentsService {
 
       layouts[type] = {
         top,
-        left,
+        left: adjustedLeftValue,
         width,
         height,
       };
