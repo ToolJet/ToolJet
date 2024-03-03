@@ -7,7 +7,7 @@ sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-u
 curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-nvm install 18.3.0
+nvm install 18.18.2
 sudo ln -s "$(which node)" /usr/bin/node
 sudo ln -s "$(which npm)" /usr/bin/npm
 
@@ -74,7 +74,7 @@ mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
 sudo chmod +x ~/app/setup_app
 
-npm install -g npm@8.11.0
+npm install -g npm@9.8.1
 
 # Building ToolJet app
 npm install -g @nestjs/cli

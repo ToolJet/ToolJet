@@ -1,4 +1,5 @@
 import React from 'react';
+import _ from 'lodash';
 import QueryEditor from './QueryEditor';
 import SourceEditor from './SourceEditor';
 
@@ -10,7 +11,7 @@ export default ({
   isRenderedAsQueryEditor,
   workspaceConstants,
 }) => {
-  function addNewKeyValuePair() {
+  function addNewKeyValuePair(options) {
     const newPairs = [...options, ['', '']];
     optionchanged(getter, newPairs);
   }
@@ -21,13 +22,14 @@ export default ({
   }
 
   function keyValuePairValueChanged(value, keyIndex, index) {
-    if (!isRenderedAsQueryEditor && options.length - 1 === index) {
-      setTimeout(() => {
-        addNewKeyValuePair();
-      }, 100);
+    if (!isRenderedAsQueryEditor) {
+      const newOptions = _.cloneDeep(options);
+      newOptions[index][keyIndex] = value;
+      options.length - 1 === index ? addNewKeyValuePair(newOptions) : optionchanged(getter, newOptions);
+    } else {
+      options[index][keyIndex] = value;
+      optionchanged(getter, options);
     }
-    options[index][keyIndex] = value;
-    optionchanged(getter, options);
   }
 
   const commonProps = {

@@ -5,6 +5,15 @@ import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
 import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
+import { AllComponents } from '@/Editor/Box';
+
+const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'NumberInput', 'PasswordInput'];
+const PROPERTIES_VS_ACCORDION_TITLE = {
+  Text: 'Data',
+  TextInput: 'Data',
+  PasswordInput: 'Data',
+  NumberInput: 'Data',
+};
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -19,9 +28,17 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     pages,
   } = restProps;
 
-  const properties = Object.keys(componentMeta.properties);
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
+  let properties = [];
+  let additionalActions = [];
+  for (const [key] of Object.entries(componentMeta?.properties)) {
+    if (componentMeta?.properties[key]?.section === 'additionalActions') {
+      additionalActions.push(key);
+    } else {
+      properties.push(key);
+    }
+  }
 
   const accordionItems = baseComponentProperties(
     properties,
@@ -37,7 +54,8 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     components,
     validations,
     darkMode,
-    pages
+    pages,
+    additionalActions
   );
 
   return <Accordion items={accordionItems} />;
@@ -57,14 +75,18 @@ export const baseComponentProperties = (
   allComponents,
   validations,
   darkMode,
-  pages
+  pages,
+  additionalActions
 ) => {
   // Add widget title to section key to filter that property section from specified widgets' settings
   const accordionFilters = {
     Properties: [],
     Events: [],
     Validation: [],
-    General: ['Modal'],
+    'Additional Actions': Object.keys(AllComponents).filter(
+      (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component)
+    ),
+    General: ['Modal', 'TextInput', 'PasswordInput', 'NumberInput', 'Text'],
     Layout: [],
   };
   if (component.component.component === 'Listview') {
@@ -75,7 +97,9 @@ export const baseComponentProperties = (
   let items = [];
   if (properties.length > 0) {
     items.push({
-      title: `${i18next.t('widget.common.properties', 'Properties')}`,
+      title:
+        PROPERTIES_VS_ACCORDION_TITLE[component?.component?.component] ??
+        `${i18next.t('widget.common.properties', 'Properties')}`,
       children: properties.map((property) =>
         renderElement(
           component,
@@ -113,7 +137,6 @@ export const baseComponentProperties = (
       ),
     });
   }
-
   if (validations.length > 0) {
     items.push({
       title: `${i18next.t('widget.common.validation', 'Validation')}`,
@@ -127,7 +150,8 @@ export const baseComponentProperties = (
           'validation',
           currentState,
           allComponents,
-          darkMode
+          darkMode,
+          componentMeta.validation?.[property]?.placeholder
         )
       ),
     });
@@ -153,7 +177,27 @@ export const baseComponentProperties = (
   });
 
   items.push({
-    title: `${i18next.t('widget.common.layout', 'Layout')}`,
+    title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+    isOpen: true,
+    children: additionalActions?.map((property) => {
+      const paramType = property === 'Tooltip' ? 'general' : 'properties';
+      return renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        paramType,
+        currentState,
+        allComponents,
+        darkMode,
+        componentMeta.properties?.[property]?.placeholder
+      );
+    }),
+  });
+
+  items.push({
+    title: `${i18next.t('widget.common.devices', 'Devices')}`,
     isOpen: true,
     children: (
       <>

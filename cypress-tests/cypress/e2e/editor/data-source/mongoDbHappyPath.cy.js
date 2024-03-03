@@ -24,11 +24,13 @@ import {
 } from "Support/utils/dataSource";
 
 const data = {};
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source MongoDB", () => {
   beforeEach(() => {
     cy.appUILogin();
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
   });
 
   it("Should verify elements on MongoDB connection form", () => {
@@ -36,11 +38,11 @@ describe("Data source MongoDB", () => {
     closeDSModal();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDataSources
+      postgreSqlText.allDataSources()
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
-      postgreSqlText.allDatabase
+      postgreSqlText.allDatabase()
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
@@ -50,7 +52,11 @@ describe("Data source MongoDB", () => {
       "have.text",
       postgreSqlText.allCloudStorage
     );
-    selectAndAddDataSource("databases", mongoDbText.mongoDb, data.lastName);
+    selectAndAddDataSource(
+      "databases",
+      mongoDbText.mongoDb,
+      data.dataSourceName
+    );
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -144,11 +150,15 @@ describe("Data source MongoDB", () => {
       .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
       .click();
 
-    deleteDatasource(`cypress-${data.lastName}-mongodb`);
+    deleteDatasource(`cypress-${data.dataSourceName}-mongodb`);
   });
 
   it("Should verify the functionality of MongoDB connection form.", () => {
-    selectAndAddDataSource("databases", mongoDbText.mongoDb, data.lastName);
+    selectAndAddDataSource(
+      "databases",
+      mongoDbText.mongoDb,
+      data.dataSourceName
+    );
 
     cy.get('[data-cy="query-select-dropdown"]').type(
       mongoDbText.optionConnectUsingConnectionString
@@ -174,10 +184,13 @@ describe("Data source MongoDB", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.lastName}-mongodb-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-mongodb`);
+      `[data-cy="cypress-${data.dataSourceName}-mongodb-button"]`
+    ).verifyVisibleElement(
+      "have.text",
+      `cypress-${data.dataSourceName}-mongodb`
+    );
 
-    deleteDatasource(`cypress-${data.lastName}-mongodb`);
+    deleteDatasource(`cypress-${data.dataSourceName}-mongodb`);
   });
 
   it.skip("Should verify the queries of MongoDB.", () => {

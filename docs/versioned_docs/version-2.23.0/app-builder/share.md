@@ -13,7 +13,11 @@ ToolJet apps offer two sharing options: they can either be shared privately with
 
 ### Making the app public
 
-To share the app with external end users and make it accessible to anyone on the internet without requiring a ToolJet login, you can toggle on the Switch for "Make the application public?" in the Share modal.
+To share the app with external end users and make it accessible to anyone on the internet without requiring a ToolJet login, you can toggle on the Switch for "Make application public" in the Share modal.
+
+:::info
+Only released apps can be accessed using the Shareable app link.
+:::
 
 <div style={{textAlign: 'center'}}>
 

@@ -38,10 +38,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18.3.0
+      - name: Use Node.js 18.18.2
         uses: actions/setup-node@v3
         with:
-          node-version: 18.3.0
+          node-version: 18.18.2
 
       - name: Cache node modules
         uses: actions/cache@v3
@@ -68,10 +68,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18.3.0
+      - name: Use Node.js 18.18.2
         uses: actions/setup-node@v3
         with:
-          node-version: 18.3.0
+          node-version: 18.18.2
 
       - name: Cache node modules
         uses: actions/cache@v3
@@ -93,7 +93,7 @@ jobs:
   unit-test:
     runs-on: ubuntu-latest
     needs: build
-    container: node:18.3.0-buster
+    container: node:18.18.2-buster
     services:
       postgres:
         image: postgres
@@ -131,7 +131,7 @@ jobs:
   e2e-test:
     runs-on: ubuntu-latest
     needs: build
-    container: node:18.3.0-buster
+    container: node:18.18.2-buster
     services:
       postgres:
         image: postgres

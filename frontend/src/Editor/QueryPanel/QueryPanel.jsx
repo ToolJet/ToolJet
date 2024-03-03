@@ -1,15 +1,17 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useContext } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { Tooltip } from 'react-tooltip';
 import { QueryDataPane } from './QueryDataPane';
 import QueryManager from '../QueryManager/QueryManager';
 
 import useWindowResize from '@/_hooks/useWindowResize';
-import { useQueryPanelStore, useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import Maximize from '@/_ui/Icon/solidIcons/Maximize';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { ModuleContext } from '../../_contexts/ModuleContext';
+import { useSuperStore } from '../../_stores/superStore';
 
 const QueryPanel = ({
   dataQueriesChanged,
@@ -22,6 +24,7 @@ const QueryPanel = ({
   onQueryPaneDragging,
   handleQueryPaneExpanding,
 }) => {
+  const moduleName = useContext(ModuleContext);
   const { updateQueryPanelHeight } = useQueryPanelActions();
   const dataQueries = useDataQueries();
   const queryManagerPreferences = useRef(JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {});
@@ -37,26 +40,28 @@ const QueryPanel = ({
   const [windowSize, isWindowResizing] = useWindowResize();
 
   useEffect(() => {
-    const queryPanelStoreListner = useQueryPanelStore.subscribe(({ selectedQuery }, prevState) => {
-      if (isEmpty(prevState?.selectedQuery) || isEmpty(selectedQuery)) {
-        return;
-      }
+    const queryPanelStoreListner = useSuperStore
+      .getState()
+      .modules[moduleName].useQueryPanelStore.subscribe(({ selectedQuery }, prevState) => {
+        if (isEmpty(prevState?.selectedQuery) || isEmpty(selectedQuery)) {
+          return;
+        }
 
-      if (prevState?.selectedQuery?.id !== selectedQuery.id) {
-        return;
-      }
+        if (prevState?.selectedQuery?.id !== selectedQuery.id) {
+          return;
+        }
 
-      //removing updated_at since this value changes whenever the data is updated in the BE
-      const formattedQuery = cloneDeep(selectedQuery);
-      delete formattedQuery.updated_at;
+        //removing updated_at since this value changes whenever the data is updated in the BE
+        const formattedQuery = cloneDeep(selectedQuery);
+        delete formattedQuery.updated_at;
 
-      const formattedPrevQuery = cloneDeep(prevState?.selectedQuery || {});
-      delete formattedPrevQuery.updated_at;
+        const formattedPrevQuery = cloneDeep(prevState?.selectedQuery || {});
+        delete formattedPrevQuery.updated_at;
 
-      if (!isEqual(formattedQuery, formattedPrevQuery)) {
-        useDataQueriesStore.getState().actions.saveData(selectedQuery);
-      }
-    });
+        if (!isEqual(formattedQuery, formattedPrevQuery)) {
+          useSuperStore.getState().modules[moduleName].useDataQueriesStore.getState().actions.saveData(selectedQuery);
+        }
+      });
 
     return queryPanelStoreListner;
   }, []);

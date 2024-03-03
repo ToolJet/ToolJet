@@ -55,6 +55,7 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
             if (value?.placeholder)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder']['value'] = value?.placeholder;
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = ''; //removing default label in all components with default label to match previous versions
             break;
           case 'DropDown':
             if (value?.styles?.disabled)
@@ -155,7 +156,10 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['minValue']['value'] = value?.minValue;
             if (value?.placeholder)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder']['value'] = value?.placeholder;
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
+
             break;
+
           case 'PasswordInput':
             if (value?.styles?.backgroundColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor']['value'] =
@@ -184,6 +188,7 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['regex']['value'] = value?.validation?.regex;
             if (value?.placeholder)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder']['value'] = value?.placeholder;
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
             break;
           case 'Datepicker':
             if (value?.styles?.borderRadius)

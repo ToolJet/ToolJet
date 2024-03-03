@@ -15,6 +15,50 @@ $border-radius: 4px;
     position: sticky;
     top: 0;
     padding: 8px 0;
+
+    .query-parameters-list {
+
+      .more-parameters-button {
+        height: 24px;
+
+        button {
+          height: inherit;
+        }
+      }
+
+      .card-header {
+        // background-color: var(--slate3);
+        height: 28px;
+        border-radius: 4px;
+        color: var(--slate11);
+        border: none !important;
+
+        .parameterItem {
+
+          height: 24px;
+
+          .parameterItemPillButton {
+            height: inherit;
+
+            .query-param-text {
+              color: var(--slate12);
+              font-weight: 500 !important;
+            }
+
+            button {
+              padding: 0px;
+              height: inherit;
+            }
+          }
+
+          button#runjs-param-add-btn {
+            padding: 0;
+            height: inherit;
+            border: none !important;
+          }
+        }
+      }
+    }
   }
 
   .nav-header {
@@ -1550,13 +1594,15 @@ $border-radius: 4px;
   font-size: 10px;
   font-weight: 400;
   color: var(--tomato-09, #E54D2E);
+
   svg {
     height: 17px;
     width: 17px;
     margin-right: 2px;
   }
-  svg>path{
-    fill:var(--tomato-09, #E54D2E);
+
+  svg>path {
+    fill: var(--tomato-09, #E54D2E);
     opacity: 0.75;
   }
 }

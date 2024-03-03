@@ -74,7 +74,7 @@ export function SwitchPage({ getPages, event, handlerChanged, eventIndex, darkMo
                 mode="javascript"
                 className="form-control codehinter-query-editor-input"
                 height={30}
-                cyLabel={`query-param-key`}
+                cyLabel={`event-query-param-key`}
               />
             </div>
             <div className="col">
@@ -84,7 +84,7 @@ export function SwitchPage({ getPages, event, handlerChanged, eventIndex, darkMo
                 mode="javascript"
                 className="form-control codehinter-query-editor-input"
                 height={30}
-                cyLabel={`query-param-value`}
+                cyLabel={`event-query-param-value`}
               />
             </div>
             <span className="btn-sm col-auto my-1" role="button" onClick={() => deleteQueryParam(index)}>

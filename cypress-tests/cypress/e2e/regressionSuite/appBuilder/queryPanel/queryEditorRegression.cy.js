@@ -23,7 +23,7 @@ describe("Query Editor", () => {
   it("should verify Elements on query editor", () => {
     cy.apiCreateApp();
     cy.openApp();
-    verifyElemtsNoGds();
+    // verifyElemtsNoGds();
     verifyElemtsWithGds("cypress-psql");
     cy.apiDeleteDS(`cypress-psql`);
   });

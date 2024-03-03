@@ -1,0 +1,25 @@
+
+  
+.reactMarkdown {
+  p,h1,h2,h3,h4,h5,h6 {
+    margin-bottom: 0px;
+  }
+}
+
+.text-widget-section {
+  scrollbar-color: transparent transparent;
+  scrollbar-width: thin;
+  &::-webkit-scrollbar {
+    background-color: transparent;
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+  &:hover{
+    scrollbar-color: #a0a6ae transparent;
+  }
+}

@@ -61,7 +61,7 @@
         "label": "Password",
         "key": "password",
         "type": "password",
-        "description": "Enter username"
+        "description": "Enter password"
       }
     },
     "header":{

@@ -6,6 +6,8 @@ import { runQuery } from '@/_helpers/appUtils';
 import { defaultSources } from './constants';
 import { useDataSources, useGlobalDataSources, useLoadingDataSources } from '@/_stores/dataSourcesStore';
 import { useQueryToBeRun, useSelectedQuery, useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { CodeHinterContext } from '@/Editor/CodeBuilder/CodeHinterContext';
+import { resolveReferences } from '@/_helpers/utils';
 
 const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinition, editorRef }) => {
   const loadingDataSources = useLoadingDataSources();
@@ -14,7 +16,6 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
   const queryToBeRun = useQueryToBeRun();
   const selectedQuery = useSelectedQuery();
   const { setSelectedDataSource, setQueryToBeRun } = useQueryPanelActions();
-
   const [options, setOptions] = useState({});
 
   useEffect(() => {
@@ -53,16 +54,34 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
         'd-none': loadingDataSources,
       })}
     >
-      <QueryManagerHeader darkMode={darkMode} options={options} editorRef={editorRef} appId={appId} />
-      <QueryManagerBody
+      <QueryManagerHeader
         darkMode={darkMode}
         options={options}
-        allComponents={allComponents}
-        apps={apps}
+        editorRef={editorRef}
         appId={appId}
-        appDefinition={appDefinition}
         setOptions={setOptions}
       />
+      <CodeHinterContext.Provider
+        value={{
+          parameters: selectedQuery?.options?.parameters?.reduce(
+            (parameters, parameter) => ({
+              ...parameters,
+              [parameter.name]: resolveReferences(parameter.defaultValue, {}, undefined),
+            }),
+            {}
+          ),
+        }}
+      >
+        <QueryManagerBody
+          darkMode={darkMode}
+          options={options}
+          allComponents={allComponents}
+          apps={apps}
+          appId={appId}
+          appDefinition={appDefinition}
+          setOptions={setOptions}
+        />
+      </CodeHinterContext.Provider>
     </div>
   );
 };

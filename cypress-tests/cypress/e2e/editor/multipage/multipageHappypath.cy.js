@@ -8,7 +8,7 @@ import { buttonText } from "Texts/button";
 import {
   verifyControlComponentAction,
   randomString,
-} from "Support/utils/textInput";
+} from "Support/utils/editor/textInput";
 import {
   openAccordion,
   verifyAndModifyParameter,
@@ -36,6 +36,7 @@ import {
   modifyPageHandle,
   clearSearch,
   searchPage,
+  disableOrEnablePage,
 } from "Support/utils/multipage";
 
 describe("Multipage", () => {
@@ -284,5 +285,28 @@ describe("Multipage", () => {
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
 
     cy.get(multipageSelector.homePageLabel).click();
+  });
+  it("should verify the disable/delete functions of multipage", () => {
+    cy.get(multipageSelector.sidebarPageButton).click();
+    cy.get(multipageSelector.pagesPinIcon).click();
+    addNewPage("pageOne");
+    addNewPage("pageTwo");
+    addNewPage("pageThree");
+
+    detetePage("pageOne");
+    disableOrEnablePage("pageTwo");
+    cy.get(
+      '[data-cy="pages-name-pagetwo"] > .color-slate09'
+    ).verifyVisibleElement("have.text", "Disabled");
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.notVisible(`[data-cy="pages-name-pageone}"]`);
+    cy.notVisible(`[data-cy="pages-name-pagetwo}"]`);
+    cy.wait(1000);
+    cy.url().should("contain", "/home?");
+    cy.url().then((url) => {
+      cy.visit(url.replace("home", "pagetwo"));
+    });
+    cy.wait(1000);
+    cy.url().should("contain", "/home?");
   });
 });

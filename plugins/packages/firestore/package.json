@@ -16,7 +16,7 @@
     "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@google-cloud/firestore": "^5.0.2",
+    "@google-cloud/firestore": "^7.1.0",
     "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"

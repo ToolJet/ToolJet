@@ -1,14 +1,13 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirectUrl } from '../../test.helper';
-import { mocked } from 'jest-mock';
 import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 
 jest.mock('got');
-const mockedGot = mocked(got);
+const mockedGot = jest.mocked(got);
 
 describe('oauth controller', () => {
   let app: INestApplication;

@@ -62,7 +62,7 @@ module.exports = {
         'import/no-unresolved': [
           'error',
           {
-            ignore: ['^@/', 'react-hot-toast', 'react-i18next'],
+            ignore: ['^@/', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring'],
           },
         ],
         'react/no-unknown-property': 'off',

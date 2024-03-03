@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { authenticationService, orgEnvironmentConstantService, appEnvironmentService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -12,6 +12,7 @@ import Drawer from '@/_ui/Drawer';
 import ConstantForm from './ConstantForm';
 import EmptyState from './EmptyState';
 import FolderList from '@/_ui/FolderList/FolderList';
+import { BreadCrumbContext } from '@/App';
 
 const MODES = Object.freeze({
   CREATE: 'create',
@@ -37,6 +38,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [errors, setErrors] = useState([]);
   const [showConstantDeleteConfirmation, setShowConstantDeleteConfirmation] = useState(false);
   const [selectedConstant, setSelectedConstant] = useState(null);
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   const onCancelBtnClicked = () => {
     setSelectedConstant(null);
@@ -125,21 +127,21 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
   const canCreateVariable = () => {
     return canAnyGroupPerformAction(
-      'org_environment_constant_create',
+      'org_environment_variable_create',
       authenticationService.currentSessionValue.group_permissions
     );
   };
 
   const canUpdateVariable = () => {
     return canAnyGroupPerformAction(
-      'org_environment_constant_create',
+      'org_environment_variable_update',
       authenticationService.currentSessionValue.group_permissions
     );
   };
 
   const canDeleteVariable = () => {
     return canAnyGroupPerformAction(
-      'org_environment_constant_delete',
+      'org_environment_variable_delete',
       authenticationService.currentSessionValue.group_permissions
     );
   };
@@ -269,6 +271,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
   useEffect(() => {
     fetchConstantsAndEnvironments(true);
+    updateSidebarNAV('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -326,7 +329,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                       width: '100%',
                     }}
                   >
-                    <div class="text-muted" data-cy="workspace-constant-helper-text">
+                    <div className="text-muted" data-cy="workspace-constant-helper-text">
                       To resolve a Workspace constant use{' '}
                       <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{constants.access_token}}'}</strong>
                     </div>

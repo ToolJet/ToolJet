@@ -41,7 +41,7 @@ import {
 describe("Modal", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-Modal-App`);
     cy.openApp();
     cy.dragAndDropWidget("Modal");
   });
@@ -67,11 +67,11 @@ describe("Modal", () => {
     cy.get('[data-cy="modal-close-button"]').click();
     cy.notVisible('[data-cy="modal-title"]');
 
-    openEditorSidebar("modal1", ["Options", "Properties", "Layout"]);
+    openEditorSidebar("modal1", ["Options", "Properties", "Devices"]);
     editAndVerifyWidgetName(data.widgetName, [
       "Options",
       "Properties",
-      "Layout",
+      "Devices",
     ]);
     verifyComponentFromInspector(data.widgetName);
 
@@ -227,9 +227,9 @@ describe("Modal", () => {
       commonWidgetText.codeMirrorLabelTrue
     );
     cy.get('[data-cy="modal-close-button"]').click();
-    cy.get(commonWidgetSelector.draggableWidget("modal1")).should(
-      "not.be.visible"
-    );
+    cy.get(commonWidgetSelector.draggableWidget("modal1"))
+      .find("button")
+      .should("not.be.visible");
     cy.get(commonWidgetSelector.parameterTogglebutton("Visibility")).click();
 
     verifyAndModifyToggleFx(
