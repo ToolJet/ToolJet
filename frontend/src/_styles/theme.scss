@@ -8058,7 +8058,7 @@ tbody {
 
   @media only screen and (max-width: 768px) {
     position: unset;
-    width: 100%;
+    width: 100% !important; 
 
     .col-4,
     .col-5 {
