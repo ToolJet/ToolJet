@@ -61,7 +61,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
 
   const filterQueries = (value, queries) => {
     if (value) {
-      const fuse = new Fuse(queries, { keys: ['name'] });
+      const fuse = new Fuse(queries, { keys: ['name'], shouldSort: true, threshold: 0.3 });
       const results = fuse.search(value);
       let filterDataQueries = [];
       results.every((result) => {
