@@ -188,7 +188,7 @@ export const Folders = function Folders({
 
   const handleInputChange = (e) => {
     setErrorText('');
-    const error = validateName(e.target.value, 'Folder name', true, false, false);
+    const error = validateName(e.target.value, 'Folder name', true, false, false, true, false, true);
     if (!error.status) {
       setErrorText(error.errorMsg);
     }

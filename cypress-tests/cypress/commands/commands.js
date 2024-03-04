@@ -115,9 +115,9 @@ Cypress.Commands.add(
           .last()
           .click()
           .type(createBackspaceText(text), { delay: 0 }),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
     if (!Array.isArray(value)) {
       cy.wrap(subject).last().type(value, {
@@ -193,9 +193,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -273,7 +273,7 @@ Cypress.Commands.add("waitForAppLoad", () => {
   const API_ENDPOINT =
     Cypress.env("environment") === "Community"
       ? "/api/v2/data_sources"
-      : "/api/app-environments/**";
+      : "/api/app-environments**";
 
   const TIMEOUT = 15000;
 
@@ -458,5 +458,13 @@ Cypress.Commands.add(
 Cypress.Commands.add("skipWalkthrough", () => {
   cy.window({ log: false }).then((win) => {
     win.localStorage.setItem("walkthroughCompleted", "true");
+  });
+});
+
+Cypress.Commands.add("appPrivacy", (appName, isPublic) => {
+  const isPublicValue = isPublic ? "true" : "false";
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `UPDATE apps SET is_public = ${isPublicValue} WHERE name = '${appName}';`,
   });
 });

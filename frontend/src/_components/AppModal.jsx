@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import Modal from '../HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _ from 'lodash';
 import { validateName } from '@/_helpers/utils';
+import { FormWrapper } from './FormWrapper';
 
 export function AppModal({
   closeModal,
@@ -127,7 +128,8 @@ export function AppModal({
             Cancel
           </ButtonSolid>
           <ButtonSolid
-            onClick={(e) => handleAction(e)}
+            form="createAppForm"
+            type="submit"
             data-cy={actionButton.toLowerCase().replace(/\s+/g, '-')}
             disabled={createBtnDisableState}
           >
@@ -136,61 +138,63 @@ export function AppModal({
         </>
       }
     >
-      <div className="row workspace-folder-modal mb-3">
-        <div className="col modal-main tj-app-input">
-          <label className="tj-input-label" data-cy="app-name-label">
-            {'App Name'}
-          </label>
-          <input
-            type="text"
-            onChange={handleInputChange}
-            className={`form-control ${errorText ? 'input-error-border' : ''}`}
-            placeholder={'Enter app name'}
-            value={newAppName}
-            data-cy="app-name-input"
-            maxLength={50}
-            autoFocus
-            ref={inputRef}
-            style={{
-              borderColor: errorText ? '#DB4324 !important' : 'initial',
-            }}
-          />
-          {errorText ? (
-            <small
-              className="tj-input-error"
+      <FormWrapper callback={handleAction} id="createAppForm">
+        <div className="row workspace-folder-modal mb-3">
+          <div className="col modal-main tj-app-input">
+            <label className="tj-input-label" data-cy="app-name-label">
+              {'App Name'}
+            </label>
+            <input
+              type="text"
+              onChange={handleInputChange}
+              className={`form-control ${errorText ? 'input-error-border' : ''}`}
+              placeholder={'Enter app name'}
+              value={newAppName}
+              data-cy="app-name-input"
+              maxLength={50}
+              autoFocus
+              ref={inputRef}
               style={{
-                fontSize: '10px',
-                color: '#DB4324',
+                borderColor: errorText ? '#DB4324 !important' : 'initial',
               }}
-              data-cy="app-name-error-label"
-            >
-              {errorText}
-            </small>
-          ) : infoText || newAppName.length >= 50 ? (
-            <small
-              className="tj-input-error"
-              style={{
-                fontSize: '10px',
-                color: '#ED5F00',
-              }}
-              data-cy="app-name-info-label"
-            >
-              {infoText || 'Maximum length has been reached'}
-            </small>
-          ) : (
-            <small
-              className="tj-input-error"
-              style={{
-                fontSize: '10px',
-                color: '#7E868C',
-              }}
-              data-cy="app-name-info-label"
-            >
-              App name must be unique and max 50 characters
-            </small>
-          )}
+            />
+            {errorText ? (
+              <small
+                className="tj-input-error"
+                style={{
+                  fontSize: '10px',
+                  color: '#DB4324',
+                }}
+                data-cy="app-name-error-label"
+              >
+                {errorText}
+              </small>
+            ) : infoText || newAppName.length >= 50 ? (
+              <small
+                className="tj-input-error"
+                style={{
+                  fontSize: '10px',
+                  color: '#ED5F00',
+                }}
+                data-cy="app-name-info-label"
+              >
+                {infoText || 'Maximum length has been reached'}
+              </small>
+            ) : (
+              <small
+                className="tj-input-error"
+                style={{
+                  fontSize: '10px',
+                  color: '#7E868C',
+                }}
+                data-cy="app-name-info-label"
+              >
+                App name must be unique and max 50 characters
+              </small>
+            )}
+          </div>
         </div>
-      </div>
+      </FormWrapper>
     </Modal>
   );
 }

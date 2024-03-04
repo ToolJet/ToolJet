@@ -1,0 +1,15 @@
+{
+  "name": "Mortgage calculator",
+  "description": "Quickly estimate monthly payments and compare rates with this user-friendly mortgage calculator.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "mortgage-calculator",
+  "category": "operations"
+}
