@@ -576,6 +576,7 @@ class HomePageComponent extends React.Component {
       showRenameAppModal,
       showCreateAppFromTemplateModal,
     } = this.state;
+    console.log("loading in home page",isLoading,appSearchKey)
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
@@ -823,7 +824,7 @@ class HomePageComponent extends React.Component {
               data-cy="home-page-content"
             >
               <div className="w-100 mb-5 container home-page-content-container">
-                {(meta?.total_count > 0 || appSearchKey) && (
+                {(meta?.total_count > 0 || isLoading) && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
                     <div className="liner"></div>
@@ -872,8 +873,8 @@ class HomePageComponent extends React.Component {
                     </span>
                   </div>
                 )}
-                {isLoading ||
-                  (meta.total_count > 0 && (
+                {(isLoading || meta.total_count > 0 ) &&
+                  (  
                     <AppList
                       apps={apps}
                       canCreateApp={this.canCreateApp}
@@ -888,7 +889,7 @@ class HomePageComponent extends React.Component {
                       appActionModal={this.appActionModal}
                       removeAppFromFolder={this.removeAppFromFolder}
                     />
-                  ))}
+                  )}
               </div>
               <div className="footer-container">
                 {this.pageCount() > MAX_APPS_PER_PAGE && (
