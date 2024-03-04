@@ -720,6 +720,7 @@ describe("Workspace constants", () => {
         cy.wait("@homePage");
         cy.apiCreateApp(data.appName);
         cy.openApp();
+        cy.waitForAppLoad();
 
         cy.wait(1000);
         selectQueryFromLandingPage("runjs", "JavaScript");

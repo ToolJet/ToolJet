@@ -153,7 +153,7 @@ jobs:
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:8082"
-          config-file: cypress-eeworkspace.config.js
+          config-file: cypress-platform.config.js
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3
@@ -277,10 +277,10 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-  Cypress-Platform-Onboarding:
+  Cypress-Onboarding:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress-platform-onboarding' || github.event.label.name == 'run-cypress') }}
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress-onboarding' || github.event.label.name == 'run-cypress') }}
 
     steps:
       - name: Setup Node.js
@@ -362,7 +362,6 @@ jobs:
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
           echo "SSO_OPENID_WELL_KNOWN_URL=http://34.121.104.58:8080/.well-known/openid-configuration" >> .env
-          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
           echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
@@ -418,7 +417,7 @@ jobs:
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:8082"
-          config-file: cypress-ee-onboarding-workspace.config.js
+          config-file: cypress-onboarding.config.js
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3

@@ -871,7 +871,7 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
-      onEditorFreeze(false);
+      if (appData.creationMode !== 'GIT') onEditorFreeze(false);
       setAppVersionPromoted(false);
       callBack(appData, null, versionSwitched, isEnvironmentSwitched, selectedEnvironmentId, extraProps);
       initComponentVersioning();
