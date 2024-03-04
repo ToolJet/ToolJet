@@ -131,7 +131,6 @@ class Chart extends React.Component {
         children: (
           <CodeHinter
             type="basic"
-            currentState={this.props.currentState}
             initialValue={jsonDescription?.value ?? {}}
             className="chart-input pr-2"
             onChange={(value) => this.props.paramUpdated({ name: 'jsonDescription' }, 'value', value, 'properties')}
@@ -159,7 +158,6 @@ class Chart extends React.Component {
         children: (
           <CodeHinter
             type="basic"
-            currentState={this.props.currentState}
             initialValue={data.value}
             className="chart-input pr-2"
             onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}

@@ -218,7 +218,6 @@ class TableComponent extends React.Component {
             </label>
             <CodeHinter
               type="basic"
-              currentState={this.props.currentState}
               initialValue={column.name}
               placeholder={column.name}
               onChange={(value) => this.onColumnItemChange(index, 'name', value)}
@@ -257,7 +256,6 @@ class TableComponent extends React.Component {
             <label className="form-label">{this.props.t('widget.Table.key', 'key')}</label>
             <CodeHinter
               type="basic"
-              currentState={this.props.currentState}
               initialValue={column.key}
               placeholder={column.name}
               onChange={(value) => this.onColumnItemChange(index, 'key', value)}
@@ -273,7 +271,6 @@ class TableComponent extends React.Component {
           <div data-cy={`transformation-field`} className="field mb-2 mt-1">
             <label className="form-label">{this.props.t('widget.Table.transformationField', 'Transformation')}</label>
             <CodeHinter
-              currentState={this.props.currentState}
               initialValue={column?.transformation ?? '{{cellValue}}'}
               theme={this.props.darkMode ? 'monokai' : 'default'}
               mode="javascript"
@@ -316,7 +313,6 @@ class TableComponent extends React.Component {
                 <label className="form-label">{this.props.t('widget.Table.textColor', 'Text color')}</label>
                 <CodeHinter
                   type="basic"
-                  currentState={this.props.currentState}
                   initialValue={column.textColor}
                   placeholder={'Text color of the cell'}
                   onChange={(value) => this.onColumnItemChange(index, 'textColor', value)}
@@ -335,7 +331,6 @@ class TableComponent extends React.Component {
                 </label>
                 <CodeHinter
                   type="basic"
-                  currentState={this.props.currentState}
                   initialValue={column.cellBackgroundColor ?? 'inherit'}
                   placeholder={''}
                   onChange={(value) => this.onColumnItemChange(index, 'cellBackgroundColor', value)}
@@ -357,7 +352,6 @@ class TableComponent extends React.Component {
                     <label className="form-label">{this.props.t('widget.Table.regex', 'Regex')}</label>
                     <CodeHinter
                       type="basic"
-                      currentState={this.props.currentState}
                       initialValue={column.regex}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'regex', value)}
@@ -373,7 +367,6 @@ class TableComponent extends React.Component {
                     <label className="form-label">{this.props.t('widget.Table.minLength', 'Min length')}</label>
                     <CodeHinter
                       type="basic"
-                      currentState={this.props.currentState}
                       initialValue={column.minLength}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'minLength', value)}
@@ -389,7 +382,6 @@ class TableComponent extends React.Component {
                     <label className="form-label">{this.props.t('widget.Table.maxLength', 'Max length')}</label>
                     <CodeHinter
                       type="basic"
-                      currentState={this.props.currentState}
                       initialValue={column.maxLength}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'maxLength', value)}
@@ -405,7 +397,6 @@ class TableComponent extends React.Component {
                     <label className="form-label">{this.props.t('widget.Table.customRule', 'Custom rule')}</label>
                     <CodeHinter
                       type="basic"
-                      currentState={this.props.currentState}
                       initialValue={column.customRule}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
@@ -431,7 +422,6 @@ class TableComponent extends React.Component {
                 <label className="form-label">{this.props.t('widget.Table.minValue', 'Min value')}</label>
                 <CodeHinter
                   type="basic"
-                  currentState={this.props.currentState}
                   initialValue={column.minLength}
                   placeholder={''}
                   onChange={(value) => this.onColumnItemChange(index, 'minValue', value)}
@@ -447,7 +437,6 @@ class TableComponent extends React.Component {
                 <label className="form-label">{this.props.t('widget.Table.maxValue', 'Max value')}</label>
                 <CodeHinter
                   type="basic"
-                  currentState={this.props.currentState}
                   initialValue={column.maxLength}
                   placeholder={''}
                   onChange={(value) => this.onColumnItemChange(index, 'maxValue', value)}
@@ -502,7 +491,6 @@ class TableComponent extends React.Component {
                 <label className="form-label">{this.props.t('widget.Table.values', 'Values')}</label>
                 <CodeHinter
                   type="basic"
-                  currentState={this.props.currentState}
                   initialValue={column.values}
                   placeholder={'{{[1, 2, 3]}}'}
                   onChange={(value) => this.onColumnItemChange(index, 'values', value)}
@@ -518,7 +506,6 @@ class TableComponent extends React.Component {
                 <label className="form-label">{this.props.t('widget.Table.labels', 'Labels')}</label>
                 <CodeHinter
                   type="basic"
-                  currentState={this.props.currentState}
                   initialValue={column.labels}
                   placeholder={'{{["one", "two", "three"]}}'}
                   onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
@@ -544,7 +531,6 @@ class TableComponent extends React.Component {
                     <label className="form-label">{this.props.t('widget.Table.customRule', 'Custom Rule')}</label>
                     <CodeHinter
                       type="basic"
-                      currentState={this.props.currentState}
                       initialValue={column.customRule}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
@@ -569,7 +555,6 @@ class TableComponent extends React.Component {
               <div data-cy={`input-date-display-format`} className="field mb-2">
                 <CodeHinter
                   type="basic"
-                  currentState={this.props.currentState}
                   initialValue={column.dateFormat}
                   placeholder={'DD-MM-YYYY'}
                   onChange={(value) => this.onColumnItemChange(index, 'dateFormat', value)}
@@ -655,7 +640,6 @@ class TableComponent extends React.Component {
                 <label className="form-label">{this.props.t('widget.Table.borderRadius', 'Border radius')}</label>
                 <CodeHinter
                   type="basic"
-                  currentState={this.props.currentState}
                   initialValue={column.borderRadius}
                   placeholder={''}
                   onChange={(value) => this.onColumnItemChange(index, 'borderRadius', value)}
@@ -667,7 +651,6 @@ class TableComponent extends React.Component {
                 <label className="form-label">{this.props.t('widget.Table.width', 'Width')}</label>
                 <CodeHinter
                   type="basic"
-                  currentState={this.props.currentState}
                   initialValue={column.width}
                   placeholder={''}
                   onChange={(value) => this.onColumnItemChange(index, 'width', value)}
@@ -679,7 +662,6 @@ class TableComponent extends React.Component {
                 <label className="form-label">{this.props.t('widget.Table.height', 'Height')}</label>
                 <CodeHinter
                   type="basic"
-                  currentState={this.props.currentState}
                   initialValue={column.height}
                   placeholder={''}
                   onChange={(value) => this.onColumnItemChange(index, 'height', value)}
