@@ -29,7 +29,7 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
     if (currentValue) {
       const keysWithNullValues = Object.keys(currentValue).filter((key) => currentValue[key] === null);
       const keysWithDefaultValues = Object.keys(currentValue).filter(
-        (key, index) => currentValue[key].toString() === columns[index].column_default
+        (key, index) => currentValue[key]?.toString() === columns[index].column_default
       );
       setActiveTab((prevActiveTabs) => {
         const newActiveTabs = [...prevActiveTabs];
@@ -41,7 +41,7 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
         });
         keysWithDefaultValues.forEach((key) => {
           const index = Object.keys(currentValue).indexOf(key);
-          if (currentValue[key].toString() === columns[index].column_default) {
+          if (currentValue[key]?.toString() === columns[index].column_default) {
             newActiveTabs[index] = 'Default';
           }
         });
@@ -52,7 +52,7 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
             const value =
               currentValue[key] === null ? null : currentValue[key] === currentValue[key] ? currentValue[key] : '';
             const disabledValue =
-              currentValue[key] === null || currentValue[key].toString() === columns[index].column_default
+              currentValue[key] === null || currentValue[key]?.toString() === columns[index].column_default
                 ? true
                 : false;
             return { value: value, disabled: disabledValue };
