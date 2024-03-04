@@ -1,13 +1,18 @@
 import React from 'react';
 import './Configuration.scss';
-import { GoogleSSOModal } from './GoogleSsoModal';
-import { GithubSSOModal } from './GithubSsoModal';
 import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Dropdown } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { GoogleSSOModal } from '@/_components/GoogleSsoModal';
+import { GithubSSOModal } from '@/_components/GithubSsoModal';
+import { OpenIdSSOModal } from '@/_components/OpenIdSsoModal';
+import { LdapSSOModal } from '@/_components/LdapSsoModal';
+import { SamlSSOModal } from '@/_components/SamlSsoModal';
+import { LicenseTooltip } from '@/LicenseTooltip';
 
 class SSOConfiguration extends React.Component {
+  protectedSSO = ['openid', 'ldap', 'saml'];
   constructor(props) {
     super(props);
     this.state = {
@@ -21,6 +26,7 @@ class SSOConfiguration extends React.Component {
       showDropdown: false,
       inheritedInstanceSSO: 0,
       showEnablingWorkspaceSSOModal: false,
+      featureAccess: this.props.featureAccess,
     };
   }
 
@@ -85,6 +91,7 @@ class SSOConfiguration extends React.Component {
     this.setState({ defaultSSO: this.props.defaultSSO });
     this.setState({ isAnySSOEnabled: this.props.isAnySSOEnabled });
     this.setState({ instanceSSO: this.props.instanceSSO });
+    this.setState({ featureAccess: this.props.featureAccess });
   }
 
   componentDidUpdate(prevProps) {
@@ -104,6 +111,12 @@ class SSOConfiguration extends React.Component {
           this.setState({ inheritedInstanceSSO: enabledSSOCount });
         }
       );
+    }
+    if (prevProps.featureAccess !== this.props.featureAccess) {
+      this.setState({ featureAccess: this.props.featureAccess }, () => {
+        const enabledSSOCount = this.getCountOfEnabledSSO();
+        this.setState({ inheritedInstanceSSO: enabledSSOCount });
+      });
     }
   }
 
@@ -211,7 +224,7 @@ class SSOConfiguration extends React.Component {
 
   getCountOfEnabledSSO = () => {
     const instanceEnabledSSOs = this.state.instanceSSO
-      .filter((sso) => sso.enabled === true && sso.sso != 'form')
+      .filter((sso) => sso.enabled === true && sso.sso != 'form' && !(this.state.featureAccess?.[sso.sso] === false))
       .map((sso) => sso.sso);
 
     let enabledSSOCount = 0;
@@ -231,6 +244,12 @@ class SSOConfiguration extends React.Component {
         return <img src="/assets/images/Google.png" alt="Google" style={iconStyles} />;
       case 'git':
         return <img src="/assets/images/Github.png" alt="GitHub" style={iconStyles} />;
+      case 'openid':
+        return <img src="/assets/images/OpenId.png" alt="OpenId" style={iconStyles} />;
+      case 'ldap':
+        return <img src="/assets/images/Ldap.png" alt="LDAP" style={iconStyles} />;
+      case 'saml':
+        return <img src="/assets/images/Saml.png" alt="SAML" style={iconStyles} />;
       default:
         return null;
     }
@@ -239,34 +258,57 @@ class SSOConfiguration extends React.Component {
   renderSSOOption = (key, name) => {
     const isEnabledKey = `${key}Enabled`;
     const isEnabled = this.state[isEnabledKey];
+    const isFeatureAvailable = !this.protectedSSO.includes(key) || this.state.featureAccess?.[key];
 
     return (
-      <div className="sso-option" key={key} onClick={() => this.openModal(key)}>
-        <div className="sso-option-label">
-          {
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {this.getSSOIcon(key)}
-              <span style={{ marginLeft: 8 }}>{name}</span>
-              {
-                <img
-                  src="/assets/images/EditIcon.png"
-                  className="option-icon"
-                  style={{ width: '14px', height: '14px', marginLeft: '8px' }}
-                />
-              }
-            </div>
-          }
+      <LicenseTooltip
+        key={key}
+        limits={this.state.featureAccess}
+        feature={name}
+        isAvailable={isFeatureAvailable}
+        noTooltipIfValid={true}
+        placement="left"
+      >
+        <div
+          className="sso-option"
+          key={key}
+          onClick={isFeatureAvailable ? () => this.openModal(key) : (e) => e.preventDefault()}
+        >
+          <div className="sso-option-label">
+            {
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {this.getSSOIcon(key)}
+                <span style={{ marginLeft: 8 }}>{name}</span>
+                {
+                  <img
+                    src="/assets/images/EditIcon.png"
+                    className="option-icon"
+                    style={{
+                      width: '14px',
+                      height: '14px',
+                      marginLeft: '8px',
+                      ...(isFeatureAvailable ? {} : { visibility: 'hidden' }),
+                    }}
+                  />
+                }
+              </div>
+            }
+          </div>
+          <label className="switch" onClick={(e) => e.stopPropagation()}>
+            <input
+              type="checkbox"
+              checked={isEnabled}
+              onChange={isFeatureAvailable ? () => this.toggleSSOOption(key) : (e) => e.preventDefault()}
+            />
+            <span className="slider round"></span>
+          </label>
         </div>
-        <label className="switch" onClick={(e) => e.stopPropagation()}>
-          <input type="checkbox" checked={isEnabled} onChange={() => this.toggleSSOOption(key)} />
-          <span className="slider round"></span>
-        </label>
-      </div>
+      </LicenseTooltip>
     );
   };
 
   render() {
-    const { showModal, currentSSO, defaultSSO, initialState, ssoOptions, showDropdown } = this.state;
+    const { showModal, currentSSO, defaultSSO, initialState, ssoOptions, showDropdown, featureAccess } = this.state;
 
     return (
       <div className="sso-configuration">
@@ -302,7 +344,7 @@ class SSOConfiguration extends React.Component {
                   height: '34px',
                 }}
               >
-                Default SSO {defaultSSO ? `(${this.state.inheritedInstanceSSO})` : ''}
+                Instance SSO {defaultSSO ? `(${this.state.inheritedInstanceSSO})` : ''}
                 <SolidIcon className="option-icon" name={showDropdown ? 'cheveronup' : 'cheverondown'} fill={'grey'} />
               </div>
             </Dropdown.Toggle>
@@ -326,6 +368,20 @@ class SSOConfiguration extends React.Component {
                   <span style={{ marginLeft: 8 }}>Github</span>
                 </div>
               </Dropdown.Item>
+              <Dropdown.Item
+                eventKey="OpenID Connect"
+                disabled={
+                  !defaultSSO ||
+                  this.isOptionEnabled('openid') ||
+                  !this.isInstanceOptionEnabled('openid') ||
+                  !featureAccess?.openid
+                } // Disable the item if defaultSSO is false
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {this.getSSOIcon('openid')}
+                  <span style={{ marginLeft: 8 }}>OpenID Connect</span>
+                </div>
+              </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
 
@@ -337,6 +393,9 @@ class SSOConfiguration extends React.Component {
         <p className="sso-note">Display default SSO for workspace URL login</p>
         {this.renderSSOOption('google', 'Google')}
         {this.renderSSOOption('git', 'GitHub')}
+        {this.renderSSOOption('openid', 'OpenID Connect')}
+        {this.renderSSOOption('ldap', 'LDAP')}
+        {this.renderSSOOption('saml', 'SAML')}
         {showModal && currentSSO === 'google' && (
           <GoogleSSOModal
             settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
@@ -347,6 +406,30 @@ class SSOConfiguration extends React.Component {
         )}
         {showModal && currentSSO === 'git' && (
           <GithubSSOModal
+            settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
+            onClose={() => this.setState({ showModal: false })}
+            onUpdateSSOSettings={this.handleUpdateSSOSettings}
+            isInstanceOptionEnabled={this.isInstanceOptionEnabled}
+          />
+        )}
+        {showModal && currentSSO === 'openid' && (
+          <OpenIdSSOModal
+            settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
+            onClose={() => this.setState({ showModal: false })}
+            onUpdateSSOSettings={this.handleUpdateSSOSettings}
+            isInstanceOptionEnabled={this.isInstanceOptionEnabled}
+          />
+        )}
+        {showModal && currentSSO === 'ldap' && (
+          <LdapSSOModal
+            settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
+            onClose={() => this.setState({ showModal: false })}
+            onUpdateSSOSettings={this.handleUpdateSSOSettings}
+            isInstanceOptionEnabled={this.isInstanceOptionEnabled}
+          />
+        )}
+        {showModal && currentSSO === 'saml' && (
+          <SamlSSOModal
             settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
             onClose={() => this.setState({ showModal: false })}
             onUpdateSSOSettings={this.handleUpdateSSOSettings}

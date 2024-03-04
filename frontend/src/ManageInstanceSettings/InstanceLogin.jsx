@@ -4,12 +4,13 @@ import { copyToClipboard } from '@/_helpers/appUtils';
 import { withTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { instanceSettingsService, licenseService } from '@/_services';
 import { ToolTip } from '@/_components/ToolTip';
-import { authenticationService, organizationService, instanceSettingsService, licenseService } from '@/_services';
-import SSOConfiguration from './SsoConfiguration';
+import InstanceSSOConfiguration from './InstanceSSOConfiguration';
 import DisablePasswordLoginModal from '@/_components/DisablePasswordLoginModal';
 import '@/_components/OrganizationLogin/Configuration.scss';
-class OrganizationLogin extends React.Component {
+
+class InstanceLogin extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -20,15 +21,13 @@ class OrganizationLogin extends React.Component {
       hasChanges: false,
       isAnySSOEnabled: false,
       ssoOptions: [],
-      defaultSSO: false,
-      instanceSSO: [],
       featureAccess: {},
     };
     this.copyFunction = this.copyFunction.bind(this);
   }
 
   async componentDidMount() {
-    await this.setLoginConfigs();
+    await this.setInstanceLoginConfigs();
     await this.fetchFeatureAccess();
   }
 
@@ -74,26 +73,22 @@ class OrganizationLogin extends React.Component {
     return result;
   }
 
-  async setLoginConfigs(passwordLogin) {
-    const settings = await this.fetchSSOSettings();
-    const instanceSSO = await instanceSettingsService.fetchSSOConfigs();
-    const organizationSettings = settings?.organization_details;
-    const ssoConfigs = organizationSettings?.sso_configs;
-    const passwordLoginEnabled = passwordLogin || ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
+  async setInstanceLoginConfigs() {
+    const ssoConfigs = await instanceSettingsService.fetchSSOConfigs();
+    const passwordLoginEnabled = ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
+    const isAnySSOEnabled = ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) || false;
     const initialOptions = {
-      enableSignUp: organizationSettings?.enable_sign_up || false,
-      domain: organizationSettings?.domain,
+      enableSignUp: window.public_config?.ENABLE_SIGNUP === 'true',
+      allowedDomains: window.public_config?.ALLOWED_DOMAINS || '',
+      enableWorkspaceConfiguration: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
       passwordLoginEnabled: passwordLoginEnabled,
+      isAnySSOEnabled: isAnySSOEnabled,
     };
     this.setState({
       options: { ...initialOptions },
       initialOptions: { ...initialOptions },
       ssoOptions: [...ssoConfigs],
-      defaultSSO: organizationSettings?.inherit_s_s_o,
-      instanceSSO: [...instanceSSO],
-      isAnySSOEnabled:
-        ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
-        (organizationSettings?.inherit_s_s_o && instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled)),
+      isAnySSOEnabled: isAnySSOEnabled,
     });
   }
 
@@ -104,11 +99,6 @@ class OrganizationLogin extends React.Component {
     this.setState({ isAnySSOEnabled });
   };
 
-  async fetchSSOSettings() {
-    const configs = await organizationService.getSSODetails();
-    return configs;
-  }
-
   disablePasswordLogin = async () => {
     this.setState({ isSaving: true });
     const { options } = this.state;
@@ -117,7 +107,7 @@ class OrganizationLogin extends React.Component {
       enabled: false,
     };
     try {
-      await organizationService.editOrganizationConfigs(passwordLoginData);
+      await instanceSettingsService.updateSSOConfigs(passwordLoginData);
       this.setState({
         initialOptions: options,
         hasChanges: false,
@@ -139,7 +129,7 @@ class OrganizationLogin extends React.Component {
       enabled: true,
     };
     try {
-      await organizationService.editOrganizationConfigs(passwordLoginData);
+      await instanceSettingsService.updateSSOConfigs(passwordLoginData);
       this.setState({
         initialOptions: options,
         hasChanges: false,
@@ -171,12 +161,12 @@ class OrganizationLogin extends React.Component {
             type: 'form',
             enabled: updatedFields.passwordLoginEnabled,
           };
-          await organizationService.editOrganizationConfigs(passwordLoginData);
+          await instanceSettingsService.updateSSOConfigs(passwordLoginData);
         }
 
         const { passwordLoginEnabled, ...otherUpdates } = updatedFields;
         if (Object.keys(otherUpdates).length > 0) {
-          await organizationService.editOrganization(otherUpdates);
+          await instanceSettingsService.updateGeneralConfigs(otherUpdates);
         }
 
         this.setState({
@@ -184,7 +174,7 @@ class OrganizationLogin extends React.Component {
           hasChanges: false,
         });
 
-        toast.success('Organization settings have been updated', { position: 'top-center' });
+        toast.success('Instance settings have been updated', { position: 'top-center' });
       } else {
         toast.info('No changes to save', { position: 'top-center' });
       }
@@ -235,16 +225,8 @@ class OrganizationLogin extends React.Component {
 
   render() {
     const { t, darkMode } = this.props;
-    const {
-      options,
-      isSaving,
-      showDisablingPasswordConfirmation,
-      isAnySSOEnabled,
-      ssoOptions,
-      defaultSSO,
-      instanceSSO,
-      featureAccess,
-    } = this.state;
+    const { options, isSaving, showDisablingPasswordConfirmation, isAnySSOEnabled, ssoOptions, featureAccess } =
+      this.state;
     const flexContainerStyle = {
       display: 'flex',
       flexDirection: 'row',
@@ -254,26 +236,14 @@ class OrganizationLogin extends React.Component {
     };
 
     return (
-      <div className="wrapper workspace-settings-page animation-fade">
+      <div className="wrapper instance-settings-page animation-fade">
         <div className="page-wrapper">
           <div className="container-xl">
             <div className="card">
-              <div className="card-header" style={{ justifyContent: 'space-between' }}>
+              <div className="card-header">
                 <div className="card-title" data-cy="card-title">
-                  {t('header.organization.menus.manageSSO.workspaceLogin.title', 'Workspace login')}
+                  {t('header.organization.menus.manageSSO.instanceLogin.title', 'Instance login')}
                 </div>
-                <span
-                  className={`tj-text-xsm ${
-                    window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true'
-                      ? 'enabled-tag'
-                      : 'inherited-tag'
-                  }`}
-                  data-cy="status-label"
-                >
-                  {window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true'
-                    ? t('header.organization.menus.manageSSO.github.enabled', 'Enabled')
-                    : t('header.organization.menus.manageSSO.github.inherited', 'Inherited')}
-                </span>
               </div>
               <div className="card-body" style={flexContainerStyle}>
                 <div style={{ width: '50%' }}>
@@ -285,24 +255,27 @@ class OrganizationLogin extends React.Component {
                       <input
                         type="text"
                         className="form-control"
-                        placeholder={t(`Enter allowed domains`)}
+                        placeholder={`Enter allowed domains`}
                         name="domain"
-                        value={options.domain || ''}
-                        onChange={(e) => this.handleInputChange('domain', e)}
+                        value={options.allowedDomains || ''}
+                        onChange={(e) => this.handleInputChange('allowedDomains', e)}
                         data-cy="allowed-domains"
                       />
                     </div>
                     <div className="tj-text-xxsm mb-3">
-                      <div data-cy="allowed-domain-helper-text">
+                      <div data-cy="allowed-allowedDomains-helper-text">
                         {t(
-                          'header.organization.menus.manageSSO.generalSettings.supportMultidomains',
-                          `Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
+                          'header.organization.menus.manageSSO.generalSettings.supportMultiallowedDomainss',
+                          `Support multiple domains. Enter allowed domains names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
                         )}
                       </div>
                     </div>
                     <div className="form-group mb-3">
                       <label className="form-label bold-text" data-cy="workspace-login-url-label">
-                        {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
+                        {t(
+                          'header.organization.menus.manageSSO.generalSettings.superadminloginUrl',
+                          `Super admin login URL`
+                        )}
                       </label>
                       <div
                         className="d-flex justify-content-between form-control align-items-center"
@@ -311,26 +284,19 @@ class OrganizationLogin extends React.Component {
                         <p id="login-url" data-cy="workspace-login-url">
                           {`${window.public_config?.TOOLJET_HOST}${
                             window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                          }login/${
-                            authenticationService?.currentSessionValue?.current_organization_slug ||
-                            authenticationService?.currentSessionValue?.current_organization_id
-                          }`}
+                          }login/super-admin`}
                         </p>
                         <SolidIcon name="copy" width="16" onClick={() => this.copyFunction('login-url')} />
                       </div>
                       <div className="mt-1 tj-text-xxsm">
                         <div data-cy="workspace-login-help-text">
-                          {t(
-                            'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
-                            `Use this URL to login directly to this workspace`
-                          )}
+                          Use this URL for super admin to login via password
                         </div>
                       </div>
                     </div>
                     <div className="form-group mb-3">
                       <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
                         <input
-                          id="enableSignUp"
                           className="form-check-input"
                           type="checkbox"
                           onChange={() => this.handleCheckboxChange('enableSignUp')}
@@ -338,7 +304,7 @@ class OrganizationLogin extends React.Component {
                           data-cy="enable-sign-up-toggle"
                         />
                         <label className="form-check-label bold-text" data-cy="enable-sign-up-label">
-                          {'Enable signup'}
+                          {t('header.organization.menus.manageSSO.generalSettings.enableSignup', 'Enable signup')}
                         </label>
                       </label>
                       <div className="help-text danger-text-login">
@@ -376,14 +342,36 @@ class OrganizationLogin extends React.Component {
                         </div>
                       </div>
                     </div>
+                    <div className="form-group mb-3">
+                      <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          onChange={() => this.handleCheckboxChange('enableWorkspaceConfiguration')}
+                          checked={options?.enableWorkspaceConfiguration === true}
+                        />
+                        <label className="form-check-label bold-text" data-cy="enable-sign-up-label">
+                          {t(
+                            'header.organization.menus.manageSSO.generalSettings.enableWorkspaceConfiguration',
+                            'Enable workspace configuration'
+                          )}
+                        </label>
+                      </label>
+                      <div className="help-text danger-text-login">
+                        <div data-cy="enable-sign-up-helper-text">
+                          {t(
+                            'header.organization.menus.manageSSO.generalSettings.enableWorkspaceConfiguration',
+                            `Allow workspace admin to configure their workspace’s login differently`
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </form>
                 </div>
                 <div style={{ width: '50%' }}>
-                  <SSOConfiguration
+                  <InstanceSSOConfiguration
                     isAnySSOEnabled={isAnySSOEnabled}
                     ssoOptions={ssoOptions}
-                    defaultSSO={defaultSSO}
-                    instanceSSO={instanceSSO}
                     onUpdateAnySSOEnabled={this.updateAnySSOEnabled}
                     featureAccess={featureAccess}
                   />
@@ -427,4 +415,4 @@ class OrganizationLogin extends React.Component {
     );
   }
 }
-export default withTranslation()(OrganizationLogin);
+export default withTranslation()(InstanceLogin);

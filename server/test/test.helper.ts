@@ -271,6 +271,7 @@ export async function createUser(
           {
             sso: 'form',
             enabled: formLoginStatus,
+            configScope: 'organization',
           },
           ...ssoConfigs,
         ],

@@ -8,7 +8,7 @@ import { OidcOAuthService } from './oidc_auth.service';
 import { decamelizeKeys } from 'humps';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { SSOConfigs, SSOType } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
 import {
   getUserErrorMessages,
@@ -130,7 +130,7 @@ export class OauthService {
     return user;
   }
 
-  #getSSOConfigs(ssoType: 'google' | 'git' | 'openid'): Partial<SSOConfigs> {
+  #getSSOConfigs(ssoType: SSOType.GOOGLE | SSOType.GIT | SSOType.OPENID): Partial<SSOConfigs> {
     switch (ssoType) {
       case 'google':
         return {
@@ -160,7 +160,7 @@ export class OauthService {
     }
   }
 
-  #getInstanceSSOConfigs(ssoType: 'google' | 'git' | 'openid'): DeepPartial<SSOConfigs> {
+  #getInstanceSSOConfigs(ssoType: SSOType.GOOGLE | SSOType.GIT | SSOType.OPENID): DeepPartial<SSOConfigs> {
     return {
       organization: {
         enableSignUp: this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
@@ -175,7 +175,7 @@ export class OauthService {
     response: Response,
     ssoResponse: SSOResponse,
     configId?: string,
-    ssoType?: 'google' | 'git',
+    ssoType?: SSOType.GOOGLE | SSOType.GIT,
     user?: User,
     cookies?: object
   ): Promise<any> {
@@ -216,15 +216,15 @@ export class OauthService {
 
     let userResponse: UserResponse;
     switch (sso) {
-      case 'google':
+      case SSOType.GOOGLE:
         userResponse = await this.googleOAuthService.signIn(token, configs);
         break;
 
-      case 'git':
+      case SSOType.GIT:
         userResponse = await this.gitOAuthService.signIn(token, configs);
         break;
 
-      case 'openid':
+      case SSOType.OPENID:
         if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC))) {
           throw new UnauthorizedException('OIDC login disabled');
         }
