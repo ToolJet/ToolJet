@@ -269,9 +269,9 @@ export const passinputConfig = {
     validation: {
       mandatory: { value: false },
       regex: { value: '' },
-      minLength: { value: null },
-      maxLength: { value: null },
-      customRule: { value: null },
+      minLength: { value: '' },
+      maxLength: { value: '' },
+      customRule: { value: '' },
     },
     events: [],
     styles: {

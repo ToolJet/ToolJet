@@ -263,7 +263,7 @@ export const numberinputConfig = {
       regex: { value: '' },
       minValue: { value: '' },
       maxValue: { value: '' },
-      customRule: { value: null },
+      customRule: { value: '' },
     },
     properties: {
       value: { value: '' },
