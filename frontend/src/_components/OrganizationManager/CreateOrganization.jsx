@@ -244,6 +244,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 {t('globals.cancel', 'Cancel')}
               </ButtonSolid>
               <ButtonSolid
+                type="submit"
                 disabled={isDisabled}
                 onClick={createOrganization}
                 data-cy="create-workspace-button"
@@ -257,6 +258,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                     fill="#FDFDFE"
                   />
                 </svg>
+
                 {t('header.organization.createWorkspace', 'Create workspace')}
               </ButtonSolid>
             </div>
