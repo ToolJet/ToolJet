@@ -4,8 +4,9 @@
 .jet-table.table-component{
     padding: 8px;
     &.jet-table {
-      background-color: var(--base) !important;
-      box-shadow: 0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10);
+      background-color: var(--surfaces-surface-01);
+      box-shadow: var(--elevation-200-box-shadow) !important;
+      border: 1px solid var(--borders-weak-disabled) !important;
     }
     .table-filters{
       border: 1px solid var(--slate3, #F1F3F5) !important;
@@ -14,7 +15,7 @@
       }
     }
     .card-footer,.card{
-      background-color:var(--base) !important;
+      background-color: var(--surfaces-surface-01);
     }
     .card{
         border: 1px solid var(--slate3) !important;
@@ -25,31 +26,33 @@
     .card-header{
       border-bottom: 0 !important;
     }
-    .table-clear-icon{
-      border-radius: 4px;
-      border: 1px solid  rgba(255, 255, 255, 0.00) !important;
-      background: var(--indigo3, #F0F4FF) !important;
-    }
+    // .table-clear-icon{
+    //   border-radius: 4px;
+    //   border: 1px solid  rgba(255, 255, 255, 0.00) !important;
+    //   background: var(--indigo3, #F0F4FF) !important;
+    // }
     .table-global-search{
+      border : 1px solid var(--borders-default) !important;
+      input{
+        color: var(--text-primary) !important;
+      };
       &:hover{
         border-radius: 6px;
         border: 1px solid var(--slate8, #C1C8CD) !important;
-        background: var(--slate4, #ECEEF0) !important;
+        background: var(surfaces/surface-01) !important;
       }
       &:focus-visible{
         border-radius: 6px;
-        border: 1px solid var(--slate7, #D7DBDF) !important;
-        background: var(--base-base, #FFF) !important;
+        border: 2px solid var(--primary-accent-strong) !important;
+        // background: var(--base-base, #FFF) !important;
         /* Focus rings/Gray/light */
-        box-shadow: 0px 0px 0px 4px var(--slate6) !important;
+        // box-shadow: 0px 0px 0px 4px var(--slate6) !important;
       }
       &:focus-within{
         border-radius: 6px;
-        border: 1px solid var(--indigo9, #3E63DD) !important;
-        background: var(--indigo2, #F8FAFF) !important;
-
+        border: 2px solid var(--primary-accent-strong) !important;
         /* Selected ring/Indigo/light */
-        box-shadow: 0px 0px 0px 1px var(--indigo6) !important;
+        // box-shadow: 0px 0px 0px 1px var(--indigo6) !important;
       }
     }
     .tr{
@@ -396,7 +399,7 @@
   right: 0;
   height: 300px;
   z-index: 100;
-  background: var(--slate1, #FBFCFD) !important;
+  background-color: var(--surfaces-surface-01) !important;
   overflow: hidden;
 }
 
@@ -526,7 +529,7 @@
 .jet-table{
   .tr{
     .th{
-      background: var(--slate3, #F1F3F5) !important;
+      background: var(--surfaces-surface-02) ;
       border-bottom: 1px solid var(--slate5, #E6E8EB) !important;
       border-top: 0 !important;
       padding: 6px 12px;
@@ -536,7 +539,7 @@
       font-size: 12px !important;
       width: 100%;
       &:hover{
-        background: var(--slate4, #ECEEF0) !important;
+        background: linear-gradient(0deg, var(--surfaces-surface-02),var(--surfaces-surface-02)),linear-gradient(0deg, var(--interactive-overlays-fill-hover),var(--interactive-overlays-fill-hover)) !important;
       }
       &:focus-within{
         outline: 0;
@@ -723,6 +726,7 @@
     //for select column type
     .td.has-dropdown{
       .select-search-input{
+        //old dropdown
         border: 0;
         background: transparent;
       }
