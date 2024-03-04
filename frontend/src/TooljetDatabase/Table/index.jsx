@@ -772,6 +772,16 @@ const Table = ({ collapseSidebar }) => {
     );
   }
 
+  function isSerialDataType(columnDetails) {
+    const { dataType = '', column_default = '' } = columnDetails;
+    const serialDatatypeDefaultValuePattern = 'nextval(';
+
+    if (dataType === 'integer' && column_default) {
+      if (column_default.includes(serialDatatypeDefaultValuePattern)) return true;
+    }
+    return false;
+  }
+
   return (
     <div>
       <TjdbTableHeader
@@ -826,7 +836,7 @@ const Table = ({ collapseSidebar }) => {
                 {headerGroup.headers.map((column, index) => (
                   <th
                     key={column.Header}
-                    width={230}
+                    width={isSerialDataType(column) ? 150 : 230}
                     style={{ height: index === 0 ? '32px' : '' }}
                     title={index === 0 ? '' : column?.Header}
                     className={
