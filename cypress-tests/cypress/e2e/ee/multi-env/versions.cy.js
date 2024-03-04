@@ -46,6 +46,7 @@ describe("App Version Functionality", () => {
     it("Verify the elements of the version module", () => {
         cy.apiCreateApp(data.appName);
         cy.openApp();
+        cy.waitForAppLoad();
         cy.dragAndDropWidget("Text", 50, 50);
         cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
         navigateToCreateNewVersionModal((currentVersion = "v1"));
@@ -65,6 +66,7 @@ describe("App Version Functionality", () => {
         data.appName = `${fake.companyName}-App`;
         cy.apiCreateApp(data.appName);
         cy.openApp();
+        cy.waitForAppLoad();
 
         cy.dragAndDropWidget("Toggle Switch", 50, 50);
         verifyComponent("toggleswitch1");

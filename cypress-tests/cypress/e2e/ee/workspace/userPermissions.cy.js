@@ -173,6 +173,7 @@ describe("User permissions", () => {
     // cy.get(commonSelectors.dashboardIcon).click();
     cy.apiCreateApp(data.appName);
     cy.openApp();
+    cy.waitForAppLoad();
     cy.dragAndDropWidget("Table", 250, 250);
     cy.get('[data-cy="landing-page-add-new-ds-button"]')
       .should("be.visible")

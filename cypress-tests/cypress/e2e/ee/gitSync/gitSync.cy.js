@@ -206,6 +206,8 @@ describe("", () => {
             "Apps imported from git repository cannot be edited"
         );
 
+        cy.waitForAppLoad();
+        cy.wait(1000);
         cy.get(".datasource-picker").should("have.class", "disabled");
         cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
         cy.get(".components-container").should("have.class", "disabled");
