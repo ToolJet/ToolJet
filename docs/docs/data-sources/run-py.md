@@ -41,10 +41,12 @@ To trigger queries in Python, you can use the below functions:
 
 ```py
 actions.runQuery('getSalesData')
+#replace getSalesData with your query name
 ```
 
 ```py
 queries.getSalesData.run()
+#replace getSalesData with your query name
 ```
 
 ## Get Query Data
