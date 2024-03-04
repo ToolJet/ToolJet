@@ -18,12 +18,6 @@ const ParameterForm = ({
   const [defaultValue, setDefaultValue] = useState();
   const [error, setError] = useState();
 
-  /**
-   * Storing {} in a ref to make sure its not a object instance whenever component reload.
-   * passing currentState={{}} to CodeHinter will consider it as a new value whenver this component rerenders
-   */
-  const emptyObj = useRef({});
-
   useEffect(() => {
     setName(_name);
     setDefaultValue(_defaultValue);
@@ -112,7 +106,6 @@ const ParameterForm = ({
                   <CodeHinter
                     onChange={(value) => setDefaultValue(value)}
                     theme={darkMode ? 'monokai' : 'default'}
-                    currentState={emptyObj.current}
                     usePortalEditor={false}
                     style={{ height: '32px', width: '177px', marginBotto: '16px' }}
                     initialValue={defaultValue}

@@ -16,7 +16,6 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
         <div className="flex-grow-1">
           <CodeHinter
             type="basic"
-            currentState={currentState}
             initialValue={options.successMessage}
             onChange={(value) => optionchanged('successMessage', value)}
             placeholder={t('editor.queryManager.queryRanSuccessfully', 'Query ran successfully')}

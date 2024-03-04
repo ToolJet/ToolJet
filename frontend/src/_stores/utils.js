@@ -330,7 +330,7 @@ function toRemoveExposedvariablesFromComponentDiff(object) {
   return copy;
 }
 
-export function createReferencesLookup(refState, forQueryParams = false) {
+export function createReferencesLookup(refState, forQueryParams = false, initalLoad = false) {
   if (forQueryParams && _.isEmpty(refState['parameters'])) {
     return { suggestionList: [] };
   }
@@ -339,22 +339,24 @@ export function createReferencesLookup(refState, forQueryParams = false) {
 
   const state = _.cloneDeep(refState);
   const queries = forQueryParams ? {} : state['queries'];
-  const actions = [
-    'runQuery',
-    'setVariable',
-    'unSetVariable',
-    'showAlert',
-    'logout',
-    'showModal',
-    'closeModal',
-    'setLocalStorage',
-    'copyToClipboard',
-    'goToApp',
-    'generateFile',
-    'setPageVariable',
-    'unsetPageVariable',
-    'switchPage',
-  ];
+  const actions = initalLoad
+    ? [
+        'runQuery',
+        'setVariable',
+        'unSetVariable',
+        'showAlert',
+        'logout',
+        'showModal',
+        'closeModal',
+        'setLocalStorage',
+        'copyToClipboard',
+        'goToApp',
+        'generateFile',
+        'setPageVariable',
+        'unsetPageVariable',
+        'switchPage',
+      ]
+    : [];
 
   if (!forQueryParams) {
     // eslint-disable-next-line no-unused-vars
@@ -365,7 +367,7 @@ export function createReferencesLookup(refState, forQueryParams = false) {
     });
   }
 
-  const currentState = !forQueryParams ? _.merge(state, { queries }) : state;
+  const currentState = !forQueryParams && initalLoad ? _.merge(state, { queries }) : state;
   const suggestionList = [];
   const map = new Map();
 
@@ -418,7 +420,7 @@ export function createReferencesLookup(refState, forQueryParams = false) {
     }
     return suggestionList.push({ hint: key, type: resolvedRefTypes.get(hintsMap.get(key)) });
   });
-  if (!forQueryParams) {
+  if (!forQueryParams && initalLoad) {
     actions.forEach((action) => {
       suggestionList.push({ hint: `actions.${action}()`, type: 'method' });
     });

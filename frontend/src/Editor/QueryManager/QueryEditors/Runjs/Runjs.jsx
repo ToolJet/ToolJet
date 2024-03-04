@@ -36,7 +36,6 @@ const Runjs = (props) => {
         }}
         componentName="Runjs"
         cyLabel={`runjs`}
-        currentState={currStateForCodeHinter}
       />
     </Card>
   );
