@@ -171,10 +171,17 @@ function FlowBuilder(props) {
   //   [removeEdge]
   // );
 
-  const onNodeClick = useCallback((event, node) => {
-    // only show modal if node is not input or output node
-    if (node.type !== 'input' && node.type !== 'output') setSelectedNode(node);
-  }, []);
+  const onNodeClick = useCallback(
+    (event, node) => {
+      // only show modal if node is not input or output node
+      const data = editorSession.dataSources.find((obj) => obj.kind === node.data.kind);
+      let nodeData = node;
+      nodeData.pluginId = data.pluginId;
+      nodeData.plugin = data.plugin;
+      if (node.type !== 'input' && node.type !== 'output') setSelectedNode(nodeData);
+    },
+    [editorSession.dataSources]
+  );
 
   var maxTopValue = 300;
   const maxLeftValue = 105;
