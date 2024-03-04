@@ -459,6 +459,8 @@ export class AppImportExportService {
                     newLayout.type = type;
                     newLayout.top = layout.top;
                     newLayout.left = resolveGridPositionForComponent(layout.left, type);
+                    newLayout.dimensionUnit = 'count';
+                    // newLayout.left = layout.left;
                     newLayout.width = layout.width;
                     newLayout.height = layout.height;
                     newLayout.componentId = appResourceMappings.componentsMapping[componentId];
@@ -776,6 +778,7 @@ export class AppImportExportService {
               newLayout.left = shouldUpdateForGridCompatibility
                 ? resolveGridPositionForComponent(layout.left, layout.type)
                 : layout.left;
+              newLayout.dimensionUnit = 'count';
               newLayout.width = layout.width;
               newLayout.height = layout.height;
               newLayout.component = savedComponent;

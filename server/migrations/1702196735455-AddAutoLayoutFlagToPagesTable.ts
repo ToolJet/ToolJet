@@ -13,6 +13,17 @@ export class AddAutoLayoutFlagToPagesTable1702196735455 implements MigrationInte
       })
     );
 
+    await queryRunner.changeColumn(
+      'pages',
+      'auto_compute_layout',
+      new TableColumn({
+        name: 'auto_compute_layout',
+        type: 'boolean',
+        isNullable: false,
+        default: 'true',
+      })
+    );
+
     await queryRunner.addColumn(
       'layouts',
       new TableColumn({
@@ -24,13 +35,13 @@ export class AddAutoLayoutFlagToPagesTable1702196735455 implements MigrationInte
     );
 
     await queryRunner.changeColumn(
-      'pages',
-      'auto_compute_layout',
+      'layouts',
+      'dimension_unit',
       new TableColumn({
-        name: 'auto_compute_layout',
-        type: 'boolean',
+        name: 'dimension_unit',
+        type: 'varchar',
         isNullable: false,
-        default: 'true',
+        default: `'count'`,
       })
     );
   }
