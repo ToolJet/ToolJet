@@ -22,7 +22,7 @@ jobs:
           allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
           allowed_user3=${{ secrets.ALLOWED_USER2_USERNAME }}
           
-          if [[ "${{ github.actor }}" != "$allowed_user1" && "${{ github.actor }}" != "$allowed_user2" && "${{ github.actor }}" != "$allowed_user3"  ]]; then
+          if [[ "${{ github.actor }}" != "$allowed_user1" && "${{ github.actor }}" != "$allowed_user2" && "${{ github.actor }}" != "$allowed_user3" ]]; then
             echo "User not authorized to trigger this workflow"
             exit 1
           fi
