@@ -576,7 +576,6 @@ class HomePageComponent extends React.Component {
       showRenameAppModal,
       showCreateAppFromTemplateModal,
     } = this.state;
-    console.log("loading in home page",isLoading,appSearchKey)
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">

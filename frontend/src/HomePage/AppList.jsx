@@ -5,27 +5,26 @@ import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg'
 
 const AppList = (props) => {
   const { t } = useTranslation();
-  console.log("loading state, ", props.isLoading);
   return (
     <div className="app-list">
       {props.isLoading && (
         <div className="container px-0">
-        <div className="row homepage-app-card-list-item-wrap">
-          {Array.from(Array(2)).map((_, rowIndex) => (
-            <div className="row mb-3" key={rowIndex}>
-              {Array.from(Array(3)).map((_, index) => (
-                <div className="col" key={rowIndex * 3 + index}>
-                  <div className="card-skeleton-container">
-                    <div className="app-icon-skeleton"></div>
-                    <div className="skeleton-line"></div>
-                    <div className="skeleton-line"></div>
-                    <div className="skeleton-line"></div>
+          <div className="row homepage-app-card-list-item-wrap">
+            {Array.from(Array(2)).map((_, rowIndex) => (
+              <div className="row mb-3" key={rowIndex}>
+                {Array.from(Array(3)).map((_, index) => (
+                  <div className="col" key={rowIndex * 3 + index}>
+                    <div className="card-skeleton-container">
+                      <div className="app-icon-skeleton"></div>
+                      <div className="skeleton-line"></div>
+                      <div className="skeleton-line"></div>
+                      <div className="skeleton-line"></div>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       )}
       { props.meta.total_count > 0 && (
