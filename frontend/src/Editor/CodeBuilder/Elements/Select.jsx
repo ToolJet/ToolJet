@@ -33,6 +33,7 @@ const selectCustomStyles = (width) => {
         borderRadius: '6px',
         width: width,
         minHeight: '32px',
+        color: 'var(--slate12)',
       };
     },
 
@@ -49,6 +50,10 @@ const selectCustomStyles = (width) => {
       backgroundColor: state.isFocused ? '#F0F4FF !important' : 'white',
       color: '#11181C',
       borderRadius: '6px',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: 'var(--slate12)',
     }),
   };
 };
