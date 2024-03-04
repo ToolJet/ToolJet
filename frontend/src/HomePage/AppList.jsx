@@ -1,33 +1,35 @@
-import React from 'react';
-import AppCard from './AppCard';
-import { useTranslation } from 'react-i18next';
-import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
+import React from "react";
+import AppCard from "./AppCard";
+import { useTranslation } from "react-i18next";
+import EmptyFoldersIllustration from "@assets/images/icons/no-queries-added.svg";
+
+const LoadingSkeleton = () => (
+  <div className="container px-0">
+    <div className="row homepage-app-card-list-item-wrap">
+      {Array.from({ length: 2 }).map((_, rowIndex) => (
+        <div className="row mb-3" key={rowIndex}>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div className="col" key={rowIndex * 3 + index}>
+              <div className="card-skeleton-container">
+                <div className="app-icon-skeleton"></div>
+                <div className="skeleton-line"></div>
+                <div className="skeleton-line"></div>
+                <div className="skeleton-line"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 const AppList = (props) => {
   const { t } = useTranslation();
   return (
     <div className="app-list">
-      {props.isLoading && (
-        <div className="container px-0">
-          <div className="row homepage-app-card-list-item-wrap">
-            {Array.from(Array(2)).map((_, rowIndex) => (
-              <div className="row mb-3" key={rowIndex}>
-                {Array.from(Array(3)).map((_, index) => (
-                  <div className="col" key={rowIndex * 3 + index}>
-                    <div className="card-skeleton-container">
-                      <div className="app-icon-skeleton"></div>
-                      <div className="skeleton-line"></div>
-                      <div className="skeleton-line"></div>
-                      <div className="skeleton-line"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      { props.meta.total_count > 0 && (
+      {props.isLoading && <LoadingSkeleton />}
+      {!props.isLoading && props.meta.total_count > 0 && (
         <div className="container px-0">
           <div className="row homepage-app-card-list-item-wrap">
             {props.apps.map((app) => {
@@ -52,12 +54,15 @@ const AppList = (props) => {
       )}
       {!props.isLoading && props.currentFolder.count === 0 && (
         <div className="text-center d-block">
-          <EmptyFoldersIllustration className="mb-4" data-cy="empty-folder-image" />
+          <EmptyFoldersIllustration
+            className="mb-4"
+            data-cy="empty-folder-image"
+          />
           <span
-            className={`d-block text-center text-body ${props.darkMode && 'text-white-50'}`}
+            className={`d-block text-center text-body ${props.darkMode && "text-white-50"}`}
             data-cy="empty-folder-text"
           >
-            {t('homePage.thisFolderIsEmpty', 'This folder is empty')}
+            {t("homePage.thisFolderIsEmpty", "This folder is empty")}
           </span>
         </div>
       )}
