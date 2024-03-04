@@ -69,7 +69,6 @@ export const Modal = function Modal({
     }
     const canShowModal = exposedVariables.show ?? false;
     fireEvent(canShowModal ? 'onOpen' : 'onClose');
-
     setShowModal(exposedVariables.show ?? false);
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
