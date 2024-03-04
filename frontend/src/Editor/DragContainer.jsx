@@ -120,6 +120,7 @@ export default function DragContainer({
   const moveableRef = useRef();
   const draggedOverElemRef = useRef(null);
   const childMoveableRefs = useRef({});
+  const groupResizeDataRef = useRef([]);
   const isDraggingRef = useRef(false);
   const [movableTargets, setMovableTargets] = useState({});
   const noOfGrids = 43;
@@ -606,6 +607,13 @@ export default function DragContainer({
         onResizeGroup={({ events }) => {
           console.log('heree--- onResizeGroup');
           const newBoxs = [];
+          const parentElm = events[0].target.closest('.real-canvas');
+          parentElm.classList.remove('show-grid');
+          const parentWidth = parentElm?.clientWidth;
+          const parentHeight = parentElm?.clientHeight;
+
+          const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
+          console.log('posRight', posRight, posLeft, posTop, posBottom);
           events.forEach((ev) => {
             ev.target.style.width = `${ev.width}px`;
             ev.target.style.height = `${ev.height}px`;
@@ -618,32 +626,67 @@ export default function DragContainer({
             //   y: ev.drag.translate[1],
             // });
           });
+
+          if (!(posLeft < 0 || posTop < 0 || posRight < 0 || posBottom < 0)) {
+            groupResizeDataRef.current = events;
+          }
           // onResizeStop(newBoxs);
         }}
-        onResizeGroupEnd={({ events }) => {
+        onResizeGroupEnd={(e) => {
           try {
-            console.log('onResizeGroup---', events);
+            const { events } = e;
+            console.log('onResizeGroup---', e);
             const newBoxs = [];
 
             const parentElm = events[0].target.closest('.real-canvas');
             parentElm.classList.remove('show-grid');
 
-            events.forEach((ev) => {
-              console.log('resizeevents', events);
+            // events.forEach((ev) => {
+            //   console.log('resizeevents', ev.lastEvent.width);
+            //   const currentWidget = boxes.find(({ id }) => {
+            //     return id === ev.target.id;
+            //   });
+
+            //   let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
+            //   console.log('resizeevents', ev.lastEvent.width, currentWidget?.layouts[currentLayout].width * _gridWidth);
+            //   let width = Math.round(ev.lastEvent.width / _gridWidth) * _gridWidth;
+            //   width = width < _gridWidth ? _gridWidth : width;
+            //   let posX = Math.round(ev.lastEvent.drag.translate[0] / _gridWidth) * _gridWidth;
+            //   let posY = Math.round(ev.lastEvent.drag.translate[1] / 10) * 10;
+            //   let height = Math.round(ev.lastEvent.height / 10) * 10;
+            //   height = height < 10 ? 10 : height;
+
+            //   ev.target.style.width = `${width}px`;
+            //   ev.target.style.height = `${height}px`;
+            //   ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
+            //   newBoxs.push({
+            //     id: ev.target.id,
+            //     height: height,
+            //     width: width,
+            //     x: posX,
+            //     y: posY,
+            //     gw: _gridWidth,
+            //   });
+            // });
+
+            // debugger;
+            // TODO: Logic needs to be relooked post go live P2
+            groupResizeDataRef.current.forEach((ev) => {
+              console.log('resizeevents', ev.width);
               const currentWidget = boxes.find(({ id }) => {
                 return id === ev.target.id;
               });
               let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
-              let width = Math.round(ev.lastEvent.width / _gridWidth) * _gridWidth;
+              console.log('resizeevents', ev.width, currentWidget?.layouts[currentLayout].width * _gridWidth);
+              let width = Math.round(ev.width / _gridWidth) * _gridWidth;
               width = width < _gridWidth ? _gridWidth : width;
-              let posX = Math.round(ev.lastEvent.drag.translate[0] / _gridWidth) * _gridWidth;
-              let posY = Math.round(ev.lastEvent.drag.translate[1] / 10) * 10;
-              let height = Math.round(ev.lastEvent.height / 10) * 10;
+              let posX = Math.round(ev.drag.translate[0] / _gridWidth) * _gridWidth;
+              let posY = Math.round(ev.drag.translate[1] / 10) * 10;
+              let height = Math.round(ev.height / 10) * 10;
               height = height < 10 ? 10 : height;
 
               ev.target.style.width = `${width}px`;
               ev.target.style.height = `${height}px`;
-              // ev.target.style.transform = ev.lastEvent.drag.transform;
               ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
               newBoxs.push({
                 id: ev.target.id,
@@ -654,7 +697,29 @@ export default function DragContainer({
                 gw: _gridWidth,
               });
             });
-            onResizeStop(newBoxs);
+
+            if (groupResizeDataRef.current.length) {
+              onResizeStop(newBoxs);
+            } else {
+              events.forEach((ev) => {
+                console.log('resizeevents', ev.width);
+                const currentWidget = boxes.find(({ id }) => {
+                  return id === ev.target.id;
+                });
+                let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
+                console.log('resizeevents', ev.width, currentWidget?.layouts[currentLayout].width * _gridWidth);
+                let width = currentWidget?.layouts[currentLayout].width * _gridWidth;
+                let posX = currentWidget?.layouts[currentLayout].left * _gridWidth;
+                let posY = currentWidget?.layouts[currentLayout].top;
+                let height = currentWidget?.layouts[currentLayout].height;
+                height = height < 10 ? 10 : height;
+                ev.target.style.width = `${width}px`;
+                ev.target.style.height = `${height}px`;
+                ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
+              });
+            }
+            groupResizeDataRef.current = [];
+            reloadGrid();
           } catch (error) {
             console.error('Error resizing group', error);
           }
@@ -907,10 +972,10 @@ export default function DragContainer({
           const { events } = ev;
           console.log('onDragGroup---', ev);
           const parentElm = events[0]?.target?.closest('.real-canvas');
-          const parentWidth = parentElm?.clientWidth;
-          const parentHeight = parentElm?.clientHeight;
+          // const parentWidth = parentElm?.clientWidth;
+          // const parentHeight = parentElm?.clientHeight;
 
-          const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
+          // const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
 
           events.forEach((ev) => {
             let posX = ev.translate[0];
@@ -1133,11 +1198,12 @@ function adjustWidth(width, posX, gridWidth) {
 
 function getPositionForGroupDrag(events, parentWidth, parentHeight) {
   return events.reduce((positions, ev) => {
+    const eventObj = ev.lastEvent ? ev.lastEvent : ev;
+    const { width, height } = eventObj;
+
     const {
       translate: [elemPosX, elemPosY],
-      width,
-      height,
-    } = ev.lastEvent ? ev.lastEvent : ev;
+    } = eventObj.drag ? eventObj.drag : eventObj;
 
     return {
       ...positions,
