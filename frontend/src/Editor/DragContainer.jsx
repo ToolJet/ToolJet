@@ -760,7 +760,8 @@ export default function DragContainer({
                 const draggedOverWidget = widgets[draggedOverElemId];
                 let { left: _left, top: _top } = getMouseDistanceFromParentDiv(
                   e,
-                  draggedOverWidget?.component?.component === 'Kanban' ? draggedOverElem : draggedOverElemId
+                  draggedOverWidget?.component?.component === 'Kanban' ? draggedOverElem : draggedOverElemId,
+                  widgets[draggedOverElemId]?.component?.component
                 );
                 left = _left;
                 top = _top;
@@ -1011,13 +1012,15 @@ export default function DragContainer({
   );
 }
 
-function getMouseDistanceFromParentDiv(event, id) {
-  // Get the parent div element.
-  const parentDiv = id
+function getMouseDistanceFromParentDiv(event, id, parentWidgetType) {
+  let parentDiv = id
     ? typeof id === 'string'
       ? document.getElementById(id)
       : id
     : document.getElementsByClassName('real-canvas')[0];
+  if (parentWidgetType === 'Container') {
+    parentDiv = document.getElementById('canvas-' + id);
+  }
 
   // Get the bounding rectangle of the parent div.
   const parentDivRect = parentDiv.getBoundingClientRect();
