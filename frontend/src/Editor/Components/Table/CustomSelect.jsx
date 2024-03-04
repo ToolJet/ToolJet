@@ -69,6 +69,9 @@ export const CustomSelect = ({
       MultiValueRemove,
       MultiValueContainer: customMultiValueContainer,
     }),
+    ...(!isMulti && {
+      SingleValue: customMultiValueContainer,
+    }),
   };
 
   const defaultValue = defaultOptionsList.length >= 1 ? defaultOptionsList[defaultOptionsList.length - 1] : null;
