@@ -1,0 +1,16 @@
+{
+  "name": "Applicant tracking system",
+  "description": "Streamline hiring with customizable job posts, candidate profiles, and interview status tracking with this simple yet powerful template.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "applicant-tracking-system",
+  "category": "human-resources"
+}

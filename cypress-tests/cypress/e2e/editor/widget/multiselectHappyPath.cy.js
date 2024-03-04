@@ -41,7 +41,7 @@ import {
 describe("Multiselect widget", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-Multiselect-App`);
     cy.openApp();
     cy.dragAndDropWidget(multiselectText.multiselect);
   });
@@ -66,7 +66,9 @@ describe("Multiselect widget", () => {
       "General",
     ]);
     verifyAndModifyParameter(commonWidgetText.parameterLabel, data.label);
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.get(multiselectSelector.multiselectLabel(data.widgetName)).should(
       "have.text",
       data.label
@@ -77,7 +79,9 @@ describe("Multiselect widget", () => {
       commonWidgetText.labelDefaultValue,
       codeMirrorInputLabel("[1,2,3]")
     );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     verifyMultiselectHeader(
       data.widgetName,
       multiselectText.labelAllItemsSelected
@@ -147,7 +151,9 @@ describe("Multiselect widget", () => {
       multiselectText.noEventsMessage
     );
     addDefaultEventHandler(data.alertMessage);
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
 
     selectFromMultiSelect(data.widgetName, ["", "", "true"]);
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
@@ -214,7 +220,9 @@ describe("Multiselect widget", () => {
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput
     );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.get(
       commonWidgetSelector.draggableWidget(multiselectText.defaultWidgetName)
     )
@@ -368,13 +376,24 @@ describe("Multiselect widget", () => {
     cy.dragAndDropWidget("Number input", 600, 50);
     selectEvent("On change", "Control Component");
     selectCSA("multiselect1", "Select Option", "1000");
+    cy.get('[data-cy="action-label"]').click({ force: true });
+    cy.wait(2000);
     addSupportCSAData("Option", "{{components.numberinput1.value");
+    // cy.get('[data-cy="-input-field"]')
+    //   .eq(1)
+    //   .type(`{selectAll}{backspace}1000{enter}`);
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget("Number input", 600, 150);
     selectEvent("On change", "Control Component");
     selectCSA("multiselect1", "Deselect Option", "1000");
+    cy.wait(2000);
+    cy.get('[data-cy="action-label"]').click({ force: true });
+    cy.wait(2000);
     addSupportCSAData("Option", "{{components.numberinput2.value");
+    // cy.get('[data-cy="-input-field"]')
+    //   .eq(1)
+    //   .type(`{selectAll}{backspace}1000{enter}`);
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget("Button", 600, 250);
@@ -390,6 +409,8 @@ describe("Multiselect widget", () => {
     cy.get(commonWidgetSelector.draggableWidget("numberinput1"))
       .clear()
       .type("1");
+    cy.forceClickOnCanvas();
+    cy.wait(1000);
     verifyMultiselectHeader(
       "multiselect1",
       multiselectText.labelAllItemsSelected
@@ -397,6 +418,8 @@ describe("Multiselect widget", () => {
     cy.get(commonWidgetSelector.draggableWidget("numberinput2"))
       .clear()
       .type("3");
+    cy.forceClickOnCanvas();
+    cy.wait(1000);
     verifyMultipleComponentValuesFromInspector("multiselect1", [2, 1]);
 
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();

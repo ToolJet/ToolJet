@@ -4,29 +4,28 @@ import { toast } from 'react-hot-toast';
 import CreateRowForm from '../../Forms/RowForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
-  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords } = useContext(TooljetDatabaseContext);
+  const {
+    organizationId,
+    selectedTable,
+    setSelectedTableData,
+    setTotalRecords,
+    pageSize,
+    setSortFilters,
+    setQueryFilters,
+  } = useContext(TooljetDatabaseContext);
 
   return (
     <>
-      <button
-        onClick={() => {
-          setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen);
-        }}
-        className={`ghost-black-operation ${isCreateRowDrawerOpen ? 'open' : ''}`}
-      >
-        <SolidIcon name="row" width="14" fill={isCreateRowDrawerOpen ? '#3E63DD' : '#889096'} />
-        <span data-cy="add-new-row-button-text" className="tj-text-xsm font-weight-500" style={{ marginLeft: '6px' }}>
-          Add new row
-        </span>
-      </button>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm
           onCreate={() => {
+            const limit = pageSize;
+            setSortFilters({});
+            setQueryFilters({});
             tooljetDatabaseService
-              .findOne(organizationId, selectedTable.id, 'order=id.desc')
+              .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}`)
               .then(({ headers, data = [], error }) => {
                 if (error) {
                   toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
@@ -39,6 +38,9 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
                   setSelectedTableData(data);
                 }
               });
+
+            const tableElement = document.querySelector('.tj-db-table');
+            if (tableElement) tableElement.scrollTop = 0;
             setIsCreateRowDrawerOpen(false);
           }}
           onClose={() => setIsCreateRowDrawerOpen(false)}

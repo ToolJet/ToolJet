@@ -14,8 +14,8 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
   const [slug, setSlug] = useState({ value: '', error: '' });
   const [slugProgress, setSlugProgress] = useState(false);
   const [workspaceNameProgress, setWorkspaceNameProgress] = useState(false);
-  const [isNameDisabled, setNameDisabled] = useState(true);
-  const [isSlugDisabled, setSlugDisabled] = useState(true);
+  const [isNameDisabled, setNameDisabled] = useState(false);
+  const [isSlugDisabled, setSlugDisabled] = useState(false);
   const { t } = useTranslation();
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -152,8 +152,8 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     setName({ value: currentValue?.name, error: '' });
     setSlug({ value: currentValue?.slug, error: '' });
     setShowEditOrg(false);
-    setSlugDisabled(true);
-    setNameDisabled(true);
+    setSlugDisabled(false);
+    setNameDisabled(false);
   };
 
   const delayedSlugChange = _.debounce(async (value) => {
@@ -166,7 +166,14 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     await handleInputChange(value, 'name');
   }, 500);
 
-  const isDisabled = isCreating || isNameDisabled || isSlugDisabled || slugProgress || workspaceNameProgress;
+  const userHasntChangeAnythingYet = name?.value === currentValue?.name && slug?.value === currentValue?.slug;
+  const baseConditions =
+    isCreating ||
+    (name?.value !== currentValue?.name && isNameDisabled) ||
+    (slug?.value !== currentValue?.slug && isSlugDisabled) ||
+    slugProgress ||
+    workspaceNameProgress;
+  const isDisabled = userHasntChangeAnythingYet || baseConditions;
 
   return (
     <AlertDialog
@@ -226,8 +233,8 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               <div className="icon-container">
                 <svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
+                    fillRule="evenodd"
+                    clipRule="evenodd"
                     d="M14.256 0.244078C14.5814 0.569515 14.5814 1.09715 14.256 1.42259L5.92263 9.75592C5.59719 10.0814 5.06956 10.0814 4.74412 9.75592L0.577452 5.58926C0.252015 5.26382 0.252015 4.73618 0.577452 4.41074C0.902889 4.08531 1.43053 4.08531 1.75596 4.41074L5.33337 7.98816L13.0775 0.244078C13.4029 -0.0813592 13.9305 -0.0813592 14.256 0.244078Z"
                     fill="#46A758"
                   />

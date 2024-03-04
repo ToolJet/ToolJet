@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
-import _, { isEmpty } from 'lodash';
+import _ from 'lodash';
 import { toast } from 'react-hot-toast';
-
+import Icon from '@/_ui/Icon/solidIcons/index';
 import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 import { useCurrentState } from '@/_stores/currentStateStore';
@@ -123,9 +123,58 @@ export const LeftSidebarInspector = ({
       };
     }
   });
+  const exposedVariablesIcon = Object.entries(currentState['components'])
+    .map(([key, value]) => {
+      const component = componentDefinitions[value.id]?.component ?? {};
+      const componentExposedVariables = value;
 
-  const iconsList = useMemo(() => [...queryIcons, ...componentIcons], [queryIcons, componentIcons]);
+      if (!_.isEmpty(component) && component.component === 'TextInput') {
+        const icons = [];
 
+        if (componentExposedVariables.disable) {
+          icons.push({
+            iconName: 'disable',
+            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            className: 'component-icon',
+            tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+            isInfoIcon: true,
+          });
+        }
+
+        if (componentExposedVariables.visibility) {
+          icons.push({
+            iconName: 'visibility',
+            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            className: 'component-icon',
+            tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+            isInfoIcon: true,
+          });
+        }
+
+        return icons;
+      }
+
+      if (!_.isEmpty(component) && component.component === 'Text' && componentExposedVariables?.visibility) {
+        return [
+          {
+            iconName: 'visibility',
+            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            className: 'component-icon',
+            tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+            isInfoIcon: true,
+          },
+        ];
+      }
+
+      return [];
+    })
+    .flat()
+    .filter((value) => value !== undefined); // Remove undefined values
+
+  const iconsList = useMemo(
+    () => [...queryIcons, ...componentIcons, ...exposedVariablesIcon],
+    [queryIcons, componentIcons, exposedVariablesIcon]
+  );
   const handleRemoveComponent = (component) => {
     removeComponent(component.id);
   };

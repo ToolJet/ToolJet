@@ -3,7 +3,7 @@ import React from 'react';
 const Unpin = ({ width = '14' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    class="icon-tabler icon-tabler-pinned-off"
+    className="icon-tabler icon-tabler-pinned-off"
     width={width}
     height={width}
     viewBox="0 0 24 24"

@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { openEditorSidebar } from "Support/utils/commonWidget";
 import { selectEvent } from "Support/utils/events";
-import { randomString } from "Support/utils/textInput";
+import { randomString } from "Support/utils/editor/textInput";
 import { buttonText } from "Texts/button";
 
 import { addSuccessNotification, chainQuery } from "Support/utils/queries";
@@ -12,7 +12,7 @@ import { resizeQueryPanel } from "Support/utils/dataSource";
 describe("Chaining of queries", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.apiCreateApp(`${fake.companyName}-chaining-App`);
     cy.openApp();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
@@ -58,7 +58,7 @@ describe("Chaining of queries", () => {
 
     cy.apiCreateGDS(
       "http://localhost:3000/api/v2/data_sources",
-      `cypress-${dsName}-postgresql`,
+      `cypress-${dsName}-qc-postgresql`,
       "postgresql",
       [
         { key: "host", value: Cypress.env("pg_host") },
@@ -76,9 +76,9 @@ describe("Chaining of queries", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `SELECT * FROM server_side_pagination`,
+        query: `SELECT * FROM pg_stat_activity;`,
       },
-      `cypress-${dsName}-postgresql`,
+      `cypress-${dsName}-qc-postgresql`,
       "postgresql"
     );
     cy.reload();
@@ -100,7 +100,7 @@ describe("Chaining of queries", () => {
       .find("input")
       .type(`{selectAll}{backspace}psql{enter}`);
     cy.forceClickOnCanvas();
-
+    cy.wait(2500)
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "psql");
     cy.verifyToastMessage(commonSelectors.toastMessage, "runjs");
@@ -140,7 +140,7 @@ describe("Chaining of queries", () => {
       .find("input")
       .type(`{selectAll}{backspace}runjs{enter}`);
     cy.forceClickOnCanvas();
-
+    cy.wait(2500)
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "runjs");
     cy.verifyToastMessage(commonSelectors.toastMessage, "runpy");

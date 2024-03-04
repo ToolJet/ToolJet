@@ -57,7 +57,7 @@ import { waitForQueryAction } from "Support/utils/queries";
 describe("Table", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.apiCreateApp(`${fake.companyName}-table-App`);
     cy.openApp();
     deleteDownloadsFolder();
     cy.viewport(1400, 2200);
@@ -314,7 +314,7 @@ describe("Table", () => {
     cy.get('[data-cy="inspector-close-icon"]').click();
 
     openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionLayout, []);
+    openAccordion('Layout', []);
 
     verifyAndModifyToggleFx(
       "Show on desktop",
@@ -372,6 +372,7 @@ describe("Table", () => {
     deleteAndVerifyColumn("id");
     deleteAndVerifyColumn("name");
     deleteAndVerifyColumn("email");
+    deleteAndVerifyColumn("fake-link");
     cy.wait(500);
     addAndOpenColumnOption("Fake-String", `string`);
     selectDropdownOption('[data-cy="input-overflow"] >>:eq(0)', `wrap`);
@@ -388,10 +389,13 @@ describe("Table", () => {
       .eq(0)
       .should("have.css", "background-color", "rgb(255, 255, 0)", {
         timeout: 10000,
-      })
+      });
+    cy.get(tableSelector.column(0))
+      .eq(0)
+      .find(".align-items-center")
       .last()
-      .should("have.css", "color", "rgb(62, 82, 91)")
-      .and("have.text", "Sarah");
+      .should("have.text", "Sarah")
+      .and("have.css", "color", "rgb(255, 0, 0)");
 
     cy.get('[data-cy="make-editable-toggle-button"]').click();
     cy.get('[data-cy="header-validation"]').verifyVisibleElement(
@@ -678,7 +682,9 @@ describe("Table", () => {
       commonWidgetText.borderRadiusInput
     );
 
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     openEditorSidebar(tableText.defaultWidgetName);
     openAccordion("Columns");
     deleteAndVerifyColumn("email");
@@ -698,7 +704,9 @@ describe("Table", () => {
       "Border radius",
       commonWidgetText.borderRadiusInput
     );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
 
     cy.get(
       commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
@@ -712,7 +720,8 @@ describe("Table", () => {
       commonWidgetText.parameterBoxShadow,
       commonWidgetText.boxShadowDefaultValue,
       false,
-      "0px 0px 0px 0px "
+      "0px 0px 0px 0px ",
+      false
     );
 
     cy.get(commonWidgetSelector.boxShadowColorPicker).click();
@@ -737,6 +746,7 @@ describe("Table", () => {
       "have.text",
       "Table type"
     );
+    cy.get('[data-cy="dropdown-table-type"]').realHover();
     cy.get('[data-cy="table-type-fx-button"] > svg').click();
     cy.get('[data-cy="table-type-input-field"]').clearAndTypeOnCodeMirror(
       `randomText`
@@ -875,6 +885,7 @@ describe("Table", () => {
   });
 
   it("should verify download", () => {
+    deleteDownloadsFolder();
     cy.get(tableSelector.buttonDownloadDropdown).should("be.visible").click();
     cy.get(tableSelector.optionDownloadPdf).click();
     cy.task("readPdf", "cypress/downloads/all-data.pdf")
@@ -1095,7 +1106,7 @@ describe("Table", () => {
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("components", "Object", "9 entries ");
     openNode("components");
-    verifyNodeData(tableText.defaultWidgetName, "Object", "23 entries ");
+    verifyNodeData(tableText.defaultWidgetName, "Object", "27 entries ");
     openNode(tableText.defaultWidgetName);
     verifyNodeData("newRows", "Array", "0 item ");
 
@@ -1129,7 +1140,7 @@ describe("Table", () => {
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("components", "Object", "1 entry ");
     openNode("components");
-    verifyNodeData(tableText.defaultWidgetName, "Object", "22 entries ");
+    verifyNodeData(tableText.defaultWidgetName, "Object", "26 entries ");
     cy.wait(1000);
     openNode(tableText.defaultWidgetName, 0, 1);
     // openNode(tableText.defaultWidgetName, 0, 1);
@@ -1232,8 +1243,11 @@ describe("Table", () => {
     cy.get('[data-cy="inspector-close-icon"]').click();
     cy.dragAndDropWidget("Text", 800, 200);
     openEditorSidebar(commonWidgetText.text1);
-    verifyAndModifyParameter("Text", "Column Email");
-    cy.get('[data-cy="inspector-close-icon"]').click();
+    cy.get(
+      '[data-cy="textcomponenttextinput-input-field"]'
+    ).clearAndTypeOnCodeMirror("Column Email");
+    // verifyAndModifyParameter("Text", "Column Email");
+    cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
     cy.get(`[data-cy="draggable-widget-${commonWidgetText.text1}"]`).should(
       "have.text",
       "Column Email"

@@ -22,7 +22,13 @@ export default function AppList(props) {
           <div></div>
         )}
         {filteredApps.map((app) => (
-          <FolderList key={app.id} action selectedItem={app.id === selectedApp?.id} onClick={() => selectApp(app)}>
+          <FolderList
+            key={app.id}
+            action
+            selectedItem={app.id === selectedApp?.id}
+            onClick={() => selectApp(app)}
+            dataCy={`${String(app.id).toLowerCase().replace(/\s+/g, '-')}`}
+          >
             {app.name}
           </FolderList>
         ))}
@@ -66,7 +72,7 @@ const SearchBoxContainer = ({ onChange, queryString }) => {
   }, [searchText]);
 
   return (
-    <div className="template-search-box">
+    <div className="template-search-box" data-cy="template-search-box">
       <div style={{ height: '36px' }} className="input-icon d-flex">
         {searchText.length === 0 && (
           <span className="search-icon mt-2 mx-2">
@@ -113,6 +119,7 @@ const SearchBoxContainer = ({ onChange, queryString }) => {
           value={searchText}
           onChange={handleChange}
           className="form-control"
+          data-cy="search-input-field"
           placeholder={t('globals.search', 'Search')}
         />
       </div>

@@ -10,7 +10,6 @@ import {
 } from "Support/utils/workspaceConstants";
 import { buttonText } from "Texts/button";
 import {
-    verifyAndModifyParameter,
     editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
 import { verifypreview } from "Support/utils/dataSource";
@@ -34,23 +33,14 @@ describe("Workspace constants", () => {
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
         cy.intercept("GET", "/api/library_apps").as("homePage");
+        cy.skipWalkthrough();
     });
     it("Verify workspace constants UI and CRUD operations", () => {
-        cy.get(commonSelectors.workspaceSettingsIcon).click();
-        cy.get(commonSelectors.workspaceConstantsOption)
-            .should(($el) => {
-                expect($el.contents().first().text().trim()).to.eq(
-                    "Workspace constants"
-                );
-            })
-            .click();
+        cy.get('[data-cy="icon-workspace-constants"]').click();
 
-        cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
-            expect($el.contents().first().text().trim()).to.eq("Workspace settings");
-        });
-        cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+        cy.get(commonSelectors.pageSectionHeader).verifyVisibleElement(
             "have.text",
-            " Workspace constants"
+            "Workspace constants"
         );
 
         cy.get(
@@ -266,7 +256,7 @@ describe("Workspace constants", () => {
     });
 
     it("should verify the constants resolving value on components and query", () => {
-        common.navigateToworkspaceConstants();
+        cy.get('[data-cy="icon-workspace-constants"]').click();
         AddNewconstants(data.constantsName, data.constantsValue);
         cy.get(
             workspaceConstantsSelectors.constantName(data.constantsName)
@@ -285,10 +275,12 @@ describe("Workspace constants", () => {
         verifypreview("raw", "dJ_8Q~BcaMPd");
 
         cy.dragAndDropWidget("Text", 550, 350);
-        editAndVerifyWidgetName(data.constantsName);
+        editAndVerifyWidgetName(data.constantsName, []);
         cy.waitForAutoSave();
 
-        verifyAndModifyParameter("Text", `{{constants.${data.constantsName}`);
+        cy.get(
+            '[data-cy="textcomponenttextinput-input-field"]'
+        ).clearAndTypeOnCodeMirror(`{{constants.${data.constantsName}`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
 

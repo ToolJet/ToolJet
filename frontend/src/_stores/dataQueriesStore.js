@@ -11,6 +11,7 @@ import { useSuperStore } from './superStore';
 import { shallow } from 'zustand/shallow';
 import { useContext } from 'react';
 import { ModuleContext } from '../_contexts/ModuleContext';
+import { getCurrentState, useCurrentStateStore } from './currentStateStore';
 
 export function createDataQueriesStore(moduleName) {
   const initialState = {
@@ -50,7 +51,12 @@ export function createDataQueriesStore(moduleName) {
                 .modules[get().moduleName].useCurrentStateStore.getState().queries;
 
               data.data_queries.forEach(({ id, name, options }) => {
-                updatedQueries[name] = _.merge(currentQueries[name], { id: id });
+                updatedQueries[name] = _.merge(currentQueries[name], {
+                  id: id,
+                  isLoading: false,
+                  data: [],
+                  rawData: [],
+                });
                 if (options && options?.requestConfirmation && options?.runOnPageLoad) {
                   queryConfirmationList.push({ queryId: id, queryName: name });
                 }
@@ -67,7 +73,7 @@ export function createDataQueriesStore(moduleName) {
                 .getState()
                 .modules[get().moduleName].useCurrentStateStore.getState()
                 .actions.setCurrentState({
-                  ...useSuperStore.getState().modules[get().moduleName].useCurrentStateStore.getState(),
+                  ...getCurrentState(get().moduleName),
                   queries: updatedQueries,
                 });
             }
@@ -94,7 +100,9 @@ export function createDataQueriesStore(moduleName) {
               .del(queryId)
               .then(() => {
                 const { actions } = useSuperStore.getState().modules[get().moduleName].useQueryPanelStore.getState();
-                const { dataQueries } = get();
+                const { dataQueries } = useSuperStore
+                  .getState()
+                  .modules[get().moduleName].useDataQueriesStore.getState();
                 const newSelectedQuery = dataQueries.find((query) => query.id !== queryId);
                 actions.setSelectedQuery(newSelectedQuery?.id || null);
                 if (!newSelectedQuery?.id) {
@@ -104,6 +112,23 @@ export function createDataQueriesStore(moduleName) {
                   isDeletingQueryInProcess: false,
                   dataQueries: state.dataQueries.filter((query) => query.id !== queryId),
                 }));
+
+                const currentQueries = useSuperStore
+                  .getState()
+                  .modules[get().moduleName].useCurrentStateStore.getState().queries;
+
+                useSuperStore
+                  .getState()
+                  .modules[get().moduleName].useCurrentStateStore.getState()
+                  .actions.setCurrentState({
+                    ...getCurrentState(get().moduleName),
+                    queries: Object.keys(currentQueries).reduce((acc, key) => {
+                      if (currentQueries[key].id !== queryId) {
+                        acc[key] = currentQueries[key];
+                      }
+                      return acc;
+                    }, {}),
+                  });
               })
               .catch(() => {
                 set({
@@ -148,7 +173,7 @@ export function createDataQueriesStore(moduleName) {
             const dataSourceId = selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;
             const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
             useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(true);
-            const { dataQueries } = get();
+            const { dataQueries } = useSuperStore.getState().modules[get().moduleName].useDataQueriesStore.getState();
             const currDataQueries = [...dataQueries];
             set(() => ({
               dataQueries: [
@@ -196,6 +221,26 @@ export function createDataQueriesStore(moduleName) {
                   get().actions.saveData({ ...get().queuedActions.saveData, id: data.id });
                   set({ queuedActions: { ...get().queuedActions, saveData: undefined } });
                 }
+
+                const currentQueries = useSuperStore
+                  .getState()
+                  .modules[get().moduleName].useCurrentStateStore.getState().queries;
+
+                useSuperStore
+                  .getState()
+                  .modules[get().moduleName].useCurrentStateStore.getState()
+                  .actions.setCurrentState({
+                    ...getCurrentState(get().moduleName),
+                    queries: {
+                      ...currentQueries,
+                      [data.name]: {
+                        id: data.id,
+                        isLoading: false,
+                        data: [],
+                        rawData: [],
+                      },
+                    },
+                  });
               })
               .catch((error) => {
                 set((state) => ({
@@ -205,9 +250,7 @@ export function createDataQueriesStore(moduleName) {
                 actions.setSelectedQuery(null);
                 toast.error(`Failed to create query: ${error.message}`);
               })
-              .finally(() =>
-                useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(false)
-              );
+              .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
           },
           renameQuery: (id, newName) => {
             /** If query creation in progress, skips call and pushes the update to queue */
@@ -238,6 +281,28 @@ export function createDataQueriesStore(moduleName) {
                   .getState()
                   .modules[get().moduleName].useQueryPanelStore.getState()
                   .actions.setSelectedQuery(id);
+
+                const currentQueries = useSuperStore
+                  .getState()
+                  .modules[get().moduleName].useCurrentStateStore.getState().queries;
+
+                const queryName = Object.keys(currentQueries).find((key) => currentQueries[key].id === id);
+
+                const { [queryName]: _, ...rest } = currentQueries;
+
+                useSuperStore
+                  .getState()
+                  .modules[get().moduleName].useCurrentStateStore.getState()
+                  .actions.setCurrentState({
+                    ...getCurrentState(get().moduleName),
+                    queries: {
+                      ...rest,
+                      [newName]: {
+                        ...currentQueries[queryName],
+                        name: newName,
+                      },
+                    },
+                  });
               })
               .finally(() =>
                 useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(false)
@@ -282,7 +347,7 @@ export function createDataQueriesStore(moduleName) {
           duplicateQuery: (id, appId) => {
             set({ creatingQueryInProcessId: uuidv4() });
             const { actions } = useSuperStore.getState().modules[get().moduleName].useQueryPanelStore.getState();
-            const { dataQueries } = get();
+            const { dataQueries } = useSuperStore.getState().modules[get().moduleName].useDataQueriesStore.getState();
             const queryToClone = { ...dataQueries.find((query) => query.id === id) };
             let newName = queryToClone.name + '_copy';
             const names = dataQueries.map(({ name }) => name);
@@ -333,17 +398,11 @@ export function createDataQueriesStore(moduleName) {
                       .actions?.createAppVersionEventHandlers(newEvent);
                   })
                 );
-              })
-              .catch((error) => {
-                console.error('error', error);
-                set({
-                  creatingQueryInProcessId: null,
-                });
-              })
-              .finally(() =>
-                useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(false)
-              );
+              });
           },
+
+          // createDataQuery: (appId, appVersionId, options, kind, name, selectedDataSource, shouldRunQuery) => {
+
           saveData: throttle((newValues) => {
             /** If query creation in progress, skips call and pushes the update to queue */
             if (get().creatingQueryInProcessId && get().creatingQueryInProcessId === newValues.id) {

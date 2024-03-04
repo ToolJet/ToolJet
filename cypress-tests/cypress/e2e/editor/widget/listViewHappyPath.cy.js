@@ -35,7 +35,7 @@ import {
 describe("List view widget", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.apiCreateApp(`${fake.companyName}-Listview-App`);
     cy.openApp();
     cy.viewport(1200, 1200);
     cy.dragAndDropWidget("List View", 50, 500);
@@ -62,7 +62,7 @@ describe("List view widget", () => {
     deleteInnerWidget(data.widgetName, commonWidgetText.button1);
     deleteInnerWidget(data.widgetName, commonWidgetText.image1);
 
-    dropWidgetToListview("Text", 50, 50, data.widgetName);
+    dropWidgetToListview("Text", 100, 50, data.widgetName);
 
     dropWidgetToListview("Text Input", 250, 50, data.widgetName);
     addDataToListViewInputs(
@@ -85,6 +85,7 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
+    cy.waitForAppLoad();
     cy.wait(2500);
 
     cy.get(
@@ -92,7 +93,10 @@ describe("List view widget", () => {
     )
       .realHover()
       .realClick();
-    verifyAndModifyParameter("Text", codeMirrorInputLabel("listItem.name"));
+    openEditorSidebar(commonWidgetText.text1);
+    cy.get(
+      '[data-cy="textcomponenttextinput-input-field"] '
+    ).clearAndTypeOnCodeMirror(codeMirrorInputLabel("listItem.name"));
     cy.forceClickOnCanvas();
     cy.get(
       `${commonWidgetSelector.draggableWidget(
@@ -114,7 +118,8 @@ describe("List view widget", () => {
       data.widgetName,
       commonWidgetText.textinput1,
       "value",
-      data.marks
+      data.marks,
+      true
     );
 
     verifyMultipleComponentValuesFromInspector(
@@ -131,12 +136,14 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
+    cy.waitForAppLoad();
     cy.wait(2500);
 
     cy.get(`${commonWidgetSelector.draggableWidget(data.widgetName)}:eq(0)`)
       .realHover()
       .click("topRight", { force: true });
 
+    openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(
       listviewText.showBottomBorder,
       codeMirrorInputLabel("false")
@@ -163,7 +170,9 @@ describe("List view widget", () => {
         `components.${data.widgetName}.selectedRow.${commonWidgetText.textinput1}.value`
       )
     );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.get(`[data-cy=${data.widgetName.toLowerCase()}-row-1]`).click();
@@ -230,12 +239,11 @@ describe("List view widget", () => {
     ).should("have.attr", "data-disabled", "true");
     cy.get("[data-cy='disable-toggle-button']").click();
 
-    cy.get("[data-cy='border-radius-fx-button']:eq(0)").click();
-    verifyAndModifyParameter(
-      commonWidgetText.parameterBorderRadius,
-      commonWidgetText.borderRadiusInput
-    );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    // cy.get("[data-cy='border-radius-fx-button']:eq(0)").click();
+    cy.clearAndType('[data-cy="border-radius-input-field"]:eq(0)', "20");
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.get(
       commonWidgetSelector.draggableWidget(listviewText.defaultWidgetName)
     ).should("have.css", "border-radius", "20px");
@@ -247,10 +255,11 @@ describe("List view widget", () => {
     verifyAndModifyToggleFx(
       commonWidgetText.parameterBoxShadow,
       "0px 0px 0px 0px #00000040",
+      false,
       false
     );
 
-    cy.get('[data-cy="border-radius-fx-button"] > svg').click();
+    // cy.get('[data-cy="border-radius-fx-button"] > svg').click();
     cy.get(commonWidgetSelector.boxShadowColorPicker).click();
 
     fillBoxShadowParams(
@@ -299,13 +308,16 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
+    cy.waitForAppLoad();
     cy.wait(3500);
 
     cy.get(
       `${commonWidgetSelector.draggableWidget(commonWidgetText.text1)}:eq(0)`
     ).click();
 
-    verifyAndModifyParameter("Text", codeMirrorInputLabel("listItem.name"));
+    cy.get(
+      '[data-cy="textcomponenttextinput-input-field"] '
+    ).clearAndTypeOnCodeMirror(codeMirrorInputLabel("listItem.name"));
     cy.forceClickOnCanvas();
     cy.get(
       `${commonWidgetSelector.draggableWidget(
@@ -326,12 +338,14 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
+    cy.waitForAppLoad();
     cy.wait(2500);
 
     cy.get(
       `${commonWidgetSelector.draggableWidget(data.widgetName)}:eq(0)`
     ).click();
 
+    openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(
       "Show bottom border",
       codeMirrorInputLabel("false")
@@ -349,7 +363,8 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
-    cy.wait(2500);
+    cy.waitForAppLoad();
+    cy.wait(3500);
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionGenaral);
@@ -375,13 +390,12 @@ describe("List view widget", () => {
       )
     ).click();
 
-    cy.get("[data-cy='border-radius-fx-button']:eq(0)").click();
-    verifyAndModifyParameter(
-      commonWidgetText.parameterBorderRadius,
-      commonWidgetText.borderRadiusInput
-    );
+    // cy.get("[data-cy='border-radius-fx-button']:eq(0)").click();
+    cy.clearAndType('[data-cy="border-radius-input-field"]:eq(0)', "20");
 
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.get(
       commonWidgetSelector.draggableWidget(listviewText.defaultWidgetName)
     ).should("have.css", "border-radius", "20px");
@@ -393,6 +407,7 @@ describe("List view widget", () => {
     verifyAndModifyToggleFx(
       commonWidgetText.parameterBoxShadow,
       "0px 0px 0px 0px #00000040",
+      false,
       false
     );
 
