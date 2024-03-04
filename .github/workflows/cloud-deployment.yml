@@ -62,4 +62,12 @@ jobs:
         run: |
           kubectl get pods
 
+      - name: Send Slack Notification
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            message="Deployed ${{ github.event.inputs.image-tag }} successfully!!"
+          else
+            message="Deployed ${{ github.event.inputs.image-tag }} failed!!"
+          fi
 
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL_CLOUD }}
