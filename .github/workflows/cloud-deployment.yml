@@ -65,7 +65,7 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="Deployed ${{ github.event.inputs.image-tag }} successfully!!"
+            message="Deployed ${{ github.event.inputs.image-tag }} successfully!! Please view logs here - http://34.86.229.129/d/a7d5a201-b6b0-4142-8a48-776ec2a96f78/tooljet-prod?orgId=1"
           else
             message="Deployed ${{ github.event.inputs.image-tag }} failed!!"
           fi
