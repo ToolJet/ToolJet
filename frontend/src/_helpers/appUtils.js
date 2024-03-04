@@ -1540,7 +1540,7 @@ export const cloneComponents = (
   }
 
   if (isCloning) {
-    const parentId = selectedComponents[0]['component']?.parent ?? undefined;
+    const parentId = allComponents[selectedComponents[0]?.id]?.['component']?.parent ?? undefined;
 
     addComponents(currentPageId, appDefinition, updateAppDefinition, parentId, newComponentObj, true);
     toast.success('Component cloned succesfully');
