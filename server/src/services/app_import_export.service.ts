@@ -458,10 +458,7 @@ export class AppImportExportService {
                     const newLayout = new Layout();
                     newLayout.type = type;
                     newLayout.top = layout.top;
-                    newLayout.left =
-                      layout.dimensionUnit !== 'count'
-                        ? resolveGridPositionForComponent(layout.left, type)
-                        : layout.left;
+                    newLayout.left = resolveGridPositionForComponent(layout.left, type);
                     newLayout.dimensionUnit = 'count';
                     // newLayout.left = layout.left;
                     newLayout.width = layout.width;
@@ -778,10 +775,9 @@ export class AppImportExportService {
               const newLayout = new Layout();
               newLayout.type = layout.type;
               newLayout.top = layout.top;
-              newLayout.left =
-                layout.dimensionUnit !== 'count'
-                  ? resolveGridPositionForComponent(layout.left, layout.type)
-                  : layout.left;
+              newLayout.left = shouldUpdateForGridCompatibility
+                ? resolveGridPositionForComponent(layout.left, layout.type)
+                : layout.left;
               newLayout.dimensionUnit = 'count';
               newLayout.width = layout.width;
               newLayout.height = layout.height;
