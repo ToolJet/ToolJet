@@ -417,7 +417,7 @@
 */
 // download pop-up in the table widget
 .table-widget-download-popup {
-    background-color: var(--base) !important;
+    background-color: var(--surfaces-surface-01) !important;
     color: var(--slate12) !important;
     padding: 4px;
     border-radius: 6px;
@@ -429,6 +429,7 @@
     .popover-body{
         color: inherit;
         border: none;
+        background-color: inherit;
     }
     
     .table-download-option{
@@ -483,7 +484,7 @@
 }
 .popover:has(.dropdown-table-column-hide-common){
     border : 1px solid var(--slate3) !important;
-    background-color: var(--base) !important;
+    background-color: var(--surfaces-surface-01) !important;
     padding: 4px;
     border-radius: 6px;
 }
@@ -773,6 +774,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  background-color: var(--surfaces-surface-01) !important;
 
   .table-select-column-type-search-box{
     width: 100%;
@@ -859,6 +861,15 @@
     .option-wrapper{
       align-items: center;
       padding: 12px 8px;
+      &:hover{
+        background: var(--interactive-overlays-fill-hover) !important;
+        border-radius: 6px;
+      }
+      &:active{
+        background: var(--surfaces-surface-01) !important;
+        box-shadow: 0px 0px 0px 4px #DFE3E6;
+
+      }
       .form-check{
         display: flex;
         align-items: center;
@@ -874,5 +885,8 @@
         }
       }
     }
+    background-color: var(--surfaces-surface-01) !important;
+    box-shadow: 0px 8px 16px 0px var(----elevation-400-box-shadow), 0px 0px 1px 0px var(--elevation-400-box-shadow);
+
   }
 }

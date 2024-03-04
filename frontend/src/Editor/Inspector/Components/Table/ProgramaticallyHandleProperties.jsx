@@ -34,6 +34,8 @@ export const ProgramaticallyHandleProperties = ({
         return props?.textColor;
       case 'cellBackgroundColor':
         return props?.cellBackgroundColor;
+      case 'optionsLoadingState':
+        return props?.optionsLoadingState;
       default:
         return;
     }

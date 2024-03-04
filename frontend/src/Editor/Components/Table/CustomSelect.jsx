@@ -5,8 +5,9 @@ import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Checkbox } from '@/_ui/CheckBox/CheckBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-
+import _ from 'lodash';
 const { MenuList } = components;
+
 export const CustomSelect = ({
   options,
   value,
@@ -17,9 +18,10 @@ export const CustomSelect = ({
   className,
   darkMode,
   defaultOptionsList,
-  textColor,
+  textColor = '',
   isMulti,
   containerWidth,
+  optionsLoadingState = false,
 }) => {
   const containerRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -41,10 +43,6 @@ export const CustomSelect = ({
 
   const customStyles = {
     ...defaultStyles(darkMode, '100%'),
-    singleValue: (provided) => ({
-      ...provided,
-      color: textColor,
-    }),
     ...(isMulti && {
       multiValue: (provided) => ({
         ...provided,
@@ -60,17 +58,39 @@ export const CustomSelect = ({
         flexDirection: 'row',
       }),
     }),
+    menuList: (base) => ({
+      ...base,
+      backgroundColor: 'var(--surfaces-surface-01) ',
+      color: 'var(--text-primary)',
+      cursor: 'pointer',
+      overflow: 'auto',
+    }),
+    multiValueLabel: (provided) => ({
+      ...provided,
+      padding: '2px 6px',
+      background: 'var(--surfaces-surface-03)',
+      margin: '0 5px',
+      borderRadius: '6px',
+      color: textColor || 'var(--text-primary)',
+      fontSize: '12px',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      padding: '2px 6px',
+      background: 'var(--surfaces-surface-03)',
+      margin: '0 5px',
+      borderRadius: '6px',
+      color: textColor || 'var(--text-primary)',
+      fontSize: '12px',
+    }),
   };
   const customCustomComponents = {
-    MenuList: CustomMenuList,
+    MenuList: (props) => <CustomMenuList {...props} optionsLoadingState={optionsLoadingState} />,
     Option: CustomMultiSelectOption,
     DropdownIndicator,
     ...(isMulti && {
       MultiValueRemove,
       MultiValueContainer: customMultiValueContainer,
-    }),
-    ...(!isMulti && {
-      SingleValue: customMultiValueContainer,
     }),
   };
 
@@ -79,7 +99,7 @@ export const CustomSelect = ({
     <OverlayTrigger
       placement="bottom"
       overlay={isMulti && getOverlay(value, containerWidth, isMulti)}
-      trigger={isMulti && ['hover', 'focus']}
+      trigger={isMulti && ['hover']}
       rootClose={true}
     >
       <div className="w-100 h-100 d-flex align-items-center">
@@ -117,7 +137,7 @@ export const CustomSelect = ({
   );
 };
 
-const CustomMenuList = ({ selectProps, ...props }) => {
+const CustomMenuList = ({ optionsLoadingState, children, selectProps, ...props }) => {
   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
 
   return (
@@ -152,7 +172,17 @@ const CustomMenuList = ({ selectProps, ...props }) => {
           className="table-select-column-type-search-box"
         />
       </div>
-      <MenuList {...props} selectProps={selectProps} />
+      <MenuList {...props} selectProps={selectProps}>
+        {optionsLoadingState && _.isEmpty(props.options) ? (
+          <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="sr-only"></span>
+            </div>
+          </div>
+        ) : (
+          children
+        )}
+      </MenuList>
     </div>
   );
 };
@@ -184,11 +214,7 @@ const customMultiValueContainer = (props) => {
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
-        padding: '2px 6px',
-        background: 'var(--slate3)',
-        margin: '0 5px',
-        borderRadius: '6px',
-        color: 'var(--slate12)',
+        gap: '4px',
       }}
     >
       {props.children}
@@ -197,25 +223,33 @@ const customMultiValueContainer = (props) => {
 };
 
 const getOverlay = (value, containerWidth) => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   return Array.isArray(value) ? (
     <div
       style={{
         height: 'fit-content',
         maxWidth: containerWidth,
         width: containerWidth,
-        background: 'var(--base)',
+        background: 'var(--surfaces-surface-01)',
         display: 'inline-flex',
         flexWrap: 'wrap',
         gap: '10px',
         padding: '16px',
         borderRadius: '6px',
-        boxShadow: '0px 8px 16px 0px rgba(48, 50, 51, 0.05)',
+        boxShadow: '0px 8px 16px 0px var(--elevation-400-box-shadow), 0px 0px 1px 0px var(--elevation-400-box-shadow)',
       }}
+      className={`overlay-multiselect-table ${darkMode && 'dark-theme'}`}
     >
       {value?.map((option) => {
         return (
           <span
-            style={{ padding: '2px 6px', background: 'var(--slate3)', borderRadius: '6px', color: 'var(--slate12)' }}
+            style={{
+              padding: '2px 6px',
+              background: 'var(--surfaces-surface-03)',
+              borderRadius: '6px',
+              color: 'var(--text-primary)',
+              fontSize: '12px',
+            }}
             key={option.label}
           >
             {option.label}
