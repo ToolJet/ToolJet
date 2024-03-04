@@ -149,7 +149,7 @@ const EditorInput = ({
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), []);
+  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [hints]);
 
   const autoCompleteConfig = autocompletion({
     override: [overRideFunction],

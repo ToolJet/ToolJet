@@ -664,8 +664,7 @@ const EditorComponent = (props) => {
   };
 
   const globalSettingsChanged = (globalOptions) => {
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     for (const [key, value] of Object.entries(globalOptions)) {
       if (value?.[1]?.a == undefined) newAppDefinition.globalSettings[key] = value;
@@ -743,49 +742,58 @@ const EditorComponent = (props) => {
       });
     }
 
-    await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id);
-    await fetchDataSources(data.editing_version?.id);
-    await fetchDataQueries(data.editing_version?.id, true, true);
-    const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
+    Promise.all([
+      await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id),
+      await fetchDataSources(data.editing_version?.id),
+      await fetchDataQueries(data.editing_version?.id, true, true),
+    ])
+      .then(() => {
+        useCurrentStateStore.getState().actions.setEditorReady(true);
+      })
+      .finally(async () => {
+        const currentPageEvents = data.events.filter(
+          (event) => event.target === 'page' && event.sourceId === homePageId
+        );
 
-    await handleEvent('onPageLoad', currentPageEvents, {}, true);
+        await handleEvent('onPageLoad', currentPageEvents, {}, true);
 
-    const refsExistsInStore = useResolveStore.getState()?.referenceMapper?.getAll()?.length > 0;
+        const refsExistsInStore = useResolveStore.getState()?.referenceMapper?.getAll()?.length > 0;
 
-    if (refsExistsInStore) {
-      const currentComponents = appJson.pages[homePageId]?.components;
+        if (refsExistsInStore) {
+          const currentComponents = appJson.pages[homePageId]?.components;
 
-      const entityReferences = findAllEntityReferences(currentComponents, [])
-        ?.map((entity) => {
-          if (entity && isValidUUID(entity)) {
-            return entity;
+          const entityReferences = findAllEntityReferences(currentComponents, [])
+            ?.map((entity) => {
+              if (entity && isValidUUID(entity)) {
+                return entity;
+              }
+            })
+            ?.filter((e) => e !== undefined);
+
+          if (Array.isArray(entityReferences) && entityReferences?.length > 0) {
+            const manager = useResolveStore.getState().referenceMapper;
+
+            let newComponentDefinition = JSON.parse(JSON.stringify(currentComponents));
+            entityReferences.forEach((entity) => {
+              const entityrefExists = manager.has(entity);
+
+              if (entityrefExists) {
+                const value = manager.get(entity);
+                newComponentDefinition = dfs(newComponentDefinition, entity, value);
+              }
+            });
+
+            const newAppDefinition = produce(appJson, (draft) => {
+              draft.pages[homePageId].components = newComponentDefinition;
+            });
+
+            updateEditorState({
+              isUpdatingEditorStateInProcess: false,
+              appDefinition: newAppDefinition,
+            });
           }
-        })
-        ?.filter((e) => e !== undefined);
-
-      if (Array.isArray(entityReferences) && entityReferences?.length > 0) {
-        const manager = useResolveStore.getState().referenceMapper;
-
-        let newComponentDefinition = _.cloneDeep(currentComponents);
-        entityReferences.forEach((entity) => {
-          const entityrefExists = manager.has(entity);
-
-          if (entityrefExists) {
-            const value = manager.get(entity);
-            newComponentDefinition = dfs(newComponentDefinition, entity, value);
-          }
-        });
-
-        const newAppDefinition = produce(appJson, (draft) => {
-          draft.pages[homePageId].components = newComponentDefinition;
-        });
-
-        updateEditorState({
-          isUpdatingEditorStateInProcess: false,
-          appDefinition: newAppDefinition,
-        });
-      }
-    }
+        }
+      });
   };
 
   const fetchApp = async (startingPageHandle, onMount = false) => {
@@ -1177,8 +1185,7 @@ const EditorComponent = (props) => {
     }
 
     if (appDefinition?.pages[currentPageId]?.components[componentDefinition.id]) {
-      // Create a new copy of appDefinition with lodash's cloneDeep
-      const updatedAppDefinition = _.cloneDeep(appDefinition);
+      const updatedAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
       // Update the component definition in the copy
       updatedAppDefinition.pages[currentPageId].components[componentDefinition.id].component =
@@ -1196,7 +1203,7 @@ const EditorComponent = (props) => {
   };
   const removeComponent = (componentId) => {
     if (!isVersionReleased) {
-      let newDefinition = cloneDeep(appDefinition);
+      let newDefinition = JSON.parse(JSON.stringify(appDefinition));
 
       let childComponents = [];
 
@@ -1240,7 +1247,7 @@ const EditorComponent = (props) => {
 
   const moveComponents = (direction) => {
     const gridWidth = (1 * 100) / 43; // width of the canvas grid in percentage
-    const _appDefinition = _.cloneDeep(appDefinition);
+    const _appDefinition = JSON.parse(JSON.stringify(appDefinition));
     let newComponents = _appDefinition?.pages[currentPageId].components;
     const selectedComponents = useEditorStore.getState()?.selectedComponents;
 
@@ -1324,7 +1331,7 @@ const EditorComponent = (props) => {
   const removeComponents = () => {
     const selectedComponents = useEditorStore.getState()?.selectedComponents;
     if (!isVersionReleased && selectedComponents?.length > 1) {
-      let newDefinition = cloneDeep(appDefinition);
+      let newDefinition = JSON.parse(JSON.stringify(appDefinition));
 
       removeSelectedComponent(currentPageId, newDefinition, selectedComponents, appDefinitionChanged);
       const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
@@ -1533,9 +1540,7 @@ const EditorComponent = (props) => {
       isUpdatingEditorStateInProcess: true,
     });
 
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.pages[pageId].disabled = isDisabled ?? false;
 
@@ -1550,9 +1555,7 @@ const EditorComponent = (props) => {
       isUpdatingEditorStateInProcess: true,
     });
 
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.pages[pageId].hidden = true;
 
@@ -1567,9 +1570,7 @@ const EditorComponent = (props) => {
       isUpdatingEditorStateInProcess: true,
     });
 
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.pages[pageId].hidden = false;
     switchPage(pageId);
@@ -1586,7 +1587,7 @@ const EditorComponent = (props) => {
         const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
         const pages = data.pages.reduce((acc, page) => {
-          const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components));
+          const currentComponents = buildComponentMetaDefinition(JSON.parse(JSON.stringify(page?.components)));
 
           page.components = currentComponents;
 
@@ -1615,9 +1616,7 @@ const EditorComponent = (props) => {
       isUpdatingEditorStateInProcess: true,
     });
 
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.homePageId = pageId;
 
@@ -1645,7 +1644,7 @@ const EditorComponent = (props) => {
       return;
     }
 
-    const newDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newDefinition.pages[pageId].handle = newHandle;
 
@@ -1658,7 +1657,6 @@ const EditorComponent = (props) => {
   };
 
   const updateOnSortingPages = (newSortedPages) => {
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const pagesObj = newSortedPages.reduce((acc, page, index) => {
       acc[page.id] = {
         ...page,
@@ -1667,7 +1665,7 @@ const EditorComponent = (props) => {
       return acc;
     }, {});
 
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.pages = pagesObj;
 
@@ -1678,8 +1676,7 @@ const EditorComponent = (props) => {
   };
 
   const showHideViewerNavigation = () => {
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.showViewerNavigation = !newAppDefinition.showViewerNavigation;
 
@@ -1749,7 +1746,7 @@ const EditorComponent = (props) => {
         <EditorContextWrapper>
           <EditorHeader
             darkMode={props.darkMode}
-            appDefinition={_.cloneDeep(appDefinition)}
+            appDefinition={JSON.parse(JSON.stringify(appDefinition))}
             canUndo={canUndo}
             canRedo={canRedo}
             handleUndo={handleUndo}

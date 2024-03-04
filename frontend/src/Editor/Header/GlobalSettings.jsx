@@ -352,7 +352,6 @@ export const GlobalSettings = ({
                     {!forceCodeBox && (
                       <CodeHinter
                         cyLabel={`canvas-bg-colour`}
-                        currentState={realState}
                         initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
                         lang="javascript"
                         className="canvas-hinter-wrap"

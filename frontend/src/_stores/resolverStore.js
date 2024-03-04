@@ -49,6 +49,7 @@ class ReferencesBiMap {
 }
 
 const initialState = {
+  storeReady: false,
   suggestions: {
     appHints: [],
     jsHints: [],
@@ -65,26 +66,101 @@ export const useResolveStore = create(
   (set, get) => ({
     ...initialState,
     actions: {
+      updateStoreState: (state) => {
+        set(() => ({ ...state, storeReady: true }));
+      },
       updateAppSuggestions: (refState) => {
-        const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState);
+        const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState, false, true);
 
         set(() => ({ suggestions: { ...get().suggestions, appHints: suggestionList } }));
 
         set(() => ({ lookupTable: { ...get().lookupTable, hints: hintsMap, resolvedRefs } }));
       },
 
+      addAppSuggestions: (partialRefState) => {
+        if (Object.keys(partialRefState).length === 0) return;
+
+        const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(partialRefState);
+
+        const lookupHintsMap = new Map([...get().lookupTable.hints]);
+        const lookupResolvedRefs = new Map([...get().lookupTable.resolvedRefs]);
+
+        hintsMap.forEach((value, key) => {
+          const alreadyExists = lookupHintsMap.has(key);
+
+          if (!alreadyExists) {
+            lookupHintsMap.set(key, value);
+          } else {
+            const existingLookupId = lookupHintsMap.get(key);
+            const newResolvedRef = resolvedRefs.get(value);
+
+            resolvedRefs.delete(value);
+            resolvedRefs.set(existingLookupId, newResolvedRef);
+          }
+        });
+
+        resolvedRefs.forEach((value, key) => {
+          lookupResolvedRefs.set(key, value);
+        });
+
+        set(() => ({
+          suggestions: {
+            ...get().suggestions,
+            appHints: [...get().suggestions.appHints, ...suggestionList],
+          },
+        }));
+
+        set(() => ({
+          lookupTable: {
+            ...get().lookupTable,
+            hints: lookupHintsMap,
+            resolvedRefs: lookupResolvedRefs,
+          },
+        }));
+      },
+
+      removeAppSuggestions: (suggestionsArray) => {
+        if (suggestionsArray.length === 0) return new Promise((resolve) => resolve({ status: 'ok' }));
+
+        const lookupHintsMap = new Map([...get().lookupTable.hints]);
+        const lookupResolvedRefs = new Map([...get().lookupTable.resolvedRefs]);
+        const currentSuggestions = get().suggestions.appHints;
+
+        suggestionsArray.forEach((suggestion) => {
+          const index = currentSuggestions.findIndex((s) => s.hint === suggestion);
+
+          if (index === -1) return;
+
+          currentSuggestions.splice(index, 1);
+          const lookUpId = lookupHintsMap.get(suggestion);
+
+          lookupHintsMap.delete(suggestion);
+          lookupResolvedRefs.delete(lookUpId);
+        });
+
+        return new Promise((resolve) => {
+          set(() => ({
+            suggestions: {
+              ...get().suggestions,
+              appHints: currentSuggestions,
+            },
+          }));
+
+          set(() => ({
+            lookupTable: {
+              ...get().lookupTable,
+              hints: lookupHintsMap,
+              resolvedRefs: lookupResolvedRefs,
+            },
+          }));
+
+          resolve({ status: 'ok' });
+        });
+      },
+
       updateJSHints: () => {
         const hints = createJavaScriptSuggestions();
         set(() => ({ suggestions: { ...get().suggestions, jsHints: hints } }));
-      },
-
-      updateComponentDefaultValues: (componentDefaultValues) => {
-        set(() => ({ componentDefaultValues }));
-      },
-
-      getDefaultComponentValue: (componentName) => {
-        const { componentDefaultValues } = get();
-        return componentDefaultValues[componentName];
       },
 
       addEntitiesToMap: (entities) => {
