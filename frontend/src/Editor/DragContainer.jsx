@@ -24,10 +24,8 @@ export default function DragContainer({
 }) {
   const lastDraggedEventsRef = useRef(null);
   const boxes = Object.keys(widgets).map((key) => ({ ...widgets[key], id: key }));
-  console.log('boxes===>', boxes);
   const isGroupHandleHoverd = useIsGroupHandleHoverd();
   const openModalWidgetId = useOpenModalWidgetId();
-  console.log('openModalWidgetId--->', openModalWidgetId);
   const configHandleForMultiple = (id) => {
     return (
       <div
@@ -54,7 +52,6 @@ export default function DragContainer({
           }
         }}
         onMouseDownCapture={() => {
-          console.log('components>>>onMouseDownCapture');
           lastDraggedEventsRef.current = null;
           if (!useGridStore.getState().isGroupHandleHoverd) {
             useGridStore.getState().actions.setIsGroupHandleHoverd(true);
@@ -101,7 +98,6 @@ export default function DragContainer({
     events: {},
     mouseEnter(e) {
       const controlBoxes = document.getElementsByClassName('moveable-control-box');
-      console.log('MouseCustomAble ENTER', e._dragTarget);
       for (const element of controlBoxes) {
         element.classList.remove('moveable-control-box-d-block');
       }
@@ -109,7 +105,6 @@ export default function DragContainer({
       e.controlBox.classList.add('moveable-control-box-d-block');
     },
     mouseLeave(e) {
-      console.log('MouseCustomAble LEAVE', e._dragTarget);
       e.props.target.classList.remove('hovered');
       e.controlBox.classList.remove('moveable-control-box-d-block');
     },
@@ -149,7 +144,6 @@ export default function DragContainer({
     if (!moveableRef.current) {
       return;
     }
-    console.log('Reloading....');
     moveableRef.current.updateRect();
     moveableRef.current.updateTarget();
     moveableRef.current.updateSelectors();
@@ -178,14 +172,11 @@ export default function DragContainer({
       var timer;
       boxes.forEach((box) => {
         box.addEventListener('scroll', function handleClick(event) {
-          console.log('timer---->', timer);
           if (timer) {
             clearTimeout(timer);
           }
 
-          console.log('timer---->Setting up the timer', timer);
           timer = setTimeout(function () {
-            console.log('timer----> triggered');
             reloadGrid();
           }, 250); //Threshold is 100ms
         });
@@ -206,13 +197,10 @@ export default function DragContainer({
     controlBoxes.forEach((box) => {
       box.style.display = '';
     });
-    console.log('openModalWidgetId', openModalWidgetId, selectedComponents);
     if (openModalWidgetId) {
       const children = findChildrenAndGrandchildren(openModalWidgetId, boxes);
       const controlBoxes = document.querySelectorAll('.moveable-control-box[target-id]');
       const childElems = children.map((childId) => ({ ...widgets[childId], id: childId }));
-      console.log(childElems);
-      console.log('controlBoxes', controlBoxes, children);
       controlBoxes.forEach((box) => {
         const id = box.getAttribute('target-id');
         if (!children.includes(id)) {
@@ -228,14 +216,12 @@ export default function DragContainer({
       moveableRef.current.updateTarget();
       moveableRef.current.updateSelectors();
     }
-    console.log('moveableRef-->', moveableRef.current?.moveable?.moveables);
     Array.isArray(moveableRef.current?.moveable?.moveables) &&
       moveableRef.current?.moveable?.moveables.forEach((moveable) => {
         const {
           props: { target },
           controlBox,
         } = moveable;
-        console.log('moveableRef--> 2', target, controlBox);
         controlBox.setAttribute('target-id', target.id);
       });
 
@@ -244,9 +230,7 @@ export default function DragContainer({
         return component.id;
       })
     );
-    console.log('selectedComponentsId->', selectedComponentsId);
     const selectedBoxs = boxes.filter((box) => selectedComponentsId.has(box.id));
-    console.log('selectedComponentsId->selectedBoxs', selectedBoxs);
     const parentId = selectedBoxs.find((comp) => comp.component.parent)?.component?.parent;
 
     // Get all elements with the old class name
@@ -322,8 +306,6 @@ export default function DragContainer({
     };
   };
 
-  console.log('selectedComponents =>', [...selectedComponents]);
-
   const groupedTargets = [
     ...findHighestLevelofSelection(selectedComponents)
       // .filter((component) => !component?.component?.parent)
@@ -333,16 +315,6 @@ export default function DragContainer({
   useEffect(() => {
     reloadGrid();
   }, [selectedComponents, openModalWidgetId]);
-
-  console.log('groupedTargets-->', selectedComponents, groupedTargets);
-  console.log(
-    'groupedTargets-->target',
-    draggedSubContainer || (groupedTargets.length < 2 && selectedComponents.length > 1)
-      ? '.empty-widget'
-      : groupedTargets.length > 1
-      ? [...groupedTargets]
-      : '.widget-target'
-  );
 
   // Function to limit the resizing of element within the parent
   const setResizingLimit = (e, i) => {
@@ -389,9 +361,6 @@ export default function DragContainer({
 
   const debouncedOnDrag = debounce((events, parent = null) => updateNewPosition(events, parent), 100);
 
-  console.log('hoveredComponent->' + hoveredComponent + '    draggedTarget->' + draggedTarget);
-  console.log('onDrager----hoveredComponent', hoveredComponent);
-
   return mode === 'edit' ? (
     <>
       <Moveable
@@ -431,34 +400,18 @@ export default function DragContainer({
           }
         }}
         onResize={(e) => {
-          console.log('onResize', e);
-          console.log('onResize---', list, e.target.id, boxList);
           const currentLayout = list.find(({ id }) => id === e.target.id);
           const currentWidget = boxes.find(({ id }) => id === e.target.id);
-          console.log('onResize---currentLayout', currentLayout);
           let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
           document.getElementById('canvas-' + currentWidget.component?.parent)?.classList.add('show-grid');
           const currentWidth = currentLayout.width * _gridWidth;
           const diffWidth = e.width - currentWidth;
           const diffHeight = e.height - currentLayout.height;
-          console.log('onResize---currentLayout', currentWidth, e.width, diffWidth, e.direction);
           const isLeftChanged = e.direction[0] === -1;
           const isTopChanged = e.direction[1] === -1;
 
-          console.log(
-            'currentLayout transform',
-            `translate(${currentLayout.left * _gridWidth}px, ${currentLayout.top}px)`,
-            `translate(${currentLayout.left * _gridWidth - diffWidth}px, ${currentLayout.top}px)`
-          );
-
           let transformX = currentLayout.left * _gridWidth;
           let transformY = currentLayout.top;
-          console.log(
-            'onResize---isLeftChanged',
-            isLeftChanged,
-            e.direction[0],
-            currentLayout.left * _gridWidth - diffWidth
-          );
           if (isLeftChanged) {
             transformX = currentLayout.left * _gridWidth - diffWidth;
           }
@@ -475,7 +428,6 @@ export default function DragContainer({
           const maxHeightHit = transformY < 0 || transformY >= maxY;
           transformY = transformY < 0 ? 0 : transformY > maxY ? maxY : transformY;
           transformX = transformX < 0 ? 0 : transformX > maxLeft ? maxLeft : transformX;
-          console.log('e.target.style.transform', `translate(${transformX}px, ${transformY}px)`);
 
           if (!maxWidthHit || e.width < e.target.clientWidth) {
             e.target.style.width = `${e.width}px`;
@@ -500,7 +452,6 @@ export default function DragContainer({
           try {
             useGridStore.getState().actions.setResizingComponentId(null);
             setIsResizing(false);
-            console.log('onResizeEnd>>>>>>>>>>>>>>', e);
             // const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
             // e.target.style.width = `${width}px`;
             // e.target.style.height = `${e.lastEvent.height}px`;
@@ -515,7 +466,6 @@ export default function DragContainer({
             //   },
             // ]);
             const currentWidget = boxes.find(({ id }) => {
-              console.log('e.target.id', id, e, e.target.id);
               return id === e.target.id;
             });
             document.getElementById('canvas-' + currentWidget.component?.parent)?.classList.remove('show-grid');
@@ -527,22 +477,9 @@ export default function DragContainer({
             const currentWidth = currentLayout.width * _gridWidth;
             const diffWidth = e.lastEvent.width - currentWidth;
             const diffHeight = e.lastEvent.height - currentLayout.height;
-            console.log('onResizeEnd data', currentWidth, e.width, diffWidth, e.direction, diffHeight);
             const isLeftChanged = e.lastEvent.direction[0] === -1;
             const isTopChanged = e.lastEvent.direction[1] === -1;
 
-            console.log(
-              'onResizeEnd => currentLayout transform',
-              `translate(${currentLayout.left * _gridWidth}px, ${currentLayout.top}px)`,
-              `translate(${currentLayout.left * _gridWidth - diffWidth}px, ${currentLayout.top}px)`
-            );
-
-            console.log('onResizeEnd---', {
-              cleft: currentLayout.left,
-              newLeft: currentLayout.left * _gridWidth,
-              _gridWidth,
-              currTransform: e.target.style.transform,
-            });
             let transformX = currentLayout.left * _gridWidth;
             let transformY = currentLayout.top;
             if (isLeftChanged) {
@@ -573,7 +510,6 @@ export default function DragContainer({
             if (!maxHeightHit || e.height < e.target.clientHeight) {
               e.target.style.height = `${Math.round(e.lastEvent.height / 10) * 10}px`;
             }
-            console.log('onResizeEnd---Newtransform', `translate(${transformX}px, ${transformY}px)`);
             const resizeData = {
               id: e.target.id,
               height: height,
@@ -584,14 +520,12 @@ export default function DragContainer({
             if (currentWidget.component?.parent) {
               resizeData.gw = _gridWidth;
             }
-            console.log('onResizeEnd---resizeData', resizeData);
             onResizeStop([resizeData]);
           } catch (error) {
             console.error('ResizeEnd error ->', error);
           }
         }}
         onResizeStart={(e) => {
-          console.log('heree--- onResizeStart');
           useGridStore.getState().actions.setResizingComponentId(e.target.id);
           setIsResizing(true);
           e.setMin([gridWidth, 10]);
@@ -605,7 +539,6 @@ export default function DragContainer({
           parentElm.classList.add('show-grid');
         }}
         onResizeGroup={({ events }) => {
-          console.log('heree--- onResizeGroup');
           const newBoxs = [];
           const parentElm = events[0].target.closest('.real-canvas');
           parentElm.classList.remove('show-grid');
@@ -613,7 +546,6 @@ export default function DragContainer({
           const parentHeight = parentElm?.clientHeight;
 
           const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
-          console.log('posRight', posRight, posLeft, posTop, posBottom);
           events.forEach((ev) => {
             ev.target.style.width = `${ev.width}px`;
             ev.target.style.height = `${ev.height}px`;
@@ -635,7 +567,6 @@ export default function DragContainer({
         onResizeGroupEnd={(e) => {
           try {
             const { events } = e;
-            console.log('onResizeGroup---', e);
             const newBoxs = [];
 
             const parentElm = events[0].target.closest('.real-canvas');
@@ -672,12 +603,10 @@ export default function DragContainer({
             // debugger;
             // TODO: Logic needs to be relooked post go live P2
             groupResizeDataRef.current.forEach((ev) => {
-              console.log('resizeevents', ev.width);
               const currentWidget = boxes.find(({ id }) => {
                 return id === ev.target.id;
               });
               let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
-              console.log('resizeevents', ev.width, currentWidget?.layouts[currentLayout].width * _gridWidth);
               let width = Math.round(ev.width / _gridWidth) * _gridWidth;
               width = width < _gridWidth ? _gridWidth : width;
               let posX = Math.round(ev.drag.translate[0] / _gridWidth) * _gridWidth;
@@ -702,12 +631,10 @@ export default function DragContainer({
               onResizeStop(newBoxs);
             } else {
               events.forEach((ev) => {
-                console.log('resizeevents', ev.width);
                 const currentWidget = boxes.find(({ id }) => {
                   return id === ev.target.id;
                 });
                 let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
-                console.log('resizeevents', ev.width, currentWidget?.layouts[currentLayout].width * _gridWidth);
                 let width = currentWidget?.layouts[currentLayout].width * _gridWidth;
                 let posX = currentWidget?.layouts[currentLayout].left * _gridWidth;
                 let posY = currentWidget?.layouts[currentLayout].top;
@@ -726,7 +653,6 @@ export default function DragContainer({
         }}
         checkInput
         onDragStart={(e) => {
-          console.log('On-drag start => ', e?.moveable?.getControlBoxElement());
           // if (currentLayout === 'mobile' && autoComputeLayout) {
           //   turnOffAutoLayout();
           //   return false;
@@ -749,21 +675,16 @@ export default function DragContainer({
           const startTime = performance.now();
           try {
             if (isDraggingRef.current) {
-              console.log('timeDifference0', performance.now() - startTime);
               useGridStore.getState().actions.setDraggingComponentId(null);
-              console.log('timeDifference1.1', performance.now() - startTime);
               isDraggingRef.current = false;
               setIsDragging(false);
-              console.log('timeDifference1.2', performance.now() - startTime);
             }
-            console.log('timeDifference1', performance.now() - startTime);
 
             setDraggedTarget();
             if (draggedSubContainer) {
               return;
             }
 
-            console.log('timeDifference2', performance.now() - startTime);
             let draggedOverElemId = widgets[e.target.id]?.component?.parent;
             let draggedOverElemIdType;
             const parentComponent = widgets[widgets[e.target.id]?.component?.parent];
@@ -854,9 +775,6 @@ export default function DragContainer({
               }px)`;
             }
 
-            console.log('timeDifference4', performance.now() - startTime);
-
-            console.log('draggedOverElemId->', draggedOverElemId, currentParentId);
             if (draggedOverElemId === currentParentId || isParentChangeAllowed) {
               onDrag([
                 {
@@ -868,9 +786,7 @@ export default function DragContainer({
               ]);
             }
             const box = boxes.find((box) => box.id === e.target.id);
-            console.log('timeDifference5', performance.now() - startTime);
             useEditorStore.getState().actions.setSelectedComponents([{ ...box }]);
-            console.log('timeDifference6', performance.now() - startTime);
           } catch (error) {
             console.log('draggedOverElemId->error', error);
           }
@@ -884,22 +800,16 @@ export default function DragContainer({
         }}
         onDrag={(e) => {
           const startTime = performance.now();
-          console.log('onDrager----', e.target.id, hoveredComponent);
           if (!isDraggingRef.current) {
-            console.log('timeDiff->1', performance.now() - startTime);
             useGridStore.getState().actions.setDraggingComponentId(e.target.id);
-            console.log('timeDiff->2', performance.now() - startTime);
             isDraggingRef.current = true;
             setIsDragging(true);
-            console.log('timeDiff->3', performance.now() - startTime);
           }
           if (draggedSubContainer) {
             return;
           }
           if (e.target.id !== draggedTarget) {
-            console.log('timeDiff->4', performance.now() - startTime);
             setDraggedTarget(e.target.id);
-            console.log('timeDiff->5', performance.now() - startTime);
           }
           // setDraggedTarget(e.target.id);
           if (!draggedSubContainer) {
@@ -946,16 +856,9 @@ export default function DragContainer({
               element.classList.add('hide-grid');
             });
             const parentWidgetId = draggedOverContainer.getAttribute('data-parent') || draggedOverElem?.id;
-            console.log('parentWidgetId-->', draggedOverContainer, parentWidgetId);
             document.getElementById('canvas-' + parentWidgetId)?.classList.add('show-grid');
 
             draggedOverElemId = draggedOverElem?.id;
-            console.log(
-              'draggedOverElemRef=>',
-              draggedOverContainer,
-              draggedOverElemRef.current?.id !== draggedOverContainer?.id,
-              !draggedOverContainer.classList.contains('hide-grid')
-            );
             if (
               draggedOverElemRef.current?.id !== draggedOverContainer?.id &&
               !draggedOverContainer.classList.contains('hide-grid')
@@ -965,12 +868,9 @@ export default function DragContainer({
               draggedOverElemRef.current = draggedOverContainer;
             }
           }
-          console.log('timeDiff->6', performance.now() - startTime);
-          console.log('draggedOverElemId parent', draggedOverElemId, parent);
         }}
         onDragGroup={(ev) => {
           const { events } = ev;
-          console.log('onDragGroup---', ev);
           const parentElm = events[0]?.target?.closest('.real-canvas');
           // const parentWidth = parentElm?.clientWidth;
           // const parentHeight = parentElm?.clientHeight;
@@ -1143,7 +1043,6 @@ export function findHighestLevelofSelection(selectedComponents) {
   //     widget?.component?.parent !== undefined && !selectedComponents.some((e) => e.id === widget?.component?.parent)
   //   );
   // });
-  console.log('groupedTargets-->result------', result, selectedComponents);
   return result;
 }
 
@@ -1158,32 +1057,17 @@ function findChildrenAndGrandchildren(parentId, widgets) {
   if (isEmpty(widgets)) {
     return [];
   }
-  console.log('findChildrenAndGrandchildren', parentId, widgets);
   const type = widgets.find(({ id }) => id === parentId)?.component?.component;
   let pid = parentId;
-  console.log(
-    'findChildrenAndGrandchildren ->type',
-    type,
-    widgets.find(({ id }) => id === parentId)
-  );
   if (type === 'Kanban') {
     pid = pid + '-modal';
   }
-  console.log(
-    'findChildrenAndGrandchildren => pid',
-    pid,
-    widgets.map((w) => w?.component?.parent)
-  );
   const children = widgets.filter((widget) => widget?.component?.parent === pid);
   let result = [];
   for (const child of children) {
     result.push(child.id);
     result = result.concat(...findChildrenAndGrandchildren(child.id));
   }
-  console.log(
-    'findChildrenAndGrandchildren => result',
-    widgets.filter((r) => result.includes(r.id))
-  );
   return result;
 }
 
