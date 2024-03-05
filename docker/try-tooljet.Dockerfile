@@ -1,7 +1,7 @@
 FROM tooljet/tooljet:latest
 
 # copy postgrest executable
-COPY --from=postgrest/postgrest /bin/postgrest /bin
+COPY --from=postgrest/postgrest:v12.0.2 /bin/postgrest /bin
 
 
 # Install Postgres
