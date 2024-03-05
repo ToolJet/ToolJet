@@ -20,6 +20,7 @@ import Float from '../Icons/Float.svg';
 import Integer from '../Icons/Integer.svg';
 import CharacterVar from '../Icons/Text.svg';
 import Boolean from '../Icons/Toggle.svg';
+import Serial from '../Icons/Serial.svg';
 import Menu from '../Icons/Menu.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 import TjdbTableHeader from './Header';
@@ -757,7 +758,7 @@ const Table = ({ collapseSidebar }) => {
           <div>
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
               {column.Header == 'id' ? (
-                <Integer width="18" height="18" className="tjdb-column-header-name" />
+                <Serial width="18" height="14" className="tjdb-column-header-name" />
               ) : (
                 checkDataType(column?.dataType)
               )}

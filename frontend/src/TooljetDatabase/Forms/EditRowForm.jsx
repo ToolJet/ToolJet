@@ -10,6 +10,7 @@ import Float from '../Icons/Float.svg';
 import Integer from '../Icons/Integer.svg';
 import CharacterVar from '../Icons/Text.svg';
 import Boolean from '../Icons/Toggle.svg';
+import Serial from '../Icons/Serial.svg';
 import './styles.scss';
 
 const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
@@ -260,7 +261,7 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
               data-cy={`${primaryColumn}-column-name-label`}
             >
               <span style={{ width: '24px' }}>
-                <Integer width="18" height="18" className="tjdb-column-header-name" />
+                <Serial width="18" height="14" className="tjdb-column-header-name" />
               </span>
               <span>{headerText}</span>
             </div>
