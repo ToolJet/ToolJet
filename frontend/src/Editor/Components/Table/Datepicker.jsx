@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef } from 'react';
+import React, { forwardRef, useEffect, useRef } from 'react';
 import Datetime from 'react-datetime';
 import moment from 'moment-timezone';
 import DatePickerComponent from 'react-datepicker';
@@ -43,9 +43,10 @@ const getDate = (value, parseDateFormat, displayFormat, timeZoneValue, timeZoneD
         .format(displayFormat);
       return momentString;
     } else {
-      const momentObj = moment(dateString, parseDateFormat);
-      const momentString = momentObj.format(displayFormat);
-      return momentString;
+      console.log(displayFormat, "displayFormat")
+      const momentObj = moment(dateString, displayFormat);
+      // const momentString = momentObj.format(displayFormat);
+      return momentObj.toDate();
     }
   }
   return '';
@@ -62,44 +63,47 @@ export const Datepicker = function Datepicker({
   timeZoneValue,
   timeZoneDisplay,
 }) {
-  const [date, setDate] = React.useState(() =>
-    getDate(value, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay)
-  );
+  const [date, setDate] = React.useState(null);
   const pickerRef = React.useRef();
 
   const dateChange = (event) => {
-    const value = event._isAMomentObject ? event.format() : event;
-    let selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} LT` : dateDisplayFormat;
-    const dateString = moment(value).format(selectedDateFormat);
-    setDate(() => dateString);
+    // const _value = event._isAMomentObject ? event.format() : event;
+    // let selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} LT` : dateDisplayFormat;
+    // const dateString = moment(_value).format(selectedDateFormat);
+    // setDate(() => dateString);
   };
 
-  React.useEffect(() => {
-    let selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} LT` : dateDisplayFormat;
-    const dateString = getDate(value, parseDateFormat, selectedDateFormat, timeZoneValue, timeZoneDisplay);
-    setDate(() => dateString);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTimeChecked, readOnly, dateDisplayFormat]);
+  // React.useEffect(() => {
+  //   let selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} LT` : dateDisplayFormat;
+  //   const dateString = getDate(value, parseDateFormat, selectedDateFormat, timeZoneValue, timeZoneDisplay);
+  //   setDate(() => dateString);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [isTimeChecked, readOnly, dateDisplayFormat]);
 
   const onDatepickerClose = () => {
     onChange(date);
   };
 
-  let inputProps = {
-    disabled: !readOnly,
-  };
+  // let inputProps = {
+  //   disabled: !readOnly,
+  // };
 
-  const calculatePosition = () => {
-    const dropdown = pickerRef.current && pickerRef.current.querySelectorAll('.rdtPicker')[0];
-    if (dropdown && tableRef.current) {
-      const tablePos = tableRef.current.getBoundingClientRect();
-      const dropDownPos = pickerRef.current.getBoundingClientRect();
-      const left = dropDownPos.left - tablePos.left;
-      const top = dropDownPos.bottom - tablePos.top;
-      dropdown.style.left = `${left}px`;
-      dropdown.style.top = `${top}px`;
-    }
-  };
+  // const calculatePosition = () => {
+  //   const dropdown = pickerRef.current && pickerRef.current.querySelectorAll('.rdtPicker')[0];
+  //   if (dropdown && tableRef.current) {
+  //     const tablePos = tableRef.current.getBoundingClientRect();
+  //     const dropDownPos = pickerRef.current.getBoundingClientRect();
+  //     const left = dropDownPos.left - tablePos.left;
+  //     const top = dropDownPos.bottom - tablePos.top;
+  //     dropdown.style.left = `${left}px`;
+  //     dropdown.style.top = `${top}px`;
+  //   }
+  // };
+
+  useEffect(() => {
+    const date = getDate(value, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay)
+    setDate(date)
+  }, [JSON.stringify(value, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay)])
 
   const IconElement = Icons['IconHome2'];
   // const datepickerinputStyles = {
@@ -120,7 +124,7 @@ export const Datepicker = function Datepicker({
   // };
 
   const dateInputRef = useRef(null); // Create a ref
-
+  console.log(date, value, "date")
   return (
     <div ref={pickerRef}>
       {/* <Datetime
@@ -145,21 +149,22 @@ export const Datepicker = function Datepicker({
         popperClassName={`tj-datepicker-widget`}
         selected={date}
         onChange={(date) => dateChange(date)}
-        value={date}
+        // dateFormat={dateDisplayFormat}
+        // value={date}
         onFocus={(event) => {
           // onComponentClick(id, component, event);
         }}
-        customInput={
-          <TjDatepicker
-            // styles={datepickerinputStyles}  // See this at last
-            // setShowValidationError={setShowValidationError}
-            // fireEvent={fireEvent}
-            // setIsFocused={setIsFocused}
-            dateInputRef={dateInputRef}
-          />
-        }
-        timeFormat={'HH:mm'}
-        showTimeSelect={true}
+        // customInput={
+        //   <TjDatepicker
+        //     // styles={datepickerinputStyles}  // See this at last
+        //     // setShowValidationError={setShowValidationError}
+        //     // fireEvent={fireEvent}
+        //     // setIsFocused={setIsFocused}
+        //     dateInputRef={dateInputRef}
+        //   />
+        // }
+        // timeFormat={'HH:mm'}
+        // showTimeSelect={true}
         // showTimeSelectOnly={enableDate ? false : true}
         showMonthDropdown
         showYearDropdown
