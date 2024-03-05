@@ -4,7 +4,7 @@ import { logout, verifyTooltip } from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { userSignUp } from "Support/utils/onboarding";
 import {
-    promoteApp, appPromote
+    promoteApp, appPromote, releaseApp
 } from "Support/utils/multiEnv";
 
 describe("App slug", () => {

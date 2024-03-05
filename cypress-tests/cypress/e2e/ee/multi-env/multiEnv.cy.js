@@ -545,7 +545,7 @@ describe("Multi env", () => {
     selectVersion((currentVersion = "v1"), (newVersion = ["v2"]));
     cy.get(commonSelectors.warningText).verifyVisibleElement(
       "have.text",
-      "App cannot be edited after promotion. Please create a new version from Development to make any changes."
+      "This version of the app is released. Please create a new version in development to make any changes."
     );
     cy.get(".datasource-picker").should("have.class", "disabled");
     cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
