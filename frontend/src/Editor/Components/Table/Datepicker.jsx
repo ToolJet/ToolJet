@@ -1,8 +1,37 @@
-import React from 'react';
+import React, { forwardRef, useRef } from 'react';
 import Datetime from 'react-datetime';
 import moment from 'moment-timezone';
-import 'react-datetime/css/react-datetime.css';
-import '@/_styles/custom.scss';
+import DatePickerComponent from 'react-datepicker';
+// import 'react-datetime/css/react-datetime.css';
+// import '@/_styles/custom.scss';
+import * as Icons from '@tabler/icons-react';
+import CustomDatePickerHeader from './CustomDatePickerHeader';
+import './datePicker.scss';
+
+const TjDatepicker = forwardRef(
+  ({ value, onClick, styles, setShowValidationError, setIsFocused, fireEvent, dateInputRef }, ref) => {
+    return (
+      <input
+        onBlur={(e) => {
+          setShowValidationError(true);
+          setIsFocused(false);
+          fireEvent('onBlur');
+          e.stopPropagation();
+        }}
+        onFocus={(e) => {
+          setIsFocused(true);
+          fireEvent('onFocus');
+          e.stopPropagation();
+        }}
+        className="custom-input-datepicker"
+        value={value}
+        onClick={onClick}
+        ref={dateInputRef}
+        style={styles}
+      ></input>
+    );
+  }
+);
 
 const getDate = (value, parseDateFormat, displayFormat, timeZoneValue, timeZoneDisplay) => {
   if (value) {
@@ -72,9 +101,29 @@ export const Datepicker = function Datepicker({
     }
   };
 
+  const IconElement = Icons['IconHome2'];
+  // const datepickerinputStyles = {
+  //   backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
+  //   // borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
+  //   borderColor: isFocused
+  //     ? '#3E63DD'
+  //     : ['#D7DBDF'].includes(borderColor)
+  //       ? darkMode
+  //         ? '#4C5155'
+  //         : '#D7DBDF'
+  //       : borderColor,
+  //   color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
+  //   boxShadow,
+  //   borderRadius: `${borderRadius}px`,
+  //   height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+  //   paddingLeft: !component?.definition?.styles?.iconVisibility?.value ? '10px' : '29px',
+  // };
+
+  const dateInputRef = useRef(null); // Create a ref
+
   return (
     <div ref={pickerRef}>
-      <Datetime
+      {/* <Datetime
         inputProps={inputProps}
         timeFormat={isTimeChecked}
         className="cell-type-datepicker"
@@ -89,6 +138,35 @@ export const Datepicker = function Datepicker({
           return renderDefault();
         }}
         closeOnTab={false}
+      /> */}
+      <DatePickerComponent
+        calendarIcon={<IconElement stroke={1.5} />}
+        className={`input-field form-control tj-text-input-widget validation-without-icon px-2`}
+        popperClassName={`tj-datepicker-widget`}
+        selected={date}
+        onChange={(date) => dateChange(date)}
+        value={date}
+        onFocus={(event) => {
+          // onComponentClick(id, component, event);
+        }}
+        customInput={
+          <TjDatepicker
+            // styles={datepickerinputStyles}  // See this at last
+            // setShowValidationError={setShowValidationError}
+            // fireEvent={fireEvent}
+            // setIsFocused={setIsFocused}
+            dateInputRef={dateInputRef}
+          />
+        }
+        timeFormat={'HH:mm'}
+        showTimeSelect={true}
+        // showTimeSelectOnly={enableDate ? false : true}
+        showMonthDropdown
+        showYearDropdown
+        dropdownMode="select"
+        // excludeDates={excludedDates}
+        showPopperArrow={false}
+        renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
       />
     </div>
   );

@@ -7,6 +7,7 @@ import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandlePropert
 import { OptionsList } from '../SelectOptionsList/OptionsList';
 import { ValidationProperties } from './ValidationProperties';
 import { Select } from '@/Editor/CodeBuilder/Elements/Select';
+import { DatePickerProperties } from './DatePickerProperties';
 export const PropertiesTabElements = ({
   column,
   index,
@@ -255,6 +256,18 @@ export const PropertiesTabElements = ({
               ],
             }}
             paramType="properties"
+          />
+        </div>
+      )}
+      {column.columnType === 'datepicker' && (
+        <div className="field">
+          <DatePickerProperties
+            column={column}
+            index={index}
+            darkMode={darkMode}
+            currentState={currentState}
+            onColumnItemChange={onColumnItemChange}
+            component={component}
           />
         </div>
       )}
