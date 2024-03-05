@@ -1,8 +1,15 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 // eslint-disable-next-line import/no-unresolved
-import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { debounce } from 'lodash';
+import * as UAParser from 'ua-parser-js';
+
+const ReactLazyPreload = (importStatement) => {
+  const Component = React.lazy(importStatement);
+  Component.preload = importStatement;
+  return Component;
+};
+
+export const PDFDoc = ReactLazyPreload(() => import('./PDFDoc'));
 
 export const PDF = React.memo(({ styles, properties, width, height, component, dataCy }) => {
   const pdfName = component.name;
@@ -81,24 +88,6 @@ export const PDF = React.memo(({ styles, properties, width, height, component, d
     width: '15px',
     height: '15px',
   };
-  const renderPDF = () => (
-    <Document
-      file={url}
-      onLoadSuccess={onDocumentLoadSuccess}
-      onLoadError={onDocumentLoadError}
-      className="pdf-document"
-    >
-      {Array.from(new Array(numPages), (el, index) => (
-        <Page
-          pageNumber={index + 1}
-          width={scale ? width - 12 : undefined}
-          height={scale ? undefined : height}
-          key={`page_${index + 1}`}
-          inputRef={(el) => (pageRef.current[index] = el)}
-        />
-      ))}
-    </Document>
-  );
 
   async function downloadFile(url, pdfName) {
     const pdf = await fetch(url);
@@ -130,7 +119,20 @@ export const PDF = React.memo(({ styles, properties, width, height, component, d
           ref={documentRef}
           onScroll={handleScroll}
         >
-          {url === '' ? 'No PDF file specified' : renderPDF()}
+          {url === '' ? (
+            'No PDF file specified'
+          ) : (
+            <PDFDoc
+              url={url}
+              onDocumentLoadError={onDocumentLoadError}
+              onDocumentLoadSuccess={onDocumentLoadSuccess}
+              numPages={numPages}
+              width={width}
+              scale={scale}
+              height={height}
+              pageRef={pageRef}
+            />
+          )}
         </div>
         {!error && !pageLoading && (showDownloadOption || pageControls) && (
           <div
@@ -184,3 +186,20 @@ export const PDF = React.memo(({ styles, properties, width, height, component, d
     </div>
   );
 });
+
+export function isPDFSupported() {
+  const userAgent = navigator.userAgent;
+  const parser = new UAParser(userAgent);
+  const browser = parser.getBrowser();
+
+  const isChrome = browser.name === 'Chrome' && browser.major >= 92;
+  const isEdge = browser.name === 'Edge' && browser.major >= 92;
+  const isSafari = browser.name === 'Safari' && browser.major >= 15 && browser.minor >= 4; // Handle minor version check for Safari
+  const isFirefox = browser.name === 'Firefox' && browser.major >= 90;
+
+  console.log('browser--', browser, isChrome || isEdge || isSafari || isFirefox);
+
+  return isChrome || isEdge || isSafari || isFirefox;
+}
+
+export default PDF;

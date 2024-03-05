@@ -32,6 +32,7 @@ import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import { PDFDoc, isPDFSupported } from '@/Editor/Components/PDF';
 
 const AppWrapper = (props) => {
   return (
@@ -305,6 +306,8 @@ class AppComponent extends React.Component {
         </div>
 
         <Toast toastOptions={toastOptions} />
+        {/* Prerendeirng the PDF file since only preloading is breaking the UI */}
+        <div className="d-none">{isPDFSupported() && <PDFDoc />}</div>
       </>
     );
   }
