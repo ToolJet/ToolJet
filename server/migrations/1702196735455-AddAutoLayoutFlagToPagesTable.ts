@@ -30,17 +30,6 @@ export class AddAutoLayoutFlagToPagesTable1702196735455 implements MigrationInte
         name: 'dimension_unit',
         type: 'varchar',
         isNullable: false,
-        default: `'percent'`,
-      })
-    );
-
-    await queryRunner.changeColumn(
-      'layouts',
-      'dimension_unit',
-      new TableColumn({
-        name: 'dimension_unit',
-        type: 'varchar',
-        isNullable: false,
         default: `'count'`,
       })
     );
