@@ -859,7 +859,7 @@ const Table = ({ collapseSidebar }) => {
                         <div className="tj-db-headerText">
                           <span className="tj-text-xsm tj-db-dataype text-lowercase">
                             {column.Header == 'id' ? (
-                              <Integer width="18" height="18" className="tjdb-column-header-name" />
+                              <Serial width="18" height="18" className="tjdb-column-header-name" />
                             ) : (
                               checkDataType(column?.dataType)
                             )}
