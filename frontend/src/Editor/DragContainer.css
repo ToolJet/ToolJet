@@ -100,7 +100,7 @@
     /* z-index: 1000000 !important; */
 } 
 
-.hovered-target {
+.main-editor-canvas .hovered-target {
     outline: 1px solid #4af;
     z-index: 4 !important;
 }
