@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useContext, useRef, memo, useCallback } from 'react';
+import * as UAParser from 'ua-parser-js';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -42,7 +43,7 @@ import { Html } from './Components/Html';
 import { ButtonGroup } from './Components/ButtonGroup';
 import { CustomComponent } from './Components/CustomComponent/CustomComponent';
 import { VerticalDivider } from './Components/verticalDivider';
-import { PDF } from './Components/PDF';
+// import { PDF } from './Components/PDF';
 import { ColorPicker } from './Components/ColorPicker';
 import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import { Kanban } from './Components/Kanban/Kanban';
@@ -112,7 +113,7 @@ export const AllComponents = {
   ButtonGroup,
   CustomComponent,
   VerticalDivider,
-  PDF,
+  // PDF,
   ColorPicker,
   KanbanBoard,
   Kanban,
@@ -123,6 +124,11 @@ export const AllComponents = {
   Form,
   BoundedBox,
 };
+
+//conditionally importing PDF component since importing it breaks app in older browserversions
+if (isPDFSupported()) {
+  import('./Components/PDF').then((component) => (AllComponents.PDF = component.PDF));
+}
 
 export const Box = memo(
   ({
@@ -365,3 +371,18 @@ export const Box = memo(
     );
   }
 );
+
+export function isPDFSupported() {
+  const userAgent = navigator.userAgent;
+  const parser = new UAParser(userAgent);
+  const browser = parser.getBrowser();
+
+  const isChrome = browser.name === 'Chrome' && browser.major >= 92;
+  const isEdge = browser.name === 'Edge' && browser.major >= 92;
+  const isSafari = browser.name === 'Safari' && browser.major >= 15 && browser.minor >= 4; // Handle minor version check for Safari
+  const isFirefox = browser.name === 'Firefox' && browser.major >= 90;
+
+  console.log('browser--', browser, isChrome || isEdge || isSafari || isFirefox);
+
+  return isChrome || isEdge || isSafari || isFirefox;
+}
