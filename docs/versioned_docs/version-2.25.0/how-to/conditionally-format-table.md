@@ -26,7 +26,7 @@ Conditional formatting enhances the visual representation of data by allowing yo
 
 ## Display Data on the Table
 
-1. Hide the Query Panel and click on the Table component to open its configuration panel.
+1. Hide the Query Panel and click on the Table component to open its properties panel.
 
 2. Under **Table Data**, enter the following code:
    ```js title="Table Data"

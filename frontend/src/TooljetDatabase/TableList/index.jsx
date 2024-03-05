@@ -82,6 +82,7 @@ const List = () => {
             onClearCallback={() => setShowInput(false)}
             customClass="tj-common-search-input"
             autoFocus={true}
+            setShowInput={setShowInput}
           />
         )}
       </div>

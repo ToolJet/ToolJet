@@ -41,7 +41,7 @@ import {
 describe("Multiselect widget", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-Multiselect-App`);
     cy.openApp();
     cy.dragAndDropWidget(multiselectText.multiselect);
   });
@@ -66,7 +66,9 @@ describe("Multiselect widget", () => {
       "General",
     ]);
     verifyAndModifyParameter(commonWidgetText.parameterLabel, data.label);
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.get(multiselectSelector.multiselectLabel(data.widgetName)).should(
       "have.text",
       data.label
@@ -77,7 +79,9 @@ describe("Multiselect widget", () => {
       commonWidgetText.labelDefaultValue,
       codeMirrorInputLabel("[1,2,3]")
     );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     verifyMultiselectHeader(
       data.widgetName,
       multiselectText.labelAllItemsSelected
@@ -147,7 +151,9 @@ describe("Multiselect widget", () => {
       multiselectText.noEventsMessage
     );
     addDefaultEventHandler(data.alertMessage);
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
 
     selectFromMultiSelect(data.widgetName, ["", "", "true"]);
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
@@ -214,7 +220,9 @@ describe("Multiselect widget", () => {
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput
     );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({
+      force: true,
+    });
     cy.get(
       commonWidgetSelector.draggableWidget(multiselectText.defaultWidgetName)
     )
@@ -363,7 +371,7 @@ describe("Multiselect widget", () => {
     );
   });
 
-  it.only("should verify CSA", () => {
+  it("should verify CSA", () => {
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget("Number input", 600, 50);
     selectEvent("On change", "Control Component");

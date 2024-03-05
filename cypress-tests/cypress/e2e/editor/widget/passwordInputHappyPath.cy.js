@@ -311,7 +311,7 @@ describe("Password Input", () => {
     cy.get('[data-cy="togglr-button-left"]').click();
     verifyAlignment(passwordInputText.defaultWidgetName, "sideLeft");
     addCustomWidthOfLabel("50");
-    verifyCustomWidthOfLabel(passwordInputText.defaultWidgetName, "50");
+    verifyCustomWidthOfLabel(passwordInputText.defaultWidgetName, "35");
     selectColourFromColourPicker(
       "Text",
       data.labelColor,
@@ -335,7 +335,7 @@ describe("Password Input", () => {
     );
 
     verifyAlignment(passwordInputText.defaultWidgetName, "sideLeft");
-    verifyCustomWidthOfLabel(passwordInputText.defaultWidgetName, "50");
+    verifyCustomWidthOfLabel(passwordInputText.defaultWidgetName, "35");
     verifyInputFieldColors("passwordinput1", data);
 
     verifyBoxShadowCss(

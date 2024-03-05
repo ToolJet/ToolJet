@@ -14,7 +14,13 @@ const IndeterminateCheckbox = React.forwardRef(({ indeterminate, className = '',
   return (
     <>
       <div class="form-check mb-0">
-        <input type="checkbox" ref={resolvedRef} className={className + ' cursor-pointer form-check-input'} {...rest} />
+        <input
+          type="checkbox"
+          data-cy="checkbox-input"
+          ref={resolvedRef}
+          className={className + ' cursor-pointer form-check-input'}
+          {...rest}
+        />
       </div>
     </>
   );

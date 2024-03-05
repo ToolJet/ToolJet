@@ -41,10 +41,13 @@ export const randomString = (length) => {
 };
 
 export const verifyCSA = (data) => {
-  cy.clearAndType(
-    commonWidgetSelector.draggableWidget("textinput1"),
-    data.customText
-  );
+  cy.get(commonWidgetSelector.draggableWidget("textinput1")).click({
+    force: true,
+  });
+  cy.get(commonWidgetSelector.draggableWidget("textinput1"))
+    .find("input")
+    .clear()
+    .type(data.customText);
   cy.get(
     commonWidgetSelector.draggableWidget(data.widgetName)
   ).verifyVisibleElement("have.value", data.customText);

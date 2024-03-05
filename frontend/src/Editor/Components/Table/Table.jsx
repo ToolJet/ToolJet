@@ -453,7 +453,7 @@ export function Table({
         ])
       ),
     }));
-  }, [JSON.stringify([transformations, currentState])]);
+  }, [JSON.stringify([transformations, currentState, component.definition.properties.data.value])]);
 
   useEffect(() => {
     setExposedVariables({
@@ -479,7 +479,6 @@ export function Table({
     t,
     darkMode,
   });
-
   const [leftActionsCellData, rightActionsCellData] = useMemo(
     () =>
       generateActionsData({
@@ -682,7 +681,6 @@ export function Table({
       },
     ];
   }, [JSON.stringify(state)]);
-
   const getDetailsOfPreSelectedRow = () => {
     const key = Object?.keys(defaultSelectedRow)[0] ?? '';
     const value = defaultSelectedRow?.[key] ?? undefined;
