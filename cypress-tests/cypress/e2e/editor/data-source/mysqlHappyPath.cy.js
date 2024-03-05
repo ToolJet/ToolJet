@@ -139,7 +139,7 @@ describe("Data sources MySql", () => {
     fillDataSourceTextField(
       postgreSqlText.labelDbName,
       postgreSqlText.placeholderNameOfDB,
-      "test_db"
+      "mysql"
     );
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
@@ -208,7 +208,7 @@ describe("Data sources MySql", () => {
     fillConnectionForm({
       Host: Cypress.env("mysql_host"),
       Port: Cypress.env("mysql_port"),
-      "Database Name": "test_db",
+      "Database Name": "mysql",
       Username: Cypress.env("mysql_user"),
       Password: Cypress.env("mysql_password"),
     });
@@ -386,7 +386,7 @@ describe("Data sources MySql", () => {
     fillConnectionForm({
       Host: Cypress.env("mysql_host"),
       Port: Cypress.env("mysql_port"),
-      "Database Name": "test_db",
+      "Database Name": "mysql",
       Username: Cypress.env("mysql_user"),
       Password: Cypress.env("mysql_password"),
     });
@@ -419,7 +419,7 @@ describe("Data sources MySql", () => {
 
     cy.get(".p-3").should(
       "have.text",
-      `[{"Tables_in_test_db (${dbName})":"${dbName}"}]`
+      `[{"Tables_in_mysql (${dbName})":"${dbName}"}]`
     );
 
     // addQuery(
