@@ -757,7 +757,7 @@ const Table = ({ collapseSidebar }) => {
         <div className="primaryKeyTooltip">
           <div>
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
-              {column.Header == 'id' ? (
+              {isSerialDataType(column) ? (
                 <Serial width="18" height="14" className="tjdb-column-header-name" />
               ) : (
                 checkDataType(column?.dataType)
@@ -858,7 +858,7 @@ const Table = ({ collapseSidebar }) => {
                       <div className="d-flex align-items-center justify-content-between">
                         <div className="tj-db-headerText">
                           <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                            {column.Header == 'id' ? (
+                            {isSerialDataType(column) ? (
                               <Serial width="18" height="18" className="tjdb-column-header-name" />
                             ) : (
                               checkDataType(column?.dataType)
@@ -888,13 +888,13 @@ const Table = ({ collapseSidebar }) => {
                           </div>
                         </TablePopover>
                       </div>
-                    ) : column.Header === 'id' ? (
+                    ) : isSerialDataType(column) ? (
                       showTooltipForId(column)
                     ) : (
                       <>
                         <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                          {column.Header == 'id' ? (
-                            <Integer width="18" height="18" className="tjdb-column-header-name" />
+                          {isSerialDataType(column) ? (
+                            <Serial width="18" height="18" className="tjdb-column-header-name" />
                           ) : (
                             checkDataType(column?.dataType)
                           )}
