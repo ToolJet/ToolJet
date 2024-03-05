@@ -17,6 +17,7 @@ import {
   catchDbException,
   extractMajorVersion,
   isTooljetVersionWithNormalizedAppDefinitionSchem,
+  shouldApplyGridCompatibilityFix,
   isVersionGreaterThanOrEqual,
 } from 'src/helpers/utils.helper';
 import { AppEnvironmentService } from './app_environments.service';
@@ -242,6 +243,9 @@ export class AppImportExportService {
       ? true
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
+    const shouldUpdateForGridCompatibility: boolean =
+      !cloning && shouldApplyGridCompatibilityFix(importedAppTooljetVersion);
+
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
 
     await this.setupImportedAppAssociations(
@@ -251,6 +255,7 @@ export class AppImportExportService {
       user,
       externalResourceMappings,
       isNormalizedAppDefinitionSchema,
+      shouldUpdateForGridCompatibility,
       tooljetVersion
     );
     await this.createAdminGroupPermissions(this.entityManager, importedApp);
@@ -330,6 +335,7 @@ export class AppImportExportService {
     user: User,
     externalResourceMappings: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean,
+    shouldUpdateForGridCompatibility: boolean,
     tooljetVersion: string
   ) {
     // Old version without app version
@@ -394,6 +400,7 @@ export class AppImportExportService {
         importingPages,
         importingComponents,
         importingEvents,
+        shouldUpdateForGridCompatibility,
         tooljetVersion
       );
 
@@ -594,6 +601,7 @@ export class AppImportExportService {
     importingPages: Page[],
     importingComponents: Component[],
     importingEvents: EventHandler[],
+    shouldUpdateForGridCompatibility: boolean,
     tooljetVersion: string
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
@@ -773,7 +781,9 @@ export class AppImportExportService {
               const newLayout = new Layout();
               newLayout.type = layout.type;
               newLayout.top = layout.top;
-              newLayout.left = resolveGridPositionForComponent(layout.left, layout.type);
+              newLayout.left = shouldUpdateForGridCompatibility
+                ? resolveGridPositionForComponent(layout.left, layout.type)
+                : layout.left;
               newLayout.width = layout.width;
               newLayout.height = layout.height;
               newLayout.component = savedComponent;
