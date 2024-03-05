@@ -66,11 +66,13 @@ export function FileDropzone({
       {fileData?.name ? (
         <div className="bulkUpload-file">
           <ul>{acceptedFiles}</ul>
+
           <div className="fileName" ref={divRef}>
             {fileData?.name && (
               <ul className="m-0 p-0" data-cy="uploaded-file-data">{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>
             )}
           </div>
+
           <div>
             {progress < 100 && (
               <progress style={{ width: divWidth }} className="progress progress-sm mt-3" value={progress} max="100" />
@@ -143,28 +145,6 @@ export function FileDropzone({
               <ul>{acceptedFiles}</ul>
               {fileData?.name && <ul data-cy="uploaded-file-data">{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>}
             </div>
-            {errors.client.length > 0 && (
-              <>
-                <div>
-                  <SolidIcon name="reloaderror" width="16" height="17" />
-                  <span className="file-upload-error">Kindly check the file and try again!</span>
-                </div>
-                <div>
-                  <span className="file-upload-error">{errors.client}</span>
-                </div>
-              </>
-            )}
-            {errors.server.length > 0 && (
-              <>
-                <div>
-                  <SolidIcon name="reloaderror" width="16" height="17" />
-                  <span className="file-upload-error">Kindly check the file and try again!</span>
-                </div>
-                <div>
-                  <span className="file-upload-error">{errors.server}</span>
-                </div>
-              </>
-            )}
           </div>
         </form>
       )}

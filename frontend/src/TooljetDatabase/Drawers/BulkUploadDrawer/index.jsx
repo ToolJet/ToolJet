@@ -130,34 +130,27 @@ function BulkUploadDrawer({
             <ButtonSolid variant="tertiary" data-cy={`cancel-button`} onClick={() => setIsBulkUploadDrawerOpen(false)}>
               Cancel
             </ButtonSolid>
-            <ButtonSolid
-              disabled={!bulkUploadFile || errors.client.length > 0 || errors.server.length > 0 || progress <= 99}
-              data-cy={`upload-data-button`}
-              onClick={handleBulkUpload}
-              fill="#fff"
-              leftIcon="floppydisk"
-              loading={isBulkUploading}
-              style={{
-                cursor:
-                  isBulkUploading === true ||
-                  !bulkUploadFile ||
-                  errors.client.length > 0 ||
-                  errors.server.length > 0 ||
-                  progress <= 99
-                    ? 'not-allowed'
-                    : 'pointer',
-                pointerEvents:
-                  isBulkUploading === true ||
-                  !bulkUploadFile ||
-                  errors.client.length > 0 ||
-                  errors.server.length > 0 ||
-                  progress <= 99
-                    ? 'none'
-                    : 'all',
-              }}
-            >
-              {isBulkUploading === true ? <Spinner /> : 'Upload data'}
-            </ButtonSolid>
+            {isBulkUploading === true ? (
+              <ButtonSolid
+                data-cy={`upload-data-button`}
+                onClick={handleBulkUpload}
+                loading={isBulkUploading}
+                style={{ cursor: 'not-allowed', pointerEvents: 'none' }}
+              >
+                <Spinner />
+              </ButtonSolid>
+            ) : (
+              <ButtonSolid
+                disabled={!bulkUploadFile || errors.client.length > 0 || errors.server.length > 0 || progress <= 99}
+                data-cy={`upload-data-button`}
+                onClick={handleBulkUpload}
+                fill="#fff"
+                leftIcon="floppydisk"
+                loading={isBulkUploading}
+              >
+                Upload data
+              </ButtonSolid>
+            )}
           </div>
         </div>
       </Drawer>
