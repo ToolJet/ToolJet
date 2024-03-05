@@ -7,7 +7,7 @@ export const s3Text = {
   alertRegionIsMissing: "Region is missing",
   cypressAwsS3: "cypress-aws-s3",
   placeholderEnterAccessKey: "Enter access key",
-  placeholderEnterSecretKey: "Enter secret key",
+  placeholderEnterSecretKey: "**************",
   labelRegion: "Region",
   region: "N. california",
   alertInvalidUrl: "Invalid URL",

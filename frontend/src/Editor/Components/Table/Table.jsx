@@ -37,6 +37,7 @@ import 'jspdf-autotable';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 // eslint-disable-next-line import/no-unresolved
 import { IconEyeOff } from '@tabler/icons-react';
+// eslint-disable-next-line import/no-unresolved
 import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -133,6 +134,7 @@ export function Table({
     enablePagination,
     maxRowHeight,
     autoHeight,
+    selectRowOnCellEdit,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
@@ -405,8 +407,10 @@ export function Table({
 
   const tableRef = useRef();
 
+  const columnProperties = useDynamicColumn ? generatedColumn : component.definition.properties.columns.value;
+
   let columnData = generateColumnsData({
-    columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
+    columnProperties,
     columnSizes,
     currentState,
     handleCellValueChange: handleExistingRowCellValueChange,
@@ -434,6 +438,32 @@ export function Table({
     [columnData, currentState]
   );
 
+  const transformations = columnProperties
+    .filter((column) => column.transformation && column.transformation != '{{cellValue}}')
+    .map((column) => ({
+      key: column.key ? column.key : column.name,
+      transformation: column.transformation,
+    }));
+
+  tableData = useMemo(() => {
+    return tableData.map((row) => ({
+      ...row,
+      ...Object.fromEntries(
+        transformations.map((t) => [
+          t.key,
+          resolveReferences(t.transformation, currentState, row[t.key], { cellValue: row[t.key], rowData: row }),
+        ])
+      ),
+    }));
+  }, [JSON.stringify([transformations, currentState, component.definition.properties.data.value])]);
+
+  useEffect(() => {
+    setExposedVariables({
+      currentData: tableData,
+      updatedData: tableData,
+    });
+  }, [JSON.stringify(tableData)]);
+
   const columnDataForAddNewRows = generateColumnsData({
     columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
     columnSizes,
@@ -451,7 +481,6 @@ export function Table({
     t,
     darkMode,
   });
-
   const [leftActionsCellData, rightActionsCellData] = useMemo(
     () =>
       generateActionsData({
@@ -514,7 +543,7 @@ export function Table({
       }
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
-  }, [tableData.length, component.definition.properties.data.value, JSON.stringify(properties.data)]);
+  }, [tableData.length, component.definition.properties.data.value, JSON.stringify([properties.data, tableData])]);
 
   useEffect(() => {
     if (
@@ -628,7 +657,7 @@ export function Table({
             Cell: ({ row }) => {
               return (
                 <div className="d-flex flex-column align-items-center">
-                  <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+                  <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} fireEvent={fireEvent} />
                 </div>
               );
             },
@@ -655,7 +684,6 @@ export function Table({
       },
     ];
   }, [JSON.stringify(state)]);
-
   const getDetailsOfPreSelectedRow = () => {
     const key = Object?.keys(defaultSelectedRow)[0] ?? '';
     const value = defaultSelectedRow?.[key] ?? undefined;
@@ -718,6 +746,7 @@ export function Table({
       }
     });
   }, [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]);
+
   useEffect(() => {
     setExposedVariable('discardNewlyAddedRows', async function () {
       if (
@@ -885,6 +914,26 @@ export function Table({
     //hack : in the initial render, data is undefined since, upon feeding data to the table from some query, query inside current state is {}. Hence we added data in the dependency array, now question is should we add data or rows?
   }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
 
+  useEffect(() => {
+    // csa for select all rows in table
+    setExposedVariable('selectAllRows', async function () {
+      if (showBulkSelector) {
+        await toggleAllRowsSelected(true);
+      }
+    });
+    // csa for deselect all rows in table
+    setExposedVariable('deselectAllRows', async function () {
+      if (showBulkSelector) {
+        await toggleAllRowsSelected(false);
+      }
+    });
+  }, [JSON.stringify(tableDetails.selectedRowsDetails)]);
+
+  const pageData = page.map((row) => row.original);
+  useEffect(() => {
+    setExposedVariable('currentPageData', pageData);
+  }, [JSON.stringify(pageData)]);
+
   function downlaodPopover() {
     const options = [
       { dataCy: 'option-download-CSV', text: 'Download as CSV', value: 'csv' },
@@ -1015,14 +1064,13 @@ export function Table({
             )}
             {showFilterButton && !loadingState && (
               <div className="position-relative">
-                {''}
                 <Tooltip id="tooltip-for-filter-data" className="tooltip" />
                 <ButtonSolid
                   variant="tertiary"
                   className={`tj-text-xsm ${tableDetails.filterDetails.filtersVisible && 'always-active-btn'}`}
                   customStyles={{ minWidth: '32px' }}
                   leftIcon="filter"
-                  fill={`var(--slate11)`}
+                  fill={`var(--icons-default)`}
                   iconWidth="16"
                   onClick={(e) => {
                     if (tableDetails?.filterDetails?.filtersVisible) {
@@ -1074,9 +1122,9 @@ export function Table({
                 setGlobalFilter={setGlobalFilter}
                 onComponentOptionChanged={onComponentOptionChanged}
                 component={component}
-                onEvent={onEvent}
                 darkMode={darkMode}
-                tableEvents={tableEvents}
+                setExposedVariable={setExposedVariable}
+                fireEvent={fireEvent}
               />
             )}
           </div>
@@ -1378,15 +1426,21 @@ export function Table({
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
                       const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
                       const rowData = tableData[cell.row.index];
-                      const cellBackgroundColor = resolveReferences(
-                        cell.column?.cellBackgroundColor,
-                        currentState,
-                        '',
-                        {
-                          cellValue,
-                          rowData,
-                        }
-                      );
+                      const cellBackgroundColor = ![
+                        'dropdown',
+                        'badge',
+                        'badges',
+                        'tags',
+                        'link',
+                        'radio',
+                        'multiselect',
+                        'toggle',
+                      ].includes(cell?.column?.columnType)
+                        ? resolveReferences(cell.column?.cellBackgroundColor, currentState, '', {
+                            cellValue,
+                            rowData,
+                          })
+                        : '';
                       const cellTextColor = resolveReferences(cell.column?.textColor, currentState, '', {
                         cellValue,
                         rowData,
@@ -1432,12 +1486,20 @@ export function Table({
                               'selector-column':
                                 cell.column.columnType === 'selector' && cell.column.id === 'selection',
                               'resizing-column': cell.column.isResizing || cell.column.id === resizingColumnId,
-                              'has-select': cell.column.columnType === 'select',
+                              'has-select': ['select', 'newMultiSelect'].includes(cell.column.columnType),
                             }
                           )}
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                           onClick={(e) => {
+                            if (
+                              (isEditable || ['rightActions', 'leftActions'].includes(cell.column.id)) &&
+                              allowSelection &&
+                              !selectRowOnCellEdit
+                            ) {
+                              // to avoid on click event getting propagating to row when td is editable or has action button and allowSelection is true and selectRowOnCellEdit is false
+                              e.stopPropagation();
+                            }
                             setExposedVariable('selectedCell', {
                               columnName: cell.column.exportValue,
                               columnKey: cell.column.key,
@@ -1458,6 +1520,7 @@ export function Table({
                                 actionButtonsArray,
                                 isEditable,
                                 horizontalAlignment,
+                                cellTextColor,
                               })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
@@ -1575,7 +1638,11 @@ export function Table({
                   </>
                 ) : (
                   !loadingState && (
-                    <span data-cy={`footer-number-of-records`} className="font-weight-500 color-slate11">
+                    <span
+                      data-cy={`footer-number-of-records`}
+                      className="font-weight-500"
+                      style={{ color: 'var(--text-placeholder)' }}
+                    >
                       {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
                       {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
                     </span>
@@ -1613,7 +1680,7 @@ export function Table({
                   <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
                   <ButtonSolid
                     variant="ghostBlack"
-                    fill={`var(--slate11)`}
+                    fill={`var(--icons-default)`}
                     className={`tj-text-xsm ${
                       tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed always-active-btn'
                     }`}
@@ -1647,7 +1714,7 @@ export function Table({
                         minWidth: '32px',
                       }}
                       leftIcon="filedownload"
-                      fill={`var(--slate11)`}
+                      fill={`var(--icons-default)`}
                       iconWidth="16"
                       size="md"
                       data-tooltip-id="tooltip-for-download"
@@ -1675,7 +1742,7 @@ export function Table({
                       className={`tj-text-xsm `}
                       customStyles={{ minWidth: '32px' }}
                       leftIcon="eye1"
-                      fill={`var(--slate11)`}
+                      fill={`var(--icons-default)`}
                       iconWidth="16"
                       size="md"
                       data-cy={`select-column-icon`}
@@ -1694,20 +1761,19 @@ export function Table({
           </div>
         </div>
       )}
-      {tableDetails.filterDetails.filtersVisible && (
-        <Filter
-          hideFilters={hideFilters}
-          filters={tableDetails.filterDetails.filters}
-          columns={columnData.map((column) => {
-            return { name: column.Header, value: column.id };
-          })}
-          mergeToFilterDetails={mergeToFilterDetails}
-          filterDetails={tableDetails.filterDetails}
-          darkMode={darkMode}
-          setAllFilters={setAllFilters}
-          fireEvent={fireEvent}
-        />
-      )}
+      <Filter
+        hideFilters={hideFilters}
+        filters={tableDetails.filterDetails.filters}
+        columns={columnData.map((column) => {
+          return { name: column.Header, value: column.id };
+        })}
+        mergeToFilterDetails={mergeToFilterDetails}
+        filterDetails={tableDetails.filterDetails}
+        darkMode={darkMode}
+        setAllFilters={setAllFilters}
+        fireEvent={fireEvent}
+        setExposedVariable={setExposedVariable}
+      />
       {tableDetails.addNewRowsDetails.addingNewRows && (
         <AddNewRowComponent
           hideAddNewRowPopup={hideAddNewRowPopup}

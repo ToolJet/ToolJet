@@ -5,7 +5,7 @@ export const dynamoDbText = {
   accessKey: "Access key",
   placeHolderAccessKey: "Enter access key",
   secretKey: "Secret key",
-  placeholderSecretKey: "Enter secret key",
+  placeholderSecretKey: "**************",
 
   errorMissingRegion: "Missing region in config",
   errorInvalidToken: "The security token included in the request is invalid.",

@@ -3,11 +3,10 @@ import { INestApplication } from '@nestjs/common';
 import { authHeaderForUser, clearDB, createUser, createNestAppInstanceWithEnvMock } from '../test.helper';
 import { getManager, QueryFailedError } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { mocked } from 'jest-mock';
 import got from 'got';
 
 jest.mock('got');
-const mockedGot = mocked(got);
+const mockedGot = jest.mocked(got);
 
 //TODO: this spec will need postgrest instance to run (skipping for now)
 describe.skip('Tooljet DB controller', () => {

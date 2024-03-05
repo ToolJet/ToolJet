@@ -19,8 +19,12 @@ export const ValidationProperties = ({
       case 'string':
       case undefined:
       case 'default':
-        return [
-          { property: 'regex', dateCy: 'input-and-label-regex', label: 'Regex' },
+      case 'text': {
+        const properties = [];
+        if (column.columnType !== 'text') {
+          properties.push({ property: 'regex', dateCy: 'input-and-label-regex', label: 'Regex' });
+        }
+        properties.push(
           [
             {
               property: 'minLength',
@@ -35,13 +39,17 @@ export const ValidationProperties = ({
               placeholder: 'Enter max length',
             },
           ],
+
           {
             property: 'customRule',
             dateCy: 'input-and-label-custom-rule',
             label: 'Custom rule',
             placeholder: 'eg. {{ 1 < 2 }}',
-          },
-        ];
+          }
+        );
+
+        return properties;
+      }
       case 'number':
         return [
           { property: 'regex', dateCy: 'input-and-label-regex', label: 'Regex' },
@@ -81,9 +89,9 @@ export const ValidationProperties = ({
 
   return (
     <div className="optional-properties-when-editable-true">
-      <div data-cy={`header-validation`} className="validation-text tj-text tj-text-xsm font-weight-500">
+      {/* <div data-cy={`header-validation`} className="validation-text tj-text tj-text-xsm font-weight-500">
         {t('widget.Table.validation', 'Validation')}
-      </div>
+      </div> */}
       <div className="d-flex flex-column custom-gap-8">
         {validationsList.map((validation) => {
           if (Array.isArray(validation)) {

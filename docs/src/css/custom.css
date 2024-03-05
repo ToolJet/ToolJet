@@ -18,7 +18,7 @@
   --ifm-color-primary-lighter: rgb(102, 212, 189);
   --ifm-color-primary-lightest: rgb(146, 224, 208);
   --ifm-code-font-size: 95%;
-  --ifm-menu-color-active: #4d72fa;
+  --ifm-menu-color-active: #3E63DD;
   --ifm-font-family-base: 'IBM Plex Sans';
   --tblr-blue: #206bc4;
   --tblr-azure: #4299e1;
@@ -43,6 +43,40 @@
   --tblr-font-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
   --tblr-font-monospace: null, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
   --tblr-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+  --doc-sidebar-width: 250px !important;
+  --ifm-link-color: #3e63dd;
+  --ifm-menu-color-background-active: #f0f4ff;
+  --ifm-link-menu-color-background-hover: #f0f4ff;
+}
+
+/* .markdown h1 {
+  margin-left: 10%;
+  margin-right: 10%;
+} */
+
+.menu__link--sublist-caret:after {
+  background: var(--ifm-menu-link-sublist-icon) 50% / 1rem 1rem;
+}
+
+.menu__caret:before {
+  background: var(--ifm-menu-link-sublist-icon) 50% / 1rem 1rem !important;
+}
+
+.badge--primary {
+  margin-bottom: 1rem;
+}
+
+article {
+  padding-left: 7%;
+  padding-right: 7%;
+}
+
+.menu__caret {
+  size: small;
+}
+
+p {
+  line-height: 180%;
 }
 
 .admonition {

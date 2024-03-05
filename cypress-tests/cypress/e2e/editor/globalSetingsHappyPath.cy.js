@@ -89,7 +89,8 @@ describe("Editor- Global Settings", () => {
     cy.get('[data-cy="modal-confirm-button"]').click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      "Application is on maintenance."
+      "Application is on maintenance.",
+      false
     );
     cy.forceClickOnCanvas();
     cy.wait(500);
@@ -98,6 +99,7 @@ describe("Editor- Global Settings", () => {
     cy.get('[data-cy="button-release"]').click();
     cy.get('[data-cy="yes-button"]').click();
     cy.get('[data-cy="editor-page-logo"]').click();
+    cy.get('[data-cy="back-to-app-option"]').click();
     cy.get(`[data-cy="${data.appName.toLowerCase()}-card"]`)
       .realHover()
       .find('[data-cy="launch-button"]')

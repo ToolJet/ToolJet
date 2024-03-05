@@ -44,14 +44,14 @@
     "@nestjs/platform-ws": "^8.0.10",
     "@nestjs/schedule": "^2.2.0",
     "@nestjs/serve-static": "^2.2.2",
-    "@nestjs/typeorm": "^8.0.0",
+    "@nestjs/typeorm": "8.0.0",
     "@nestjs/websockets": "^8.0.10",
     "@sentry/node": "6.17.6",
     "@sentry/tracing": "6.17.6",
     "@tooljet/plugins": "../plugins",
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.5.1",
-    "class-validator": "^0.13.1",
+    "class-validator": "^0.14.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "dotenv": "^10.0.0",
@@ -88,7 +88,7 @@
     "y-websocket": "^1.4.0"
   },
   "peerDependencies": {
-    "@nestjs/cli": "^8.0.0"
+    "@nestjs/cli": "^9.0.0"
   },
   "devDependencies": {
     "@golevelup/ts-jest": "^0.3.2",
@@ -96,12 +96,11 @@
     "@nestjs/testing": "^8.0.0",
     "@types/compression": "^1.7.2",
     "@types/cookie-parser": "^1.4.3",
-    "@types/cron": "^2.0.0",
     "@types/express": "^4.17.13",
     "@types/express-http-proxy": "^1.6.3",
     "@types/got": "^9.6.12",
     "@types/humps": "^2.0.1",
-    "@types/jest": "^26.0.24",
+    "@types/jest": "^27.0.0",
     "@types/multer": "^1.4.7",
     "@types/node": "^16.0.0",
     "@types/nodemailer": "^6.4.4",
@@ -110,8 +109,8 @@
     "@types/sanitize-html": "^2.6.2",
     "@types/supertest": "^2.0.11",
     "@types/ws": "^8.2.2",
-    "@typescript-eslint/eslint-plugin": "^4.31.1",
-    "@typescript-eslint/parser": "^4.31.1",
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-cypress": "^2.12.1",
@@ -127,7 +126,7 @@
     "typescript": "^4.3.5"
   },
   "engines": {
-    "node": "18.3.0",
-    "npm": "8.11.0"
+    "node": "18.18.2",
+    "npm": "9.8.1"
   }
 }

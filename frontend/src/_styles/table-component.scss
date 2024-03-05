@@ -4,8 +4,9 @@
 .jet-table.table-component{
     padding: 8px;
     &.jet-table {
-      background-color: var(--base) !important;
-      box-shadow: 0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10);
+      background-color: var(--surfaces-surface-01);
+      box-shadow: var(--elevation-200-box-shadow) !important;
+      border: 1px solid var(--borders-weak-disabled) !important;
     }
     .table-filters{
       border: 1px solid var(--slate3, #F1F3F5) !important;
@@ -14,7 +15,7 @@
       }
     }
     .card-footer,.card{
-      background-color:var(--base) !important;
+      background-color: var(--surfaces-surface-01);
     }
     .card{
         border: 1px solid var(--slate3) !important;
@@ -25,31 +26,33 @@
     .card-header{
       border-bottom: 0 !important;
     }
-    .table-clear-icon{
-      border-radius: 4px;
-      border: 1px solid  rgba(255, 255, 255, 0.00) !important;
-      background: var(--indigo3, #F0F4FF) !important;
-    }
+    // .table-clear-icon{
+    //   border-radius: 4px;
+    //   border: 1px solid  rgba(255, 255, 255, 0.00) !important;
+    //   background: var(--indigo3, #F0F4FF) !important;
+    // }
     .table-global-search{
+      border : 1px solid var(--borders-default) !important;
+      input{
+        color: var(--text-primary) !important;
+      };
       &:hover{
         border-radius: 6px;
         border: 1px solid var(--slate8, #C1C8CD) !important;
-        background: var(--slate4, #ECEEF0) !important;
+        background: var(surfaces/surface-01) !important;
       }
       &:focus-visible{
         border-radius: 6px;
-        border: 1px solid var(--slate7, #D7DBDF) !important;
-        background: var(--base-base, #FFF) !important;
+        border: 2px solid var(--primary-accent-strong) !important;
+        // background: var(--base-base, #FFF) !important;
         /* Focus rings/Gray/light */
-        box-shadow: 0px 0px 0px 4px var(--slate6) !important;
+        // box-shadow: 0px 0px 0px 4px var(--slate6) !important;
       }
       &:focus-within{
         border-radius: 6px;
-        border: 1px solid var(--indigo9, #3E63DD) !important;
-        background: var(--indigo2, #F8FAFF) !important;
-
+        border: 2px solid var(--primary-accent-strong) !important;
         /* Selected ring/Indigo/light */
-        box-shadow: 0px 0px 0px 1px var(--indigo6) !important;
+        // box-shadow: 0px 0px 0px 1px var(--indigo6) !important;
       }
     }
     .tr{
@@ -402,7 +405,7 @@
   right: 0;
   height: 300px;
   z-index: 100;
-  background: var(--slate1, #FBFCFD) !important;
+  background-color: var(--surfaces-surface-01) !important;
   overflow: hidden;
 }
 
@@ -420,7 +423,7 @@
 */
 // download pop-up in the table widget
 .table-widget-download-popup {
-    background-color: var(--base) !important;
+    background-color: var(--surfaces-surface-01) !important;
     color: var(--slate12) !important;
     padding: 4px;
     border-radius: 6px;
@@ -432,6 +435,7 @@
     .popover-body{
         color: inherit;
         border: none;
+        background-color: inherit;
     }
     
     .table-download-option{
@@ -486,7 +490,7 @@
 }
 .popover:has(.dropdown-table-column-hide-common){
     border : 1px solid var(--slate3) !important;
-    background-color: var(--base) !important;
+    background-color: var(--surfaces-surface-01) !important;
     padding: 4px;
     border-radius: 6px;
 }
@@ -532,7 +536,7 @@
 .jet-table{
   .tr{
     .th{
-      background: var(--slate3, #F1F3F5) !important;
+      background: var(--surfaces-surface-02) ;
       border-bottom: 1px solid var(--slate5, #E6E8EB) !important;
       border-top: 0 !important;
       padding: 6px 12px;
@@ -542,7 +546,7 @@
       font-size: 12px !important;
       width: 100%;
       &:hover{
-        background: var(--slate4, #ECEEF0) !important;
+        background: linear-gradient(0deg, var(--surfaces-surface-02),var(--surfaces-surface-02)),linear-gradient(0deg, var(--interactive-overlays-fill-hover),var(--interactive-overlays-fill-hover)) !important;
       }
       &:focus-within{
         outline: 0;
@@ -729,6 +733,7 @@
     //for select column type
     .td.has-dropdown{
       .select-search-input{
+        //old dropdown
         border: 0;
         background: transparent;
       }
@@ -755,7 +760,7 @@
         background-color: var(--indigo1) !important; 
         .table-select-search{
           .react-select__indicators{
-            display: none !important;
+            // display: none !important;
           }
         }
       }
@@ -775,6 +780,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  background-color: var(--surfaces-surface-01) !important;
 
   .table-select-column-type-search-box{
     width: 100%;
@@ -792,15 +798,15 @@
   .popover-body{
     display: flex;
     flex-direction: column;
-    padding: 16px 16px 24px 16px!important;
+    padding: 16px !important;
     gap: 16px !important;
     align-self: stretch;
     background-color: var(--slate1) !important;
     border-radius: 0;
     .optional-properties-when-editable-true{
-      background-color: var(--slate3);
-      padding: 12px 16px;
-      border-radius: 6px;
+      // background-color: var(--slate3);
+      padding: 6px;
+      // border-radius: 6px;
       display: flex;
       flex-direction: column;
       gap:10px;
@@ -831,5 +837,62 @@
       gap: 4px;
       flex: 1 0 0;
     }
+  }
+}
+.table-action-popover{
+  .form-label{
+    margin-bottom: 2px !important;
+  }
+  .form-control{
+    margin-bottom: 0 !important;
+  }
+}
+.table-select-column-accordian{
+  .accordion-button {
+    padding: 16px 0px !important;
+  }
+  .accordion-body {
+    padding: 0 !important;
+  }
+  .accordian-item{
+    border: solid var(--slate5);
+    border-width: 1px 0px 0px 0px;
+  }
+}
+
+.table-select-custom-menu-list{
+  .react-select__menu-list{
+    display: flex;
+    flex-direction: column;
+    .option-wrapper{
+      align-items: center;
+      padding: 12px 8px;
+      &:hover{
+        background: var(--interactive-overlays-fill-hover) !important;
+        border-radius: 6px;
+      }
+      &:active{
+        background: var(--surfaces-surface-01) !important;
+        box-shadow: 0px 0px 0px 4px #DFE3E6;
+
+      }
+      .form-check{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0 !important;
+        input[type=checkbox]{
+          width: 18px !important;
+          height: 18px !important;
+        }
+        input[type=checkbox]:checked{
+          background-color: var(--indigo9) !important;
+          
+        }
+      }
+    }
+    background-color: var(--surfaces-surface-01) !important;
+    box-shadow: 0px 8px 16px 0px var(----elevation-400-box-shadow), 0px 0px 1px 0px var(--elevation-400-box-shadow);
+
   }
 }

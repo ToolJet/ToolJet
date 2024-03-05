@@ -19,7 +19,11 @@ import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import { ModuleContext } from '../../../../_contexts/ModuleContext';
+import { useSuperStore } from '@/_stores/superStore';
 class TableComponent extends React.Component {
+  static contextType = ModuleContext;
+
   constructor(props) {
     super(props);
 
@@ -163,13 +167,19 @@ class TableComponent extends React.Component {
   };
 
   deleteEvents = (ref, eventTarget) => {
-    const events = useAppDataStore.getState().events.filter((event) => event.target === eventTarget);
+    const events = useSuperStore
+      .getState()
+      .modules[this.context].useAppDataStore.getState()
+      .events.filter((event) => event.target === eventTarget);
 
     const toDelete = events?.filter((e) => e.event?.ref === ref.ref);
 
     return new Promise.all(
       toDelete?.forEach((e) => {
-        return useAppDataStore.getState().actions.deleteAppVersionEventHandler(e.id);
+        return useSuperStore
+          .getState()
+          .modules[this.context].useAppDataStore.getState()
+          .actions.deleteAppVersionEventHandler(e.id);
       })
     );
   };
@@ -191,8 +201,8 @@ class TableComponent extends React.Component {
 
     return (
       <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'}`}>
-        <Popover.Body>
-          <div className="field mb-2 tj-app-input">
+        <Popover.Body className="table-action-popover d-flex flex-column custom-gap-16">
+          <div className="field">
             <label data-cy={`label-action-button-text`} className="form-label">
               {this.props.t('widget.Table.buttonText', 'Button Text')}
             </label>
@@ -207,7 +217,7 @@ class TableComponent extends React.Component {
               value={action.buttonText}
             />
           </div>
-          <div className="field mb-2" data-cy={`dropdown-action-button-position`}>
+          <div className="field" data-cy={`dropdown-action-button-position`}>
             <label data-cy={`label-action-button-position`} className="form-label">
               {this.props.t('widget.Table.buttonPosition', 'Button Position')}
             </label>
@@ -326,7 +336,7 @@ class TableComponent extends React.Component {
   addNewColumn = () => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4() });
+    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4(), fxActiveFields: [] });
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
   };
 
@@ -552,7 +562,9 @@ class TableComponent extends React.Component {
 
     const rowSelectionsOptions = [
       'allowSelection',
-      ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow'] : []),
+      ...(allowSelection
+        ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow', 'selectRowOnCellEdit']
+        : []),
     ];
     const searchSortFilterOptions = [
       ...(displaySearchBox ? ['displaySearchBox'] : []),
@@ -618,7 +630,7 @@ class TableComponent extends React.Component {
     });
 
     items.push({
-      title: 'Layout',
+      title: 'Devices',
       isOpen: true,
       children: (
         <>

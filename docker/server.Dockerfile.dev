@@ -1,5 +1,5 @@
 # pull official base image
-FROM node:18.3.0-buster
+FROM node:18.18.2-buster
 RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget
 
 # Install Instantclient Basic Light Oracle and Dependencies
@@ -19,7 +19,7 @@ WORKDIR /
 ENV NODE_ENV=development
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@8.11.0
+RUN npm i -g npm@9.8.1
 RUN mkdir -p /app
 WORKDIR /app
 

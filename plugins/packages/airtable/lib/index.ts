@@ -9,11 +9,15 @@ export default class AirtableQueryService implements QueryService {
 
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     let result = {};
+    let apiToken = '';
     let response = null;
     const operation = queryOptions.operation;
     const baseId = queryOptions.base_id;
     const tableName = queryOptions.table_name;
-    const apiKey = sourceOptions.api_key;
+
+    // Below condition for API Key is kept for Backward compatibility and needs migration to be removed later on.
+    if (sourceOptions.api_key) apiToken = sourceOptions.api_key;
+    if (sourceOptions.personal_access_token) apiToken = sourceOptions.personal_access_token;
 
     try {
       switch (operation) {
@@ -25,7 +29,7 @@ export default class AirtableQueryService implements QueryService {
             `https://api.airtable.com/v0/${baseId}/${tableName}/?pageSize=${pageSize}&offset=${offset}`,
             {
               method: 'get',
-              headers: this.authHeader(apiKey),
+              headers: this.authHeader(apiToken),
             }
           );
 
@@ -37,7 +41,7 @@ export default class AirtableQueryService implements QueryService {
           const recordId = queryOptions.record_id;
 
           response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}/${recordId}`, {
-            headers: this.authHeader(apiKey),
+            headers: this.authHeader(apiToken),
           });
 
           result = JSON.parse(response.body);
@@ -47,7 +51,7 @@ export default class AirtableQueryService implements QueryService {
         case 'create_record': {
           response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
             method: 'post',
-            headers: this.authHeader(apiKey),
+            headers: this.authHeader(apiToken),
             json: {
               records: JSON.parse(queryOptions.body),
             },
@@ -61,7 +65,7 @@ export default class AirtableQueryService implements QueryService {
         case 'update_record': {
           response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
             method: 'patch',
-            headers: this.authHeader(apiKey),
+            headers: this.authHeader(apiToken),
             json: {
               records: [
                 {
@@ -82,7 +86,7 @@ export default class AirtableQueryService implements QueryService {
 
           response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}/${_recordId}`, {
             method: 'delete',
-            headers: this.authHeader(apiKey),
+            headers: this.authHeader(apiToken),
           });
           result = JSON.parse(response.body);
 

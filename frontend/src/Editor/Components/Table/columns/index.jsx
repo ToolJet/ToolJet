@@ -55,7 +55,7 @@ export default function generateColumnsData({
         });
       }
     }
-    if (columnType === 'select') {
+    if (columnType === 'select' || columnType === 'newMultiSelect') {
       columnOptions.selectOptions = [];
       const useDynamicOptions = resolveReferences(column?.useDynamicOptions, currentState);
       if (useDynamicOptions) {
@@ -114,7 +114,7 @@ export default function generateColumnsData({
       sortType,
       columnVisibility: column?.columnVisibility ?? true,
       horizontalAlignment: column?.horizontalAlignment ?? 'left',
-      Cell: function ({ cell, isEditable, newRowsChangeSet = null, horizontalAlignment }) {
+      Cell: function ({ cell, isEditable, newRowsChangeSet = null, horizontalAlignment, cellTextColor = '' }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
@@ -204,7 +204,7 @@ export default function generateColumnsData({
                     defaultValue={cellValue}
                     onFocus={(e) => e.stopPropagation()}
                   />
-                  <div className="invalid-feedback">{validationError}</div>
+                  <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );
             }
@@ -247,7 +247,6 @@ export default function generateColumnsData({
               });
 
               const { isValid, validationError } = validationData;
-              console.log('validationData', column.minValue, column.maxValue, validationData);
               const cellStyles = {
                 color: textColor ?? '',
               };
@@ -283,7 +282,7 @@ export default function generateColumnsData({
                     className={`table-column-type-input-element ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
-                  <div className="invalid-feedback">{validationError}</div>
+                  <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );
             }
@@ -299,31 +298,79 @@ export default function generateColumnsData({
             );
           }
           case 'text': {
+            if (isEditable) {
+              const validationData = validateWidget({
+                validationObject: {
+                  minLength: {
+                    value: column.minLength,
+                  },
+                  maxLength: {
+                    value: column.maxLength,
+                  },
+                  customRule: {
+                    value: column.customRule,
+                  },
+                },
+                widgetValue: cellValue,
+                currentState,
+                customResolveObjects: { cellValue },
+              });
+              const { isValid, validationError } = validationData;
+              return (
+                <div className="h-100 d-flex flex-column justify-content-center">
+                  <textarea
+                    rows="1"
+                    className={`${!isValid ? 'is-invalid' : ''} form-control-plaintext text-container ${
+                      darkMode ? ' textarea-dark-theme' : ''
+                    }`}
+                    style={{
+                      color: cellTextColor ? cellTextColor : 'inherit',
+                    }}
+                    readOnly={!isEditable}
+                    onBlur={(e) => {
+                      if (isEditable && e.target.defaultValue !== e.target.value) {
+                        handleCellValueChange(
+                          cell.row.index,
+                          column.key || column.name,
+                          e.target.value,
+                          cell.row.original
+                        );
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      e.persist();
+                      if (e.key === 'Enter' && !e.shiftKey && isEditable) {
+                        handleCellValueChange(
+                          cell.row.index,
+                          column.key || column.name,
+                          e.target.value,
+                          cell.row.original
+                        );
+                      }
+                    }}
+                    defaultValue={cellValue}
+                    onFocus={(e) => e.stopPropagation()}
+                  ></textarea>
+                  <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
+                </div>
+              );
+            }
             return (
-              <textarea
-                rows="1"
-                className={`form-control-plaintext text-container ${
-                  darkMode ? 'text-light textarea-dark-theme' : 'text-muted'
-                }`}
-                readOnly={!isEditable}
-                onBlur={(e) => {
-                  if (isEditable && e.target.defaultValue !== e.target.value) {
-                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
-                  }
+              <div
+                className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+                  horizontalAlignment
+                )}`}
+                style={{
+                  color: cellTextColor ? cellTextColor : 'inherit',
                 }}
-                onKeyDown={(e) => {
-                  e.persist();
-                  if (e.key === 'Enter' && !e.shiftKey && isEditable) {
-                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
-                  }
-                }}
-                defaultValue={cellValue}
-                onFocus={(e) => e.stopPropagation()}
-              ></textarea>
+              >
+                {cellValue}
+              </div>
             );
           }
           case 'dropdown':
-          case 'select': {
+          case 'select':
+          case 'newMultiSelect': {
             const validationData = validateWidget({
               validationObject: {
                 regex: {
@@ -365,7 +412,7 @@ export default function generateColumnsData({
                     className="select-search"
                   />
                 )}
-                {columnType === 'select' && (
+                {['newMultiSelect', 'select'].includes(columnType) && (
                   <CustomSelect
                     options={columnOptions.selectOptions}
                     value={cellValue}
@@ -380,6 +427,14 @@ export default function generateColumnsData({
                     darkMode={darkMode}
                     defaultOptionsList={column?.defaultOptionsList || []}
                     textColor={column?.textColor || 'var(--slate12)'}
+                    isMulti={columnType === 'newMultiSelect' ? true : false}
+                    containerWidth={width}
+                    optionsLoadingState={
+                      resolveReferences(column?.useDynamicOptions, currentState) &&
+                      resolveReferences(column?.optionsLoadingState, currentState)
+                        ? true
+                        : false
+                    }
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>

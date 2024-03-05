@@ -1,8 +1,0 @@
-{
-  "name": "GitHub contributors",
-  "description": "Display the list of contributors of a GitHub repository and display profile details on selection.",
-  "widgets": ["Table"],
-  "sources": [{"name": "REST API", "id": "restapi"}],
-  "id": "github-contributors",
-  "category": "product-management"
-}

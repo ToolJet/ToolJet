@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 18.3.0
+          node-version: 18.18.2
 
       - name: Set up Docker
         uses: docker-practice/actions-setup-docker@master
@@ -74,7 +74,7 @@ jobs:
         run: |
           sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
           -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
-          postgrest/postgrest:v10.1.1.20221215
+          postgrest/postgrest
 
       - name: Run plugins compilation in watch mode
         run: cd plugins && npm start &
@@ -171,6 +171,7 @@ jobs:
           echo "SUB_PATH=/apps/tooljet/" >> .env
           echo "NODE_ENV=production" >> .env
           echo "SERVE_CLIENT=true" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data

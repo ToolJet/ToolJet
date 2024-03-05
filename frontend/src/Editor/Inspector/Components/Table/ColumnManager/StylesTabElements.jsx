@@ -8,6 +8,7 @@ import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import AlignLeft from '@/_ui/Icon/solidIcons/AlignLeft';
 import AlignCenter from '@/_ui/Icon/solidIcons/AlignCenter';
 import AlignRight from '@/_ui/Icon/solidIcons/AlignRight';
+import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 
 export const StylesTabElements = ({
   column,
@@ -161,28 +162,38 @@ export const StylesTabElements = ({
         </div>
       )}
 
-      {['string', 'default', undefined, 'number', 'boolean', 'select'].includes(column.columnType) && (
+      {['string', 'default', undefined, 'number', 'boolean', 'select', 'text', 'newMultiSelect'].includes(
+        column.columnType
+      ) && (
         <>
           {column.columnType !== 'boolean' && (
             <div data-cy={`input-and-label-text-color`} className="field">
-              <Color
-                param={{ name: 'Text color' }}
+              <ProgramaticallyHandleProperties
+                label="Text color"
+                currentState={currentState}
+                index={index}
+                darkMode={darkMode}
+                callbackFunction={onColumnItemChange}
+                property="textColor"
+                props={column}
+                component={component}
+                paramMeta={{ type: 'color', displayName: 'Text color' }}
                 paramType="properties"
-                componentMeta={{ properties: { color: { displayName: 'Text color' } } }}
-                definition={{ value: column?.textColor || '#11181C' }}
-                onChange={(name, value, color) => onColumnItemChange(index, 'textColor', color)}
-                shouldFlexDirectionBeRow={true}
               />
             </div>
           )}
           <div className="field" data-cy={`input-and-label-cell-background-color`}>
-            <Color
-              param={{ name: 'Cell BG' }}
+            <ProgramaticallyHandleProperties
+              label="Cell Background Color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="cellBackgroundColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'color', displayName: 'Cell Background Color' }}
               paramType="properties"
-              componentMeta={{ properties: { color: { displayName: 'Cell Background Color' } } }}
-              definition={{ value: column?.cellBackgroundColor }}
-              onChange={(name, value, color) => onColumnItemChange(index, 'cellBackgroundColor', color)}
-              shouldFlexDirectionBeRow={true}
             />
           </div>
         </>

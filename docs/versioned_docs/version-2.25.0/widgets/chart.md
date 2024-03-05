@@ -120,6 +120,10 @@ You can refer to the [JSON Chart Schema](https://plotly.com/chart-studio-help/js
 
 </div>
 
+:::tip Using events on chart
+Currently, the chart component does not support events. However, you can use the Custom Component using Plotly and add events to it. Check out the [How to use events on chart](/docs/how-to/use-events-on-chart) to learn more.
+:::
+
 ### Bar Mode
 
 The **Bar Mode** option allows you to customize the layout and display style specifically for bar charts. This option becomes available when the **Plotly JSON chart schema** toggle is enabled and a JSON schema specific to bar charts is provided. This option provide different modes for organizing and presenting bars within the chart.
