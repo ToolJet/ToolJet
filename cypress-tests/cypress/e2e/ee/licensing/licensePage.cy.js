@@ -27,7 +27,7 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { editAndVerifyWidgetName } from "Support/utils/commonWidget";
-import { appPromote } from "Support/utils/multiEnv";
+import { appPromote, releaseApp } from "Support/utils/multiEnv";
 
 describe("", () => {
     const data = {};
