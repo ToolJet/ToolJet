@@ -7,71 +7,101 @@ title: Managing Users and Groups
 
 ## Managing Users
 
-Admin of a workspace can add users to the workspace. To manage the users in your workspace, just go to the **Workspace Settings** from the left sidebar on the dashboard and click on the **Users** option.
+Admins of a workspace can invite users to the workspace or archive/unarchive the existing users of a workspace. To manage users in a workspace, go to the **Workspace Settings** from the left sidebar on the dashboard and select **Users**.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/usersnew.png" alt="Manage Users" />
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/users3.png" alt="Manage Users" />
 
 </div>
 
-### Inviting users
+### Inviting Users
 
 Admins can invite anyone to a workspace using the email address. To invite a user:
 
-- On the **Users** page click on the `Add users` button.
+- Click on the `Add users` button on the top right corner of the **Users** page.
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/addusersbutton.png" alt="Manage Users" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/addusers.png" alt="Manage Users" />
     
   </div>
 
-- A drawer from the right will open, navigate to the **Invite with email** tab. Fill in the required information for the new user, including their Full Name, Email address, and select the desired group(s) from the dropdown menu to assign them. Once you have entered all the details, proceed by clicking the **Invite Users** button.
-  <div style={{textAlign: 'center'}}>
-    
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/groupsdrop.png" alt="add new user" />
-    
-  </div>
+- On clicking the `Add users` button, a drawer will open from the right. Click on the **Invite with email** tab. Fill in the required information for the new user, including their Full Name, Email address, and select the desired group(s) from the dropdown menu to assign them. Once you have entered all the details, proceed by clicking the **Invite Users** button. 
 
-- An email including the **Invite Link** to join your workspace will be send to the created user. The status will turn from **invited** to **active** after the user successfully joins your workspace using the invite link.
-
-  :::tip
-  You can also copy the invitation url by clicking on the copy icon next to `invited` status of the created user.
-  :::
+  Note: The **All Users** group is the default group for all the users in a workspace. You can also create a new group and assign it to the user.
 
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/invited2.png" alt="add new user" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/invitemodal.png" alt="add new user" />
     
   </div>
 
-- You can also **Bulk Invite Users** by editing and uploading the sample CSV file including all the users details. Click on the `Add users` button and on the drawer, click on the **Upload CSV file** tab.
+- An email including the **Invite Link** to join the workspace will be send to the invited user. The status will turn from **Invited** to **Active** after the user successfully joins your workspace using the invite link.
+
+  **TIP**: You can also copy the invitation url by clicking on the `Copy link` next to `Invited` status of the invited user.
+
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/bulknew.png" alt="add new user" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/copylink.png" alt="add new user" />
     
   </div>
 
-
-### Disabling a user's access
-
-You can disable any active user's access to your workspace by clicking on the **Archive** button and the status of the user will change from **active** to **archived**.
-
-<div style={{textAlign: 'center'}}>
+- You can also **Bulk Invite Users** by editing and uploading the sample CSV file including all the users details. Click on the `Add users` button and select the **Bulk Invite** tab.
+  <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/archivenew.png" alt="archived"/>
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/bulkinviten.png" alt="add new user" />
     
-</div>
+  </div>
 
-### Enabling a user's access
+### Edit User Details
 
-Similar to archiving a user's access, you can enable it again by clicking on **Unarchive**. The status of user will change from **archived** to **invited** and the user will have to join again using the invite link received via the e-mail.
+Admins of a workspace can edit the details of any user in their workspace. The details include **adding** or **removing** the user from a group. To edit the details of a user:
 
-<div style={{textAlign: 'center'}}>
+- Go to the **Users** settings from the **Workspace Settings**.
+- Click on the kebab menu next to the user you want to edit and select **Edit user details**.
+- A drawer will open from the right. Admins can add or remove the user from a group. Once you have made the changes, click on the **Update** button.
+
+  <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/unarchivenew.png" alt="status" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/edituserdetails.png" alt="edit user" />
     
-</div>
+  </div>
+
+### Archive User from a workspace
+
+Admins of a workspace can archive any user from their workspace. Archiving a user will disable their access to the workspace. 
+
+**Info**: An archived user from a workspace can still be invited to the other workspaces unless they are archived at instance level from the **[Settings](/docs/Enterprise/superadmin#settings)** page.
+
+To archive a user:
+
+- Go to the **Users** page from the **Workspace Settings**.
+- Click on the kebab menu next to the user you want to archive and select **Archive**.
+- Once the user is archived, the status will change from **Active** to **Archived**.
+
+  <div style={{textAlign: 'center'}}>
+    
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/archiveuser.png" alt="archive user" />
+    
+  </div>
+
+### Unarchive User from a workspace
+
+Admins of a workspace can unarchive any user from their workspace. Unarchiving a user will enable their access to the workspace. 
+
+**Info**: A user who is **Archived** at instance level from the **[Settings](/docs/Enterprise/superadmin#settings)** page, if **Unarchived** from a workspace, will automatically be **Unarchived** at instance level as well.
+
+To unarchive a user:
+
+- Go to the **Users** page from the **Workspace Settings**.
+- Click on the kebab menu next to the user that is archived and select **Unarchive** option.
+- Once the user is unarchived, the status will change from **Archived** to **Invited**. The user will have to join again using the invite link received via the e-mail.
+
+  <div style={{textAlign: 'center'}}>
+    
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/unarchiveuser.png" alt="unarchive user" />
+    
+  </div>
 
 ## Managing Groups
 
