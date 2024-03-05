@@ -46,8 +46,8 @@ const Header = ({
     handleBuildFilterQuery,
     selectedTable,
     organizationId,
-    setTotalRecords,
-    setSelectedTableData,
+    handleRefetchQuery,
+    pageSize,
   } = useContext(TooljetDatabaseContext);
 
   useEffect(() => {
@@ -67,33 +67,12 @@ const Header = ({
   useEffect(() => {
     if (isEmpty(selectedTable)) return;
 
-    const reloadTableData = async () => {
-      const { headers, data, error } = await tooljetDatabaseService.findOne(
-        organizationId,
-        selectedTable.id,
-        'order=id.desc'
-      );
-
-      if (error) {
-        toast.error(error?.message ?? 'Something went wrong');
-        return;
-      }
-      const totalRecords = headers['content-range'].split('/')[1] || 0;
-
-      if (Array.isArray(data)) {
-        setTotalRecords(totalRecords);
-        setSelectedTableData(data);
-      }
-    };
-
-    setIsBulkUploading(false);
     setBulkUploadFile(null);
     setIsBulkUploadDrawerOpen(false);
     setQueryFilters({});
-    resetFilterQuery();
     setSortFilters({});
-    resetSortQuery();
-    reloadTableData();
+    handleRefetchQuery({}, {}, 1, pageSize);
+    setIsBulkUploading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uploadResult]);
 
