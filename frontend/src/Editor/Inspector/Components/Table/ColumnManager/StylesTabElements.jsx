@@ -198,6 +198,71 @@ export const StylesTabElements = ({
           </div>
         </>
       )}
+
+      {['link'].includes(column.columnType) && (
+        <>
+          <div data-cy={`input-and-label-text-color`} className="field">
+            <ProgramaticallyHandleProperties
+              label="Link color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="linkColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'color', displayName: 'Link color' }}
+              paramType="properties"
+            />
+          </div>
+          <div className="field" data-cy={`input-and-label-cell-background-color`}>
+            <ProgramaticallyHandleProperties
+              label="Underline Color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="underlineColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'color', displayName: 'Underline' }}
+              paramType="properties"
+            />
+          </div>
+          {/* <div className="field" data-cy={`input-and-label-cell-background-color`}>
+            <ProgramaticallyHandleProperties
+              label="Underline"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="Underline"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'color', displayName: 'Underline' }}
+              paramType="properties"
+            /> */}
+          {/* </div> */}
+          <div className="d-flex flex-column custom-gap-16">
+            <div
+              data-cy={`input-overflow`}
+              className="field  d-flex custom-gap-12 align-items-center align-self-stretch"
+            >
+              <label data-cy={`label-overflow`} className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
+                Underline
+              </label>
+              <ToggleGroup
+                onValueChange={(_value) => onColumnItemChange(index, 'underline', _value)}
+                defaultValue={column.underline || 'hover'}
+                style={{ flex: '1 1 0' }}
+              >
+                <ToggleGroupItem value="hover">Hover</ToggleGroupItem>
+                <ToggleGroupItem value="always">Always</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 };

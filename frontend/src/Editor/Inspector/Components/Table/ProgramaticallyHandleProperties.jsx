@@ -26,6 +26,10 @@ export const ProgramaticallyHandleProperties = ({
         return props.columnVisibility;
       case 'linkTarget':
         return props.linkTarget;
+      case 'underlineColor':
+        return props.underlineColor;
+      case 'linkColor':
+        return props.linkColor;
       case 'useDynamicOptions':
         return props?.useDynamicOptions;
       case 'makeDefaultOption':
@@ -44,13 +48,22 @@ export const ProgramaticallyHandleProperties = ({
       return definitionObj?.value ?? `{{true}}`;
     }
     if (property === 'linkTarget') {
-      return definitionObj?.value ?? '_blank';
+      return definitionObj?.value == '_self' ? `{{false}}` : `{{true}}`;
     }
     if (property === 'cellBackgroundColor') {
       return definitionObj?.value ?? '';
     }
     if (property === 'textColor') {
       return definitionObj?.value ?? '#11181C';
+    }
+    if (property === 'underlineColor') {
+      return definitionObj?.value ?? '#ffffff';
+    }
+    if (property === 'underline') {
+      return definitionObj?.value ?? 'hover';
+    }
+    if (property === 'linkColor') {
+      return definitionObj?.value ?? '#1B1F24';
     }
     return definitionObj?.value ?? `{{false}}`;
   };
@@ -59,7 +72,6 @@ export const ProgramaticallyHandleProperties = ({
   const param = { name: property === 'makeDefaultOption' ? `options::${property}` : property };
   let definition;
   let initialValue;
-  let isFxActive = Array.isArray(props) ? props?.[index]?.fxActive ?? false : props.fxActive ?? false;
   if (Array.isArray(props)) {
     definition = { value, fxActive: props?.[index]?.fxActive };
     initialValue = getInitialValue(property, definition);

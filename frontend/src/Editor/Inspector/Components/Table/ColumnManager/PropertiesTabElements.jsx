@@ -236,27 +236,41 @@ export const PropertiesTabElements = ({
         </div>
       )}
       {column.columnType === 'link' && (
-        <div className="field">
-          <ProgramaticallyHandleProperties
-            label="Link target"
-            currentState={currentState}
-            index={index}
-            darkMode={darkMode}
-            callbackFunction={onColumnItemChange}
-            property="linkTarget"
-            props={column}
-            component={component}
-            paramMeta={{
-              type: 'select',
-              displayName: 'Link Target',
-              options: [
-                { name: 'Same window', value: '_self' },
-                { name: 'New window', value: '_blank' },
-              ],
-            }}
-            paramType="properties"
-          />
-        </div>
+        <>
+          <div className="field mb-2">
+            <label className="form-label">Display Text</label>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column?.displayText}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={'Display text'}
+              onChange={(value) => onColumnItemChange(index, 'displayText', value)}
+              componentName={getPopoverFieldSource(column.columnType, 'displayText')}
+            />
+          </div>
+
+          <div className="border" style={{ borderRadius: '6px', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--slate3)', padding: '6px' }}>
+              <ProgramaticallyHandleProperties
+                label="Link target"
+                currentState={currentState}
+                index={index}
+                darkMode={darkMode}
+                callbackFunction={onColumnItemChange}
+                property="linkTarget"
+                props={column}
+                component={component}
+                paramMeta={{
+                  type: 'toggle',
+                  displayName: 'Link Target',
+                }}
+                paramType="properties"
+              />
+            </div>
+          </div>
+        </>
       )}
       {column.columnType === 'number' && (
         <div className="field mb-2">
