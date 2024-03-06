@@ -125,9 +125,12 @@ export const AllComponents = {
   BoundedBox,
 };
 
-//conditionally importing PDF component since importing it breaks app in older browserversions
+/**
+ * Conditionally importing PDF component since importing it breaks app in older versions of browsers.
+ * refer: https://github.com/wojtekmaj/react-pdf?tab=readme-ov-file#compatibility
+ **/
 if (isPDFSupported()) {
-  import('./Components/PDF').then((component) => (AllComponents.PDF = component.PDF));
+  AllComponents.PDF = await import('./Components/PDF').then((module) => module.PDF);
 }
 
 export const Box = memo(
