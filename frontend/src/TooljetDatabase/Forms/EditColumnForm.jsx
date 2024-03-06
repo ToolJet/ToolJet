@@ -207,7 +207,13 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
             disabled={dataType === 'serial'}
           />
           {isNotNull === true && rows.length > 0 && (defaultValue?.length <= 0 || defaultValue === null) ? (
-            <span className="form-error-message">Default value cannot be empty when NOT NULL constraint is added</span>
+            <span className="form-error-message">
+              Default value is required to populate this field in existing rows as NOT NULL constraint is added
+            </span>
+          ) : isNotNull === true && rows.length > 0 && !isEmpty(defaultValue) ? (
+            <span className="form-warning-message">
+              Changing the default value will NOT update the fields having existing default value
+            </span>
           ) : null}
         </div>
         <div className="row mb-3">
