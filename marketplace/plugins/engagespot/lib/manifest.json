@@ -1,0 +1,85 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Engagespot datasource",
+  "description": "A schema defining Engagespot datasource",
+  "type": "api",
+  "source": {
+    "name": "Engagespot",
+    "kind": "engagespot",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiKey":{
+        "type": "string"
+      },
+      "apiSecret":{
+        "type": "string",
+        "encrypted": true
+      },
+      "SigningKey":{
+        "type":"string"
+      },
+      "endpoint": {
+        "type": "string"
+      }
+    },
+    "customTesting": false
+  },
+  "defaults": {
+    "apiKey":{
+      "value": ""
+    },
+    "apiSecret":{
+      "value": ""
+    },
+    "SigningKey":{
+      "value":""
+    },
+    "endpoint": {
+      "value": "https://api.engagespot.com/v3"
+    },
+    "endpoint_enabled": {
+      "value": false
+    }
+  },
+  "properties": {
+    "apiKey": {
+      "label": "X-ENGAGESPOT-KEY",
+      "key": "apiKey",
+      "type": "text",
+      "description": "Enter the Api Key"
+    },
+    "apiSecret": {
+      "label": "X-ENGAGESPOT-SECRET",
+      "key": "apiSecret",
+      "type": "password",
+      "description": "Enter the  secret key"
+    },
+    "SigningKey": {
+      "label": "SigningKey",
+      "key": "SigningKey",
+      "type": "text",
+      "description": "Enter the SigningKey"
+    },
+    "endpoint_enabled": {
+      "label": "Custom Endpoint",
+      "key": "endpoint_enabled",
+      "type": "toggle",
+      "description": "Toggle for endpoint_enabled"
+    },
+    "endpoint": {
+      "key": "endpoint",
+      "type": "text",
+      "description": "Enter custom endpoint",
+      "controller": "endpoint_enabled"
+    } 
+  },
+  "required": [
+    "X-ENGAGESPOT-KEY",
+    "X-ENGAGESPOT-SECRET"
+  ]
+}

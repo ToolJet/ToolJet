@@ -47,5 +47,13 @@
     "id": "aws-lambda",
     "author": "Tooljet",
     "timestamp": "Tue, 05 Dec 2023 00:27:16 GMT"
+  },
+  {
+    "name": "engagespot",
+    "description": "api plugin from engagespot",
+    "version": "1.0.0",
+    "id": "engagespot",
+    "author": "Tooljet",
+    "timestamp": "Thu, 29 Feb 2024 09:46:21 GMT"
   }
 ]
