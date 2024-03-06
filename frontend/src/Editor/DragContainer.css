@@ -169,4 +169,8 @@
     left: -11px;
     top: -1px;
 }
+
+.moveable-draggable-dragging {
+    opacity: 1 !important;
+}
 /*  */
