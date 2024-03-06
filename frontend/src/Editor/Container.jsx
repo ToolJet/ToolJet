@@ -1065,10 +1065,12 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
     layouts,
   } = widget;
   const { isSelected, isHovered } = useEditorStore((state) => {
-    if (state?.selectedComponents?.length > 1) {
-      return false;
-    }
-    const isSelected = (state.selectedComponents || []).length === 1 && state?.selectedComponents?.[0]?.id === id;
+    // if (state?.selectedComponents?.length > 1) {
+    //   return false;
+    // }
+    // const isSelected = (state.selectedComponents || []).length === 1 && state?.selectedComponents?.[0]?.id === id;
+    const isSelected = !!(state.selectedComponents || []).find((selected) => selected?.id === id);
+    console.log('state.selectedComponents--', state.selectedComponents, id, isSelected);
     const isHovered = state?.hoveredComponent == id;
     return { isSelected, isHovered };
   }, shallow);
@@ -1091,6 +1093,7 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
   };
 
   const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
+  console.log('state.selectedComponents--', isWidgetActive, id, isSelected, isDragging);
 
   return (
     <>
