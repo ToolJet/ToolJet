@@ -2,7 +2,6 @@ import React from 'react';
 import AccordionItem from './AccordionItem';
 
 const Accordion = ({ items, className = '' }) => {
-  console.log(className, 'className');
   return (
     <div className={`accordion ${className}`}>
       {items.map(({ title, isOpen, children }, index) => {

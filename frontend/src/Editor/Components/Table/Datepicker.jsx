@@ -1,5 +1,6 @@
 import React, { forwardRef, useEffect, useRef } from 'react';
 import Datetime from 'react-datetime';
+// import moment from 'moment';
 import moment from 'moment-timezone';
 import DatePickerComponent from 'react-datepicker';
 // import 'react-datetime/css/react-datetime.css';
@@ -34,23 +35,20 @@ const TjDatepicker = forwardRef(
 );
 
 const getDate = (value, parseDateFormat, displayFormat, timeZoneValue, timeZoneDisplay) => {
+  let momentObj = null
+  console.log(timeZoneValue, timeZoneDisplay)
   if (value) {
-    const dateString = value;
     if (timeZoneValue && timeZoneDisplay) {
-      let momentString = moment
-        .tz(dateString, parseDateFormat, timeZoneValue)
+      momentObj = moment
+        .tz(value, parseDateFormat, timeZoneValue)
         .tz(timeZoneDisplay)
-        .format(displayFormat);
-      return momentString;
     } else {
-      console.log(displayFormat, "displayFormat")
-      const momentObj = moment(dateString, displayFormat);
-      // const momentString = momentObj.format(displayFormat);
-      return momentObj.toDate();
+      momentObj = moment(value, parseDateFormat)
     }
   }
-  return '';
+  return momentObj?.isValid() ? momentObj.toDate() : null;
 };
+
 
 export const Datepicker = function Datepicker({
   value,
@@ -62,11 +60,13 @@ export const Datepicker = function Datepicker({
   parseDateFormat, //?Parse date format
   timeZoneValue,
   timeZoneDisplay,
+  isDateSelectionEnabled,
+  isTwentyFourHrFormatEnabled
 }) {
   const [date, setDate] = React.useState(null);
   const pickerRef = React.useRef();
 
-  const dateChange = (event) => {
+  const handleDateChange = (event) => {
     // const _value = event._isAMomentObject ? event.format() : event;
     // let selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} LT` : dateDisplayFormat;
     // const dateString = moment(_value).format(selectedDateFormat);
@@ -124,7 +124,20 @@ export const Datepicker = function Datepicker({
   // };
 
   const dateInputRef = useRef(null); // Create a ref
-  console.log(date, value, "date")
+
+  const computeDateString = (date) => {
+    const _date = getDate(date, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay)
+    const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT'
+    const selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
+    if (isDateSelectionEnabled) {
+      return moment(_date).format(selectedDateFormat);
+    }
+
+    if (!isDateSelectionEnabled && isTimeChecked) {
+      return moment(_date).format(timeFormat);
+    }
+  };
+  // console.log(date, value, "date")
   return (
     <div ref={pickerRef}>
       {/* <Datetime
@@ -148,24 +161,21 @@ export const Datepicker = function Datepicker({
         className={`input-field form-control tj-text-input-widget validation-without-icon px-2`}
         popperClassName={`tj-datepicker-widget`}
         selected={date}
-        onChange={(date) => dateChange(date)}
-        // dateFormat={dateDisplayFormat}
-        // value={date}
-        onFocus={(event) => {
-          // onComponentClick(id, component, event);
-        }}
-        // customInput={
-        //   <TjDatepicker
-        //     // styles={datepickerinputStyles}  // See this at last
-        //     // setShowValidationError={setShowValidationError}
-        //     // fireEvent={fireEvent}
-        //     // setIsFocused={setIsFocused}
-        //     dateInputRef={dateInputRef}
-        //   />
-        // }
-        // timeFormat={'HH:mm'}
-        // showTimeSelect={true}
-        // showTimeSelectOnly={enableDate ? false : true}
+        onChange={(date) => handleDateChange(date)}
+        value={date !== null ? computeDateString(date) : 'select date'}
+        dateFormat={dateDisplayFormat}
+        customInput={
+          <TjDatepicker
+            // styles={datepickerinputStyles}  // See this at last
+            // setShowValidationError={setShowValidationError}
+            // fireEvent={fireEvent}
+            // setIsFocused={setIsFocused}
+            dateInputRef={dateInputRef}
+          />
+        }
+        timeFormat={'HH:mm'}
+        showTimeSelect={isTimeChecked}
+        showTimeSelectOnly={!isDateSelectionEnabled && isTimeChecked}
         showMonthDropdown
         showYearDropdown
         dropdownMode="select"

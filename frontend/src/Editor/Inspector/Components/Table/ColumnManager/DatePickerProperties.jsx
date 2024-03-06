@@ -6,6 +6,7 @@ import Accordion from '@/_ui/Accordion';
 import { resolveReferences } from '@/_helpers/utils';
 import styles from '@/_ui/Select/styles';
 export const DatePickerProperties = ({ column, index, darkMode, currentState, onColumnItemChange, component }) => {
+
   const timeZoneOptions = [
     { name: 'UTC', value: 'Etc/UTC' },
     { name: '-12:00', value: 'Etc/GMT+12' },
@@ -49,7 +50,7 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
       className: 'table-date-picker-formatting-accordion',
       children: (
         <>
-          <div className="grey-bg-section mb-2 pb-2 border">
+          <div className="grey-bg-section mb-2 border">
             <div style={{ background: 'var(--slate3)', padding: '6px', borderRadius: '6px' }}>
               <ProgramaticallyHandleProperties
                 label="Enable date selection"
@@ -57,14 +58,14 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
                 index={index}
                 darkMode={darkMode}
                 callbackFunction={onColumnItemChange}
-                property="enableDateSelection"
+                property="isDateSelectionEnabled"
                 props={column}
                 component={component}
                 paramType="properties"
                 paramMeta={{ type: 'toggle', displayName: 'Enable date selection' }}
               />
             </div>
-            {resolveReferences(column?.enableDateSelection, currentState) && (
+            {resolveReferences(column?.isDateSelectionEnabled, currentState) && (
               <div
                 data-cy={`input-date-display-format`}
                 className="field mb-2 w-100"
@@ -108,7 +109,7 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
               </div>
             )}
           </div>
-          <div className="grey-bg-section mb-2 pb-2 border">
+          <div className="grey-bg-section mb-2 border">
             <div style={{ background: 'var(--slate3)', padding: '6px', borderRadius: '6px' }}>
               <ProgramaticallyHandleProperties
                 label="Enable time selection"
@@ -153,7 +154,7 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
                     index={index}
                     darkMode={darkMode}
                     callbackFunction={onColumnItemChange}
-                    property="enableTwentyFourHrFormat"
+                    property="isTwentyFourHrFormatEnabled"
                     props={column}
                     component={component}
                     paramType="properties"
@@ -207,7 +208,7 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
             paramMeta={{ type: 'toggle', displayName: 'Parse in unix timestamp' }}
           />
           {resolveReferences(column?.parseInUnixTimestamp, currentState) ? (
-            <>
+            <div className='mt-2'>
               <div className="field mb-2 tj-app-input">
                 <label data-cy={`label-date-parse-format`} className="form-label">
                   {t('widget.Table.unixTimestamp', 'Unix timestamp')}
@@ -223,10 +224,10 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
                   placeholder={'eg. 170477864'}
                 />
               </div>
-            </>
+            </div>
           ) : (
-            <>
-              {resolveReferences(column?.enableDateSelection, currentState) && (
+            <div className='mt-2'>
+              {resolveReferences(column?.isDateSelectionEnabled, currentState) && (
                 <div data-cy={`input-parse-timezone`} className="field mb-2">
                   <label data-cy={`label-parse-timezone`} className="form-label">
                     Date parse format
@@ -306,7 +307,7 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
                   </div>
                 </>
               )}
-            </>
+            </div>
           )}
         </>
       ),

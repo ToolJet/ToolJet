@@ -32,6 +32,14 @@ export const ProgramaticallyHandleProperties = ({
         return props?.textColor;
       case 'cellBackgroundColor':
         return props?.cellBackgroundColor;
+      case 'isTimeChecked':
+        return props?.isTimeChecked;
+      case 'isTwentyFourHrFormatEnabled':
+        return props?.isTwentyFourHrFormatEnabled;
+      case 'parseInUnixTimestamp':
+        return props?.parseInUnixTimestamp;
+      case 'isDateSelectionEnabled':
+        return props?.isDateSelectionEnabled;
       default:
         return;
     }

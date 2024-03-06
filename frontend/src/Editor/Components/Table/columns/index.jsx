@@ -320,9 +320,8 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <textarea
                     rows="1"
-                    className={`${!isValid ? 'is-invalid' : ''} form-control-plaintext text-container ${
-                      darkMode ? ' textarea-dark-theme' : ''
-                    }`}
+                    className={`${!isValid ? 'is-invalid' : ''} form-control-plaintext text-container ${darkMode ? ' textarea-dark-theme' : ''
+                      }`}
                     style={{
                       color: cellTextColor ? cellTextColor : 'inherit',
                     }}
@@ -546,13 +545,15 @@ export default function generateColumnsData({
             );
           }
           case 'datepicker': {
+            const isTimeChecked = resolveReferences(column?.isTimeChecked, currentState);
+            const isTwentyFourHrFormatEnabled = resolveReferences(column?.isTwentyFourHrFormatEnabled, currentState);
             return (
               <div className="h-100 d-flex align-items-center">
                 <Datepicker
                   timeZoneValue={column.timeZoneValue}
                   timeZoneDisplay={column.timeZoneDisplay}
                   dateDisplayFormat={column.dateFormat}
-                  isTimeChecked={column.isTimeChecked}
+                  isTimeChecked={isTimeChecked}
                   value={cellValue}
                   readOnly={isEditable}
                   parseDateFormat={column.parseDateFormat}
@@ -560,7 +561,15 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   tableRef={tableRef}
+                  isDateSelectionEnabled={column.isDateSelectionEnabled}
+                  isTwentyFourHrFormatEnabled={isTwentyFourHrFormatEnabled}
+                  timeFormat={column.timeFormat}
+                  parseTimeFormat={column.parseTimeFormat}
+                  parseInUnixTimestamp={column.parseInUnixTimestamp}
+                  unixTimeStamp={column.unixTimestamp}
                 />
+                <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
+
               </div>
             );
           }
