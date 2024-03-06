@@ -326,7 +326,7 @@ class SSOConfiguration extends React.Component {
               <Dropdown.Item
                 eventKey="Google"
                 disabled={!defaultSSO || this.isOptionEnabled('google') || !this.isInstanceOptionEnabled('google')} // Disable the item if defaultSSO is false
-                data-cy="dropdwon-options-google"
+                data-cy="dropdown-options-google"
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {this.getSSOIcon('google')}
@@ -336,7 +336,7 @@ class SSOConfiguration extends React.Component {
               <Dropdown.Item
                 eventKey="GitHub"
                 disabled={!defaultSSO || this.isOptionEnabled('git') || !this.isInstanceOptionEnabled('git')} // Disable the item if defaultSSO is false
-                data-cy="dropdwon-options-git"
+                data-cy="dropdown-options-git"
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {this.getSSOIcon('git')}
