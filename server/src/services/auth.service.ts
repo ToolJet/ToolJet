@@ -358,13 +358,23 @@ export class AuthService {
     user: User,
     organizationParams: Partial<OrganizationUser>,
     manager?: EntityManager,
-    defaultOrganization = null
+    defaultOrganization = null,
+    source = 'signup'
   ) {
     const { invitationToken, organizationId } = organizationParams;
     /* Active user want to signup to the organization case */
+    const passwordLogin = source === 'signup';
     const session = defaultOrganization
-      ? await this.generateLoginResultPayload(response, user, defaultOrganization, false, true, null, manager)
-      : await this.generateInviteSignupPayload(response, user, 'signup', manager);
+      ? await this.generateLoginResultPayload(
+          response,
+          user,
+          defaultOrganization,
+          !passwordLogin,
+          passwordLogin,
+          null,
+          manager
+        )
+      : await this.generateInviteSignupPayload(response, user, source, manager);
     const organizationInviteUrl = generateOrgInviteURL(invitationToken, organizationId, false);
     return { ...session, organizationInviteUrl };
   }
