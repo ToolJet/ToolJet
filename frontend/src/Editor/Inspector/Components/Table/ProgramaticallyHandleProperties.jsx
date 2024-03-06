@@ -57,7 +57,7 @@ export const ProgramaticallyHandleProperties = ({
       return definitionObj?.value ?? '#11181C';
     }
     if (property === 'underlineColor') {
-      return definitionObj?.value ?? '#ffffff';
+      return definitionObj?.value ?? '#4368E3';
     }
     if (property === 'underline') {
       return definitionObj?.value ?? 'hover';
