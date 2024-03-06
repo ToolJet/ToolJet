@@ -241,24 +241,35 @@ class SSOConfiguration extends React.Component {
     const isEnabled = this.state[isEnabledKey];
 
     return (
-      <div className="sso-option" key={key} onClick={() => this.openModal(key)}>
+      <div className="sso-option" key={key} onClick={() => this.openModal(key)} data-cy="sso-card">
         <div className="sso-option-label">
           {
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-icon`}
+            >
               {this.getSSOIcon(key)}
-              <span style={{ marginLeft: 8 }}>{name}</span>
+              <span style={{ marginLeft: 8 }} data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-label`}>
+                {name}
+              </span>
               {
                 <img
                   src="/assets/images/EditIcon.png"
                   className="option-icon"
                   style={{ width: '14px', height: '14px', marginLeft: '8px' }}
+                  data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-edit-icon`}
                 />
               }
             </div>
           }
         </div>
         <label className="switch" onClick={(e) => e.stopPropagation()}>
-          <input type="checkbox" checked={isEnabled} onChange={() => this.toggleSSOOption(key)} />
+          <input
+            type="checkbox"
+            checked={isEnabled}
+            onChange={() => this.toggleSSOOption(key)}
+            data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-toggle`}
+          />
           <span className="slider round"></span>
         </label>
       </div>
@@ -270,7 +281,9 @@ class SSOConfiguration extends React.Component {
 
     return (
       <div className="sso-configuration">
-        <h4 style={{ fontSize: '12px' }}>SSO</h4>
+        <h4 style={{ fontSize: '12px' }} data-cy="sso-header">
+          SSO
+        </h4>
         <div
           className={`sso-option ${showDropdown ? 'clicked' : ''}`}
           style={{ paddingLeft: '0px', marginBottom: '1px' }}
@@ -290,6 +303,7 @@ class SSOConfiguration extends React.Component {
                 justifyContent: 'flex-start',
               }}
               bsPrefix="no-caret-dropdown-toggle"
+              data-testid="instance-sso-toggle"
             >
               <div
                 className="sso-option-label"
@@ -301,6 +315,7 @@ class SSOConfiguration extends React.Component {
                   paddingBottom: '6px',
                   height: '34px',
                 }}
+                data-cy="instance-sso-card"
               >
                 Default SSO {defaultSSO ? `(${this.state.inheritedInstanceSSO})` : ''}
                 <SolidIcon className="option-icon" name={showDropdown ? 'cheveronup' : 'cheverondown'} fill={'grey'} />
@@ -311,6 +326,7 @@ class SSOConfiguration extends React.Component {
               <Dropdown.Item
                 eventKey="Google"
                 disabled={!defaultSSO || this.isOptionEnabled('google') || !this.isInstanceOptionEnabled('google')} // Disable the item if defaultSSO is false
+                data-cy="dropdwon-options-google"
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {this.getSSOIcon('google')}
@@ -320,6 +336,7 @@ class SSOConfiguration extends React.Component {
               <Dropdown.Item
                 eventKey="GitHub"
                 disabled={!defaultSSO || this.isOptionEnabled('git') || !this.isInstanceOptionEnabled('git')} // Disable the item if defaultSSO is false
+                data-cy="dropdwon-options-git"
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {this.getSSOIcon('git')}
@@ -334,7 +351,9 @@ class SSOConfiguration extends React.Component {
             <span className="slider round"></span>
           </label>
         </div>
-        <p className="sso-note">Display default SSO for workspace URL login</p>
+        <p className="sso-note" data-cy="instance-sso-helper-text">
+          Display default SSO for workspace URL login
+        </p>
         {this.renderSSOOption('google', 'Google')}
         {this.renderSSOOption('git', 'GitHub')}
         {showModal && currentSSO === 'google' && (
