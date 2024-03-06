@@ -11,6 +11,7 @@ import DisablePasswordLoginModal from '@/_components/DisablePasswordLoginModal';
 import '@/_components/OrganizationLogin/Configuration.scss';
 
 class InstanceLogin extends React.Component {
+  protectedSSO = ['openid', 'ldap', 'saml'];
   constructor(props) {
     super(props);
     this.state = {
@@ -27,8 +28,8 @@ class InstanceLogin extends React.Component {
   }
 
   async componentDidMount() {
-    await this.setInstanceLoginConfigs();
     await this.fetchFeatureAccess();
+    await this.setInstanceLoginConfigs();
   }
 
   fetchFeatureAccess = () => {
@@ -76,7 +77,13 @@ class InstanceLogin extends React.Component {
   async setInstanceLoginConfigs() {
     const ssoConfigs = await instanceSettingsService.fetchSSOConfigs();
     const passwordLoginEnabled = ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
-    const isAnySSOEnabled = ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) || false;
+    const isAnySSOEnabled =
+      ssoConfigs?.some(
+        (obj) =>
+          obj.sso !== 'form' &&
+          obj.enabled &&
+          (!this.protectedSSO.includes(obj.sso) || this.state.featureAccess?.[obj.sso])
+      ) || false;
     const initialOptions = {
       enableSignUp: window.public_config?.ENABLE_SIGNUP === 'true',
       allowedDomains: window.public_config?.ALLOWED_DOMAINS || '',

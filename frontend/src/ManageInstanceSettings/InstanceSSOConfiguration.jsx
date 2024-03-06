@@ -55,9 +55,7 @@ class InstanceSSOConfiguration extends React.Component {
       },
       async () => {
         try {
-          await this.props.onUpdateAnySSOEnabled(
-            this.state.ssoOptions?.some((obj) => obj.sso !== 'form' && obj.enabled)
-          );
+          await this.props.onUpdateAnySSOEnabled(this.checkIfAnySSOEnabled());
         } catch (error) {
           toast.error('Error while updating SSO configuration', { position: 'top-center' });
         }
@@ -120,9 +118,7 @@ class InstanceSSOConfiguration extends React.Component {
         },
         async () => {
           try {
-            await this.props.onUpdateAnySSOEnabled(
-              this.state.ssoOptions?.some((obj) => obj.sso !== 'form' && obj.enabled)
-            );
+            await this.props.onUpdateAnySSOEnabled(this.checkIfAnySSOEnabled());
           } catch (error) {
             toast.error('Error while updating SSO configuration', { position: 'top-center' });
           }
@@ -160,9 +156,13 @@ class InstanceSSOConfiguration extends React.Component {
     }
   };
 
-  isOptionEnabled = (key) => {
-    const option = this.state.ssoOptions.find((option) => option.sso === key);
-    return option ? option.enabled : false;
+  checkIfAnySSOEnabled = () => {
+    return this.state.ssoOptions?.some(
+      (obj) =>
+        obj.sso !== 'form' &&
+        obj.enabled &&
+        (!this.protectedSSO.includes(obj.sso) || this.state.featureAccess?.[obj.sso])
+    );
   };
 
   getSSOIcon = (key) => {
@@ -218,7 +218,7 @@ class InstanceSSOConfiguration extends React.Component {
               </div>
             }
           </div>
-          <label className="switch" onClick={(e) => e.stopPropagation()}>
+          <label className="switch" onClick={isFeatureAvailable && ((e) => e.stopPropagation())}>
             <input
               type="checkbox"
               checked={isEnabled}

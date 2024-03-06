@@ -68,10 +68,7 @@ class SSOConfiguration extends React.Component {
         },
         async () => {
           try {
-            await this.props.onUpdateAnySSOEnabled(
-              this.state.ssoOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
-                (this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
-            );
+            await this.props.onUpdateAnySSOEnabled(this.checkIfAnySSOEnabled());
             const enabledSSOCount = this.getCountOfEnabledSSO();
             this.setState({ inheritedInstanceSSO: enabledSSOCount });
           } catch (error) {
@@ -134,14 +131,15 @@ class SSOConfiguration extends React.Component {
   toggleDefaultSSO = async () => {
     try {
       await organizationService.editOrganization({ inheritSSO: !this.state.defaultSSO });
-      await this.props.onUpdateAnySSOEnabled(
-        this.state.ssoOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
-          (!this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
+      this.setState(
+        {
+          defaultSSO: !this.state.defaultSSO,
+        },
+        async () => {
+          await this.props.onUpdateAnySSOEnabled(this.checkIfAnySSOEnabled());
+          toast.success('Updated default sso settings');
+        }
       );
-      this.setState({
-        defaultSSO: !this.state.defaultSSO,
-      });
-      toast.success('Updated default sso settings');
     } catch (e) {
       toast.error('Default sso settings could not be updated');
     }
@@ -169,10 +167,7 @@ class SSOConfiguration extends React.Component {
         },
         async () => {
           try {
-            await this.props.onUpdateAnySSOEnabled(
-              this.state.ssoOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
-                (this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
-            );
+            await this.props.onUpdateAnySSOEnabled(this.checkIfAnySSOEnabled());
             const enabledSSOCount = this.getCountOfEnabledSSO();
             this.setState({ inheritedInstanceSSO: enabledSSOCount });
           } catch (error) {
@@ -215,6 +210,24 @@ class SSOConfiguration extends React.Component {
   isOptionEnabled = (key) => {
     const option = this.state.ssoOptions.find((option) => option.sso === key);
     return option ? option.enabled : false;
+  };
+
+  checkIfAnySSOEnabled = () => {
+    return (
+      this.state.ssoOptions?.some(
+        (obj) =>
+          obj.sso !== 'form' &&
+          obj.enabled &&
+          (!this.protectedSSO.includes(obj.sso) || this.state.featureAccess?.[obj.sso])
+      ) ||
+      (this.state.defaultSSO &&
+        this.state.instanceSSO?.some(
+          (obj) =>
+            obj.sso !== 'form' &&
+            obj.enabled &&
+            (!this.protectedSSO.includes(obj.sso) || this.state.featureAccess?.[obj.sso])
+        ))
+    );
   };
 
   isInstanceOptionEnabled = (key) => {
@@ -294,7 +307,7 @@ class SSOConfiguration extends React.Component {
               </div>
             }
           </div>
-          <label className="switch" onClick={(e) => e.stopPropagation()}>
+          <label className="switch" onClick={isFeatureAvailable && ((e) => e.stopPropagation())}>
             <input
               type="checkbox"
               checked={isEnabled}

@@ -10,6 +10,7 @@ import SSOConfiguration from './SsoConfiguration';
 import DisablePasswordLoginModal from '@/_components/DisablePasswordLoginModal';
 import '@/_components/OrganizationLogin/Configuration.scss';
 class OrganizationLogin extends React.Component {
+  protectedSSO = ['openid', 'ldap', 'saml'];
   constructor(props) {
     super(props);
     this.state = {
@@ -28,8 +29,8 @@ class OrganizationLogin extends React.Component {
   }
 
   async componentDidMount() {
-    await this.setLoginConfigs();
     await this.fetchFeatureAccess();
+    await this.setLoginConfigs();
   }
 
   fetchFeatureAccess = () => {
@@ -74,12 +75,12 @@ class OrganizationLogin extends React.Component {
     return result;
   }
 
-  async setLoginConfigs(passwordLogin) {
+  async setLoginConfigs() {
     const settings = await this.fetchSSOSettings();
     const instanceSSO = await instanceSettingsService.fetchSSOConfigs();
     const organizationSettings = settings?.organization_details;
     const ssoConfigs = organizationSettings?.sso_configs;
-    const passwordLoginEnabled = passwordLogin || ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
+    const passwordLoginEnabled = ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
     const initialOptions = {
       enableSignUp: organizationSettings?.enable_sign_up || false,
       domain: organizationSettings?.domain,
@@ -92,8 +93,19 @@ class OrganizationLogin extends React.Component {
       defaultSSO: organizationSettings?.inherit_s_s_o,
       instanceSSO: [...instanceSSO],
       isAnySSOEnabled:
-        ssoConfigs?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
-        (organizationSettings?.inherit_s_s_o && instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled)),
+        ssoConfigs?.some(
+          (obj) =>
+            obj.sso !== 'form' &&
+            obj.enabled &&
+            (!this.protectedSSO.includes(obj.sso) || this.state.featureAccess?.[obj.sso])
+        ) ||
+        (organizationSettings?.inherit_s_s_o &&
+          instanceSSO?.some(
+            (obj) =>
+              obj.sso !== 'form' &&
+              obj.enabled &&
+              (!this.protectedSSO.includes(obj.sso) || this.state.featureAccess?.[obj.sso])
+          )),
     });
   }
 
