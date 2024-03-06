@@ -169,11 +169,11 @@ class InstanceSSOConfiguration extends React.Component {
     const iconStyles = { width: '20px', height: '20x' };
     switch (key) {
       case 'google':
-        return <img src="/assets/images/Google.png" alt="Google" style={iconStyles} />;
+        return <img src="assets/images/Google.png" alt="Google" style={iconStyles} />;
       case 'git':
-        return <img src="/assets/images/Github.png" alt="GitHub" style={iconStyles} />;
+        return <img src="assets/images/Github.png" alt="GitHub" style={iconStyles} />;
       case 'openid':
-        return <img src="/assets/images/OpenId.png" alt="OpenId" style={iconStyles} />;
+        return <img src="assets/images/OpenId.png" alt="OpenId" style={iconStyles} />;
       default:
         return null;
     }
@@ -205,7 +205,7 @@ class InstanceSSOConfiguration extends React.Component {
                 <span style={{ marginLeft: 8 }}>{name}</span>
                 {
                   <img
-                    src="/assets/images/EditIcon.png"
+                    src="assets/images/EditIcon.png"
                     className="option-icon"
                     style={{
                       width: '14px',

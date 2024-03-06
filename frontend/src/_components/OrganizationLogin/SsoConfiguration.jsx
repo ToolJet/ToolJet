@@ -241,15 +241,15 @@ class SSOConfiguration extends React.Component {
     const iconStyles = { width: '20px', height: '20x' };
     switch (key) {
       case 'google':
-        return <img src="/assets/images/Google.png" alt="Google" style={iconStyles} />;
+        return <img src="assets/images/Google.png" alt="Google" style={iconStyles} />;
       case 'git':
-        return <img src="/assets/images/Github.png" alt="GitHub" style={iconStyles} />;
+        return <img src="assets/images/Github.png" alt="GitHub" style={iconStyles} />;
       case 'openid':
-        return <img src="/assets/images/OpenId.png" alt="OpenId" style={iconStyles} />;
+        return <img src="assets/images/OpenId.png" alt="OpenId" style={iconStyles} />;
       case 'ldap':
-        return <img src="/assets/images/Ldap.png" alt="LDAP" style={iconStyles} />;
+        return <img src="assets/images/Ldap.png" alt="LDAP" style={iconStyles} />;
       case 'saml':
-        return <img src="/assets/images/Saml.png" alt="SAML" style={iconStyles} />;
+        return <img src="assets/images/Saml.png" alt="SAML" style={iconStyles} />;
       default:
         return null;
     }
@@ -281,7 +281,7 @@ class SSOConfiguration extends React.Component {
                 <span style={{ marginLeft: 8 }}>{name}</span>
                 {
                   <img
-                    src="/assets/images/EditIcon.png"
+                    src="assets/images/EditIcon.png"
                     className="option-icon"
                     style={{
                       width: '14px',
