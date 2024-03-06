@@ -6,7 +6,7 @@ import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 
 const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerOpen }) => {
-  const { organizationId, selectedTable, setColumns, setSelectedTableData, setPageCount } =
+  const { organizationId, selectedTable, setColumns, setPageCount, handleRefetchQuery, pageSize } =
     useContext(TooljetDatabaseContext);
 
   return (
@@ -31,18 +31,7 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
                 );
               }
             });
-            tooljetDatabaseService
-              .findOne(organizationId, selectedTable.id, 'order=id.desc')
-              .then(({ data = [], error }) => {
-                if (error) {
-                  toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
-                  return;
-                }
-
-                if (Array.isArray(data) && data?.length > 0) {
-                  setSelectedTableData(data);
-                }
-              });
+            handleRefetchQuery({}, {}, 1, pageSize);
             setPageCount(1);
             setIsCreateColumnDrawerOpen(false);
           }}

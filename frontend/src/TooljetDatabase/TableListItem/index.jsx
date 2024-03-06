@@ -11,8 +11,7 @@ import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, columns, selectedTable, setTables, setSelectedTable, setColumns, setSelectedTableData } =
-    useContext(TooljetDatabaseContext);
+  const { organizationId, columns, selectedTable, setSelectedTable } = useContext(TooljetDatabaseContext);
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showDropDownMenu, setShowDropDownMenu] = useState(false);

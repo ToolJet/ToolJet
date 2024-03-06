@@ -1,5 +1,4 @@
 import React, { useState, useContext } from 'react';
-//import Select from '@/_ui/Select';
 import Select from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { toast } from 'react-hot-toast';
@@ -196,19 +195,12 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
             value={defaultValue}
             type="text"
             placeholder="Enter default value"
-            className={
-              isNotNull === true && (defaultValue?.length <= 0 || defaultValue === null)
-                ? 'form-control form-error'
-                : 'form-control'
-            }
+            className={'form-control'}
             data-cy="default-value-input-field"
             autoComplete="off"
             onChange={(e) => setDefaultValue(e.target.value)}
             disabled={dataType === 'serial'}
           />
-          {isNotNull === true && (defaultValue?.length <= 0 || defaultValue === null) ? (
-            <span className="form-error-message">Default value cannot be empty when NOT NULL constraint is added</span>
-          ) : null}
         </div>
         <div className="row mb-3">
           <div className="col-1">
@@ -236,7 +228,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
         fetching={fetching}
         onClose={onClose}
         onEdit={handleEdit}
-        shouldDisableCreateBtn={columnName === '' || (isNotNull && defaultValue?.length <= 0)}
+        shouldDisableCreateBtn={columnName === ''}
       />
     </div>
   );

@@ -252,11 +252,15 @@
   left: 0;
   bottom: 0;
   height: 2px;
-  background-color: var(--Indigo-09, #3E63DD) !important;
+  border: none !important;
+}
 
-  .tjdb-cell-save-progress-bar {
-    background-color: var(--Indigo-09, #3E63DD) !important;
-  }
+.progress::-webkit-progress-value {
+  background-color: var(--Indigo-09, #3E63DD) !important;
+}
+
+.progress::-moz-progress-bar {
+  background-color: var(--Indigo-09, #3E63DD) !important;
 }
 
 .toojet-db-table-footer {

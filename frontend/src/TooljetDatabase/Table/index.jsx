@@ -65,8 +65,6 @@ const Table = ({ collapseSidebar }) => {
     columnEditPopover: false,
   });
 
-  // const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
-  // const [wholeScreenWidth, setWholeScreenWidth] = useState(window.innerWidth);
   const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
   const [selectedRowIds, setSelectedRowIds] = useState({});
   const [cellClick, setCellClick] = useState({
@@ -76,6 +74,8 @@ const Table = ({ collapseSidebar }) => {
     errorState: false,
   });
   const [filterEnable, setFilterEnable] = useState(false);
+  const selectedCellRef = useRef({ rowIndex: null, columnIndex: null, editable: false });
+
   const [cellVal, setCellVal] = useState('');
   const [editPopover, setEditPopover] = useState(false);
   const [defaultValue, setDefaultValue] = useState(false);
@@ -84,8 +84,15 @@ const Table = ({ collapseSidebar }) => {
   const [isCellUpdateInProgress, setIsCellUpdateInProgress] = useState(false);
 
   const prevSelectedTableRef = useRef({});
+  const tooljetDbTableRef = useRef(null);
   const duration = 300;
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const updateCellNavigationRefToDefault = () => {
+    if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null)
+      removeCellSelectionClassNames(selectedCellRef.current.rowIndex, selectedCellRef.current.columnIndex);
+    selectedCellRef.current = { rowIndex: null, columnIndex: null, editable: false };
+  };
 
   const toggleSelectOrDeSelectAllRows = (totalRowsCount) => {
     if (!totalRowsCount) return;
@@ -95,6 +102,7 @@ const Table = ({ collapseSidebar }) => {
       editable: false,
       errorState: false,
     });
+    updateCellNavigationRefToDefault();
 
     const shouldDeselect = Object.keys(selectedRowIds).length > 0 && Object.keys(selectedRowIds).length < rows.length;
     const shouldSelectAll =
@@ -103,6 +111,7 @@ const Table = ({ collapseSidebar }) => {
       setSelectedRowIds({});
       return;
     }
+
     const newSelectedRowIds = {};
     new Array(totalRowsCount).fill(true).forEach((value, index) => (newSelectedRowIds[index] = value));
     setSelectedRowIds(newSelectedRowIds);
@@ -119,6 +128,7 @@ const Table = ({ collapseSidebar }) => {
       editable: false,
       errorState: false,
     });
+    updateCellNavigationRefToDefault();
     setSelectedRowIds(selectedRowIdsRef);
     return;
   };
@@ -128,6 +138,131 @@ const Table = ({ collapseSidebar }) => {
     if (rowIdSelected) newSelectedIdRef[`${rowIdSelected}`] = true;
     setSelectedRowIds(newSelectedIdRef);
     return;
+  };
+
+  const manageScrollWhileNavigation = () => {
+    // Table Scroll based on Content overlfow is handled here
+    const selectedCellElem = document.querySelector('.tjdb-selected-cell');
+    if (selectedCellElem && tooljetDbTableRef.current) {
+      const tableBoundingRect = tooljetDbTableRef?.current?.getBoundingClientRect();
+      const cellBoundingRect = selectedCellElem.getBoundingClientRect();
+
+      // Scroll when we reach the bottom of the table and when content overflows
+      if (cellBoundingRect.bottom > tableBoundingRect.bottom) {
+        tooljetDbTableRef.current.scrollTo({
+          top: tooljetDbTableRef.current.scrollTop + (cellBoundingRect.bottom - tableBoundingRect.bottom),
+          behavior: 'instant',
+        });
+      }
+
+      // Scroll when we reach the top of the table. Added 32 for considering table header space
+      if (cellBoundingRect.top < tableBoundingRect.top + 32) {
+        tooljetDbTableRef.current.scrollTo({
+          top: tooljetDbTableRef.current.scrollTop + (cellBoundingRect.top - (tableBoundingRect.top + 32)),
+          behavior: 'instant',
+        });
+      }
+
+      // Scroll when we reach right end of the table and if content gets overflow
+      if (cellBoundingRect.right > tableBoundingRect.right) {
+        tooljetDbTableRef.current.scrollTo({
+          left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.right - tableBoundingRect.right),
+          behavior: 'instant',
+        });
+      }
+
+      // Scroll when we reach left end of the table and if content gets overflow. Added 296 for width of two sticky columns
+      if (cellBoundingRect.left < tableBoundingRect.left + 296) {
+        tooljetDbTableRef.current.scrollTo({
+          left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.left - (tableBoundingRect.left + 296)),
+          behavior: 'instant',
+        });
+      }
+    }
+  };
+
+  const updateCellNavigationRef = (rowIndex, columnIndex, cellEditable) => {
+    if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null) {
+      toggleCellSelectionClassNames(
+        selectedCellRef.current.rowIndex,
+        selectedCellRef.current.columnIndex,
+        rowIndex,
+        columnIndex
+      );
+    }
+
+    selectedCellRef.current = {
+      rowIndex: rowIndex,
+      columnIndex: columnIndex,
+      editable: cellEditable,
+    };
+  };
+
+  const removeCellSelectionClassNames = (prevRowIndex, prevColumnIndex) => {
+    const selectedElementTd = document.getElementById(`tjdb-td-row${prevRowIndex}-column${prevColumnIndex}`);
+    const selectedElementCell = document.getElementById(`tjdb-cell-row${prevRowIndex}-column${prevColumnIndex}`);
+
+    if (selectedElementCell) selectedElementCell.classList.remove('tjdb-selected-cell');
+    if (selectedElementTd) {
+      selectedElementTd.classList.remove('table-editable-parent-cell');
+      selectedElementTd.classList.add('table-cell');
+    }
+  };
+
+  const toggleCellSelectionClassNames = (prevRowIndex, prevColumnIndex, currentRowIndex, currentColumnIndex) => {
+    const selectedElementTd = document.getElementById(`tjdb-td-row${prevRowIndex}-column${prevColumnIndex}`);
+    const selectedElementCell = document.getElementById(`tjdb-cell-row${prevRowIndex}-column${prevColumnIndex}`);
+    const elementToBeSelectedTd = document.getElementById(`tjdb-td-row${currentRowIndex}-column${currentColumnIndex}`);
+    const elementToBeSelectedCell = document.getElementById(
+      `tjdb-cell-row${currentRowIndex}-column${currentColumnIndex}`
+    );
+
+    if (selectedElementCell) selectedElementCell.classList.remove('tjdb-selected-cell');
+    if (selectedElementTd) {
+      selectedElementTd.classList.remove('table-editable-parent-cell');
+      selectedElementTd.classList.add('table-cell');
+    }
+
+    if (elementToBeSelectedCell) elementToBeSelectedCell.classList.add('tjdb-selected-cell');
+    if (elementToBeSelectedTd) {
+      elementToBeSelectedTd.classList.add('table-editable-parent-cell');
+      elementToBeSelectedTd.classList.remove('table-cell');
+    }
+  };
+
+  const patchCellNavigationRef = (index, type, cellEditable = null) => {
+    // type - row | column
+    if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null) {
+      if (cellClick.cellIndex !== null && cellClick.rowIndex !== null) {
+        setCellClick({
+          rowIndex: null,
+          cellIndex: null,
+          editable: false,
+          errorState: false,
+        });
+      }
+
+      const { rowIndex, columnIndex } = selectedCellRef.current;
+      if (type === 'row') {
+        toggleCellSelectionClassNames(rowIndex, columnIndex, index, columnIndex);
+        selectedCellRef.current = {
+          ...selectedCellRef.current,
+          rowIndex: index,
+          ...(cellEditable !== null ? { editable: cellEditable } : {}),
+        };
+        manageScrollWhileNavigation();
+      }
+
+      if (type === 'column') {
+        toggleCellSelectionClassNames(rowIndex, columnIndex, rowIndex, index);
+        selectedCellRef.current = {
+          ...selectedCellRef.current,
+          columnIndex: index,
+          ...(cellEditable !== null ? { editable: cellEditable } : {}),
+        };
+        manageScrollWhileNavigation();
+      }
+    }
   };
 
   const fetchTableMetadata = () => {
@@ -228,6 +363,7 @@ const Table = ({ collapseSidebar }) => {
       editable: false,
       errorState: false,
     });
+    updateCellNavigationRefToDefault();
   };
 
   // Allowlist keys for entering on text field to enable edit mode
@@ -257,19 +393,27 @@ const Table = ({ collapseSidebar }) => {
   const handleKeyDown = (e) => {
     // Disables Cell navigation while error and update-inprogress
     if (cellClick.errorState || isCellUpdateInProgress) e.preventDefault();
-
     // Logic to edit value in a cell and simultaneously trigger edit menu
     if (
-      cellClick.rowIndex !== null &&
+      selectedCellRef.current.rowIndex !== null &&
       !editPopover &&
       !cellClick.errorState &&
       !isCellUpdateInProgress &&
       allowListForKeys.includes(e.keyCode) &&
-      cellClick.cellIndex !== 0
+      selectedCellRef.current.columnIndex !== 0
     ) {
       e.preventDefault();
-      const cellValue = rows[cellClick.rowIndex].cells[cellClick.cellIndex].value;
-      const cellDataType = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.column?.dataType;
+      const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex].value;
+      const cellDataType =
+        rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.column?.dataType;
+
+      setCellClick((prevValue) => ({
+        ...prevValue,
+        rowIndex: selectedCellRef.current.rowIndex,
+        cellIndex: selectedCellRef.current.columnIndex,
+        editable: true,
+      }));
+
       if (cellDataType !== 'boolean') {
         setSelectedRowIds({});
         if (cellValue === null) {
@@ -278,7 +422,8 @@ const Table = ({ collapseSidebar }) => {
           setCellVal(e.key);
           document.getElementById('edit-input-blur')?.focus();
         } else {
-          setCellVal((prevValue) => prevValue + e.key);
+          cellValue === null ? setNullValue(true) : setNullValue(false);
+          setCellVal(cellValue + e.key);
           setEditPopover(true);
           document.getElementById('edit-input-blur')?.focus();
         }
@@ -286,67 +431,64 @@ const Table = ({ collapseSidebar }) => {
     }
 
     // Logic for Cell Navigation - Enter ( Opens edit menu ), Backspace (removes Null value ) & ESC event ( close edit menu )
-    if (cellClick.rowIndex !== null && !cellClick.errorState && !isCellUpdateInProgress) {
+    if (selectedCellRef.current.rowIndex !== null && !cellClick.errorState && !isCellUpdateInProgress) {
       if (e.key === 'ArrowRight') {
-        setSelectedRowIds({});
-        setEditPopover(false);
-        const cellIndexValue =
-          cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
-        const cellValue = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
+        e.preventDefault();
+        if (Object.keys(selectedRowIds).length > 0) setSelectedRowIds({});
+        if (editPopover) setEditPopover(false);
+
         const newIndex =
-          cellClick.cellIndex === columHeaderLength - 1 ? columHeaderLength - 1 : cellClick.cellIndex + 1;
-        setCellClick((prevState) => ({
-          ...prevState,
-          cellIndex: newIndex,
-        }));
-        setCellVal(cellValue);
-        cellValue === null ? setNullValue(true) : setNullValue(false);
-        setDefaultValue(false);
+          selectedCellRef.current.columnIndex === columHeaderLength - 1
+            ? columHeaderLength - 1
+            : selectedCellRef.current.columnIndex + 1;
+        patchCellNavigationRef(newIndex, 'column', true);
       } else if (e.key === 'ArrowLeft') {
-        setSelectedRowIds({});
-        setEditPopover(false);
-        const cellIndexValue = cellClick.cellIndex === 0 ? 0 : cellClick.cellIndex - 1;
-        const cellValue = rows[cellClick.rowIndex].cells[cellIndexValue].value; // cell Index's value
-        const newIndex = cellClick.cellIndex === 0 ? 0 : cellClick.cellIndex - 1;
-        setCellClick((prevState) => ({
-          ...prevState,
-          cellIndex: newIndex,
-        }));
-        setCellVal(cellValue);
-        cellValue === null ? setNullValue(true) : setNullValue(false);
-        setDefaultValue(false);
+        e.preventDefault();
+        if (Object.keys(selectedRowIds).length > 0) setSelectedRowIds({});
+        if (editPopover) setEditPopover(false);
+
+        const newIndex = selectedCellRef.current.columnIndex === 0 ? 0 : selectedCellRef.current.columnIndex - 1;
+        patchCellNavigationRef(newIndex, 'column', true);
       } else if (e.key === 'ArrowUp') {
-        setSelectedRowIds({});
-        setEditPopover(false);
-        const cellValue = rows[cellClick.rowIndex - 1].cells[cellClick.cellIndex].value; // row Index's value
-        const newRowIndex = cellClick.rowIndex === 0 ? 0 : cellClick.rowIndex - 1;
-        setCellClick((prevState) => ({
-          ...prevState,
-          rowIndex: newRowIndex,
-        }));
-        setCellVal(cellValue);
-        cellValue === null ? setNullValue(true) : setNullValue(false);
-        setDefaultValue(false);
+        e.preventDefault();
+        if (Object.keys(selectedRowIds).length > 0) setSelectedRowIds({});
+        if (editPopover) setEditPopover(false);
+
+        const newRowIndex = selectedCellRef.current.rowIndex === 0 ? 0 : selectedCellRef.current.rowIndex - 1;
+        patchCellNavigationRef(newRowIndex, 'row', true);
       } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (Object.keys(selectedRowIds).length > 0) setSelectedRowIds({});
+        if (editPopover) setEditPopover(false);
+
+        const newRowIndex =
+          selectedCellRef.current.rowIndex === rows.length - 1 ? rows.length - 1 : selectedCellRef.current.rowIndex + 1;
+        patchCellNavigationRef(newRowIndex, 'row', true);
+      } else if (e.key === 'Enter' && selectedCellRef.current.columnIndex !== 0) {
         setSelectedRowIds({});
-        setEditPopover(false);
-        const cellValue = rows[cellClick.rowIndex + 1].cells[cellClick.cellIndex].value; // row Index's value
-        const newRowIndex = cellClick.rowIndex === rows.length - 1 ? rows.length - 1 : cellClick.rowIndex + 1;
-        setCellClick((prevState) => ({
-          ...prevState,
-          rowIndex: newRowIndex,
-        }));
+        const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.value;
         setCellVal(cellValue);
+        setCellClick((prevValue) => ({
+          ...prevValue,
+          rowIndex: selectedCellRef.current.rowIndex,
+          cellIndex: selectedCellRef.current.columnIndex,
+          editable: true,
+        }));
         cellValue === null ? setNullValue(true) : setNullValue(false);
-        setDefaultValue(false);
-      } else if (e.key === 'Enter' && cellClick.cellIndex !== 0) {
         setEditPopover(true);
         document.getElementById('edit-input-blur').focus();
-      } else if (e.key === 'Backspace' && !editPopover && cellClick.cellIndex !== 0) {
-        const cellValue = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.value;
-        const cellDataType = rows[cellClick.rowIndex].cells[cellClick.cellIndex]?.column?.dataType;
+      } else if (e.key === 'Backspace' && !editPopover && selectedCellRef.current.columnIndex !== 0) {
+        const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.value;
+        const cellDataType =
+          rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.column?.dataType;
         if (cellValue === null) {
           setSelectedRowIds({});
+          setCellClick((prevValue) => ({
+            ...prevValue,
+            rowIndex: selectedCellRef.current.rowIndex,
+            cellIndex: selectedCellRef.current.columnIndex,
+            editable: true,
+          }));
           cellDataType === 'boolean' ? setCellVal(true) : setCellVal('');
           setNullValue(false);
           setDefaultValue(false);
@@ -361,12 +503,18 @@ const Table = ({ collapseSidebar }) => {
   useEffect(() => {
     if (!editPopover) {
       document.addEventListener('keydown', handleKeyDown);
-      return () => {
-        document.removeEventListener('keydown', handleKeyDown);
-      };
     }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cellClick, editPopover, isCellUpdateInProgress]);
+  }, [
+    cellClick,
+    selectedCellRef.current.rowIndex,
+    selectedCellRef.current.columnIndex,
+    editPopover,
+    isCellUpdateInProgress,
+  ]);
 
   useEffect(() => {
     setSelectedRowIds({});
@@ -387,6 +535,7 @@ const Table = ({ collapseSidebar }) => {
         editable: false,
         errorState: false,
       }));
+      updateCellNavigationRefToDefault();
       handleOnCloseEditMenu();
     }
     event.stopPropagation();
@@ -544,6 +693,17 @@ const Table = ({ collapseSidebar }) => {
   if (!selectedTable) return null;
 
   const handleMouseOver = (index) => {
+    if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null) {
+      const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.value;
+      setCellVal(cellValue);
+      setCellClick((prevState) => ({
+        ...prevState,
+        rowIndex: selectedCellRef.current.rowIndex,
+        cellIndex: selectedCellRef.current.columnIndex,
+      }));
+      cellValue === null ? setNullValue(true) : setNullValue(false);
+    }
+
     setEditColumnHeader((prevState) => ({
       ...prevState,
       hoveredColumn: index,
@@ -577,6 +737,7 @@ const Table = ({ collapseSidebar }) => {
     if (
       ['table-editable-parent-cell', 'tjdb-td-wrapper', 'table-cell', 'cell-text'].includes(e.target.classList.value)
     ) {
+      updateCellNavigationRef(rowIndex, cellIndex, true);
       setSelectedRowIds({});
       setCellVal(cellVal);
       setCellClick((prevState) => ({
@@ -640,6 +801,15 @@ const Table = ({ collapseSidebar }) => {
     ? 'No data found matching the criteria specified in current filters.'
     : 'Use Add Row from the menu or directly click on + icon to add a row. You may use the bulk upload option to add multiple rows of data using a csv file.';
   const emptyMainData = filterEnable ? 'No results found' : 'No data added yet';
+  function isSerialDataType(columnDetails) {
+    const { dataType = '', column_default = '' } = columnDetails;
+    const serialDatatypeDefaultValuePattern = 'nextval(';
+
+    if (dataType === 'integer' && column_default) {
+      if (column_default.includes(serialDatatypeDefaultValuePattern)) return true;
+    }
+    return false;
+  }
 
   return (
     <div>
@@ -665,6 +835,7 @@ const Table = ({ collapseSidebar }) => {
         className={cx(
           `table-responsive border-0 tj-db-table animation-fade ${rows.length === 0 ? 'tj-table-empty' : 'tj-table'}`
         )}
+        ref={tooljetDbTableRef}
       >
         {loadingState ? (
           <table
@@ -740,7 +911,7 @@ const Table = ({ collapseSidebar }) => {
                   {headerGroup.headers.map((column, index) => (
                     <th
                       key={column.Header}
-                      width={230}
+                      width={isSerialDataType(column) ? 150 : 230}
                       style={{ height: index === 0 ? '32px' : '' }}
                       title={index === 0 ? '' : column?.Header}
                       className={
@@ -904,6 +1075,7 @@ const Table = ({ collapseSidebar }) => {
                               }
                             )}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
+                            id={`tjdb-td-row${rIndex}-column${index}`}
                             {...cell.getCellProps()}
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
@@ -913,8 +1085,8 @@ const Table = ({ collapseSidebar }) => {
                               delay={{ show: 200, hide: 0 }}
                               show={
                                 !(
-                                  cellClick.rowIndex === rIndex &&
-                                  cellClick.cellIndex === index &&
+                                  selectedCellRef.current.rowIndex === rIndex &&
+                                  selectedCellRef.current.columnIndex === index &&
                                   cellClick.editable
                                 ) &&
                                 cell.value !== null &&
@@ -935,6 +1107,7 @@ const Table = ({ collapseSidebar }) => {
                                       cellClick.cellIndex === index &&
                                       cellClick.errorState === true,
                                   })}
+                                  id={`tjdb-cell-row${rIndex}-column${index}`}
                                 >
                                   {cellClick.editable &&
                                   cellClick.rowIndex === rIndex &&
