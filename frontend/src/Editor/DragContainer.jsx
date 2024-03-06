@@ -312,6 +312,8 @@ export default function DragContainer({
       .map((component) => '.ele-' + component.id),
   ];
 
+  console.log('selectedComponents--', selectedComponents, groupedTargets);
+
   useEffect(() => {
     reloadGrid();
   }, [selectedComponents, openModalWidgetId]);
