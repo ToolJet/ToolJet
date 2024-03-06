@@ -197,12 +197,18 @@ class InstanceSSOConfiguration extends React.Component {
           className="sso-option"
           key={key}
           onClick={isFeatureAvailable ? () => this.openModal(key) : (e) => e.preventDefault()}
+          data-cy="sso-card"
         >
           <div className="sso-option-label">
             {
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-icon`}
+              >
                 {this.getSSOIcon(key)}
-                <span style={{ marginLeft: 8 }}>{name}</span>
+                <span style={{ marginLeft: 8 }} data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-label`}>
+                  {name}
+                </span>
                 {
                   <img
                     src="assets/images/EditIcon.png"
@@ -213,6 +219,7 @@ class InstanceSSOConfiguration extends React.Component {
                       marginLeft: '8px',
                       ...(isFeatureAvailable ? {} : { visibility: 'hidden' }),
                     }}
+                    data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-edit-icon`}
                   />
                 }
               </div>
@@ -223,6 +230,7 @@ class InstanceSSOConfiguration extends React.Component {
               type="checkbox"
               checked={isEnabled}
               onChange={isFeatureAvailable ? () => this.toggleSSOOption(key) : (e) => e.preventDefault()}
+              data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-toggle`}
             />
             <span className="slider round"></span>
           </label>
@@ -236,7 +244,9 @@ class InstanceSSOConfiguration extends React.Component {
 
     return (
       <div className="sso-configuration">
-        <h4 style={{ fontSize: '12px' }}>SSO</h4>
+        <h4 style={{ fontSize: '12px' }} data-cy="sso-header">
+          SSO
+        </h4>
         {this.renderSSOOption('google', 'Google')}
         {this.renderSSOOption('git', 'GitHub')}
         {this.renderSSOOption('openid', 'OpenID Connect')}

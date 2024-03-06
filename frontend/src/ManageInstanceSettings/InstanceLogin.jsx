@@ -337,7 +337,7 @@ class InstanceLogin extends React.Component {
                               checked={options?.passwordLoginEnabled === true}
                               disabled={!isAnySSOEnabled}
                             />
-                            <label className="form-check-label bold-text" data-cy="label-password-login">
+                            <label className="form-check-label bold-text" data-cy="password-login-label">
                               Password login
                             </label>
                           </div>
@@ -356,8 +356,9 @@ class InstanceLogin extends React.Component {
                           type="checkbox"
                           onChange={() => this.handleCheckboxChange('enableWorkspaceConfiguration')}
                           checked={options?.enableWorkspaceConfiguration === true}
+                          data-cy="enable-workspace-configuration-toggle"
                         />
-                        <label className="form-check-label bold-text" data-cy="enable-sign-up-label">
+                        <label className="form-check-label bold-text" data-cy="enable-workspace-configuration-label">
                           {t(
                             'header.organization.menus.manageSSO.generalSettings.enableWorkspaceConfiguration',
                             'Enable workspace configuration'
@@ -365,7 +366,7 @@ class InstanceLogin extends React.Component {
                         </label>
                       </label>
                       <div className="help-text danger-text-login">
-                        <div data-cy="enable-sign-up-helper-text">
+                        <div data-cy="enable-workspace-configuration-helper-text">
                           {t(
                             'header.organization.menus.manageSSO.generalSettings.enableWorkspaceConfiguration',
                             `Allow workspace admin to configure their workspace’s login differently`
