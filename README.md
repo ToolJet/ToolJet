@@ -10,7 +10,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 ![Number of GitHub pull requests that are open](https://img.shields.io/github/issues-pr-raw/tooljet/tooljet)
 ![GitHub release; latest by date](https://img.shields.io/github/v/release/tooljet/tooljet)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/tooljet/tooljet)
-[![GitHub license which is APGL license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet)
+[![GitHub license which is AGPL license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet)
 [![Follow us on X, formerly Twitter](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
 <p align="center">
@@ -23,13 +23,13 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 ## All features
 
-- **Visual App Builder:** 40+ built-in responsive components, including Tables, Charts, Lists, Forms, and Progress Bars.
+- **Visual App Builder:** 45+ built-in responsive components, including Tables, Charts, Lists, Forms, and Progress Bars.
 - **ToolJet Database:** Built-in no-code database.
 - **Multi-Page:** Build an application with multiple pages.
 - **Multiplayer editing:** Allows simultaneous app building by multiple developers.
-- **40+ data sources:** Integrate with external databases, cloud storage, and APIs.
+- **50+ data sources:** Integrate with external databases, cloud storage, and APIs.
 - **Desktop & mobile:** Customize layout widths to fit various screen sizes.
-- **Self-host:** Supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more.
+- **Self-host:** Supports Docker, Kubernetes, AWS EC2, Google Cloud Run, and more.
 - **Collaborate:** Add comments anywhere on the canvas and tag your team members.
 - **Extend with plugins:** Use our [command-line tool](https://www.npmjs.com/package/@tooljet/cli) to easily bootstrap new connectors.
 - **Version control:** Manage multiple application versions with a structured release cycle.
@@ -48,10 +48,9 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 ## Quickstart
 The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/setup/).
 
-You can deploy ToolJet on Heroku and DigitalOcean using one-click-deployment.
+You can deploy ToolJet on DigitalOcean using one-click-deployment.
 
 <p align="center">
-  <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height=32></a>
   <a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/ToolJet/ToolJet/tree/main"><img src="https://www.deploytodo.com/do-btn-blue.svg" alt="Deploy to DigitalOcean" height=32></a>
 </p>
 
@@ -59,10 +58,11 @@ You can deploy ToolJet on Heroku and DigitalOcean using one-click-deployment.
 Want to give ToolJet a quick spin on your local machine? You can run the following command from your terminal to have ToolJet up and running right away.
 
 ```bash
-docker run \
+docker run -d \
   --name tooljet \
   --restart unless-stopped \
   -p 80:80 \
+  --platform linux/amd64 \
   -v tooljet_data:/var/lib/postgresql/13/main \
   tooljet/try:latest
 ```
@@ -81,13 +81,12 @@ Documentation is available at https://docs.tooljet.com.
 - [Component Reference](https://docs.tooljet.com/docs/widgets/button)
 
 ## Self-hosted
-You can use ToolJet Cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, Heroku, and more.
+You can use ToolJet Cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, and more.
 
 | Provider  | Documentation |
 | :------------- | :------------- |
 | Digital Ocean | [Link](https://docs.tooljet.com/docs/setup/digitalocean)  |
 | Docker  | [Link](https://docs.tooljet.com/docs/setup/docker)   |
-| Heroku  | [Link](https://docs.tooljet.com/docs/setup/heroku)  |
 | AWS EC2 | [Link](https://docs.tooljet.com/docs/setup/ec2)  |
 | AWS ECS | [Link](https://docs.tooljet.com/docs/setup/ecs)   |
 | OpenShift | [Link](https://docs.tooljet.com/docs/setup/openshift)   |
