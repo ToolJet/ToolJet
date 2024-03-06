@@ -476,29 +476,29 @@ export class TooljetDbService {
     });
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
-    let query = '';
-
-    if ('column_default' in column) {
-      column.column_default.length
-        ? (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${
-            column.column_name
-          } SET DEFAULT ${this.addQuotesIfString(column['column_default'])};`)
-        : (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${column.column_name} DROP DEFAULT;`);
-    }
-
-    if ('is_not_null' in constraints_type) {
-      constraints_type.is_not_null
-        ? (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${column.column_name} SET NOT NULL;`)
-        : (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${column.column_name} DROP NOT NULL;`);
-    }
-
-    if (column?.column_name && column?.new_column_name)
-      query += `ALTER TABLE "${internalTable.id}" RENAME COLUMN ${column.column_name} TO ${column.new_column_name};`;
     const internalTableInfo = {};
+
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.startTransaction();
+
     try {
-      const result = await this.tooljetDbManager.query(query);
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      return result;
+      await tjdbQueryRunner.changeColumn(
+        internalTable.id,
+        column.column_name,
+        new TableColumn({
+          name: column.column_name,
+          type: column['data_type'],
+          ...(column['column_default'] && { default: this.addQuotesIfString(column['column_default']) }),
+          ...(constraints_type?.is_not_null ? { isNullable: false } : { isNullable: true }),
+        })
+      );
+
+      if (column?.column_name && column?.new_column_name) {
+        await tjdbQueryRunner.renameColumn(internalTable.id, column?.column_name, column?.new_column_name);
+      }
+
+      await tjdbQueryRunner.commitTransaction();
     } catch (error) {
       internalTableInfo[internalTable.id] = tableName;
       if (error instanceof QueryFailedError || error instanceof TypeORMError) {
@@ -508,7 +508,11 @@ export class TooljetDbService {
         });
         throw new HttpException(customErrorMessage, 422);
       }
+      await tjdbQueryRunner.rollbackTransaction();
       throw error;
+    } finally {
+      await tjdbQueryRunner.query("NOTIFY pgrst, 'reload schema'");
+      await tjdbQueryRunner.release();
     }
   }
 
