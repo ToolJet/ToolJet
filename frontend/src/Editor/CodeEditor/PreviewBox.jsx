@@ -340,6 +340,7 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
           enableClipboard={false}
           rootName={false}
           theme={darkMode ? 'dark' : 'light'}
+          groupArraysAfterLength={500}
         />
       </div>
     );
