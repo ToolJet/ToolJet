@@ -193,6 +193,7 @@ export default function DragContainer({
   }, [currentLayout]);
 
   useEffect(() => {
+    console.log('selectedComponents---', selectedComponents);
     const controlBoxes = document.querySelectorAll('.moveable-control-box[target-id]');
     controlBoxes.forEach((box) => {
       box.style.display = '';
