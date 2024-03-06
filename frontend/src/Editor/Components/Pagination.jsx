@@ -9,6 +9,7 @@ export const Pagination = ({
   fireEvent,
   darkMode,
   dataCy,
+  width,
 }) => {
   const { visibility, disabledState, boxShadow } = styles;
   const [currentPage, setCurrentPage] = useState(() => properties?.defaultPageIndex ?? 1);
@@ -64,13 +65,8 @@ export const Pagination = ({
   };
 
   return (
-    <div
-      data-disabled={disabledState}
-      className="d-flex align-items-center px-1"
-      data-cy={dataCy}
-      style={{ boxShadow }}
-    >
-      <ul className="pagination m-0" style={computedStyles}>
+    <div data-disabled={disabledState} className="d-flex align-items-center" data-cy={dataCy} style={{ boxShadow }}>
+      <ul className="pagination m-0 align-items-center" style={computedStyles}>
         <Pagination.Operator
           operator="<<"
           currentPage={currentPage}
@@ -90,6 +86,7 @@ export const Pagination = ({
           totalPages={properties.numberOfPages}
           callback={gotoPage}
           darkMode={darkMode}
+          width={width}
         />
         <Pagination.Operator
           operator=">"
@@ -222,19 +219,80 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
   );
 };
 
-const PageLinks = ({ currentPage, totalPages, callback, darkMode }) => {
-  return Array.from(Array(totalPages).keys()).map((index) => {
-    const pageNumber = index + 1;
-    return (
-      <li
-        key={pageNumber}
-        onClick={() => callback(pageNumber)}
-        className={`page-item ${currentPage === pageNumber ? 'active' : ''}`}
-      >
-        <a className={`page-link ${darkMode && 'text-light'}`}>{pageNumber}</a>
+const PageLinks = ({ currentPage, totalPages, callback, darkMode, width }) => {
+  const itemsToShowPerWidth = Math.floor(width / 28); //  each item occupies 28px width
+
+  // Calculate the range of pages to display based on the current page and available width
+  let startPage = 1;
+  let endPage = totalPages;
+
+  if (totalPages > itemsToShowPerWidth) {
+    const halfItemsToShowPerWidth = Math.floor(itemsToShowPerWidth / 2);
+    startPage = Math.max(1, currentPage - halfItemsToShowPerWidth);
+    endPage = Math.min(totalPages, currentPage + halfItemsToShowPerWidth);
+
+    // Adjust startPage and endPage to ensure that itemsToShowPerWidth items are displayed
+    if (endPage - startPage + 1 < itemsToShowPerWidth) {
+      if (currentPage < totalPages / 2) {
+        endPage = Math.min(totalPages, endPage + (itemsToShowPerWidth - (endPage - startPage + 1)));
+      } else {
+        startPage = Math.max(1, startPage - (itemsToShowPerWidth - (endPage - startPage + 1)));
+      }
+    }
+  }
+
+  const pages = [];
+
+  // Add the first page only if it's not already displayed
+  if (startPage > 1) {
+    pages.push(
+      <li key={1} onClick={() => callback(1)} className={`page-item`}>
+        <a className={`page-link ${darkMode && 'text-light'}`}>1</a>
       </li>
     );
-  });
+  }
+
+  // Add ellipsis if needed before the start page
+  if (startPage > 2) {
+    pages.push(
+      <li key="ellipsis-start" className="page-item disabled">
+        <a className={`page-link ${darkMode && 'text-light'}`}>...</a>
+      </li>
+    );
+  }
+
+  // Add the pages in the range
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(
+      <li key={i} onClick={() => callback(i)} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+        <a className={`page-link ${darkMode && 'text-light'}`}>{i}</a>
+      </li>
+    );
+  }
+
+  // Add ellipsis if needed after the end page
+  if (endPage < totalPages - 1) {
+    pages.push(
+      <li key="ellipsis-end" className="page-item disabled">
+        <a className={`page-link ${darkMode && 'text-light'}`}>...</a>
+      </li>
+    );
+  }
+
+  // Add the last page only if it's not already displayed
+  if (endPage < totalPages) {
+    pages.push(
+      <li
+        key={totalPages}
+        onClick={() => callback(totalPages)}
+        className={`page-item ${currentPage === totalPages ? 'active' : ''}`}
+      >
+        <a className={`page-link ${darkMode && 'text-light'}`}>{totalPages}</a>
+      </li>
+    );
+  }
+
+  return pages;
 };
 
 Pagination.Operator = Operator;
