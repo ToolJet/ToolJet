@@ -25,6 +25,12 @@ source "amazon-ebs" "ubuntu" {
   }
   ssh_username = "ubuntu"
   ssh_clear_authorized_keys = "true"
+
+  launch_block_device_mappings {
+    device_name = "/dev/sda1"
+    volume_size = 10
+  }
+
 }
 
 build {
@@ -64,6 +70,5 @@ build {
 
   provisioner "shell" {
     script = "setup_machine.sh"
-    environment_vars = ["SSH_PRIVATE_KEY=${var.ssh_private_key}"]
   }
 }
