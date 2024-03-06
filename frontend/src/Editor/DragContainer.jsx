@@ -193,7 +193,6 @@ export default function DragContainer({
   }, [currentLayout]);
 
   useEffect(() => {
-    console.log('selectedComponents---', selectedComponents);
     const controlBoxes = document.querySelectorAll('.moveable-control-box[target-id]');
     controlBoxes.forEach((box) => {
       box.style.display = '';
@@ -873,6 +872,9 @@ export default function DragContainer({
         onDragGroup={(ev) => {
           const { events } = ev;
           const parentElm = events[0]?.target?.closest('.real-canvas');
+          if (parentElm && !parentElm.classList.contains('show-grid')) {
+            parentElm?.classList?.add('show-grid');
+          }
           // const parentWidth = parentElm?.clientWidth;
           // const parentHeight = parentElm?.clientHeight;
 
@@ -896,8 +898,7 @@ export default function DragContainer({
 
             ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
           });
-          debouncedOnDrag(events);
-          // }
+          updateNewPosition(events);
         }}
         onDragGroupStart={({ events }) => {
           const parentElm = events[0]?.target?.closest('.real-canvas');
