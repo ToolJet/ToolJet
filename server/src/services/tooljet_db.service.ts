@@ -1,5 +1,14 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException, Optional } from '@nestjs/common';
-import { EntityManager, In, ObjectLiteral, QueryFailedError, SelectQueryBuilder, Table, TypeORMError } from 'typeorm';
+import {
+  EntityManager,
+  In,
+  ObjectLiteral,
+  QueryFailedError,
+  SelectQueryBuilder,
+  Table,
+  TableColumn,
+  TypeORMError,
+} from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { isString, isEmpty, camelCase } from 'lodash';
@@ -194,6 +203,7 @@ export class TooljetDbService {
     } finally {
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await queryRunner.release();
+      await tjdbQueryRunner.release();
     }
   }
 
@@ -254,14 +264,29 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
-    let query = `ALTER TABLE "${internalTable.id}" ADD ${column['column_name']} ${column['data_type']}`;
-    if (column['column_default']) query += ` DEFAULT ${this.addQuotesIfString(column['column_default'])}`;
-    if (column?.constraints_type?.is_primary_key ?? false) query += ` PRIMARY KEY`;
-    if (column?.constraints_type?.is_not_null ?? false) query += ` NOT NULL`;
+    const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
+    await tjdbQueryRunnner.connect();
+    await tjdbQueryRunnner.startTransaction();
 
-    const result = await this.tooljetDbManager.query(query);
-    await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-    return result;
+    try {
+      await tjdbQueryRunnner.addColumn(
+        internalTable.id,
+        new TableColumn({
+          name: column['column_name'],
+          type: column['data_type'],
+          ...(column['column_default'] && { default: this.addQuotesIfString(column['column_default']) }),
+          ...(column?.constraints_type?.is_not_null ?? false ? { isNullable: false } : { isNullable: true }),
+          ...(column?.constraints_type?.is_primary_key ? { isPrimary: true } : {}),
+        })
+      );
+      await tjdbQueryRunnner.commitTransaction();
+    } catch (err) {
+      await tjdbQueryRunnner.rollbackTransaction();
+      throw err;
+    } finally {
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await tjdbQueryRunnner.release();
+    }
   }
 
   private async dropColumn(organizationId: string, params) {
