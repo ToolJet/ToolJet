@@ -17,13 +17,7 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
-import {
-  dbTransactionWrap,
-  generateInviteURL,
-  generateNextNameAndSlug,
-  generateOrgInviteURL,
-  isValidDomain,
-} from 'src/helpers/utils.helper';
+import { dbTransactionWrap, generateInviteURL, generateNextNameAndSlug, isValidDomain } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
@@ -327,6 +321,23 @@ export class OauthService {
             ...{ invitationToken: null },
             ...(!userDetails?.password && { password: uuid.v4() }), // Default password for sso-signed workspace user
           };
+
+          // Activate the personal workspace if the user is invited to another organization
+          const defaultOrganizationId = userDetails.defaultOrganizationId;
+          const shouldActivatePersonalWorkspace =
+            signUpInvitationToken &&
+            signupOrganizationId &&
+            defaultOrganizationId &&
+            signupOrganizationId !== defaultOrganizationId;
+          let personalWorkspace: Organization;
+          if (shouldActivatePersonalWorkspace) {
+            const defaultOrganizationUser = await this.organizationUsersService.getOrganizationUser(
+              defaultOrganizationId
+            );
+            await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
+            personalWorkspace = await this.organizationService.fetchOrganization(defaultOrganizationId);
+          }
+
           // User account setup not done, updating source and status
           await this.usersService.updateUser(userDetails.id, updatableUserParams, manager);
           // New user created and invited to the organization
@@ -334,9 +345,14 @@ export class OauthService {
             (ou) => ou.organizationId === organization.id
           )?.invitationToken;
 
-          const session = await this.authService.generateInviteSignupPayload(response, userDetails, 'sso', manager);
-          const organizationInviteUrl = generateOrgInviteURL(organizationToken, organization.id, false);
-          return { ...session, organizationInviteUrl };
+          return await this.authService.processOrganizationSignup(
+            response,
+            userDetails,
+            { invitationToken: organizationToken, organizationId: organization.id },
+            manager,
+            personalWorkspace,
+            'sso'
+          );
         }
       }
 

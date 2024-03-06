@@ -50,6 +50,12 @@ export class OrganizationUsersService {
     }, manager);
   }
 
+  async getOrganizationUser(organizationId: string) {
+    return this.organizationUsersRepository.findOneOrFail({
+      where: { organizationId, status: WORKSPACE_USER_STATUS.INVITED },
+    });
+  }
+
   async changeRole(id: string, role: string) {
     const organizationUser = await this.organizationUsersRepository.findOne({ where: { id } });
     if (organizationUser.role == 'admin') {
