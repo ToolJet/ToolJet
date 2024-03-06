@@ -35,6 +35,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { camelizeKeys } from 'humps';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useResolveStore } from '@/_stores/resolverStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -1223,6 +1224,14 @@ export function runQuery(
               [queryName]: {
                 type: 'query',
                 kind: query.kind,
+              },
+            },
+          });
+
+          useResolveStore.getState().actions.addAppSuggestions({
+            queries: {
+              [queryName]: {
+                data: [...finalData],
               },
             },
           });
