@@ -101,7 +101,7 @@ export class AppController {
     return await this.authService.generateSessionPayload(user, currentOrganization);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SessionAuthGuard)
   @Get('logout')
   async terminateUserSession(@User() user, @Res({ passthrough: true }) response: Response) {
     await this.sessionService.terminateSession(user.id, user.sessionId, response);
