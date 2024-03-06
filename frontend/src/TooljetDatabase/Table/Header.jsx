@@ -257,6 +257,7 @@ const Header = ({
       <CreateColumnDrawer
         isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
+        rows={rows}
       />
       <CreateRowDrawer
         isCreateRowDrawerOpen={isCreateRowDrawerOpen}
