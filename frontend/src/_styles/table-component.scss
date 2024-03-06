@@ -799,14 +799,7 @@
       flex-direction: column;
       gap:10px;
     }
-    .grey-bg-section {
-      background-color: var(--slate3);
-      padding: 12px 16px;
-      border-radius: 6px;
-      display: flex;
-      flex-direction: column;
-      gap:10px;
-    }
+   
     label{
       @extend .tj-text;
       @extend .tj-text-xsm;
@@ -816,6 +809,20 @@
     }
     .ToggleGroupItem{
       flex : 1 1 0;
+    }
+    .table-column-date-picker-accordion {
+      .accordion-button,.accordion-body{
+        padding-left:  0 !important;
+        padding-right: 0 !important;
+      }
+      .grey-bg-section {
+        // background-color: var(--slate3);
+        // padding: 12px 16px;
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        gap:10px;
+      }
     }
   }
   .popover-header{
@@ -880,3 +887,4 @@
     }
   }
 }
+

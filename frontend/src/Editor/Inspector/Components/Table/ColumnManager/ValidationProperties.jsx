@@ -77,6 +77,53 @@ export const ValidationProperties = ({
       case 'dropdown':
       case 'select':
         return [{ property: 'customRule', dateCy: 'input-and-label-custom-rule', label: 'Custom rule' }];
+      case 'datepicker': {
+        const properties = [];
+        properties.push(
+          [
+            {
+              property: 'minDate',
+              dateCy: 'input-and-label-min-date',
+              label: 'Min date',
+              placeholder: 'MM/DD/YYYY',
+            },
+            {
+              property: 'maxDate',
+              dateCy: 'input-and-label-max-date',
+              label: 'Max date',
+              placeholder: 'MM/DD/YYYY',
+            },
+          ],
+          [
+            {
+              property: 'minTime',
+              dateCy: 'input-and-label-min-time',
+              label: 'Min time',
+              placeholder: 'HH:mm',
+            },
+            {
+              property: 'maxTime',
+              dateCy: 'input-and-label-max-time',
+              label: 'Max time',
+              placeholder: 'HH:mm',
+            },
+          ],
+          {
+            property: 'disbaledDates',
+            dateCy: 'input-and-label-custom-rule',
+            label: 'Disabled dates',
+            placeholder: '{{[]}}',
+          },
+          {
+            property: 'customRule',
+            dateCy: 'input-and-label-custom-rule',
+            label: 'Custom rule',
+            placeholder: 'eg. {{ 1 < 2 }}',
+          }
+        );
+
+        return properties;
+      }
       default:
         return [];
     }

@@ -198,6 +198,7 @@ export const Inspector = ({
     }
     newDefinition[paramType] = allParams;
     newComponent.component.definition = newDefinition;
+    console.log(newComponent, 'newComponent');
     componentDefinitionChanged(newComponent, {
       componentPropertyUpdated: true,
       isParamFromTableColumn: isParamFromTableColumn,

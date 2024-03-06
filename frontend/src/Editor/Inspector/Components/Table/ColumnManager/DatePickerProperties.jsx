@@ -46,79 +46,86 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
   items.push(
     {
       title: 'Formatting',
+      className: 'table-date-picker-formatting-accordion',
       children: (
         <>
-          <div className="grey-bg-section mb-2">
-            <ProgramaticallyHandleProperties
-              label="Enable date selection"
-              currentState={currentState}
-              index={index}
-              darkMode={darkMode}
-              callbackFunction={onColumnItemChange}
-              property="enableDateSelection"
-              props={column}
-              component={component}
-              paramType="properties"
-              paramMeta={{ type: 'toggle', displayName: 'Enable date selection' }}
-            />
+          <div className="grey-bg-section mb-2 pb-2 border">
+            <div style={{ background: 'var(--slate3)', padding: '6px', borderRadius: '6px' }}>
+              <ProgramaticallyHandleProperties
+                label="Enable date selection"
+                currentState={currentState}
+                index={index}
+                darkMode={darkMode}
+                callbackFunction={onColumnItemChange}
+                property="enableDateSelection"
+                props={column}
+                component={component}
+                paramType="properties"
+                paramMeta={{ type: 'toggle', displayName: 'Enable date selection' }}
+              />
+            </div>
             {resolveReferences(column?.enableDateSelection, currentState) && (
               <div
                 data-cy={`input-date-display-format`}
                 className="field mb-2 w-100"
                 onClick={(e) => e.stopPropagation()}
               >
-                <label data-cy={`label-date-display-format`} className="form-label">
-                  {t('widget.Table.dateDisplayformat', 'Date Display Format')}
-                </label>
-                <Select
-                  options={[
-                    {
-                      label: 'DD/MM/YYYY',
-                      value: 'DD/MM/YYYY',
-                    },
-                    {
-                      label: 'MM/DD/YYYY',
-                      value: 'MM/DD/YYYY',
-                    },
-                    {
-                      label: 'YYYY/DD/MM',
-                      value: 'YYYY/DD/MM',
-                    },
-                    {
-                      label: 'YYYY/MM/DD',
-                      value: 'YYYY/MM/DD',
-                    },
-                  ]}
-                  value={column?.dateFormat ?? 'DD/MM/YYYY'}
-                  search={true}
-                  closeOnSelect={true}
-                  onChange={(value) => {
-                    onColumnItemChange(index, 'dateFormat', value);
-                  }}
-                  fuzzySearch
-                  placeholder="Select.."
-                  useCustomStyles={true}
-                  styles={styles(darkMode, '100%')}
-                />
+                <div style={{ padding: '0px 12px' }}>
+                  <label data-cy={`label-date-display-format`} className="form-label">
+                    {t('widget.Table.dateDisplayformat', 'Date Display Format')}
+                  </label>
+                  <Select
+                    options={[
+                      {
+                        label: 'DD/MM/YYYY',
+                        value: 'DD/MM/YYYY',
+                      },
+                      {
+                        label: 'MM/DD/YYYY',
+                        value: 'MM/DD/YYYY',
+                      },
+                      {
+                        label: 'YYYY/DD/MM',
+                        value: 'YYYY/DD/MM',
+                      },
+                      {
+                        label: 'YYYY/MM/DD',
+                        value: 'YYYY/MM/DD',
+                      },
+                    ]}
+                    value={column?.dateFormat ?? 'DD/MM/YYYY'}
+                    search={true}
+                    closeOnSelect={true}
+                    onChange={(value) => {
+                      onColumnItemChange(index, 'dateFormat', value);
+                    }}
+                    fuzzySearch
+                    placeholder="Select.."
+                    useCustomStyles={true}
+                    styles={styles(darkMode, '100%')}
+                  />
+                </div>
               </div>
             )}
           </div>
-          <div className="grey-bg-section">
-            <ProgramaticallyHandleProperties
-              label="Show time"
-              currentState={currentState}
-              index={index}
-              darkMode={darkMode}
-              callbackFunction={onColumnItemChange}
-              property="isTimeChecked"
-              props={column}
-              component={component}
-              paramType="properties"
-              paramMeta={{ type: 'toggle', displayName: 'Show time' }}
-            />
+          <div className="grey-bg-section mb-2 pb-2 border">
+            <div style={{ background: 'var(--slate3)', padding: '6px', borderRadius: '6px' }}>
+              <ProgramaticallyHandleProperties
+                label="Enable time selection"
+                currentState={currentState}
+                index={index}
+                darkMode={darkMode}
+                callbackFunction={onColumnItemChange}
+                property="isTimeChecked"
+                props={column}
+                component={component}
+                paramType="properties"
+                paramMeta={{ type: 'toggle', displayName: 'Enable time selection' }}
+              />
+            </div>
             {resolveReferences(column?.isTimeChecked, currentState) && (
               <>
-                <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
+                <div className="field mb-2" onClick={(e) => e.stopPropagation()} style={{ padding: '0px 12px' }}>
                   <label className="form-label">{t('widget.Table.timeFormat', 'Time Format')}</label>
                   <Select
                     options={[
@@ -139,19 +146,27 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
                     styles={styles(darkMode, '100%')}
                   />
                 </div>
-                <ProgramaticallyHandleProperties
-                  label="Enable 24 hr time format"
-                  currentState={currentState}
-                  index={index}
-                  darkMode={darkMode}
-                  callbackFunction={onColumnItemChange}
-                  property="enableTwentyFourHrFormat"
-                  props={column}
-                  component={component}
-                  paramType="properties"
-                  paramMeta={{ type: 'toggle', displayName: 'Enable 24 hr time format' }}
-                />
-                <div ata-cy={`input-display-time-zone`} className="field mb-2" onClick={(e) => e.stopPropagation()}>
+                <div style={{ padding: '0px 12px' }}>
+                  <ProgramaticallyHandleProperties
+                    label="Enable 24 hr time format"
+                    currentState={currentState}
+                    index={index}
+                    darkMode={darkMode}
+                    callbackFunction={onColumnItemChange}
+                    property="enableTwentyFourHrFormat"
+                    props={column}
+                    component={component}
+                    paramType="properties"
+                    paramMeta={{ type: 'toggle', displayName: 'Enable 24 hr time format' }}
+                  />
+                </div>
+
+                <div
+                  data-cy={`input-display-time-zone`}
+                  className="field mb-2"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ padding: '0px 12px' }}
+                >
                   <label data-cy={`label-display-time-zone`} className="form-label">
                     Display in timezone
                   </label>
@@ -298,5 +313,5 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
     }
   );
 
-  return <Accordion items={items} />;
+  return <Accordion items={items} className="table-column-date-picker-accordion" />;
 };
