@@ -238,7 +238,7 @@ export const PropertiesTabElements = ({
       {column.columnType === 'link' && (
         <>
           <div className="field mb-2">
-            <label className="form-label">Display Text</label>
+            <label className="form-label">Display text</label>
             <CodeHinter
               currentState={currentState}
               initialValue={column?.displayText}
@@ -264,7 +264,7 @@ export const PropertiesTabElements = ({
                 component={component}
                 paramMeta={{
                   type: 'toggle',
-                  displayName: 'Link Target',
+                  displayName: 'Link target',
                 }}
                 paramType="properties"
               />
