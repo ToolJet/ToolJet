@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
@@ -973,6 +973,9 @@ const SubWidgetWrapper = ({
   mode,
 }) => {
   const { layouts } = widget;
+  const widgetRef = useRef();
+  const isOnScreen = useOnScreen(widgetRef);
+
   const layoutData = layouts?.[currentLayout] || layouts?.['desktop'];
   const isSelected = useEditorStore((state) => {
     const isSelected = (state.selectedComponents || []).length === 1 && state?.selectedComponents?.[0]?.id === id;
@@ -980,9 +983,6 @@ const SubWidgetWrapper = ({
   }, shallow);
 
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
-  if (isEmpty(layoutData)) {
-    return {};
-  }
 
   const width = (canvasWidth * layoutData.width) / 43;
   const styles = {
@@ -994,6 +994,23 @@ const SubWidgetWrapper = ({
   };
 
   const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
+
+  useEffect(() => {
+    const controlBox = document.querySelector(`[target-id="${id}"]`);
+    console.log('controlBox', { hide: !isOnScreen && isSelected && !isDragging && !isResizing, isOnScreen });
+    //adding attribute instead of class since react-moveable seems to replace classes internally on scroll stop
+    if (!isOnScreen && isSelected && !isDragging && !isResizing) {
+      controlBox?.classList.add('hide-control');
+      controlBox?.setAttribute('data-off-screen', 'true');
+    } else {
+      // controlBox?.classList.remove('hide-control');
+      controlBox?.removeAttribute('data-off-screen');
+    }
+  }, [isOnScreen]);
+
+  if (isEmpty(layoutData)) {
+    return '';
+  }
 
   return (
     <div
@@ -1011,6 +1028,7 @@ const SubWidgetWrapper = ({
       style={{ transform: `translate(332px, -134px)`, ...styles }}
       widget-id={id}
       widgetid={id}
+      ref={widgetRef}
     >
       {children}
     </div>
@@ -1044,3 +1062,23 @@ const SubContianerWrapper = ({
     </div>
   );
 };
+
+export default function useOnScreen(ref) {
+  const [isIntersecting, setIntersecting] = useState(false);
+
+  const observer = useMemo(
+    () =>
+      new IntersectionObserver(([entry]) => setIntersecting(entry.isIntersecting), {
+        root: ref.current?.closest('.real-canvas'),
+        threshold: 0,
+      }),
+    [ref]
+  );
+
+  useEffect(() => {
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return isIntersecting;
+}
