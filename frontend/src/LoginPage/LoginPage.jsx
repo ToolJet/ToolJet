@@ -16,6 +16,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import { redirectToDashboard, getRedirectTo } from '@/_helpers/routes';
 import { setCookie } from '@/_helpers/cookie';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
+import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -99,7 +100,12 @@ class LoginPageComponent extends React.Component {
       .then(this.authSuccessHandler, this.authFailureHandler);
   };
 
-  authSuccessHandler = (user) => onLoginSuccess(user, this.props.navigate);
+  authSuccessHandler = (user) => {
+    updateCurrentSession({
+      isUserLoggingIn: true,
+    });
+    onLoginSuccess(user, this.props.navigate);
+  };
 
   authFailureHandler = (res) => {
     toast.error(res.error || 'Invalid email or password', {

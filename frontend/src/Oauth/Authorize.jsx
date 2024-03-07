@@ -6,6 +6,7 @@ import Configs from './Configs/Config.json';
 import { RedirectLoader } from '../_components';
 import { getCookie } from '@/_helpers';
 import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
+import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 
 export function Authorize({ navigate }) {
   const [error, setError] = useState('');
@@ -73,6 +74,9 @@ export function Authorize({ navigate }) {
         }
         if (restResponse?.organizationInviteUrl) onInvitedUserSignUpSuccess(restResponse, navigate);
         else {
+          updateCurrentSession({
+            isUserLoggingIn: true,
+          });
           onLoginSuccess(restResponse, navigate);
         }
       })
