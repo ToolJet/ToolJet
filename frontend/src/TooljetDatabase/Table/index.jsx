@@ -162,9 +162,9 @@ const Table = ({ collapseSidebar }) => {
       }
 
       // Scroll when we reach left end of the table and if content gets overflow. Added 296 for width of two sticky columns
-      if (cellBoundingRect.left < tableBoundingRect.left + 296) {
+      if (cellBoundingRect.left < tableBoundingRect.left + 216) {
         tooljetDbTableRef.current.scrollTo({
-          left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.left - (tableBoundingRect.left + 296)),
+          left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.left - (tableBoundingRect.left + 216)),
           behavior: 'instant',
         });
       }
@@ -223,6 +223,7 @@ const Table = ({ collapseSidebar }) => {
   const patchCellNavigationRef = (index, type, cellEditable = null) => {
     // type - row | column
     if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null) {
+      // Making cell selection state to default on navigation, to make the state consistent
       if (cellClick.cellIndex !== null && cellClick.rowIndex !== null) {
         setCellClick({
           rowIndex: null,
