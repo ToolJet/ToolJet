@@ -27,7 +27,7 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { editAndVerifyWidgetName } from "Support/utils/commonWidget";
-import { promoteApp, releaseApp } from "Support/utils/multiEnv";
+import { appPromote, releaseApp } from "Support/utils/multiEnv";
 
 describe("", () => {
     const data = {};
@@ -271,6 +271,7 @@ describe("", () => {
         verifyrenewPlanModal();
         cy.apiCreateApp(data.appName);
         cy.openApp();
+        cy.waitForAppLoad();
         cy.get(commonSelectors.releaseButton).verifyVisibleElement(
             "have.text",
             "Release"
@@ -600,6 +601,7 @@ describe("", () => {
 
         cy.apiCreateApp(data.appName);
         cy.openApp();
+        cy.waitForAppLoad();
 
         cy.wait(2000);
         addQuery("table_preview", `SELECT * FROM tooljet;`, data.dsName);
@@ -620,9 +622,7 @@ describe("", () => {
             commonWidgetSelector.draggableWidget(data.widgetName)
         ).verifyVisibleElement("have.text", "development");
 
-        promoteApp();
-        promoteApp();
-        releaseApp();
+        appPromote("development", "release");
 
         cy.get(commonWidgetSelector.shareAppButton).click();
         cy.clearAndType(commonWidgetSelector.appNameSlugInput, data.slug);
@@ -706,6 +706,7 @@ describe("", () => {
 
         cy.apiCreateApp(data.appName);
         cy.openApp();
+        cy.waitForAppLoad();
 
         cy.wait(2000);
         addQuery("table_preview", `SELECT * FROM tooljet;`, data.dsName);
@@ -743,6 +744,7 @@ describe("", () => {
         ).verifyVisibleElement("have.text", "development");
 
         cy.go("back");
+        cy.waitForAppLoad();
         cy.wait(2000);
 
         cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
@@ -769,4 +771,5 @@ describe("", () => {
             commonWidgetSelector.draggableWidget(data.widgetName)
         ).verifyVisibleElement("have.text", "development");
     });
+
 });

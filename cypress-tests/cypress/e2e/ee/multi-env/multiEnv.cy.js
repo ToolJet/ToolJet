@@ -88,7 +88,8 @@ describe("Multi env", () => {
     cy.get(commonSelectors.dashboardIcon).click();
 
     cy.openApp();
-    cy.wait(2500);
+    cy.waitForAppLoad();
+    cy.wait(2000);
     cy.get(`[data-cy="${data.ds}-add-query-card"] > .text-truncate`).click();
     cy.wait(1000);
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
@@ -268,6 +269,7 @@ describe("Multi env", () => {
     data.appName = `${fake.companyName} App`;
     cy.apiCreateApp(data.appName);
     cy.openApp();
+    cy.waitForAppLoad();
     cy.dragAndDropWidget("Text", 550, 650);
     cy.get(multiEnvSelector.envContainer).should("be.visible");
     cy.get(multiEnvSelector.currentEnvName)
@@ -503,6 +505,7 @@ describe("Multi env", () => {
     data.appName = `${fake.companyName} App`;
     cy.apiCreateApp(data.appName);
     cy.openApp();
+    cy.waitForAppLoad();
     cy.dragAndDropWidget("Text", 550, 650);
     appPromote("development", "production");
 
@@ -542,7 +545,7 @@ describe("Multi env", () => {
     selectVersion((currentVersion = "v1"), (newVersion = ["v2"]));
     cy.get(commonSelectors.warningText).verifyVisibleElement(
       "have.text",
-      "App cannot be edited after promotion. Please create a new version from Development to make any changes."
+      "This version of the app is released. Please create a new version in development to make any changes."
     );
     cy.get(".datasource-picker").should("have.class", "disabled");
     cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
@@ -574,6 +577,7 @@ describe("Multi env", () => {
     data.appName = `${fake.companyName} App`;
     cy.apiCreateApp(data.appName);
     cy.openApp();
+    cy.waitForAppLoad();
     cy.dragAndDropWidget("Text", 550, 650);
 
     appPromote("development", "staging");
@@ -615,6 +619,7 @@ describe("Multi env", () => {
     data.appName = `${fake.companyName} App`;
     cy.apiCreateApp(data.appName);
     cy.openApp();
+    cy.waitForAppLoad();
     cy.dragAndDropWidget("Text", 550, 650);
 
     appPromote("development", "staging");
@@ -643,9 +648,9 @@ describe("Multi env", () => {
       .should("be.visible")
       .and("have.text", "v3");
 
-    cy.get('[data-cy="list-current-env-name"]').verifyVisibleElement(
+    cy.get('[data-cy="list-current-env-name"]').should(
       "have.text",
-      " Staging"
+      "Staging"
     );
   })
 });

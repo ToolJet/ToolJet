@@ -75,6 +75,7 @@ export const createNewVersion = (value, newVersion = [], version) => {
     cy.contains(`[id*="react-select-"]`, version).click();
     cy.get(appVersionSelectors.versionNameInputField).click().type(newVersion[0]);
     cy.get(appVersionSelectors.createNewVersionButton).click();
+    cy.waitForAppLoad();
     cy.verifyToastMessage(
         commonSelectors.toastMessage,
         appVersionText.createdToastMessage
@@ -89,6 +90,7 @@ export const selectVersion = (value, newVersion = []) => {
     cy.get(".react-select__menu-list .app-version-name")
         .contains(newVersion[0])
         .click();
+    cy.waitForAppLoad();
 };
 
 export const selectEnv = (envName) => {
@@ -111,6 +113,7 @@ export const selectEnv = (envName) => {
         cy.wait(500)
         const envSelector = `${multiEnvSelector.envNameList}:eq(${envIndex})`;
         cy.get(envSelector).click();
+        cy.waitForAppLoad();
     }
 };
 
