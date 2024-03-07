@@ -281,7 +281,7 @@ export const PropertiesTabElements = ({
                 component={component}
                 paramMeta={{
                   type: 'toggle',
-                  displayName: 'Link target',
+                  displayName: 'Open in new tab',
                 }}
                 paramType="properties"
               />

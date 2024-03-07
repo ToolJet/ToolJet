@@ -229,20 +229,6 @@ export const StylesTabElements = ({
               paramType="properties"
             />
           </div>
-          {/* <div className="field" data-cy={`input-and-label-cell-background-color`}>
-            <ProgramaticallyHandleProperties
-              label="Underline"
-              currentState={currentState}
-              index={index}
-              darkMode={darkMode}
-              callbackFunction={onColumnItemChange}
-              property="Underline"
-              props={column}
-              component={component}
-              paramMeta={{ type: 'color', displayName: 'Underline' }}
-              paramType="properties"
-            /> */}
-          {/* </div> */}
           <div className="d-flex flex-column custom-gap-16">
             <div
               data-cy={`input-overflow`}

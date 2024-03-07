@@ -50,7 +50,7 @@ export const ProgramaticallyHandleProperties = ({
       return definitionObj?.value ?? `{{true}}`;
     }
     if (property === 'linkTarget') {
-      return definitionObj?.value == '_self' ? `{{false}}` : `{{true}}`;
+      return definitionObj?.value == '_self' || definitionObj?.value == '{{false}}' ? `{{false}}` : `{{true}}`;
     }
     if (property === 'cellBackgroundColor') {
       return definitionObj?.value ?? '';
