@@ -394,13 +394,13 @@ const sidebars = {
       'items': [
         {
           'type': 'link',
-          'label': 'Releases',
-          'href': 'https://github.com/ToolJet/ToolJet/releases',
+          'label': 'Release Notes',
+          'href': 'https://app.tooljet.com/applications/tj-changelog/home',
         },
         {
           'type': 'link',
           'label': 'Roadmap',
-          'href': 'https://github.com/tooljet/tooljet/milestones',
+          'href': 'https://github.com/orgs/ToolJet/projects/15',
         },
       ],
     },

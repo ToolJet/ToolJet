@@ -212,18 +212,35 @@ export const OptionsList = ({
           paramType="properties"
         />
         {resolveReferences(column?.useDynamicOptions, currentState) ? (
-          <CodeHinter
-            currentState={currentState}
-            initialValue={column?.dynamicOptions}
-            theme={darkMode ? 'monokai' : 'default'}
-            mode="javascript"
-            lineNumbers={false}
-            onChange={(value) => onColumnItemChange(index, 'dynamicOptions', value)}
-            componentName={getPopoverFieldSource(column.columnType, 'dynamicOptions')}
-            popOverCallback={(showing) => {
-              setColumnPopoverRootCloseBlocker('dynamicOptions', showing);
-            }}
-          />
+          <div className="d-flex custom-gap-7 flex-column">
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column?.dynamicOptions}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              onChange={(value) => onColumnItemChange(index, 'dynamicOptions', value)}
+              componentName={getPopoverFieldSource(column.columnType, 'dynamicOptions')}
+              popOverCallback={(showing) => {
+                setColumnPopoverRootCloseBlocker('dynamicOptions', showing);
+              }}
+            />
+            <ProgramaticallyHandleProperties
+              label="Options loading state"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="optionsLoadingState"
+              props={column}
+              component={component}
+              paramMeta={{
+                type: 'toggle',
+                displayName: 'Options loading state',
+              }}
+              paramType="properties"
+            />
+          </div>
         ) : (
           <List>
             <DragDropContext

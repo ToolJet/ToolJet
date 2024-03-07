@@ -165,7 +165,7 @@ describe("dashboard", () => {
     verifyTooltip(commonSelectors.databaseIcon, "ToolJet Database");
     verifyTooltip(commonSelectors.globalDataSourceIcon, "Data sources");
     verifyTooltip(
-      '[data-cy="icon-workspace-constants"]',
+      commonSelectors.workspaceConstantsIcon,
       "Workspace constants"
     );
     verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");

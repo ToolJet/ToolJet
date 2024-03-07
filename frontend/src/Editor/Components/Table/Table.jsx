@@ -1067,7 +1067,7 @@ export function Table({
                   className={`tj-text-xsm ${tableDetails.filterDetails.filtersVisible && 'always-active-btn'}`}
                   customStyles={{ minWidth: '32px' }}
                   leftIcon="filter"
-                  fill={`var(--slate11)`}
+                  fill={`var(--icons-default)`}
                   iconWidth="16"
                   onClick={(e) => {
                     if (tableDetails?.filterDetails?.filtersVisible) {
@@ -1627,7 +1627,11 @@ export function Table({
                   </>
                 ) : (
                   !loadingState && (
-                    <span data-cy={`footer-number-of-records`} className="font-weight-500 color-slate11">
+                    <span
+                      data-cy={`footer-number-of-records`}
+                      className="font-weight-500"
+                      style={{ color: 'var(--text-placeholder)' }}
+                    >
                       {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
                       {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
                     </span>
@@ -1665,7 +1669,7 @@ export function Table({
                   <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
                   <ButtonSolid
                     variant="ghostBlack"
-                    fill={`var(--slate11)`}
+                    fill={`var(--icons-default)`}
                     className={`tj-text-xsm ${
                       tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed always-active-btn'
                     }`}
@@ -1699,7 +1703,7 @@ export function Table({
                         minWidth: '32px',
                       }}
                       leftIcon="filedownload"
-                      fill={`var(--slate11)`}
+                      fill={`var(--icons-default)`}
                       iconWidth="16"
                       size="md"
                       data-tooltip-id="tooltip-for-download"
@@ -1727,7 +1731,7 @@ export function Table({
                       className={`tj-text-xsm `}
                       customStyles={{ minWidth: '32px' }}
                       leftIcon="eye1"
-                      fill={`var(--slate11)`}
+                      fill={`var(--icons-default)`}
                       iconWidth="16"
                       size="md"
                       data-cy={`select-column-icon`}

@@ -60,21 +60,35 @@ export const PasswordInput = function PasswordInput({
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
-    color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
-    borderColor: isFocused
-      ? accentColor
-      : ['#D7DBDF'].includes(borderColor)
+    backgroundColor: !['#ffffff', '#fff'].includes(backgroundColor)
+      ? backgroundColor
+      : disable || loading
       ? darkMode
-        ? '#6D757D7A'
-        : '#6A727C47'
-      : borderColor,
-    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
-    backgroundColor: darkMode && ['#fff', '#ffffff'].includes(backgroundColor) ? '#313538' : backgroundColor,
+        ? 'var(--surfaces-app-bg-default)'
+        : 'var(--surfaces-surface-03)'
+      : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
-    padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
+    padding: styles.iconVisibility
+      ? height < 20
+        ? '0px 10px 0px 29px'
+        : '8px 10px 8px 29px'
+      : height < 20
+      ? '0px 10px'
+      : '8px 10px',
 
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    color: textColor !== '#1B1F24' ? textColor : disable ? 'var(--text-disabled)' : 'var(--text-primary)',
+    borderColor: isFocused
+      ? accentColor != '4368E3'
+        ? accentColor
+        : 'var(--primary-accent-strong)'
+      : borderColor != '#CCD1D5'
+      ? borderColor
+      : disable || loading
+      ? '1px solid var(--borders-disabled-on-white)'
+      : 'var(--borders-default)',
+    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
   };
 
   const loaderStyle = {
@@ -232,7 +246,6 @@ export const PasswordInput = function PasswordInput({
     <>
       <div
         data-cy={`label-${String(component.name).toLowerCase()}`}
-        data-disabled={disable || loading}
         className={`text-input  d-flex  ${
           defaultAlignment === 'top' &&
           ((width != 0 && label && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
@@ -283,7 +296,7 @@ export const PasswordInput = function PasswordInput({
                   : '50%'
               }`,
               transform: ' translateY(-50%)',
-              color: iconColor,
+              color: iconColor !== '#CCD1D5' ? iconColor : 'var(--icons-weak-disabled)',
               zIndex: 3,
             }}
             stroke={1.5}
@@ -326,7 +339,7 @@ export const PasswordInput = function PasswordInput({
           data-cy={dataCy}
           className={`tj-text-input-widget ${
             !isValid && showValidationError ? 'is-invalid' : ''
-          } validation-without-icon ${darkMode && 'dark-theme-placeholder'}`}
+          } validation-without-icon `}
           ref={textInputRef}
           onKeyUp={(e) => {
             if (e.key === 'Enter') {
@@ -363,11 +376,13 @@ export const PasswordInput = function PasswordInput({
       </div>
       {showValidationError && visibility && (
         <div
-          className="tj-text-sm"
           data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
           style={{
-            color: errTextColor,
-            textAlign: direction === 'left' && 'end',
+            color: errTextColor !== '#D72D39' ? errTextColor : 'var(--status-error-strong)',
+            textAlign: direction == 'left' && 'end',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
           }}
         >
           {showValidationError && validationError}

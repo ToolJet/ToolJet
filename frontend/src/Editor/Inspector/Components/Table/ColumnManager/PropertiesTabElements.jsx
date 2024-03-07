@@ -92,6 +92,23 @@ export const PropertiesTabElements = ({
           }}
         />
       </div>
+      <div data-cy={`transformation-field`} className="field">
+        <label className="form-label">{t('widget.Table.transformationField', 'Transformation')}</label>
+        <CodeHinter
+          currentState={currentState}
+          initialValue={column?.transformation ?? '{{cellValue}}'}
+          theme={darkMode ? 'monokai' : 'default'}
+          mode="javascript"
+          lineNumbers={false}
+          placeholder={column.name}
+          onChange={(value) => onColumnItemChange(index, 'transformation', value)}
+          componentName={getPopoverFieldSource(column.columnType, 'transformation')}
+          popOverCallback={(showing) => {
+            setColumnPopoverRootCloseBlocker('transformation', showing);
+          }}
+          enablePreview={false}
+        />
+      </div>
       {column.columnType === 'toggle' && (
         <div>
           <EventManager

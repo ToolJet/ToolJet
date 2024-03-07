@@ -428,6 +428,12 @@ export default function generateColumnsData({
                     textColor={column?.textColor || 'var(--slate12)'}
                     isMulti={columnType === 'newMultiSelect' ? true : false}
                     containerWidth={width}
+                    optionsLoadingState={
+                      resolveReferences(column?.useDynamicOptions, currentState) &&
+                      resolveReferences(column?.optionsLoadingState, currentState)
+                        ? true
+                        : false
+                    }
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>
