@@ -460,6 +460,10 @@ const Table = ({ collapseSidebar }) => {
       } else if (e.key === 'Enter' && selectedCellRef.current.columnIndex !== 0) {
         setSelectedRowIds({});
         const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.value;
+        const isCellValueDefault =
+          headerGroups[0].headers[selectedCellRef.current.columnIndex]?.column_default === cellValue.toString()
+            ? true
+            : false;
         setCellVal(cellValue);
         setCellClick((prevValue) => ({
           ...prevValue,
@@ -468,6 +472,7 @@ const Table = ({ collapseSidebar }) => {
           editable: true,
         }));
         cellValue === null ? setNullValue(true) : setNullValue(false);
+        setDefaultValue(isCellValueDefault);
         setEditPopover(true);
         document.getElementById('edit-input-blur').focus();
       } else if (e.key === 'Backspace' && !editPopover && selectedCellRef.current.columnIndex !== 0) {
@@ -475,6 +480,10 @@ const Table = ({ collapseSidebar }) => {
         const cellDataType =
           rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.column?.dataType;
         if (cellValue === null) {
+          const isCellValueDefault =
+            headerGroups[0].headers[selectedCellRef.current.columnIndex]?.column_default === cellValue.toString()
+              ? true
+              : false;
           setSelectedRowIds({});
           setCellClick((prevValue) => ({
             ...prevValue,
@@ -484,7 +493,7 @@ const Table = ({ collapseSidebar }) => {
           }));
           cellDataType === 'boolean' ? setCellVal(true) : setCellVal('');
           setNullValue(false);
-          setDefaultValue(false);
+          setDefaultValue(isCellValueDefault);
           setEditPopover(true);
           document.getElementById('edit-input-blur').focus();
         }
@@ -674,6 +683,12 @@ const Table = ({ collapseSidebar }) => {
     };
   }, [editColumnHeader.columnEditPopover]);
 
+  // useEffect(() => {
+  //   const isCellValueDefault =
+  //     headerGroups[0]?.headers[cellClick.cellIndex]?.column_default === cellVal.toString() ? true : false;
+  //   setDefaultValue(isCellValueDefault);
+  // }, [cellClick.cellIndex]);
+
   const handleDelete = (column) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
@@ -730,6 +745,8 @@ const Table = ({ collapseSidebar }) => {
     if (
       ['table-editable-parent-cell', 'tjdb-td-wrapper', 'table-cell', 'cell-text'].includes(e.target.classList.value)
     ) {
+      const isCellValueDefault =
+        headerGroups[0].headers[cellIndex]?.column_default === cellVal.toString() ? true : false;
       updateCellNavigationRef(rowIndex, cellIndex, true);
       setSelectedRowIds({});
       setCellVal(cellVal);
@@ -741,14 +758,14 @@ const Table = ({ collapseSidebar }) => {
         errorState: false,
       }));
       cellVal === null ? setNullValue(true) : setNullValue(false);
+      setDefaultValue(isCellValueDefault);
       setEditPopover(false);
     }
   };
 
-  const closeEditPopover = (previousValue) => {
+  const closeEditPopover = (previousValue, cellIndex) => {
     setEditPopover(false);
     previousValue === null ? setNullValue(true) : setNullValue(false);
-    setDefaultValue(false);
     setCellVal(previousValue);
     document.getElementById('edit-input-blur').blur();
   };
@@ -1049,7 +1066,7 @@ const Table = ({ collapseSidebar }) => {
                                   cellClick.cellIndex === index ? (
                                     <CellEditMenu
                                       show={index === 0 ? false : editPopover}
-                                      close={() => closeEditPopover(cell.value)}
+                                      close={() => closeEditPopover(cell.value, index)}
                                       columnDetails={headerGroups[0].headers[index]}
                                       saveFunction={(newValue) => {
                                         handleToggleCellEdit(newValue, row.values.id, index, rIndex, false, cell.value);
@@ -1118,13 +1135,16 @@ const Table = ({ collapseSidebar }) => {
                                             value={cellVal === null ? '' : cellVal}
                                             onChange={(e) => {
                                               if (index !== 0) setCellVal(e.target.value);
+                                              if (e.target.value !== headerGroups[0].headers[index].column_default) {
+                                                setDefaultValue(false);
+                                              } else {
+                                                setDefaultValue(true);
+                                              }
                                             }}
                                             onFocus={() => {
                                               if (index !== 0) setEditPopover(true);
                                             }}
-                                            disabled={
-                                              defaultValue === true || nullValue === true || index === 0 ? true : false
-                                            }
+                                            disabled={nullValue === true || index === 0 ? true : false}
                                           />
                                         )}
                                       </div>
