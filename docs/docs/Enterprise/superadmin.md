@@ -30,6 +30,7 @@ The user details entered while setting up ToolJet will have Super Admin privileg
 | [Make any user Super Admin](#make-the-user-super-admin) | ❌ | ✅ |
 | [Manage all workspaces in the instance(Archive/Unarchive)](#all-workspaces) | ❌ | ✅ |
 | [Restrict creation of personal workspace of users](#restrict-creation-of-personal-workspace-of-users) | ❌ | ✅ |
+| [Configure instance level login](#instance-login) | ❌ | ✅ |
 | [Enable Multiplayer editing](#enable-multiplayer-editing) | ❌ | ✅ |
 | [Implement White Labelling](#white-labelling) | ❌ | ✅ |
 
@@ -197,6 +198,36 @@ Super Admins can enable comments from the Manage Settings page. Once enabled, us
 This feature allows you to customize the ToolJet instance with your own branding. You can change the logo, favicon, and the name of the instance.
 
 Check out the [White labelling](/docs/enterprise/white-label/) page for more details.
+
+## Instance login
+
+Instance login configuration at the Settings level allows super admins to set up and manage the default login method for all workspaces within the instance. This ensures a standardized login experience unless individual workspace admins choose to configure a different method for their specific workspace.
+
+### Access and permissions
+
+Only super admins have the authority to configure **Instance login** settings. This ensures centralized control over the default login method across the entire instance.
+
+### Super Admin URL
+
+This URL serves as a fail-safe in scenarios where password login is disabled, SSO is not configured, or a paid plan expires. Importantly, this URL exclusively supports password login and is accessible only by the super admin, preventing any unauthorized access.
+
+The default URL for super admin login is `https://<domain>/login/super-admin`. This URL can be accessed by the super admin to log in to the instance and manage the settings.
+
+### Enable sign-up
+
+The "Enable Sign Up" option allows users to sign up without being invited. It is important to note that this feature includes both password login and SSO, providing a seamless onboarding experience for users.
+
+### Password login
+
+Super admins can enable or disable password login for the entire instance. This setting ensures that all workspaces within the instance adhere to the same login method, unless individual workspace admins choose to configure a different method for their specific workspace.
+
+### Enable workspace configuration
+
+Turning off this option restricts workspace admins from configuring the login method for their workspace. This configuration hides the Workspace Login option from the workspace settings tab.
+
+<div style={{textAlign: 'center'}}>
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/instancelogin.png" alt="Superadmin: settings" />
+</div>
 
 ## License
 

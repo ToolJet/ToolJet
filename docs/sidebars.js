@@ -302,8 +302,7 @@ const sidebars = {
           'collapsed': true,
           'items': [
             'user-authentication/user-lifecycle',
-            'user-authentication/general-settings',
-            'user-authentication/password-login',
+            'user-authentication/workspace-login',
             {
               'type': 'category',
               'label': 'SSO',
