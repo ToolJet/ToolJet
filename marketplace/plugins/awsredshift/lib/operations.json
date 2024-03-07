@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "AWS Redshift datasource",
+  "description": "A schema defining AWS Redshift datasource",
+  "type": "database",
+  "defaults": {
+    "mode": "sql"
+  },
+  "properties": {
+    "mode": {
+      "label": "",
+      "key": "mode",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for mode",
+      "list": [
+        {
+          "name": "SQL mode",
+          "value": "sql"
+        }
+      ]
+    },
+    "sql": {
+      "sql_query": {
+        "key": "sql_query",
+        "type": "codehinter",
+        "description": "Enter your SQL query",
+        "height": "150px"
+      }
+    }
+  }
+}
