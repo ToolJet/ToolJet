@@ -122,6 +122,7 @@ export const navigateToAppEditor = (appName) => {
     cy.intercept("GET", "/api/app-environments/**").as("appDs");
     cy.wait("@appDs", { timeout: 15000 });
     cy.skipEditorPopover();
+    cy.waitForAppLoad();
   }
 };
 

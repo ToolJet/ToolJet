@@ -14,7 +14,6 @@ import {
     WorkspaceInvitationLink,
     createAnAppWithSlug,
 } from "Support/utils/eeCommon";
-import { promoteApp, releaseApp } from "Support/utils/multiEnv";
 
 describe(
     "App share functionality",

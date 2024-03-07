@@ -226,6 +226,7 @@ describe("Workspace constants", () => {
 
         cy.apiCreateApp(data.appName);
         cy.openApp();
+        cy.waitForAppLoad();
 
         addQuery("table_preview", `SELECT * FROM tooljet;`, data.dsName);
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();

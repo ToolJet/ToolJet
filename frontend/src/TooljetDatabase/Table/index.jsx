@@ -602,7 +602,7 @@ const Table = ({ collapseSidebar }) => {
             </span>
             {column.render('Header')}
           </div>
-          <div className="tjdb-primary-key-parent">
+          <div className="tjdb-primary-key-parent" data-cy="primary-key-label">
             <span className="primary-key-text">Primary key</span>
           </div>
         </div>
@@ -704,7 +704,7 @@ const Table = ({ collapseSidebar }) => {
                           className="column-popover-parent"
                           darkMode={darkMode}
                         >
-                          <div className="tjdb-menu-icon-parent">
+                          <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
                             <Menu
                               width="20"
                               height="20"
@@ -736,6 +736,7 @@ const Table = ({ collapseSidebar }) => {
                     setIsCreateColumnDrawerOpen(true);
                   }}
                   className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
+                  data-cy="add-column-icon"
                 >
                   <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
                 </th>
@@ -799,6 +800,7 @@ const Table = ({ collapseSidebar }) => {
                               setTimeout(() => setIsEditRowDrawerOpen(true), 100);
                             }}
                             className="tjdb-checkbox-cell"
+                            data-cy="edit-cell-expand"
                             style={{
                               display: 'none',
                             }}
@@ -1023,6 +1025,7 @@ const Table = ({ collapseSidebar }) => {
                 setIsCreateRowDrawerOpen(true);
               }}
               className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
+              data-cy="add-row-icon"
               style={{
                 zIndex: 3,
               }}
