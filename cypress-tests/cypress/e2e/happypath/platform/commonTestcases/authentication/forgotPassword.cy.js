@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "../../constants/texts/common";
+import { commonText } from "Texts/common";
 import { fake } from "Fixtures/fake";
 import { addNewUser } from "Support/utils/onboarding";
 import { logout } from "Support/utils/common";
