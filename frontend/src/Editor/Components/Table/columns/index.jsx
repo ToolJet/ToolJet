@@ -320,9 +320,8 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <textarea
                     rows="1"
-                    className={`${!isValid ? 'is-invalid' : ''} form-control-plaintext text-container ${
-                      darkMode ? ' textarea-dark-theme' : ''
-                    }`}
+                    className={`${!isValid ? 'is-invalid' : ''} form-control-plaintext text-container ${darkMode ? ' textarea-dark-theme' : ''
+                      }`}
                     style={{
                       color: cellTextColor ? cellTextColor : 'inherit',
                     }}
@@ -546,8 +545,13 @@ export default function generateColumnsData({
             );
           }
           case 'datepicker': {
+            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
             const isTimeChecked = resolveReferences(column?.isTimeChecked, currentState);
             const isTwentyFourHrFormatEnabled = resolveReferences(column?.isTwentyFourHrFormatEnabled, currentState);
+            const cellStyles = {
+              color: textColor ?? '',
+            };
+            // if (isEditable) {
             const validationData = validateDates({
               validationObject: {
                 minDate: {
@@ -569,9 +573,10 @@ export default function generateColumnsData({
             });
 
             const { isValid, validationError } = validationData;
+
             console.log(isValid, validationError);
             return (
-              <div className="h-100 d-flex align-items-center">
+              <div className="h-100 d-flex flex-column justify-content-center">
                 <Datepicker
                   timeZoneValue={column.timeZoneValue}
                   timeZoneDisplay={column.timeZoneDisplay}
@@ -590,10 +595,22 @@ export default function generateColumnsData({
                   parseTimeFormat={column.parseTimeFormat}
                   parseInUnixTimestamp={column.parseInUnixTimestamp}
                   unixTimeStamp={column.unixTimestamp}
+                  isEditable={isEditable}
                 />
-                <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
+                {isEditable && <div className={isValid ? '' : 'invalid-feedback d-block'}>{validationError}</div>}
               </div>
             );
+            // }
+            // return (
+            //   <div
+            //     className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+            //       horizontalAlignment
+            //     )}`}
+            //     style={cellStyles}
+            //   >
+            //     {cellValue}
+            //   </div>
+            // );
           }
           case 'link': {
             const linkTarget = resolveReferences(column?.linkTarget ?? '_blank', currentState);

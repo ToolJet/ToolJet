@@ -1,10 +1,8 @@
 .tj-datepicker-widget {
     border-radius: 6px !important;
     border: 1px solid var(--slate5) !important;
-    // background: var(--base);
     box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
-    // background: red !important;
-    // width: 278px;
+    width: 278px;
     padding: 0px;
 }
 
@@ -223,11 +221,9 @@ select:focus {
     /* Add a subtle box-shadow when focused */
 }
 
-.custom-input-datepicker {
-    // border-radius: 6px;
-    border: 1px solid var(--tj-text-input-widget-border-default);
-    background: var(--base);
-    box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.04);
+.table-column-datepicker-input {
+    border: 1px solid transparent;
+    background: inherit;
     text-align: left;
     width: 100%;
 }

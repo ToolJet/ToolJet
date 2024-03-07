@@ -438,19 +438,19 @@ export function validateDates({ validationObject, widgetValue, currentState, cus
       };
     }
 
-    if (!moment(resolvedMinTime, timeFormat).isBefore(moment(widgetValue, timeFormat))) {
-      return {
-        isValid: false,
-        validationError: `Minimum time is ${resolvedMinTime}`,
-      };
-    }
+    // if (!moment(resolvedMinTime, timeFormat).isBefore(moment(widgetValue, timeFormat))) {
+    //   return {
+    //     isValid: false,
+    //     validationError: `Minimum time is ${resolvedMinTime}`,
+    //   };
+    // }
 
-    if (!moment(resolvedMaxTime, timeFormat).isAfter(moment(widgetValue, timeFormat))) {
-      return {
-        isValid: false,
-        validationError: `Maximum time is ${resolvedMaxTime}`,
-      };
-    }
+    // if (!moment(resolvedMaxTime, timeFormat).isAfter(moment(widgetValue, timeFormat))) {
+    //   return {
+    //     isValid: false,
+    //     validationError: `Maximum time is ${resolvedMaxTime}`,
+    //   };
+    // }
   }
 
   const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);

@@ -5,24 +5,19 @@ import DatePickerComponent from 'react-datepicker';
 import * as Icons from '@tabler/icons-react';
 import CustomDatePickerHeader from './CustomDatePickerHeader';
 import 'react-datepicker/dist/react-datepicker.css';
-import './datePicker.scss';
+import './datepicker.scss';
+import classNames from 'classnames';
 
 const TjDatepicker = forwardRef(
-  ({ value, onClick, styles, setShowValidationError, setIsFocused, fireEvent, dateInputRef }, ref) => {
+  ({ value, onClick, styles, dateInputRef, readOnly }, ref) => {
     return (
       <input
         onBlur={(e) => {
-          setShowValidationError(true);
-          setIsFocused(false);
-          fireEvent('onBlur');
           e.stopPropagation();
         }}
-        onFocus={(e) => {
-          setIsFocused(true);
-          fireEvent('onFocus');
-          e.stopPropagation();
-        }}
-        className="custom-input-datepicker"
+        className={classNames("table-column-datepicker-input", {
+          "pointer-events-none": readOnly
+        })}
         value={value}
         onClick={onClick}
         ref={dateInputRef}
@@ -57,15 +52,16 @@ export const Datepicker = function Datepicker({
   timeZoneDisplay,
   isDateSelectionEnabled,
   isTwentyFourHrFormatEnabled,
+  isEditable
 }) {
   const [date, setDate] = React.useState(null);
   const pickerRef = React.useRef();
 
-  const handleDateChange = (event) => {
-    // const _value = event._isAMomentObject ? event.format() : event;
-    // let selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} LT` : dateDisplayFormat;
-    // const dateString = moment(_value).format(selectedDateFormat);
-    // setDate(() => dateString);
+  const handleDateChange = (date) => {
+    const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT';
+    const selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
+    setDate(getDate(date, selectedDateFormat));
+    onChange(computeDateString(date));
   };
 
   // React.useEffect(() => {
@@ -161,11 +157,8 @@ export const Datepicker = function Datepicker({
         dateFormat={dateDisplayFormat}
         customInput={
           <TjDatepicker
-            // styles={datepickerinputStyles}  // See this at last
-            // setShowValidationError={setShowValidationError}
-            // fireEvent={fireEvent}
-            // setIsFocused={setIsFocused}
             dateInputRef={dateInputRef}
+            readOnly={!isEditable}
           />
         }
         timeFormat={'HH:mm'}
@@ -177,6 +170,8 @@ export const Datepicker = function Datepicker({
         // excludeDates={excludedDates}
         showPopperArrow={false}
         renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
+        shouldCloseOnSelect
+        readOnly={!isEditable}
       />
     </div>
   );
