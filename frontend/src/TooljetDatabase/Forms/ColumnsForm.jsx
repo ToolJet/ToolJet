@@ -76,8 +76,6 @@ const ColumnsForm = ({ columns, setColumns }) => {
     dropdownContainerWidth
   );
 
-  console.log('first', columns);
-
   return (
     <div className="">
       <div className="card-header">
