@@ -49,7 +49,7 @@ const MobileHeader = ({
             redirectToDashboard();
           }}
         >
-          <AppLogo isLoadingFromHeader={false} />
+          <AppLogo isLoadingFromHeader={false} viewer={true} organizationId={organizationId} />
         </Link>
       </h1>
       <div className="navbar-seperator" style={{ margin: '0px 1.375rem' }}></div>
