@@ -14,12 +14,14 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
+import { isSerialDataType } from '../constants';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import BigInt from '../Icons/Biginteger.svg';
 import Float from '../Icons/Float.svg';
 import Integer from '../Icons/Integer.svg';
 import CharacterVar from '../Icons/Text.svg';
 import Boolean from '../Icons/Toggle.svg';
+import Serial from '../Icons/Serial.svg';
 import Menu from '../Icons/Menu.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 import TjdbTableHeader from './Header';
@@ -757,8 +759,8 @@ const Table = ({ collapseSidebar }) => {
         <div className="primaryKeyTooltip">
           <div>
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
-              {column.Header == 'id' ? (
-                <Integer width="18" height="18" className="tjdb-column-header-name" />
+              {isSerialDataType(column) ? (
+                <Serial width="18" height="14" className="tjdb-column-header-name" />
               ) : (
                 checkDataType(column?.dataType)
               )}
@@ -771,16 +773,6 @@ const Table = ({ collapseSidebar }) => {
         </div>
       </ToolTip>
     );
-  }
-
-  function isSerialDataType(columnDetails) {
-    const { dataType = '', column_default = '' } = columnDetails;
-    const serialDatatypeDefaultValuePattern = 'nextval(';
-
-    if (dataType === 'integer' && column_default) {
-      if (column_default.includes(serialDatatypeDefaultValuePattern)) return true;
-    }
-    return false;
   }
 
   return (
@@ -858,8 +850,8 @@ const Table = ({ collapseSidebar }) => {
                       <div className="d-flex align-items-center justify-content-between">
                         <div className="tj-db-headerText">
                           <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                            {column.Header == 'id' ? (
-                              <Integer width="18" height="18" className="tjdb-column-header-name" />
+                            {isSerialDataType(column) ? (
+                              <Serial width="18" height="18" className="tjdb-column-header-name" />
                             ) : (
                               checkDataType(column?.dataType)
                             )}
@@ -888,13 +880,13 @@ const Table = ({ collapseSidebar }) => {
                           </div>
                         </TablePopover>
                       </div>
-                    ) : column.Header === 'id' ? (
+                    ) : isSerialDataType(column) ? (
                       showTooltipForId(column)
                     ) : (
                       <>
                         <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                          {column.Header == 'id' ? (
-                            <Integer width="18" height="18" className="tjdb-column-header-name" />
+                          {isSerialDataType(column) ? (
+                            <Serial width="18" height="18" className="tjdb-column-header-name" />
                           ) : (
                             checkDataType(column?.dataType)
                           )}
