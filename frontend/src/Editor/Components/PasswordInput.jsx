@@ -43,7 +43,7 @@ export const PasswordInput = function PasswordInput({
 
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [passwordValue, setPasswordValue] = useState(properties.value);
-  const [visibility, setVisibility] = useState(properties.visibility);
+  const [visibility, setVisibility] = useState(properties.visibility !== false ? true : false);
   const { isValid, validationError } = validate(passwordValue);
   const [showValidationError, setShowValidationError] = useState(false);
   const currentState = useCurrentState();
@@ -130,7 +130,7 @@ export const PasswordInput = function PasswordInput({
   }, [disabledState]);
 
   useEffect(() => {
-    visibility !== properties.visibility && setVisibility(properties.visibility);
+    visibility !== properties.visibility && setVisibility(properties.visibility !== false ? true : false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
