@@ -26,7 +26,6 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
     ...restResponse,
     authentication_status: null,
     noWorkspaceAttachedInTheSession,
-    isUserLoggingIn: true,
   });
   const redirectPath = redirectTo || getCookie('redirectPath');
   const path = getRedirectURL(redirectPath);

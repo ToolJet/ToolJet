@@ -8,6 +8,7 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
 import { withRouter } from '@/_hoc/withRouter';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
+import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -78,6 +79,9 @@ class OrganizationInvitationPageComponent extends React.Component {
       })
       .then((data) => {
         toast.success(`Added to the workspace successfully.`);
+        updateCurrentSession({
+          isUserLoggingIn: true,
+        });
         onLoginSuccess(data, this.props.navigate);
       })
       .catch(() => {
