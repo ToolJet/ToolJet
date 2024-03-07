@@ -1,12 +1,10 @@
 import React, { forwardRef, useEffect, useRef } from 'react';
-import Datetime from 'react-datetime';
-// import moment from 'moment';
 import moment from 'moment-timezone';
 import DatePickerComponent from 'react-datepicker';
-// import 'react-datetime/css/react-datetime.css';
 // import '@/_styles/custom.scss';
 import * as Icons from '@tabler/icons-react';
 import CustomDatePickerHeader from './CustomDatePickerHeader';
+import 'react-datepicker/dist/react-datepicker.css';
 import './datePicker.scss';
 
 const TjDatepicker = forwardRef(
@@ -35,20 +33,17 @@ const TjDatepicker = forwardRef(
 );
 
 const getDate = (value, parseDateFormat, displayFormat, timeZoneValue, timeZoneDisplay) => {
-  let momentObj = null
-  console.log(timeZoneValue, timeZoneDisplay)
+  let momentObj = null;
+  // console.log(timeZoneValue, timeZoneDisplay)
   if (value) {
     if (timeZoneValue && timeZoneDisplay) {
-      momentObj = moment
-        .tz(value, parseDateFormat, timeZoneValue)
-        .tz(timeZoneDisplay)
+      momentObj = moment.tz(value, parseDateFormat, timeZoneValue).tz(timeZoneDisplay);
     } else {
-      momentObj = moment(value, parseDateFormat)
+      momentObj = moment(value, parseDateFormat);
     }
   }
   return momentObj?.isValid() ? momentObj.toDate() : null;
 };
-
 
 export const Datepicker = function Datepicker({
   value,
@@ -61,7 +56,7 @@ export const Datepicker = function Datepicker({
   timeZoneValue,
   timeZoneDisplay,
   isDateSelectionEnabled,
-  isTwentyFourHrFormatEnabled
+  isTwentyFourHrFormatEnabled,
 }) {
   const [date, setDate] = React.useState(null);
   const pickerRef = React.useRef();
@@ -101,9 +96,9 @@ export const Datepicker = function Datepicker({
   // };
 
   useEffect(() => {
-    const date = getDate(value, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay)
-    setDate(date)
-  }, [JSON.stringify(value, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay)])
+    const date = getDate(value, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay);
+    setDate(date);
+  }, [JSON.stringify(value, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay)]);
 
   const IconElement = Icons['IconHome2'];
   // const datepickerinputStyles = {
@@ -126,8 +121,8 @@ export const Datepicker = function Datepicker({
   const dateInputRef = useRef(null); // Create a ref
 
   const computeDateString = (date) => {
-    const _date = getDate(date, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay)
-    const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT'
+    const _date = getDate(date, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay);
+    const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT';
     const selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
     if (isDateSelectionEnabled) {
       return moment(_date).format(selectedDateFormat);

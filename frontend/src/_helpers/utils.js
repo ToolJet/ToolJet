@@ -402,6 +402,68 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   };
 }
 
+export function validateDates({ validationObject, widgetValue, currentState, customResolveObjects }) {
+  let isValid = true;
+  let validationError = null;
+  const minDate = validationObject?.minDate?.value;
+  const maxDate = validationObject?.maxDate?.value;
+  const minTime = validationObject?.minTime?.value;
+  const maxTime = validationObject?.maxTime?.value;
+  const dateFormat = validationObject?.dateFormat?.value || 'MM/DD/YYYY';
+  const timeFormat = validationObject?.timeFormat?.value || 'HH:mm';
+  const customRule = validationObject?.customRule?.value;
+
+  const resolvedMinDate = resolveWidgetFieldValue(minDate, currentState, undefined, customResolveObjects);
+  const resolvedMaxDate = resolveWidgetFieldValue(maxDate, currentState, undefined, customResolveObjects);
+  const resolvedMinTime = resolveWidgetFieldValue(minTime, currentState, undefined, customResolveObjects);
+  const resolvedMaxTime = resolveWidgetFieldValue(maxTime, currentState, undefined, customResolveObjects);
+
+  if (
+    resolvedMinDate !== undefined ||
+    resolvedMaxDate !== undefined ||
+    resolvedMinTime !== undefined ||
+    resolvedMaxTime !== undefined
+  ) {
+    if (!moment(resolvedMinDate, dateFormat).isBefore(moment(widgetValue, dateFormat))) {
+      return {
+        isValid: false,
+        validationError: `Minimum date is ${resolvedMinDate}`,
+      };
+    }
+
+    if (!moment(resolvedMaxDate, dateFormat).isAfter(moment(widgetValue, dateFormat))) {
+      return {
+        isValid: false,
+        validationError: `Maximum date is ${resolvedMaxDate}`,
+      };
+    }
+
+    if (!moment(resolvedMinTime, timeFormat).isBefore(moment(widgetValue, timeFormat))) {
+      return {
+        isValid: false,
+        validationError: `Minimum time is ${resolvedMinTime}`,
+      };
+    }
+
+    if (!moment(resolvedMaxTime, timeFormat).isAfter(moment(widgetValue, timeFormat))) {
+      return {
+        isValid: false,
+        validationError: `Maximum time is ${resolvedMaxTime}`,
+      };
+    }
+  }
+
+  const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
+  if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
+    return { isValid: false, validationError: resolvedCustomRule };
+  }
+
+  return {
+    isValid,
+    validationError,
+  };
+}
+
 export function validateEmail(email) {
   const emailRegex =
     /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;

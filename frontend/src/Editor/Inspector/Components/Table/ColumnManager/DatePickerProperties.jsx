@@ -6,7 +6,6 @@ import Accordion from '@/_ui/Accordion';
 import { resolveReferences } from '@/_helpers/utils';
 import styles from '@/_ui/Select/styles';
 export const DatePickerProperties = ({ column, index, darkMode, currentState, onColumnItemChange, component }) => {
-
   const timeZoneOptions = [
     { name: 'UTC', value: 'Etc/UTC' },
     { name: '-12:00', value: 'Etc/GMT+12' },
@@ -208,7 +207,7 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
             paramMeta={{ type: 'toggle', displayName: 'Parse in unix timestamp' }}
           />
           {resolveReferences(column?.parseInUnixTimestamp, currentState) ? (
-            <div className='mt-2'>
+            <div className="mt-2">
               <div className="field mb-2 tj-app-input">
                 <label data-cy={`label-date-parse-format`} className="form-label">
                   {t('widget.Table.unixTimestamp', 'Unix timestamp')}
@@ -226,7 +225,7 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
               </div>
             </div>
           ) : (
-            <div className='mt-2'>
+            <div className="mt-2">
               {resolveReferences(column?.isDateSelectionEnabled, currentState) && (
                 <div data-cy={`input-parse-timezone`} className="field mb-2">
                   <label data-cy={`label-parse-timezone`} className="form-label">

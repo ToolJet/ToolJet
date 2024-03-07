@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import SelectSearch from 'react-select-search';
-import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
+import { resolveReferences, validateWidget, determineJustifyContentValue, validateDates } from '@/_helpers/utils';
 import { CustomDropdown } from '../CustomDropdown';
 import { Tags } from '../Tags';
 import { Radio } from '../Radio';
@@ -320,8 +320,9 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <textarea
                     rows="1"
-                    className={`${!isValid ? 'is-invalid' : ''} form-control-plaintext text-container ${darkMode ? ' textarea-dark-theme' : ''
-                      }`}
+                    className={`${!isValid ? 'is-invalid' : ''} form-control-plaintext text-container ${
+                      darkMode ? ' textarea-dark-theme' : ''
+                    }`}
                     style={{
                       color: cellTextColor ? cellTextColor : 'inherit',
                     }}
@@ -547,6 +548,28 @@ export default function generateColumnsData({
           case 'datepicker': {
             const isTimeChecked = resolveReferences(column?.isTimeChecked, currentState);
             const isTwentyFourHrFormatEnabled = resolveReferences(column?.isTwentyFourHrFormatEnabled, currentState);
+            const validationData = validateDates({
+              validationObject: {
+                minDate: {
+                  value: column.minDate,
+                },
+                maxDate: {
+                  value: column.maxDate,
+                },
+                minTime: {
+                  value: column.minTime,
+                },
+                maxTime: {
+                  value: column.maxTime,
+                },
+              },
+              widgetValue: cellValue,
+              currentState,
+              customResolveObjects: { cellValue },
+            });
+
+            const { isValid, validationError } = validationData;
+            console.log(isValid, validationError);
             return (
               <div className="h-100 d-flex align-items-center">
                 <Datepicker
@@ -569,7 +592,6 @@ export default function generateColumnsData({
                   unixTimeStamp={column.unixTimestamp}
                 />
                 <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
-
               </div>
             );
           }

@@ -117,41 +117,41 @@ export const PropertiesTabElements = ({
         column.columnType === 'badge' ||
         column.columnType === 'badges' ||
         column.columnType === 'radio') && (
-          <div>
-            <div data-cy={`input-and-label-values`} className="field mb-2">
-              <label className="form-label">{t('widget.Table.values', 'Values')}</label>
-              <CodeHinter
-                currentState={currentState}
-                initialValue={column.values}
-                theme={darkMode ? 'monokai' : 'default'}
-                mode="javascript"
-                lineNumbers={false}
-                placeholder={'{{[1, 2, 3]}}'}
-                onChange={(value) => onColumnItemChange(index, 'values', value)}
-                componentName={getPopoverFieldSource(column.columnType, 'values')}
-                popOverCallback={(showing) => {
-                  setColumnPopoverRootCloseBlocker('values', showing);
-                }}
-              />
-            </div>
-            <div data-cy={`input-and-label-labels`} className="field mb-2">
-              <label className="form-label">{t('widget.Table.labels', 'Labels')}</label>
-              <CodeHinter
-                currentState={currentState}
-                initialValue={column.labels}
-                theme={darkMode ? 'monokai' : 'default'}
-                mode="javascript"
-                lineNumbers={false}
-                placeholder={'{{["one", "two", "three"]}}'}
-                onChange={(value) => onColumnItemChange(index, 'labels', value)}
-                componentName={getPopoverFieldSource(column.columnType, 'labels')}
-                popOverCallback={(showing) => {
-                  setColumnPopoverRootCloseBlocker('labels', showing);
-                }}
-              />
-            </div>
+        <div>
+          <div data-cy={`input-and-label-values`} className="field mb-2">
+            <label className="form-label">{t('widget.Table.values', 'Values')}</label>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column.values}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={'{{[1, 2, 3]}}'}
+              onChange={(value) => onColumnItemChange(index, 'values', value)}
+              componentName={getPopoverFieldSource(column.columnType, 'values')}
+              popOverCallback={(showing) => {
+                setColumnPopoverRootCloseBlocker('values', showing);
+              }}
+            />
           </div>
-        )}
+          <div data-cy={`input-and-label-labels`} className="field mb-2">
+            <label className="form-label">{t('widget.Table.labels', 'Labels')}</label>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column.labels}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={'{{["one", "two", "three"]}}'}
+              onChange={(value) => onColumnItemChange(index, 'labels', value)}
+              componentName={getPopoverFieldSource(column.columnType, 'labels')}
+              popOverCallback={(showing) => {
+                setColumnPopoverRootCloseBlocker('labels', showing);
+              }}
+            />
+          </div>
+        </div>
+      )}
       {column.columnType === 'link' && (
         <div className="field">
           <ProgramaticallyHandleProperties
