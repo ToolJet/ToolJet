@@ -5,6 +5,7 @@ import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 import Select from '@/_ui/Select';
 import _ from 'lodash';
+import { isSerialDataType } from '../constants';
 import BigInt from '../Icons/Biginteger.svg';
 import Float from '../Icons/Float.svg';
 import Integer from '../Icons/Integer.svg';
@@ -217,6 +218,7 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
   };
 
   const primaryColumn = columns.find((column) => column.constraints_type.is_primary_key)?.accessor || null;
+  const serialDatatypeColumn = columns.find((column) => column.constraints_type.is_primary_key);
 
   const options = selectedTableData.map((row) => {
     return {
@@ -260,9 +262,11 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
               className="form-label d-flex align-items-center justify-content-start mb-2"
               data-cy={`${primaryColumn}-column-name-label`}
             >
-              <span style={{ width: '24px' }}>
-                <Serial width="18" height="14" className="tjdb-column-header-name" />
-              </span>
+              {isSerialDataType(serialDatatypeColumn) && (
+                <span style={{ width: '24px' }}>
+                  <Serial width="18" height="14" className="tjdb-column-header-name" />
+                </span>
+              )}
               <span>{headerText}</span>
             </div>
             <div className="edit-row-dropdown col-auto row-edit-select-container w-100" data-cy="select-row-dropdown">

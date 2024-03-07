@@ -14,6 +14,7 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
+import { isSerialDataType } from '../constants';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import BigInt from '../Icons/Biginteger.svg';
 import Float from '../Icons/Float.svg';
@@ -771,16 +772,6 @@ const Table = ({ collapseSidebar }) => {
         </div>
       </ToolTip>
     );
-  }
-
-  function isSerialDataType(columnDetails) {
-    const { dataType = '', column_default = '' } = columnDetails;
-    const serialDatatypeDefaultValuePattern = 'nextval(';
-
-    if (dataType === 'integer' && column_default) {
-      if (column_default.includes(serialDatatypeDefaultValuePattern)) return true;
-    }
-    return false;
   }
 
   return (

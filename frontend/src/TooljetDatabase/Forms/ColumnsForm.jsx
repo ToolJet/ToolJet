@@ -6,6 +6,7 @@ import AddColumnIcon from '../Icons/AddColumnIcon.svg';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, primaryKeydataTypes } from '../constants';
 import Tick from '../Icons/Tick.svg';
+import Serial from '../Icons/Serial.svg';
 
 const ColumnsForm = ({ columns, setColumns }) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
@@ -74,6 +75,8 @@ const ColumnsForm = ({ columns, setColumns }) => {
     darkBorder,
     dropdownContainerWidth
   );
+
+  console.log('first', columns);
 
   return (
     <div className="">
@@ -144,11 +147,23 @@ const ColumnsForm = ({ columns, setColumns }) => {
                     prevColumns[index].data_type = value ? value.value : null;
                     setColumns(prevColumns);
                   }}
-                  components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
+                  components={{
+                    Option: CustomSelectOption,
+                    IndicatorSeparator: () => null,
+                  }}
                   styles={customStyles}
                   formatOptionLabel={formatOptionLabel}
                   placeholder={
-                    columns[index]?.constraints_type?.is_primary_key === true ? columns[0].data_type : 'Select...'
+                    columns[index]?.constraints_type?.is_primary_key === true ? (
+                      <div>
+                        <span style={{ marginRight: '5px' }}>
+                          <Serial width="16" />
+                        </span>
+                        <span>{columns[0].data_type}</span>
+                      </div>
+                    ) : (
+                      'Select...'
+                    )
                   }
                   onMenuOpen={() => {
                     setColumnSelection((prevState) => ({

@@ -231,7 +231,7 @@ const RowForm = ({ onCreate, onClose }) => {
                   >
                     <div className="headerText-withIcon d-flex align-items-center justify-content-start">
                       <span style={{ width: '24px' }}>
-                        {Header == 'id' ? (
+                        {isPrimaryKey === true ? (
                           <Serial width="18" height="14" className="tjdb-column-header-name" />
                         ) : (
                           checkDataTypeIcons(dataType)
