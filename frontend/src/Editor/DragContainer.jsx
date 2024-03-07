@@ -657,6 +657,7 @@ export default function DragContainer({
           //   turnOffAutoLayout();
           //   return false;
           // }
+          e?.moveable?.controlBox?.removeAttribute('data-off-screen');
           const box = boxes.find((box) => box.id === e.target.id);
           if (['RangeSlider', 'Container', 'BoundedBox', 'Kanban'].includes(box?.component?.component)) {
             const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
@@ -672,7 +673,6 @@ export default function DragContainer({
         }}
         // linePadding={10}
         onDragEnd={(e) => {
-          const startTime = performance.now();
           try {
             if (isDraggingRef.current) {
               useGridStore.getState().actions.setDraggingComponentId(null);
@@ -868,6 +868,13 @@ export default function DragContainer({
               draggedOverElemRef.current = draggedOverContainer;
             }
           }
+          console.log('getOffset--', getOffset(e.target, document.querySelector('#real-canvas')));
+          const offset = getOffset(e.target, document.querySelector('#real-canvas'));
+          if (document.getElementById('moveable-drag-ghost')) {
+            document.getElementById('moveable-drag-ghost').style.transform = `translate(${offset.x}px, ${offset.y}px)`;
+            document.getElementById('moveable-drag-ghost').style.width = `${e.target.clientWidth}px`;
+            document.getElementById('moveable-drag-ghost').style.height = `${e.target.clientHeight}px`;
+          }
         }}
         onDragGroup={(ev) => {
           const { events } = ev;
@@ -972,6 +979,19 @@ export default function DragContainer({
         displayAroundControls={true}
         controlPadding={20}
         // hideDefaultLines
+        // // scrollable={true}
+        // // scrollOptions={{
+        // //   container: `#canvas-${selectedComponents[0]?.component?.parent}`,
+        // //   threshold: 30,
+        // //   checkScrollEvent: false,
+        // //   throttleTime: 0,
+        // // }}
+        // container={
+        //   selectedComponents[0]?.component?.parent
+        //     ? document.getElementById(`canvas-${selectedComponents[0]?.component?.parent}`)
+        //     : document.getElementsByClassName('.rm-container')[0]
+        // }
+        // key={selectedComponents[0]?.component?.parent}
       />
     </>
   ) : (
@@ -1102,4 +1122,18 @@ function getPositionForGroupDrag(events, parentWidth, parentHeight) {
       posTop: Math.min(positions.posTop ?? Infinity, elemPosY),
     };
   }, {});
+}
+
+function getOffset(childElement, grandparentElement) {
+  if (!childElement || !grandparentElement) return null;
+
+  // Get bounding rectangles for both elements
+  const childRect = childElement.getBoundingClientRect();
+  const grandparentRect = grandparentElement.getBoundingClientRect();
+
+  // Calculate offset by subtracting grandparent's position from child's position
+  const offsetX = childRect.left - grandparentRect.left;
+  const offsetY = childRect.top - grandparentRect.top;
+
+  return { x: offsetX, y: offsetY };
 }

@@ -1021,7 +1021,7 @@ const SubWidgetWrapper = ({
           ? `moveable-box position-absolute`
           : `target-${parent} target1-${parent} ele-${id} nested-target moveable-box target  ${
               isResizing ? 'resizing-target' : ''
-            } ${isWidgetActive ? 'active-target' : ''}`
+            } ${isWidgetActive ? 'active-target' : ''} ${isDragging ? 'opacity-0' : ''}`
       }
       key={id}
       id={id}

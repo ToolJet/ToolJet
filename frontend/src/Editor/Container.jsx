@@ -62,7 +62,7 @@ export const Container = ({
   const { resizingComponentId } = useGridStore(
     (state) => ({
       resizingComponentId: state?.resizingComponentId,
-      // draggingComponentId: state?.draggingComponentId,
+      draggingComponentId: state?.draggingComponentId,
     }),
     shallow
   );
@@ -943,82 +943,7 @@ export const Container = ({
                 </WidgetWrapper>
               );
             })}
-          {/* {draggingComponentId && (
-            <WidgetWrapper
-              isResizing={false}
-              widget={boxes[draggingComponentId]}
-              id={draggingComponentId}
-              gridWidth={gridWidth}
-              currentLayout={currentLayout}
-              mode={mode}
-            >
-              <DraggableBox
-                className={showComments && 'pointer-events-none'}
-                canvasWidth={canvasWidth}
-                onComponentClick={
-                  config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
-                }
-                onEvent={onEvent}
-                // height={height}
-                onComponentOptionChanged={onComponentOptionChanged}
-                onComponentOptionsChanged={onComponentOptionsChanged}
-                key={draggingComponentId}
-                paramUpdated={paramUpdated}
-                id={draggingComponentId}
-                {...boxes[draggingComponentId]}
-                mode={mode}
-                resizingStatusChanged={(status) => setIsResizing(status)}
-                draggingStatusChanged={(status) => setIsDragging(status)}
-                inCanvas={true}
-                zoomLevel={zoomLevel}
-                setSelectedComponent={setSelectedComponent}
-                removeComponent={removeComponent}
-                deviceWindowWidth={deviceWindowWidth}
-                isSelectedComponent={
-                  mode === 'edit' ? selectedComponents.find((component) => component.id === id) : false
-                }
-                darkMode={darkMode}
-                // onComponentHover={onComponentHover}
-                // hoveredComponent={hoveredComponent}
-                sideBarDebugger={sideBarDebugger}
-                isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
-                childComponents={childComponents[draggingComponentId]}
-                containerProps={{
-                  // turnOffAutoLayout,
-                  mode,
-                  snapToGrid,
-                  onComponentClick,
-                  onEvent,
-                  appDefinition,
-                  appDefinitionChanged,
-                  currentState,
-                  onComponentOptionChanged,
-                  onComponentOptionsChanged,
-                  appLoading,
-                  zoomLevel,
-                  setSelectedComponent,
-                  removeComponent,
-                  currentLayout,
-                  deviceWindowWidth,
-                  selectedComponents,
-                  darkMode,
-                  // onComponentHover,
-                  // hoveredComponent,
-                  sideBarDebugger,
-                  addDefaultChildren: boxes[draggingComponentId].withDefaultChildren,
-                  currentPageId,
-                  childComponents,
-                  // setIsChildDragged,
-                  setSubContainerWidths: (id, width) => setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
-                  parentGridWidth: gridWidth,
-                  subContainerWidths,
-                  draggedSubContainer,
-                }}
-                isVersionReleased={isVersionReleased}
-              />
-            </WidgetWrapper>
-          )} */}
-
+          <GhostWidget />
           <DragContainer
             widgets={boxes}
             onResizeStop={onResizeStop}
@@ -1084,15 +1009,16 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
   // const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
   const width = gridWidth * layoutData.width;
 
+  const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
   const styles = {
     width: width + 'px',
     height: layoutData.height + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     // ...(isGhostComponent ? { opacity: 0.5 } : isResizing ? { opacity: 0 } : {}),
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
+    ...(isWidgetActive ? { zIndex: 3 } : {}),
   };
 
-  const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
   console.log('state.selectedComponents--', isWidgetActive, id, isSelected, isDragging);
 
   return (
@@ -1103,7 +1029,7 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
             ? `ghost-target`
             : `target widget-target target1 ele-${id} moveable-box ${isResizing ? 'resizing-target' : ''} ${
                 isWidgetActive ? 'active-target' : ''
-              } ${isHovered ? 'hovered-target' : ''}`
+              } ${isHovered ? 'hovered-target' : ''} ${isDragging ? 'opacity-0' : ''}`
         }
         data-id={`${parent}`}
         id={id}
@@ -1111,7 +1037,6 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
         style={{
           transform: `translate(332px, -134px)`,
           ...styles,
-          ...(isWidgetActive ? { zIndex: 3 } : {}),
         }}
       >
         {children}
@@ -1119,6 +1044,22 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
     </>
   );
 };
+
+function GhostWidget() {
+  const draggingComponentId = useGridStore((state) => state?.draggingComponentId);
+  if (!draggingComponentId) return '';
+  return (
+    <div
+      id={'moveable-drag-ghost'}
+      style={{
+        zIndex: 4,
+        position: 'absolute',
+        background: '#D9E2FC',
+        opacity: '0.7',
+      }}
+    ></div>
+  );
+}
 
 function ContainerWrapper({
   children,
