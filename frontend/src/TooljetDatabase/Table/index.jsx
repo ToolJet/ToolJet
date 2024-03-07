@@ -14,12 +14,14 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
+import { isSerialDataType } from '../constants';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import BigInt from '../Icons/Biginteger.svg';
 import Float from '../Icons/Float.svg';
 import Integer from '../Icons/Integer.svg';
 import CharacterVar from '../Icons/Text.svg';
 import Boolean from '../Icons/Toggle.svg';
+import Serial from '../Icons/Serial.svg';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
@@ -172,9 +174,9 @@ const Table = ({ collapseSidebar }) => {
       }
 
       // Scroll when we reach left end of the table and if content gets overflow. Added 296 for width of two sticky columns
-      if (cellBoundingRect.left < tableBoundingRect.left + 296) {
+      if (cellBoundingRect.left < tableBoundingRect.left + 216) {
         tooljetDbTableRef.current.scrollTo({
-          left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.left - (tableBoundingRect.left + 296)),
+          left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.left - (tableBoundingRect.left + 216)),
           behavior: 'instant',
         });
       }
@@ -233,6 +235,7 @@ const Table = ({ collapseSidebar }) => {
   const patchCellNavigationRef = (index, type, cellEditable = null) => {
     // type - row | column
     if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null) {
+      // Making cell selection state to default on navigation, to make the state consistent
       if (cellClick.cellIndex !== null && cellClick.rowIndex !== null) {
         setCellClick({
           rowIndex: null,
@@ -467,6 +470,10 @@ const Table = ({ collapseSidebar }) => {
       } else if (e.key === 'Enter' && selectedCellRef.current.columnIndex !== 0) {
         setSelectedRowIds({});
         const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.value;
+        const isCellValueDefault =
+          headerGroups[0].headers[selectedCellRef.current.columnIndex]?.column_default === cellValue.toString()
+            ? true
+            : false;
         setCellVal(cellValue);
         setCellClick((prevValue) => ({
           ...prevValue,
@@ -475,6 +482,7 @@ const Table = ({ collapseSidebar }) => {
           editable: true,
         }));
         cellValue === null ? setNullValue(true) : setNullValue(false);
+        setDefaultValue(isCellValueDefault);
         setEditPopover(true);
         document.getElementById('edit-input-blur').focus();
       } else if (e.key === 'Backspace' && !editPopover && selectedCellRef.current.columnIndex !== 0) {
@@ -482,6 +490,10 @@ const Table = ({ collapseSidebar }) => {
         const cellDataType =
           rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.column?.dataType;
         if (cellValue === null) {
+          const isCellValueDefault =
+            headerGroups[0].headers[selectedCellRef.current.columnIndex]?.column_default === cellValue.toString()
+              ? true
+              : false;
           setSelectedRowIds({});
           setCellClick((prevValue) => ({
             ...prevValue,
@@ -491,7 +503,7 @@ const Table = ({ collapseSidebar }) => {
           }));
           cellDataType === 'boolean' ? setCellVal(true) : setCellVal('');
           setNullValue(false);
-          setDefaultValue(false);
+          setDefaultValue(isCellValueDefault);
           setEditPopover(true);
           document.getElementById('edit-input-blur').focus();
         }
@@ -681,6 +693,12 @@ const Table = ({ collapseSidebar }) => {
     };
   }, [editColumnHeader.columnEditPopover]);
 
+  // useEffect(() => {
+  //   const isCellValueDefault =
+  //     headerGroups[0]?.headers[cellClick.cellIndex]?.column_default === cellVal.toString() ? true : false;
+  //   setDefaultValue(isCellValueDefault);
+  // }, [cellClick.cellIndex]);
+
   const handleDelete = (column) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
@@ -737,6 +755,8 @@ const Table = ({ collapseSidebar }) => {
     if (
       ['table-editable-parent-cell', 'tjdb-td-wrapper', 'table-cell', 'cell-text'].includes(e.target.classList.value)
     ) {
+      const isCellValueDefault =
+        headerGroups[0].headers[cellIndex]?.column_default === cellVal.toString() ? true : false;
       updateCellNavigationRef(rowIndex, cellIndex, true);
       setSelectedRowIds({});
       setCellVal(cellVal);
@@ -748,14 +768,14 @@ const Table = ({ collapseSidebar }) => {
         errorState: false,
       }));
       cellVal === null ? setNullValue(true) : setNullValue(false);
+      setDefaultValue(isCellValueDefault);
       setEditPopover(false);
     }
   };
 
-  const closeEditPopover = (previousValue) => {
+  const closeEditPopover = (previousValue, cellIndex) => {
     setEditPopover(false);
     previousValue === null ? setNullValue(true) : setNullValue(false);
-    setDefaultValue(false);
     setCellVal(previousValue);
     document.getElementById('edit-input-blur').blur();
   };
@@ -766,8 +786,8 @@ const Table = ({ collapseSidebar }) => {
         <div className="primaryKeyTooltip">
           <div>
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
-              {column.Header == 'id' ? (
-                <Integer width="18" height="18" className="tjdb-column-header-name" />
+              {isSerialDataType(column) ? (
+                <Serial width="18" height="14" className="tjdb-column-header-name" />
               ) : (
                 checkDataType(column?.dataType)
               )}
@@ -932,13 +952,13 @@ const Table = ({ collapseSidebar }) => {
                         <div className="d-flex align-items-center justify-content-between">
                           <div className="tj-db-headerText">
                             <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                              {column.Header == 'id' ? (
-                                <Integer width="18" height="18" className="tjdb-column-header-name" />
+                              {isSerialDataType(column) ? (
+                                <Serial width="18" height="18" className="tjdb-column-header-name" />
                               ) : (
                                 checkDataType(column?.dataType)
                               )}
                             </span>
-                            <span>{column.render('Header')}</span>
+                            {column.render('Header')}
                           </div>
                           <TablePopover
                             onEdit={() => {
@@ -952,7 +972,7 @@ const Table = ({ collapseSidebar }) => {
                             className="column-popover-parent"
                             darkMode={darkMode}
                           >
-                            <div className="tjdb-menu-icon-parent">
+                            <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
                               <Menu
                                 width="20"
                                 height="20"
@@ -962,13 +982,13 @@ const Table = ({ collapseSidebar }) => {
                             </div>
                           </TablePopover>
                         </div>
-                      ) : column.Header === 'id' ? (
+                      ) : isSerialDataType(column) ? (
                         showTooltipForId(column)
                       ) : (
                         <>
                           <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                            {column.Header == 'id' ? (
-                              <Integer width="18" height="18" className="tjdb-column-header-name" />
+                            {isSerialDataType(column) ? (
+                              <Serial width="18" height="18" className="tjdb-column-header-name" />
                             ) : (
                               checkDataType(column?.dataType)
                             )}
@@ -1114,7 +1134,7 @@ const Table = ({ collapseSidebar }) => {
                                   cellClick.cellIndex === index ? (
                                     <CellEditMenu
                                       show={index === 0 ? false : editPopover}
-                                      close={() => closeEditPopover(cell.value)}
+                                      close={() => closeEditPopover(cell.value, index)}
                                       columnDetails={headerGroups[0].headers[index]}
                                       saveFunction={(newValue) => {
                                         handleToggleCellEdit(newValue, row.values.id, index, rIndex, false, cell.value);
@@ -1183,13 +1203,16 @@ const Table = ({ collapseSidebar }) => {
                                             value={cellVal === null ? '' : cellVal}
                                             onChange={(e) => {
                                               if (index !== 0) setCellVal(e.target.value);
+                                              if (e.target.value !== headerGroups[0].headers[index].column_default) {
+                                                setDefaultValue(false);
+                                              } else {
+                                                setDefaultValue(true);
+                                              }
                                             }}
                                             onFocus={() => {
                                               if (index !== 0) setEditPopover(true);
                                             }}
-                                            disabled={
-                                              defaultValue === true || nullValue === true || index === 0 ? true : false
-                                            }
+                                            disabled={nullValue === true || index === 0 ? true : false}
                                           />
                                         )}
                                       </div>
