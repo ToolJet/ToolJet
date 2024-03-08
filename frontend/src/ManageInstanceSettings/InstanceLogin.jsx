@@ -28,15 +28,8 @@ class InstanceLogin extends React.Component {
   }
 
   async componentDidMount() {
-    await this.fetchFeatureAccess();
     await this.setInstanceLoginConfigs();
   }
-
-  fetchFeatureAccess = () => {
-    licenseService.getFeatureAccess().then((data) => {
-      this.setState({ featureAccess: data });
-    });
-  };
 
   reset = () => {
     this.setState({ options: { ...this.state.initialOptions }, hasChanges: false });
@@ -75,15 +68,12 @@ class InstanceLogin extends React.Component {
   }
 
   async setInstanceLoginConfigs() {
+    const featureAccess = await licenseService.getFeatureAccess();
     const ssoConfigs = await instanceSettingsService.fetchSSOConfigs();
     const passwordLoginEnabled = ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
-    const isAnySSOEnabled =
-      ssoConfigs?.some(
-        (obj) =>
-          obj.sso !== 'form' &&
-          obj.enabled &&
-          (!this.protectedSSO.includes(obj.sso) || this.state.featureAccess?.[obj.sso])
-      ) || false;
+    const isAnySSOEnabled = ssoConfigs?.some(
+      (obj) => obj.sso !== 'form' && obj.enabled && (!this.protectedSSO.includes(obj.sso) || featureAccess?.[obj.sso])
+    );
     const initialOptions = {
       enableSignUp: window.public_config?.ENABLE_SIGNUP === 'true',
       allowedDomains: window.public_config?.ALLOWED_DOMAINS || '',
@@ -96,6 +86,7 @@ class InstanceLogin extends React.Component {
       initialOptions: { ...initialOptions },
       ssoOptions: [...ssoConfigs],
       isAnySSOEnabled: isAnySSOEnabled,
+      featureAccess: featureAccess,
     });
   }
 

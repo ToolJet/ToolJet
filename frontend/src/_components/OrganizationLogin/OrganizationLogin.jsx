@@ -29,15 +29,8 @@ class OrganizationLogin extends React.Component {
   }
 
   async componentDidMount() {
-    await this.fetchFeatureAccess();
     await this.setLoginConfigs();
   }
-
-  fetchFeatureAccess = () => {
-    licenseService.getFeatureAccess().then((data) => {
-      this.setState({ featureAccess: data });
-    });
-  };
 
   reset = () => {
     this.setState({ options: { ...this.state.initialOptions }, hasChanges: false });
@@ -76,6 +69,7 @@ class OrganizationLogin extends React.Component {
   }
 
   async setLoginConfigs() {
+    const featureAccess = await licenseService.getFeatureAccess();
     const settings = await this.fetchSSOSettings();
     const instanceSSO = await instanceSettingsService.fetchSSOConfigs();
     const organizationSettings = settings?.organization_details;
@@ -92,19 +86,16 @@ class OrganizationLogin extends React.Component {
       ssoOptions: [...ssoConfigs],
       defaultSSO: organizationSettings?.inherit_s_s_o,
       instanceSSO: [...instanceSSO],
+      featureAccess: featureAccess,
       isAnySSOEnabled:
         ssoConfigs?.some(
           (obj) =>
-            obj.sso !== 'form' &&
-            obj.enabled &&
-            (!this.protectedSSO.includes(obj.sso) || this.state.featureAccess?.[obj.sso])
+            obj.sso !== 'form' && obj.enabled && (!this.protectedSSO.includes(obj.sso) || featureAccess?.[obj.sso])
         ) ||
         (organizationSettings?.inherit_s_s_o &&
           instanceSSO?.some(
             (obj) =>
-              obj.sso !== 'form' &&
-              obj.enabled &&
-              (!this.protectedSSO.includes(obj.sso) || this.state.featureAccess?.[obj.sso])
+              obj.sso !== 'form' && obj.enabled && (!this.protectedSSO.includes(obj.sso) || featureAccess?.[obj.sso])
           )),
     });
   }
