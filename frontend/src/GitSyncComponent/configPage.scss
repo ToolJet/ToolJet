@@ -1,0 +1,497 @@
+
+.gitsync-config-wrapper {
+  margin: 0 auto;
+  width: 880px;
+  
+}
+
+.gitsync-config-page {
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+  outline: 1px solid var(--slate7);
+  background: var(--base);
+  width: 880px;
+  margin: 0 auto;
+  border-radius: 6px;
+  height: calc(100vh - 150px);
+  position: relative;
+
+
+  .gitsync-header{
+    position: absolute;
+    width: 100%;
+    height: 68px;
+    border-bottom: 1px solid var(--slate7);
+    padding: 20px 36px 20px 36px;
+
+
+    .git-header-cont{
+      width: 94px;
+      padding: 0;
+      margin-right: 5px;
+
+      .git-header-text {
+      font-family: 'IBM Plex Sans';
+      font-size: 16px;
+      font-weight: 500;
+      }
+    }
+
+    .git-header-text {
+      font-family: 'IBM Plex Sans';
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .blank-col {
+      padding: 0px;
+    }
+
+    .git-toggle-container {
+      margin: 0px;
+      padding: 0px;
+      width: 40px;
+      justify-content: right;
+    }
+
+    .git-toggle-label {
+      margin: 0px;
+      width: 233px;
+      padding: 0px 0px 0px 0px;
+
+      .main-text {
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .helper-text {
+        font-size: 12px;
+        font-weight: 400;
+      }
+
+      .disable-text{
+        color: var(--slate7);
+      }
+
+    }
+    
+    .git-disable-tag {
+      border-radius: 100px;
+      width: 77px;
+      height: 28px;
+      background-color: var(--grass3) ;
+      padding: 4px 16px 4px 16px;
+      color: var(--grass9);
+      justify-content: center;
+      font-size: 12px;
+      margin-left: auto;
+    }
+  
+  }
+
+  .gitconfig-body{
+    // height: 450px;
+    position: absolute;
+    overflow-y: auto;
+    top: 68px;
+    bottom: 88px;
+    width: 100%;
+    padding: 24px 300px 14px 36px;
+    
+
+    .git-url-container{
+      width: 100%;
+      margin: 0px;
+      padding: 0px;
+
+      .git-url-input {
+        padding: 0px;
+        margin: 0px;
+        height: 64px;
+  
+  
+        .label{
+          padding: 0px 0px 4px 2px;
+          font-size: 14px;
+          font-weight: 500;
+  
+        }
+  
+        .input {
+          height: 40px;
+          width: 100%;
+          border-radius: 6px 0px 0px 6px;
+          border: 1px solid var(--slate7);
+          padding: 10px 12px 10px 12px;
+          background-color: unset;
+          color: var(--slate12);
+          
+          &:focus {
+            border: 1px solid var(--slate8);
+          }
+
+          &:read-only{
+            background-color: var(--slate3);
+          }
+        }
+
+        .input-alert {
+          height: 40px;
+          width: 100%;
+          border-radius: 6px 0px 0px 6px;
+          border: 1px solid var(--tomato10);
+          padding: 10px 12px 10px 12px;
+          background-color: unset;
+          color: var(--slate12);
+          }
+
+        .disable-text {
+          color: var(--slate7);
+        }
+      }
+      .generate-button-container{
+        padding: 24px 0px 0px 0px;
+        height: auto;
+        
+  
+        .generate-button{
+          height: 100%;
+          width: 100%;
+          border-radius: 0px 6px 6px 0px;
+          font-family: 'IBM Plex Sans';
+          font-weight: 500;
+          
+  
+          &:disabled{
+            background-color: var(--slate3);
+            color: var(--slate8);
+            border: 1px solid var(--slate7);
+            border-left: none !important;
+          }
+    
+        }
+        
+      }
+
+      
+
+    }
+
+    .alert-container{
+        height: 52px;
+        border-radius: 6px;
+        border: 1px solid var(--slate8);
+        border-left-width: 5px;
+        border-left-color: var(--tomato10);
+        padding: 14px 8px 14px 8px;
+        font-size: 14px;
+        margin-top: 10px;
+      }
+
+    
+    
+    .key-output-container{
+      margin-top: 30px;
+      width: 100%;
+      height: 172px;
+      padding: 0px;
+
+      .ssh-key-row {
+        display:flex;
+
+      .key-type-switches-container {
+        width: 127PX;
+        position: relative;
+        display: flex;
+        padding: 0;
+        position: relative;
+        background: var(--slate4);
+        height: 28px;
+        border-radius: 6px;
+        margin-left: auto;
+        margin-right: 0;
+        font-size: 12px;
+        font-weight: 500;
+
+        input {
+          visibility: hidden;
+          position: absolute;
+          top: 0;
+        }
+
+        .label {
+          width: 50%;
+          padding: 0 0 0 0 ;
+          margin: auto;
+          font-size: 12px;
+          text-align: center;
+          vertical-align: middle;
+          cursor: pointer;
+          color: var(--slate11);
+      }
+      .switch-wrapper {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 50%;
+        padding: 0.15rem;
+        z-index: 3;
+        transition: transform .5s cubic-bezier(.77, 0, .175, 1);
+      
+
+    /* switch box highlighter */
+      .switch {
+          border-radius: 6px;
+          background: var(--base);
+          height: 100%;
+          width: 100%;
+          
+          
+
+        .div-switch {
+          width: 100%;
+          text-align: center;
+          opacity: 0;
+          margin-top:3px;
+          display: block;
+          color: var(--indigo10) ;
+          transition: opacity .2s cubic-bezier(.77, 0, .175, 1) .125s;
+          will-change: opacity;
+          position: absolute;
+          top: 0;
+          left: 0;
+
+          &.disable{
+              color: var(--slate7) !important;
+            };
+      }
+      }
+    }
+
+      input:nth-of-type(1):checked~.switch-wrapper {
+    transform: translateX(0%);
+}
+
+/* slide the switch box from left to right */
+    input:nth-of-type(2):checked~.switch-wrapper {
+    transform: translateX(100%);
+}
+
+/* toggle the switch box labels - first checkbox:checked - show first switch div */
+    input:nth-of-type(1):checked~.switch-wrapper .switch div:nth-of-type(1) {
+    opacity: 1;
+}
+
+/* toggle the switch box labels - second checkbox:checked - show second switch div */
+  input:nth-of-type(2):checked~.switch-wrapper .switch div:nth-of-type(2) {
+    opacity: 1;
+}
+    }
+
+    /* switch box labels
+        - default setup
+        - toggle afterwards based on radio:checked status 
+    */
+      .label{
+        padding: 5px 0px 4px 2px;
+        font-size: 14px;
+        font-weight: 500;
+
+      }
+    }
+
+      .key-box {
+        width: 100%;
+        height: 120px;
+        border-radius: 6px 6px 6px 6px;
+        border: 1px solid var(--slate7);
+        background-color: var(--slate3);
+        padding: 0px ;
+        margin: 5px 0 0 0;
+
+        .spinner-center{
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-top: 25px;
+        }
+
+        .key-display {
+          padding: 5px 12px;
+          word-wrap: break-word;
+          overflow: auto;
+          height: 100px;
+
+          &::-webkit-scrollbar {
+              width: 0;  /* Remove scrollbar width */
+          }
+
+          /* Hide scrollbar for Firefox */
+          scrollbar-width: none; /* Firefox 64 and later */
+
+          /* Hide scrollbar for Internet Explorer 10+ */
+          -ms-overflow-style: none;
+        }
+
+        &:disabled {
+          color: var(--slate7);
+        }
+
+        .copy-btn {
+          background: none;
+          padding: 0px;
+          margin: 0px;
+        }
+      }
+
+      
+    }
+
+    .help-text {
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--slate10);
+      padding: 2px 0px 0px 0px;
+    }
+    .disable-text{
+      color: var(--slate7);
+    }
+
+    .alert-text {
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--tomato10);
+      padding: 2px 0px 0px 0px;
+    }
+
+    .open-git-container {
+      width: 100%;
+      height: 80px;
+      padding: 10px 12px 8px 12px;
+      margin: 20px 0px 0px 0px;
+      border: 1px solid var(--indigo7);
+      background: var(--indigo2);
+      border-radius: 6px 6px 6px 6px;
+      
+
+
+      .info-btn {
+        padding: 0px;
+        flex: 0 0 24px;
+      }
+
+      .message {
+        word-wrap: break-word;
+        font-size: 12px;
+      }
+
+      .open-git-btn {
+        margin-top: 5px;
+        color: var(--indigo9);
+        font-size: 12px;
+        font-weight: 500;
+
+        .open-icn {
+          margin-right: 2px;
+        }
+      }
+    }
+
+    .auto-commit-toggle-cont {
+      width: 100%;
+      height: 80px;
+      margin: 20px 0px 0px 0px;
+
+
+      .toggle-main-head{
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--base-black);
+      }
+
+      .toggle-desc{
+        font-size:12px ;
+        font-weight: 400;
+        color:#687076
+      }
+    }
+  }
+
+  .disable-text{
+        color: var(--slate7);
+  }
+
+  .git-config-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 88px;
+    border-top: 1px solid var(--slate7);
+    padding: 24px 32px 24px 32px;
+    margin: 0px;
+
+    .test-btn{
+      justify-content: end;
+      margin-left: auto;
+      display: flex;
+      width: 135px;
+      height: 40px;
+      align-items: center;
+      justify-content: center;
+
+      &:disabled{
+        background-color: var(--slate3);
+        color: var(--slate8);
+      }
+      
+    }
+
+    .test-btn-cont {
+      padding: 0px ;
+      margin: 0px;
+    }
+
+    .delete-btn-cont {
+      padding: 0px;
+      margin: 0px;
+    }
+
+    .delete-btn {
+      height: 100%;
+      display: flex;
+      margin-left: auto;
+      margin-right: 5px;
+      align-items: center;
+      justify-content: center;
+      background-color: transparent;
+      border: 1px solid var(--tomato10);
+      border-radius: 6px;
+
+      &:disabled{
+        background-color: var(--slate3);
+        border: 1px solid var(--slate8);
+        color: var(--slate8);
+      }
+    }
+
+    .read-btn {
+      padding: 10px 20px 10px 20px;
+      align-content: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'IBM Plex Sans';
+
+
+      .stud-icn {
+        margin-bottom: 3px;  
+        margin-right: 8px;     
+      }
+    }
+  }
+}
+
+.git-toggle-header-class {
+  font-family: 'IBM Plex Sans';
+  font-size: 16px;
+  font-weight: 500;
+}
