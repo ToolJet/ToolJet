@@ -5,7 +5,7 @@ import CreateColumnForm from '../../Forms/ColumnForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 
-const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerOpen }) => {
+const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerOpen, rows }) => {
   const { organizationId, selectedTable, setColumns, setPageCount, handleRefetchQuery, pageSize } =
     useContext(TooljetDatabaseContext);
 
@@ -36,6 +36,7 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
             setIsCreateColumnDrawerOpen(false);
           }}
           onClose={() => setIsCreateColumnDrawerOpen(false)}
+          rows={rows}
         />
       </Drawer>
     </>
