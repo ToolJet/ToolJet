@@ -4,19 +4,19 @@ import { useEditorStore } from './editorStore';
 import { useDataQueriesStore } from './dataQueriesStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { useResolverStoreActions } from './resolverStore';
 
-//*  using binary search to find and remove it from the currentSuggestions array
-
-function binarySearchDelete(array, key) {
+//*  using binary search to find and replace it with new hint (re-named entities) from the currentSuggestions array
+function binarySearchUpdate(array, obj) {
+  const { old, newHint } = obj;
   let start = 0;
   let end = array.length - 1;
   while (start <= end) {
     let middle = Math.floor((start + end) / 2);
-    if (array[middle].hint === key) {
-      // Delete the item at the found index
-      array.splice(middle, 1);
-      return; // Exit after deletion
-    } else if (array[middle].hint < key) {
+    if (array[middle].hint === old) {
+      array[middle].hint = newHint;
+      return;
+    } else if (array[middle].hint < old) {
       start = middle + 1;
     } else {
       end = middle - 1;
@@ -24,13 +24,13 @@ function binarySearchDelete(array, key) {
   }
 }
 
-export function removeAppSuggestions(suggestionsArray, deleteSuggestionsArray) {
+export function removeAppSuggestions(suggestionsArray, deleteAndReplaceArray) {
   const sortedSuggestionsArray = JSON.parse(
     JSON.stringify(suggestionsArray.sort((a, b) => a.hint.localeCompare(b.hint)))
   );
 
-  deleteSuggestionsArray.forEach((suggestion) => {
-    binarySearchDelete(sortedSuggestionsArray, suggestion);
+  deleteAndReplaceArray.forEach((suggestion) => {
+    binarySearchUpdate(sortedSuggestionsArray, suggestion);
   });
 
   return sortedSuggestionsArray;
@@ -160,4 +160,8 @@ export const handleReferenceTransactions = (
 
     useAppDataStore.getState().actions.updateAppVersionEventHandlers(transactionSnapshot.events, 'update');
   }
+
+  updatedEntityNames.forEach((entity) => {
+    useResolverStoreActions().handleUpdatesOnReferencingEnities(entity);
+  });
 };

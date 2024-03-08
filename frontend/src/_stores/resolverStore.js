@@ -3,7 +3,7 @@ import { createReferencesLookup, findAllEntityReferences, findEntityId } from '.
 import { createJavaScriptSuggestions } from '../Editor/CodeEditor/utils';
 import { v4 as uuid } from 'uuid';
 import _ from 'lodash';
-import { dfs } from './handleReferenceTransactions';
+import { dfs, removeAppSuggestions } from './handleReferenceTransactions';
 
 class ReferencesBiMap {
   constructor() {
@@ -72,9 +72,10 @@ export const useResolveStore = create(
       updateAppSuggestions: (refState) => {
         const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState, false, true);
 
-        set(() => ({ suggestions: { ...get().suggestions, appHints: suggestionList } }));
-
-        set(() => ({ lookupTable: { ...get().lookupTable, hints: hintsMap, resolvedRefs } }));
+        set(() => ({
+          suggestions: { ...get().suggestions, appHints: suggestionList },
+          lookupTable: { ...get().lookupTable, hints: hintsMap, resolvedRefs },
+        }));
       },
 
       addAppSuggestions: (partialRefState) => {
@@ -108,9 +109,6 @@ export const useResolveStore = create(
             ...get().suggestions,
             appHints: [...get().suggestions.appHints, ...suggestionList],
           },
-        }));
-
-        set(() => ({
           lookupTable: {
             ...get().lookupTable,
             hints: lookupHintsMap,
@@ -144,9 +142,7 @@ export const useResolveStore = create(
               ...get().suggestions,
               appHints: currentSuggestions,
             },
-          }));
 
-          set(() => ({
             lookupTable: {
               ...get().lookupTable,
               hints: lookupHintsMap,
@@ -225,6 +221,50 @@ export const useResolveStore = create(
         }
 
         return obj;
+      },
+      handleUpdatesOnReferencingEnities: (updatedEntityName) => {
+        if (!updatedEntityName) return;
+        const referencesSubstring = updatedEntityName.type + '.' + updatedEntityName.name;
+        const allRefsInHints = [];
+        const toDeleteAppHints = [];
+        const lookupHintsMap = new Map(_.cloneDeep([...get().lookupTable.hints]));
+        const currentSuggestions = get().suggestions.appHints;
+
+        lookupHintsMap.forEach((value, key) => {
+          if (key.includes(referencesSubstring)) {
+            const newReference = key.replace(
+              referencesSubstring,
+              updatedEntityName.type + '.' + updatedEntityName.newName
+            );
+
+            allRefsInHints.push({ refKey: key, refId: value, newRefKey: newReference });
+            toDeleteAppHints.push({ old: key, newHint: newReference });
+          }
+        });
+
+        allRefsInHints.forEach((ref) => {
+          if (!lookupHintsMap.has(ref.refKey)) {
+            return;
+          }
+
+          lookupHintsMap.delete(ref.refKey);
+          lookupHintsMap.set(ref.newRefKey, ref.refId);
+        });
+
+        const newAppHints = removeAppSuggestions(currentSuggestions, toDeleteAppHints);
+
+        set(() => {
+          return {
+            suggestions: {
+              ...get().suggestions,
+              appHints: newAppHints,
+            },
+            lookupTable: {
+              ...get().lookupTable,
+              hints: lookupHintsMap,
+            },
+          };
+        });
       },
     },
   }),

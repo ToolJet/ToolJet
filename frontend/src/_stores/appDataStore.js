@@ -191,6 +191,7 @@ useAppDataStore.subscribe(
           id: component.id,
           name: existingName,
           newName: component.name,
+          type: 'components',
         });
       });
 

@@ -325,6 +325,7 @@ export const useDataQueriesStore = create(
                   id: dataQuery.id,
                   name: existingName,
                   newName: dataQuery.name,
+                  type: 'queries',
                 });
               });
 
