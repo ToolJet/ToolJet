@@ -41,6 +41,7 @@ describe("List view widget", () => {
     cy.dragAndDropWidget("List View", 50, 500);
     cy.modifyCanvasSize(1200, 700);
     cy.intercept("PUT", "/api/apps/**").as("apps");
+    cy.get('[data-tooltip-content="Hide query panel"]').click();
   });
   afterEach(() => {
     cy.apiDeleteApp();
@@ -62,9 +63,9 @@ describe("List view widget", () => {
     deleteInnerWidget(data.widgetName, commonWidgetText.button1);
     deleteInnerWidget(data.widgetName, commonWidgetText.image1);
 
-    dropWidgetToListview("Text", 100, 50, data.widgetName);
+    dropWidgetToListview("Text", 50, 50, data.widgetName);
 
-    dropWidgetToListview("Text Input", 250, 50, data.widgetName);
+    dropWidgetToListview("Text Input", 300, 50, data.widgetName);
     addDataToListViewInputs(
       data.widgetName,
       commonWidgetText.textinput1,
@@ -296,7 +297,7 @@ describe("List view widget", () => {
     deleteInnerWidget(data.widgetName, "button1");
     deleteInnerWidget(data.widgetName, "image1");
 
-    dropWidgetToListview("Text Input", 250, 20, data.widgetName);
+    dropWidgetToListview("Text Input", 300, 50, data.widgetName);
 
     cy.forceClickOnCanvas();
     openEditorSidebar(data.widgetName);

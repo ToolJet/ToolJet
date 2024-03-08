@@ -123,13 +123,15 @@ describe("Editor- Test Button widget", () => {
     verifyPropertiesGeneralAccordion(data.widgetName, data.tooltipText);
 
     verifyLayout(data.widgetName);
-
-    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
     cy.get(
       commonWidgetSelector.parameterTogglebutton(
         commonWidgetText.parameterShowOnDesktop
       )
     ).click();
+
+    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
+    openEditorSidebar(data.widgetName);
+    
 
     cy.get(commonWidgetSelector.widgetDocumentationLink).should(
       "have.text",

@@ -220,11 +220,11 @@ Cypress.Commands.add("notVisible", (dataCy) => {
 Cypress.Commands.add(
   "resizeWidget",
   (widgetName, x, y, autosaveStatusCheck = true) => {
-    cy.get(`[data-cy="draggable-widget-${widgetName}"]`).trigger("mouseover", {
+    cy.get(`.selected-component.modal-moveable .moveable-se.moveable-resizable`).trigger("mouseover", {
       force: true,
     });
 
-    cy.get('[class="bottom-right"]').trigger("mousedown", {
+    cy.get('.selected-component.modal-moveable .moveable-se.moveable-resizable').last().realHover().trigger("mousedown", {
       which: 1,
       force: true,
     });

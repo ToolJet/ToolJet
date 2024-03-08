@@ -35,7 +35,7 @@ describe("Date Picker widget", () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-datepicker-App`);
     cy.openApp();
-    cy.dragAndDropWidget("Date Picker");
+    cy.dragAndDropWidget("Date Picker", 400, 400);
   });
   afterEach(() => {
     cy.apiDeleteApp();
