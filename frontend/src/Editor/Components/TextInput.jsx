@@ -44,7 +44,7 @@ export const TextInput = function TextInput({
   } = styles;
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [value, setValue] = useState(properties.value);
-  const [visibility, setVisibility] = useState(properties.visibility !== false ? true : false);
+  const [visibility, setVisibility] = useState(properties.visibility);
   const { isValid, validationError } = validate(value);
   const [showValidationError, setShowValidationError] = useState(false);
   const currentState = useCurrentState();
@@ -124,7 +124,7 @@ export const TextInput = function TextInput({
   }, [disabledState]);
 
   useEffect(() => {
-    visibility !== properties.visibility && setVisibility(properties.visibility !== false ? true : false);
+    visibility !== properties.visibility && setVisibility(properties.visibility);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);

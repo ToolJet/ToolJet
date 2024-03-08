@@ -44,7 +44,7 @@ export const NumberInput = function NumberInput({
   const minValue = resolveReferences(component?.definition?.validation?.minValue?.value, currentState) ?? null;
   const maxValue = resolveReferences(component?.definition?.validation?.maxValue?.value, currentState) ?? null;
 
-  const [visibility, setVisibility] = useState(properties.visibility !== false ? true : false);
+  const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(loadingState);
   const [showValidationError, setShowValidationError] = useState(false);
   const [value, setValue] = React.useState(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
@@ -206,7 +206,7 @@ export const NumberInput = function NumberInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
   useEffect(() => {
-    visibility !== properties.visibility && setVisibility(properties.visibility !== false ? true : false);
+    visibility !== properties.visibility && setVisibility(properties.visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
   useEffect(() => {

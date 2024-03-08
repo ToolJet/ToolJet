@@ -33,13 +33,13 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
   } = styles;
   const { loadingState, textFormat, disabledState } = properties;
   const [text, setText] = useState(() => computeText());
-  const [visibility, setVisibility] = useState(properties.visibility !== false ? true : false);
+  const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
 
   useEffect(() => {
-    if (visibility !== properties.visibility) setVisibility(properties.visibility !== false ? true : false);
+    if (visibility !== properties.visibility) setVisibility(properties.visibility);
     if (isLoading !== loadingState) setLoading(loadingState);
     if (isDisabled !== disabledState) setIsDisabled(disabledState);
 

@@ -172,9 +172,11 @@ export const Box = memo(
       mode === 'edit' && component.validate
         ? validateProperties(resolvedProperties, componentMeta.properties)
         : [resolvedProperties, []];
+    if (shouldAddBoxShadowAndVisibility.includes(component.component)) {
+      validatedProperties.visibility = validatedProperties.visibility !== false ? true : false;
+    }
 
     const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
-
     const [validatedStyles, styleErrors] =
       mode === 'edit' && component.validate
         ? validateProperties(resolvedStyles, componentMeta.styles)
@@ -189,7 +191,7 @@ export const Box = memo(
         : [resolvedGeneralProperties, []];
 
     const resolvedGeneralStyles = resolveGeneralStyles(component, currentState, null, customResolvables);
-    resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
+
     const [validatedGeneralStyles, generalStylesErrors] =
       mode === 'edit' && component.validate
         ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
