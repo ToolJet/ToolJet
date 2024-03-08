@@ -58,7 +58,7 @@ export const Folders = function Folders({
 
   useEffect(() => {
     if (_.isEmpty(currentFolder)) {
-      updateSidebarNAV('All apps');
+      updateSidebarNAV(t('homePage.folders.allApps', 'All apps'));
       setActiveFolder({});
     } else {
       updateSidebarNAV(currentFolder.name);
@@ -76,7 +76,7 @@ export const Folders = function Folders({
   function saveFolder() {
     const newName = newFolderName?.trim();
     if (!newName) {
-      setErrorText("Folder name can't be empty");
+      setErrorText(t('homePage.folders.folderCantEmpty', "Folder name can't be empty"));
       return;
     }
     if (!errorText) {
@@ -84,7 +84,7 @@ export const Folders = function Folders({
       folderService
         .create(newName)
         .then(() => {
-          toast.success('Folder created.');
+          toast.success(t('homePage.folders.folderCreated', 'Folder created.'));
           setCreationStatus(false);
           setShowForm(false);
           setNewFolderName('');
@@ -105,7 +105,7 @@ export const Folders = function Folders({
       setActiveFolder(folder);
     }
     folderChanged(folder);
-    updateSidebarNAV(folder?.name ?? 'All apps');
+    updateSidebarNAV(folder?.name ?? t('homePage.folders.allApps', 'All apps'));
     //update the url query parameter with folder name
     updateFolderQuery(folder?.name);
   }
@@ -131,7 +131,7 @@ export const Folders = function Folders({
     folderService
       .deleteFolder(deletingFolder.id)
       .then(() => {
-        toast.success('Folder has been deleted.');
+        toast.success(t('homePage.folders.deletedFolder', 'Folder has been deleted.'));
         setShowDeleteConfirmation(false);
         setDeletionStatus(false);
         foldersChanged();
@@ -161,7 +161,7 @@ export const Folders = function Folders({
       folderService
         .updateFolder(folderName, updatingFolder.id)
         .then(() => {
-          toast.success('Folder has been updated.');
+          toast.success(t('homePage.folders.folderUpdated', 'Folder has been updated.'));
           setUpdationStatus(false);
           setShowUpdateForm(false);
           setNewFolderName('');
@@ -188,7 +188,7 @@ export const Folders = function Folders({
 
   const handleInputChange = (e) => {
     setErrorText('');
-    const error = validateName(e.target.value, 'Folder name', true, false, false, true, false, true);
+    const error = validateName(e.target.value, t('homePage.folders.folderName', 'Folder name'), true, false, false, true, false, true);
     if (!error.status) {
       setErrorText(error.errorMsg);
     }

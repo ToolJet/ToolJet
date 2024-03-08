@@ -140,7 +140,7 @@ class HomePageComponent extends React.Component {
       const data = await appsService.createApp({ icon: sample(iconList), name: appName });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
-      toast.success('App created successfully!');
+      toast.success(this.props.t('homePage.homePage.appCreatedSuccess', 'App created successfully!'));
       _self.setState({ creatingApp: false });
       return true;
     } catch (errorResponse) {
@@ -159,7 +159,7 @@ class HomePageComponent extends React.Component {
     try {
       await appsService.saveApp(appId, { name: newAppName });
       await this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
-      toast.success('App name has been updated!');
+      toast.success(this.props.t('homePage.homePage.appNameUpdated', 'App name has been updated!'));
       _self.setState({ renamingApp: false });
       return true;
     } catch (errorResponse) {
@@ -183,7 +183,7 @@ class HomePageComponent extends React.Component {
         app: [{ id: appId, name: appName }],
         organization_id: this.state.currentUser?.organization_id,
       });
-      toast.success('App cloned successfully!');
+      toast.success(this.props.t('homePage.homePage.appClonedSucc', 'App cloned successfully!'));
       this.props.navigate(`/${getWorkspaceId()}/apps/${data?.imports?.app[0]?.id}`);
       this.setState({ isCloningApp: false });
       return true;
@@ -215,13 +215,17 @@ class HomePageComponent extends React.Component {
         try {
           fileContent = JSON.parse(result);
         } catch (parseError) {
-          toast.error(`Could not import: ${parseError}`);
+          toast.error(
+            this.props.t('homePage.homePage.importErr', 'Could not import: {{parseError}}', { parseError: parseError })
+          );
           return;
         }
         this.setState({ fileContent, fileName, showImportAppModal: true });
       };
       fileReader.onerror = (error) => {
-        toast.error(`Could not import the app: ${error}`);
+        toast.error(
+          this.props.t('homePage.homePage.importErr2', 'Could not import the app: {{error}}', { error: error })
+        );
         return;
       };
       event.target.value = null;
@@ -243,7 +247,7 @@ class HomePageComponent extends React.Component {
     const requestBody = { organization_id, ...importJSON };
     try {
       const data = await appsService.importResource(requestBody);
-      toast.success('App imported successfully.');
+      toast.success(this.props.t('homePage.homePage.appImported', 'App imported successfully.'));
       this.setState({
         isImportingApp: false,
       });
@@ -259,7 +263,7 @@ class HomePageComponent extends React.Component {
       if (error.statusCode === 409) {
         return false;
       }
-      toast.error("Couldn't import the app");
+      toast.error(this.props.t('homePage.homePage.appImportErr', "Couldn't import the app"));
     }
   };
 
@@ -270,7 +274,9 @@ class HomePageComponent extends React.Component {
     try {
       const data = await libraryAppService.deploy(id, appName);
       this.setState({ deploying: false });
-      toast.success('App created successfully!', { position: 'top-center' });
+      toast.success(this.props.t('homePage.homePage.appCreatedSuccess', 'App created successfully!'), {
+        position: 'top-center',
+      });
       this.props.navigate(`/${getWorkspaceId()}/apps/${data.app[0].id}`);
     } catch (e) {
       this.setState({ deploying: false });
@@ -369,7 +375,7 @@ class HomePageComponent extends React.Component {
       .deleteApp(this.state.appToBeDeleted.id)
       // eslint-disable-next-line no-unused-vars
       .then((data) => {
-        toast.success('App deleted successfully.');
+        toast.success(this.props.t('homePage.homePage.appDeleted', 'App deleted successfully.'));
         this.fetchApps(
           this.state.currentPage
             ? this.state.apps?.length === 1
@@ -381,7 +387,7 @@ class HomePageComponent extends React.Component {
         this.fetchFolders();
       })
       .catch(({ error }) => {
-        toast.error('Could not delete the app.');
+        toast.error(this.props.t('homePage.homePage.couldNotDeleteApp', 'Could not delete the app.'));
         console.log(error);
       })
       .finally(() => {
@@ -403,14 +409,14 @@ class HomePageComponent extends React.Component {
   addAppToFolder = () => {
     const { appOperations } = this.state;
     if (!appOperations?.selectedFolder || !appOperations?.selectedApp) {
-      return toast.error('Select a folder');
+      return toast.error(this.props.t('homePage.homePage.selectedFolder', 'Select a folder'));
     }
     this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
     folderService
       .addToFolder(appOperations.selectedApp.id, appOperations.selectedFolder)
       .then(() => {
-        toast.success('Added to folder.');
+        toast.success(this.props.t('homePage.homePage.addedToFolder', 'Added to folder.'));
         this.foldersChanged();
         this.setState({ appOperations: {}, showAddToFolderModal: false });
       })
@@ -430,7 +436,7 @@ class HomePageComponent extends React.Component {
     folderService
       .removeAppFromFolder(appOperations.selectedApp.id, appOperations.selectedFolder.id)
       .then(() => {
-        toast.success('Removed from folder.');
+        toast.success(this.props.t('homePage.homePage.removedFromFolder', 'Removed from folder.'));
 
         this.fetchApps(1, appOperations.selectedFolder.id);
         this.fetchFolders();
@@ -499,18 +505,18 @@ class HomePageComponent extends React.Component {
     const { appOperations, apps } = this.state;
 
     if (!appOperations?.selectedIcon || !appOperations?.selectedApp) {
-      return toast.error('Select an icon');
+      return toast.error(this.props.t('homePage.homePage.selectedIcon', 'Select an icon'));
     }
     if (appOperations.selectedIcon === appOperations.selectedApp.icon) {
       this.setState({ appOperations: {}, showChangeIconModal: false });
-      return toast.success('Icon updated.');
+      return toast.success(this.props.t('homePage.homePage.iconUpdated', 'Icon updated.'));
     }
     this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
     appsService
       .changeIcon(appOperations.selectedIcon, appOperations.selectedApp.id)
       .then(() => {
-        toast.success('Icon updated.');
+        toast.success(this.props.t('homePage.homePage.iconUpdated', 'Icon updated.'));
 
         const updatedApps = apps.map((app) => {
           if (app.id === appOperations.selectedApp.id) {
@@ -584,9 +590,9 @@ class HomePageComponent extends React.Component {
               closeModal={this.closeCreateAppModal}
               processApp={this.createApp}
               show={this.openCreateAppModal}
-              title={'Create app'}
-              actionButton={'+ Create app'}
-              actionLoadingButton={'Creating'}
+              title={this.props.t('homePage.homePage.createApp', 'Create app')}
+              actionButton={this.props.t('homePage.homePage.createApp_', '+ Create app')}
+              actionLoadingButton={this.props.t('homePage.homePage.creating', 'Creating')}
             />
           )}
           {showCloneAppModal && (
@@ -596,9 +602,9 @@ class HomePageComponent extends React.Component {
               show={() => this.setState({ showCloneAppModal: true })}
               selectedAppId={appOperations?.selectedApp?.id}
               selectedAppName={appOperations?.selectedApp?.name}
-              title={'Clone app'}
-              actionButton={'Clone app'}
-              actionLoadingButton={'Cloning'}
+              title={this.props.t('homePage.homePage.cloneApp', 'Clone app')}
+              actionButton={this.props.t('homePage.homePage.cloneApp', 'Clone app')}
+              actionLoadingButton={this.props.t('homePage.homePage.cloning', 'Cloning')}
             />
           )}
           {showImportAppModal && (
@@ -608,9 +614,9 @@ class HomePageComponent extends React.Component {
               fileContent={fileContent}
               show={() => this.setState({ showImportAppModal: true })}
               selectedAppName={fileName}
-              title={'Import app'}
-              actionButton={'Import app'}
-              actionLoadingButton={'Importing'}
+              title={this.props.t('homePage.homePage.importApp', 'Import app')}
+              actionButton={this.props.t('homePage.homePage.importApp', 'Import app')}
+              actionLoadingButton={this.props.t('homePage.homePage.importing', 'Importing')}
             />
           )}
           {showCreateAppFromTemplateModal && (
@@ -619,9 +625,9 @@ class HomePageComponent extends React.Component {
               templateDetails={this.state.selectedTemplate}
               processApp={this.deployApp}
               closeModal={this.closeCreateAppFromTemplateModal}
-              title={'Create new app from template'}
-              actionButton={'+ Create app'}
-              actionLoadingButton={'Creating'}
+              title={this.props.t('homePage.homePage.newAppTemplate', 'Create new app from template')}
+              actionButton={this.props.t('homePage.homePage.createApp_', '+ Create app')}
+              actionLoadingButton={this.props.t('homePage.homePage.creating', 'Creating')}
             />
           )}
           {showRenameAppModal && (
@@ -631,9 +637,9 @@ class HomePageComponent extends React.Component {
               processApp={this.renameApp}
               selectedAppId={appOperations.selectedApp.id}
               selectedAppName={appOperations.selectedApp.name}
-              title={'Rename app'}
-              actionButton={'Rename app'}
-              actionLoadingButton={'Renaming'}
+              title={this.props.t('homePage.appCard.renameApp', 'Rename app')}
+              actionButton={this.props.t('homePage.appCard.renameApp', 'Rename app')}
+              actionLoadingButton={this.props.t('homePage.appCard.renaming', 'Renaming')}
             />
           )}
           <ConfirmDialog
@@ -756,7 +762,7 @@ class HomePageComponent extends React.Component {
                 this.setState({ isExportingApp: false, app: {} });
               }}
               customClassName="modal-version-lists"
-              title={'Select a version to export'}
+              title={this.props.t('homePage.homePage.selectedVersionToExport', 'Select a version to export')}
               app={app}
               darkMode={this.props.darkMode}
             />

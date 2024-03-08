@@ -4,6 +4,7 @@ import Modal from '../HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _ from 'lodash';
 import { validateName } from '@/_helpers/utils';
+import { useTranslation } from 'react-i18next';
 import { FormWrapper } from './FormWrapper';
 
 export function AppModal({
@@ -18,13 +19,15 @@ export function AppModal({
   actionButton,
   actionLoadingButton,
 }) {
+  const { t } = useTranslation();
+
   if (!selectedAppName && templateDetails) {
     selectedAppName = templateDetails?.name || '';
   } else if (!selectedAppName) {
     selectedAppName = '';
   }
 
-  if (actionButton === 'Clone app') {
+  if (actionButton === t('homePage.homePage.cloneApp', 'Clone app')) {
     if (selectedAppName.length >= 45) {
       selectedAppName = selectedAppName.slice(0, 45) + '_Copy';
     } else {
@@ -82,7 +85,7 @@ export function AppModal({
           success = await processApp(trimmedAppName);
         }
         if (success === false) {
-          setErrorText('App name already exists');
+          setErrorText(t('_components.appModal.appNameExists', 'App name already exists'));
           setInfoText('');
         } else {
           setErrorText('');
@@ -103,7 +106,7 @@ export function AppModal({
     const trimmedName = newAppName.trim();
     setNewAppName(newAppName);
     if (newAppName.length >= 50) {
-      setInfoText('Maximum length has been reached');
+      setInfoText(t('_components.appModal.maxLenReached', 'Maximum length has been reached'));
     } else {
       setInfoText('');
       const error = validateName(trimmedName, 'App', false);
@@ -114,8 +117,10 @@ export function AppModal({
   const createBtnDisableState =
     isLoading ||
     errorText ||
-    (actionButton === 'Rename app' && (!isNameChanged || newAppName.trim().length === 0 || newAppName.length > 50)) || // For rename case
-    (actionButton !== 'Rename app' && (newAppName.length > 50 || newAppName.trim().length === 0));
+    (actionButton === t('homePage.appCard.renameApp', 'Rename app') &&
+      (!isNameChanged || newAppName.trim().length === 0 || newAppName.length > 50)) || // For rename case
+    (actionButton !== t('homePage.appCard.renameApp', 'Rename app') &&
+      (newAppName.length > 50 || newAppName.trim().length === 0));
 
   return (
     <Modal
@@ -125,7 +130,7 @@ export function AppModal({
       footerContent={
         <>
           <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button" className="modal-footer-divider">
-            Cancel
+            {t('globals.cancel', 'Cancel')}
           </ButtonSolid>
           <ButtonSolid
             form="createAppForm"
@@ -142,13 +147,13 @@ export function AppModal({
         <div className="row workspace-folder-modal mb-3">
           <div className="col modal-main tj-app-input">
             <label className="tj-input-label" data-cy="app-name-label">
-              {'App Name'}
+              {t('_components.appModal.appName', 'App Name')}
             </label>
             <input
               type="text"
               onChange={handleInputChange}
               className={`form-control ${errorText ? 'input-error-border' : ''}`}
-              placeholder={'Enter app name'}
+              placeholder={t('_components.appModal.enterAppName', 'Enter app name')}
               value={newAppName}
               data-cy="app-name-input"
               maxLength={50}
@@ -178,7 +183,7 @@ export function AppModal({
                 }}
                 data-cy="app-name-info-label"
               >
-                {infoText || 'Maximum length has been reached'}
+                {infoText || t('_components.appModal.maxLenReached', 'Maximum length has been reached')}
               </small>
             ) : (
               <small
@@ -189,7 +194,7 @@ export function AppModal({
                 }}
                 data-cy="app-name-info-label"
               >
-                App name must be unique and max 50 characters
+                {t('_components.appModal.uniqueAppNameMax50', 'App name must be unique and max 50 characters')}
               </small>
             )}
           </div>

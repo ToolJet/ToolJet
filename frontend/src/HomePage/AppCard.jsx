@@ -65,7 +65,7 @@ export default function AppCard({
   try {
     AppIcon = <BulkIcon fill={'#3E63DD'} name={app?.icon || defaultIcon} />;
   } catch (e) {
-    console.error('App icon not found', app.icon);
+    console.error(t('homePage.appCard.appIconNotFound', 'App icon not found'), app.icon);
   }
 
   return (
@@ -112,9 +112,13 @@ export default function AppCard({
           {canUpdate && (
             <div className="app-creation-time tj-text-xsm" data-cy="app-creation-details">
               <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
-                <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
+                <span>
+                  {updated === 'just now'
+                    ? t('homePage.appCard.editedUpdated', 'Edited {{updated}}', { updated: updated })
+                    : t('homePage.appCard.editedUpdatedAgo', 'Edited {{updated}} ago', { updated: updated })}
+                </span>
               </ToolTip>
-              &nbsp;by{' '}
+              &nbsp;{t('homePage.appCard.by', 'by') + ' '}
               {`${app.user?.first_name ? app.user.first_name : ''} ${app.user?.last_name ? app.user.last_name : ''}`}
             </div>
           )}
@@ -122,7 +126,7 @@ export default function AppCard({
         <div className="appcard-buttons-wrap">
           {canUpdate && (
             <div>
-              <ToolTip message="Open in app builder">
+              <ToolTip message={t('homePage.appCard.openInAppBuilder', 'Open in app builder')}>
                 <Link
                   to={getPrivateRoute('editor', {
                     slug: isValidSlug(app.slug) ? app.slug : app.id,

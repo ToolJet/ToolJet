@@ -4,6 +4,7 @@ import moment from 'moment';
 import { appsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { ButtonSolid } from '@/_components/AppButton';
+import { useTranslation } from 'react-i18next';
 
 export default function ExportAppModal({ title, show, closeModal, customClassName, app, darkMode }) {
   const currentVersion = app?.editing_version;
@@ -12,6 +13,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   const [allTables, setAllTables] = useState(undefined);
   const [versionId, setVersionId] = useState(currentVersion?.id);
   const [exportTjDb, setExportTjDb] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     async function fetchAppVersions() {
@@ -20,7 +22,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         const { versions } = fetchVersions;
         setVersions(versions);
       } catch (error) {
-        toast.error('Could not fetch the versions.', {
+        toast.error(t('homePage.exportAppModal.versionsNotFetched', 'Could not fetch the versions.'), {
           position: 'top-center',
         });
         closeModal();
@@ -56,7 +58,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         setTables(selectedVersiontable);
         setAllTables(tables);
       } catch (error) {
-        toast.error('Could not fetch the tables.', {
+        toast.error(t('homePage.exportAppModal.tablesNotFetched', 'Could not fetch the tables.'), {
           position: 'top-center',
         });
         closeModal();
@@ -101,9 +103,12 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         closeModal();
       })
       .catch((error) => {
-        toast.error(`Could not export app: ${error.data.message}`, {
-          position: 'top-center',
-        });
+        toast.error(
+          t('homePage.exportAppModal.errMsg', `Could not export app: {{message}}`, { message: error.data.message }),
+          {
+            position: 'top-center',
+          }
+        );
         closeModal();
       });
   };
@@ -140,7 +145,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
             <div>
               <div className="current-version " data-cy="current-version-section">
                 <span data-cy="current-version-label" className="current-version-label">
-                  Current Version
+                  {t('homePage.exportAppModal.currentVersion', 'Current Version')}
                 </span>
                 <InputRadioField
                   versionId={currentVersion?.id}
@@ -155,7 +160,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               {versions.length >= 2 ? (
                 <div className="other-versions" data-cy="other-version-section">
                   <span data-cy="other-version-label" className="other-version-label">
-                    Other Versions
+                    {t('homePage.exportAppModal.otherVersions', 'Other Versions')}
                   </span>
                   {versions.map((version) => {
                     if (version.id !== currentVersion?.id) {
@@ -176,14 +181,16 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                 </div>
               ) : (
                 <div className="other-versions" data-cy="other-version-section">
-                  <span data-cy="no-other-versions-found-text">No other versions found</span>
+                  <span data-cy="no-other-versions-found-text">
+                    {t('homePage.exportAppModal.noOtherVersionsFound', 'No other versions found')}
+                  </span>
                 </div>
               )}
             </div>
           </BootstrapModal.Body>
           <div className="tj-version-wrap-sub-footer">
             <input type="checkbox" checked={exportTjDb} onChange={() => setExportTjDb(!exportTjDb)} />
-            <p>Export ToolJet table schema</p>
+            <p>{t('homePage.exportAppModal.exportTableSchema', 'Export ToolJet table schema')}</p>
           </div>
           <BootstrapModal.Footer className="export-app-modal-footer d-flex justify-content-end align-items-center ">
             <ButtonSolid
@@ -192,14 +199,14 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               data-cy="export-all-button"
               onClick={() => exportApp(app, null, exportTjDb, allTables)}
             >
-              Export All
+              {t('homePage.exportAppModal.exportAll', 'Export All')}
             </ButtonSolid>
             <ButtonSolid
               className="import-export-footer-btns"
               data-cy="export-selected-version-button"
               onClick={() => exportApp(app, versionId, exportTjDb, tables)}
             >
-              Export selected version
+              {t('homePage.exportAppModal.exportSelectedVersion', 'Export selected version')}
             </ButtonSolid>
           </BootstrapModal.Footer>
         </>
@@ -219,6 +226,7 @@ function InputRadioField({
   setVersionId,
   className,
 }) {
+  const { t } = useTranslation();
   return (
     <span
       key={key}
@@ -242,9 +250,10 @@ function InputRadioField({
         style={{ paddingLeft: '0.75rem' }}
       >
         <span data-cy={`${String(versionName).toLowerCase().replace(/\s+/g, '-')}-text`}>{versionName}</span>
-        <span className="export-creation-date tj-text-sm" data-cy="created-date-label">{`Created on ${moment(
-          versionCreatedAt
-        ).format('Do MMM YYYY')}`}</span>
+        <span className="export-creation-date tj-text-sm" data-cy="created-date-label">
+          {t('homePage.exportAppModal.createdOn', 'Created on')}
+          {moment(versionCreatedAt).format('Do MMM YYYY')}
+        </span>
       </label>
     </span>
   );

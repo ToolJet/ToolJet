@@ -13,6 +13,9 @@ import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 
+// eslint-disable-next-line import/no-unresolved
+import i18next from 'i18next';
+
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
@@ -909,7 +912,7 @@ export const validateName = (
   const newName = name;
   let errorMsg = '';
   if (emptyCheck && !newName) {
-    errorMsg = `${nameType} can't be empty`;
+    errorMsg = i18next.t('_helper.utils.cantEmpty', "{{nameType}} can't be empty", { nameType: nameType });
     showError &&
       toast.error(errorMsg, {
         id: '1',
@@ -925,9 +928,9 @@ export const validateName = (
     const regex = allowAllCases ? /^[a-zA-Z0-9 -]+$/ : /^[a-z0-9 -]+$/;
     if (!allowSpecialChars && newName.match(regex) === null) {
       if (/[A-Z]/.test(newName) && !allowAllCases) {
-        errorMsg = 'Only lowercase letters are accepted.';
+        errorMsg = i18next.t('_helper.utils.acceptLower', 'Only lowercase letters are accepted.');
       } else {
-        errorMsg = `Special characters are not accepted.`;
+        errorMsg = i18next.t('_helper.utils.notAcceptSpecial', 'Special characters are not accepted.');
       }
       showError &&
         toast.error(errorMsg, {
@@ -940,7 +943,7 @@ export const validateName = (
     }
 
     if (!allowSpaces && /\s/g.test(newName)) {
-      errorMsg = 'Cannot contain spaces';
+      errorMsg = i18next.t('_helper.utils.cantSpace', 'Cannot contain spaces');
       showError &&
         toast.error(errorMsg, {
           id: '3',
@@ -952,7 +955,7 @@ export const validateName = (
     }
 
     if (newName.length > 50) {
-      errorMsg = `Maximum length has been reached.`;
+      errorMsg = i18next.t('_helper.utils.maxLenReached', 'Maximum length has been reached.');
       showError &&
         toast.error(errorMsg, {
           id: '3',
@@ -983,7 +986,7 @@ export const validateName = (
     ];
 
     if (checkReservedWords && reservedPaths.includes(newName)) {
-      errorMsg = `Reserved words are not allowed.`;
+      errorMsg = i18next.t('_helper.utils.notAllowReserved', 'Reserved words are not allowed.');
       showError &&
         toast.error(errorMsg, {
           id: '3',

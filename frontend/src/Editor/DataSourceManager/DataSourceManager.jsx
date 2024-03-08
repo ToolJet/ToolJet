@@ -923,7 +923,7 @@ class DataSourceManagerComponent extends React.Component {
                     onClick={this.createDataSource}
                   >
                     {isSaving
-                      ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
+                      ? this.props.t('editor.queryManager.dataSourceManager.saving', 'Saving...')
                       : this.props.t('globals.save', 'Save')}
                   </ButtonSolid>
                 </div>

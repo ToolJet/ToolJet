@@ -136,7 +136,7 @@ class SignupPageComponent extends React.Component {
                           <div className="login-sso-wrapper">
                             <GitSSOLoginButton
                               configs={this.state.configs?.git?.configs}
-                              text={this.props.t('confirmationPage.signupWithGithub', 'Sign up with GitHub')}
+                              text={this.props.t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
                             />
                           </div>
                         )}

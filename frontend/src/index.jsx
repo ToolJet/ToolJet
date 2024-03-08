@@ -10,6 +10,8 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 // import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
+import moment from 'moment';
+import 'moment/locale/zh-cn';
 
 const AppWithProfiler = Sentry.withProfiler(App);
 
@@ -17,7 +19,7 @@ appService
   .getConfig()
   .then((config) => {
     window.public_config = config;
-    const language = config.LANGUAGE || 'en';
+    const language = config.LANGUAGE || 'zh_Hans';
     const path = config?.SUB_PATH || '/';
     i18n
       .use(Backend)
@@ -31,6 +33,10 @@ appService
           loadPath: `${path}assets/translations/{{lng}}.json`,
         },
       });
+
+    if (language === 'zh_Hans') {
+      moment.locale('zh-cn');
+    }
 
     if (window.public_config.APM_VENDOR === 'sentry') {
       const tooljetServerUrl = window.public_config.TOOLJET_SERVER_URL;
