@@ -126,7 +126,7 @@ export function CodeHinter({
   const isPreviewFocused = useRef(false);
   const [isPropertyHovered, setPropertyHovered] = useState(false);
   const wrapperRef = useRef(null);
-
+  const codeMirrorRef = useRef();
   // Todo: Remove this when workspace variables are deprecated
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
@@ -193,6 +193,12 @@ export function CodeHinter({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (isFocused && codeMirrorRef.current?.editor) {
+      codeMirrorRef.current?.editor.focus();
+    }
+  }, [codeMirrorRef.current, isFocused]);
 
   useEffect(() => {
     const newState = { ...currentState, ..._currentState, ...context };
@@ -434,6 +440,7 @@ export function CodeHinter({
   };
 
   const onFocusHandler = () => {
+    focusPreview();
     setFocused(true);
     updatePreview();
   };
@@ -545,6 +552,7 @@ export function CodeHinter({
                   callgpt={callgpt}
                 >
                   <CodeMirror
+                    ref={codeMirrorRef}
                     value={typeof initialValue === 'string' ? initialValue : ''}
                     realState={realState}
                     scrollbarStyle={null}
