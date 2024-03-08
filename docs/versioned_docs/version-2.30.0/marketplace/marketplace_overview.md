@@ -5,7 +5,7 @@ title: 'Marketplace : Overview'
 
 # Marketplace : Overview
 
-With ToolJet Marketplace, ToolJet users can conveniently add custom plugins (datasources) to their workspaces. This feature enables users to create plugins that cater to their specific needs and integrate them seamlessly with ToolJet.
+With ToolJet Marketplace, ToolJet users can conveniently add custom plugins (data sources) to their workspaces. This feature enables users to create plugins that cater to their specific needs and integrate them seamlessly with ToolJet.
 
 <div style={{textAlign: 'center'}}>
 
@@ -51,7 +51,7 @@ Under the **Marketplace** tab, you will see a list of all the available plugins 
 
 You can access any installed plugins by following these steps:
 
-- Navigate to the **Global Datasources** Page.
+- Navigate to the **Global Data Sources** Page.
 - Click on the **Add new datasource** button.
 - Open the **Plugins** tab in the modal that appears.
 - From here, you can connect to any of the plugins that were installed from the Marketplace.

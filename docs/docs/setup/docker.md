@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # Deploying ToolJet using Docker Compose
 
-Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJet requires a PostgreSQL database to store applications definitions, (encrypted) credentials for datasources and user authentication data.
+Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJet requires a PostgreSQL database to store applications definitions, (encrypted) credentials for data sources and user authentication data.
 
 :::info
 If you rather want to try out ToolJet on your local machine with Docker, you can follow the steps [here](/docs/setup/try-tooljet/).

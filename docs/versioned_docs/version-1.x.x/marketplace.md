@@ -5,7 +5,7 @@ title: Marketplace
 
 # ToolJet Marketplace
 
-ToolJet marketplace for plugins will allow users to install the custom plugins (datasources) for their ToolJet instances. This will allow ToolJet users to build their own custom plugins according to their requirements and then easily connect them to ToolJet.
+ToolJet marketplace for plugins will allow users to install the custom plugins (data sources) for their ToolJet instances. This will allow ToolJet users to build their own custom plugins according to their requirements and then easily connect them to ToolJet.
 
 ## Enabling the marketplace for your instance
 

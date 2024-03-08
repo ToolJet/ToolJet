@@ -3,7 +3,7 @@ id: run-js
 title: Run JavaScript code
 ---
 
-You can write custom JavaScript code to interact with components and queries. To do that, you just need to create a new query and select **Run JavaScript Code** from the default datasources section.
+You can write custom JavaScript code to interact with components and queries. To do that, you just need to create a new query and select **Run JavaScript Code** from the default data sources section.
 
 <div style={{textAlign: 'center'}}>
 
@@ -75,7 +75,7 @@ With this setup, the `multiply` query can be called from other queries, such as 
 ### Displaying random number
 
 - Let's drag a **button** and a **text** widget inside a container widget.
-- Click on the `+` on the query panel to create a query and select **Run JavaScript code** from the available datasources
+- Click on the `+` on the query panel to create a query and select **Run JavaScript code** from the available data sources
 - Write the code in **JavaScript editor** and save the query:
 ```jsx
 const a = Math.floor(Math.random() * (10 - 1)) + 1;

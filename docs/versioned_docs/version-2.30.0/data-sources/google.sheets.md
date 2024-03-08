@@ -20,7 +20,7 @@ If you decide to self-host ToolJet, there are a few additional steps you need to
 
 ## Connection
 
-To establish a connection with Google Sheet, you have two options. First, you can click on the **+Add new global datasource** button found on the query panel. Alternatively, you can go to the **[Global Datasources](/docs/data-sources/overview)** page within the ToolJet dashboard.
+To establish a connection with Google Sheet, you have two options. First, you can click on the **+Add new global datasource** button found on the query panel. Alternatively, you can go to the **[Global Data Sources](/docs/data-sources/overview)** page within the ToolJet dashboard.
 
 ### Authorization Scopes
 
