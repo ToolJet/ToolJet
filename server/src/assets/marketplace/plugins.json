@@ -47,5 +47,13 @@
     "id": "aws-lambda",
     "author": "Tooljet",
     "timestamp": "Tue, 05 Dec 2023 00:27:16 GMT"
+  },
+  {
+    "name": "salesforce",
+    "description": "api plugin from salesforce",
+    "version": "1.0.0",
+    "id": "salesforce",
+    "author": "Tooljet",
+    "timestamp": "Wed, 06 Mar 2024 11:34:26 GMT"
   }
 ]

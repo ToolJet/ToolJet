@@ -1,0 +1,44 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Salesforce datasource",
+  "description": "A schema defining Salesforce datasource",
+  "type": "api",
+  "source": {
+    "name": "Salesforce",
+    "kind": "salesforce",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_version":{
+        "type":"string"
+      },
+      "redirect_url":{
+        "type":"string"
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "api_version": {
+      "label": "API Version",
+      "type": "text",
+      "key":"api_version",
+      "title": "API Version",
+      "description": "API version of Salesforce"
+    },
+    "redirect_url": {
+      "label": "Redirect URL",
+      "type": "text",
+      "key":"redirect_url",
+      "title": "Redirect URL",
+      "description": "Redirect URL for Salesforce",
+      "helpText": "In Salesforce, use the URL above when prompted to enter an OAuth callback or redirect URL"
+    }
+
+  },
+  "required": []
+}
