@@ -380,7 +380,10 @@ export const GlobalSettings = ({
                   </div>
                 </div>
               </div>
-
+            </div>
+          </div>
+          <div style={{ padding: '0px 16px' }}>
+            <div className="tj-text-xsm color-slate12 ">
               <div className="d-flex align-items-center  global-popover-div-wrap mb-3">
                 <p className="tj-text-xsm color-slate12 w-full m-auto">Export app</p>
                 <div>
