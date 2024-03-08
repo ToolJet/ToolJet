@@ -66,17 +66,18 @@ useCurrentStateStore.subscribe((state, prevState) => {
   if (!isEditorReady) return;
 
   const stateRequiredForRefs = {
-    queries: state.queries,
+    // queries: state.queries,
     components: state.components,
     globals: state.globals,
-    variables: state.variables,
-    client: state.client,
-    server: state.server,
     page: state.page,
-    constants: state.constants,
+    variables: state.variables,
+    // client: state.client,
+    // server: state.server,
+    // constants: state.constants,
   };
 
   const previousState = {
+    components: prevState.components,
     globals: prevState.globals,
     variables: prevState.variables,
     page: prevState.page,
@@ -85,32 +86,46 @@ useCurrentStateStore.subscribe((state, prevState) => {
   const isStoreIntialized = useResolveStore.getState().storeReady;
 
   if (!isStoreIntialized) {
-    useResolveStore.getState().actions.updateAppSuggestions(stateRequiredForRefs);
+    useResolveStore.getState().actions.updateAppSuggestions({
+      queries: state.queries,
+      components: state.components,
+      globals: state.globals,
+      page: state.page,
+      variables: state.variables,
+      client: state.client,
+      server: state.server,
+      constants: state.constants,
+    });
     useResolveStore.getState().actions.updateStoreState({ storeReady: true });
     console.log('Resolver store initialized with current state.');
     return;
   }
 
-  const latestCurrentState = _.omit(stateRequiredForRefs, 'components', 'queries', 'server', 'client', 'constants');
+  // const latestCurrentState = _.omit(stateRequiredForRefs, 'queries', 'server', 'client', 'constants');
 
-  const didComponentsChange = JSON.stringify(latestCurrentState) !== JSON.stringify(previousState);
-  let diffInState = didComponentsChange ? diff(previousState, latestCurrentState) : {};
+  // const didComponentsChange = JSON.stringify(stateRequiredForRefs) !== JSON.stringify(previousState);
+  // let diffInState = didComponentsChange ? diff(previousState, stateRequiredForRefs) : {};
 
-  if (!didComponentsChange || _.isEmpty(diffInState)) return;
+  // if (!didComponentsChange || _.isEmpty(diffInState)) return;
 
-  const undefinedPaths = Object.keys(findPathForObjWithUndefined(diffInState));
-  diffInState = removeUndefined(diffInState);
+  // console.log('---arpit::', {
+  //   didComponentsChange,
+  //   diffInState,
+  // });
 
-  useResolveStore
-    .getState()
-    .actions.removeAppSuggestions(undefinedPaths)
-    .then((resp) => {
-      const suggestionObj = removeChildNodesWithEmptyValues(diffInState);
+  // const undefinedPaths = Object.keys(findPathForObjWithUndefined(diffInState));
+  // diffInState = removeUndefined(diffInState);
 
-      if (resp?.status === 'ok' && !_.isEmpty(suggestionObj)) {
-        useResolveStore.getState().actions.addAppSuggestions(suggestionObj);
-      }
-    });
+  // useResolveStore
+  //   .getState()
+  //   .actions.removeAppSuggestions(undefinedPaths)
+  //   .then((resp) => {
+  //     const suggestionObj = removeChildNodesWithEmptyValues(diffInState);
+
+  //     if (resp?.status === 'ok' && !_.isEmpty(suggestionObj)) {
+  //       useResolveStore.getState().actions.addAppSuggestions(suggestionObj);
+  //     }
+  //   });
 }, shallow);
 
 export const getCurrentState = () => {

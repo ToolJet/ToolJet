@@ -120,7 +120,7 @@ export const useResolveStore = create(
       },
 
       removeAppSuggestions: (suggestionsArray) => {
-        if (suggestionsArray.length === 0) return new Promise((resolve) => resolve({ status: 'ok' }));
+        if (suggestionsArray.length === 0) return new Promise((resolve) => resolve({ status: '' }));
 
         const lookupHintsMap = new Map([...get().lookupTable.hints]);
         const lookupResolvedRefs = new Map([...get().lookupTable.resolvedRefs]);
