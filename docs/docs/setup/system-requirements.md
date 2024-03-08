@@ -25,7 +25,7 @@ Adjustments can be made based on specific needs and the expected load on the ser
 
 ## Bare-Metal Setup
 
-For those opting for a bare-metal setup instead of Docker:
+For those opting for a **[bare-metal setup](/docs/contributing-guide/setup/docker)** instead of Docker:
 - **RAM**: 8GB RAM is sufficient for a bare-metal setup.
 
 Please ensure your system meets these requirements before proceeding with the installation. Adjustments to the server specifications should be made considering the specific demands of your deployment scenario.
