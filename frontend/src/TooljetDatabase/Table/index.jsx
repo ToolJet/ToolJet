@@ -1358,6 +1358,7 @@ const Table = ({ collapseSidebar }) => {
           selectedColumn={selectedColumn}
           setColumns={setColumns}
           onClose={() => setIsEditColumnDrawerOpen(false)}
+          rows={rows}
         />
       </Drawer>
       <ConfirmDialog

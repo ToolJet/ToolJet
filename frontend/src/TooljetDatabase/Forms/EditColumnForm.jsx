@@ -6,6 +6,7 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import WarningInfo from '../Icons/Edit-information.svg';
+import { isEmpty } from 'lodash';
 
 const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
   const nullValue = selectedColumn.constraints_type.is_not_null;
