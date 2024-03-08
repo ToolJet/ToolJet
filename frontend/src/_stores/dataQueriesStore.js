@@ -103,6 +103,7 @@ export const useDataQueriesStore = create(
             .then(() => {
               const { actions } = useQueryPanelStore.getState();
               const { dataQueries } = useDataQueriesStore.getState();
+              const deletedQueryName = dataQueries.find((query) => query.id === queryId).name;
               const newSelectedQuery = dataQueries.find((query) => query.id !== queryId);
               actions.setSelectedQuery(newSelectedQuery?.id || null);
               if (!newSelectedQuery?.id) {
@@ -126,8 +127,16 @@ export const useDataQueriesStore = create(
               });
 
               const referenceManager = useResolveStore.getState().referenceMapper;
-
               referenceManager.delete(queryId);
+
+              const allHintsAssociatedWithQuery = useResolveStore
+                .getState()
+                .suggestions.appHints?.filter((suggestion) => {
+                  return suggestion?.hint.includes(deletedQueryName);
+                })
+                .map((item) => item.hint);
+
+              return useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
             })
             .catch(() => {
               set({
@@ -230,6 +239,16 @@ export const useDataQueriesStore = create(
               });
 
               useResolveStore.getState().actions.addEntitiesToMap([{ id: data.id, name: data.name }]);
+              useResolveStore.getState().actions.addAppSuggestions({
+                queries: {
+                  [data.name]: {
+                    id: data.id,
+                    isLoading: false,
+                    data: [],
+                    rawData: [],
+                  },
+                },
+              });
             })
             .catch((error) => {
               set((state) => ({
@@ -385,6 +404,18 @@ export const useDataQueriesStore = create(
                 dataQueries: [{ ...data, data_source_id: queryToClone.data_source_id }, ...state.dataQueries],
               }));
               actions.setSelectedQuery(data.id, { ...data, data_source_id: queryToClone.data_source_id });
+
+              useResolveStore.getState().actions.addEntitiesToMap([{ id: data.id, name: data.name }]);
+              useResolveStore.getState().actions.addAppSuggestions({
+                queries: {
+                  [data.name]: {
+                    id: data.id,
+                    isLoading: false,
+                    data: [],
+                    rawData: [],
+                  },
+                },
+              });
 
               const dataQueryEvents = useAppDataStore
                 .getState()
