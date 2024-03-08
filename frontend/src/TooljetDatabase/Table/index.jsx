@@ -23,9 +23,13 @@ import CharacterVar from '../Icons/Text.svg';
 import Boolean from '../Icons/Toggle.svg';
 import Serial from '../Icons/Serial.svg';
 import Menu from '../Icons/Menu.svg';
+import Warning from '../Icons/warning.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 import TjdbTableHeader from './Header';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
+import Plus from '@/_ui/Icon/solidIcons/Plus';
 
 import './styles.scss';
 
@@ -44,12 +48,17 @@ const Table = ({ collapseSidebar }) => {
     pageSize,
     pageCount,
     handleRefetchQuery,
+    loadingState,
+    setLoadingState,
+    totalRecords,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, _setLoading] = useState(false);
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
+  const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
+  const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
   const [editColumnHeader, setEditColumnHeader] = useState({
     hoveredColumn: null,
     clickedColumn: null,
@@ -66,6 +75,7 @@ const Table = ({ collapseSidebar }) => {
     editable: false,
     errorState: false,
   });
+  const [filterEnable, setFilterEnable] = useState(false);
   const selectedCellRef = useRef({ rowIndex: null, columnIndex: null, editable: false });
 
   const [cellVal, setCellVal] = useState('');
@@ -792,6 +802,35 @@ const Table = ({ collapseSidebar }) => {
     );
   }
 
+  const toggleAddNewDataMenu = (isShow) => {
+    setIsAddNewDataMenuOpen(isShow);
+  };
+
+  const handleOnClickCreateNewRow = () => {
+    resetCellAndRowSelection();
+    setIsCreateRowDrawerOpen(true);
+  };
+
+  const handleOnClickBulkUpdateData = (isOpenBulkUploadDrawer) => {
+    setIsBulkUploadDrawerOpen(isOpenBulkUploadDrawer);
+  };
+
+  const emptyHeader = Array.from({ length: 5 }, (_, index) => index + 1);
+  const emptyTableData = Array.from({ length: 10 }, (_, index) => index + 1);
+  const emptyData = filterEnable
+    ? 'No data found matching the criteria specified in current filters.'
+    : 'Use Add Row from the menu or directly click on + icon to add a row. You may use the bulk upload option to add multiple rows of data using a csv file.';
+  const emptyMainData = filterEnable ? 'No results found' : 'No data added yet';
+  function isSerialDataType(columnDetails) {
+    const { dataType = '', column_default = '' } = columnDetails;
+    const serialDatatypeDefaultValuePattern = 'nextval(';
+
+    if (dataType === 'integer' && column_default) {
+      if (column_default.includes(serialDatatypeDefaultValuePattern)) return true;
+    }
+    return false;
+  }
+
   return (
     <div>
       <TjdbTableHeader
@@ -799,73 +838,154 @@ const Table = ({ collapseSidebar }) => {
         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
         isCreateRowDrawerOpen={isCreateRowDrawerOpen}
         setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
+        setIsBulkUploadDrawerOpen={setIsBulkUploadDrawerOpen}
+        isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}
         selectedRowIds={selectedRowIds}
         handleDeleteRow={handleDeleteRow}
         rows={rows}
         isEditRowDrawerOpen={isEditRowDrawerOpen}
         setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
+        setFilterEnable={setFilterEnable}
+        filterEnable={filterEnable}
       />
       <div
         style={{
           height: 'calc(100vh - 164px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
-        className={cx('table-responsive border-0 tj-db-table animation-fade tj-table')}
+        className={cx(
+          `table-responsive border-0 tj-db-table animation-fade ${rows.length === 0 ? 'tj-table-empty' : 'tj-table'}`
+        )}
         ref={tooljetDbTableRef}
       >
-        <table
-          {...getTableProps()}
-          className={`table card-table table-vcenter text-nowrap datatable ${darkMode && 'dark-background'}`}
-          style={{ position: 'relative' }}
-        >
-          <thead>
-            {headerGroups.map((headerGroup, index) => (
-              <tr className="tj-database-column-row" {...headerGroup.getHeaderGroupProps()} key={index}>
-                <th
-                  className={`${darkMode ? 'table-header-dark' : 'table-header'} tj-database-column-header tj-text-xsm`}
-                  style={{ width: '66px', height: index === 0 ? '32px' : '' }}
+        {loadingState ? (
+          <table
+            className={`table card-table loading-table table-vcenter text-nowrap datatable ${
+              darkMode && 'dark-background'
+            }`}
+            style={{ position: 'relative' }}
+          >
+            <thead>
+              <tr>
+                {emptyHeader.map((element, index) => (
+                  <th key={index} width={index === 0 ? 66 : 230}>
+                    <div className="d-flex align-items-center justify-content-between tjdb-loader-parent">
+                      {index > 0 && <Skeleton count={1} height={20} className="tjdb-loader" />}
+
+                      <div className="tjdb-loader-icon-parent">
+                        <Skeleton count={1} height={20} className="tjdb-icon-loader" />
+                      </div>
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {emptyTableData.map((element, rowIdex) => (
+                <tr
+                  className={cx(`tjdb-table-row row-tj tjdb-empty-row`, {
+                    'dark-bg': darkMode,
+                  })}
+                  key={rowIdex} // row Index
                 >
-                  <div>
-                    <IndeterminateCheckbox
-                      indeterminate={
-                        Object.keys(selectedRowIds).length > 0 && Object.keys(selectedRowIds).length < rows.length
-                      }
-                      checked={Object.keys(selectedRowIds).length === rows.length && rows.length}
-                      onChange={() => toggleSelectOrDeSelectAllRows(rows.length)}
-                      style={{
-                        backgroundColor: `${
-                          (Object.keys(selectedRowIds).length > 0 &&
-                            Object.keys(selectedRowIds).length < rows.length) ||
-                          (Object.keys(selectedRowIds).length === rows.length && rows.length)
-                            ? '#3E63DD'
-                            : 'var(--base)'
-                        }`,
-                      }}
-                    />
-                  </div>
-                </th>
-                {headerGroup.headers.map((column, index) => (
+                  {emptyHeader.map((elem, i) => (
+                    <td key={i} className={cx('table-cell')}></td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <table
+            {...getTableProps()}
+            className={`table card-table table-vcenter text-nowrap datatable ${darkMode && 'dark-background'}`}
+            style={{ position: 'relative' }}
+          >
+            <thead>
+              {headerGroups.map((headerGroup, index) => (
+                <tr className="tj-database-column-row" {...headerGroup.getHeaderGroupProps()} key={index}>
                   <th
-                    key={column.Header}
-                    width={isSerialDataType(column) ? 150 : 230}
-                    style={{ height: index === 0 ? '32px' : '' }}
-                    title={index === 0 ? '' : column?.Header}
-                    className={
-                      darkMode
-                        ? 'table-header-dark tj-database-column-header tj-text-xsm'
-                        : !darkMode
-                        ? 'table-header tj-database-column-header tj-text-xsm'
-                        : editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
-                        ? 'table-header-click tj-database-column-header tj-text-xsm'
-                        : 'table-header tj-database-column-header tj-text-xsm'
-                    }
-                    data-cy={`${String(column.Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-header`}
-                    {...column.getHeaderProps()}
-                    onMouseOver={() => handleMouseOver(index)}
-                    onMouseOut={() => handleMouseOut()}
+                    className={`${
+                      darkMode ? 'table-header-dark' : 'table-header'
+                    } tj-database-column-header tj-text-xsm`}
+                    style={{ width: '66px', height: index === 0 ? '32px' : '' }}
                   >
-                    {column.Header !== 'id' && index > 0 ? (
-                      <div className="d-flex align-items-center justify-content-between">
-                        <div className="tj-db-headerText">
+                    <div>
+                      <IndeterminateCheckbox
+                        indeterminate={
+                          Object.keys(selectedRowIds).length > 0 && Object.keys(selectedRowIds).length < rows.length
+                        }
+                        checked={Object.keys(selectedRowIds).length === rows.length && rows.length}
+                        onChange={() => toggleSelectOrDeSelectAllRows(rows.length)}
+                        style={{
+                          backgroundColor: `${
+                            (Object.keys(selectedRowIds).length > 0 &&
+                              Object.keys(selectedRowIds).length < rows.length) ||
+                            (Object.keys(selectedRowIds).length === rows.length && rows.length)
+                              ? '#3E63DD'
+                              : 'var(--base)'
+                          }`,
+                        }}
+                      />
+                    </div>
+                  </th>
+                  {headerGroup.headers.map((column, index) => (
+                    <th
+                      key={column.Header}
+                      width={isSerialDataType(column) ? 150 : 230}
+                      style={{ height: index === 0 ? '32px' : '' }}
+                      title={index === 0 ? '' : column?.Header}
+                      className={
+                        darkMode
+                          ? 'table-header-dark tj-database-column-header tj-text-xsm'
+                          : !darkMode
+                          ? 'table-header tj-database-column-header tj-text-xsm'
+                          : editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
+                          ? 'table-header-click tj-database-column-header tj-text-xsm'
+                          : 'table-header tj-database-column-header tj-text-xsm'
+                      }
+                      data-cy={`${String(column.Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-header`}
+                      {...column.getHeaderProps()}
+                      onMouseOver={() => handleMouseOver(index)}
+                      onMouseOut={() => handleMouseOut()}
+                    >
+                      {column.Header !== 'id' && index > 0 ? (
+                        <div className="d-flex align-items-center justify-content-between">
+                          <div className="tj-db-headerText">
+                            <span className="tj-text-xsm tj-db-dataype text-lowercase">
+                              {isSerialDataType(column) ? (
+                                <Serial width="18" height="18" className="tjdb-column-header-name" />
+                              ) : (
+                                checkDataType(column?.dataType)
+                              )}
+                            </span>
+                            {column.render('Header')}
+                          </div>
+                          <TablePopover
+                            onEdit={() => {
+                              setSelectedColumn(column);
+                              setIsEditColumnDrawerOpen(true);
+                              closeMenu();
+                            }}
+                            onDelete={() => handleDelete(column.Header)}
+                            disabled={index === 0 || column.isPrimaryKey}
+                            show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
+                            className="column-popover-parent"
+                            darkMode={darkMode}
+                          >
+                            <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
+                              <Menu
+                                width="20"
+                                height="20"
+                                className="tjdb-menu-icon"
+                                onClick={(e) => onMenuClick(index, e)}
+                              />
+                            </div>
+                          </TablePopover>
+                        </div>
+                      ) : isSerialDataType(column) ? (
+                        showTooltipForId(column)
+                      ) : (
+                        <>
                           <span className="tj-text-xsm tj-db-dataype text-lowercase">
                             {isSerialDataType(column) ? (
                               <Serial width="18" height="18" className="tjdb-column-header-name" />
@@ -873,83 +993,31 @@ const Table = ({ collapseSidebar }) => {
                               checkDataType(column?.dataType)
                             )}
                           </span>
-                          {column.render('Header')}
-                        </div>
-                        <TablePopover
-                          onEdit={() => {
-                            setSelectedColumn(column);
-                            setIsEditColumnDrawerOpen(true);
-                            closeMenu();
-                          }}
-                          onDelete={() => handleDelete(column.Header)}
-                          disabled={index === 0 || column.isPrimaryKey}
-                          show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
-                          className="column-popover-parent"
-                          darkMode={darkMode}
-                        >
-                          <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
-                            <Menu
-                              width="20"
-                              height="20"
-                              className="tjdb-menu-icon"
-                              onClick={(e) => onMenuClick(index, e)}
-                            />
-                          </div>
-                        </TablePopover>
-                      </div>
-                    ) : isSerialDataType(column) ? (
-                      showTooltipForId(column)
-                    ) : (
-                      <>
-                        <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                          {isSerialDataType(column) ? (
-                            <Serial width="18" height="18" className="tjdb-column-header-name" />
-                          ) : (
-                            checkDataType(column?.dataType)
-                          )}
-                        </span>
-                        {/* {column.render('Header')} */}
-                      </>
-                    )}
+                          {/* {column.render('Header')} */}
+                        </>
+                      )}
+                    </th>
+                  ))}
+                  <th
+                    onClick={() => {
+                      resetCellAndRowSelection();
+                      setIsCreateColumnDrawerOpen(true);
+                    }}
+                    className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
+                  >
+                    <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
                   </th>
-                ))}
-                <th
-                  onClick={() => {
-                    resetCellAndRowSelection();
-                    setIsCreateColumnDrawerOpen(true);
-                  }}
-                  className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
-                  data-cy="add-column-icon"
-                >
-                  <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
-                </th>
-              </tr>
-            ))}
-          </thead>
-          <tbody
-            className={cx({
-              'bg-white': rows.length > 0 && !darkMode,
-              'fs-12': true,
-            })}
-            {...getTableBodyProps()}
-          >
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length + 1}>
-                  <div className="d-flex justify-content-center align-items-center flex-column">
-                    <div className="mb-3">
-                      <EmptyFoldersIllustration />
-                    </div>
-                    <div className="text-center">
-                      <div className="text-h3" data-cy="do-not-have-records-text">
-                        You don&apos;t have any records yet.
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              rows.map((row, rIndex) => {
+                </tr>
+              ))}
+            </thead>
+            <tbody
+              className={cx({
+                'bg-white': rows.length > 0 && !darkMode,
+                'fs-12': true,
+              })}
+              {...getTableBodyProps()}
+            >
+              {rows.map((row, rIndex) => {
                 prepareRow(row);
                 return (
                   <>
@@ -959,7 +1027,7 @@ const Table = ({ collapseSidebar }) => {
                         'table-row-selected': selectedRowIds[row.id] ?? false,
                       })}
                       {...row.getRowProps()}
-                      key={rIndex}
+                      key={rIndex} // row Index
                     >
                       <td
                         className={cx('table-cell', {
@@ -1205,23 +1273,64 @@ const Table = ({ collapseSidebar }) => {
                     </tr>
                   </>
                 );
-              })
-            )}
-            <div
-              onClick={() => {
-                resetCellAndRowSelection();
-                setIsCreateRowDrawerOpen(true);
-              }}
-              className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
-              data-cy="add-row-icon"
-              style={{
-                zIndex: 3,
-              }}
-            >
-              +
+              })}
+              {rows.length > 0 && (
+                <div
+                  onClick={() => {
+                    resetCellAndRowSelection();
+                    setIsCreateRowDrawerOpen(true);
+                  }}
+                  className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
+                  style={{
+                    zIndex: 3,
+                  }}
+                >
+                  +
+                </div>
+              )}
+            </tbody>
+          </table>
+        )}
+        {rows.length === 0 && !loadingState && (
+          <div className="empty-table-container">
+            <div>
+              <div className="warning-icon-container">
+                <Warning />
+              </div>
+              <div
+                className="text-h3"
+                style={{ width: '400px', textAlign: 'center' }}
+                data-cy="do-not-have-records-text"
+              >
+                {emptyMainData}
+                <p className="empty-table-description mb-2">{emptyData}</p>
+              </div>
+              <div style={{ width: '130px', margin: '0px auto' }}>
+                <AddNewDataPopOver
+                  disabled={false}
+                  show={isAddNewDataMenuOpen}
+                  darkMode={darkMode}
+                  toggleAddNewDataMenu={toggleAddNewDataMenu}
+                  handleOnClickCreateNewRow={handleOnClickCreateNewRow}
+                  handleOnClickBulkUpdateData={handleOnClickBulkUpdateData}
+                >
+                  <span className="col-auto">
+                    <ButtonSolid
+                      variant="tertiary"
+                      disabled={false}
+                      onClick={() => toggleAddNewDataMenu(true)}
+                      size="sm"
+                      className="px-1 pe-3 ps-2 gap-0"
+                    >
+                      <Plus fill="#697177" style={{ height: '16px' }} />
+                      Add new data
+                    </ButtonSolid>
+                  </span>
+                </AddNewDataPopOver>
+              </div>
             </div>
-          </tbody>
-        </table>
+          </div>
+        )}
 
         <TableFooter
           darkMode={darkMode}
@@ -1229,6 +1338,20 @@ const Table = ({ collapseSidebar }) => {
           tableDataLength={tableData.length}
           collapseSidebar={collapseSidebar}
         />
+        {rows.length === 0 && !loadingState && (
+          <div
+            onClick={() => {
+              resetCellAndRowSelection();
+              setIsCreateRowDrawerOpen(true);
+            }}
+            className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
+            style={{
+              zIndex: 3,
+            }}
+          >
+            +
+          </div>
+        )}
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
         <EditColumnForm
