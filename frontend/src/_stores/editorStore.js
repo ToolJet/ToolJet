@@ -3,6 +3,8 @@ import { create } from './utils';
 import { v4 as uuid } from 'uuid';
 import { useAppDataStore } from './appDataStore';
 import { useResolveStore } from './resolverStore';
+import { shallow } from 'zustand/shallow';
+import { useCurrentState, useCurrentStateStore } from './currentStateStore';
 const STORE_NAME = 'Editor';
 
 export const EMPTY_ARRAY = [];
@@ -94,49 +96,6 @@ export const useEditorStore = create(
     },
   }),
   { name: STORE_NAME }
-);
-
-useEditorStore.subscribe(
-  (state) => {
-    const { appDefinition, currentPageId } = state;
-
-    if (currentPageId && !_.isEmpty(appDefinition)) {
-      const components = appDefinition?.pages[currentPageId]?.components || {};
-
-      const finalComponentsArray = Object.keys(components).map((key) => {
-        const { component } = components[key];
-        return {
-          id: key,
-          name: component?.name,
-          definition: component?.definition,
-        };
-      });
-
-      const prevComponents = useAppDataStore.getState().components;
-
-      const diff = _.differenceWith(finalComponentsArray, prevComponents, _.isEqual);
-
-      if (diff.length === 0) return;
-
-      useAppDataStore.getState().actions.setComponents(finalComponentsArray);
-
-      const referencesManager = useResolveStore.getState().referenceMapper;
-
-      const newComponents = diff
-        .map((component) => {
-          if (!referencesManager.get(component.id)) {
-            return {
-              id: component.id,
-              name: component.name,
-            };
-          }
-        })
-        .filter((c) => c !== undefined);
-
-      useResolveStore.getState().actions.addEntitiesToMap(newComponents);
-    }
-  },
-  (state) => [JSON.stringify(state['appDefinition']), state['currentPageId']]
 );
 
 export const useEditorActions = () => useEditorStore((state) => state.actions);

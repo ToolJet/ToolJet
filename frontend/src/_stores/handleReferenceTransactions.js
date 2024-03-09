@@ -81,8 +81,10 @@ export const handleReferenceTransactions = (
     const _dataQueries = JSON.parse(JSON.stringify(dataQueries));
     const events = JSON.parse(JSON.stringify(currentAppEvents));
     updatedEntityNames.forEach((entity) => {
-      _components.forEach((c) => {
-        c.definition = dfs(c.definition, entity.name, entity.newName);
+      Object.entries(_components).forEach(([id, component]) => {
+        let componentDefinition = component.component.definition;
+        componentDefinition = dfs(componentDefinition, entity.name, entity.newName);
+        component.component.definition = componentDefinition;
       });
 
       _dataQueries.forEach((query) => {
@@ -94,12 +96,16 @@ export const handleReferenceTransactions = (
       });
     });
 
+    updatedEntityNames.forEach((entity) => {
+      useResolverStoreActions().handleUpdatesOnReferencingEnities(entity);
+    });
+
     // Commit Transaction
     const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const componentsFromAppDef = newAppDefinition.pages[currentPageId].components;
 
-    _components.forEach((component) => {
-      componentsFromAppDef[component.id].component.definition = component.definition;
+    Object.entries(_components).forEach(([id, component]) => {
+      componentsFromAppDef[id].component.definition = component.component.definition;
     });
     newAppDefinition.pages[currentPageId].components = componentsFromAppDef;
 
@@ -114,7 +120,7 @@ export const handleReferenceTransactions = (
 
     if (diffPatches) {
       useAppDataStore.getState().actions.updateState({
-        appDiffOptions: { componentDefinitionChanged: true },
+        appDiffOptions: { componentDefinitionChanged: true, entityReferenceUpdated: true },
         appDefinitionDiff: diffPatches,
       });
 
@@ -125,7 +131,7 @@ export const handleReferenceTransactions = (
     }
 
     if (queriesToUpdate.length > 0) {
-      useDataQueriesStore.getState().actions.updateBulkQueryOptions(queriesToUpdate, currentVersionId);
+      useDataQueriesStore.getState().actions.updateQueryOptionsState(queriesToUpdate);
     }
 
     const eventsToUpdate = _.differenceWith(events, currentAppEvents, _.isEqual).map((event) => {
@@ -160,8 +166,4 @@ export const handleReferenceTransactions = (
 
     useAppDataStore.getState().actions.updateAppVersionEventHandlers(transactionSnapshot.events, 'update');
   }
-
-  updatedEntityNames.forEach((entity) => {
-    useResolverStoreActions().handleUpdatesOnReferencingEnities(entity);
-  });
 };

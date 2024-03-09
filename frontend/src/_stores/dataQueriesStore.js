@@ -27,6 +27,7 @@ const initialState = {
   isUpdatingQueryInProcess: false,
   /** When a 'Create Data Query' operation is in progress, rename/update API calls are cached in the variable. */
   queuedActions: {},
+  queuedQueriesForRunOnAppLoad: [],
 };
 
 export const useDataQueriesStore = create(
@@ -82,19 +83,20 @@ export const useDataQueriesStore = create(
             });
           }
 
-          // Compute query state to be added in the current state
-          const { actions, selectedQuery } = useQueryPanelStore.getState();
-          if (selectFirstQuery) {
-            actions.setSelectedQuery(data.data_queries[0]?.id, data.data_queries[0]);
-          } else if (selectedQuery?.id) {
-            const query = data.data_queries.find((query) => query.id === selectedQuery?.id);
-            actions.setSelectedQuery(query?.id);
-          }
-
           // Runs query on loading application
-          if (runQueriesOnAppLoad) runQueries(data.data_queries, ref);
+          if (runQueriesOnAppLoad) {
+            set({ queuedQueriesForRunOnAppLoad: data.data_queries });
+          }
         },
-        setDataQueries: (dataQueries) => set({ dataQueries }),
+        setDataQueries: (dataQueries, type = 'initial') => {
+          set({ dataQueries });
+          if (type === 'mappingUpdate') {
+            const { actions } = useQueryPanelStore.getState();
+            const queryId = dataQueries[0]?.id;
+
+            actions.setSelectedQuery(queryId);
+          }
+        },
         deleteDataQueries: (queryId) => {
           set({ isDeletingQueryInProcess: true });
           useAppDataStore.getState().actions.setIsSaving(true);
@@ -452,10 +454,12 @@ export const useDataQueriesStore = create(
             set({ queuedActions: { ...get().queuedActions, saveData: newValues } });
             return;
           }
+          const entityIdMappedOptions = useResolveStore.getState().actions.findReferences(newValues?.options);
+
           useAppDataStore.getState().actions.setIsSaving(true);
           set({ isUpdatingQueryInProcess: true });
           dataqueryService
-            .update(newValues?.id, newValues?.name, newValues?.options)
+            .update(newValues?.id, newValues?.name, entityIdMappedOptions)
             .then((data) => {
               localStorage.removeItem('transformation');
               set((state) => ({
@@ -523,6 +527,33 @@ export const useDataQueriesStore = create(
             .finally(() => {
               useAppDataStore.getState().actions.setIsSaving(false);
             });
+        },
+        clearQueuedQueriesForRunOnAppLoad: () => {
+          set({ queuedQueriesForRunOnAppLoad: [] });
+        },
+        updateQueryOptionsState: (queryOptionsList) => {
+          set({ isUpdatingQueryInProcess: true });
+          const { actions, selectedQuery } = useQueryPanelStore.getState();
+
+          const prevSelectedQuery = selectedQuery;
+          actions.setSelectedQuery(null);
+
+          set((state) => ({
+            dataQueries: state.dataQueries.map((query) => {
+              const updatedQuery = queryOptionsList.find((q) => q.id === query.id);
+
+              if (updatedQuery) {
+                return { ...query, options: updatedQuery.options };
+              }
+              return query;
+            }),
+
+            isUpdatingQueryInProcess: false,
+          }));
+
+          if (prevSelectedQuery?.id) {
+            actions.setSelectedQuery(prevSelectedQuery.id);
+          }
         },
       },
     }),

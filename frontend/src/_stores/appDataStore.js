@@ -167,6 +167,8 @@ useAppDataStore.subscribe(
   (state) => {
     const isComponentNameUpdated = state[itemToObserve]?.componentNameUpdated;
 
+    if (!isComponentNameUpdated) return;
+
     const { appDefinition, currentPageId, isUpdatingEditorStateInProcess } = useEditorStore.getState();
     const { dataQueries } = useDataQueriesStore.getState();
 
@@ -178,22 +180,24 @@ useAppDataStore.subscribe(
 
       const referenceManager = useResolveStore.getState().referenceMapper;
 
-      components.forEach((component) => {
-        const existingName = referenceManager.get(component.id);
+      Object.entries(state.components).forEach(([id, component]) => {
+        const existingName = referenceManager.get(id);
 
-        if (existingName === component.name) {
+        if (existingName === component.component.name) {
           return;
         }
 
-        referenceManager.update(component.id, component.name);
+        referenceManager.update(id, component.component.name);
 
         updatedNames.push({
-          id: component.id,
+          id: id,
           name: existingName,
-          newName: component.name,
+          newName: component.component.name,
           type: 'components',
         });
       });
+
+      if (updatedNames.length === 0) return;
 
       handleReferenceTransactions(
         components,

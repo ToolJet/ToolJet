@@ -161,6 +161,7 @@ export const useResolveStore = create(
 
       addEntitiesToMap: (entities) => {
         const { referenceMapper } = get();
+
         entities.forEach((entity) => {
           if (!referenceMapper.has(entity.id)) {
             referenceMapper.set(entity.id, entity.name);
