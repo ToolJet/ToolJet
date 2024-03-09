@@ -1,11 +1,12 @@
 import { appVersionService } from '@/_services';
-import { create, zustandDevTools } from './utils';
+import { create, findAllEntityReferences, zustandDevTools } from './utils';
 import { shallow } from 'zustand/shallow';
 import { useResolveStore } from './resolverStore';
 import { useEditorStore } from './editorStore';
 import { useDataQueriesStore } from './dataQueriesStore';
 import _ from 'lodash';
-import { handleReferenceTransactions } from './handleReferenceTransactions';
+import { dfs, handleReferenceTransactions } from './handleReferenceTransactions';
+import { isValidUUID } from '@/_helpers/utils';
 
 const initialState = {
   editingVersion: null,
@@ -90,7 +91,14 @@ export const useAppDataStore = create(
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
-          const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, events, updateType);
+          const entityIdMappingData = useResolveStore.getState().actions.findReferences(events);
+
+          const response = await appVersionService.saveAppVersionEventHandlers(
+            appId,
+            versionId,
+            entityIdMappingData,
+            updateType
+          );
 
           useAppDataStore.getState().actions.setIsSaving(false);
           set({ eventsUpdatedLoader: false, actionsUpdatedLoader: false });
@@ -103,7 +111,26 @@ export const useAppDataStore = create(
             }
           });
 
-          set(() => ({ events: updatedEvents }));
+          const entityReferencesInEvents = findAllEntityReferences(updatedEvents, [])
+            ?.map((entity) => {
+              if (entity && isValidUUID(entity)) {
+                return entity;
+              }
+            })
+            ?.filter((e) => e !== undefined);
+          const manager = useResolveStore.getState().referenceMapper;
+          let newEvents = JSON.parse(JSON.stringify(updatedEvents));
+
+          entityReferencesInEvents.forEach((entity) => {
+            const entityrefExists = manager.has(entity);
+
+            if (entityrefExists) {
+              const value = manager.get(entity);
+              newEvents = dfs(newEvents, entity, value);
+            }
+          });
+
+          set(() => ({ events: newEvents }));
         },
 
         createAppVersionEventHandlers: async (event) => {
