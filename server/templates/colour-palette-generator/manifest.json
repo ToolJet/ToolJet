@@ -1,0 +1,15 @@
+{
+  "name": "Colour palette generator",
+  "description": "Discover harmonious colour combinations for your designs with this intuitive palette generator.",
+  "widgets": [
+    "Listview"
+  ],
+  "sources": [
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "colour-palette-generator",
+  "category": "utilities"
+}

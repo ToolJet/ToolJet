@@ -1,0 +1,19 @@
+{
+  "name": "Bug tracker",
+  "description": "Streamline issue tracking and reporting with a centralized platform for developers and testers.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "bug-tracker",
+  "category": "product-management"
+}
