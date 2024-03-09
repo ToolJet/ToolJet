@@ -775,6 +775,7 @@ const EditorComponent = (props) => {
         const currentPageId = useEditorStore.getState().currentPageId;
         const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components;
         let dataQueries = JSON.parse(JSON.stringify(useDataQueriesStore.getState().dataQueries));
+        let allEvents = JSON.parse(JSON.stringify(useAppDataStore.getState().events));
 
         const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])
           ?.map((entity) => {
@@ -785,6 +786,14 @@ const EditorComponent = (props) => {
           ?.filter((e) => e !== undefined);
 
         const entityReferencesInQueryoOptions = findAllEntityReferences(dataQueries, [])
+          ?.map((entity) => {
+            if (entity && isValidUUID(entity)) {
+              return entity;
+            }
+          })
+          ?.filter((e) => e !== undefined);
+
+        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])
           ?.map((entity) => {
             if (entity && isValidUUID(entity)) {
               return entity;
@@ -846,6 +855,23 @@ const EditorComponent = (props) => {
           });
 
           useDataQueriesStore.getState().actions.setDataQueries(dataQueries, 'mappingUpdate');
+        }
+
+        if (Array.isArray(entityReferencesInEvents) && entityReferencesInEvents?.length > 0) {
+          let newEvents = JSON.parse(JSON.stringify(allEvents));
+
+          entityReferencesInEvents.forEach((entity) => {
+            const entityrefExists = manager.has(entity);
+
+            if (entityrefExists) {
+              const value = manager.get(entity);
+              newEvents = dfs(newEvents, entity, value);
+            }
+          });
+
+          updateState({
+            events: newEvents,
+          });
         }
       })
       .finally(async () => {
