@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { OrganizationUsersService } from '@services/organization_users.service';
+import { OrganizationsService } from '@services/organizations.service';
 import { getUserErrorMessages, USER_STATUS } from 'src/helpers/user_lifecycle';
 
 /* 
@@ -17,7 +18,10 @@ This guard will check all possible cases to reject an invalid invitation session
 */
 @Injectable()
 export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
-  constructor(private organizationUsersService: OrganizationUsersService) {
+  constructor(
+    private organizationUsersService: OrganizationUsersService,
+    private organizationService: OrganizationsService
+  ) {
     super();
   }
 
@@ -81,7 +85,13 @@ export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
       return invitedUser;
     } else {
       /* User doesn't have a session. Next?: login again and accept invite */
-      return false;
+      const organization = await this.organizationService.fetchOrganization(invitedUser.invitedOrganizationId);
+      const errorResponse = {
+        message: {
+          invitedOrganizationSlug: organization?.slug || invitedUser.invitedOrganizationId,
+        },
+      };
+      throw new ForbiddenException(errorResponse);
     }
   }
 }

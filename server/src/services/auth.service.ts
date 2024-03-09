@@ -112,7 +112,17 @@ export class AuthService {
     let organization: Organization;
     const { email, password, redirectTo } = appAuthDto;
 
-    const user = await this.validateUser(email, password, organizationId);
+    const isInviteRedirect =
+      redirectTo.startsWith('/organization-invitations/') || redirectTo.startsWith('/invitations/');
+
+    let user: User;
+    if (isInviteRedirect) {
+      /* give access to the default organization */
+      user = await this.usersService.findByEmail(email, organizationId, [WORKSPACE_USER_STATUS.INVITED]);
+      organizationId = null;
+    } else {
+      user = await this.validateUser(email, password, organizationId);
+    }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!organizationId) {
@@ -132,8 +142,6 @@ export class AuthService {
           // default organization form login not enabled, picking first one from form enabled list
           organization = organizationList[0];
         } else {
-          const isInviteRedirect =
-            redirectTo.startsWith('/organization-invitations/') || redirectTo.startsWith('/invitations/');
           // no form login enabled organization available for user - creating new one
           if (!isInviteRedirect) {
             const { name, slug } = generateNextNameAndSlug('My workspace');

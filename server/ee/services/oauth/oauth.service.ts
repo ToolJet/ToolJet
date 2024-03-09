@@ -211,6 +211,9 @@ export class OauthService {
       let userDetails: User;
       let organizationDetails: DeepPartial<Organization>;
 
+      const isInviteRedirect =
+        redirectTo.startsWith('/organization-invitations/') || redirectTo.startsWith('/invitations/');
+
       if (isInstanceSSOLogin) {
         // Login from main login page - Multi-Workspace enabled
         userDetails = await this.usersService.findByEmail(userResponse.email);
@@ -267,7 +270,7 @@ export class OauthService {
             // default organization SSO login not enabled, picking first one from SSO enabled list
             organizationDetails = organizationList[0];
           } else {
-            if (!redirectTo.startsWith('/organization-invitations/')) {
+            if (!isInviteRedirect) {
               // no SSO login enabled organization available for user - creating new one
               const { name, slug } = generateNextNameAndSlug('My workspace');
               organizationDetails = await this.organizationService.create(name, slug, userDetails, manager);
@@ -294,6 +297,7 @@ export class OauthService {
         if (userDetails) {
           // user already exist
           if (
+            !isInviteRedirect &&
             !userDetails.invitationToken &&
             userDetails.organizationUsers[0].status === WORKSPACE_USER_STATUS.INVITED
           ) {
@@ -367,6 +371,12 @@ export class OauthService {
           redirectUrl: generateInviteURL(userDetails.invitationToken, null, null, URL_SSO_SOURCE),
         });
       }
+
+      if (isInviteRedirect && userDetails.defaultOrganizationId) {
+        /* Assign defaultOrganization instead of invited organization details */
+        organizationDetails = await this.organizationService.fetchOrganization(userDetails.defaultOrganizationId);
+      }
+
       return await this.authService.generateLoginResultPayload(
         response,
         userDetails,

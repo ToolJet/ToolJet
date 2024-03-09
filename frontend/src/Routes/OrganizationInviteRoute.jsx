@@ -80,8 +80,9 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
             /* logout and redirect to login page */
             navigate('/error/invalid-invite-session');
           } else {
+            const invitedOrganizationSlug = errorObj?.error?.invitedOrganizationSlug;
             /* Redirect to the login page. No session at all */
-            redirectToInstanceLoginPage();
+            redirectToLoginPage(invitedOrganizationSlug);
           }
           break;
         }
@@ -99,14 +100,15 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
     }
   };
 
-  const redirectToInstanceLoginPage = () => {
+  const redirectToLoginPage = (invitedOrganizationSlug) => {
     updateCurrentSession({
       authentication_status: false,
     });
     const redirectTo = `${location.pathname}${location.search}`;
+    const pathname = `/login${invitedOrganizationSlug ? `/${invitedOrganizationSlug}` : ''}`;
     navigate(
       {
-        pathname: `/login`,
+        pathname,
         search: `?redirectTo=${redirectTo}`,
         state: { from: location },
       },
