@@ -331,10 +331,10 @@ export const useDataQueriesStore = create(
                 });
               });
 
-              const components = useAppDataStore.getState().components;
               const currentAppEvents = useAppDataStore.getState().events;
               const appDefinition = useEditorStore.getState().appDefinition;
               const currentPageId = useEditorStore.getState().currentPageId;
+              const components = appDefinition.pages[currentPageId].components;
               const currentVersionId = useAppDataStore.getState().currentVersionId;
 
               handleReferenceTransactions(
