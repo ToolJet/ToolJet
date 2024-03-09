@@ -96,11 +96,11 @@ export const handleReferenceTransactions = (
       });
     });
 
+    // Commit Transaction
     updatedEntityNames.forEach((entity) => {
       useResolverStoreActions().handleUpdatesOnReferencingEnities(entity);
     });
 
-    // Commit Transaction
     const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const componentsFromAppDef = newAppDefinition.pages[currentPageId].components;
 
