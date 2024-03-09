@@ -60,28 +60,10 @@ export const useCurrentState = () =>
     };
   }, shallow);
 
-useCurrentStateStore.subscribe((state, prevState) => {
+useCurrentStateStore.subscribe((state) => {
   const isEditorReady = state.isEditorReady;
 
   if (!isEditorReady) return;
-
-  const stateRequiredForRefs = {
-    // queries: state.queries,
-    components: state.components,
-    globals: state.globals,
-    page: state.page,
-    variables: state.variables,
-    // client: state.client,
-    // server: state.server,
-    // constants: state.constants,
-  };
-
-  const previousState = {
-    components: prevState.components,
-    globals: prevState.globals,
-    variables: prevState.variables,
-    page: prevState.page,
-  };
 
   const isStoreIntialized = useResolveStore.getState().storeReady;
 
@@ -100,70 +82,8 @@ useCurrentStateStore.subscribe((state, prevState) => {
     console.log('Resolver store initialized with current state.');
     return;
   }
-
-  // const latestCurrentState = _.omit(stateRequiredForRefs, 'queries', 'server', 'client', 'constants');
-
-  // const didComponentsChange = JSON.stringify(stateRequiredForRefs) !== JSON.stringify(previousState);
-  // let diffInState = didComponentsChange ? diff(previousState, stateRequiredForRefs) : {};
-
-  // if (!didComponentsChange || _.isEmpty(diffInState)) return;
-
-  // console.log('---arpit::', {
-  //   didComponentsChange,
-  //   diffInState,
-  // });
-
-  // const undefinedPaths = Object.keys(findPathForObjWithUndefined(diffInState));
-  // diffInState = removeUndefined(diffInState);
-
-  // useResolveStore
-  //   .getState()
-  //   .actions.removeAppSuggestions(undefinedPaths)
-  //   .then((resp) => {
-  //     const suggestionObj = removeChildNodesWithEmptyValues(diffInState);
-
-  //     if (resp?.status === 'ok' && !_.isEmpty(suggestionObj)) {
-  //       useResolveStore.getState().actions.addAppSuggestions(suggestionObj);
-  //     }
-  //   });
 }, shallow);
 
 export const getCurrentState = () => {
   return omit(useCurrentStateStore.getState(), 'actions');
 };
-
-function removeUndefined(obj) {
-  Object.keys(obj).forEach((key) => {
-    if (obj[key] && typeof obj[key] === 'object') removeUndefined(obj[key]);
-    else if (obj[key] === undefined || _.isEmpty(obj[key])) delete obj[key];
-  });
-
-  return obj;
-}
-
-function removeChildNodesWithEmptyValues(obj) {
-  Object.keys(obj).forEach((key) => {
-    if (obj[key] && typeof obj[key] === 'object') {
-      removeChildNodesWithEmptyValues(obj[key]);
-      if (_.isEmpty(obj[key])) {
-        delete obj[key];
-      }
-    }
-  });
-
-  return obj;
-}
-
-function findPathForObjWithUndefined(obj, path = undefined) {
-  let result = {};
-  Object.keys(obj).forEach((key) => {
-    if (obj[key] && typeof obj[key] === 'object') {
-      const objPath = path ? `${path}.${key}` : key;
-      result = { ...result, ...findPathForObjWithUndefined(obj[key], objPath) };
-    } else if (obj[key] === undefined || _.isEmpty(obj[key])) {
-      result = { ...result, [`${path}.${key}`]: obj[key] };
-    }
-  });
-
-  return result;
-}
