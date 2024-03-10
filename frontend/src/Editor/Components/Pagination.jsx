@@ -65,8 +65,13 @@ export const Pagination = ({
   };
 
   return (
-    <div data-disabled={disabledState} className="d-flex align-items-center" data-cy={dataCy} style={{ boxShadow }}>
-      <ul className="pagination m-0 align-items-center" style={computedStyles}>
+    <div
+      data-disabled={disabledState}
+      className="d-flex align-items-center px-1"
+      data-cy={dataCy}
+      style={{ boxShadow }}
+    >
+      <ul className="pagination m-0" style={computedStyles}>
         <Pagination.Operator
           operator="<<"
           currentPage={currentPage}
@@ -220,79 +225,92 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
 };
 
 const PageLinks = ({ currentPage, totalPages, callback, darkMode, width }) => {
-  const itemsToShowPerWidth = Math.floor(width / 28); //  each item occupies 28px width
+  // Define constants for page number width and operator width
+  const PAGE_NUMBER_WIDTH = 28;
+  const OPERATOR_WIDTH = 28;
 
-  // Calculate the range of pages to display based on the current page and available width
+  // Calculate the maximum number of visible pages
+  const containerWidth = width; // Width of the container
+  const maxVisiblePages = Math.floor((containerWidth - 5 * OPERATOR_WIDTH) / PAGE_NUMBER_WIDTH);
+
+  // Ensure that the first and last page numbers are always displayed
   let startPage = 1;
   let endPage = totalPages;
 
-  if (totalPages > itemsToShowPerWidth) {
-    const halfItemsToShowPerWidth = Math.floor(itemsToShowPerWidth / 2);
-    startPage = Math.max(1, currentPage - halfItemsToShowPerWidth);
-    endPage = Math.min(totalPages, currentPage + halfItemsToShowPerWidth);
+  // Calculate the number of pages to show on each side of the current page
+  let numPagesToShowOnEachSide = Math.floor((maxVisiblePages - 3) / 2);
 
-    // Adjust startPage and endPage to ensure that itemsToShowPerWidth items are displayed
-    if (endPage - startPage + 1 < itemsToShowPerWidth) {
-      if (currentPage < totalPages / 2) {
-        endPage = Math.min(totalPages, endPage + (itemsToShowPerWidth - (endPage - startPage + 1)));
-      } else {
-        startPage = Math.max(1, startPage - (itemsToShowPerWidth - (endPage - startPage + 1)));
-      }
-    }
+  // If the total number of pages is less than the maximum visible pages
+  if (totalPages <= maxVisiblePages) {
+    numPagesToShowOnEachSide = Math.floor((totalPages - 3) / 2);
   }
 
-  const pages = [];
+  // Calculate the start and end of the range of middle pages to display
+  let startMiddlePage = currentPage - numPagesToShowOnEachSide;
+  let endMiddlePage = currentPage + numPagesToShowOnEachSide;
 
-  // Add the first page only if it's not already displayed
-  if (startPage > 1) {
-    pages.push(
-      <li key={1} onClick={() => callback(1)} className={`page-item`}>
-        <a className={`page-link ${darkMode && 'text-light'}`}>1</a>
-      </li>
-    );
+  // Adjust the range if it goes out of bounds
+  if (startMiddlePage < startPage + 1) {
+    endMiddlePage += startPage + 1 - startMiddlePage;
+    startMiddlePage = startPage + 1;
+  }
+  if (endMiddlePage > endPage - 1) {
+    startMiddlePage -= endMiddlePage - (endPage - 1);
+    endMiddlePage = endPage - 1;
   }
 
-  // Add ellipsis if needed before the start page
-  if (startPage > 2) {
-    pages.push(
-      <li key="ellipsis-start" className="page-item disabled">
-        <a className={`page-link ${darkMode && 'text-light'}`}>...</a>
-      </li>
-    );
-  }
-
-  // Add the pages in the range
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(
-      <li key={i} onClick={() => callback(i)} className={`page-item ${currentPage === i ? 'active' : ''}`}>
-        <a className={`page-link ${darkMode && 'text-light'}`}>{i}</a>
-      </li>
-    );
-  }
-
-  // Add ellipsis if needed after the end page
-  if (endPage < totalPages - 1) {
-    pages.push(
-      <li key="ellipsis-end" className="page-item disabled">
-        <a className={`page-link ${darkMode && 'text-light'}`}>...</a>
-      </li>
-    );
-  }
-
-  // Add the last page only if it's not already displayed
-  if (endPage < totalPages) {
-    pages.push(
+  // Render the page numbers with ellipsis
+  const pageNumbers = [];
+  if (totalPages > 1) {
+    pageNumbers.push(
       <li
-        key={totalPages}
-        onClick={() => callback(totalPages)}
-        className={`page-item ${currentPage === totalPages ? 'active' : ''}`}
+        key={startPage}
+        onClick={() => callback(startPage)}
+        className={`page-item ${currentPage === startPage ? 'active' : ''}`}
       >
-        <a className={`page-link ${darkMode && 'text-light'}`}>{totalPages}</a>
+        <a className={`page-link ${darkMode && 'text-light'}`}>{startPage}</a>
+      </li>
+    );
+
+    // Display ellipsis only if there are more than two pages
+    if (totalPages > 2) {
+      pageNumbers.push(
+        <li key="start-ellipsis" className="page-item disabled">
+          <span className="page-link">...</span>
+        </li>
+      );
+    }
+
+    // Render middle pages
+    for (let i = startMiddlePage; i <= endMiddlePage; i++) {
+      pageNumbers.push(
+        <li key={i} onClick={() => callback(i)} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+          <a className={`page-link ${darkMode && 'text-light'}`}>{i}</a>
+        </li>
+      );
+    }
+
+    // Display ellipsis only if there are more than two pages
+    if (totalPages > 2) {
+      pageNumbers.push(
+        <li key="end-ellipsis" className="page-item disabled">
+          <span className="page-link">...</span>
+        </li>
+      );
+    }
+
+    pageNumbers.push(
+      <li
+        key={endPage}
+        onClick={() => callback(endPage)}
+        className={`page-item ${currentPage === endPage ? 'active' : ''}`}
+      >
+        <a className={`page-link ${darkMode && 'text-light'}`}>{endPage}</a>
       </li>
     );
   }
 
-  return pages;
+  return <React.Fragment>{pageNumbers}</React.Fragment>;
 };
 
 Pagination.Operator = Operator;
