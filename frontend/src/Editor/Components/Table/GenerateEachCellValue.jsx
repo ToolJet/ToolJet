@@ -3,7 +3,6 @@ import _ from 'lodash';
 import { validateWidget } from '@/_helpers/utils';
 import { useMounted } from '@/_hooks/use-mount';
 import NullRenderer from './NullRenderer/NullRenderer';
-import ReactDOMServer from 'react-dom/server';
 
 export default function GenerateEachCellValue({
   cellValue,
@@ -109,8 +108,7 @@ export default function GenerateEachCellValue({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rowData, rowChangeSet]);
 
-  const nullRendererHtml = ReactDOMServer.renderToString(<NullRenderer darkMode={darkMode} />);
-  let htmlElement = cellValue === null ? nullRendererHtml : cellValue;
+  let htmlElement = cellValue;
   if (cellValue?.toString()?.toLowerCase().includes(globalFilter?.toLowerCase())) {
     if (globalFilter) {
       var normReq = globalFilter
@@ -128,16 +126,20 @@ export default function GenerateEachCellValue({
   const _renderCellWhenHighlighted = () => {
     return (
       <div className="d-flex justify-content-center flex-column w-100 h-100 generate-cell-value-component-div-wrapper">
-        <div
-          style={{
-            color: cellTextColor,
-          }}
-          dangerouslySetInnerHTML={{
-            __html: htmlElement,
-          }}
-          tabIndex={0}
-          className={`form-control-plaintext form-control-plaintext-sm ${columnType === 'text' && 'h-100 my-1'}`}
-        ></div>
+        {cellValue === null ? (
+          <NullRenderer darkMode={darkMode} />
+        ) : (
+          <div
+            style={{
+              color: cellTextColor,
+            }}
+            dangerouslySetInnerHTML={{
+              __html: htmlElement,
+            }}
+            tabIndex={0}
+            className={`form-control-plaintext form-control-plaintext-sm ${columnType === 'text' && 'h-100 my-1'}`}
+          ></div>
+        )}
         <div
           style={{
             display: cell.column.isEditable && validationData.validationError ? 'block' : 'none',
