@@ -499,7 +499,8 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
     component.component.component === 'TextInput' ||
       component.component.component === 'PasswordInput' ||
       component.component.component === 'NumberInput' ||
-      component.component.component === 'Text'
+      component.component.component === 'Text' ||
+      component.component.component === 'Button'
       ? groupedProperties
       : componentMeta.styles
   ).map((style) => {

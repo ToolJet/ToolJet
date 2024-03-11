@@ -157,7 +157,6 @@ export const Button = function Button(props) {
     <div
       className="widget-button"
       style={{
-        padding: padding === 'default' ? '2px' : '',
         position: 'relative',
       }}
     >
