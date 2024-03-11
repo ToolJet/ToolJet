@@ -1114,6 +1114,26 @@ const EditorComponent = (props) => {
             });
           }
 
+          //Todo: Move this to a separate function or as a middleware of the api to createing a component
+          if (updateDiff?.type === 'components' && updateDiff?.operation === 'create') {
+            const componentsFromCurrentState = getCurrentState().components;
+            const newComponentIds = Object.keys(updateDiff?.updateDiff);
+            const newComponentsExposedData = {};
+            const componentEntityArray = [];
+            Object.values(componentsFromCurrentState).filter((component) => {
+              if (newComponentIds.includes(component.id)) {
+                const componentName = updateDiff?.updateDiff[component.id]?.name;
+                newComponentsExposedData[componentName] = component;
+                componentEntityArray.push({ id: component.id, name: componentName });
+              }
+            });
+
+            useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
+            useResolveStore.getState().actions.addAppSuggestions({
+              components: newComponentsExposedData,
+            });
+          }
+
           if (
             updateDiff?.type === 'components' &&
             updateDiff?.operation === 'delete' &&
@@ -1129,6 +1149,7 @@ const EditorComponent = (props) => {
               events: updatedEvents,
             });
           }
+
           updateEditorState({
             saveError: false,
             isUpdatingEditorStateInProcess: false,
@@ -1142,11 +1163,6 @@ const EditorComponent = (props) => {
           toast.error('App could not save.');
         })
         .finally(() => {
-          updateState({
-            appDiffOptions: {},
-          });
-        })
-        .finally(() => {
           if (appDiffOptions?.cloningComponent) {
             cloneEventsForClonedComponents(
               updateDiff.updateDiff,
@@ -1154,6 +1170,10 @@ const EditorComponent = (props) => {
               appDiffOptions?.cloningComponent
             );
           }
+
+          updateState({
+            appDiffOptions: {},
+          });
         });
     }
     updateEditorState({
@@ -1327,14 +1347,32 @@ const EditorComponent = (props) => {
           icon: '🗑️',
         });
       }
+
+      const deleteFromMap = [componentId, ...childComponents];
+      const deletedComponentNames = deleteFromMap.map((id) => {
+        return appDefinition.pages[currentPageId].components[id].component.name;
+      });
+
       appDefinitionChanged(newDefinition, {
         componentDefinitionChanged: true,
         componentDeleted: true,
       });
 
-      const deleteFromMap = [componentId, ...childComponents];
+      const allAppHints = useResolveStore.getState().suggestions.appHints ?? [];
+      const allHintsAssociatedWithQuery = [];
+
+      if (allAppHints.length > 0) {
+        deletedComponentNames.forEach((componentName) => {
+          return allAppHints.forEach((suggestion) => {
+            if (suggestion?.hint.includes(componentName)) {
+              allHintsAssociatedWithQuery.push(suggestion.hint);
+            }
+          });
+        });
+      }
 
       useResolveStore.getState().actions.removeEntitiesFromMap(deleteFromMap);
+      useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
     } else {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }
