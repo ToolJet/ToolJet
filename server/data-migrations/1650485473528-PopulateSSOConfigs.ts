@@ -1,5 +1,5 @@
 import { Organization } from 'src/entities/organization.entity';
-import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { SSOConfigs, SSOType } from 'src/entities/sso_config.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { EncryptionService } from 'src/services/encryption.service';
 
@@ -53,7 +53,7 @@ export class PopulateSSOConfigs1650485473528 implements MigrationInterface {
             .into(SSOConfigs, ['organizationId', 'sso', 'enabled'])
             .values({
               organizationId: organization.id,
-              sso: 'form',
+              sso: SSOType.FORM,
               enabled: !isSingleOrganization ? true : passwordEnabled,
             })
             .execute();
@@ -71,7 +71,7 @@ export class PopulateSSOConfigs1650485473528 implements MigrationInterface {
             .into(SSOConfigs, ['organizationId', 'sso', 'enabled', 'configs'])
             .values({
               organizationId: organization.id,
-              sso: 'google',
+              sso: SSOType.GOOGLE,
               enabled: googleEnabled,
               configs: googleConfigs,
             })
@@ -91,7 +91,7 @@ export class PopulateSSOConfigs1650485473528 implements MigrationInterface {
             .into(SSOConfigs, ['organizationId', 'sso', 'enabled', 'configs'])
             .values({
               organizationId: organization.id,
-              sso: 'git',
+              sso: SSOType.GIT,
               enabled: gitEnabled,
               configs: gitConfigs,
             })

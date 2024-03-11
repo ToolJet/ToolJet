@@ -10,6 +10,8 @@ export default function Modal({
   children,
   footerContent = null,
   headerContent = null,
+  size = 'sm',
+  closeButton = true,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const modalFooter = footerContent ? (
@@ -23,8 +25,9 @@ export default function Modal({
       contentClassName={`home-modal-component animation-fade${customClassName ? ` ${customClassName}` : ''} ${
         darkMode && 'dark-theme'
       }`}
+      dialogClassName="custom-modal-width"
       show={show}
-      size="sm"
+      size={size}
       backdrop={true}
       keyboard={true}
       enforceFocus={false}
@@ -34,21 +37,25 @@ export default function Modal({
       data-cy={'modal-component'}
     >
       <BootstrapModal.Header>
-        <div>
+        {typeof title === 'string' ? (
           <BootstrapModal.Title data-cy={`${title.toLowerCase().replace(/\s+/g, '-')}-title`}>
             {title}
             {titleAdornment}
           </BootstrapModal.Title>
-          {headerContent && <div>{headerContent}</div>}
-        </div>
-        <button
-          className="btn-close"
-          aria-label="Close"
-          onClick={() => closeModal()}
-          data-cy="modal-close-button"
-        ></button>
+        ) : (
+          title
+        )}
+        {headerContent && <div>{headerContent}</div>}
+        {closeButton && (
+          <button
+            className="btn-close"
+            aria-label="Close"
+            onClick={() => closeModal()}
+            data-cy="modal-close-button"
+          ></button>
+        )}
       </BootstrapModal.Header>
-      <BootstrapModal.Body>{children}</BootstrapModal.Body>
+      <BootstrapModal.Body className="modal-body-scrollable">{children}</BootstrapModal.Body>
       {modalFooter ? modalFooter : <></>}
     </BootstrapModal>
   );

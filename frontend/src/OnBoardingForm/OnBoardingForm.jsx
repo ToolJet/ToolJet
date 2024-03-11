@@ -298,9 +298,9 @@ export function Page1({ formData, setFormData, setPage, page, setCompleted, isLo
 
   return (
     <div className="onboarding-pages-wrapper">
-      {ON_BOARDING_ROLES.map((field) => (
+      {ON_BOARDING_ROLES.map((field, index) => (
         <div key={field}>
-          <OnBoardingRadioInput {...props} field={field} />
+          <OnBoardingRadioInput {...props} field={field} index={index} />
         </div>
       ))}
       <ContinueButton {...btnProps} />
@@ -320,9 +320,9 @@ export function Page2({ formData, setFormData, setPage, page, setCompleted, isLo
   };
   return (
     <div className="onboarding-pages-wrapper">
-      {ON_BOARDING_SIZE.map((field) => (
+      {ON_BOARDING_SIZE.map((field, index) => (
         <div key={field}>
-          <OnBoardingRadioInput {...props} field={field} />
+          <OnBoardingRadioInput {...props} field={field} index={index} />
         </div>
       ))}
       <ContinueButton {...btnProps} />
