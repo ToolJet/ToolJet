@@ -624,7 +624,7 @@ export const widgets = [
       type: {
         type: 'switch',
         displayName: 'Type',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        validation: { schema: { type: 'string' } },
         options: [
           { displayName: 'Primary', value: 'primary' },
           { displayName: 'Outline', value: 'outline' },
@@ -683,16 +683,16 @@ export const widgets = [
         showLabel: false,
         isIcon: true,
         options: [
-          { displayName: 'alignleftinspector', value: 'left' },
-          { displayName: 'alignrightinspector', value: 'right' },
+          { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+          { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
         ],
         accordian: 'button',
       },
       borderRadius: {
-        type: 'input',
+        type: 'numberInput',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'number' },
+          validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
           defaultValue: false,
         },
         accordian: 'button',
@@ -776,8 +776,8 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '#fff' },
-        loaderColor: { value: '#fff' },
+        textColor: { value: '#ffffff' },
+        loaderColor: { value: '#ffffff' },
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#4368E3' },
         iconColor: { value: '#FBFCFD' },

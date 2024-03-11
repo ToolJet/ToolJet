@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 const tinycolor = require('tinycolor2');
-import { ToolTip } from '@/_components/ToolTip';
 import * as Icons from '@tabler/icons-react';
 
 export const Button = function Button(props) {
@@ -14,12 +13,11 @@ export const Button = function Button(props) {
     borderColor,
     boxShadow,
     iconColor,
-    padding,
     direction,
     type,
     iconVisibility,
   } = styles;
-  const { loadingState, tooltip, disabledState } = properties;
+  const { loadingState, disabledState } = properties;
   const [label, setLabel] = useState(properties.text);
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
@@ -153,7 +151,7 @@ export const Button = function Button(props) {
     document.dispatchEvent(event1);
     fireEvent('onClick');
   };
-  const renderInput = () => (
+  const renderButton = () => (
     <div
       className="widget-button"
       style={{
@@ -217,15 +215,5 @@ export const Button = function Button(props) {
     </div>
   );
 
-  return (
-    <>
-      {tooltip?.length > 0 ? (
-        <ToolTip message={tooltip}>
-          <div>{renderInput()}</div>
-        </ToolTip>
-      ) : (
-        <div>{renderInput()}</div>
-      )}
-    </>
-  );
+  return <>{renderButton()}</>;
 };

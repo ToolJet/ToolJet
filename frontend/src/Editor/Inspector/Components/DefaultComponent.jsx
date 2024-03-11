@@ -7,12 +7,13 @@ import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
 import { AllComponents } from '@/Editor/Box';
 
-const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'NumberInput', 'PasswordInput'];
+const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'NumberInput', 'PasswordInput', 'Button'];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
   TextInput: 'Data',
   PasswordInput: 'Data',
   NumberInput: 'Data',
+  Button: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
