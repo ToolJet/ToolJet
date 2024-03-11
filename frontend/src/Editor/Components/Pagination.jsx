@@ -226,12 +226,11 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
 
 const PageLinks = ({ currentPage, totalPages, callback, darkMode, width }) => {
   // Define constants for page number width and operator width
-  const PAGE_NUMBER_WIDTH = 28;
-  const OPERATOR_WIDTH = 28;
+  const ELEMENT_WIDTH = 28;
 
   // Calculate the maximum number of visible pages
   const containerWidth = width; // Width of the container
-  const maxVisiblePages = Math.floor((containerWidth - 5 * OPERATOR_WIDTH) / PAGE_NUMBER_WIDTH);
+  const maxVisiblePages = Math.floor((containerWidth - 5 * ELEMENT_WIDTH) / ELEMENT_WIDTH);
 
   // Ensure that the first and last page numbers are always displayed
   let startPage = 1;
