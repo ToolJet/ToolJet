@@ -8,7 +8,7 @@ import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import WarningInfo from '../Icons/Edit-information.svg';
 import { isEmpty } from 'lodash';
 
-const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
+const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
   const nullValue = selectedColumn.constraints_type.is_not_null;
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
@@ -18,6 +18,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
   const [isNotNull, setIsNotNull] = useState(nullValue);
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
   const disabledDataType = dataTypes.find((e) => e.value === dataType);
+  const [defaultValueLength, setDefaultValueLength] = useState(defaultValue?.length);
 
   const darkDisabledBackground = '#1f2936';
   const lightDisabledBackground = '#f4f6fa';
@@ -202,6 +203,11 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
             onChange={(e) => setDefaultValue(e.target.value)}
             disabled={dataType === 'serial'}
           />
+          {isNotNull === true && rows.length > 0 && !isEmpty(defaultValue) && defaultValueLength > 0 ? (
+            <span className="form-warning-message">
+              Changing the default value will NOT update the fields having existing default value
+            </span>
+          ) : null}
         </div>
         <div className="row mb-3">
           <div className="col-1">
