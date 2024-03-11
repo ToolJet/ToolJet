@@ -302,7 +302,11 @@ export default class PostgrestQueryBuilder {
    * @param value  The value to filter with.
    */
   filter(column, operator, value) {
-    this.url.append(`${column}`, `${operator}.${value}`);
+    if (operator === 'is' && value === 'not null') {
+      this.url.append(`${column}`, `not.is.null`);
+    } else {
+      this.url.append(`${column}`, `${operator}.${value}`);
+    }
     return this;
   }
   /**
