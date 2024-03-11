@@ -4,7 +4,6 @@ import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
-const produce = require('immer').default;
 import _, { isEmpty } from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
@@ -18,10 +17,8 @@ import { useMounted } from '@/_hooks/use-mount';
 import { useEditorStore } from '@/_stores/editorStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import DragContainerNested from './DragContainerNested';
 import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
 import { SUBCONTAINER_WITH_SCROLL } from './constants';
-import { widgets } from './WidgetManager/widgetConfig';
 
 // const NO_OF_GRIDS = 43;
 
