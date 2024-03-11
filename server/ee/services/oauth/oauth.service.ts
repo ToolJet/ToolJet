@@ -383,7 +383,9 @@ export class OauthService {
         organizationDetails,
         isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
         false,
-        user
+        user,
+        manager,
+        isInviteRedirect ? loginOrganiaztionId : null
       );
     });
   }

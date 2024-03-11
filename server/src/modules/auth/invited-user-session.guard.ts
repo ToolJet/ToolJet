@@ -8,6 +8,8 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { OrganizationsService } from '@services/organizations.service';
+import { Organization } from 'src/entities/organization.entity';
+import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { getUserErrorMessages, USER_STATUS } from 'src/helpers/user_lifecycle';
 
 /* 
@@ -69,6 +71,25 @@ export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
             error:
               'Your session does not match the invited user. Please logout and login to the invited user email account.',
             isInvitationTokenAndUserMismatch: true,
+          },
+        };
+        throw new ForbiddenException(errorResponse);
+      }
+    }
+
+    if (request?.user) {
+      /* Already a session is going on for the user. Check the login methods of user against invited workspace */
+      const user = request.user;
+      const organization: Organization = await this.organizationService.get(invitedUser.invitedOrganizationId);
+      const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+
+      const isCompatibleWithUserLogin =
+        (user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO);
+      if (isCompatibleWithUserLogin && user.invitedOrganizationId !== organization.id) {
+        // no configurations in organization side or Form login disabled for the organization
+        const errorResponse = {
+          message: {
+            invitedOrganizationSlug: organization?.slug || invitedUser.invitedOrganizationId,
           },
         };
         throw new ForbiddenException(errorResponse);
