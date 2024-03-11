@@ -76,15 +76,13 @@ module.exports = defineConfig({
         experimentalRunAllSpecs: true,
         baseUrl: "http://localhost:8082",
         specPattern: [
-            "cypress/e2e/cloud/subscription.cy.js",
-            "cypress/e2e/ee/workspace/**/*.cy.js",
-            "cypress/e2e/workspace/*.cy.js",
-            "cypress/e2e/ee/superadmin/*.cy.js",
-            "cypress/e2e/ee/globalDataSource/*.cy.js",
-            "cypress/e2e/ee/multi-env/*cy.js",
-            "cypress/e2e/ee/gitSync/*cy.js",
-            "cypress/e2e/authentication/*.cy.js",
-            "cypress/e2e/ee/licensing/*.cy.js",
+            "cypress/e2e/happypath/platform/commonTestcases/**/*.cy.js",
+            "cypress/e2e/happypath/platform/enterpriseTestcases/workspace/**/*.cy.js",
+            "cypress/e2e/happypath/platform/enterpriseTestcases/superadmin/*.cy.js",
+            "cypress/e2e/happypath/platform/enterpriseTestcases/globalDataSource/*.cy.js",
+            "cypress/e2e/happypath/platform/enterpriseTestcases/multi-env/*cy.js",
+            "cypress/e2e/happypath/platform/enterpriseTestcases/gitSync/*cy.js",
+            "cypress/e2e/happypath/platform/enterpriseTestcases/licensing/*.cy.js",
         ],
         numTestsKeptInMemory: 1,
         redirectionLimit: 20,
@@ -94,3 +92,4 @@ module.exports = defineConfig({
         videoUploadOnPasses: false,
     },
 });
+
