@@ -190,7 +190,7 @@ export class ComponentsService {
             const componentData = component;
             const componentLayout = component.layouts;
 
-            const transformedData = this.createComponentWithLayout(componentData, componentLayout);
+            const transformedData = this.createComponentWithLayout(componentData, componentLayout, manager);
 
             acc[componentId] = transformedData[componentId];
 
