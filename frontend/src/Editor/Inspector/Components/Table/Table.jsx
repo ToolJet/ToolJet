@@ -1167,7 +1167,7 @@ class TableComponent extends React.Component {
               </DragDropContext>
               <div>
                 {columns?.value?.length === 0 && <NoListItem text={'There are no columns'} dataCy={`-columns`} />}
-                <div>
+                <div className="mb-2">
                   <AddNewButton dataCy={`button-add-column`} onClick={this.addNewColumn}>
                     {this.props.t('widget.Table.addNewColumn', ' Add new column')}
                   </AddNewButton>
