@@ -32,7 +32,7 @@ COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
-FROM node:18.18.2-buster
+FROM node:18.18.2-bullseye
 # copy postgrest executable
 COPY --from=postgrest/postgrest /bin/postgrest /bin
 
