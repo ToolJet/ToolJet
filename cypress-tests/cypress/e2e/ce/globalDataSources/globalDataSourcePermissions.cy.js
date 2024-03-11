@@ -14,7 +14,6 @@ import {
 } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
-import { addNewUserMW } from "Support/utils/userPermissions";
 import { groupsSelector } from "Selectors/manageGroups";
 import {
   logout,
@@ -29,18 +28,12 @@ data.firstName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.email = fake.email.toLowerCase();
 data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.dsName2 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-data.appName = `${fake.companyName}-App`;
 
 describe("Global Datasource Manager", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     cy.viewport(1200, 1300);
-  });
-  before(() => {
-    cy.defaultWorkspaceLogin();
-    cy.apiCreateApp(data.appName);
-    addNewUserMW(data.firstName, data.email);
-    logout();
+    cy.skipWalkthrough();
   });
 
   it("Should verify the global data source manager UI", () => {
@@ -166,6 +159,9 @@ describe("Global Datasource Manager", () => {
   });
 
   it("Should verify the Datasource connection and query creation using global data source", () => {
+    data.appName = `${fake.companyName}-App`;
+    cy.removeAssignedApps();
+
     selectAndAddDataSource(
       "databases",
       dataSourceText.postgreSQL,
@@ -185,6 +181,7 @@ describe("Global Datasource Manager", () => {
     );
     cy.wait("@datasource");
 
+    cy.apiCreateApp(data.appName);
     cy.openApp();
     pinInspector();
 
@@ -225,6 +222,7 @@ describe("Global Datasource Manager", () => {
     );
 
     navigateToManageGroups();
+    cy.get(groupsSelector.appsLink).click();
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
     cy.get(groupsSelector.selectAddButton).click();
@@ -246,7 +244,7 @@ describe("Global Datasource Manager", () => {
   });
   it("Should validate the user's global data source permissions on apps created by admin", () => {
     logout();
-    cy.apiLogin(data.email, "password");
+    cy.apiLogin("test@tooljet.com", "password");
     cy.visit("/my-workspace");
 
     cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
@@ -277,9 +275,11 @@ describe("Global Datasource Manager", () => {
     verifyValueOnInspector("student_data", "4 items ");
   });
   it("Should verify the query creation and scope changing functionality.", () => {
+    cy.removeAssignedApps();
+
     data.appName = `${fake.companyName}-App`;
     logout();
-    cy.apiLogin(data.email, "password");
+    cy.apiLogin("test@tooljet.com", "password");
     cy.apiCreateApp(data.appName);
     cy.openApp();
 

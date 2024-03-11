@@ -51,9 +51,9 @@ To protect the user's privacy, Geolocation API requests permission to locate the
 
 - Now, go to the **Advanced** tab and enable the `Run query on page load?` option. Enabling this option will run this javascript query every time the app is opened by the user and the query will return the location
 
-- **Save** the query and hit the fire button
+- **Save** the query and hit the **Run** button
 
-- As soon as you hit the fire button, the browser will prompt you to allow the permission to share the location access to ToolJet app. You'll need to **allow** it to return the location data
+- As soon as you hit the **Run** button, the browser will prompt you to allow the permission to share the location access to ToolJet app. You'll need to **allow** it to return the location data
 
     <div style={{textAlign: 'center'}}>
 

@@ -20,8 +20,9 @@ import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, pageTitles, setWindowTitle } from '@/_helpers/utils';
 import { withRouter } from '@/_hoc/withRouter';
+import FolderFilter from './FolderFilter';
 
 const { iconList, defaultIcon } = configs;
 
@@ -63,6 +64,7 @@ class HomePageComponent extends React.Component {
       showTemplateLibraryModal: false,
       app: {},
       showCreateAppModal: false,
+      showCreateModuleModal: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
       showCloneAppModal: false,
@@ -75,6 +77,7 @@ class HomePageComponent extends React.Component {
   }
 
   componentDidMount() {
+    setWindowTitle({ page: pageTitles.DASHBOARD });
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
   }
@@ -131,11 +134,11 @@ class HomePageComponent extends React.Component {
     this.fetchFolders();
   };
 
-  createApp = async (appName) => {
+  createApp = async (appName, type) => {
     let _self = this;
     _self.setState({ creatingApp: true });
     try {
-      const data = await appsService.createApp({ icon: sample(iconList), name: appName });
+      const data = await appsService.createApp({ icon: sample(iconList), name: appName, type });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
       toast.success('App created successfully!');
@@ -540,11 +543,11 @@ class HomePageComponent extends React.Component {
   };
 
   openCreateAppModal = () => {
-    this.setState({ showCreateAppModal: true });
+    this.setState({ showCreateAppModal: true, showCreateModuleModal: true });
   };
 
   closeCreateAppModal = () => {
-    this.setState({ showCreateAppModal: false });
+    this.setState({ showCreateAppModal: false, showCreateModuleModal: false });
   };
 
   render() {
@@ -568,6 +571,7 @@ class HomePageComponent extends React.Component {
       appToBeDeleted,
       app,
       showCreateAppModal,
+      showCreateModuleModal,
       showImportAppModal,
       fileContent,
       fileName,
@@ -577,13 +581,13 @@ class HomePageComponent extends React.Component {
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
-          {showCreateAppModal && (
+          {(showCreateAppModal || showCreateModuleModal) && (
             <AppModal
               closeModal={this.closeCreateAppModal}
-              processApp={this.createApp}
+              processApp={(name) => this.createApp(name, showCreateAppModal ? 'front-end' : 'module')}
               show={this.openCreateAppModal}
-              title={'Create app'}
-              actionButton={'+ Create app'}
+              title={showCreateAppModal ? 'Create app' : 'Create module'}
+              actionButton={showCreateAppModal ? '+ Create app' : '+ Create module'}
               actionLoadingButton={'Creating'}
             />
           )}
@@ -795,6 +799,13 @@ class HomePageComponent extends React.Component {
                           data-cy="import-option-input"
                         />
                       </label>
+                      <Dropdown.Item
+                        className="homepage-dropdown-style tj-text tj-text-xsm"
+                        onClick={() => this.setState({ showCreateModuleModal: true })}
+                        data-cy="create-module-button"
+                      >
+                        {this.props.t('homePage.header.createModule', 'Create module')}
+                      </Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
                 </div>
@@ -825,6 +836,27 @@ class HomePageComponent extends React.Component {
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
                     <div className="liner"></div>
+                    <div className="filter-container">
+                      <span>{currentFolder?.count ?? meta?.total_count} APPS</span>
+                      <div className="d-flex align-items-center">
+                        <div className="mx-2">Filter by</div>
+                        <FolderFilter
+                          disabled={!!appOperations?.isAdding}
+                          options={this.state.folders.map((folder) => {
+                            return {
+                              name: folder.name,
+                              label: folder.name,
+                              value: folder.id,
+                              id: folder.id,
+                              ...folder,
+                            };
+                          })}
+                          onChange={this.folderChanged}
+                          value={currentFolder}
+                          closeMenuOnSelect={true}
+                        />
+                      </div>
+                    </div>
                   </>
                 )}
                 {!isLoading && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
@@ -867,16 +899,21 @@ class HomePageComponent extends React.Component {
                     />
                   ))}
               </div>
-              {this.pageCount() > MAX_APPS_PER_PAGE && (
-                <Footer
-                  currentPage={meta.current_page}
-                  count={this.pageCount()}
-                  itemsPerPage={MAX_APPS_PER_PAGE}
-                  pageChanged={this.pageChanged}
-                  darkMode={this.props.darkMode}
-                  dataLoading={isLoading}
-                />
-              )}
+              <div className="footer-container">
+                {this.pageCount() > MAX_APPS_PER_PAGE && (
+                  <Footer
+                    currentPage={meta.current_page}
+                    count={this.pageCount()}
+                    itemsPerPage={MAX_APPS_PER_PAGE}
+                    pageChanged={this.pageChanged}
+                    darkMode={this.props.darkMode}
+                    dataLoading={isLoading}
+                  />
+                )}
+                <div className="org-selector-mobile">
+                  <OrganizationList />
+                </div>
+              </div>
             </div>
           </div>
           <TemplateLibraryModal

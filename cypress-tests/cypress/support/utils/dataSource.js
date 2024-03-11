@@ -1,10 +1,12 @@
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { cyParamName } from "../../constants/selectors/common";
+import { cyParamName } from "Selectors/common";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
+import { navigateToAppEditor } from "Support/utils/common";
+
 
 export const verifyCouldnotConnectWithAlert = (dangerText) => {
   cy.get(postgreSqlSelector.connectionFailedText, {
@@ -112,6 +114,26 @@ export const addQuery = (queryName, query, dbName) => {
   });
 };
 
+export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
+  cy.get('[data-cy="show-ds-popover-button"]').click();
+  cy.get(".css-1rrkggf-Input").type(`${dbName}`);
+  cy.intercept("POST", "http://localhost:3000/api/data_queries").as(
+    "createQuery"
+  );
+  cy.contains(`[id*="react-select-"]`, dbName).click();
+
+  cy.get('[data-cy="query-rename-input"]').clear().type(queryName);
+
+  cy.wait("@createQuery").then((interception) => {
+    const dataQueryId = interception.response.body.id;
+    cy.visit("/my-workspace");
+    cy.addQueryApi(queryName, query, dataQueryId);
+    navigateToAppEditor(appName);
+    cy.wait(2000);
+  });
+};
+
+
 export const verifyValueOnInspector = (queryName, value) => {
   cy.get('[data-cy="inspector-node-queries"]')
     .parent()
@@ -131,3 +153,10 @@ export const verifyValueOnInspector = (queryName, value) => {
     }
   });
 };
+
+export const selectDatasource = (datasourceName) => {
+  cy.get(dataSourceSelector.addedDsSearchIcon).click();
+  cy.clearAndType(dataSourceSelector.AddedDsSearchBar, datasourceName);
+  cy.wait(500)
+  cy.get(`[data-cy="${cyParamName(datasourceName)}-button"]`).click()
+}

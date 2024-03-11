@@ -49,6 +49,8 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
+type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput';
+
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
   'runjsdefault',
@@ -57,6 +59,7 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'workflowsdefault',
 ];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
+const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput'];
 
 @Injectable()
 export class AppImportExportService {
@@ -139,9 +142,13 @@ export class AppImportExportService {
 
         dataSourceOptions = await manager
           .createQueryBuilder(DataSourceOptions, 'data_source_options')
-          .where('data_source_options.environmentId IN(:...environmentId)', {
-            environmentId: appEnvironments.map((v) => v.id),
-          })
+          .where(
+            'data_source_options.environmentId IN(:...environmentId) AND data_source_options.dataSourceId IN(:...dataSourceId)',
+            {
+              environmentId: appEnvironments.map((v) => v.id),
+              dataSourceId: dataSources.map((v) => v.id),
+            }
+          )
           .orderBy('data_source_options.createdAt', 'ASC')
           .getMany();
 
@@ -712,6 +719,11 @@ export class AppImportExportService {
             const mappedParentId = newComponentIdsMap[_parentId];
 
             parentId = `${mappedParentId}-${childTabId}`;
+          } else if (isChildOfKanbanModal(component, pageComponents, parentId, true)) {
+            const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+            const mappedParentId = newComponentIdsMap[_parentId];
+
+            parentId = `${mappedParentId}-modal`;
           } else {
             if (component.parent && !newComponentIdsMap[parentId]) {
               skipComponent = true;
@@ -719,15 +731,21 @@ export class AppImportExportService {
 
             parentId = newComponentIdsMap[parentId];
           }
-
           if (!skipComponent) {
+            const { properties, styles, general, validation, generalStyles } = migrateProperties(
+              component.type as NewRevampedComponent,
+              component,
+              NewRevampedComponents
+            );
             newComponent.id = newComponentIdsMap[component.id];
             newComponent.name = component.name;
             newComponent.type = component.type;
-            newComponent.properties = component.properties;
-            newComponent.styles = component.styles;
-            newComponent.generalStyles = component.generalStyles;
-            newComponent.validation = component.validation;
+            newComponent.properties = properties;
+            newComponent.styles = styles;
+            newComponent.generalStyles = generalStyles;
+            newComponent.general = general;
+            newComponent.displayPreferences = component.displayPreferences;
+            newComponent.validation = validation;
             newComponent.parent = component.parent ? parentId : null;
 
             newComponent.page = pageCreated;
@@ -1657,6 +1675,64 @@ function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
   return appParamsWithMultipageSchema;
 }
 
+/**
+ * Migrates styles to properties of the component based on the specified component types.
+ * @param {NewRevampedComponent} componentType - Component type for which to perform property migration.
+ * @param {Component} component - The component object containing properties, styles, and general information.
+ * @param {NewRevampedComponent[]} componentTypes - An array of component types for which to perform property migration.
+ * @returns {object} An object containing the modified properties, styles, and general information.
+ */
+function migrateProperties(
+  componentType: NewRevampedComponent,
+  component: Component,
+  componentTypes: NewRevampedComponent[]
+) {
+  const properties = { ...component.properties };
+  const styles = { ...component.styles };
+  const general = { ...component.general };
+  const validation = { ...component.validation };
+  const generalStyles = { ...component.generalStyles };
+  // Check if the component type is included in the specified component types
+  if (componentTypes.includes(componentType as NewRevampedComponent)) {
+    if (styles.visibility) {
+      properties.visibility = styles.visibility;
+      delete styles.visibility;
+    }
+
+    if (styles.disabledState) {
+      properties.disabledState = styles.disabledState;
+      delete styles.disabledState;
+    }
+
+    if (general?.tooltip) {
+      properties.tooltip = general?.tooltip;
+      delete general?.tooltip;
+    }
+
+    if (generalStyles?.boxShadow) {
+      styles.boxShadow = generalStyles?.boxShadow;
+      delete generalStyles?.boxShadow;
+    }
+
+    if (componentType === 'TextInput' || componentType === 'PasswordInput' || componentType === 'NumberInput') {
+      properties.label = '';
+    }
+
+    if (componentType === 'NumberInput') {
+      if (properties.minValue) {
+        validation.minValue = properties?.minValue;
+        delete properties.minValue;
+      }
+
+      if (properties.maxValue) {
+        validation.maxValue = properties?.maxValue;
+        delete properties.maxValue;
+      }
+    }
+  }
+  return { properties, styles, general, generalStyles, validation };
+}
+
 function transformComponentData(
   data: object,
   componentEvents: any[],
@@ -1694,6 +1770,11 @@ function transformComponentData(
       const mappedParentId = componentsMapping[_parentId];
 
       parentId = `${mappedParentId}-${childTabId}`;
+    } else if (isChildOfKanbanModal(component, allComponents, parentId, true)) {
+      const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+      const mappedParentId = componentsMapping[_parentId];
+
+      parentId = `${mappedParentId}-modal`;
     } else {
       if (component.parent && !componentsMapping[parentId]) {
         skipComponent = true;
@@ -1702,14 +1783,19 @@ function transformComponentData(
     }
 
     if (!skipComponent) {
+      const { properties, styles, general, validation, generalStyles } = migrateProperties(
+        componentData.component,
+        componentData.definition,
+        NewRevampedComponents
+      );
       transformedComponent.id = uuid();
       transformedComponent.name = componentData.name;
       transformedComponent.type = componentData.component;
-      transformedComponent.properties = componentData.definition.properties || {};
-      transformedComponent.styles = componentData.definition.styles || {};
-      transformedComponent.validation = componentData.definition.validation || {};
-      transformedComponent.general = componentData.definition.general || {};
-      transformedComponent.generalStyles = componentData.definition.generalStyles || {};
+      transformedComponent.properties = properties || {};
+      transformedComponent.styles = styles || {};
+      transformedComponent.validation = validation || {};
+      transformedComponent.general = general || {};
+      transformedComponent.generalStyles = generalStyles || {};
       transformedComponent.displayPreferences = componentData.definition.others || {};
       transformedComponent.parent = component.parent ? parentId : null;
 
@@ -1747,4 +1833,23 @@ const isChildOfTabsOrCalendar = (
   }
 
   return false;
+};
+
+const isChildOfKanbanModal = (
+  component,
+  allComponents = [],
+  componentParentId = undefined,
+  isNormalizedAppDefinitionSchema: boolean
+) => {
+  if (!componentParentId || !componentParentId.includes('modal')) return false;
+
+  const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+  const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+  if (!isNormalizedAppDefinitionSchema) {
+    return parentComponent.component.component === 'Kanban';
+  }
+
+  return parentComponent.type === 'Kanban';
 };

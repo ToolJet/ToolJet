@@ -7,7 +7,7 @@ import { buttonText } from "Texts/button";
 import {
   verifyControlComponentAction,
   randomString,
-} from "Support/utils/textInput";
+} from "Support/utils/editor/textInput";
 import {
   openAccordion,
   verifyAndModifyParameter,
@@ -64,7 +64,7 @@ import { deleteDownloadsFolder } from "Support/utils/common";
 describe("RunJS", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.apiCreateApp(`${fake.companyName}-runjs-App`);
     cy.openApp();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
@@ -72,7 +72,7 @@ describe("RunJS", () => {
     deleteDownloadsFolder();
   });
 
-  it.only("should verify basic runjs", () => {
+  it("should verify basic runjs", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -201,6 +201,7 @@ describe("RunJS", () => {
     cy.get('[data-cy="sign-in-header"]').should("be.visible");
     cy.apiLogin();
     cy.openApp(
+      Cypress.env("workspaceId"),
       Cypress.env("appId"),
       '[data-cy="draggable-widget-modal1-launch-button"]'
     );

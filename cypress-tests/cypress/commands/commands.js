@@ -115,9 +115,9 @@ Cypress.Commands.add(
           .last()
           .click()
           .type(createBackspaceText(text), { delay: 0 }),
-        {
-          delay: 0,
-        };
+          {
+            delay: 0,
+          };
       });
     if (!Array.isArray(value)) {
       cy.wrap(subject).last().type(value, {
@@ -193,9 +193,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-        {
-          delay: 0,
-        };
+          {
+            delay: 0,
+          };
       });
   }
 );
@@ -256,7 +256,6 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
 });
 
 Cypress.Commands.add("skipEditorPopover", () => {
-  // cy.get(".text-muted");
   cy.wait(1000);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip", { timeout: 2000 })) {
@@ -366,19 +365,98 @@ Cypress.Commands.add("getPosition", (componentName) => {
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
   cy.apiLogin();
-  cy.intercept('GET', "http://localhost:3000/api/library_apps/").as("library_apps")
-  cy.visit('/my-workspace');
-  cy.get(commonSelectors.homePageLogo, { timeout: 10000 })
-  cy.wait("@library_apps")
-})
+  cy.intercept("GET", "http://localhost:3000/api/library_apps").as(
+    "library_apps"
+  );
+  cy.visit("/my-workspace");
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+  cy.wait("@library_apps");
+});
 
-Cypress.Commands.add('visitSlug', ({ actualUrl, currentUrl = 'http://localhost:8082/error/unknown' }) => {
-  cy.visit(actualUrl);
-  cy.wait(3000);
+Cypress.Commands.add(
+  "visitSlug",
+  ({ actualUrl, currentUrl = "http://localhost:8082/error/unknown" }) => {
+    cy.visit(actualUrl);
+    cy.wait(3000);
 
-  cy.url().then((url) => {
-    if (url === currentUrl) {
-      cy.visit(actualUrl);
-    }
+    cy.url().then((url) => {
+      if (url === currentUrl) {
+        cy.visit(actualUrl);
+      }
+    });
+  }
+);
+
+Cypress.Commands.add("releaseApp", () => {
+  if (Cypress.env("environment") !== "Community") {
+    cy.get(commonEeSelectors.promoteButton).click();
+    cy.get(commonEeSelectors.promoteButton).eq(1).click();
+    cy.waitForAppLoad();
+    cy.wait(3000);
+    cy.get(commonEeSelectors.promoteButton).click();
+    cy.get(commonEeSelectors.promoteButton).eq(1).click();
+    cy.waitForAppLoad();
+    cy.wait(3000);
+  }
+  cy.get(commonSelectors.releaseButton).click();
+  cy.get(commonSelectors.yesButton).click();
+  cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
+  cy.wait(1000);
+});
+
+Cypress.Commands.add("backToApps", () => {
+  cy.get(commonSelectors.editorPageLogo).click();
+  cy.get(commonSelectors.backToAppOption).click();
+});
+
+Cypress.Commands.add("removeAssignedApps", () => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `DELETE FROM app_group_permissions;`,
+  });
+});
+
+Cypress.Commands.add(
+  "saveFromIntercept",
+  (interceptAlias, property, envVariable) => {
+    cy.get(interceptAlias)
+      .its("response.body")
+      .then((responseBody) => {
+        Cypress.env(envVariable, responseBody[property]);
+      });
+  }
+);
+
+Cypress.Commands.add("verifyLabel", (labelName) => {
+  cy.get(commonSelectors.label(`${labelName}`)).verifyVisibleElement(
+    "have.text",
+    labelName
+  );
+});
+
+Cypress.Commands.add(
+  "visitSlug",
+  ({ actualUrl, currentUrl = "http://localhost:8082/error/unknown" }) => {
+    cy.visit(actualUrl);
+    cy.wait(3000);
+
+    cy.url().then((url) => {
+      if (url === currentUrl) {
+        cy.visit(actualUrl);
+      }
+    });
+  }
+);
+
+Cypress.Commands.add(
+  "verifyCssProperty",
+  (selector, property, expectedValue) => {
+    cy.get(selector).should("have.css", property).and("eq", expectedValue);
+  }
+);
+
+Cypress.Commands.add("skipWalkthrough", () => {
+  cy.window({ log: false }).then((win) => {
+    win.localStorage.setItem("walkthroughCompleted", "true");
   });
 });

@@ -1,27 +1,22 @@
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import React from 'react';
+import cx from 'classnames';
 
 const Switch = ({ value, onChange, cyLabel, meta, paramName, isIcon }) => {
   const options = meta?.options;
-
-  const defaultValue = typeof value == 'boolean' ? (value ? '{{true}}' : '{{false}}') : value; //for booelan values ex: in checkbox and toggle
-
-  function handleOptionChanged(_value) {
-    onChange(_value);
-  }
-
+  const defaultValue = value;
   return (
-    <div>
-      <ToggleGroup onValueChange={handleOptionChanged} defaultValue={defaultValue}>
+    <div className={cx({ 'w-full': meta?.fullWidth })}>
+      <ToggleGroup onValueChange={onChange} defaultValue={defaultValue} className={cx({ 'w-full': meta?.fullWidth })}>
         {options.map((option) => (
           <ToggleGroupItem
-            key={`${option.value}-${meta.type}`}
+            key={option.value}
             value={option.value}
             isIcon={isIcon}
-            defaultValue={defaultValue}
+            style={{ width: meta?.fullWidth ? '100%' : '67px' }}
           >
-            {option.displayName}
+            {isIcon ? option?.iconName ?? '' : option?.displayName}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>

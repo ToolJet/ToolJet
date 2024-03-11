@@ -6,15 +6,14 @@ import { renderElement } from '../Utils';
 import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
 import { AllComponents } from '@/Editor/Box';
-const SHOW_ADDITIONAL_ACTIONS = [
-  'Text',
-  'TextInput',
-  'DropDown',
-  'NumberInput',
-  'PasswordInput',
-  'ToggleSwitch',
-  'Checkbox',
-];
+
+const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'NumberInput', 'PasswordInput'];
+const PROPERTIES_VS_ACCORDION_TITLE = {
+  Text: 'Data',
+  TextInput: 'Data',
+  PasswordInput: 'Data',
+  NumberInput: 'Data',
+};
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -87,7 +86,7 @@ export const baseComponentProperties = (
     'Additional Actions': Object.keys(AllComponents).filter(
       (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component)
     ),
-    General: ['Modal', 'TextInput', 'PasswordInput', 'NumberInput', 'ToggleSwitch', 'Checkbox'],
+    General: ['Modal', 'TextInput', 'PasswordInput', 'NumberInput', 'Text', 'ToggleSwitch', 'Checkbox'],
     Layout: [],
   };
   if (component.component.component === 'Listview') {
@@ -98,7 +97,9 @@ export const baseComponentProperties = (
   let items = [];
   if (properties.length > 0) {
     items.push({
-      title: `${i18next.t('widget.common.properties', 'Properties')}`,
+      title:
+        PROPERTIES_VS_ACCORDION_TITLE[component?.component?.component] ??
+        `${i18next.t('widget.common.properties', 'Properties')}`,
       children: properties.map((property) =>
         renderElement(
           component,

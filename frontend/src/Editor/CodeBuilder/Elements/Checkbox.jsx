@@ -8,8 +8,9 @@ function Checkbox({ value, onChange }) {
   }, [value]);
 
   return (
-    <div className="d-flex align-items-center" style={{ width: '142px' }}>
+    <div className="d-flex align-items-center color-slate12" style={{ width: '142px', marginTop: '16px' }}>
       <input
+        data-cy={`auto-width-checkbox`}
         type="checkbox"
         checked={isChecked}
         onChange={() => {
@@ -19,7 +20,7 @@ function Checkbox({ value, onChange }) {
         value={isChecked}
         style={{ height: '16px', width: '16px' }}
       />
-      <span className="tj-text-xsm" style={{ marginLeft: '4px' }}>
+      <span className="tj-text-xsm" style={{ marginLeft: '8px' }} data-cy={`auto-width-label`}>
         Auto width
       </span>
     </div>

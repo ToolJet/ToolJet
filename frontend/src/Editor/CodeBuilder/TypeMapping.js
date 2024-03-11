@@ -16,4 +16,5 @@ export const TypeMapping = {
   input: 'Input',
   icon: 'Icon',
   visibility: 'Visibility',
+  numberInput: 'NumberInput',
 };

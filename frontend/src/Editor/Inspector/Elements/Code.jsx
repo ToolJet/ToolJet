@@ -33,6 +33,13 @@ export const Code = ({
       if (isPaginationEnabled) return '{{true}}';
       return '{{false}}';
     }
+    // Following condition is needed to support older Text component not having textFormat switch
+    if (component?.component?.component === 'Text' && param === 'textFormat') {
+      const doTextFormatAlreadyExist = component?.component?.definition?.properties?.textFormat;
+      if (!doTextFormatAlreadyExist) {
+        return 'html';
+      }
+    }
     if (['showAddNewRowButton', 'allowSelection', 'defaultSelectedRow'].includes(param)) {
       if (param === 'allowSelection') {
         const highlightSelectedRow = component?.component?.definition?.properties?.highlightSelectedRow?.value ?? false;
@@ -46,9 +53,13 @@ export const Code = ({
       } else {
         return '{{true}}';
       }
-    } else {
-      return '';
     }
+    if (param === 'selectRowOnCellEdit') {
+      const selectRowOnCellEdit =
+        component?.component?.definition?.properties?.selectRowOnCellEdit?.value ?? '{{true}}';
+      return selectRowOnCellEdit;
+    }
+    return '';
   };
 
   let initialValue = !_.isEmpty(definition) ? definition.value : getDefinitionForNewProps(param.name);
@@ -110,6 +121,7 @@ export const Code = ({
         isIcon={paramMeta?.isIcon}
         staticText={paramMeta?.staticText}
         placeholder={placeholder}
+        inspectorTab={paramType}
         bold={true}
       />
     </div>

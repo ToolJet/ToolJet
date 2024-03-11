@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext, useRef, memo } from 'react';
+import React, { useEffect, useState, useMemo, useContext, useRef, memo, useCallback } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -68,6 +68,8 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
+import WidgetIcon from '@/../assets/images/icons/widgets';
+import { useModuleName } from '../_contexts/ModuleContext';
 
 export const AllComponents = {
   Button,
@@ -150,22 +152,12 @@ export const Box = memo(
     childComponents,
     isResizing,
     adjustHeightBasedOnAlignment,
+    currentLayout,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
-    let styles = {
-      height: '100%',
-      // paddingRight: '1px',
-      // paddingLeft: '1px',
-    };
-
-    if (inCanvas) {
-      styles = {
-        ...styles,
-      };
-    }
-
+    const moduleName = useModuleName();
     const { events } = useAppInfo();
 
     const componentMeta = useMemo(() => {
@@ -184,11 +176,11 @@ export const Box = memo(
         : [resolvedProperties, []];
 
     const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
+
     const [validatedStyles, styleErrors] =
       mode === 'edit' && component.validate
         ? validateProperties(resolvedStyles, componentMeta.styles)
         : [resolvedStyles, []];
-    validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
 
     const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
     const [validatedGeneralProperties, generalPropertiesErrors] =
@@ -206,6 +198,15 @@ export const Box = memo(
     const darkMode = localStorage.getItem('darkMode') === 'true';
     const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
+    let styles = {
+      height: '100%',
+    };
+
+    if (inCanvas) {
+      styles = {
+        ...styles,
+      };
+    }
     useEffect(() => {
       if (!component?.parent) {
         onComponentOptionChanged && onComponentOptionChanged(component, 'id', id);
@@ -281,18 +282,29 @@ export const Box = memo(
         ...{ component: component.component },
         customResolveObjects: customResolvables,
       });
-    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'ToggleSwitch', 'Checkbox'];
-
+    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
         delay={{ show: 500, hide: 0 }}
-        trigger={inCanvas && !validatedGeneralProperties.tooltip?.toString().trim() ? null : ['hover', 'focus']}
+        trigger={
+          inCanvas && shouldAddBoxShadow.includes(component.component)
+            ? !validatedProperties.tooltip?.toString().trim()
+              ? null
+              : ['hover', 'focus']
+            : !validatedGeneralProperties.tooltip?.toString().trim()
+            ? null
+            : ['hover', 'focus']
+        }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${validatedGeneralProperties.tooltip}`
+              ? `${
+                  shouldAddBoxShadow.includes(component.component)
+                    ? validatedProperties.tooltip
+                    : validatedGeneralProperties.tooltip
+                }`
               : `${t(`widget.${component.name}.description`, component.description)}`,
           })
         }
@@ -301,6 +313,7 @@ export const Box = memo(
           style={{
             ...styles,
             backgroundColor,
+            padding: validatedStyles?.padding ? (validatedStyles?.padding == 'default' ? '2px' : '0px') : '2px',
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >
@@ -348,6 +361,7 @@ export const Box = memo(
               dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
               isResizing={isResizing}
               adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
+              currentLayout={currentLayout}
             ></ComponentToRender>
           ) : (
             <></>
