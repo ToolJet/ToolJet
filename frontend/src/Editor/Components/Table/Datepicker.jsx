@@ -1,8 +1,6 @@
 import React, { forwardRef, useEffect, useRef } from 'react';
 import moment from 'moment-timezone';
 import DatePickerComponent from 'react-datepicker';
-// import '@/_styles/custom.scss';
-import * as Icons from '@tabler/icons-react';
 import CustomDatePickerHeader from './CustomDatePickerHeader';
 import 'react-datepicker/dist/react-datepicker.css';
 import './datepicker.scss';
@@ -64,6 +62,7 @@ export const Datepicker = function Datepicker({
   disabledDates,
   unixTimestamp,
   parseInUnixTimestamp,
+  cellStyles,
 }) {
   const [date, setDate] = React.useState(null);
   const [excludedDates, setExcludedDates] = React.useState([]);
@@ -88,8 +87,6 @@ export const Datepicker = function Datepicker({
     });
     setDate(date);
   }, [JSON.stringify(value, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay, unixTimestamp)]);
-
-  const IconElement = Icons['IconHome2'];
 
   const dateInputRef = useRef(null); // Create a ref
 
@@ -130,14 +127,15 @@ export const Datepicker = function Datepicker({
   return (
     <div ref={pickerRef}>
       <DatePickerComponent
-        calendarIcon={<IconElement stroke={1.5} />}
         className={`input-field form-control tj-text-input-widget validation-without-icon px-2`}
         popperClassName={`tj-datepicker-widget`}
         selected={date}
         onChange={(date) => handleDateChange(date)}
         value={date !== null ? computeDateString(date) : 'Invalid date'}
         dateFormat={dateDisplayFormat}
-        customInput={<TjDatepicker dateInputRef={dateInputRef} readOnly={readOnly} />}
+        customInput={
+          <TjDatepicker dateInputRef={dateInputRef} readOnly={readOnly} styles={{ color: cellStyles.color }} />
+        }
         timeFormat={'HH:mm'}
         showTimeSelect={isTimeChecked}
         showTimeSelectOnly={!isDateSelectionEnabled && isTimeChecked}

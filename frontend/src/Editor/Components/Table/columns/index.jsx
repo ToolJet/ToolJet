@@ -599,21 +599,11 @@ export default function generateColumnsData({
                   unixTimeStamp={column.unixTimestamp}
                   disabledDates={disabledDates}
                   unixTimestamp={column.unixTimestamp}
+                  cellStyles={cellStyles}
                 />
                 {isEditable && <div className={isValid ? '' : 'invalid-feedback d-block'}>{validationError}</div>}
               </div>
             );
-            // }
-            // return (
-            //   <div
-            //     className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
-            //       horizontalAlignment
-            //     )}`}
-            //     style={cellStyles}
-            //   >
-            //     {cellValue}
-            //   </div>
-            // );
           }
           case 'link': {
             const linkTarget = resolveReferences(column?.linkTarget ?? '_blank', currentState);
