@@ -797,23 +797,7 @@ export const Container = ({
     return '';
   };
 
-  // console.log('isDragging----', draggingComponentId);
-
   return (
-    // <div
-    //   {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
-    //   ref={(el) => {
-    //     canvasRef.current = el;
-    //     drop(el);
-    //   }}
-    //   style={{ ...styles, height: canvasHeight }}
-    //   className={cx('real-canvas', {
-    //     'show-grid': isDragging || isResizing || dragTarget === 'canvas',
-    //   })}
-    //   id="real-canvas"
-    //   data-cy="real-canvas"
-    //   canvas-height={canvasHeight}
-    // >
     <ContainerWrapper
       showComments={showComments}
       handleAddThread={handleAddThread}
@@ -990,10 +974,6 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
     layouts,
   } = widget;
   const { isSelected, isHovered } = useEditorStore((state) => {
-    // if (state?.selectedComponents?.length > 1) {
-    //   return false;
-    // }
-    // const isSelected = (state.selectedComponents || []).length === 1 && state?.selectedComponents?.[0]?.id === id;
     const isSelected = !!(state.selectedComponents || []).find((selected) => selected?.id === id);
     console.log('state.selectedComponents--', state.selectedComponents, id, isSelected);
     const isHovered = state?.hoveredComponent == id;
