@@ -934,7 +934,8 @@ export class AuthService {
     isInstanceSSO: boolean,
     isPasswordLogin: boolean,
     loggedInUser?: User,
-    manager?: EntityManager
+    manager?: EntityManager,
+    invitedOrganizationId?: string
   ): Promise<any> {
     const request = RequestContext?.currentContext?.req;
     const organizationIds = new Set([
@@ -962,6 +963,7 @@ export class AuthService {
       organizationIds: [...organizationIds],
       isSSOLogin: loggedInUser?.isSSOLogin || isInstanceSSO,
       isPasswordLogin: loggedInUser?.isPasswordLogin || isPasswordLogin,
+      ...(invitedOrganizationId ? { invitedOrganizationId } : {}),
     };
 
     if (organization) user.organizationId = organization.id;
@@ -1092,4 +1094,5 @@ interface JWTPayload {
   organizationIds: Array<string>;
   isSSOLogin: boolean;
   isPasswordLogin: boolean;
+  invitedOrganizationId?: string;
 }

@@ -77,6 +77,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       user.isPasswordLogin = payload.isPasswordLogin;
       user.isSSOLogin = payload.isSSOLogin;
       user.sessionId = payload.sessionId;
+      if (isInviteSession) user.invitedOrganizationId = payload.invitedOrganizationId;
     }
 
     return user ?? {};
@@ -91,4 +92,5 @@ type JWTPayload = {
   organizationIds?: Array<string>;
   isPasswordLogin: boolean;
   isSSOLogin: boolean;
+  invitedOrganizationId?: string;
 };
