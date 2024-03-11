@@ -957,12 +957,21 @@ class TableComponent extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
-
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
 
+    // When column type is link, we need to make it non-editable
+    if (newColumns[index].columnType === 'link') {
+      newColumns[index].isEditable = '{{false}}';
+    }
+
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
+
+    // When any of the column is not editable, we need to disable "make all columns editable" toggle
+    if (item === 'isEditable' && !resolveReferences(value)) {
+      this.props.paramUpdated({ name: 'isAllColumnsEditable' }, 'value', value, 'properties');
+    }
   };
 
   getItemStyle = (isDragging, draggableStyle) => ({
@@ -1004,6 +1013,23 @@ class TableComponent extends React.Component {
   getPopoverFieldSource = (column, field) =>
     `component/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
 
+  handleMakeAllColumnsEditable = (value) => {
+    const columns = resolveReferences(
+      this.props.component.component.definition.properties.columns,
+      this.props.currentState
+    );
+    const newValue = columns.value.map((column) => ({
+      ...column,
+      isEditable: column.columnType !== 'link' ? value : '{{false}}', // Link columns are not editable
+    }));
+    this.props.paramUpdated({ name: 'isAllColumnsEditable' }, 'value', value, 'properties');
+
+    // setTimeout is required since there is a bug where param updated if consecutively called, then only the last is being reflected
+    setTimeout(() => {
+      this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
+    }, 1000);
+  };
+
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
 
@@ -1041,6 +1067,11 @@ class TableComponent extends React.Component {
       ? resolveReferences(component.component.definition.properties.allowSelection?.value, currentState)
       : resolveReferences(component.component.definition.properties.highlightSelectedRow.value, currentState) ||
         resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
+
+    const isAllColumnsEditable = component.component.definition.properties.isAllColumnsEditable?.value
+      ? resolveReferences(component.component.definition.properties.isAllColumnsEditable?.value, currentState) ?? false
+      : false;
+
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
     };
@@ -1135,6 +1166,19 @@ class TableComponent extends React.Component {
                     {this.props.t('widget.Table.addNewColumn', ' Add new column')}
                   </AddNewButton>
                 </div>
+                <ProgramaticallyHandleProperties
+                  label="Make all columns editable'"
+                  currentState={this.state.currentState}
+                  darkMode={this.props.darkMode}
+                  callbackFunction={(index, property, value) => {
+                    this.handleMakeAllColumnsEditable(value);
+                  }}
+                  property="isAllColumnsEditable"
+                  props={{ isAllColumnsEditable }}
+                  component={this.props.component}
+                  paramMeta={{ type: 'toggle', displayName: 'Make all columns editable' }}
+                  paramType="properties"
+                />
               </div>
             </List>
           )}

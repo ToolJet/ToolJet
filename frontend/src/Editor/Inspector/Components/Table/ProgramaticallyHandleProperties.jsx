@@ -26,6 +26,8 @@ export const ProgramaticallyHandleProperties = ({
         return props.columnVisibility;
       case 'linkTarget':
         return props.linkTarget;
+      case 'isAllColumnsEditable':
+        return props?.isAllColumnsEditable;
       default:
         return;
     }
