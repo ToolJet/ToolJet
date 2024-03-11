@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import Moveable, { makeAble } from 'react-moveable';
+import Moveable from 'react-moveable';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import './DragContainer.css';
@@ -310,8 +310,6 @@ export default function DragContainer({
     };
     lastDraggedEventsRef.current = posWithParent;
   };
-
-  const debouncedOnDrag = debounce((events, parent = null) => updateNewPosition(events, parent), 100);
 
   return mode === 'edit' ? (
     <>
@@ -656,7 +654,6 @@ export default function DragContainer({
           });
         }}
         onDrag={(e) => {
-          const startTime = performance.now();
           if (!isDraggingRef.current) {
             useGridStore.getState().actions.setDraggingComponentId(e.target.id);
             isDraggingRef.current = true;
@@ -827,27 +824,6 @@ function getMouseDistanceFromParentDiv(event, id, parentWidgetType) {
   return { top, left };
 }
 
-function removeDuplicates(arr) {
-  const unique = arr
-    .map((e) => e['parent'])
-    .map((e, i, final) => final.indexOf(e) === i && i)
-    .filter((e) => arr[e])
-    .map((e) => arr[e]);
-
-  return unique;
-}
-
-function extractWidgetClassOnHover(element) {
-  var classes = element.className.split(' ');
-
-  // Filter out the classes that match the format 'widget-{id}'
-  var widgetClass = classes.find(function (c) {
-    return c.startsWith('widget-');
-  });
-
-  return widgetClass.replace('widget-', '');
-}
-
 export function findHighestLevelofSelection(selectedComponents) {
   let result = [...selectedComponents];
   if (selectedComponents.some((widget) => !widget?.component?.parent)) {
@@ -858,13 +834,6 @@ export function findHighestLevelofSelection(selectedComponents) {
     );
   }
   return result;
-}
-
-async function runAsync(fn) {
-  // console.log('Executing_ssetState==>' + fn);
-  // setImmediate(() => {
-  fn();
-  // });
 }
 
 function findChildrenAndGrandchildren(parentId, widgets) {
