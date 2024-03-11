@@ -3,15 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
 import ReactDatePicker from 'react-datepicker';
 import moment from 'moment';
+import Timepicker from '@/ToolJetUI/TimePicker/Timepicker';
 
-const getDate = (date) => {
-  const dateMomentInstance = date && moment(date, 'MM/DD/YYYY');
+const getDate = (date, format) => {
+  const dateMomentInstance = date && moment(date, format);
   if (dateMomentInstance && dateMomentInstance.isValid()) {
-    return (dateMomentInstance.toDate());
+    return dateMomentInstance.toDate();
   } else {
-    return null
+    return null;
   }
-}
+};
 
 export const ValidationProperties = ({
   column,
@@ -113,20 +114,18 @@ export const ValidationProperties = ({
               dateCy: 'input-and-label-min-time',
               label: 'Min time',
               placeholder: 'HH:mm',
-              fieldType: 'datepicker',
-              showOnlyTime: true,
+              fieldType: 'timepicker',
             },
             {
               property: 'maxTime',
               dateCy: 'input-and-label-max-time',
               label: 'Max time',
               placeholder: 'HH:mm',
-              fieldType: 'datepicker',
-              showOnlyTime: true,
+              fieldType: 'timepicker',
             },
           ],
           {
-            property: 'disbaledDates',
+            property: 'disabledDates',
             dateCy: 'input-and-label-custom-rule',
             label: 'Disabled dates',
             placeholder: '{{[]}}',
@@ -155,11 +154,36 @@ export const ValidationProperties = ({
     switch (validation.fieldType) {
       case 'datepicker':
         return (
-          <div data-cy={validation.dataCy} className="field flex-fill inspector-validation-date-picker" key={validation.property}>
+          <div
+            data-cy={validation.dataCy}
+            className="field flex-fill inspector-validation-date-picker"
+            key={validation.property}
+          >
             <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
-            <ReactDatePicker selected={getDate(column?.[validation.property])} onChange={(date) => onColumnItemChange(index, validation.property, moment(date).format('MM/DD/YYYY'))} showTimeSelectOnly={validation.showOnlyTime} placeholderText={validation?.placeholder ?? ''} />
+            <ReactDatePicker
+              selected={getDate(column?.[validation.property], 'MM/DD/YYYY')}
+              onChange={(date) => onColumnItemChange(index, validation.property, moment(date).format('MM/DD/YYYY'))}
+              showTimeSelectOnly={validation.showOnlyTime}
+              placeholderText={validation?.placeholder ?? ''}
+            />
           </div>
-        )
+        );
+      case 'timepicker':
+        return (
+          <div
+            data-cy={validation.dataCy}
+            className="field flex-fill inspector-validation-date-picker"
+            key={validation.property}
+          >
+            <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
+            <Timepicker
+              selected={getDate(column?.[validation.property], 'HH:mm')}
+              onChange={(date) => onColumnItemChange(index, validation.property, moment(date).format('HH:mm'))}
+              placeholderText={validation?.placeholder ?? ''}
+              timeFormat={'HH:mm'}
+            />
+          </div>
+        );
       default:
         return (
           <div data-cy={validation.dataCy} className="field flex-fill" key={validation.property}>
@@ -197,7 +221,7 @@ export const ValidationProperties = ({
               </div>
             );
           } else {
-            return renderAsPerFieldType(validation)
+            return renderAsPerFieldType(validation);
           }
         })}
       </div>

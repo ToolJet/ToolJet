@@ -74,6 +74,7 @@ export default function generateColumnsData({
       column.isTimeChecked = column.isTimeChecked ? column.isTimeChecked : false;
       column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
       column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
+      column.isDateSelectionEnabled = column.isDateSelectionEnabled ?? true;
       sortType = (firstDate, secondDate) => {
         const columnKey = column.key || column.name;
         // Return -1 if second date is higher, 1 if first date is higher
@@ -320,8 +321,9 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <textarea
                     rows="1"
-                    className={`${!isValid ? 'is-invalid' : ''} form-control-plaintext text-container ${darkMode ? ' textarea-dark-theme' : ''
-                      }`}
+                    className={`${!isValid ? 'is-invalid' : ''} form-control-plaintext text-container ${
+                      darkMode ? ' textarea-dark-theme' : ''
+                    }`}
                     style={{
                       color: cellTextColor ? cellTextColor : 'inherit',
                     }}
@@ -548,10 +550,11 @@ export default function generateColumnsData({
             const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
             const isTimeChecked = resolveReferences(column?.isTimeChecked, currentState);
             const isTwentyFourHrFormatEnabled = resolveReferences(column?.isTwentyFourHrFormatEnabled, currentState);
+            const disabledDates = resolveReferences(column?.disabledDates, currentState);
+            const parseInUnixTimestamp = resolveReferences(column?.parseInUnixTimestamp, currentState);
             const cellStyles = {
               color: textColor ?? '',
             };
-            // if (isEditable) {
             const validationData = validateDates({
               validationObject: {
                 minDate: {
@@ -574,7 +577,6 @@ export default function generateColumnsData({
 
             const { isValid, validationError } = validationData;
 
-            console.log(isValid, validationError);
             return (
               <div className="h-100 d-flex flex-column justify-content-center">
                 <Datepicker
@@ -583,7 +585,7 @@ export default function generateColumnsData({
                   dateDisplayFormat={column.dateFormat}
                   isTimeChecked={isTimeChecked}
                   value={cellValue}
-                  readOnly={isEditable}
+                  readOnly={!isEditable}
                   parseDateFormat={column.parseDateFormat}
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
@@ -593,9 +595,10 @@ export default function generateColumnsData({
                   isTwentyFourHrFormatEnabled={isTwentyFourHrFormatEnabled}
                   timeFormat={column.timeFormat}
                   parseTimeFormat={column.parseTimeFormat}
-                  parseInUnixTimestamp={column.parseInUnixTimestamp}
+                  parseInUnixTimestamp={parseInUnixTimestamp}
                   unixTimeStamp={column.unixTimestamp}
-                  isEditable={isEditable}
+                  disabledDates={disabledDates}
+                  unixTimestamp={column.unixTimestamp}
                 />
                 {isEditable && <div className={isValid ? '' : 'invalid-feedback d-block'}>{validationError}</div>}
               </div>

@@ -1,48 +1,73 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import Select from '@/_ui/Select';
 import { useTranslation } from 'react-i18next';
 import Accordion from '@/_ui/Accordion';
 import { resolveReferences } from '@/_helpers/utils';
 import styles from '@/_ui/Select/styles';
+import FxButton from '../../../../CodeBuilder/Elements/FxButton';
+import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
+
+const TIMEZONE_OPTIONS = [
+  { name: 'UTC', value: 'Etc/UTC' },
+  { name: '-12:00', value: 'Etc/GMT+12' },
+  { name: '-11:00', value: 'Etc/GMT+11' },
+  { name: '-10:00', value: 'Pacific/Honolulu' },
+  { name: '-09:00', value: 'America/Anchorage' },
+  { name: '-08:00', value: 'America/Santa_Isabel' },
+  { name: '-07:00', value: 'America/Chihuahua' },
+  { name: '-06:00', value: 'America/Guatemala' },
+  { name: '-05:00', value: 'America/Bogota' },
+  { name: '-04:00', value: 'America/Halifax' },
+  { name: '-03:30', value: 'America/St_Johns' },
+  { name: '-03:00', value: 'America/Sao_Paulo' },
+  { name: '-02:00', value: 'Etc/GMT+2' },
+  { name: '-01:00', value: 'Atlantic/Cape_Verde' },
+  { name: '+00:00', value: 'UTC' },
+  { name: '+01:00', value: 'Europe/Berlin' },
+  { name: '+02:00', value: 'Africa/Gaborone' },
+  { name: '+03:00', value: 'Asia/Baghdad' },
+  { name: '+04:00', value: 'Asia/Muscat' },
+  { name: '+04:30', value: 'Asia/Kabul' },
+  { name: '+05:00', value: 'Asia/Tashkent' },
+  { name: '+05:30', value: 'Asia/Colombo' },
+  { name: '+05:45', value: 'Asia/Kathmandu' },
+  { name: '+06:00', value: 'Asia/Almaty' },
+  { name: '+06:30', value: 'Asia/Yangon' },
+  { name: '+07:00', value: 'Asia/Bangkok' },
+  { name: '+08:00', value: 'Asia/Makassar' },
+  { name: '+09:00', value: 'Asia/Seoul' },
+  { name: '+09:30', value: 'Australia/Darwin' },
+  { name: '+10:00', value: 'Pacific/Chuuk' },
+  { name: '+11:00', value: 'Pacific/Pohnpei' },
+  { name: '+12:00', value: 'Etc/GMT-12' },
+  { name: '+13:00', value: 'Pacific/Auckland' },
+];
+
+const DATE_FORMAT_OPTIONS = [
+  {
+    label: 'DD/MM/YYYY',
+    value: 'DD/MM/YYYY',
+  },
+  {
+    label: 'MM/DD/YYYY',
+    value: 'MM/DD/YYYY',
+  },
+  {
+    label: 'YYYY/DD/MM',
+    value: 'YYYY/DD/MM',
+  },
+  {
+    label: 'YYYY/MM/DD',
+    value: 'YYYY/MM/DD',
+  },
+];
+
 export const DatePickerProperties = ({ column, index, darkMode, currentState, onColumnItemChange, component }) => {
-  const timeZoneOptions = [
-    { name: 'UTC', value: 'Etc/UTC' },
-    { name: '-12:00', value: 'Etc/GMT+12' },
-    { name: '-11:00', value: 'Etc/GMT+11' },
-    { name: '-10:00', value: 'Pacific/Honolulu' },
-    { name: '-09:00', value: 'America/Anchorage' },
-    { name: '-08:00', value: 'America/Santa_Isabel' },
-    { name: '-07:00', value: 'America/Chihuahua' },
-    { name: '-06:00', value: 'America/Guatemala' },
-    { name: '-05:00', value: 'America/Bogota' },
-    { name: '-04:00', value: 'America/Halifax' },
-    { name: '-03:30', value: 'America/St_Johns' },
-    { name: '-03:00', value: 'America/Sao_Paulo' },
-    { name: '-02:00', value: 'Etc/GMT+2' },
-    { name: '-01:00', value: 'Atlantic/Cape_Verde' },
-    { name: '+00:00', value: 'UTC' },
-    { name: '+01:00', value: 'Europe/Berlin' },
-    { name: '+02:00', value: 'Africa/Gaborone' },
-    { name: '+03:00', value: 'Asia/Baghdad' },
-    { name: '+04:00', value: 'Asia/Muscat' },
-    { name: '+04:30', value: 'Asia/Kabul' },
-    { name: '+05:00', value: 'Asia/Tashkent' },
-    { name: '+05:30', value: 'Asia/Colombo' },
-    { name: '+05:45', value: 'Asia/Kathmandu' },
-    { name: '+06:00', value: 'Asia/Almaty' },
-    { name: '+06:30', value: 'Asia/Yangon' },
-    { name: '+07:00', value: 'Asia/Bangkok' },
-    { name: '+08:00', value: 'Asia/Makassar' },
-    { name: '+09:00', value: 'Asia/Seoul' },
-    { name: '+09:30', value: 'Australia/Darwin' },
-    { name: '+10:00', value: 'Pacific/Chuuk' },
-    { name: '+11:00', value: 'Pacific/Pohnpei' },
-    { name: '+12:00', value: 'Etc/GMT-12' },
-    { name: '+13:00', value: 'Pacific/Auckland' },
-  ];
   const { t } = useTranslation();
   const items = [];
+  const [isDateDisplayFormatFxOn, setIsDateDisplayFormatFxOn] = useState(true);
+  const [isParseDateFormatFxOn, setIsParseDateFormatFxOn] = useState(true);
   items.push(
     {
       title: 'Formatting',
@@ -71,39 +96,43 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
                 onClick={(e) => e.stopPropagation()}
               >
                 <div style={{ padding: '0px 12px' }}>
-                  <label data-cy={`label-date-display-format`} className="form-label">
-                    {t('widget.Table.dateDisplayformat', 'Date Display Format')}
-                  </label>
-                  <Select
-                    options={[
-                      {
-                        label: 'DD/MM/YYYY',
-                        value: 'DD/MM/YYYY',
-                      },
-                      {
-                        label: 'MM/DD/YYYY',
-                        value: 'MM/DD/YYYY',
-                      },
-                      {
-                        label: 'YYYY/DD/MM',
-                        value: 'YYYY/DD/MM',
-                      },
-                      {
-                        label: 'YYYY/MM/DD',
-                        value: 'YYYY/MM/DD',
-                      },
-                    ]}
-                    value={column?.dateFormat ?? 'DD/MM/YYYY'}
-                    search={true}
-                    closeOnSelect={true}
-                    onChange={(value) => {
-                      onColumnItemChange(index, 'dateFormat', value);
-                    }}
-                    fuzzySearch
-                    placeholder="Select.."
-                    useCustomStyles={true}
-                    styles={styles(darkMode, '100%')}
-                  />
+                  <div className="d-flex justify-content-between">
+                    <label data-cy={`label-date-display-format`} className="form-label">
+                      {t('widget.Table.dateDisplayformat', 'Date Display Format')}
+                    </label>
+                    <span>
+                      <FxButton
+                        active={isDateDisplayFormatFxOn}
+                        onPress={() => {
+                          setIsDateDisplayFormatFxOn(!isDateDisplayFormatFxOn);
+                        }}
+                      />
+                    </span>
+                  </div>
+                  {isDateDisplayFormatFxOn ? (
+                    <CodeHinter
+                      initialValue={column?.dateFormat}
+                      theme={darkMode ? 'monokai' : 'default'}
+                      mode="javascript"
+                      lineNumbers={false}
+                      // placeholder={validation?.placeholder ?? ''}
+                      onChange={(value) => onColumnItemChange(index, 'dateFormat', value)}
+                    />
+                  ) : (
+                    <Select
+                      options={DATE_FORMAT_OPTIONS}
+                      value={column?.dateFormat ?? 'DD/MM/YYYY'}
+                      search={true}
+                      closeOnSelect={true}
+                      onChange={(value) => {
+                        onColumnItemChange(index, 'dateFormat', value);
+                      }}
+                      fuzzySearch
+                      placeholder="Select.."
+                      useCustomStyles={true}
+                      styles={styles(darkMode, '100%')}
+                    />
+                  )}
                 </div>
               </div>
             )}
@@ -125,27 +154,29 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
             </div>
             {resolveReferences(column?.isTimeChecked, currentState) && (
               <>
-                <div className="field mb-2" onClick={(e) => e.stopPropagation()} style={{ padding: '0px 12px' }}>
-                  <label className="form-label">{t('widget.Table.timeFormat', 'Time Format')}</label>
-                  <Select
-                    options={[
-                      {
-                        label: 'HH:mm',
-                        value: 'HH:mm',
-                      },
-                    ]}
-                    value={column?.timeFormat ?? 'HH:mm'}
-                    search={true}
-                    closeOnSelect={true}
-                    onChange={(value) => {
-                      onColumnItemChange(index, 'timeFormat', value);
-                    }}
-                    fuzzySearch
-                    placeholder="Select.."
-                    useCustomStyles={true}
-                    styles={styles(darkMode, '100%')}
-                  />
-                </div>
+                {!isDateDisplayFormatFxOn && (
+                  <div className="field mb-2" onClick={(e) => e.stopPropagation()} style={{ padding: '0px 12px' }}>
+                    <label className="form-label">{t('widget.Table.timeFormat', 'Time Format')}</label>
+                    <Select
+                      options={[
+                        {
+                          label: 'HH:mm',
+                          value: 'HH:mm',
+                        },
+                      ]}
+                      value={column?.timeFormat ?? 'HH:mm'}
+                      search={true}
+                      closeOnSelect={true}
+                      onChange={(value) => {
+                        onColumnItemChange(index, 'timeFormat', value);
+                      }}
+                      fuzzySearch
+                      placeholder="Select.."
+                      useCustomStyles={true}
+                      styles={styles(darkMode, '100%')}
+                    />
+                  </div>
+                )}
                 <div style={{ padding: '0px 12px' }}>
                   <ProgramaticallyHandleProperties
                     label="Enable 24 hr time format"
@@ -171,7 +202,7 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
                     Display in timezone
                   </label>
                   <Select
-                    options={timeZoneOptions}
+                    options={TIMEZONE_OPTIONS}
                     value={column?.timeZoneDisplay ?? 'Etc/UTC'}
                     search={true}
                     closeOnSelect={true}
@@ -228,70 +259,76 @@ export const DatePickerProperties = ({ column, index, darkMode, currentState, on
             <div className="mt-2">
               {resolveReferences(column?.isDateSelectionEnabled, currentState) && (
                 <div data-cy={`input-parse-timezone`} className="field mb-2">
-                  <label data-cy={`label-parse-timezone`} className="form-label">
-                    Date parse format
-                  </label>
-                  <Select
-                    options={[
-                      {
-                        label: 'DD/MM/YYYY',
-                        value: 'DD/MM/YYYY',
-                      },
-                      {
-                        label: 'MM/DD/YYYY',
-                        value: 'MM/DD/YYYY',
-                      },
-                      {
-                        label: 'YYYY/DD/MM',
-                        value: 'YYYY/DD/MM',
-                      },
-                      {
-                        label: 'YYYY/MM/DD',
-                        value: 'YYYY/MM/DD',
-                      },
-                    ]}
-                    value={column?.parseDateFormat ?? 'DD/MM/YYYY'}
-                    search={true}
-                    closeOnSelect={true}
-                    onChange={(value) => {
-                      onColumnItemChange(index, 'parseDateFormat', value);
-                    }}
-                    fuzzySearch
-                    placeholder="Select.."
-                    useCustomStyles={true}
-                    styles={styles(darkMode, '100%')}
-                  />
-                </div>
-              )}
-              {resolveReferences(column?.isTimeChecked, currentState) && (
-                <>
-                  <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
-                    <label className="form-label">{t('widget.Table.timeFormat', 'Time Format')}</label>
+                  <div className="d-flex justify-content-between">
+                    <label data-cy={`label-parse-timezone`} className="form-label">
+                      Date parse format
+                    </label>
+                    <span>
+                      <FxButton
+                        active={isParseDateFormatFxOn}
+                        onPress={() => {
+                          setIsParseDateFormatFxOn(!isParseDateFormatFxOn);
+                        }}
+                      />
+                    </span>
+                  </div>
+                  {isParseDateFormatFxOn ? (
+                    <CodeHinter
+                      initialValue={column?.dateFormat}
+                      theme={darkMode ? 'monokai' : 'default'}
+                      mode="javascript"
+                      lineNumbers={false}
+                      // placeholder={validation?.placeholder ?? ''}
+                      onChange={(value) => onColumnItemChange(index, 'parseDateFormat', value)}
+                    />
+                  ) : (
                     <Select
-                      options={[
-                        {
-                          label: 'HH:mm',
-                          value: 'HH:mm',
-                        },
-                      ]}
-                      value={column?.parseTimeFormat ?? 'HH:mm'}
+                      options={DATE_FORMAT_OPTIONS}
+                      value={column?.parseDateFormat ?? 'DD/MM/YYYY'}
                       search={true}
                       closeOnSelect={true}
                       onChange={(value) => {
-                        onColumnItemChange(index, 'parseTimeFormat', value);
+                        onColumnItemChange(index, 'parseDateFormat', value);
                       }}
                       fuzzySearch
                       placeholder="Select.."
                       useCustomStyles={true}
                       styles={styles(darkMode, '100%')}
                     />
-                  </div>
+                  )}
+                </div>
+              )}
+              {resolveReferences(column?.isTimeChecked, currentState) && (
+                <>
+                  {!isParseDateFormatFxOn && (
+                    <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
+                      <label className="form-label">{t('widget.Table.timeFormat', 'Time Format')}</label>
+                      <Select
+                        options={[
+                          {
+                            label: 'HH:mm',
+                            value: 'HH:mm',
+                          },
+                        ]}
+                        value={column?.parseTimeFormat ?? 'HH:mm'}
+                        search={true}
+                        closeOnSelect={true}
+                        onChange={(value) => {
+                          onColumnItemChange(index, 'parseTimeFormat', value);
+                        }}
+                        fuzzySearch
+                        placeholder="Select.."
+                        useCustomStyles={true}
+                        styles={styles(darkMode, '100%')}
+                      />
+                    </div>
+                  )}
                   <div data-cy={`input-parse-timezone`} className="field mb-2">
                     <label data-cy={`label-parse-timezone`} className="form-label">
                       Parse in timezone
                     </label>
                     <Select
-                      options={timeZoneOptions}
+                      options={TIMEZONE_OPTIONS}
                       value={column?.timeZoneValue ?? 'Etc/UTC'}
                       search={true}
                       closeOnSelect={true}
