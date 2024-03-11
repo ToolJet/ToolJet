@@ -3,7 +3,9 @@ id: licensing
 title: Licensing
 ---
 
+<a href="https://www.tooljet.com/pricing">
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+</a>
 
 ## Setting up for Licensing
 

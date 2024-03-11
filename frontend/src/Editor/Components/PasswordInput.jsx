@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import { ToolTip } from '@/_components/ToolTip';
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import Label from '@/_ui/Label';
 
 export const PasswordInput = function PasswordInput({
   height,
@@ -18,11 +18,12 @@ export const PasswordInput = function PasswordInput({
   dataCy,
   isResizing,
   adjustHeightBasedOnAlignment,
+  currentLayout,
 }) {
   const textInputRef = useRef();
   const labelRef = useRef();
 
-  const { loadingState, tooltip, disabledState, label, placeholder } = properties;
+  const { loadingState, disabledState, label, placeholder } = properties;
   const {
     padding,
     borderRadius,
@@ -37,6 +38,7 @@ export const PasswordInput = function PasswordInput({
     auto,
     errTextColor,
     iconColor,
+    accentColor,
   } = styles;
 
   const [disable, setDisable] = useState(disabledState || loadingState);
@@ -46,48 +48,65 @@ export const PasswordInput = function PasswordInput({
   const [showValidationError, setShowValidationError] = useState(false);
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
-  const [elementWidth, setElementWidth] = useState(0);
+  const [labelWidth, setLabelWidth] = useState(0);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const [iconVisibility, setIconVisibility] = useState(false);
   const [loading, setLoading] = useState(loadingState);
   const [isFocused, setIsFocused] = useState(false);
+  const tinycolor = require('tinycolor2');
+
+  const _width = (width / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
 
   const computedStyles = {
-    height: height == 40 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height - 4 : height,
+    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: isFocused
-      ? '#3E63DD'
+      ? accentColor
       : ['#D7DBDF'].includes(borderColor)
       ? darkMode
-        ? '#4C5155'
-        : '#D7DBDF'
+        ? '#6D757D7A'
+        : '#6A727C47'
       : borderColor,
-    backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-    boxShadow:
-      boxShadow !== '0px 0px 0px 0px #00000040' ? boxShadow : isFocused ? '0px 0px 0px 1px #3E63DD4D' : boxShadow,
-    padding: styles.iconVisibility
-      ? padding == 'default'
-        ? '3px 24px 3px 29px'
-        : '3px 24px 3px 27px'
-      : '3px 24px 3px 10px',
+    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
+    backgroundColor: darkMode && ['#fff', '#ffffff'].includes(backgroundColor) ? '#313538' : backgroundColor,
+    boxShadow: boxShadow,
+    padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
+
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   };
+
   const loaderStyle = {
     right:
-      direction === 'right' && defaultAlignment === 'side'
-        ? `${elementWidth + 5}px`
-        : padding == 'default'
-        ? '12px'
-        : '10px',
-    top: `${defaultAlignment === 'top' ? `53%` : ''}`,
-    transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
+      direction === 'right' &&
+      defaultAlignment === 'side' &&
+      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+        ? `${labelWidth + 11}px`
+        : '11px',
+    top: `${
+      defaultAlignment === 'top'
+        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
+          'calc(50% + 10px)'
+        : ''
+    }`,
+    transform:
+      defaultAlignment === 'top' &&
+      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
+      ' translateY(-50%)',
+    zIndex: 3,
   };
 
   useEffect(() => {
-    if (labelRef.current) {
-      const width = labelRef.current.offsetWidth;
-      padding == 'default' ? setElementWidth(width + 17) : setElementWidth(width + 15);
-    } else padding == 'default' ? setElementWidth(7) : setElementWidth(5);
+    setExposedVariable('label', label);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [label]);
+
+  useEffect(() => {
+    if (labelRef?.current) {
+      const absolutewidth = labelRef?.current?.getBoundingClientRect()?.width;
+      setLabelWidth(absolutewidth);
+    } else setLabelWidth(0);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -102,6 +121,7 @@ export const PasswordInput = function PasswordInput({
     direction,
     alignment,
     isMandatory,
+    labelRef?.current?.getBoundingClientRect()?.width,
   ]);
 
   useEffect(() => {
@@ -137,12 +157,6 @@ export const PasswordInput = function PasswordInput({
     setExposedVariable('setBlur', async function () {
       textInputRef.current.blur();
     });
-    setExposedVariable('disable', async function (value) {
-      setDisable(value);
-    });
-    setExposedVariable('visibility', async function (value) {
-      setVisibility(value);
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -164,10 +178,11 @@ export const PasswordInput = function PasswordInput({
   // eslint-disable-next-line import/namespace
 
   useEffect(() => {
-    if (alignment == 'top' && label?.length > 0) adjustHeightBasedOnAlignment(true);
+    if (alignment == 'top' && ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)))
+      adjustHeightBasedOnAlignment(true);
     else adjustHeightBasedOnAlignment(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length]);
+  }, [alignment, label?.length, currentLayout, width, auto]);
 
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
@@ -216,65 +231,60 @@ export const PasswordInput = function PasswordInput({
   const renderInput = () => (
     <>
       <div
+        data-cy={`label-${String(component.name).toLowerCase()}`}
         data-disabled={disable || loading}
-        className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
-          direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
-        }
+        className={`text-input  d-flex  ${
+          defaultAlignment === 'top' &&
+          ((width != 0 && label && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
+            ? 'flex-column'
+            : 'align-items-center '
+        }  ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
       ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
       ${visibility || 'invisible'}`}
         style={{
-          padding: padding === 'default' ? '2px' : '',
           position: 'relative',
+          whiteSpace: 'nowrap',
+          width: '100%',
         }}
       >
-        {label && width > 0 && (
-          <label
-            ref={labelRef}
-            style={{
-              color: darkMode && color === '#11181C' ? '#fff' : color,
-              width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${width}%` : '100%',
-              maxWidth: auto && defaultAlignment === 'side' ? '70%' : '100%',
-              marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '9px' : '',
-              marginLeft: label?.length > 0 && direction === 'right' && defaultAlignment === 'side' ? '9px' : '',
-              display: 'flex',
-              fontWeight: 500,
-              justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
-            }}
-          >
-            <span
-              style={{
-                overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
-                textOverflow: 'ellipsis', // Display ellipsis for overflowed content
-                whiteSpace: 'nowrap',
-                display: 'block',
-              }}
-            >
-              {label}
-            </span>{' '}
-            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
-          </label>
-        )}
+        <Label
+          label={label}
+          width={width}
+          labelRef={labelRef}
+          darkMode={darkMode}
+          color={color}
+          defaultAlignment={defaultAlignment}
+          direction={direction}
+          auto={auto}
+          isMandatory={isMandatory}
+          _width={_width}
+          labelWidth={labelWidth}
+        />
         {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
           <IconElement
+            data-cy={'text-input-icon'}
             style={{
               width: '16px',
               height: '16px',
               left:
                 direction === 'right'
-                  ? padding == 'default'
-                    ? '13px'
-                    : '10px'
+                  ? '11px'
                   : defaultAlignment === 'top'
-                  ? padding == 'default'
-                    ? '13px'
-                    : '10px'
-                  : `${elementWidth + 5}px`,
+                  ? '11px'
+                  : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
+                  ? `${labelWidth + 11}px`
+                  : '11px', //11 ::  is 10 px inside the input + 1 px border + 12px margin right
               position: 'absolute',
               top: `${
-                defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
+                defaultAlignment === 'side'
+                  ? '50%'
+                  : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
+                  ? 'calc(50% + 10px)'
+                  : '50%'
               }`,
               transform: ' translateY(-50%)',
               color: iconColor,
+              zIndex: 3,
             }}
             stroke={1.5}
           />
@@ -289,18 +299,23 @@ export const PasswordInput = function PasswordInput({
               height: '16px',
               position: 'absolute',
               right:
-                alignment == 'top'
-                  ? padding == 'none'
-                    ? `11px`
-                    : '13px'
-                  : direction == 'left'
-                  ? padding == 'none'
-                    ? `11px`
-                    : '13px'
-                  : `${elementWidth + 5}px`,
-              top: alignment == 'side' ? '50%' : label?.length > 0 && width > 0 ? `calc(50% + 10px)` : '50%',
-              transform: ' translateY(-50%)',
+                direction === 'right' &&
+                defaultAlignment === 'side' &&
+                ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+                  ? `${labelWidth + 11}px`
+                  : '11px',
+              top: `${
+                defaultAlignment === 'top'
+                  ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
+                    'calc(50% + 10px)'
+                  : ''
+              }`,
+              transform:
+                defaultAlignment === 'top' &&
+                ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
+                ' translateY(-50%)',
               display: 'flex',
+              zIndex: 3,
             }}
             stroke={1.5}
           >
@@ -308,6 +323,7 @@ export const PasswordInput = function PasswordInput({
           </div>
         )}
         <input
+          data-cy={dataCy}
           className={`tj-text-input-widget ${
             !isValid && showValidationError ? 'is-invalid' : ''
           } validation-without-icon ${darkMode && 'dark-theme-placeholder'}`}
@@ -341,7 +357,6 @@ export const PasswordInput = function PasswordInput({
           placeholder={placeholder}
           style={computedStyles}
           value={passwordValue}
-          data-cy={dataCy}
           disabled={disable || loading}
         />
         {loading && <Loader style={{ ...loaderStyle }} width="16" />}
@@ -350,7 +365,10 @@ export const PasswordInput = function PasswordInput({
         <div
           className="tj-text-sm"
           data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-          style={{ color: errTextColor, textAlign: direction === 'left' && 'end' }}
+          style={{
+            color: errTextColor,
+            textAlign: direction === 'left' && 'end',
+          }}
         >
           {showValidationError && validationError}
         </div>
@@ -358,15 +376,5 @@ export const PasswordInput = function PasswordInput({
     </>
   );
 
-  return (
-    <>
-      {tooltip?.length > 0 ? (
-        <ToolTip message={tooltip}>
-          <div>{renderInput()}</div>
-        </ToolTip>
-      ) : (
-        <div>{renderInput()}</div>
-      )}
-    </>
-  );
+  return <div>{renderInput()}</div>;
 };

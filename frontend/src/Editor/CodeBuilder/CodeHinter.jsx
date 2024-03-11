@@ -35,15 +35,17 @@ import cx from 'classnames';
 import { Alert } from '@/_ui/Alert/Alert';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import ClientServerSwitch from './Elements/ClientServerSwitch';
+import { CodeHinterContext } from './CodeHinterContext';
 import Switch from './Elements/Switch';
 import Checkbox from './Elements/Checkbox';
 import Slider from './Elements/Slider';
 import { Input } from './Elements/Input';
 import { Icon } from './Elements/Icon';
 import { Visibility } from './Elements/Visibility';
+import { NumberInput } from './Elements/NumberInput';
 import { validateProperty } from '../component-properties-validation';
 
-const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
+const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'TextComponentTextInput'];
 
 const AllElements = {
   Color,
@@ -60,6 +62,7 @@ const AllElements = {
   Checkbox,
   Icon,
   Visibility,
+  NumberInput,
 };
 
 export function CodeHinter({
@@ -92,9 +95,11 @@ export function CodeHinter({
   isCopilotEnabled = false,
   currentState: _currentState,
   isIcon = false,
-  paramUpdated,
+  inspectorTab,
   staticText,
 }) {
+  const context = useContext(CodeHinterContext);
+
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
     lineNumbers: lineNumbers ?? false,
@@ -108,7 +113,8 @@ export function CodeHinter({
     placeholder,
   };
   const currentState = useCurrentState();
-  const [realState, setRealState] = useState(currentState);
+  const [realState, setRealState] = useState({ ...currentState, ..._currentState, ...context });
+
   const [currentValue, setCurrentValue] = useState('');
 
   const [prevCurrentValue, setPrevCurrentValue] = useState(null);
@@ -118,6 +124,7 @@ export function CodeHinter({
   const [isFocused, setFocused] = useState(false);
   const [heightRef, currentHeight] = useHeight();
   const isPreviewFocused = useRef(false);
+  const [isPropertyHovered, setPropertyHovered] = useState(false);
   const wrapperRef = useRef(null);
 
   // Todo: Remove this when workspace variables are deprecated
@@ -188,13 +195,10 @@ export function CodeHinter({
   }, []);
 
   useEffect(() => {
-    if (_currentState) {
-      setRealState(_currentState);
-    } else {
-      setRealState(currentState);
-    }
+    const newState = { ...currentState, ..._currentState, ...context };
+    setRealState(newState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ currentState, _currentState })]);
+  }, [JSON.stringify([currentState.components, _currentState, context])]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -215,38 +219,43 @@ export function CodeHinter({
     };
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
-  useEffect(() => {
+  const updatePreview = () => {
     let globalPreviewCopy = null;
     let globalErrorCopy = null;
-    if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
-      const [preview, error] = getPreviewAndErrorFromValue(currentValue);
-      // checking type error if any in run time
-      const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
+    const [preview, error] = getPreviewAndErrorFromValue(currentValue);
+    setPrevCurrentValue(currentValue);
 
-      setPrevCurrentValue(currentValue);
-      if (error || !_valid || typeof preview === 'function') {
-        globalPreviewCopy = null;
-        globalErrorCopy = error || errorMessages?.[errorMessages?.length - 1];
-        setResolvingError(error || errorMessages?.[errorMessages?.length - 1]);
-        setResolvedValue(null);
-      } else {
-        globalPreviewCopy = preview;
-        globalErrorCopy = null;
-        setResolvingError(null);
-        setResolvedValue(preview);
-      }
+    const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
+
+    setPrevCurrentValue(currentValue);
+    if (error || !_valid || typeof preview === 'function') {
+      globalPreviewCopy = null;
+      globalErrorCopy = error || errorMessages?.[errorMessages?.length - 1];
+      setResolvingError(error || errorMessages?.[errorMessages?.length - 1]);
+      setResolvedValue(null);
+    } else {
+      globalPreviewCopy = preview;
+      globalErrorCopy = null;
+      setResolvingError(null);
+      setResolvedValue(preview);
     }
 
+    return [globalPreviewCopy, globalErrorCopy];
+  };
+
+  useEffect(() => {
+    let [globalPreviewCopy, globalErrorCopy] = enablePreview ? updatePreview() : [null, null];
+
     return () => {
-      if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
+      if (enablePreview) {
         setPrevCurrentValue(null);
         setResolvedValue(globalPreviewCopy);
         setResolvingError(globalErrorCopy);
       }
     };
-  }, [JSON.stringify({ currentValue, realState, isFocused })]);
+  }, [JSON.stringify({ currentValue, realState, isFocused, context })]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [JSON.stringify({ currentValue, realState, isFocused })]);
+  // }, [JSON.stringify({ currentValue, realState, isFocused, context })]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
     if (editor.getValue()?.trim() !== currentValue) {
@@ -395,10 +404,49 @@ export function CodeHinter({
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
+
+  const fxBtn = () => (
+    <div className="col-auto pt-0 fx-common">
+      {!['Type', 'selectRowOnCellEdit', 'Select row on cell edit', ' ', 'Padding', 'Width'].includes(paramLabel) && ( //add some key if these extends
+        <FxButton
+          active={codeShow}
+          onPress={() => {
+            if (codeShow) {
+              setForceCodeBox(false);
+              onFxPress(false);
+            } else {
+              setForceCodeBox(true);
+              onFxPress(true);
+            }
+          }}
+          dataCy={cyLabel}
+        />
+      )}
+    </div>
+  );
+
+  const _renderFxBtn = () => {
+    if (inspectorTab === 'styles') {
+      return isPropertyHovered || codeShow ? fxBtn() : null;
+    } else {
+      return fxBtn();
+    }
+  };
+
+  const onFocusHandler = () => {
+    setFocused(true);
+    updatePreview();
+  };
+
   return (
-    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow, 'd-flex': paramLabel == 'Tooltip' })}>
+    <div
+      ref={wrapperRef}
+      className={cx({ 'codeShow-active': codeShow, 'd-flex': paramLabel == 'Tooltip' })}
+      onMouseEnter={() => setPropertyHovered(true)}
+      onMouseLeave={() => setPropertyHovered(false)}
+    >
       <div
-        className={cx('d-flex justify-content-between')}
+        className={cx('d-flex justify-content-between', { 'w-full': fieldMeta?.fullWidth })}
         style={{
           marginRight: paramLabel == 'Tooltip' && '40px',
           alignItems: paramLabel == 'Tooltip' ? 'flex-start' : 'center',
@@ -412,34 +460,15 @@ export function CodeHinter({
               labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'label-hinter-margin' : 'mb-0'} ${
                 darkMode && 'color-whitish-darkmode'
               }`}
-              // bold={!AllElements.hasOwnProperty(TypeMapping[type]) ? true : false}
             />
           </div>
         )}
-        <div className={`${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
+        <div className={cx(`${(type ?? 'code') === 'code' ? 'd-none' : ''}`, { 'w-full': fieldMeta?.fullWidth })}>
           <div
             style={{ width: width, marginBottom: codeShow ? '0.5rem' : '0px' }}
-            className="d-flex align-items-center"
+            className={cx('d-flex align-items-center', { 'w-full': fieldMeta?.fullWidth })}
           >
-            <div className="col-auto pt-0 fx-common">
-              {paramLabel !== 'Type' &&
-                paramLabel !== ' ' &&
-                paramLabel !== 'Padding' && ( //add some key if these extends
-                  <FxButton
-                    active={codeShow}
-                    onPress={() => {
-                      if (codeShow) {
-                        setForceCodeBox(false);
-                        onFxPress(false);
-                      } else {
-                        setForceCodeBox(true);
-                        onFxPress(true);
-                      }
-                    }}
-                    dataCy={cyLabel}
-                  />
-                )}
-            </div>
+            {!fieldMeta?.isFxNotRequired && _renderFxBtn()}
             {!codeShow && (
               <ElementToRender
                 value={resolveReferences(initialValue, realState)}
@@ -480,7 +509,7 @@ export function CodeHinter({
             <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
               <div
                 className={`${defaultClassName} ${className || 'codehinter-default-input'} ${
-                  resolvingError && 'border-danger'
+                  paramName && resolvingError && 'border-danger'
                 }`}
                 key={componentName}
                 style={{
@@ -489,6 +518,7 @@ export function CodeHinter({
                   maxHeight: '320px',
                   overflow: 'auto',
                   fontSize: ' .875rem',
+                  maxWidth: paramLabel == 'Tooltip' && '190px',
                 }}
                 data-cy={`${cyLabel}-input-field`}
               >
@@ -519,7 +549,7 @@ export function CodeHinter({
                     realState={realState}
                     scrollbarStyle={null}
                     height={'100%'}
-                    onFocus={() => setFocused(true)}
+                    onFocus={onFocusHandler}
                     onBlur={(editor, e) => {
                       e?.stopPropagation();
                       const value = editor?.getValue()?.trimEnd();
@@ -542,11 +572,6 @@ export function CodeHinter({
       </div>
     </div>
   );
-}
-
-// eslint-disable-next-line no-unused-vars
-function CodeHinterInputField() {
-  return <></>;
 }
 
 const PopupIcon = ({ callback, icon, tip, transformation = false }) => {

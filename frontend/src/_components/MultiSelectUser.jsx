@@ -26,9 +26,6 @@ function MultiSelectUser({
   const searchFunction = useCallback(
     async (query) => {
       setSearchText(query);
-      if (!query) {
-        return [];
-      }
       const options = await onSearch(query);
       listOfOptions.current = filterOptions(options);
       return listOfOptions.current;

@@ -3,7 +3,7 @@ id: using-fx
 title: Using the FX Functionality
 ---
 
-Clicking on the **fx** symbol in ToolJet opens up a code editor that allows you to write custom JavaScript expressions. You can find **fx** in the configuration panel on the right, next to various properties and settings of a component.
+Clicking on the **fx** symbol in ToolJet opens up a code editor that allows you to write custom JavaScript expressions. You can find **fx** in the properties panel on the right, next to various properties and settings of a component.
 
 With **fx**, you can perform calculations or set conditional logic to dynamically configure the components without leaving the ToolJet interface. It's an invaluable tool for adding complexity and interactivity to your applications.
 

@@ -30,12 +30,15 @@ function createRow(headers, tableId, data) {
   return tooljetAdapter.post(`/tooljet-db/proxy/${tableId}`, data, headers);
 }
 
-function createColumn(organizationId, tableId, columnName, dataType, defaultValue) {
+function createColumn(organizationId, tableId, columnName, dataType, defaultValue, isNotNull) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/column`, {
     column: {
       column_name: columnName,
       data_type: dataType,
       column_default: defaultValue,
+      constraints_type: {
+        is_not_null: isNotNull,
+      },
     },
   });
 }
@@ -58,6 +61,14 @@ function renameTable(organizationId, tableName, newTableName) {
 
 function updateRows(headers, tableId, data, query = '') {
   return tooljetAdapter.patch(`/tooljet-db/proxy/${tableId}?${query}`, data, headers);
+}
+
+function updateColumn(organizationId, tableName, columns) {
+  return tooljetAdapter.patch(
+    `/tooljet-db/organizations/${organizationId}/table/${tableName}/column`,
+    columns,
+    organizationId
+  );
 }
 
 function deleteRows(headers, tableId, query = '') {
@@ -91,4 +102,5 @@ export const tooljetDatabaseService = {
   renameTable,
   bulkUpload,
   joinTables,
+  updateColumn,
 };

@@ -6,7 +6,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 const ToggleGroupItem = ({ children, value, isIcon, ...restProps }) => {
   return (
     <ToggleGroup.Item className="ToggleGroupItem" value={value} {...restProps}>
-      <div className="toggle-item">
+      <div className="toggle-item" data-cy={`togglr-button-${value}`}>
         {!isIcon ? (
           children
         ) : (

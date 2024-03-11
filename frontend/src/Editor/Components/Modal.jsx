@@ -65,8 +65,8 @@ export const Modal = function Modal({
     const canShowModal = exposedVariables.show ?? false;
     setShowModal(exposedVariables.show ?? false);
     fireEvent(canShowModal ? 'onOpen' : 'onClose');
-    const inpuRef = document.getElementsByClassName('tj-text-input-widget')[0];
-    inpuRef.blur();
+    const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
+    inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
 
@@ -176,7 +176,12 @@ export const Modal = function Modal({
   }, [closeOnClickingOutside, parentRef]);
 
   return (
-    <div className="container" data-disabled={disabledState} data-cy={dataCy}>
+    <div
+      className="container d-flex align-items-center"
+      data-disabled={disabledState}
+      data-cy={dataCy}
+      style={{ height }}
+    >
       {useDefaultButton && (
         <button
           disabled={disabledState}

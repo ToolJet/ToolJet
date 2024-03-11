@@ -353,9 +353,11 @@
         ]
       },
       "items": [
+        "how-to/setup-rsyslog",
         "how-to/use-inspector",
         "how-to/use-form-component",
         "how-to/access-cellvalue-rowdata",
+        "how-to/conditionally-format-table",
         "how-to/bulk-update-multiple-rows",
         "how-to/delete-multiple-rows",
         "how-to/use-server-side-pagination",
@@ -373,7 +375,8 @@
         "how-to/upload-files-aws",
         "how-to/upload-files-gcs",
         "how-to/loading-image-pdf-from-db",
-        "how-to/use-events-on-chart"
+        "how-to/use-events-on-chart",
+        "how-to/print-multi-tabs-report"
       ]
     },
     {

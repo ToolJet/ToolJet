@@ -477,6 +477,17 @@ export class AppsService {
       return false;
     };
 
+    const isChildOfKanbanModal = (componentParentId: string, allComponents = []) => {
+      if (!componentParentId.includes('modal')) return false;
+
+      if (componentParentId) {
+        const parentId = componentParentId.split('-').slice(0, -1).join('-');
+        const isParentKandban = allComponents.find((comp) => comp.id === parentId)?.type === 'Kanban';
+
+        return isParentKandban;
+      }
+    };
+
     for (const page of pages) {
       const savedPage = await manager.save(
         manager.create(Page, {
@@ -574,6 +585,11 @@ export class AppsService {
           const mappedParentId = oldComponentToNewComponentMapping[_parentId];
 
           parentId = `${mappedParentId}-${childTabId}`;
+        } else if (isChildOfKanbanModal(component.parent, page.components)) {
+          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const mappedParentId = oldComponentToNewComponentMapping[_parentId];
+
+          parentId = `${mappedParentId}-modal`;
         } else {
           parentId = oldComponentToNewComponentMapping[parentId];
         }

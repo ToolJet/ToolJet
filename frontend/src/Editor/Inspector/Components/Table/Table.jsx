@@ -17,8 +17,11 @@ import List from '@/ToolJetUI/List/List';
 import { capitalize, has } from 'lodash';
 import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
-import { useAppDataStore } from '@/_stores/appDataStore';
+import { ModuleContext } from '../../../../_contexts/ModuleContext';
+import { useSuperStore } from '@/_stores/superStore';
 class TableComponent extends React.Component {
+  static contextType = ModuleContext;
+
   constructor(props) {
     super(props);
 
@@ -268,6 +271,25 @@ class TableComponent extends React.Component {
               }}
             />
           </div>
+
+          <div data-cy={`transformation-field`} className="field mb-2 mt-1">
+            <label className="form-label">{this.props.t('widget.Table.transformationField', 'Transformation')}</label>
+            <CodeHinter
+              currentState={this.props.currentState}
+              initialValue={column?.transformation ?? '{{cellValue}}'}
+              theme={this.props.darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={column.name}
+              onChange={(value) => this.onColumnItemChange(index, 'transformation', value)}
+              componentName={this.getPopoverFieldSource(column.columnType, 'transformation')}
+              popOverCallback={(showing) => {
+                this.setColumnPopoverRootCloseBlocker('transformation', showing);
+              }}
+              enablePreview={false}
+            />
+          </div>
+
           <div className="field mb-2">
             <label className="form-label">
               {this.props.t('widget.Table.horizontalAlignment', 'Horizontal Alignment')}
@@ -749,13 +771,19 @@ class TableComponent extends React.Component {
   };
 
   deleteEvents = (ref, eventTarget) => {
-    const events = useAppDataStore.getState().events.filter((event) => event.target === eventTarget);
+    const events = useSuperStore
+      .getState()
+      .modules[this.context].useAppDataStore.getState()
+      .events.filter((event) => event.target === eventTarget);
 
     const toDelete = events?.filter((e) => e.event?.ref === ref.ref);
 
     return new Promise.all(
       toDelete?.forEach((e) => {
-        return useAppDataStore.getState().actions.deleteAppVersionEventHandler(e.id);
+        return useSuperStore
+          .getState()
+          .modules[this.context].useAppDataStore.getState()
+          .actions.deleteAppVersionEventHandler(e.id);
       })
     );
   };
@@ -908,7 +936,7 @@ class TableComponent extends React.Component {
   addNewColumn = () => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4() });
+    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4(), fxActiveFields: [] });
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
   };
 
@@ -1133,7 +1161,9 @@ class TableComponent extends React.Component {
 
     const rowSelectionsOptions = [
       'allowSelection',
-      ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow'] : []),
+      ...(allowSelection
+        ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow', 'selectRowOnCellEdit']
+        : []),
     ];
     const searchSortFilterOptions = [
       ...(displaySearchBox ? ['displaySearchBox'] : []),
@@ -1199,7 +1229,7 @@ class TableComponent extends React.Component {
     });
 
     items.push({
-      title: 'Layout',
+      title: 'Devices',
       isOpen: true,
       children: (
         <>

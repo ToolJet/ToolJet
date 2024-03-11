@@ -1,34 +1,44 @@
-// Loader.js
 import React from 'react';
-import './Loader.scss'; // Import a CSS file for styling
 
-const Loader = ({ width, style }) => {
+const Loader = ({ width, style, absolute = true }) => {
+  const viewBoxSize = 240; // Increase the viewBox size as needed
+
   return (
-    <div class="tj-widget-loader" style={style}>
+    <div className="tj-widget-loader d-flex" style={{ ...style, position: absolute ? 'absolute' : 'relative' }}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width={width}
-        heighth={width}
-        viewBox="0 0 200 200"
+        height={width}
+        viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
         fill="none"
         color="#3E63DD"
       >
         <defs>
           <linearGradient id="spinner-secondHalf">
-            <stop offset="0%" stop-opacity="0" stop-color="currentColor" />
-            <stop offset="100%" stop-opacity="0.5" stop-color="currentColor" />
+            <stop offset="0%" stopOpacity="0" stopColor="currentColor" />
+            <stop offset="100%" stopOpacity="0.5" stopColor="currentColor" />
           </linearGradient>
           <linearGradient id="spinner-firstHalf">
-            <stop offset="0%" stop-opacity="1" stop-color="currentColor" />
-            <stop offset="100%" stop-opacity="0.5" stop-color="currentColor" />
+            <stop offset="0%" stopOpacity="1" stopColor="currentColor" />
+            <stop offset="100%" stopOpacity="0.5" stopColor="currentColor" />
           </linearGradient>
         </defs>
 
-        <g stroke-width="8">
-          <path stroke="url(#spinner-secondHalf)" d="M 4 100 A 96 96 0 0 1 196 100" />
-          <path stroke="url(#spinner-firstHalf)" d="M 196 100 A 96 96 0 0 1 4 100" />
+        <g strokeWidth="24">
+          <path
+            stroke="url(#spinner-secondHalf)"
+            d={`M 10 ${viewBoxSize / 2} A 96 96 0 0 1 ${viewBoxSize - 10} ${viewBoxSize / 2}`}
+          />
+          <path
+            stroke="url(#spinner-firstHalf)"
+            d={`M ${viewBoxSize - 10} ${viewBoxSize / 2} A 96 96 0 0 1 10 ${viewBoxSize / 2}`}
+          />
 
-          <path stroke="currentColor" stroke-linecap="round" d="M 4 100 A 96 96 0 0 1 4 98" />
+          <path
+            stroke="currentColor"
+            strokeLinecap="round"
+            d={`M 10 ${viewBoxSize / 2} A 96 96 0 0 1 10 ${viewBoxSize / 2 - 2}`}
+          />
         </g>
 
         <animateTransform
