@@ -326,7 +326,11 @@ class TableComponent extends React.Component {
   addNewColumn = () => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4() });
+    newValue.push({
+      name: this.generateNewColumnName(columns.value),
+      id: uuidv4(),
+      isEditable: this.props.component.component.definition.properties.isAllColumnsEditable?.value,
+    });
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
   };
 
@@ -354,6 +358,8 @@ class TableComponent extends React.Component {
     // When column type is link, we need to make it non-editable
     if (newColumns[index].columnType === 'link') {
       newColumns[index].isEditable = '{{false}}';
+    } else {
+      newColumns[index].isEditable = this.props.component.component.definition.properties.isAllColumnsEditable?.value;
     }
 
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
@@ -412,12 +418,12 @@ class TableComponent extends React.Component {
       ...column,
       isEditable: column.columnType !== 'link' ? value : '{{false}}', // Link columns are not editable
     }));
-    this.props.paramUpdated({ name: 'isAllColumnsEditable' }, 'value', value, 'properties');
 
+    this.props.paramUpdated({ name: 'isAllColumnsEditable' }, 'value', value, 'properties');
     // setTimeout is required since there is a bug where param updated if consecutively called, then only the last is being reflected
     setTimeout(() => {
       this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
-    }, 1000);
+    }, 500);
   };
 
   render() {
