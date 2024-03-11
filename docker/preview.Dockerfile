@@ -34,7 +34,7 @@ RUN npm --prefix server run build
 
 FROM node:18.18.2-buster
 # copy postgrest executable
-COPY --from=postgrest/postgrest:v10.1.1.20221215 /bin/postgrest /bin
+COPY --from=postgrest/postgrest /bin/postgrest /bin
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
