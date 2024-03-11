@@ -15,12 +15,12 @@ function WorkspaceSSOEnableModal({ show, ssoKey, saveSettings, setShowModal, res
 
   const modalContent = (
     <div>
-      <p>
+      <p data-cy="modal-message">
         Enabling <strong>{ssoKey.charAt(0).toUpperCase() + ssoKey.slice(1)}</strong> at the workspace level will
         override any <strong>{ssoKey.charAt(0).toUpperCase() + ssoKey.slice(1)}</strong> configurations set at the
         instance level.
       </p>
-      <p>Are you sure you want to continue?</p>
+      <p data-cy="confirmation-text">Are you sure you want to continue?</p>
     </div>
   );
 
@@ -29,14 +29,14 @@ function WorkspaceSSOEnableModal({ show, ssoKey, saveSettings, setShowModal, res
       <ButtonSolid variant="tertiary" onClick={handleClose} data-cy="cancel-button">
         Cancel
       </ButtonSolid>
-      <ButtonSolid variant="primary" onClick={handleEnable}>
+      <ButtonSolid variant="primary" onClick={handleEnable} data-cy="enable-button">
         Enable
       </ButtonSolid>
     </>
   );
 
   const ModalTitle = () => (
-    <strong style={{ fontWeight: 500, fontSize: 'medium' }}>
+    <strong style={{ fontWeight: 500, fontSize: 'medium' }} data-cy="modal-title">
       Enable {ssoKey.charAt(0).toUpperCase() + ssoKey.slice(1)}
     </strong>
   );
