@@ -104,10 +104,14 @@ export const useResolveStore = create(
           lookupResolvedRefs.set(key, value);
         });
 
+        const uniqueAppHints = suggestionList.filter((hint) => {
+          return !get().suggestions.appHints.find((h) => h.hint === hint.hint);
+        });
+
         set(() => ({
           suggestions: {
             ...get().suggestions,
-            appHints: [...get().suggestions.appHints, ...suggestionList],
+            appHints: [...get().suggestions.appHints, ...uniqueAppHints],
           },
           lookupTable: {
             ...get().lookupTable,
