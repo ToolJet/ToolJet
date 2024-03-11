@@ -200,6 +200,7 @@ describe("", () => {
             "Please contact ToolJet team to link your domain"
         );
     });
+
     it("Should verify expired license banners, renew modal and tooltips for super-admin user", () => {
         let ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.appName = `${fake.companyName} App`;
@@ -368,6 +369,7 @@ describe("", () => {
             "Multi-environments are available only in paid plans"
         );
     });
+
     it("Should verify expired license banners, renew modal and tooltips for admin user", () => {
         let ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.appName = `${fake.companyName} App`;
@@ -487,6 +489,7 @@ describe("", () => {
             "Multi-environments are available only in paid plans"
         );
     });
+
     it("Should verify happy-path flow for a valid to expired license", () => {
         data.constantsName = fake.firstName
             .toLowerCase()
@@ -644,6 +647,7 @@ describe("", () => {
             commonWidgetSelector.draggableWidget(data.widgetName)
         ).verifyVisibleElement("have.text", "production");
     });
+
     it("Should verify happy-path flow for a basic to valid license", () => {
         data.constantsName = fake.firstName
             .toLowerCase()
@@ -772,4 +776,307 @@ describe("", () => {
         ).verifyVisibleElement("have.text", "development");
     });
 
+    it("Should verify free trial license banners and tooltips for super-admin user", () => {
+        let ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.appName = `${fake.companyName} App`;
+        data.constantsName = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
+
+        updateLicense(Cypress.env("unlimted-free-trial"));
+
+        cy.get(commonSelectors.settingsIcon).click();
+        cy.get(commonEeSelectors.instanceSettingIcon).click();
+
+        cy.get(licenseSelectors.enterpriseGradientIcon).should("be.visible");
+        //Need to add validation for the dates after revamp
+        cy.get('[data-cy="warning-text-header"] > div').should("be.visible");
+        cy.get('[data-cy="upgrade-button"]').verifyVisibleElement(
+            "have.text",
+            "Upgrade"
+        );
+
+        cy.get(instanceSettingsSelector.manageInstanceSettings).click();
+        cy.get('[data-cy="enterprise-gradient-icon"]:eq(1)').should("be.visible");
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
+            "have.text",
+            "Paid feature"
+        );
+        cy.get(instanceSettingsSelector.allowWorkspaceToggle)
+            .eq(0)
+            .should("be.enabled");
+        cy.get(instanceSettingsSelector.allowWorkspaceToggle)
+            .eq(1)
+            .should("be.enabled");
+        cy.get(instanceSettingsSelector.allowWorkspaceToggle)
+            .eq(2)
+            .should("be.enabled");
+
+        cy.get('[data-cy="white-labelling-list-item"]').click();
+        cy.get('[data-cy="enterprise-gradient-icon"]:eq(1)').should("be.visible");
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
+            "have.text",
+            "Paid feature"
+        );
+        cy.get('[data-cy="input-field-app-logo"]').should("be.enabled");
+        cy.get('[data-cy="input-field-page-title"]').should("be.enabled");
+        cy.get('[data-cy="input-field-fav-icon"]').should("be.enabled");
+        cy.clearAndType(
+            '[data-cy="input-field-app-logo"]',
+            "https://asset.brandfetch.io/idZEG-0bZD/id-qjO-aPI.png?updated=1667607225317"
+        );
+        cy.clearAndType('[data-cy="input-field-page-title"]', "Test");
+        cy.clearAndType(
+            '[data-cy="input-field-fav-icon"]',
+            "https://asset.brandfetch.io/idZEG-0bZD/id-qjO-aPI.png?updated=1667607225317"
+        );
+        cy.get('[data-cy="save-button"]').should("be.enabled");
+
+        cy.get(commonSelectors.dashboardIcon).click();
+        cy.wait(2000);
+
+        cy.get(licenseSelectors.enterpriseGradientIcon).should("be.visible");
+        cy.get('[data-cy="warning-text-header"] > div').should("be.visible");
+        cy.get(licenseSelectors.warningInfoText).verifyVisibleElement(
+            "have.text",
+            "Upgrade to a paid plan to continue accessing premium features"
+        );
+        cy.get('[data-cy="upgrade-button"]').verifyVisibleElement(
+            "have.text",
+            "Upgrade"
+        );
+
+        cy.apiCreateApp(data.appName);
+        cy.openApp();
+        cy.waitForAppLoad();
+        cy.get('[data-cy="list-current-env-name"]').click();
+        cy.get('[data-cy="enterprise-gradient-sm-icon"]')
+            .eq(0)
+            .should("be.visible");
+        verifyTooltip(
+            '[data-cy="env-name-dropdown"]:eq(1)',
+            "Multi-environments is a paid plan feature"
+        );
+        cy.get('[data-cy="enterprise-gradient-sm-icon"]')
+            .eq(1)
+            .should("be.visible");
+        verifyTooltip(
+            '[data-cy="env-name-dropdown"]:eq(1)',
+            "Multi-environments is a paid plan feature"
+        );
+
+        cy.apiDeleteApp();
+
+        cy.visit("my-workspace/data-sources");
+
+        selectAndAddDataSource("databases", "PostgreSQL", ds);
+        cy.wait(1000);
+        cy.get('[data-cy="enterprise-gradient-sm-icon"]')
+            .eq(0)
+            .should("be.visible");
+        verifyTooltip(
+            '[data-cy="staging-label"]',
+            "Multi-environments is a paid plan feature"
+        );
+        cy.get('[data-cy="enterprise-gradient-sm-icon"]')
+            .eq(1)
+            .should("be.visible");
+        verifyTooltip(
+            '[data-cy="production-label"]',
+            "Multi-environments is a paid plan feature"
+        );
+
+        cy.get('[data-cy="icon-workflows"]').click();
+        cy.wait(2000);
+        cy.get(licenseSelectors.enterpriseGradientIcon).should("be.visible");
+        cy.get('[data-cy="warning-text-header"] > div').should("be.visible");
+        cy.get(licenseSelectors.warningInfoText).verifyVisibleElement(
+            "have.text",
+            "Upgrade to a paid plan to continue accessing premium features"
+        );
+        cy.get('[data-cy="upgrade-button"]').verifyVisibleElement(
+            "have.text",
+            "Upgrade"
+        );
+
+        navigateToManageGroups();
+        cy.get('[data-cy="warning-text-header"] > div').should("be.visible");
+        cy.get('[data-cy="upgrade-button"]').verifyVisibleElement(
+            "have.text",
+            "Upgrade"
+        );
+
+        cy.get('[data-cy="create-new-group-button"]').click();
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
+            "have.text",
+            "Paid feature"
+        );
+        cy.get(commonSelectors.cancelButton).click();
+
+        cy.get('[data-cy="custom-styles-list-item"]').click();
+        cy.get('[data-cy="enterprise-gradient-icon"]:eq(1)').should("be.visible");
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
+            "have.text",
+            "Paid feature"
+        );
+        cy.get('[data-cy="save-button"]').should("be.enabled");
+
+        cy.get('[data-cy="configure-git-list-item"]').click();
+        cy.get('[data-cy="enterprise-gradient-icon"]:eq(1)').should("be.visible");
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
+            "have.text",
+            "Paid feature"
+        );
+        cy.get('[data-cy="git-ssh-input"]').should("be.enabled");
+
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
+        AddNewconstants(data.constantsName, data.constantsName);
+
+        cy.wait(1000);
+        cy.get('[data-cy="enterprise-gradient-sm-icon"]')
+            .eq(0)
+            .should("be.visible");
+        verifyTooltip(
+            '[data-cy="left-menu-items tj-text-xsm"]>>:eq(1)',
+            "Multi-environments is a paid plan feature"
+        );
+        cy.get('[data-cy="enterprise-gradient-sm-icon"]')
+            .eq(1)
+            .should("be.visible");
+        verifyTooltip(
+            '[data-cy="left-menu-items tj-text-xsm"]>>:eq(2)',
+            "Multi-environments is a paid plan feature"
+        );
+
+        cy.get(commonSelectors.settingsIcon).click();
+        cy.get(commonEeSelectors.auditLogIcon).click();
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
+            "have.text",
+            "Paid feature"
+        );
+    });
+
+    it("Should verify free trial license banners and tooltips for admin user", () => {
+        let ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.appName = `${fake.companyName} App`;
+        data.constantsName = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
+        data.firstName = fake.firstName;
+        data.workspaceName = data.firstName.toLowerCase();
+
+        updateLicense(Cypress.env("unlimted-free-trial"));
+        cy.logoutApi();
+
+        cy.apiLogin("test@tooljet.com", "password");
+        cy.apiCreateWorkspace(data.firstName, data.workspaceName);
+        cy.visit(`${data.workspaceName}`);
+
+        cy.get(commonSelectors.dashboardIcon).click();
+        cy.wait(2000);
+        cy.get(licenseSelectors.enterpriseGradientIcon).should("be.visible");
+        cy.get('[data-cy="warning-text-header"] > div').should("be.visible");
+        cy.get(licenseSelectors.warningInfoText).verifyVisibleElement(
+            "have.text",
+            "Contact super admin to continue using ToolJet's premium features"
+        );
+
+        cy.skipWalkthrough();
+        cy.createApp(data.appName);
+        cy.waitForAppLoad();
+        cy.get('[data-cy="list-current-env-name"]').click();
+        cy.get('[data-cy="enterprise-gradient-sm-icon"]')
+            .eq(0)
+            .should("be.visible");
+        verifyTooltip(
+            '[data-cy="env-name-dropdown"]:eq(1)',
+            "Multi-environments is a paid plan feature"
+        );
+        cy.get('[data-cy="enterprise-gradient-sm-icon"]')
+            .eq(1)
+            .should("be.visible");
+        verifyTooltip(
+            '[data-cy="env-name-dropdown"]:eq(1)',
+            "Multi-environments is a paid plan feature"
+        );
+
+        cy.visit(`${data.workspaceName}/data-sources`);
+        selectAndAddDataSource("databases", "PostgreSQL", ds);
+        cy.wait(1000);
+        cy.get('[data-cy="enterprise-gradient-sm-icon"]')
+            .eq(0)
+            .should("be.visible");
+        verifyTooltip(
+            '[data-cy="staging-label"]',
+            "Multi-environments is a paid plan feature"
+        );
+        cy.get('[data-cy="enterprise-gradient-sm-icon"]')
+            .eq(1)
+            .should("be.visible");
+        verifyTooltip(
+            '[data-cy="production-label"]',
+            "Multi-environments is a paid plan feature"
+        );
+
+        cy.get('[data-cy="icon-workflows"]').click();
+        cy.wait(2000);
+        cy.get(licenseSelectors.enterpriseGradientIcon).should("be.visible");
+        cy.get('[data-cy="warning-text-header"] > div').should("be.visible");
+        cy.get(licenseSelectors.warningInfoText).verifyVisibleElement(
+            "have.text",
+            "Contact super admin to continue using ToolJet's premium features"
+        );
+
+        navigateToManageGroups();
+        cy.get('[data-cy="warning-text-header"] > div').should("be.visible");
+
+        cy.get('[data-cy="create-new-group-button"]').click();
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
+            "have.text",
+            "Paid feature"
+        );
+        cy.get(commonSelectors.cancelButton).click();
+
+        cy.get('[data-cy="custom-styles-list-item"]').click();
+        cy.get('[data-cy="enterprise-gradient-icon"]:eq(1)').should("be.visible");
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
+            "have.text",
+            "Paid feature"
+        );
+        cy.get('[data-cy="save-button"]').should("be.enabled");
+
+        cy.get('[data-cy="configure-git-list-item"]').click();
+        cy.get('[data-cy="enterprise-gradient-icon"]:eq(1)').should("be.visible");
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
+            "have.text",
+            "Paid feature"
+        );
+        cy.get('[data-cy="git-ssh-input"]').should("be.enabled");
+
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
+        AddNewconstants(data.constantsName, data.constantsName);
+
+        cy.wait(1000);
+        cy.get('[data-cy="enterprise-gradient-sm-icon"]')
+            .eq(0)
+            .should("be.visible");
+        verifyTooltip(
+            '[data-cy="left-menu-items tj-text-xsm"]>>:eq(1)',
+            "Multi-environments is a paid plan feature"
+        );
+        cy.get('[data-cy="enterprise-gradient-sm-icon"]')
+            .eq(1)
+            .should("be.visible");
+        verifyTooltip(
+            '[data-cy="left-menu-items tj-text-xsm"]>>:eq(2)',
+            "Multi-environments is a paid plan feature"
+        );
+
+        cy.get(commonSelectors.settingsIcon).click();
+        cy.get(commonEeSelectors.auditLogIcon).click();
+        cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
+            "have.text",
+            "Paid feature"
+        );
+    });
 });

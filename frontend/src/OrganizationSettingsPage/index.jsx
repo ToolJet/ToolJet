@@ -9,6 +9,8 @@ import { OrganizationList } from '../_components/OrganizationManager/List';
 import { licenseService } from '../_services/license.service';
 import { LicenseBanner } from '@/LicenseBanner';
 import Skeleton from 'react-loading-skeleton';
+import { getWorkspaceId } from '@/_helpers/utils';
+import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
@@ -20,15 +22,24 @@ export function OrganizationSettings(props) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Copilot', 'Custom styles', 'Configure git'];
+  const enableWorkspaceConfiguration = window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true';
+  const sideBarNavs = [
+    'Users',
+    'Groups',
+    ...(enableWorkspaceConfiguration ? ['Workspace login'] : []),
+    'Workspace variables',
+    'Copilot',
+    'Custom styles',
+    'Configure git',
+  ];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'users':
         return 'Users';
       case 'groups':
         return 'Groups';
-      case 'sso':
-        return 'SSO';
+      case 'workspace-login':
+        return 'Workspace login';
       case 'workspace-variables':
         return 'Workspace variables';
       case 'copilot':

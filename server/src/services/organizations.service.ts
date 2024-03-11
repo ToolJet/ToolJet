@@ -9,7 +9,7 @@ import * as csv from 'fast-csv';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
-import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { ConfigScope, SSOConfigs, SSOType } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
 import {
   cleanObject,
@@ -56,7 +56,8 @@ import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { OrganizationUpdateDto } from '@dto/organization.dto';
-import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
+import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
+import { IsNull } from 'typeorm';
 
 const MAX_ROW_COUNT = 500;
 
@@ -78,6 +79,18 @@ interface UserCsvRow {
   last_name: string;
   email: string;
   groups?: any;
+}
+
+interface SSOConfig {
+  enabled: boolean;
+  configs: any; // Replace 'any' with a more specific type if possible
+}
+
+interface InstanceSSOConfigMap {
+  google?: SSOConfig;
+  git?: SSOConfig;
+  openid?: SSOConfig;
+  form?: SSOConfig;
 }
 
 const orgConstraints = [
@@ -118,8 +131,9 @@ export class OrganizationsService {
           manager.create(Organization, {
             ssoConfigs: [
               {
-                sso: 'form',
+                sso: SSOType.FORM,
                 enabled: true,
+                configScope: ConfigScope.ORGANIZATION,
               },
             ],
             name,
@@ -157,39 +171,95 @@ export class OrganizationsService {
       INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE
     );
     const oidcEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC);
+    const ssoConfigs = await this.getInstanceSSOConfigs();
+    const enableSignUp = await this.instanceSettingsService.getSettings(INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP);
+
+    // Create a map from the ssoConfigs array
+    const ssoConfigMap: InstanceSSOConfigMap = {};
+    ssoConfigs.forEach((config) => {
+      ssoConfigMap[config.sso] = {
+        enabled: config.enabled,
+        configs: config.configs,
+      };
+    });
+
     return {
       google: {
-        enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
-        configs: {
-          client_id: this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
-        },
+        enabled: ssoConfigMap?.google?.enabled || false,
+        configs: ssoConfigMap?.google?.configs || {},
       },
       git: {
-        enabled: !!this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
-        configs: {
-          client_id: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
-          host_name: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
-        },
+        enabled: ssoConfigMap?.git?.enabled || false,
+        configs: ssoConfigMap?.git?.configs || {},
       },
       openid: {
-        enabled: !!(this.configService.get<string>('SSO_OPENID_CLIENT_ID') && oidcEnabled),
-        configs: {
-          client_id: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
-          name: this.configService.get<string>('SSO_OPENID_NAME'),
-        },
+        enabled: ssoConfigMap?.openid?.enabled && oidcEnabled,
+        configs: ssoConfigMap?.openid?.configs || {},
       },
       form: {
-        enable_sign_up:
-          this.configService.get<string>('DISABLE_SIGNUPS') !== 'true' && isPersonalWorkspaceAllowed === 'true',
-        enabled: true,
+        enable_sign_up: enableSignUp === 'true' && isPersonalWorkspaceAllowed === 'true',
+        enabled: ssoConfigMap?.form?.enabled || false,
       },
-      enableSignUp:
-        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true' && isPersonalWorkspaceAllowed === 'true',
+      enableSignUp: enableSignUp === 'true' && isPersonalWorkspaceAllowed === 'true',
     };
   }
 
   async get(id: string): Promise<Organization> {
     return await this.organizationsRepository.findOne({ where: { id }, relations: ['ssoConfigs'] });
+  }
+
+  async getInstanceSSOConfigs(): Promise<SSOConfigs[]> {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.find(SSOConfigs, {
+        where: {
+          organizationId: IsNull(),
+        },
+      });
+    });
+    if (!(result.length > 0)) {
+      return result;
+    }
+    for (const sso of result) {
+      await this.decryptSecret(sso?.configs);
+    }
+    return result;
+  }
+
+  async updateInstanceSSOConfigs(params: any): Promise<SSOConfigs> {
+    //can't do an upsert because entity includes only partial unique constraints
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const { type, configs, enabled } = params;
+      await this.encryptSecret(configs);
+      const updatableParams = {
+        configs,
+        enabled,
+        updatedAt: new Date(),
+      };
+      cleanObject(updatableParams);
+
+      let ssoConfig = await manager.findOne(SSOConfigs, {
+        where: {
+          sso: type,
+          organizationId: null,
+          configScope: ConfigScope.INSTANCE,
+        },
+      });
+
+      if (ssoConfig) {
+        ssoConfig = { ...ssoConfig, ...updatableParams };
+      } else {
+        ssoConfig = manager.create(SSOConfigs, {
+          organizationId: null,
+          sso: type,
+          configScope: ConfigScope.INSTANCE,
+          ...updatableParams,
+        });
+      }
+
+      // Save the record (insert or update)
+      const savedConfig = await manager.save(SSOConfigs, ssoConfig);
+      return savedConfig;
+    });
   }
 
   async fetchOrganization(slug: string): Promise<Organization> {
@@ -537,67 +607,83 @@ export class OrganizationsService {
     } catch (error) {
       result = await this.constructOrgFindQuery(null, organizationId, statusList).getOne();
     }
+    const ssoConfigs = await this.getInstanceSSOConfigs();
+    const isEnableWorkspaceLoginConfiguration =
+      (await this.instanceSettingsService.getSettings(
+        INSTANCE_SYSTEM_SETTINGS.ENABLE_WORKSPACE_LOGIN_CONFIGURATION
+      )) === 'true';
+
+    // Create a map from the ssoConfigs array
+    const ssoConfigMap: InstanceSSOConfigMap = {};
+    ssoConfigs.forEach((config) => {
+      ssoConfigMap[config.sso] = {
+        enabled: config.enabled,
+        configs: config.configs,
+      };
+    });
 
     if (!result) return;
 
-    if (addInstanceLevelSSO && result.inheritSSO) {
-      if (
-        this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID') &&
-        !result.ssoConfigs?.some((config) => config.sso === 'google')
-      ) {
-        if (!result.ssoConfigs) {
-          result.ssoConfigs = [];
-        }
+    if (!isEnableWorkspaceLoginConfiguration) {
+      result.ssoConfigs = [];
+      if (ssoConfigMap?.form?.enabled === true) {
         result.ssoConfigs.push({
-          sso: 'google',
+          sso: SSOType.FORM,
           enabled: true,
-          configs: {
-            clientId: this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
-          },
         });
       }
-      if (
-        this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID') &&
-        this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET') &&
-        !result.ssoConfigs?.some((config) => config.sso === 'git')
-      ) {
-        if (!result.ssoConfigs) {
-          result.ssoConfigs = [];
-        }
+      if (ssoConfigMap?.google?.enabled === true) {
         result.ssoConfigs.push({
-          sso: 'git',
+          sso: SSOType.GOOGLE,
           enabled: true,
-          configs: {
-            clientId: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
-            clientSecret: await this.encryptionService.encryptColumnValue(
-              'ssoConfigs',
-              'clientSecret',
-              this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET')
-            ),
-            hostName: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
-          },
+          configs: ssoConfigMap?.google?.configs || {},
         });
       }
-      if (
-        this.configService.get<string>('SSO_OPENID_CLIENT_ID') &&
-        this.configService.get<string>('SSO_OPENID_CLIENT_SECRET') &&
-        !result.ssoConfigs?.some((config) => config.sso === 'openid')
-      ) {
+      if (ssoConfigMap?.git?.enabled === true) {
+        result.ssoConfigs.push({
+          sso: SSOType.GIT,
+          enabled: true,
+          configs: ssoConfigMap?.git?.configs || {},
+        });
+      }
+      if (ssoConfigMap?.openid?.enabled === true) {
+        result.ssoConfigs.push({
+          sso: SSOType.OPENID,
+          enabled: true,
+          configs: ssoConfigMap?.openid?.configs || {},
+        });
+      }
+    }
+
+    if (addInstanceLevelSSO && result.inheritSSO && isEnableWorkspaceLoginConfiguration) {
+      if (ssoConfigMap?.google?.enabled === true && !result.ssoConfigs?.some((config) => config.sso === 'google')) {
         if (!result.ssoConfigs) {
           result.ssoConfigs = [];
         }
         result.ssoConfigs.push({
-          sso: 'openid',
+          sso: SSOType.GOOGLE,
           enabled: true,
-          configs: {
-            clientId: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
-            clientSecret: await this.encryptionService.encryptColumnValue(
-              'ssoConfigs',
-              'clientSecret',
-              this.configService.get<string>('SSO_OPENID_CLIENT_SECRET')
-            ),
-            wellKnownUrl: this.configService.get<string>('SSO_OPENID_WELL_KNOWN_URL'),
-          },
+          configs: ssoConfigMap?.git?.configs || {},
+        });
+      }
+      if (ssoConfigMap?.git?.enabled === true && !result.ssoConfigs?.some((config) => config.sso === 'git')) {
+        if (!result.ssoConfigs) {
+          result.ssoConfigs = [];
+        }
+        result.ssoConfigs.push({
+          sso: SSOType.GIT,
+          enabled: true,
+          configs: ssoConfigMap?.git?.configs || {},
+        });
+      }
+      if (ssoConfigMap?.openid?.enabled === true && !result.ssoConfigs?.some((config) => config.sso === 'openid')) {
+        if (!result.ssoConfigs) {
+          result.ssoConfigs = [];
+        }
+        result.ssoConfigs.push({
+          sso: SSOType.OPENID,
+          enabled: true,
+          configs: ssoConfigMap?.openid?.configs || {},
         });
       }
     }
@@ -768,6 +854,7 @@ export class OrganizationsService {
         sso: type,
         configs,
         enabled: !!enabled,
+        configScope: ConfigScope.ORGANIZATION,
       });
       return await this.ssoConfigRepository.save(newSSOConfigs);
     }

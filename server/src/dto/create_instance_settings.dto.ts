@@ -1,8 +1,7 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '../helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
-
 export class CreateInstanceSettingsDto {
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
@@ -39,6 +38,22 @@ export class CreateInstanceSettingsDto {
   @IsNotEmpty()
   @IsOptional()
   dataType: string;
+}
+
+export class InstanceConfigsUpdateDto {
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(250, { message: 'Domains cannot be longer than 250 characters' })
+  allowedDomains?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  enableSignUp?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  enableWorkspaceConfiguration?: boolean;
 }
 
 export class UpdateInstanceSettingsDto extends PartialType(CreateInstanceSettingsDto) {}

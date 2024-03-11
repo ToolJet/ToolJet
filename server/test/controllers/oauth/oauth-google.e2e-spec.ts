@@ -48,7 +48,7 @@ describe('oauth controller', () => {
     beforeEach(async () => {
       const { organization } = await createUser(app, {
         email: 'anotherUser@tooljet.io',
-        ssoConfigs: [{ sso: 'google', enabled: true, configs: { clientId: 'client-id' } }],
+        ssoConfigs: [{ sso: 'google', enabled: true, configs: { clientId: 'client-id' }, configScope: 'organization' }],
         enableSignUp: true,
       });
       current_organization = organization;

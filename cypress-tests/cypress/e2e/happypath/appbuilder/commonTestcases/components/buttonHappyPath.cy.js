@@ -354,7 +354,7 @@ describe("Editor- Test Button widget", () => {
     cy.wait(500);
 
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
-    cy.get('[data-cy="input-textinput1"]').should(
+    cy.get(commonWidgetSelector.draggableWidget('textinput1')).should(
       "have.value",
       data.customMessage
     );

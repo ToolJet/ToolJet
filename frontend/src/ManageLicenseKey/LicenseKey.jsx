@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { licenseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { LoadingScreen } from './LoadingScreen';
+import { textAreaEnterOnSave } from '@/_components/FormWrapper';
 
 const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
   const [license, setLicense] = useState(null);
@@ -38,6 +39,7 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
   };
 
   const updateLicense = () => {
+    if (!hasKeyChanged) return;
     setLoading(true);
     licenseService
       .update({ key: licenseKey })
@@ -77,6 +79,7 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
                 onChange={(e) => optionChanged(e.target.value)}
                 disabled={loading}
                 data-cy="license-text-area"
+                onKeyDown={(event) => textAreaEnterOnSave(event, updateLicense)}
               />
             </div>
           </div>

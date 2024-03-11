@@ -72,6 +72,8 @@ export const CopilotSetting = () => {
           return resolve(false);
         })
         .catch((err) => {
+          setIsLoading(false);
+          toast.error('Something went wrong while validating the API key');
           return reject(err);
         });
     });

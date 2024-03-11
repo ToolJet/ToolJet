@@ -333,16 +333,19 @@ describe("Manage Users", () => {
       "have.text",
       "Update"
     );
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(2).click();
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(2).type("Admin");
-    cy.get(".form-check-input").check();
+
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Admin");
+    cy.wait(1000);
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
+
     cy.get(commonSelectors.cancelButton).click();
 
     cy.get('[data-cy="user-actions-button"]').click();
     cy.get(usersSelector.editUserDetailsButton).click();
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(2).click();
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(2).type("Admin");
-    cy.get(".form-check-input").check();
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Admin");
+    cy.wait(1000);
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
+
     cy.get(usersSelector.buttonInviteUsers).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,

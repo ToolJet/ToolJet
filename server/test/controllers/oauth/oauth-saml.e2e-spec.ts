@@ -81,6 +81,7 @@ describe('oauth controller', () => {
             sso: 'saml',
             enabled: true,
             configs: { name: 'SAML', idpMetadata: idp },
+            configScope: 'organization',
           },
         ],
         enableSignUp: true,

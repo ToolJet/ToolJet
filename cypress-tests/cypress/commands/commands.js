@@ -115,9 +115,9 @@ Cypress.Commands.add(
           .last()
           .click()
           .type(createBackspaceText(text), { delay: 0 }),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
     if (!Array.isArray(value)) {
       cy.wrap(subject).last().type(value, {
@@ -193,9 +193,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );

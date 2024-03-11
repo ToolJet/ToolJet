@@ -347,7 +347,7 @@ export const Container = ({
       updateCanvasHeight(newBoxes);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isVersionReleased, enableReleasedVersionPopupState, boxes, setBoxes, updateCanvasHeight]
+    [isVersionReleased, enableReleasedVersionPopupState, boxes, setBoxes, updateCanvasHeight, isEditorFreezed]
   );
 
   const onResizeStop = useCallback(
@@ -411,7 +411,16 @@ export const Container = ({
       updateCanvasHeight(newBoxes);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setBoxes, currentLayout, boxes, enableReleasedVersionPopupState, isVersionReleased, updateCanvasHeight, gridWidth]
+    [
+      setBoxes,
+      currentLayout,
+      boxes,
+      enableReleasedVersionPopupState,
+      isVersionReleased,
+      updateCanvasHeight,
+      gridWidth,
+      isEditorFreezed,
+    ]
   );
 
   const paramUpdated = useCallback(

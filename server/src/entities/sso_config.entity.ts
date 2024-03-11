@@ -40,17 +40,43 @@ type SAML = {
   idpMetadata: string;
   groupAttribute: string;
 };
+export enum SSOType {
+  GOOGLE = 'google',
+  GIT = 'git',
+  FORM = 'form',
+  OPENID = 'openid',
+  LDAP = 'ldap',
+  SAML = 'saml',
+}
+
+export enum ConfigScope {
+  ORGANIZATION = 'organization',
+  INSTANCE = 'instance',
+}
 
 @Entity({ name: 'sso_configs' })
 export class SSOConfigs {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'organization_id' })
-  organizationId: string;
+  @Column({ name: 'organization_id', nullable: true })
+  organizationId: string | null;
 
-  @Column({ name: 'sso' })
-  sso: 'google' | 'git' | 'form' | 'openid' | 'ldap' | 'saml';
+  @Column({
+    name: 'sso',
+    type: 'enum',
+    enum: SSOType,
+    enumName: 'sso_type_enum',
+  })
+  sso: SSOType;
+
+  @Column({
+    name: 'config_scope',
+    type: 'enum',
+    enum: ConfigScope,
+    enumName: 'config_scope_enum',
+  })
+  configScope: ConfigScope;
 
   @Column({ type: 'json' })
   configs: Google | Git | OpenId | LDAP | SAML;
