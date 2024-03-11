@@ -195,15 +195,16 @@ export class TooljetDbService {
 
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await queryRunner.release();
+      await tjdbQueryRunner.release();
       return { id: internalTable.id, table_name: tableName };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       await tjdbQueryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await queryRunner.release();
       await tjdbQueryRunner.release();
+      throw err;
     }
   }
 
@@ -274,18 +275,23 @@ export class TooljetDbService {
         new TableColumn({
           name: column['column_name'],
           type: column['data_type'],
-          ...(column['column_default'] && { default: this.addQuotesIfString(column['column_default']) }),
+          ...(column['column_default'] && {
+            default:
+              column['data_type'] === 'character varying'
+                ? this.addQuotesIfString(column['column_default'])
+                : column['column_default'],
+          }),
           ...(column?.constraints_type?.is_not_null ?? false ? { isNullable: false } : { isNullable: true }),
           ...(column?.constraints_type?.is_primary_key ? { isPrimary: true } : {}),
         })
       );
       await tjdbQueryRunnner.commitTransaction();
-    } catch (err) {
-      await tjdbQueryRunnner.rollbackTransaction();
-      throw err;
-    } finally {
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await tjdbQueryRunnner.release();
+    } catch (err) {
+      await tjdbQueryRunnner.rollbackTransaction();
+      await tjdbQueryRunnner.release();
+      throw err;
     }
   }
 
@@ -489,7 +495,12 @@ export class TooljetDbService {
         new TableColumn({
           name: column.column_name,
           type: column['data_type'],
-          ...(column['column_default'] && { default: this.addQuotesIfString(column['column_default']) }),
+          ...(column['column_default'] && {
+            default:
+              column['data_type'] === 'character varying'
+                ? this.addQuotesIfString(column['column_default'])
+                : column['column_default'],
+          }),
           ...(constraints_type?.is_not_null ? { isNullable: false } : { isNullable: true }),
         })
       );
@@ -499,6 +510,8 @@ export class TooljetDbService {
       }
 
       await tjdbQueryRunner.commitTransaction();
+      await tjdbQueryRunner.query("NOTIFY pgrst, 'reload schema'");
+      await tjdbQueryRunner.release();
     } catch (error) {
       internalTableInfo[internalTable.id] = tableName;
       if (error instanceof QueryFailedError || error instanceof TypeORMError) {
@@ -509,10 +522,8 @@ export class TooljetDbService {
         throw new HttpException(customErrorMessage, 422);
       }
       await tjdbQueryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await tjdbQueryRunner.query("NOTIFY pgrst, 'reload schema'");
       await tjdbQueryRunner.release();
+      throw error;
     }
   }
 
@@ -523,7 +534,9 @@ export class TooljetDbService {
       return {
         name: column_name,
         type: data_type,
-        ...(column_default && { default: this.addQuotesIfString(column_default) }),
+        ...(column_default && {
+          default: data_type === 'character varying' ? this.addQuotesIfString(column_default) : column_default,
+        }),
         ...(constraints_type?.is_not_null ?? false ? { isNullable: false } : { isNullable: true }),
         ...(constraints_type?.is_primary_key && { isPrimary: true }),
       };
