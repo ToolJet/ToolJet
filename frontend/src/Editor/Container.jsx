@@ -12,7 +12,6 @@ import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
-const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -24,8 +23,7 @@ import _, { cloneDeep, isEmpty } from 'lodash';
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
-import { useDraggedSubContainer, useGridStore, useResizingComponentId } from '@/_stores/gridStore';
-import useConfirm from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/Confirm';
+import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
 // eslint-disable-next-line import/no-unresolved
 
 // const noOfGrids = 24;
