@@ -159,7 +159,7 @@ export const Box = memo(
     const currentState = useCurrentState();
     const moduleName = useModuleName();
     const { events } = useAppInfo();
-    const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
+    const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'Button'];
 
     const componentMeta = useMemo(() => {
       return componentTypes.find((comp) => component.component === comp.component);
