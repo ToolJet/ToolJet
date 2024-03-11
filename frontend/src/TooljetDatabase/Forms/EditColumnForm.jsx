@@ -16,7 +16,8 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
   const [dataType, setDataType] = useState(selectedColumn?.dataType);
   const [fetching, setFetching] = useState(false);
   const [isNotNull, setIsNotNull] = useState(nullValue);
-  const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, handleRefetchQuery, queryFilters, pageCount, pageSize, sortFilters } =
+    useContext(TooljetDatabaseContext);
   const disabledDataType = dataTypes.find((e) => e.value === dataType);
   const [defaultValueLength, setDefaultValueLength] = useState(defaultValue?.length);
 
@@ -68,17 +69,11 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
       column: {
         column_name: selectedColumn?.Header,
         data_type: selectedColumn?.dataType,
+        column_default: defaultValue,
+        constraints_type: {
+          is_not_null: isNotNull,
+        },
         ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
-        ...(defaultValue?.length > 0 || defaultValue !== selectedColumn?.column_default
-          ? { column_default: defaultValue }
-          : {}),
-        ...(nullValue !== isNotNull
-          ? {
-              constraints_type: {
-                is_not_null: isNotNull,
-              },
-            }
-          : {}),
       },
     };
 
@@ -96,6 +91,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
         return;
       }
     }
+
     tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
       if (error) {
         toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
@@ -113,6 +109,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
         );
       }
     });
+    handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
     toast.success(`Column edited successfully`);
     onClose && onClose();
   };
