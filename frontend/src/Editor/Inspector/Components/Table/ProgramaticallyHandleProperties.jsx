@@ -32,6 +32,8 @@ export const ProgramaticallyHandleProperties = ({
         return props?.textColor;
       case 'cellBackgroundColor':
         return props?.cellBackgroundColor;
+      case 'isAllColumnsEditable':
+        return props?.isAllColumnsEditable;
       default:
         return;
     }
