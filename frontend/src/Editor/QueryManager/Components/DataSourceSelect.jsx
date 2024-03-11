@@ -150,7 +150,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
       <Select
         onChange={({ source } = {}) =>
           source?.id !== 'if' && workflowDataSources
-            ? onNewNode(source.kind, source.id, source.plugin_id)
+            ? onNewNode(source.kind, source.id, source.plugin_id, source)
             : source && source?.id === 'if'
             ? onNewNode('if')
             : handleChangeDataSource(source)
