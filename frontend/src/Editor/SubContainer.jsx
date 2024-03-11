@@ -718,14 +718,6 @@ export const SubContainer = ({
   };
 
   return (
-    // <div
-    //   ref={drop}
-    //   style={styles}
-    //   id={`canvas-${parent}`}
-    //   className={`sub-canvas real-canvas ${
-    //     (isDragging || isResizing || dragTarget === parent || isGridActive) && !readOnly ? 'show-grid' : 'hide-grid'
-    //   }`}
-    // >
     <SubContianerWrapper
       drop={drop}
       styles={styles}
@@ -736,15 +728,6 @@ export const SubContainer = ({
       readOnly={readOnly}
       parentWidgetId={parentWidgetId}
     >
-      {/* <DragContainerNested
-        boxes={Object.keys(childWidgets).map((key) => ({ ...boxes[key], id: key }))}
-        renderWidget={renderWidget}
-        canvasWidth={_containerCanvasWidth}
-        gridWidth={gridWidth}
-        parent={parent}
-        currentLayout={currentLayout}
-        readOnly={readOnly}
-      ></DragContainerNested> */}
       <div className="root h-100">
         <div
           className={`container-fluid p-0 h-100 drag-container-parent`}
@@ -862,85 +845,6 @@ export const SubContainer = ({
                       }}
                     />
                   </SubWidgetWrapper>
-                  // <DraggableBox
-                  //   onComponentClick={onComponentClick}
-                  //   onEvent={onEvent}
-                  //   onComponentOptionChanged={
-                  //     checkParent(box)
-                  //       ? onComponentOptionChangedForSubcontainer
-                  //       : (component, optionName, value, componentId = '') => {
-                  //           if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
-                  //             return Promise.resolve();
-                  //           }
-                  //           onOptionChange && onOptionChange({ component, optionName, value, componentId });
-                  //         }
-                  //   }
-                  //   onComponentOptionsChanged={(component, variableSet, id) => {
-                  //     checkParent(box)
-                  //       ? onComponentOptionsChanged(component, variableSet)
-                  //       : variableSet.map((item) => {
-                  //           onOptionChange &&
-                  //             onOptionChange({
-                  //               component,
-                  //               optionName: item[0],
-                  //               value: item[1],
-                  //               componentId: id,
-                  //             });
-                  //         });
-                  //   }}
-                  //   key={key}
-                  //   onResizeStop={onResizeStop}
-                  //   onDragStop={onDragStop}
-                  //   paramUpdated={paramUpdated}
-                  //   id={key}
-                  //   allComponents={allComponents}
-                  //   {...childWidgets[key]}
-                  //   mode={mode}
-                  //   resizingStatusChanged={(status) => setIsResizing(status)}
-                  //   draggingStatusChanged={(status) => setIsDragging(status)}
-                  //   inCanvas={true}
-                  //   zoomLevel={zoomLevel}
-                  //   setSelectedComponent={setSelectedComponent}
-                  //   selectedComponent={selectedComponent}
-                  //   deviceWindowWidth={deviceWindowWidth}
-                  //   removeComponent={customRemoveComponent}
-                  //   canvasWidth={_containerCanvasWidth}
-                  //   readOnly={readOnly}
-                  //   darkMode={darkMode}
-                  //   customResolvables={customResolvables}
-                  //   onComponentHover={onComponentHover}
-                  //   hoveredComponent={hoveredComponent}
-                  //   parentId={parentComponent?.name}
-                  //   parent={parent}
-                  //   sideBarDebugger={sideBarDebugger}
-                  //   exposedVariables={exposedVariables ?? {}}
-                  //   childComponents={childComponents[key]}
-                  //   containerProps={{
-                  //     mode,
-                  //     snapToGrid,
-                  //     onComponentClick,
-                  //     onEvent,
-                  //     appDefinition,
-                  //     appDefinitionChanged,
-                  //     currentState,
-                  //     onComponentOptionChanged,
-                  //     onComponentOptionsChanged,
-                  //     appLoading,
-                  //     zoomLevel,
-                  //     setSelectedComponent,
-                  //     removeComponent,
-                  //     currentLayout,
-                  //     deviceWindowWidth,
-                  //     darkMode,
-                  //     readOnly,
-                  //     onComponentHover,
-                  //     hoveredComponent,
-                  //     sideBarDebugger,
-                  //     addDefaultChildren,
-                  //     currentPageId,
-                  //     childComponents,
-                  //   }}
-                  // />
                 );
               }
             })}
