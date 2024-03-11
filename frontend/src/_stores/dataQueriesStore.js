@@ -60,6 +60,15 @@ export const useDataQueriesStore = create(
             loadingDataQueries: false,
           }));
 
+          // Compute query state to be added in the current state
+          const { actions, selectedQuery } = useQueryPanelStore.getState();
+          if (selectFirstQuery) {
+            actions.setSelectedQuery(data.data_queries[0]?.id, data.data_queries[0]);
+          } else if (selectedQuery?.id) {
+            const query = data.data_queries.find((query) => query.id === selectedQuery?.id);
+            actions.setSelectedQuery(query?.id);
+          }
+
           if (data.data_queries.length !== 0) {
             const queryConfirmationList = [];
             const updatedQueries = {};
