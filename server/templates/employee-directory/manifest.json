@@ -1,0 +1,16 @@
+{
+  "name": "Employee directory",
+  "description": "Manage employee contact information and profiles in a centralized database built on the ToolJet database.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "employee-directory",
+  "category": "human-resources"
+}

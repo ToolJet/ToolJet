@@ -119,8 +119,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
               <span className="d-flex" data-tooltip-id="query-card-btn-tooltip" data-tooltip-content="Rename query">
                 <svg
                   data-cy={`edit-query-${dataQuery.name.toLowerCase()}`}
-                  width="auto"
-                  height="auto"
+                  width="100%"
+                  height="100%"
                   viewBox="0 0 19 20"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -154,8 +154,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
                   <span className="d-flex">
                     <svg
                       data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
-                      width="auto"
-                      height="auto"
+                      width="100%"
+                      height="100%"
                       viewBox="0 0 18 20"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"

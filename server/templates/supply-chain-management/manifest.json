@@ -1,10 +1,13 @@
 {
   "name": "Supply chain management",
   "description": "The Supply Chain Management template optimizes operations with a Main Dashboard for KPIs, Product Inventory for stock management, and All Orders for tracking and updates.",
-  "widgets": ["Table", "Chart"],
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
   "sources": [
     {
-      "name": "Tooljet Database",
+      "name": "ToolJet Database",
       "id": "tooljetdb"
     }
   ],

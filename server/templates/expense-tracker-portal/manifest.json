@@ -1,0 +1,16 @@
+{
+  "name": "Expense tracker portal",
+  "description": "Submit and track personal expenses through an easy portal built with a ToolJet web UI and database.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "expense-tracker-portal",
+  "category": "operations"
+}

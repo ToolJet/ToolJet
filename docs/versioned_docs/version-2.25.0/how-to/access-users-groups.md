@@ -1,54 +1,36 @@
 ---
 id: access-currentuser
-title: Enable/Disable a component using current user's property
+title: Enable/Disable a Component Using Current User's Property
 ---
 
-# Enable/Disable a component using current user's property
-
-Let's take look at the exposed variables of the current user property:
+Let's take a look at the exposed variables of the currentUser property by clicking on the **[inspector](/docs/app-builder/left-sidebar/#inspector)** icon on the left sidebar:
 
 - **email** : The value can accessed using `{{globals.currentUser.email}}`
 - **firstName** : The value can accessed using `{{globals.currentUser.firstName}}`
 - **lastName** : The value can accessed using `{{globals.currentUser.lastName}}`
-- **lastName** : The value can accessed using `{{globals.currentUser.lastName}}`
-- **groups** : By default, the admin will be in the two groups `all_users` and `admin`, and any user who is not admin will always be in the `all_users` group by default. Since the **groups** is an array you’ll have to provide the index ([0], [1], and so on) to return the group name. The value can be accessed using `{{globals.currentUser.groups[1]}}`.
+- **groups**: The `groups` attribute is an array representing the groups a user belongs to. By default, every user, including admins, is part of the `all_users` group. Additionally, admins are also part of the `admin` group. To access a specific group name, you need to specify the array index, such as `[0]` for the first group, `[1]` for the second, and so on. For example, you can retrieve the name of the second group a user belongs to with `{{globals.currentUser.groups[1]}}`.
 
-<div style={{textAlign: 'center'}}>
+### Example: Disable a Button if a User is Not Admin
 
-<img className="screenshot-full" src="/img/how-to/access-currentuser/props.png" alt="Properties of current user" />
+- Click on the **Button** handle to open its properties. On the **Styles** tab, go to the **Disable** property. 
 
+<div style={{textAlign: 'left', width: '100%', marginTop:'15px', marginBottom:'15px'}}>
+    <img className="screenshot-full" src="/img/how-to/access-currentuser/button.png" alt="Properties of button" />
 </div>
 
-### Example: Disable a button if a user is not admin
+- Configure the Disable field with a condition that checks the user's group membership. If the user is not an admin, as determined by the absence of the admin value in the first position (index [1]) of the groups array, the field should be disabled. Use the following JavaScript condition for this purpose:
 
-- Click on the **Button** handle to open its properties, on the **Styles** tab go to the **Disable** property. 
+```javascript
+{{globals.currentUser.groups[1] !== "admin" ? true : false}}
+```
 
-    <div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left', width: '100%', marginTop:'15px', marginBottom:'15px'}}>
+    <img className="screenshot-full" width="100%" src="/img/how-to/access-currentuser/disable.png" alt="Disable Property of button" />
+</div>
 
-    <img className="screenshot-full" src="/img/how-to/access-currentuser/button.png" alt="Properties of button" />
+- Now, when you **release** the app, if the user is not a part of the **admin** group, the button will be disabled. 
 
-    </div>
+<div style={{textAlign: 'left', width: '100%', marginTop:'15px', marginBottom:'15px'}}>
+    <img className="screenshot-full" width="100%" src="/img/how-to/access-currentuser/released.png" alt="Released button disabled when user is not admin" />
+</div>
 
-- Set a condition on the Disable field so that if the the user who is using the app does not have **admin** value in the first index of **groups** array return **true**. The condition can be:
-
-    ```javascript
-    {{globals.currentUser.groups[1] !== "admin" ? true : false}}
-    ```
-
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/how-to/access-currentuser/disable.png" alt="Disable Property of button" />
-
-    </div>
-
-- Now, when you'll **release** the app, if the user is not is not admin the button will be disabled. 
-
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/how-to/access-currentuser/released.png" alt="Released button disabled when user is not admin" />
-
-    </div>
-
-:::info
-In this how-to we have used the **Groups** property of the **Current User**. You can use any of the exposed variables mentioned above according to your use.
-:::

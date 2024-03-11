@@ -1,115 +1,62 @@
 ---
 id: access-cellvalue-rowdata
-title: Change text color in columns of the table
+title: Dynamically Change Cell Colors in Table
 ---
 
-# Change text color in columns by accessing `cellValue` and `rowData` in the table
+This guide shows how to change the text color and background color of certain cells in a Table component based on specific conditions.
 
-In this how-to guide, we will build an app that will use a sample RestAPI to display the data in the table, and then we will change the text color of the columns according to the condition.
+## 1. Start by Creating a New Application and Setting up the Data Source
+- Create a new app and add a **[Table](/docs/widgets/table)** component to the canvas.
+- Open the Query Panel at the bottom and click on the `+ Add` button.
+- Select REST API as your data source - your query will be named as restapi1 by default.
+- Choose GET method and enter the below URL:
+```
+https://fakestoreapi.com/products
+``` 
+- To view the data that your query will return, click on the **Preview** button. Click on the **Run** button to execute the query and retrieve the data. 
 
-- Let's start by creating a new application and then adding a table widget into the canvas.
+## 2. Display Data on the Table
 
+- Hide the Query Panel and click on the Table component to open its properties panel on the right.
+- Under Table Data, enter the below code:
+```
+{{queries.restapi1.data}}
+```
 <div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Change text color in columns of the table](/img/how-to/change-text-color/newapp.gif)
-
+    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/change-text-color/table-with-data.png" alt="Table Component With Data" />
 </div>
 
-- Now go to the **Query Panel** at the bottom of the app editor and click on the `+` button.
-- Choose **RestAPI** data source
+## 3. Change Text Color Based on Cell Value
+
+- Select the Table component and go to Columns.
+- For the `category` column, paste the below code under Text Color to dynamically change the text color based on the value of the cell:
+
+```
+{{cellValue == 'electronics' ? 'red' : 'green'}}
+```
+
+Now, if the cell value is `electronics`, the text color will be red; otherwise, it will be green.
 
 <div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Change text color in columns of the table](/img/how-to/change-text-color/restapi.png)
-
+    <img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/how-to/change-text-color/conditional-text-color.png" alt="Conditional Text Color" />
 </div>
 
-- Now we will use a sample RestAPI endpoint -  I have used the API provided by **coinstats.app**, API-URL:
-https://api.coinstats.app/public/v1/coins?skip=0&limit=100&currency=USD
-- Choose `GET` method, enter the request URL (API URL in previous step), name the query - I have named it `crypto`, and then **Create** the query
+<i>You can use also Hex color codes for more color options.</i>
+
+## 4. Change Text Color Using Row Data
+
+- Under Cell Background Color for the `symbol` column, paste the below code: 
+
+```
+{{rowData.price < 100? 'yellow': 'white'}}
+```
+
+The rowData identifier can be utilized to reference values from any column within the Table component. 
+
+Now if the value in the price column is lesser than 100, the cell background color will be yellow or else it will be white.
 
 <div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Change text color in columns of the table](/img/how-to/change-text-color/apiendpoint.png)
-
+    <img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/how-to/change-text-color/conditional-background-color.png" alt="Conditional Background Color" />
 </div>
 
-- Now hit the **Run** button next to the query name to run the query.
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Change text color in columns of the table](/img/how-to/change-text-color/runquery.png)
-
-</div>
-
-- Once you run the query, you can check the data returned by the query in the **Inspector** on the left sidebar.
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Change text color in columns of the table](/img/how-to/change-text-color/inspectord.png)
-
-</div>
-
-- Now that we have got the data, we will display it on the table. To do this, click on the widget handle of the table to open its properties in the right sidebar. 
-- In the Table Data field, enter `{{queries.crypto.data.coins}}` - as you can see in the screenshot of the inspector the data is inside the `coins` array. You'll see the data in the Preview(green box) below the field.
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Change text color in columns of the table](/img/how-to/change-text-color/data.png)
-
-</div>
-
-- Let's add the columns that we want to display on the table. Go to the **Columns** section, Add columns, set their Names, and set **key** for each column. I have added 5 columns: **Rank**, **Name**, **Symbol**, **Price**, and **Market Cap**.
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Change text color in columns of the table](/img/how-to/change-text-color/columns.png)
-
-</div>
-
-- Once you've added the columns, you'll get the table like this:
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Change text color in columns of the table](/img/how-to/change-text-color/table.png)
-
-</div>
-
-### Using cellValue to change column text color
-
-Now that we have our data on the table, we will change the color of the text in the **Price** and **Market Cap** columns.
-
-- Edit table properties, go to **Columns**, and click on the Price Column to open its properties.
-- For **Price** column, we want to change color of those cells who have value which is greater than 1000 to red else to green if it is less than 1000. So to do this, we will set a condition in **Text Color** property of this column: `{{cellValue >= 1000 ? 'red' : 'green'}}`
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Change text color in columns of the table](/img/how-to/change-text-color/price.png)
-
-</div>
-
-- Similarly, we will do for **Market Cap** column. We want to change the text color of those cells who have value which is greater than 60000000000 to red else to green if it is less than 60000000000. so the condition will be `{{cellValue >= 60000000000 ? 'red' : 'green'}}`
-- Now the text color of cells in the columns will be updated.
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Change text color in columns of the table](/img/how-to/change-text-color/cellvalue.png)
-
-</div>
-
-:::info
-You can also use Hex Color Code instead of mentioning color in plane text.
-:::
-
-### Using rowData to change column text color
-
-- To change the color of the text using `rowData` variable it is required to mention the column name whose cell value we will be comparing in the condition. Let's take a look by changing the text color of **Symbol** column. 
-- We will add a condition to look in the row data and if the row has column called `name` which has value `Solana` then it should change the color to red else the color should be green.
-- Edit the properties of the Symbol column, set the **Text Color** field value to `{{rowData.name ===  'Solana' ? 'red' : 'green'}}`.
-- You'll see that in the Symbols column all the values has become green except the one that has Solana in Name column.
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Change text color in columns of the table](/img/how-to/change-text-color/rowData.png)
-
-</div>
+You can use the above methods to change the text and background colors of a cell dynamically.

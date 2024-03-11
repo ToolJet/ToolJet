@@ -74,5 +74,9 @@ export const usersSelector = {
   userStatus: (userName) => {
     return `[data-cy="${cyParamName(userName)}-user-status"]`;
   },
+  userActionButton: '[data-cy="user-actions-button"]',
+  editUserDetailsButton: '[data-cy="edit-user-details-button"]',
+  fullNameLabel: '[data-cy="label-full-name-input-field"]',
+  groupChip: '[data-cy="group-chip"]',
 
 };
