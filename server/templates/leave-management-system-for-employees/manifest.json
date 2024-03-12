@@ -1,0 +1,19 @@
+{
+  "name": "Leave management system for employees",
+  "description": "Request, track, and manage your leave balances seamlessly with a convenient employee portal.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "leave-management-system-for-employees",
+  "category": "human-resources"
+}

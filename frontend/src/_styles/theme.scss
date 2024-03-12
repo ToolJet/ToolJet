@@ -330,7 +330,7 @@ button {
 
   .resizer-select,
   .resizer-active {
-    border: solid 1px $primary !important;
+    outline: solid 1px $primary !important;
 
 
     .top-right,
@@ -728,7 +728,7 @@ button {
         margin: 0px auto;
 
         .resizer {
-          border: solid 1px transparent;
+          outline: solid 1px transparent;
         }
       }
     }
@@ -1991,6 +1991,11 @@ button {
 
 .form-check-input:checked {
   background-color: var(--indigo9);
+  border-color: rgba(101, 109, 119, 0.24);
+}
+
+#passwordLogin:checked {
+  background-color: #E54D2E;
   border-color: rgba(101, 109, 119, 0.24);
 }
 
@@ -5311,7 +5316,7 @@ div#driver-page-overlay {
 .sso-card-wrapper {
   background: var(--base);
   min-height: 100%;
-  height: calc(100vh - 156px) !important;
+  //height: calc(100vh - 156px);
 
   display: grid;
   grid-template-rows: auto 1fr auto;
@@ -5331,11 +5336,73 @@ div#driver-page-overlay {
     align-items: center;
     padding: 24px 32px;
     gap: 8px;
-    width: 660px;
+    width: 400px;
     height: 88px;
     border-top: 1px solid var(--slate5) !important;
     background: var(--base);
     margin-top: 0px !important;
+  }
+
+}
+
+.workspace-settings-page {
+  width: 880px;
+  margin: 0 auto;
+  background: var(--base);
+
+  .card {
+    background: var(--base);
+    border: 1px solid var(--slate7) !important;
+    box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05) !important;
+    width: 880px;
+
+    .card-header {
+      padding: 24px 24px;
+      gap: 12px;
+      height: 72px;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+
+      .title-banner-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 878px;
+      }
+
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 500px;
+      margin-bottom: 4px !important;
+      color: var(--slate12);
+    }
+    .card-footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 24px 32px;
+      gap: 8px;
+      border-top: 1px solid var(--slate5) !important;
+      background: var(--base);
+      margin-top: 0px !important;
+      align-Self: 'stretch';
+      height: 88px;
+    }
+    .card-body {
+      height: 467px;
+      padding: 24px;
+      .form-group{
+        .tj-app-input{
+          .form-control{
+            &:disabled{
+              background: var(--slate3) !important;
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -6929,6 +6996,7 @@ tbody {
   }
 
   .table-editable-parent-cell {
+    max-width: 230px;
     background-color: var(--indigo2);
     cursor: pointer;
     padding: 0rem;
@@ -9015,7 +9083,7 @@ tbody {
 .tj-database-column-header {
   color: var(--slate12);
   padding: 4px 4px 4px 8px !important;
-  text-transform: capitalize !important;
+  text-transform: none !important;
   line-height: 0px !important;
   font-weight: 500 !important;
   font-size: 12px !important;
@@ -9750,6 +9818,7 @@ tbody {
 
         input {
           color: var(--slate11);
+
           &:focus {
             background: unset !important
           }
@@ -12569,6 +12638,9 @@ tbody {
   }
 }
 
+.modal-custom-height {
+  height: 700px !important; /* Set the desired width */
+}
 .tj-text-input-widget {
   border: 1px solid var(--tj-text-input-widget-border-default);
   background-color: var(--tj-text-input-widget-field-default);
