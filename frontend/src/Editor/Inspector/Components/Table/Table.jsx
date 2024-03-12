@@ -968,16 +968,21 @@ class TableComponent extends React.Component {
     // When column type is link, we need to make it non-editable
     if (newColumns[index].columnType === 'link') {
       newColumns[index].isEditable = '{{false}}';
-    } else {
+    }
+
+    if (item === 'columnType' && value !== 'link') {
       newColumns[index].isEditable = this.props.component.component.definition.properties.isAllColumnsEditable?.value;
     }
 
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
 
-    // When any of the column is not editable, we need to disable "make all columns editable" toggle
-    if (item === 'isEditable' && !resolveReferences(value)) {
-      this.props.paramUpdated({ name: 'isAllColumnsEditable' }, 'value', value, 'properties');
-    }
+    // setTimeout is required since there is a bug where param updated if consecutively called, then only the last is being reflected
+    setTimeout(() => {
+      // When any of the column is not editable, we need to disable "make all columns editable" toggle
+      if (item === 'isEditable' && !resolveReferences(value)) {
+        this.props.paramUpdated({ name: 'isAllColumnsEditable' }, 'value', value, 'properties');
+      }
+    }, 500);
   };
 
   getItemStyle = (isDragging, draggableStyle) => ({
