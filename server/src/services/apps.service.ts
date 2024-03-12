@@ -132,6 +132,7 @@ export class AppsService {
             handle: 'home',
             appVersionId: appVersion.id,
             index: 1,
+            autoComputeLayout: true,
           })
         );
 
