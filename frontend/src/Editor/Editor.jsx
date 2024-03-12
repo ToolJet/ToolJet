@@ -1159,8 +1159,11 @@ const EditorComponent = (props) => {
           newDefinition.pages[currentPageId].components[key].component.parent?.startsWith(componentId)
         );
       } else {
+        const isChildOfParent = (key, componentId) => {
+          return newDefinition.pages[currentPageId].components[key].component.parent === componentId;
+        };
         childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter(
-          (key) => newDefinition.pages[currentPageId].components[key].component.parent === componentId
+          (key) => isChildOfParent(key, componentId) || isChildOfParent(key, `${componentId}-popover`)
         );
       }
 
