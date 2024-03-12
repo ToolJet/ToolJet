@@ -2510,6 +2510,13 @@ export const widgets = [
         },
         accordian: 'switch',
       },
+      boxShadow: {
+        type: 'boxShadow',
+        displayName: 'Box shadow',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'switch',
+      },
+
       alignment: {
         type: 'switch',
         displayName: 'alignment',
@@ -2588,6 +2595,7 @@ export const widgets = [
         borderColor: { value: '#D7DBDF' },
         handleColor: { value: '#FFFFFF' },
         alignment: { value: 'left' },
+        boxShadow: { value: '0px 0px 0px 0px #00000090' },
       },
       validation: {
         mandatory: { value: false },
@@ -2840,6 +2848,12 @@ export const widgets = [
         ],
         accordian: 'container',
       },
+      boxShadow: {
+        type: 'boxShadow',
+        displayName: 'Box Shadow',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'switch',
+      },
     },
     exposedVariables: {
       value: false,
@@ -2896,6 +2910,7 @@ export const widgets = [
         borderColor: { value: '#D7DBDF' },
         handleColor: { value: '#FFFFFF' },
         alignment: { value: 'right' },
+        boxShadow: { value: '0px 0px 0px 0px #00000090' },
       },
     },
   },

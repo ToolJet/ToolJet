@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { ToolTip } from '@/_components/ToolTip';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import Label from '@/_ui/Label';
 
 export const Checkbox = function Checkbox({
   height,
@@ -15,6 +15,7 @@ export const Checkbox = function Checkbox({
   dataCy,
   component,
   validate,
+  isResizing,
 }) {
   const defaultValueFromProperties = properties.defaultValue ?? false;
   const [defaultValue, setDefaultvalue] = React.useState(defaultValueFromProperties);
@@ -22,22 +23,22 @@ export const Checkbox = function Checkbox({
   const { label } = properties;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const currentState = useCurrentState();
-  const { loadingState, tooltip, disabledState } = properties;
+  const { loadingState, disabledState } = properties;
   const { checkboxColor, boxShadow, alignment, padding, uncheckedColor, borderColor, handleColor } = styles;
 
   const [loading, setLoading] = useState(properties?.loadingState);
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
   const { isValid, validationError } = validate(checked);
-  const [calculatedHeight, setCalculatedHeight] = useState(height);
+  // const [calculatedHeight, setCalculatedHeight] = useState(height);
 
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
 
-  useEffect(() => {
-    if (padding == 'default') {
-      setCalculatedHeight(height + 10);
-    }
-  }, [padding]);
+  // useEffect(() => {
+  //   if (padding == 'default') {
+  //     setCalculatedHeight(height + 10);
+  //   }
+  // }, [padding]);
 
   function toggleValue(e) {
     const isChecked = e.target.checked;
@@ -156,8 +157,7 @@ export const Checkbox = function Checkbox({
         alignItems: 'center',
         gap: '8px ',
         justifyContent: `${loadingState ? 'center' : alignment == 'right' ? 'space-between' : ''}`,
-        padding: padding === 'default' ? '4px 6px' : '',
-        height: calculatedHeight == 30 ? (padding == 'default' ? '30px' : '20px') : calculatedHeight,
+        height,
         whiteSpace: 'nowrap',
       }}
       data-cy={dataCy}
@@ -183,7 +183,7 @@ export const Checkbox = function Checkbox({
               checked={checked}
             />
             <div style={checkmarkStyle}>
-              {checked && (
+              {checked && !isResizing && (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className=" icon-tabler icon-tabler-check"
@@ -203,7 +203,7 @@ export const Checkbox = function Checkbox({
             </div>
           </div>
 
-          <p
+          {/* <p
             className="form-check-label tj-text-xsm"
             style={{
               lineHeight: padding == 'none' && '12px',
@@ -218,7 +218,66 @@ export const Checkbox = function Checkbox({
           >
             {label}
             {isMandatory && !checked && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
-          </p>
+          </p> */}
+          <>
+            {label && (
+              <label
+                style={{
+                  color: darkMode && textColor === '#11181C' ? '#fff' : textColor,
+
+                  display: 'flex',
+                  fontWeight: 500,
+                  justifyContent: alignment == 'right' ? 'flex-end' : 'flex-start',
+                  fontSize: '12px',
+                }}
+              >
+                <p
+                  style={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    display: 'block',
+                    margin: '0px',
+                    // paddingRight:
+                    //   direction == 'right'
+                    //     ? '6px'
+                    //     : (label?.length > 0 && defaultAlignment === 'side') || defaultAlignment === 'top'
+                    //     ? '12px'
+                    //     : '',
+                    // paddingLeft: label?.length > 0 && defaultAlignment === 'side' && direction != 'left' ? '12px' : '',
+                  }}
+                >
+                  {label}
+                  {isMandatory && (
+                    <span
+                      style={{
+                        color: '#DB4324',
+                        position: 'absolute',
+                        right: alignment == 'right' ? '0px' : '4px',
+                        top: '0px',
+                      }}
+                    >
+                      *
+                    </span>
+                  )}
+                </p>
+              </label>
+            )}
+          </>
+
+          {/* <Label
+            label={label}
+            width={'100%'}
+            // labelRef={labelRef}
+            darkMode={darkMode}
+            color={darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor}
+            defaultAlignment={'side'}
+            direction={alignment}
+            auto={true}
+            isMandatory={isMandatory}
+            _width={'100%'}
+          /> */}
         </>
       )}
     </div>
@@ -229,9 +288,9 @@ export const Checkbox = function Checkbox({
     visibility: checked ? 'visible' : 'hidden',
     height: '16px',
     width: ' 16px',
-    left: padding == 'default' ? alignment == 'left' && '14px' : alignment == 'left' && '8px',
+    left: padding == 'default' ? alignment == 'left' && '10px' : alignment == 'left' && '8px',
     top: '50%',
-    right: alignment == 'right' && padding == 'default' ? '-1.5px' : '-8px',
+    right: alignment == 'right' && padding == 'default' ? '-5.5px' : '-8px',
     display: 'flex',
   };
 
@@ -260,19 +319,11 @@ export const Checkbox = function Checkbox({
   return (
     <div
       style={{
-        height: calculatedHeight == 30 ? (padding == 'default' ? '30px' : '20px') : calculatedHeight,
+        // height: calculatedHeight == 30 ? (padding == 'default' ? '30px' : '20px') : calculatedHeight,
         justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
       }}
     >
-      <>
-        {properties?.tooltip?.length > 0 ? (
-          <ToolTip message={tooltip}>
-            <div>{renderCheckBox()}</div>
-          </ToolTip>
-        ) : (
-          <div>{renderCheckBox()}</div>
-        )}
-      </>
+      {renderCheckBox()}
       {validationError && visibility && (
         <div
           className="tj-text-sm"

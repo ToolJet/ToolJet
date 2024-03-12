@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { ToolTip } from '@/_components/ToolTip';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import Loader from '@/ToolJetUI/Loader/Loader';
@@ -108,7 +107,7 @@ export const ToggleSwitch = ({
   const [on, setOn] = React.useState(Boolean(defaultValue));
   const label = properties.label;
   const currentState = useCurrentState();
-  const { loadingState, disabledState, tooltip } = properties;
+  const { loadingState, disabledState } = properties;
   const [showValidationError, setShowValidationError] = useState(true);
   const { isValid, validationError } = validate(on);
 
@@ -128,11 +127,11 @@ export const ToggleSwitch = ({
     setExposedVariable('value', toggled);
     fireEvent('onChange');
   }
-  useEffect(() => {
-    if (padding == 'default') {
-      setCalculatedHeight(height + 10);
-    }
-  }, [padding]);
+  // useEffect(() => {
+  //   if (padding == 'default') {
+  //     setCalculatedHeight(height + 10);
+  //   }
+  // }, [padding]);
 
   // Exposing the initially set false value once on load
   useEffect(() => {
@@ -229,8 +228,7 @@ export const ToggleSwitch = ({
         alignItems: 'center',
         gap: '8px ',
         justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'space-between'}`,
-        padding: padding === 'default' ? '4px 6px' : '',
-        height: calculatedHeight == 30 ? (padding == 'default' ? '30px' : '20px') : calculatedHeight,
+        height: height,
         whiteSpace: 'nowrap',
       }}
       data-cy={dataCy}
@@ -282,19 +280,11 @@ export const ToggleSwitch = ({
   return (
     <div
       style={{
-        height: calculatedHeight == 30 ? (padding == 'default' ? '30px' : '20px') : calculatedHeight,
+        // height: height,
         justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
       }}
     >
-      <>
-        {properties?.tooltip?.length > 0 ? (
-          <ToolTip message={tooltip}>
-            <div>{renderInput()}</div>
-          </ToolTip>
-        ) : (
-          <div>{renderInput()}</div>
-        )}
-      </>
+      {renderInput()}
       {showValidationError && visibility && (
         <div
           className="tj-text-sm"

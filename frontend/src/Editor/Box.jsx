@@ -282,7 +282,7 @@ export const Box = memo(
         ...{ component: component.component },
         customResolveObjects: customResolvables,
       });
-    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
+    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'ToggleSwitch', 'Checkbox'];
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
