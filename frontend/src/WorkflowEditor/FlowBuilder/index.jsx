@@ -23,6 +23,7 @@ import ModalContent from './ModalContent';
 import StartNode from './Nodes/StartNode';
 import ResultNode from './Nodes/ResultNode';
 import ToolBar from '../BottomToolBar';
+import { getDefaultOptions } from '../../_stores/storeHelper';
 
 const nodeTypes = { 'if-condition': ifConditionNode, query: CommonCustomNode, input: StartNode, output: ResultNode };
 
@@ -98,7 +99,7 @@ function FlowBuilder(props) {
   );
 
   const addNewNode = useCallback(
-    (kind, dataSourceId, pluginId) => {
+    (kind, dataSourceId, pluginId, selectedSource) => {
       const { x, y, startingNodeId, startingNodeHandleId } = showBlockOptions;
       setShowBlockOptions(null);
       if (kind === 'if') {
@@ -119,7 +120,8 @@ function FlowBuilder(props) {
       } else {
         const isStaticDataSource = dataSourceId === 'null';
         const _dataSourceId = dataSourceId === 'null' ? null : dataSourceId;
-        const queryId = addQuery(kind, {}, _dataSourceId, pluginId, isStaticDataSource);
+        const { options } = getDefaultOptions(selectedSource);
+        const queryId = addQuery(kind, options, _dataSourceId, pluginId, isStaticDataSource);
 
         const newNode = {
           id: uuidv4(),

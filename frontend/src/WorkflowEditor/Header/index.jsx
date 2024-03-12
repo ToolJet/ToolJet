@@ -62,7 +62,7 @@ const Header = (props) => {
                     <CustomToggleSwitch
                       isChecked={value}
                       toggleSwitchFunction={onEnableChange}
-                      action="bodyToggle"
+                      action="headerToggle"
                       darkMode={props.darkMode}
                     />
                   </div>
