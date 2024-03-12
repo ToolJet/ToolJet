@@ -26,6 +26,8 @@ For instance, you can set the `Data` property of a Text component on a card usin
 // Replace title with the key in your data
 ```
 
+<div style={{textAlign: 'center', marginBottom:'15px'}}>
+    <img className="screenshot-full" src="/img/widgets/kanban/kanban2/kanban2.png" alt="ToolJet - Component Reference - Kanban Component" />
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
