@@ -484,15 +484,14 @@ export default function generateColumnsData({
           }
           case 'tags': {
             return (
-              <div>
-                <Tags
-                  value={cellValue}
-                  onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                  }}
-                  readOnly={!isEditable}
-                />
-              </div>
+              <Tags
+                value={cellValue}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+                readOnly={!isEditable}
+                containerWidth={width}
+              />
             );
           }
           case 'image': {

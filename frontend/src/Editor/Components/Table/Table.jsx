@@ -132,6 +132,8 @@ export function Table({
     showAddNewRowButton,
     allowSelection,
     enablePagination,
+    maxRowHeight,
+    autoHeight,
     selectRowOnCellEdit,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
@@ -493,6 +495,7 @@ export function Table({
   );
 
   const textWrapActions = (id) => {
+    //should we remove this
     let wrapOption = tableDetails.columnProperties?.find((item) => {
       return item?.id == id;
     });
@@ -1414,6 +1417,11 @@ export function Table({
                       ) {
                         cellProps.style.flex = '1 1 auto';
                       }
+                      if (cellSize === 'hugContent') {
+                        cellProps.style.maxHeight = autoHeight ? 80 : resolveReferences(maxRowHeight, currentState);
+                        cellProps.style.height = autoHeight ? 80 : resolveReferences(maxRowHeight, currentState);
+                      }
+                      //should we remove this
                       const wrapAction = textWrapActions(cell.column.id);
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
                       const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
@@ -1459,9 +1467,12 @@ export function Table({
                             cell.column.id === 'rightActions' || cell.column.id === 'leftActions' ? cell.column.id : ''
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
                           className={cx(
-                            `table-text-align-${cell.column.horizontalAlignment} ${
-                              wrapAction ? wrapAction : cell?.column?.Header === 'Actions' ? '' : 'wrap'
-                            }-wrapper td`,
+                            `table-text-align-${cell.column.horizontalAlignment}  
+                            ${
+                              cell?.column?.Header !== 'Actions' &&
+                              (['regular', 'condensed'].includes(cellSize) ? '' : 'wrap-wrapper')
+                            }
+                            td`,
                             {
                               'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
                               'has-left-actions': cell.column.id === 'leftActions',

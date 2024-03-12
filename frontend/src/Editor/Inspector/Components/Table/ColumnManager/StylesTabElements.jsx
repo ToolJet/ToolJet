@@ -43,14 +43,14 @@ export const StylesTabElements = ({
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
-      {['string', 'default', 'number', undefined].includes(column.columnType) && (
+      {/* {['string', 'default', 'number', undefined].includes(column.columnType) && (
         <div className="d-flex flex-column custom-gap-16">
           <div data-cy={`input-overflow`} className="field  d-flex custom-gap-12 align-items-center align-self-stretch">
             <label data-cy={`label-overflow`} className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
               {t('widget.Table.overflow', 'Overflow')}
             </label>
             <ToggleGroup
-              onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
+              onValueChange={(_value) => onColumnItemChange(index, 'textWrap', _value)}
               defaultValue={column.textWrap || 'wrap'}
               style={{ flex: '1 1 0' }}
             >
@@ -60,7 +60,7 @@ export const StylesTabElements = ({
             </ToggleGroup>
           </div>
         </div>
-      )}
+      )} */}
       {column.columnType === 'toggle' && (
         <div>
           <div className="field">

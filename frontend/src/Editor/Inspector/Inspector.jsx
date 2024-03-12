@@ -468,6 +468,16 @@ const widgetsWithStyleConditions = {
       },
     ],
   },
+  Table: {
+    conditions: [
+      {
+        definition: 'styles',
+        property: 'cellSize',
+        conditionStyles: ['maxRowHeight', 'autoHeight'],
+        type: 'select',
+      },
+    ],
+  },
 };
 const styleGroupedComponentTypes = ['TextInput', 'NumberInput', 'PasswordInput'];
 
@@ -566,7 +576,14 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
 const resolveConditionalStyle = (definition, condition, currentState) => {
   const conditionExistsInDefinition = definition[condition] ?? false;
   if (conditionExistsInDefinition) {
-    return resolveReferences(definition[condition]?.value ?? false, currentState);
+    switch (condition) {
+      case 'cellSize': {
+        const cellSize = resolveReferences(definition[condition]?.value ?? false, currentState) === 'hugContent';
+        return cellSize;
+      }
+      default:
+        return resolveReferences(definition[condition]?.value ?? false, currentState);
+    }
   }
 };
 
