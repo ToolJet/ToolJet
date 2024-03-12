@@ -450,12 +450,12 @@ export default function DragContainer({
         }}
         onResizeGroupStart={({ events }) => {
           const parentElm = events[0].target.closest('.real-canvas');
+          console.log('parentElm', parentElm);
           parentElm.classList.add('show-grid');
         }}
         onResizeGroup={({ events }) => {
           const newBoxs = [];
           const parentElm = events[0].target.closest('.real-canvas');
-          parentElm.classList.remove('show-grid');
           const parentWidth = parentElm?.clientWidth;
           const parentHeight = parentElm?.clientHeight;
 
