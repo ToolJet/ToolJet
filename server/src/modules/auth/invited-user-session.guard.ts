@@ -45,7 +45,13 @@ export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
     const isOrganizationOnlyInvite = !!workspaceInviteToken && !request.body.accountToken;
     if (isOrganizationOnlyInvite && invitedUserStatus !== USER_STATUS.ACTIVE) {
       /* User has the organization token, But the account isn't activated yet */
-      throw new BadRequestException(getUserErrorMessages(invitedUserStatus));
+      const errorResponse = {
+        message: {
+          error: getUserErrorMessages(invitedUserStatus),
+          accountIsNotActivatedYet: true,
+        },
+      };
+      throw new BadRequestException(errorResponse);
     }
 
     try {

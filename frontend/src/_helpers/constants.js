@@ -75,6 +75,18 @@ export const ERROR_MESSAGES = {
     retry: true,
     queryParams: [],
   },
+  'invited-workspace-archived': {
+    title: 'Archived workspace',
+    message: 'The workspace you are invited to has been archived. Kindly contact admin to know more.',
+    cta: 'Back to home page',
+    queryParams: [],
+  },
+  'user-is-not-activated': {
+    title: 'Account not activated',
+    message: 'Your account is not activated yet. Please check your email for activation link.',
+    cta: 'Back to home page',
+    queryParams: [],
+  },
 };
 
 export const TOOLTIP_MESSAGES = {

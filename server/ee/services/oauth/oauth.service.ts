@@ -212,7 +212,7 @@ export class OauthService {
       let organizationDetails: DeepPartial<Organization>;
 
       const isInviteRedirect =
-        redirectTo.startsWith('/organization-invitations/') || redirectTo.startsWith('/invitations/');
+        redirectTo?.startsWith('/organization-invitations/') || redirectTo?.startsWith('/invitations/');
 
       if (isInstanceSSOLogin) {
         // Login from main login page - Multi-Workspace enabled

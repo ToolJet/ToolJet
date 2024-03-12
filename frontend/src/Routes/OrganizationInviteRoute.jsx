@@ -88,8 +88,29 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
         }
         case 400: {
           const isInvalidInvitationUrl = errorObj?.error?.isInvalidInvitationUrl;
-          /* Wring invitation URL (invalid tokens) */
-          setLinkStatus(isInvalidInvitationUrl);
+          const isWorkspaceArchived = errorObj?.error?.isWorkspaceArchived;
+          const accountIsNotActivatedYet = errorObj?.error?.accountIsNotActivatedYet;
+
+          switch (true) {
+            case accountIsNotActivatedYet: {
+              navigate('/error/user-is-not-activated');
+              break;
+            }
+            case isWorkspaceArchived: {
+              navigate('/error/invited-workspace-archived');
+              break;
+            }
+            case isInvalidInvitationUrl: {
+              /* Wrong invitation URL (invalid tokens) */
+              setLinkStatus(isInvalidInvitationUrl);
+              break;
+            }
+            default: {
+              toast.error(errorMessage);
+              break;
+            }
+          }
+
           break;
         }
         default: {
