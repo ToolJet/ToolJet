@@ -4,7 +4,7 @@ import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
 export class MoveVisibilityDisabledStatesToProperties1707466537651 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'Text'];
+    const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'Text', 'Button'];
     const batchSize = 100;
     const entityManager = queryRunner.manager;
 

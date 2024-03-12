@@ -70,7 +70,7 @@ export const Button = function Button(props) {
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
     borderColor: borderColor,
     boxShadow: boxShadow,
-    padding: '6px 12px',
+    padding: '0px 12px',
     cursor: 'pointer',
     opacity: disable && '50%',
   };
@@ -193,7 +193,7 @@ export const Button = function Button(props) {
             }}
           >
             <span style={{ maxWidth: ' 100%', minWidth: '0' }}>
-              <p className="tj-text-xsm" style={{ fontWeight: '500', margin: '0px', padding: '0px' }}>
+              <p className="" style={{ fontWeight: '500', margin: '0px', padding: '0px' }}>
                 {label}
               </p>
             </span>
