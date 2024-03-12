@@ -5,7 +5,7 @@ export const Radio = ({ options, value, onChange, readOnly }) => {
   options = Array.isArray(options) ? options : [];
 
   return (
-    <div className="radio row">
+    <div className="table-radio-column-cell radio row">
       <div>
         {options.map((option, index) => (
           <label

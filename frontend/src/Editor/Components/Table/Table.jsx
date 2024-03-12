@@ -1470,7 +1470,7 @@ export function Table({
                             `table-text-align-${cell.column.horizontalAlignment}  
                             ${
                               cell?.column?.Header !== 'Actions' &&
-                              (['regular', 'condensed'].includes(cellSize) ? 'overflow-x-hidden' : 'wrap-wrapper')
+                              (['regular', 'condensed'].includes(cellSize) ? '' : 'wrap-wrapper')
                             }
                             td`,
                             {

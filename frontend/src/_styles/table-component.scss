@@ -896,3 +896,27 @@
 
   }
 }
+.table-custom-select-badge-badges{
+  .select-search-value{
+    overflow: hidden;
+    width: 90%;
+  }
+}
+.table-tags{
+  flex-direction: row-reverse;
+  .tag-wrapper {
+    width: 100px; /* Adjust width as needed */
+  }
+  
+  .add-tag-button {
+    width: 30px; /* Adjust width as needed */
+  }
+  
+  input[type="text"] {
+    width: 100px; /* Adjust width as needed */
+  }
+  
+}
+.table-radio-column-cell{
+  overflow: hidden;
+}
