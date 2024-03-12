@@ -219,7 +219,7 @@ export const Checkbox = function Checkbox({
             {label}
             {isMandatory && !checked && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
           </p> */}
-          <>
+          {/* <>
             {label && (
               <label
                 style={{
@@ -264,7 +264,7 @@ export const Checkbox = function Checkbox({
                 </p>
               </label>
             )}
-          </>
+          </> */}
 
           {/* <Label
             label={label}
