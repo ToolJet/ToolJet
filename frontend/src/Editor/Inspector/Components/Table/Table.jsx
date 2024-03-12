@@ -404,6 +404,16 @@ class TableComponent extends React.Component {
   getPopoverFieldSource = (column, field) =>
     `component/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
 
+  duplicateColumn = (index) => {
+    const columns = this.props.component.component.definition.properties?.columns ?? [];
+    const newColumns = columns.value;
+    let columnToBeDuplicated = newColumns?.[index];
+    console.log('manish ::', { columnToBeDuplicated });
+    columnToBeDuplicated = { ...columnToBeDuplicated, id: uuidv4() };
+    newColumns.push(columnToBeDuplicated);
+    this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
+  };
+
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
 
@@ -480,6 +490,7 @@ class TableComponent extends React.Component {
                     <div className="w-100" {...droppableProps} ref={innerRef}>
                       {columns.value.map((item, index) => {
                         const resolvedItemName = resolveReferences(item.name, this.state.currentState);
+                        const columnVisibility = item?.columnVisibility ?? true;
                         return (
                           <Draggable key={item.id} draggableId={item.id} index={index}>
                             {(provided, snapshot) => (
@@ -505,8 +516,11 @@ class TableComponent extends React.Component {
                                       enableActionsMenu={false}
                                       isEditable={item.isEditable === '{{true}}'}
                                       onMenuOptionClick={(listItem, menuOptionLabel) => {
-                                        if (menuOptionLabel === 'Delete')
+                                        if (menuOptionLabel === 'Delete') {
                                           this.removeColumn(index, `${item.name}-${index}`);
+                                        } else if (menuOptionLabel === 'copyColumn') {
+                                          this.duplicateColumn(index);
+                                        }
                                       }}
                                       darkMode={darkMode}
                                       // menuActions={[
@@ -516,6 +530,9 @@ class TableComponent extends React.Component {
                                       //   },
                                       // ]}
                                       deleteIconOutsideMenu={true}
+                                      showCopyColumnOption={true}
+                                      showVisibilityIcon={true}
+                                      isColumnVisible={resolveReferences(columnVisibility, this.state.currentState)}
                                     />
                                   </div>
                                 </OverlayTrigger>
