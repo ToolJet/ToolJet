@@ -6,7 +6,6 @@ import { ItemTypes } from './ItemTypes';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
 import { ConfigHandle } from './ConfigHandle';
-import { Rnd } from 'react-rnd';
 import { resolveWidgetFieldValue, resolveReferences } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
 import { useCurrentState } from '@/_stores/currentStateStore';
@@ -18,13 +17,6 @@ import * as Sentry from '@sentry/react';
 import { findHighestLevelofSelection } from './DragContainer';
 
 // const noOfGrid = 43;
-
-const resizerClasses = {
-  topRight: 'top-right',
-  bottomRight: 'bottom-right',
-  bottomLeft: 'bottom-left',
-  topLeft: 'top-left',
-};
 
 function computeWidth(currentLayoutOptions) {
   return `${currentLayoutOptions?.width}%`;
@@ -99,33 +91,6 @@ export const DraggableBox = React.memo(
     const currentState = useCurrentState();
     const [boxHeight, setboxHeight] = useState(layoutData?.height); // height for layouting with top and side values
 
-    const resizerStyles = {
-      topRight: {
-        width: '8px',
-        height: '8px',
-        right: '-4px',
-        top: '-4px',
-      },
-      bottomRight: {
-        width: '8px',
-        height: '8px',
-        right: '-4px',
-        bottom: '-4px',
-      },
-      bottomLeft: {
-        width: '8px',
-        height: '8px',
-        left: '-4px',
-        bottom: '-4px',
-      },
-      topLeft: {
-        width: '8px',
-        height: '8px',
-        left: '-4px',
-        top: '-4px',
-      },
-    };
-
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({
         type: ItemTypes.BOX,
@@ -167,12 +132,6 @@ export const DraggableBox = React.memo(
       }
     }, [isDragging2]);
 
-    const style = {
-      display: 'inline-block',
-      alignItems: 'center',
-      justifyContent: 'center',
-    };
-
     let _refProps = {};
 
     if (mode === 'edit' && canDrag) {
@@ -197,7 +156,6 @@ export const DraggableBox = React.memo(
     // const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
     const layoutData = inCanvas ? layouts[currentLayout] || layouts['desktop'] : defaultData;
     console.log('layoutData--', layoutData, currentLayout, layouts);
-    const gridWidth = canvasWidth / noOfGrid;
     const width = (canvasWidth * layoutData.width) / noOfGrid;
 
     const configWidgetHandlerForModalComponent =
