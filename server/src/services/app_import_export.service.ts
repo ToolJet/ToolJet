@@ -17,7 +17,6 @@ import {
   catchDbException,
   extractMajorVersion,
   isTooljetVersionWithNormalizedAppDefinitionSchem,
-  shouldApplyGridCompatibilityFix,
   isVersionGreaterThanOrEqual,
   resolveGridPositionForComponent,
 } from 'src/helpers/utils.helper';
@@ -238,8 +237,7 @@ export class AppImportExportService {
       ? true
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
-    const shouldUpdateForGridCompatibility: boolean =
-      !cloning && shouldApplyGridCompatibilityFix(importedAppTooljetVersion);
+    const shouldUpdateForGridCompatibility = !cloning;
 
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
 
