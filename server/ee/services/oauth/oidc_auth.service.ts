@@ -4,6 +4,7 @@ import { BaseClient, CallbackParamsType, Issuer, TokenSet, generators, UserinfoR
 import UserResponse from './models/user_response';
 import { OrganizationsService } from '@services/organizations.service';
 import * as uuid from 'uuid';
+import { InstanceSSOConfigMap } from '@services/organizations.service';
 
 @Injectable()
 export class OidcOAuthService {
@@ -31,10 +32,19 @@ export class OidcOAuthService {
         ssoConfigs = configs;
       }
     } else {
+      const configs = await this.organizationsService.getInstanceSSOConfigs();
+      // Create a map from the ssoConfigs array
+      const ssoConfigMap: InstanceSSOConfigMap = {};
+      configs.forEach((config) => {
+        ssoConfigMap[config.sso] = {
+          enabled: config.enabled,
+          configs: config.configs,
+        };
+      });
       ssoConfigs = {
-        clientId: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
-        clientSecret: this.configService.get<string>('SSO_OPENID_CLIENT_SECRET'),
-        wellKnownUrl: this.configService.get<string>('SSO_OPENID_WELL_KNOWN_URL'),
+        clientId: ssoConfigMap?.openid?.configs?.clientId || '',
+        clientSecret: ssoConfigMap?.openid?.configs?.clientSecret || '',
+        wellKnownUrl: ssoConfigMap?.openid?.configs?.wellKnownUrl || '',
       };
     }
 

@@ -30,6 +30,8 @@ import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { LdapService } from './ldap.service';
 import { SAMLService } from './saml.service';
 import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
+import { InstanceSSOConfigMap } from '@services/organizations.service';
+import { INSTANCE_SYSTEM_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
 export class OauthService {
@@ -130,44 +132,54 @@ export class OauthService {
     return user;
   }
 
-  #getSSOConfigs(ssoType: SSOType.GOOGLE | SSOType.GIT | SSOType.OPENID): Partial<SSOConfigs> {
+  async getSSOConfigs(ssoType: SSOType.GOOGLE | SSOType.GIT | SSOType.OPENID): Promise<Partial<SSOConfigs>> {
+    const ssoConfigs = await this.organizationService.getInstanceSSOConfigs();
+    const oidcEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC);
+
+    // Create a map from the ssoConfigs array
+    const ssoConfigMap: InstanceSSOConfigMap = {};
+    ssoConfigs.forEach((config) => {
+      ssoConfigMap[config.sso] = {
+        enabled: config.enabled,
+        configs: config.configs,
+      };
+    });
+
     switch (ssoType) {
-      case 'google':
+      case SSOType.GOOGLE:
         return {
-          enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
-          configs: { clientId: this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID') },
+          enabled: ssoConfigMap.google.enabled || false,
+          configs: ssoConfigMap.google.configs || {},
         };
-      case 'git':
+      case SSOType.GIT:
         return {
-          enabled: !!this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
-          configs: {
-            clientId: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
-            clientSecret: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET'),
-            hostName: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
-          },
+          enabled: ssoConfigMap.git.enabled || false,
+          configs: ssoConfigMap.git.configs || {},
         };
-      case 'openid':
+      case SSOType.OPENID:
         return {
-          enabled: !!this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
-          configs: {
-            clientId: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
-            clientSecret: this.configService.get<string>('SSO_OPENID_CLIENT_SECRET'),
-            wellKnownUrl: this.configService.get<string>('SSO_OPENID_WELL_KNOWN_URL'),
-          },
+          enabled: ssoConfigMap.openid.enabled && oidcEnabled,
+          configs: ssoConfigMap.openid.configs || {},
         };
       default:
         return;
     }
   }
 
-  #getInstanceSSOConfigs(ssoType: SSOType.GOOGLE | SSOType.GIT | SSOType.OPENID): DeepPartial<SSOConfigs> {
+  async getInstanceSSOConfigs(
+    ssoType: SSOType.GOOGLE | SSOType.GIT | SSOType.OPENID
+  ): Promise<DeepPartial<SSOConfigs>> {
+    const instanceSettings = await this.instanceSettingsService.getSettings([
+      INSTANCE_SYSTEM_SETTINGS.ALLOWED_DOMAINS,
+      INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP,
+    ]);
     return {
       organization: {
-        enableSignUp: this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
-        domain: this.configService.get<string>('SSO_ACCEPTED_DOMAINS'),
+        enableSignUp: instanceSettings?.ENABLE_SIGNUP === 'true',
+        domain: instanceSettings?.ALLOWED_DOMAINS,
       },
       sso: ssoType,
-      ...this.#getSSOConfigs(ssoType),
+      ...(await this.getSSOConfigs(ssoType)),
     };
   }
 
@@ -195,7 +207,7 @@ export class OauthService {
       ssoConfigs = organization?.ssoConfigs?.find((conf) => conf.sso === ssoType);
     } else if (isInstanceSSOLogin) {
       // Instance SSO login from common login page
-      ssoConfigs = this.#getInstanceSSOConfigs(ssoType);
+      ssoConfigs = await this.getInstanceSSOConfigs(ssoType);
       organization = ssoConfigs?.organization;
     } else {
       throw new UnauthorizedException();

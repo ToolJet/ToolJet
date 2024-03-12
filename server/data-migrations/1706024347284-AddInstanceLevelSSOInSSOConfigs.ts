@@ -22,11 +22,14 @@ export class AddInstanceLevelSSOInSSOConfigs1706024347284 implements MigrationIn
         configs: {
           clientId: process.env?.SSO_GIT_OAUTH2_CLIENT_ID || '',
           hostName: process.env?.SSO_GIT_OAUTH2_HOST || '',
-          clientSecret: process.env?.SSO_GIT_OAUTH2_CLIENT_SECRET && (await encryptionService.encryptColumnValue(
-            'ssoConfigs',
-            'clientSecret',
-            process.env.SSO_GIT_OAUTH2_CLIENT_SECRET
-          )) || '',
+          clientSecret:
+            (process.env?.SSO_GIT_OAUTH2_CLIENT_SECRET &&
+              (await encryptionService.encryptColumnValue(
+                'ssoConfigs',
+                'clientSecret',
+                process.env.SSO_GIT_OAUTH2_CLIENT_SECRET
+              ))) ||
+            '',
         },
       },
       {
@@ -36,11 +39,14 @@ export class AddInstanceLevelSSOInSSOConfigs1706024347284 implements MigrationIn
         configs: {
           clientId: process.env?.SSO_OPENID_CLIENT_ID || '',
           name: process.env?.SSO_OPENID_NAME || '',
-          clientSecret: process.env?.SSO_OPENID_CLIENT_SECRET && (await encryptionService.encryptColumnValue(
-            'ssoConfigs',
-            'clientSecret',
-            process.env.SSO_OPENID_CLIENT_SECRET
-          )) || '',
+          clientSecret:
+            (process.env?.SSO_OPENID_CLIENT_SECRET &&
+              (await encryptionService.encryptColumnValue(
+                'ssoConfigs',
+                'clientSecret',
+                process.env.SSO_OPENID_CLIENT_SECRET
+              ))) ||
+            '',
           wellKnownUrl: process.env?.SSO_OPENID_WELL_KNOWN_URL || '',
         },
       },
