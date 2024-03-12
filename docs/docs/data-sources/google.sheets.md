@@ -31,7 +31,7 @@ When connecting to a Google Sheets datasource, you can choose between two permis
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/sheetconnect.gif" alt="Google Sheet" />
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/sheetconnect-new.gif" alt="Google Sheet" />
 
 </div>
 

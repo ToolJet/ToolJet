@@ -11,7 +11,7 @@ To establish a connection with the GraphQL global datasource, you can either cli
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/graphql/graphgds.gif" alt="ToolJet - Data source - REST API" />
+<img className="screenshot-full" src="/img/datasource-reference/graphql/graphgds-new.gif" alt="ToolJet - Data source - REST API" />
 
 </div>
 

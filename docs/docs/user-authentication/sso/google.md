@@ -8,21 +8,21 @@ title: Google
 - Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/general/workside2.png" alt="General Settings: SSO" width="500"/>
+  <img className="screenshot-full" src="/img/sso/general/workside2-new.png" alt="General Settings: SSO" width="500"/>
 
   </div>
 
 - Select `SSO` from sidebar and then select **Google**. Google login will be **disabled** by default,
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/google/googlessov22.png" alt="General Settings: SSO" />
+  <img className="screenshot-full" src="/img/sso/google/googlessov22-new.png" alt="General Settings: SSO" />
 
   </div>
 
 - Enable Google. You can see `Redirect URL` generated
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/google/googlesso2v22.png" alt="General Settings: SSO" />
+  <img className="screenshot-full" src="/img/sso/google/googlesso2v22-new.png" alt="General Settings: SSO" />
 
   </div>
 

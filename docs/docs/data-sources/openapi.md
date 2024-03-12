@@ -21,7 +21,7 @@ OpenAPI datasource accepts specifications only in **JSON** and **YAML** formats.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/openapi/openapiconnect.gif" alt="OpenAPI" />
+<img className="screenshot-full" src="/img/datasource-reference/openapi/openapiconnect-new.gif" alt="OpenAPI" />
 
 </div>
 

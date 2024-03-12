@@ -9,7 +9,7 @@ To set up LDAP as Single Sign-On (SSO) for ToolJet, follow these steps:
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/ldap/settings.png" alt="SSO :LDAP" width="500"/>
+  <img className="screenshot-full" src="/img/sso/ldap/settings-new.png" alt="SSO :LDAP" width="500"/>
 
   </div>
 
@@ -17,7 +17,7 @@ To set up LDAP as Single Sign-On (SSO) for ToolJet, follow these steps:
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/ldap/disabled.png" alt="SSO :LDAP"/>
+  <img className="screenshot-full" src="/img/sso/ldap/disabled-new.png" alt="SSO :LDAP"/>
 
   </div>
 

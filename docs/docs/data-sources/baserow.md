@@ -17,7 +17,7 @@ To connect to Baserow, you need to provide the following details:
 
 
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-intro.png" alt="Baserow intro" />
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-intro-new.png" alt="Baserow intro" />
 
 
 ## Supported Operations
