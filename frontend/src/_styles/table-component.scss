@@ -708,6 +708,7 @@
 .jet-data-table{
   .table{
     .td{
+      overflow: hidden;
       &:hover{
         border: 1px solid var(--slate8);
         background-color: var(--slate4);
