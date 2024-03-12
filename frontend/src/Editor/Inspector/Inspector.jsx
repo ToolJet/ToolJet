@@ -83,7 +83,7 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
+  const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'Button'];
 
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
