@@ -86,7 +86,7 @@ interface SSOConfig {
   configs: any; // Replace 'any' with a more specific type if possible
 }
 
-interface InstanceSSOConfigMap {
+export interface InstanceSSOConfigMap {
   google?: SSOConfig;
   git?: SSOConfig;
   openid?: SSOConfig;
@@ -208,7 +208,7 @@ export class OrganizationsService {
     return await this.organizationsRepository.findOne({ where: { id }, relations: ['ssoConfigs'] });
   }
 
-  async getInstanceSSOConfigs(): Promise<SSOConfigs[]> {
+  async getInstanceSSOConfigs(decryptSensitiveData = true): Promise<SSOConfigs[]> {
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.find(SSOConfigs, {
         where: {
@@ -219,8 +219,10 @@ export class OrganizationsService {
     if (!(result.length > 0)) {
       return result;
     }
-    for (const sso of result) {
-      await this.decryptSecret(sso?.configs);
+    if (decryptSensitiveData) {
+      for (const sso of result) {
+        await this.decryptSecret(sso?.configs);
+      }
     }
     return result;
   }
@@ -607,7 +609,7 @@ export class OrganizationsService {
     } catch (error) {
       result = await this.constructOrgFindQuery(null, organizationId, statusList).getOne();
     }
-    const ssoConfigs = await this.getInstanceSSOConfigs();
+    const ssoConfigs = await this.getInstanceSSOConfigs(false);
     const isEnableWorkspaceLoginConfiguration =
       (await this.instanceSettingsService.getSettings(
         INSTANCE_SYSTEM_SETTINGS.ENABLE_WORKSPACE_LOGIN_CONFIGURATION
@@ -663,7 +665,7 @@ export class OrganizationsService {
         result.ssoConfigs.push({
           sso: SSOType.GOOGLE,
           enabled: true,
-          configs: ssoConfigMap?.git?.configs || {},
+          configs: ssoConfigMap?.google?.configs || {},
         });
       }
       if (ssoConfigMap?.git?.enabled === true && !result.ssoConfigs?.some((config) => config.sso === 'git')) {
@@ -694,14 +696,14 @@ export class OrganizationsService {
       LICENSE_FIELD.LDAP,
       LICENSE_FIELD.SAML,
     ]);
-    if (result?.ssoConfigs?.some((sso) => sso.sso === 'openid') && !licenseTerms[LICENSE_FIELD.OIDC]) {
-      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'openid');
+    if (result?.ssoConfigs?.some((sso) => sso.sso === SSOType.OPENID) && !licenseTerms[LICENSE_FIELD.OIDC]) {
+      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== SSOType.OPENID);
     }
-    if (result?.ssoConfigs?.some((sso) => sso.sso === 'ldap') && !licenseTerms[LICENSE_FIELD.LDAP]) {
-      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'ldap');
+    if (result?.ssoConfigs?.some((sso) => sso.sso === SSOType.LDAP) && !licenseTerms[LICENSE_FIELD.LDAP]) {
+      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== SSOType.LDAP);
     }
-    if (result?.ssoConfigs?.some((sso) => sso.sso === 'saml') && !licenseTerms[LICENSE_FIELD.SAML]) {
-      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'saml');
+    if (result?.ssoConfigs?.some((sso) => sso.sso === SSOType.SAML) && !licenseTerms[LICENSE_FIELD.SAML]) {
+      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== SSOType.SAML);
     }
 
     if (!isHideSensitiveData) {
