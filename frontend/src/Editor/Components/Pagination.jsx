@@ -65,12 +65,7 @@ export const Pagination = ({
   };
 
   return (
-    <div
-      data-disabled={disabledState}
-      className="d-flex align-items-center px-1"
-      data-cy={dataCy}
-      style={{ boxShadow }}
-    >
+    <div data-disabled={disabledState} className="d-flex align-items-center" data-cy={dataCy} style={{ boxShadow }}>
       <ul className="pagination m-0" style={computedStyles}>
         <Pagination.Operator
           operator="<<"
@@ -248,10 +243,16 @@ const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth
       const rightPageNumbers = maxPageNumbers - leftPageNumbers - 1;
 
       startPage = currentPage - leftPageNumbers;
-      if (startPage <= 1) startPage = 1;
-
       endPage = currentPage + rightPageNumbers;
-      if (endPage >= totalPages) endPage = totalPages;
+
+      // Ensure startPage and endPage are within valid ranges
+      if (startPage <= 1) {
+        startPage = 1;
+        endPage = maxPageNumbers;
+      } else if (endPage >= totalPages) {
+        endPage = totalPages;
+        startPage = totalPages - maxPageNumbers + 1;
+      }
     }
 
     // Render page numbers
