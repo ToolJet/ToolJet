@@ -19,6 +19,7 @@ import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { ModuleContext } from '../../../../_contexts/ModuleContext';
 import { useSuperStore } from '@/_stores/superStore';
+
 class TableComponent extends React.Component {
   static contextType = ModuleContext;
 
@@ -976,11 +977,28 @@ class TableComponent extends React.Component {
 
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
 
-    // setTimeout is required since there is a bug where param updated if consecutively called, then only the last is being reflected
+    // setTimeout is required since there is a bug where param updated if consecutively called, then only the last param updated is being reflected
     setTimeout(() => {
       // When any of the column is not editable, we need to disable "make all columns editable" toggle
-      if (item === 'isEditable' && !resolveReferences(value)) {
+      if (
+        item === 'isEditable' &&
+        !resolveReferences(value) &&
+        resolveReferences(this.props.component.component.definition.properties.isAllColumnsEditable?.value)
+      ) {
         this.props.paramUpdated({ name: 'isAllColumnsEditable' }, 'value', value, 'properties');
+      }
+      // Check if all columns are editable and also if we have disabled "make all columns editable" toggle, if yes then enable it
+      if (
+        item === 'isEditable' &&
+        resolveReferences(value) &&
+        !resolveReferences(this.props.component.component.definition.properties.isAllColumnsEditable?.value)
+      ) {
+        const isAllColumnsEditable = newColumns
+          .filter((column) => column.columnType !== 'link')
+          .every((column) => resolveReferences(column.isEditable));
+        if (isAllColumnsEditable) {
+          this.props.paramUpdated({ name: 'isAllColumnsEditable' }, 'value', value, 'properties');
+        }
       }
     }, 500);
   };
@@ -1029,6 +1047,7 @@ class TableComponent extends React.Component {
       this.props.component.component.definition.properties.columns,
       this.props.currentState
     );
+
     const newValue = columns.value.map((column) => ({
       ...column,
       isEditable: column.columnType !== 'link' ? value : '{{false}}', // Link columns are not editable
