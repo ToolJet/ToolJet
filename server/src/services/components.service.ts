@@ -4,7 +4,11 @@ import { EntityManager, Repository } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
-import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/utils.helper';
+import {
+  dbTransactionForAppVersionAssociationsUpdate,
+  dbTransactionWrap,
+  resolveGridPositionForComponent,
+} from 'src/helpers/utils.helper';
 
 import { EventsService } from './events_handler.service';
 import { LayoutData } from '@dto/component.dto';
@@ -167,6 +171,7 @@ export class ComponentsService {
 
             await manager.update(Layout, { id: componentLayout.id }, layout);
           }
+          //Handle parent change cases. component.parent can be undefined if the element is moved form container to canvas
           if (component) {
             await manager.update(Component, { id: componentId }, { parent: component.parent });
           }
@@ -279,10 +284,4 @@ export class ComponentsService {
 
     return componentWithLayout;
   }
-}
-
-function resolveGridPositionForComponent(dimension: number, type: string) {
-  // const numberOfGrids = type === 'desktop' ? 43 : 12;
-  const numberOfGrids = 43;
-  return Math.round((dimension * numberOfGrids) / 100);
 }

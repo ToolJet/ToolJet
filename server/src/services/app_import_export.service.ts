@@ -19,6 +19,7 @@ import {
   isTooljetVersionWithNormalizedAppDefinitionSchem,
   shouldApplyGridCompatibilityFix,
   isVersionGreaterThanOrEqual,
+  resolveGridPositionForComponent,
 } from 'src/helpers/utils.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -62,12 +63,6 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
 ];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
 const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput'];
-
-function resolveGridPositionForComponent(dimension: number, type: string) {
-  // const numberOfGrids = type === 'desktop' ? 43 : 12;
-  const numberOfGrids = 43;
-  return Math.round((dimension * numberOfGrids) / 100);
-}
 
 @Injectable()
 export class AppImportExportService {

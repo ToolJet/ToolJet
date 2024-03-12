@@ -594,7 +594,7 @@ export class AppsService {
         const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
 
         if (isParentTabOrCalendar) {
-          const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+          const childTabId = component?.parent?.split('-')[component?.parent?.split('-').length - 1];
           const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
           const mappedParentId = oldComponentToNewComponentMapping[_parentId];
 
