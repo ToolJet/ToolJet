@@ -754,7 +754,7 @@ class DataSourceManagerComponent extends React.Component {
                 >
                   <ToolTip
                     message={'Multi-environments is a paid plan feature'}
-                    show={isTrial && licenseValid}
+                    show={isTrial && licenseValid && env?.priority > 1}
                     placement="bottom"
                   >
                     <div className="d-flex align-items-center">
