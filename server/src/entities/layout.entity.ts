@@ -24,7 +24,12 @@ export class Layout {
   @Column({ name: 'component_id' })
   componentId: string;
 
-  @Column({ name: 'dimension_unit' })
+  @Column({
+    type: 'enum',
+    enumName: 'dimension_unit',
+    name: 'dimension_unit',
+    enum: ['signup', 'invite', 'google', 'git'],
+  })
   dimensionUnit: string;
 
   @ManyToOne(() => Component, (component) => component.layouts)

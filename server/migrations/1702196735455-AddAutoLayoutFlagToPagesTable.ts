@@ -17,7 +17,9 @@ export class AddAutoLayoutFlagToPagesTable1702196735455 implements MigrationInte
       'layouts',
       new TableColumn({
         name: 'dimension_unit',
-        type: 'varchar',
+        type: 'enum',
+        enumName: 'dimension_unit',
+        enum: ['count', 'percent'],
         isNullable: false,
         default: `'count'`,
       })
