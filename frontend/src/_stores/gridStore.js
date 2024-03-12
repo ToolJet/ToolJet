@@ -1,4 +1,3 @@
-import { useEditorStore } from './editorStore';
 import { create, zustandDevTools } from './utils';
 import { shallow } from 'zustand/shallow';
 
@@ -17,7 +16,7 @@ const initialState = {
 
 export const useGridStore = create(
   zustandDevTools(
-    (set, get) => ({
+    (set) => ({
       ...initialState,
       actions: {
         setActiveGrid: (gridId) => set({ activeGrid: gridId }),
