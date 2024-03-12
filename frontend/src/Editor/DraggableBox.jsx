@@ -191,10 +191,12 @@ export const DraggableBox = React.memo(
     const defaultData = {
       top: 100,
       left: 0,
-      width: 445,
+      width: 43,
       height: 500,
     };
-    const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
+    // const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
+    const layoutData = inCanvas ? layouts[currentLayout] || layouts['desktop'] : defaultData;
+    console.log('layoutData--', layoutData, currentLayout, layouts);
     const gridWidth = canvasWidth / noOfGrid;
     const width = (canvasWidth * layoutData.width) / noOfGrid;
 
@@ -280,26 +282,21 @@ export const DraggableBox = React.memo(
             style={getStyles(isDragging, isSelectedComponent)}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-              {mode === 'edit' &&
-                !readOnly &&
-                // (configWidgetHandlerForModalComponent || mouseOver || isSelectedComponent) &&
-                !isResizing && (
-                  <ConfigHandle
-                    id={id}
-                    removeComponent={removeComponent}
-                    component={component}
-                    position={layoutData.top < 15 ? 'bottom' : 'top'}
-                    widgetTop={layoutData.top}
-                    widgetHeight={layoutData.height}
-                    isMultipleComponentsSelected={isMultipleComponentsSelected}
-                    configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
-                    mouseOver={mouseOver}
-                    isSelectedComponent={isSelectedComponent}
-                    showHandle={
-                      (configWidgetHandlerForModalComponent || mouseOver || isSelectedComponent) && !isResizing
-                    }
-                  />
-                )}
+              {mode === 'edit' && !readOnly && !isResizing && (
+                <ConfigHandle
+                  id={id}
+                  removeComponent={removeComponent}
+                  component={component}
+                  position={layoutData.top < 15 ? 'bottom' : 'top'}
+                  widgetTop={layoutData.top}
+                  widgetHeight={layoutData.height}
+                  isMultipleComponentsSelected={isMultipleComponentsSelected}
+                  configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
+                  mouseOver={mouseOver}
+                  isSelectedComponent={isSelectedComponent}
+                  showHandle={(configWidgetHandlerForModalComponent || mouseOver || isSelectedComponent) && !isResizing}
+                />
+              )}
               <Sentry.ErrorBoundary
                 fallback={<h2>Something went wrong.</h2>}
                 beforeCapture={(scope) => {

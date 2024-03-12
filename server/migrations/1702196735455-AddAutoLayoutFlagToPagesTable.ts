@@ -13,14 +13,15 @@ export class AddAutoLayoutFlagToPagesTable1702196735455 implements MigrationInte
       })
     );
 
-    await queryRunner.changeColumn(
-      'pages',
-      'auto_compute_layout',
+    await queryRunner.addColumn(
+      'layouts',
       new TableColumn({
-        name: 'auto_compute_layout',
-        type: 'boolean',
+        name: 'dimension_unit',
+        type: 'enum',
+        enumName: 'dimension_unit',
+        enum: ['count', 'percent'],
         isNullable: false,
-        default: 'true',
+        default: `'count'`,
       })
     );
   }

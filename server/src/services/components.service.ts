@@ -4,7 +4,11 @@ import { EntityManager, Repository } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
-import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/utils.helper';
+import {
+  dbTransactionForAppVersionAssociationsUpdate,
+  dbTransactionWrap,
+  resolveGridPositionForComponent,
+} from 'src/helpers/utils.helper';
 
 import { EventsService } from './events_handler.service';
 import { LayoutData } from '@dto/component.dto';
@@ -167,6 +171,7 @@ export class ComponentsService {
 
             await manager.update(Layout, { id: componentLayout.id }, layout);
           }
+          //Handle parent change cases. component.parent can be undefined if the element is moved form container to canvas
           if (component) {
             await manager.update(Component, { id: componentId }, { parent: component.parent });
           }
@@ -190,7 +195,7 @@ export class ComponentsService {
             const componentData = component;
             const componentLayout = component.layouts;
 
-            const transformedData = this.createComponentWithLayout(componentData, componentLayout);
+            const transformedData = this.createComponentWithLayout(componentData, componentLayout, manager);
 
             acc[componentId] = transformedData[componentId];
 
@@ -224,18 +229,33 @@ export class ComponentsService {
     return transformedComponents;
   }
 
-  createComponentWithLayout(componentData: Component, layoutData = []) {
+  createComponentWithLayout(componentData: Component, layoutData = [], manager: EntityManager) {
     const { id, name, properties, styles, generalStyles, validation, parent, displayPreferences, general } =
       componentData;
 
     const layouts = {};
 
     layoutData.forEach((layout) => {
-      const { type, top, left, width, height } = layout;
+      const { type, top, left, width, height, dimensionUnit, id } = layout;
+
+      let adjustedLeftValue = left;
+      if (dimensionUnit === 'percent') {
+        adjustedLeftValue = resolveGridPositionForComponent(left, type);
+        manager.update(
+          Layout,
+          {
+            id,
+          },
+          {
+            dimensionUnit: 'count',
+            left: adjustedLeftValue,
+          }
+        );
+      }
 
       layouts[type] = {
         top,
-        left,
+        left: adjustedLeftValue,
         width,
         height,
       };

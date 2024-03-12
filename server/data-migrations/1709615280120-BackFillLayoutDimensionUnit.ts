@@ -1,40 +1,40 @@
-import { Page } from 'src/entities/page.entity';
+import { Layout } from 'src/entities/layout.entity';
 import { MigrationProgress, processDataInBatches } from 'src/helpers/utils.helper';
 import { EntityManager, In, MigrationInterface, QueryRunner } from 'typeorm';
 
-export class BackfillAutoComputeLayout1703230364205 implements MigrationInterface {
+export class BackFillLayoutDimensionUnit1709615280120 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
 
-    const pages = await entityManager.query(`
-            SELECT id FROM pages ORDER BY created_at ASC
+    const layouts = await entityManager.query(`
+            SELECT id FROM layouts
     `);
 
-    const totalPages = pages?.length;
+    const totalPages = layouts?.length;
 
-    const migrationProgress = new MigrationProgress('BackfillAutoComputeLayout1703230364205', totalPages);
+    const migrationProgress = new MigrationProgress('BackFillLayoutDimensionUnit1709615280120', totalPages);
 
     const batchSize = 100;
 
     await processDataInBatches(
       entityManager,
       async (entityManager: EntityManager, skip: number, take: number) => {
-        const ids = pages.slice(skip, skip + take).map((page) => page.id);
+        const ids = layouts.slice(skip, skip + take).map((page) => page.id);
         if (!ids || ids.length === 0) {
           return [];
         }
         return entityManager.query(
-          `SELECT id, auto_compute_layout FROM pages WHERE id IN (${ids.map((id) => `'${id}'`).join(',')})`
+          `SELECT id, dimension_unit FROM layouts WHERE id IN (${ids.map((id) => `'${id}'`).join(',')})`
         );
       },
-      async (entityManager: EntityManager, pages: Page[]) => {
+      async (entityManager: EntityManager, layouts: Layout[]) => {
         await entityManager.update(
-          Page,
+          Layout,
           {
-            id: In(pages.map((page) => page.id)),
+            id: In(layouts.map((page) => page.id)),
           },
           {
-            autoComputeLayout: false,
+            dimensionUnit: 'percent',
           }
         );
 

@@ -1,10 +1,9 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
-const produce = require('immer').default;
 import _, { isEmpty } from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
@@ -18,10 +17,8 @@ import { useMounted } from '@/_hooks/use-mount';
 import { useEditorStore } from '@/_stores/editorStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import DragContainerNested from './DragContainerNested';
 import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
 import { SUBCONTAINER_WITH_SCROLL } from './constants';
-import { widgets } from './WidgetManager/widgetConfig';
 
 // const NO_OF_GRIDS = 43;
 
@@ -718,14 +715,6 @@ export const SubContainer = ({
   };
 
   return (
-    // <div
-    //   ref={drop}
-    //   style={styles}
-    //   id={`canvas-${parent}`}
-    //   className={`sub-canvas real-canvas ${
-    //     (isDragging || isResizing || dragTarget === parent || isGridActive) && !readOnly ? 'show-grid' : 'hide-grid'
-    //   }`}
-    // >
     <SubContianerWrapper
       drop={drop}
       styles={styles}
@@ -736,15 +725,6 @@ export const SubContainer = ({
       readOnly={readOnly}
       parentWidgetId={parentWidgetId}
     >
-      {/* <DragContainerNested
-        boxes={Object.keys(childWidgets).map((key) => ({ ...boxes[key], id: key }))}
-        renderWidget={renderWidget}
-        canvasWidth={_containerCanvasWidth}
-        gridWidth={gridWidth}
-        parent={parent}
-        currentLayout={currentLayout}
-        readOnly={readOnly}
-      ></DragContainerNested> */}
       <div className="root h-100">
         <div
           className={`container-fluid p-0 h-100 drag-container-parent`}
@@ -862,85 +842,6 @@ export const SubContainer = ({
                       }}
                     />
                   </SubWidgetWrapper>
-                  // <DraggableBox
-                  //   onComponentClick={onComponentClick}
-                  //   onEvent={onEvent}
-                  //   onComponentOptionChanged={
-                  //     checkParent(box)
-                  //       ? onComponentOptionChangedForSubcontainer
-                  //       : (component, optionName, value, componentId = '') => {
-                  //           if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
-                  //             return Promise.resolve();
-                  //           }
-                  //           onOptionChange && onOptionChange({ component, optionName, value, componentId });
-                  //         }
-                  //   }
-                  //   onComponentOptionsChanged={(component, variableSet, id) => {
-                  //     checkParent(box)
-                  //       ? onComponentOptionsChanged(component, variableSet)
-                  //       : variableSet.map((item) => {
-                  //           onOptionChange &&
-                  //             onOptionChange({
-                  //               component,
-                  //               optionName: item[0],
-                  //               value: item[1],
-                  //               componentId: id,
-                  //             });
-                  //         });
-                  //   }}
-                  //   key={key}
-                  //   onResizeStop={onResizeStop}
-                  //   onDragStop={onDragStop}
-                  //   paramUpdated={paramUpdated}
-                  //   id={key}
-                  //   allComponents={allComponents}
-                  //   {...childWidgets[key]}
-                  //   mode={mode}
-                  //   resizingStatusChanged={(status) => setIsResizing(status)}
-                  //   draggingStatusChanged={(status) => setIsDragging(status)}
-                  //   inCanvas={true}
-                  //   zoomLevel={zoomLevel}
-                  //   setSelectedComponent={setSelectedComponent}
-                  //   selectedComponent={selectedComponent}
-                  //   deviceWindowWidth={deviceWindowWidth}
-                  //   removeComponent={customRemoveComponent}
-                  //   canvasWidth={_containerCanvasWidth}
-                  //   readOnly={readOnly}
-                  //   darkMode={darkMode}
-                  //   customResolvables={customResolvables}
-                  //   onComponentHover={onComponentHover}
-                  //   hoveredComponent={hoveredComponent}
-                  //   parentId={parentComponent?.name}
-                  //   parent={parent}
-                  //   sideBarDebugger={sideBarDebugger}
-                  //   exposedVariables={exposedVariables ?? {}}
-                  //   childComponents={childComponents[key]}
-                  //   containerProps={{
-                  //     mode,
-                  //     snapToGrid,
-                  //     onComponentClick,
-                  //     onEvent,
-                  //     appDefinition,
-                  //     appDefinitionChanged,
-                  //     currentState,
-                  //     onComponentOptionChanged,
-                  //     onComponentOptionsChanged,
-                  //     appLoading,
-                  //     zoomLevel,
-                  //     setSelectedComponent,
-                  //     removeComponent,
-                  //     currentLayout,
-                  //     deviceWindowWidth,
-                  //     darkMode,
-                  //     readOnly,
-                  //     onComponentHover,
-                  //     hoveredComponent,
-                  //     sideBarDebugger,
-                  //     addDefaultChildren,
-                  //     currentPageId,
-                  //     childComponents,
-                  //   }}
-                  // />
                 );
               }
             })}
@@ -973,6 +874,9 @@ const SubWidgetWrapper = ({
   mode,
 }) => {
   const { layouts } = widget;
+  const widgetRef = useRef();
+  const isOnScreen = useOnScreen(widgetRef);
+
   const layoutData = layouts?.[currentLayout] || layouts?.['desktop'];
   const isSelected = useEditorStore((state) => {
     const isSelected = (state.selectedComponents || []).length === 1 && state?.selectedComponents?.[0]?.id === id;
@@ -980,20 +884,34 @@ const SubWidgetWrapper = ({
   }, shallow);
 
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
-  if (isEmpty(layoutData)) {
-    return {};
-  }
 
-  const width = (canvasWidth * layoutData.width) / 43;
+  let width = (canvasWidth * layoutData.width) / 43;
+  width = width > canvasWidth ? canvasWidth : width; //this handles scenarios where the width is set more than canvas for older components
   const styles = {
     width: width + 'px',
     height: layoutData.height + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
-    // ...(isGhostComponent ? { opacity: 0.5 } : isResizing ? { opacity: 0 } : {}),
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
   };
 
   const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
+
+  useEffect(() => {
+    const controlBox = document.querySelector(`[target-id="${id}"]`);
+    console.log('controlBox', { hide: !isOnScreen && isSelected && !isDragging && !isResizing, isOnScreen });
+    //adding attribute instead of class since react-moveable seems to replace classes internally on scroll stop
+    if (!isOnScreen && isSelected && !isDragging && !isResizing) {
+      controlBox?.classList.add('hide-control');
+      controlBox?.setAttribute('data-off-screen', 'true');
+    } else {
+      // controlBox?.classList.remove('hide-control');
+      controlBox?.removeAttribute('data-off-screen');
+    }
+  }, [isOnScreen]);
+
+  if (isEmpty(layoutData)) {
+    return '';
+  }
 
   return (
     <div
@@ -1004,13 +922,14 @@ const SubWidgetWrapper = ({
           ? `moveable-box position-absolute`
           : `target-${parent} target1-${parent} ele-${id} nested-target moveable-box target  ${
               isResizing ? 'resizing-target' : ''
-            } ${isWidgetActive ? 'active-target' : ''}`
+            } ${isWidgetActive ? 'active-target' : ''} ${isDragging ? 'opacity-0' : ''}`
       }
       key={id}
       id={id}
       style={{ transform: `translate(332px, -134px)`, ...styles }}
       widget-id={id}
       widgetid={id}
+      ref={widgetRef}
     >
       {children}
     </div>
@@ -1044,3 +963,23 @@ const SubContianerWrapper = ({
     </div>
   );
 };
+
+export default function useOnScreen(ref) {
+  const [isIntersecting, setIntersecting] = useState(false);
+
+  const observer = useMemo(
+    () =>
+      new IntersectionObserver(([entry]) => setIntersecting(entry.isIntersecting), {
+        root: ref.current?.closest('.real-canvas'),
+        threshold: 0,
+      }),
+    [ref]
+  );
+
+  useEffect(() => {
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return isIntersecting;
+}

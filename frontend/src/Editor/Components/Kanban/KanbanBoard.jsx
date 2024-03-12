@@ -23,7 +23,7 @@ import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import cx from 'classnames';
-import { useGridStore, useOpenModalWidgetId } from '@/_stores/gridStore';
+import { useGridStore } from '@/_stores/gridStore';
 
 const dropAnimation = {
   sideEffects: defaultDropAnimationSideEffects({

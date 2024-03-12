@@ -24,7 +24,6 @@ export const CalendarEventPopover = function ({
   const calendarElement = document.getElementById(calendarWidgetId);
 
   const handleClickOutside = (event) => {
-    console.log('handleClickOutside', event);
     if (
       parentRef.current &&
       !parentRef.current.contains(event.target) &&

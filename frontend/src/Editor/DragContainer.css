@@ -173,4 +173,10 @@
 .moveable-draggable-dragging {
     opacity: 1 !important;
 }
+
+[data-off-screen="true"] {
+    display: none;
+}
+
+
 /*  */

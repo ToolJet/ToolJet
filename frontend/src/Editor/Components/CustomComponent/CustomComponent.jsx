@@ -13,7 +13,6 @@ export const CustomComponent = (props) => {
 
   const showPlaceholder = useGridStore((state) => {
     const { resizingComponentId, draggingComponentId } = state;
-    console.log('showPlaceholder', { resizingComponentId, draggingComponentId, id });
     if (
       (resizingComponentId === null && draggingComponentId === id) ||
       (draggingComponentId === null && resizingComponentId === id) ||

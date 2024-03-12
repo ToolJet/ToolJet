@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
-import Moveable, { makeAble } from 'react-moveable';
+import Moveable from 'react-moveable';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import './DragContainer.css';
-import _, { isEmpty, debounce } from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
 import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
@@ -135,9 +135,6 @@ export default function DragContainer({
     }));
   const [list, setList] = useState(boxList);
 
-  // console.log('dragTarget => ', dragTarget);
-  // const { setSelectedComponents } = useEditorActions();
-
   const hoveredComponent = useEditorStore((state) => state?.hoveredComponent, shallow);
 
   useEffect(() => {
@@ -157,17 +154,6 @@ export default function DragContainer({
     setTimeout(reloadGrid, 100);
 
     try {
-      // for (let key in widgets) {
-      //   const box = widgets[key];
-      //   const boxEle = document.getElementById(key);
-      //   console.log('boxEle->', boxEle, box);
-      //   if (boxEle) {
-      //     boxEle.addEventListener('scrollend', (event) => {
-      //       alert('Scrolled..');
-      //     });
-      //   }
-      // }
-
       const boxes = document.querySelectorAll('.jet-container');
       var timer;
       boxes.forEach((box) => {
@@ -239,27 +225,7 @@ export default function DragContainer({
     for (var i = 0; i < elements.length; i++) {
       elements[i].className = 'moveable-control-box modal-moveable rCS1w3zcxh';
     }
-    // if (parentId) {
-    //   // eslint-disable-next-line no-undef
-    //   const childMoveableRef = childMoveableRefs.current[parentId];
-    //   const controlBoxes = childMoveableRef?.moveable?.getMoveables();
-    //   if (controlBoxes) {
-    //     for (const element of controlBoxes) {
-    //       if (selectedComponentsId.has(element?.props?.target?.id)) {
-    //         element?.controlBox?.classList.add('selected-component', `sc-${element?.props?.target?.id}`);
-    //       }
-    //     }
-    //   }
-    // } else {
-    //   const controlBoxes = moveableRef?.current?.moveable?.getMoveables();
-    //   if (controlBoxes) {
-    //     for (const element of controlBoxes) {
-    //       if (selectedComponentsId.has(element?.props?.target?.id)) {
-    //         element?.controlBox?.classList.add('selected-component', `sc-${element?.props?.target?.id}`);
-    //       }
-    //     }
-    //     // }
-    //   }
+
     const controlBoxes = moveableRef?.current?.moveable?.getMoveables();
     if (controlBoxes) {
       for (const element of controlBoxes) {
@@ -275,20 +241,6 @@ export default function DragContainer({
   useEffect(() => {
     setList(boxList);
   }, [JSON.stringify(boxes)]);
-
-  // useEffect(() => {
-  //   const groupedTargets = [...selectedComponents.map((component) => '.ele-' + component.id)];
-  //   const newMovableTargets = groupedTargets.length ? [...groupedTargets] : [];
-  //   if (hoveredComponent && groupedTargets?.length <= 1 && !groupedTargets.includes('.ele-' + hoveredComponent)) {
-  //     newMovableTargets.push('.ele-' + hoveredComponent);
-  //   }
-
-  //   if (draggedTarget && !newMovableTargets.includes(`.ele-${draggedTarget}`)) {
-  //     newMovableTargets.push('.ele-' + draggedTarget);
-  //   }
-
-  //   setMovableTargets(draggedSubContainer ? [] : draggedTarget ? ['.ele-' + draggedTarget] : newMovableTargets);
-  // }, [selectedComponents, draggedTarget, draggedSubContainer]);
 
   const getDimensions = (id) => {
     const box = boxes.find((b) => b.id === id);
@@ -359,16 +311,11 @@ export default function DragContainer({
     lastDraggedEventsRef.current = posWithParent;
   };
 
-  const debouncedOnDrag = debounce((events, parent = null) => updateNewPosition(events, parent), 100);
-
   return mode === 'edit' ? (
     <>
       <Moveable
         dragTargetSelf={true}
-        dragTarget={
-          isGroupHandleHoverd ? document.getElementById('multiple-components-config-handle') : undefined
-          // `.widget-${hoveredComponent}`
-        }
+        dragTarget={isGroupHandleHoverd ? document.getElementById('multiple-components-config-handle') : undefined}
         ref={moveableRef}
         ables={[MouseCustomAble, DimensionViewable]}
         props={{
@@ -376,19 +323,13 @@ export default function DragContainer({
           dimensionViewable: groupedTargets.length > 1,
         }}
         flushSync={flushSync}
-        // target={groupedTargets?.[0] ? groupedTargets?.[0] : `.ele-${draggedTarget ? draggedTarget : hoveredComponent}`}
-        target={
-          // groupedTargets?.length > 1 ? groupedTargets : groupedTargets?.length === 1 ? groupedTargets[0] : '.target'
-          groupedTargets?.length > 1 ? groupedTargets : '.target'
-        }
+        target={groupedTargets?.length > 1 ? groupedTargets : '.target'}
         origin={false}
         individualGroupable={groupedTargets.length <= 1}
         draggable={true}
         resizable={{
           edge: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
           renderDirections: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
-          // edge: ['e', 'w', 'n', 's'],
-          // renderDirections: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
         }}
         keepRatio={false}
         // key={list.length}
@@ -436,35 +377,11 @@ export default function DragContainer({
             e.target.style.height = `${e.height}px`;
           }
           e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
-
-          // e.target.style.transform = e.drag.transform;
-          // onResizeStop([
-          //   {
-          //     id: e.target.id,
-          //     height: e.height,
-          //     width: width,
-          //     x: e.drag.translate[0],
-          //     y: e.drag.translate[1],
-          //   },
-          // ]);
         }}
         onResizeEnd={(e) => {
           try {
             useGridStore.getState().actions.setResizingComponentId(null);
             setIsResizing(false);
-            // const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
-            // e.target.style.width = `${width}px`;
-            // e.target.style.height = `${e.lastEvent.height}px`;
-            // e.target.style.transform = e.lastEvent.drag.transform;
-            // onResizeStop([
-            //   {
-            //     id: e.target.id,
-            //     height: e.lastEvent.height,
-            //     width: width,
-            //     x: e.lastEvent.drag.translate[0],
-            //     y: e.lastEvent.drag.translate[1],
-            //   },
-            // ]);
             const currentWidget = boxes.find(({ id }) => {
               return id === e.target.id;
             });
@@ -489,10 +406,7 @@ export default function DragContainer({
               transformY = currentLayout.top - diffHeight;
             }
 
-            // e.target.style.transform = e.drag.transform;
             width = adjustWidth(width, transformX, _gridWidth);
-            // e.target.style.width = `${width}px`;
-            // e.target.style.height = `${height}px`;
             const elemContainer = e.target.closest('.real-canvas');
             const containerHeight = elemContainer.clientHeight;
             const containerWidth = elemContainer.clientWidth;
@@ -550,19 +464,11 @@ export default function DragContainer({
             ev.target.style.width = `${ev.width}px`;
             ev.target.style.height = `${ev.height}px`;
             ev.target.style.transform = ev.drag.transform;
-            // newBoxs.push({
-            //   id: ev.target.id,
-            //   height: ev.height,
-            //   width: ev.width,
-            //   x: ev.drag.translate[0],
-            //   y: ev.drag.translate[1],
-            // });
           });
 
           if (!(posLeft < 0 || posTop < 0 || posRight < 0 || posBottom < 0)) {
             groupResizeDataRef.current = events;
           }
-          // onResizeStop(newBoxs);
         }}
         onResizeGroupEnd={(e) => {
           try {
@@ -572,35 +478,6 @@ export default function DragContainer({
             const parentElm = events[0].target.closest('.real-canvas');
             parentElm.classList.remove('show-grid');
 
-            // events.forEach((ev) => {
-            //   console.log('resizeevents', ev.lastEvent.width);
-            //   const currentWidget = boxes.find(({ id }) => {
-            //     return id === ev.target.id;
-            //   });
-
-            //   let _gridWidth = subContainerWidths[currentWidget.component?.parent] || gridWidth;
-            //   console.log('resizeevents', ev.lastEvent.width, currentWidget?.layouts[currentLayout].width * _gridWidth);
-            //   let width = Math.round(ev.lastEvent.width / _gridWidth) * _gridWidth;
-            //   width = width < _gridWidth ? _gridWidth : width;
-            //   let posX = Math.round(ev.lastEvent.drag.translate[0] / _gridWidth) * _gridWidth;
-            //   let posY = Math.round(ev.lastEvent.drag.translate[1] / 10) * 10;
-            //   let height = Math.round(ev.lastEvent.height / 10) * 10;
-            //   height = height < 10 ? 10 : height;
-
-            //   ev.target.style.width = `${width}px`;
-            //   ev.target.style.height = `${height}px`;
-            //   ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
-            //   newBoxs.push({
-            //     id: ev.target.id,
-            //     height: height,
-            //     width: width,
-            //     x: posX,
-            //     y: posY,
-            //     gw: _gridWidth,
-            //   });
-            // });
-
-            // debugger;
             // TODO: Logic needs to be relooked post go live P2
             groupResizeDataRef.current.forEach((ev) => {
               const currentWidget = boxes.find(({ id }) => {
@@ -653,10 +530,7 @@ export default function DragContainer({
         }}
         checkInput
         onDragStart={(e) => {
-          // if (currentLayout === 'mobile' && autoComputeLayout) {
-          //   turnOffAutoLayout();
-          //   return false;
-          // }
+          e?.moveable?.controlBox?.removeAttribute('data-off-screen');
           const box = boxes.find((box) => box.id === e.target.id);
           if (['RangeSlider', 'Container', 'BoundedBox', 'Kanban'].includes(box?.component?.component)) {
             const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
@@ -670,9 +544,7 @@ export default function DragContainer({
           }
           setDraggedTarget(e.target.id);
         }}
-        // linePadding={10}
         onDragEnd={(e) => {
-          const startTime = performance.now();
           try {
             if (isDraggingRef.current) {
               useGridStore.getState().actions.setDraggingComponentId(null);
@@ -695,11 +567,7 @@ export default function DragContainer({
                 const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
                 if (isOwnChild) return false;
 
-                let isDroppable =
-                  ele.id !== e.target.id &&
-                  // ele.classList.contains('target') ||
-                  // (ele.classList.contains('nested-target') || ele.classList.contains('drag-container-parent'));
-                  ele.classList.contains('drag-container-parent');
+                let isDroppable = ele.id !== e.target.id && ele.classList.contains('drag-container-parent');
                 if (isDroppable) {
                   // debugger;
                   let widgetId = ele?.getAttribute('component-id') || ele.id;
@@ -721,7 +589,6 @@ export default function DragContainer({
               draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
               draggedOverElemIdType = draggedOverElem?.getAttribute('data-parent-type');
             }
-            // console.log("draggedOverElemId", draggedOverElemId);
 
             const _gridWidth = subContainerWidths[draggedOverElemId] || gridWidth;
             const parentElem = list.find(({ id }) => id === draggedOverElemId);
@@ -759,17 +626,6 @@ export default function DragContainer({
                 e.target.style.transform = `translate(${left}px, ${top}px)`;
               }
             } else {
-              // const elemContainer = e.target.closest('.real-canvas');
-              // const containerHeight = elemContainer.clientHeight;
-              // const containerWidth = elemContainer.clientWidth;
-              // const maxY = containerHeight - e.target.clientHeight;
-              // const maxLeft = containerWidth - e.target.clientWidth;
-              // top = top < 0 ? 0 : top > maxY ? maxY : top;
-              // left = left < 0 ? 0 : left > maxLeft ? maxLeft : left;
-              // e.target.style.transform = `translate(${Math.round(left / _gridWidth) * _gridWidth}px, ${
-              //   Math.round(top / 10) * 10
-              // }px)`;
-
               e.target.style.transform = `translate(${Math.round(left / _gridWidth) * _gridWidth}px, ${
                 Math.round(top / 10) * 10
               }px)`;
@@ -790,7 +646,6 @@ export default function DragContainer({
           } catch (error) {
             console.log('draggedOverElemId->error', error);
           }
-          // runAsync(() => useGridStore.getState().actions.setDragTarget(null));
           var canvasElms = document.getElementsByClassName('sub-canvas');
           var elementsArray = Array.from(canvasElms);
           elementsArray.forEach(function (element) {
@@ -799,7 +654,6 @@ export default function DragContainer({
           });
         }}
         onDrag={(e) => {
-          const startTime = performance.now();
           if (!isDraggingRef.current) {
             useGridStore.getState().actions.setDraggingComponentId(e.target.id);
             isDraggingRef.current = true;
@@ -811,7 +665,6 @@ export default function DragContainer({
           if (e.target.id !== draggedTarget) {
             setDraggedTarget(e.target.id);
           }
-          // setDraggedTarget(e.target.id);
           if (!draggedSubContainer) {
             const parentComponent = widgets[widgets[e.target.id]?.component?.parent];
             let top = e.translate[1];
@@ -846,9 +699,6 @@ export default function DragContainer({
             const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
             const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
 
-            // if (useGridStore.getState().dragTarget !== draggedOverElem?.id) {
-            //   runAsync(() => useGridStore.getState().actions.setDragTarget(draggedOverElem?.id));
-            // }
             var canvasElms = document.getElementsByClassName('sub-canvas');
             var elementsArray = Array.from(canvasElms);
             elementsArray.forEach(function (element) {
@@ -868,6 +718,13 @@ export default function DragContainer({
               draggedOverElemRef.current = draggedOverContainer;
             }
           }
+          console.log('getOffset--', getOffset(e.target, document.querySelector('#real-canvas')));
+          const offset = getOffset(e.target, document.querySelector('#real-canvas'));
+          if (document.getElementById('moveable-drag-ghost')) {
+            document.getElementById('moveable-drag-ghost').style.transform = `translate(${offset.x}px, ${offset.y}px)`;
+            document.getElementById('moveable-drag-ghost').style.width = `${e.target.clientWidth}px`;
+            document.getElementById('moveable-drag-ghost').style.height = `${e.target.clientHeight}px`;
+          }
         }}
         onDragGroup={(ev) => {
           const { events } = ev;
@@ -875,26 +732,10 @@ export default function DragContainer({
           if (parentElm && !parentElm.classList.contains('show-grid')) {
             parentElm?.classList?.add('show-grid');
           }
-          // const parentWidth = parentElm?.clientWidth;
-          // const parentHeight = parentElm?.clientHeight;
-
-          // const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
 
           events.forEach((ev) => {
             let posX = ev.translate[0];
             let posY = ev.translate[1];
-            // if (posLeft < 0) {
-            //   posX = ev.translate[0] - posLeft;
-            // }
-            // if (posTop < 0) {
-            //   posY = ev.translate[1] - posTop;
-            // }
-            // if (posRight < 0) {
-            //   posX = ev.translate[0] + posRight;
-            // }
-            // if (posBottom < 0) {
-            //   posY = ev.translate[1] + posBottom;
-            // }
 
             ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
           });
@@ -908,7 +749,6 @@ export default function DragContainer({
           try {
             const { events } = e;
             const parentId = widgets[events[0]?.target?.id]?.component?.parent;
-            // setIsDragging(false);
 
             const parentElm = events[0].target.closest('.real-canvas');
             parentElm.classList.remove('show-grid');
@@ -948,30 +788,11 @@ export default function DragContainer({
         }}
         //snap settgins
         snappable={true}
-        // snapDirections={{
-        //   top: true,
-        //   left: true,
-        //   bottom: true,
-        //   right: true,
-        //   center: true,
-        //   middle: true,
-        // }}
-        // elementSnapDirections={{
-        //   top: true,
-        //   left: true,
-        //   bottom: true,
-        //   right: true,
-        //   center: true,
-        //   middle: true,
-        // }}
         snapThreshold={10}
-        // elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
         isDisplaySnapDigit={false}
-        // snapGridWidth={gridWidth}
         bounds={{ left: 0, top: 0, right: 0, bottom: 0, position: 'css' }}
         displayAroundControls={true}
         controlPadding={20}
-        // hideDefaultLines
       />
     </>
   ) : (
@@ -1003,28 +824,6 @@ function getMouseDistanceFromParentDiv(event, id, parentWidgetType) {
   return { top, left };
 }
 
-function removeDuplicates(arr) {
-  const unique = arr
-    .map((e) => e['parent'])
-    .map((e, i, final) => final.indexOf(e) === i && i)
-    .filter((e) => arr[e])
-    .map((e) => arr[e]);
-
-  // debugger;
-  return unique;
-}
-
-function extractWidgetClassOnHover(element) {
-  var classes = element.className.split(' ');
-
-  // Filter out the classes that match the format 'widget-{id}'
-  var widgetClass = classes.find(function (c) {
-    return c.startsWith('widget-');
-  });
-
-  return widgetClass.replace('widget-', '');
-}
-
 export function findHighestLevelofSelection(selectedComponents) {
   let result = [...selectedComponents];
   if (selectedComponents.some((widget) => !widget?.component?.parent)) {
@@ -1034,25 +833,7 @@ export function findHighestLevelofSelection(selectedComponents) {
       (widget) => widget?.component?.parent === selectedComponents[0]?.component?.parent
     );
   }
-  // const result = selectedComponents.filter((widget) => {
-  //   console.log(
-  //     'groupedTargets-->result------>',
-  //     widget?.component?.parent,
-  //     selectedComponents,
-  //     selectedComponents.some((e) => e.id === widget?.component?.parent)
-  //   );
-  //   return (
-  //     widget?.component?.parent !== undefined && !selectedComponents.some((e) => e.id === widget?.component?.parent)
-  //   );
-  // });
   return result;
-}
-
-async function runAsync(fn) {
-  // console.log('Executing_ssetState==>' + fn);
-  // setImmediate(() => {
-  fn();
-  // });
 }
 
 function findChildrenAndGrandchildren(parentId, widgets) {
@@ -1102,4 +883,18 @@ function getPositionForGroupDrag(events, parentWidth, parentHeight) {
       posTop: Math.min(positions.posTop ?? Infinity, elemPosY),
     };
   }, {});
+}
+
+function getOffset(childElement, grandparentElement) {
+  if (!childElement || !grandparentElement) return null;
+
+  // Get bounding rectangles for both elements
+  const childRect = childElement.getBoundingClientRect();
+  const grandparentRect = grandparentElement.getBoundingClientRect();
+
+  // Calculate offset by subtracting grandparent's position from child's position
+  const offsetX = childRect.left - grandparentRect.left;
+  const offsetY = childRect.top - grandparentRect.top;
+
+  return { x: offsetX, y: offsetY };
 }
