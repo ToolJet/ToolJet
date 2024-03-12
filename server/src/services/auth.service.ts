@@ -380,7 +380,8 @@ export class AuthService {
           !passwordLogin,
           passwordLogin,
           null,
-          manager
+          manager,
+          organizationId
         )
       : await this.generateInviteSignupPayload(response, user, source, manager);
     const organizationInviteUrl = generateOrgInviteURL(invitationToken, organizationId, false);
