@@ -125,7 +125,6 @@ export const TextInput = function TextInput({
 
   useEffect(() => {
     visibility !== properties.visibility && setVisibility(properties.visibility);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
