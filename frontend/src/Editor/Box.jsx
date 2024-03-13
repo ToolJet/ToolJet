@@ -264,10 +264,7 @@ export const Box = memo(
       if (customResolvables && !readOnly && mode === 'edit') {
         const newCustomResolvable = {};
         newCustomResolvable[id] = { ...customResolvables };
-        exposeToCodeHinter((prevState) => ({
-          ...prevState,
-          ...newCustomResolvable,
-        }));
+        exposeToCodeHinter((prevState) => ({ ...prevState, ...newCustomResolvable }));
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(customResolvables), readOnly]);
