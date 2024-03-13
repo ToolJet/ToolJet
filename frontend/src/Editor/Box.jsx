@@ -280,10 +280,7 @@ export const Box = memo(
 
       const componentEvents = events.filter((event) => event.sourceId === id);
 
-      onEvent(eventName, componentEvents, {
-        ...options,
-        customVariables: { ...customResolvables },
-      });
+      onEvent(eventName, componentEvents, { ...options, customVariables: { ...customResolvables } });
     };
     const validate = (value) =>
       validateWidget({
