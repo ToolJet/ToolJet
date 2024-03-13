@@ -18,8 +18,8 @@ import {
   extractMajorVersion,
   isTooljetVersionWithNormalizedAppDefinitionSchem,
   isVersionGreaterThanOrEqual,
-  resolveGridPositionForComponent,
 } from 'src/helpers/utils.helper';
+import { LayoutDimensionUnits, resolveGridPositionForComponent } from 'src/helpers/components.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
@@ -457,10 +457,10 @@ export class AppImportExportService {
                     newLayout.type = type;
                     newLayout.top = layout.top;
                     newLayout.left =
-                      layout.dimensionUnit !== 'count'
+                      layout.dimensionUnit !== LayoutDimensionUnits.COUNT
                         ? resolveGridPositionForComponent(layout.left, type)
                         : layout.left;
-                    newLayout.dimensionUnit = 'count';
+                    newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
                     // newLayout.left = layout.left;
                     newLayout.width = layout.width;
                     newLayout.height = layout.height;
@@ -779,10 +779,10 @@ export class AppImportExportService {
               newLayout.type = layout.type;
               newLayout.top = layout.top;
               newLayout.left =
-                layout.dimensionUnit !== 'count'
+                layout.dimensionUnit !== LayoutDimensionUnits.COUNT
                   ? resolveGridPositionForComponent(layout.left, layout.type)
                   : layout.left;
-              newLayout.dimensionUnit = 'count';
+              newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
               newLayout.width = layout.width;
               newLayout.height = layout.height;
               newLayout.component = savedComponent;
