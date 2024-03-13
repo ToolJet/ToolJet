@@ -9,6 +9,7 @@ import AlignLeft from '@/_ui/Icon/solidIcons/AlignLeft';
 import AlignCenter from '@/_ui/Icon/solidIcons/AlignCenter';
 import AlignRight from '@/_ui/Icon/solidIcons/AlignRight';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
+import { Select } from '@/Editor/CodeBuilder/Elements/Select';
 
 export const StylesTabElements = ({
   column,
@@ -117,14 +118,16 @@ export const StylesTabElements = ({
             />
           </div>
           <div data-cy={`input-and-label-object-fit`} className="field">
-            <label className="form-label">{t('widget.Table.objectFit', 'Object fit')}</label>
-            <SelectSearch
+            <label className="form-label">{t('widget.Table.imageFit', 'Image fit')}</label>
+            <Select
               className={'select-search'}
-              options={[
-                { name: 'Cover', value: 'cover' },
-                { name: 'Contain', value: 'contain' },
-                { name: 'Fill', value: 'fill' },
-              ]}
+              meta={{
+                options: [
+                  { label: 'Cover', value: 'cover' },
+                  { label: 'Contain', value: 'contain' },
+                  { label: 'Fill', value: 'fill' },
+                ],
+              }}
               value={column.objectFit}
               search={true}
               closeOnSelect={true}
@@ -133,6 +136,7 @@ export const StylesTabElements = ({
               }}
               fuzzySearch
               placeholder={t('Select') + '...'}
+              width={'100%'}
             />
           </div>
         </>
