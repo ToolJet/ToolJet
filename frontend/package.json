@@ -129,6 +129,10 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
+    "@types/react": "^18.2.65",
+    "@types/react-dom": "^18.2.22",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "babel-loader": "^9.1.2",
     "babel-plugin-console-source": "^2.0.5",
     "babel-plugin-import": "^1.13.6",
@@ -158,6 +162,7 @@
     "storybook": "^7.2.1",
     "style-loader": "^3.3.1",
     "terser-webpack-plugin": "^5.3.6",
+    "typescript": "^5.4.2",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.11.1"

@@ -19,6 +19,7 @@ module.exports = {
         'plugin:prettier/recommended',
         'plugin:react-perf/all',
         'plugin:sonarjs/recommended',
+        'plugin:@typescript-eslint/recommended',
       ],
       parser: '@babel/eslint-parser',
       parserOptions: {
@@ -32,7 +33,7 @@ module.exports = {
         ecmaVersion: 12,
         sourceType: 'module',
       },
-      plugins: ['react', 'prettier', 'jest', 'complexity', 'react-perf', 'sonarjs'],
+      plugins: ['react', 'prettier', 'jest', 'complexity', 'react-perf', 'sonarjs', '@typescript-eslint'],
       rules: {
         'prettier/prettier': [
           'error',
@@ -73,6 +74,23 @@ module.exports = {
         // 'max-lines-per-function': ['warn', 50], // Limits the number of lines per function
         'react/jsx-key': ['error', { checkFragmentShorthand: true }], // Ensures key prop is present in JSX arrays
         'max-lines': ['warn', { max: 150, skipBlankLines: true, skipComments: true }],
+        '@typescript-eslint/interface-name-prefix': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-unused-vars': ['error', { vars: 'all', args: 'none' }],
+        '@typescript-eslint/no-var-requires': 'off',
+        '@typescript-eslint/no-empty-function': 0,
+        'no-unsafe-optional-chaining': 'off',
+        '@typescript-eslint/ban-types': [
+          'error',
+          {
+            types: {
+              object: false,
+            },
+            extendDefaults: true,
+          },
+        ],
       },
       settings: {
         react: {
