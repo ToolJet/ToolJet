@@ -29,24 +29,30 @@ export const TextArea = function TextArea({
   }, [properties.value, setValue]);
 
   return (
-    <textarea
-      disabled={styles.disabledState}
-      onChange={(e) => {
-        setValue(e.target.value);
-        setExposedVariable('value', e.target.value);
-      }}
-      type="text"
-      className="form-control textarea"
-      placeholder={properties.placeholder}
+    <div
+      className="textarea-wrapper"
       style={{
-        height,
-        resize: 'none',
-        display: styles.visibility ? '' : 'none',
-        borderRadius: `${styles.borderRadius}px`,
-        boxShadow: styles.boxShadow,
+        borderRadius: `${styles?.borderRadius || 0}px`,
       }}
-      value={value}
-      data-cy={dataCy}
-    ></textarea>
+    >
+      <textarea
+        disabled={styles.disabledState}
+        onChange={(e) => {
+          setValue(e.target.value);
+          setExposedVariable('value', e.target.value);
+        }}
+        type="text"
+        className="form-control textarea"
+        placeholder={properties.placeholder}
+        style={{
+          height,
+          resize: 'none',
+          display: styles.visibility ? '' : 'none',
+          boxShadow: styles.boxShadow,
+        }}
+        value={value}
+        data-cy={dataCy}
+      ></textarea>
+    </div>
   );
 };

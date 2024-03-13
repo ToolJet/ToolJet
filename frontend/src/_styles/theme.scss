@@ -10756,6 +10756,14 @@ tbody {
 
 }
 
+.textarea-wrapper{
+  border: 1px solid #dadcde;
+  .form-control.textarea{
+    border: 0px;
+    border-radius: 0px;
+  }
+}
+
 .tj-app-input-wrapper {
   display: flex;
 
