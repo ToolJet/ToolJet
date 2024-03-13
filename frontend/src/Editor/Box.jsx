@@ -289,7 +289,7 @@ export const Box = memo(
         customResolveObjects: customResolvables,
       });
 
-    const shouldHideWidget = mode === 'view' && component.component === 'PDF' && !isPDFSupported();
+    const shouldHideWidget = component.component === 'PDF' && !isPDFSupported();
 
     return (
       <OverlayTrigger
