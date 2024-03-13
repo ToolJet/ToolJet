@@ -69,6 +69,7 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
+import { isPDFSupported } from '@/_stores/utils';
 
 export const AllComponents = {
   Button,
@@ -286,6 +287,8 @@ export const Box = memo(
         customResolveObjects: customResolvables,
       });
     const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
+    const shouldHideWidget = mode === 'view' && component.component === 'PDF' && !isPDFSupported();
+
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
@@ -320,7 +323,7 @@ export const Box = memo(
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >
-          {!resetComponent ? (
+          {!resetComponent && !shouldHideWidget ? (
             <ComponentToRender
               onComponentClick={onComponentClick}
               onComponentOptionChanged={onComponentOptionChanged}
@@ -374,18 +377,3 @@ export const Box = memo(
     );
   }
 );
-
-export function isPDFSupported() {
-  const userAgent = navigator.userAgent;
-  const parser = new UAParser(userAgent);
-  const browser = parser.getBrowser();
-
-  const isChrome = browser.name === 'Chrome' && browser.major >= 92;
-  const isEdge = browser.name === 'Edge' && browser.major >= 92;
-  const isSafari = browser.name === 'Safari' && browser.major >= 15 && browser.minor >= 4; // Handle minor version check for Safari
-  const isFirefox = browser.name === 'Firefox' && browser.major >= 90;
-
-  console.log('browser--', browser, isChrome || isEdge || isSafari || isFirefox);
-
-  return isChrome || isEdge || isSafari || isFirefox;
-}
