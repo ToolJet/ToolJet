@@ -163,6 +163,7 @@ export const Box = memo(
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
     const { events } = useAppInfo();
+    const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
     const componentMeta = useMemo(() => {
       return componentTypes.find((comp) => component.component === comp.component);
@@ -178,14 +179,18 @@ export const Box = memo(
       mode === 'edit' && component.validate
         ? validateProperties(resolvedProperties, componentMeta.properties)
         : [resolvedProperties, []];
+    if (shouldAddBoxShadowAndVisibility.includes(component.component)) {
+      validatedProperties.visibility = validatedProperties.visibility !== false ? true : false;
+    }
 
     const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
-
     const [validatedStyles, styleErrors] =
       mode === 'edit' && component.validate
         ? validateProperties(resolvedStyles, componentMeta.styles)
         : [resolvedStyles, []];
-
+    if (!shouldAddBoxShadowAndVisibility.includes(component.component)) {
+      validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
+    }
     const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
     const [validatedGeneralProperties, generalPropertiesErrors] =
       mode === 'edit' && component.validate
@@ -193,7 +198,7 @@ export const Box = memo(
         : [resolvedGeneralProperties, []];
 
     const resolvedGeneralStyles = resolveGeneralStyles(component, currentState, null, customResolvables);
-    resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
+
     const [validatedGeneralStyles, generalStylesErrors] =
       mode === 'edit' && component.validate
         ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
@@ -289,7 +294,7 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
-    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
+
     const shouldHideWidget = mode === 'view' && component.component === 'PDF' && !isPDFSupported();
 
     return (
@@ -297,7 +302,7 @@ export const Box = memo(
         placement={inCanvas ? 'auto' : 'top'}
         delay={{ show: 500, hide: 0 }}
         trigger={
-          inCanvas && shouldAddBoxShadow.includes(component.component)
+          inCanvas && shouldAddBoxShadowAndVisibility.includes(component.component)
             ? !validatedProperties.tooltip?.toString().trim()
               ? null
               : ['hover', 'focus']
@@ -310,7 +315,7 @@ export const Box = memo(
             props,
             text: inCanvas
               ? `${
-                  shouldAddBoxShadow.includes(component.component)
+                  shouldAddBoxShadowAndVisibility.includes(component.component)
                     ? validatedProperties.tooltip
                     : validatedGeneralProperties.tooltip
                 }`
@@ -347,7 +352,7 @@ export const Box = memo(
               exposedVariables={exposedVariables}
               styles={{
                 ...validatedStyles,
-                ...(!shouldAddBoxShadow.includes(component.component)
+                ...(!shouldAddBoxShadowAndVisibility.includes(component.component)
                   ? { boxShadow: validatedGeneralStyles?.boxShadow }
                   : {}),
               }}
