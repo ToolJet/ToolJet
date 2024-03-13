@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext, useRef, memo, useCallback } from 'react';
-import * as UAParser from 'ua-parser-js';
+import React, { useEffect, useState, useMemo, useContext, memo } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
