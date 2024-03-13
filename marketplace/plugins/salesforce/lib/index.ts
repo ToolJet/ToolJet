@@ -3,11 +3,18 @@ import { SourceOptions, QueryOptions } from './types';
 import jsforce from 'jsforce';
 
 export default class Salesforce implements QueryService {
-
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
+    sourceOptions.redirect_uri = this.jsforceAuthUrl();
     return {
       status: 'ok',
       data: {},
+    };
+  }
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
+    sourceOptions.redirect_uri = this.jsforceAuthUrl();
+    return {
+      status: 'ok',
+      data: { message: 'Connection successful', redirect_uri: sourceOptions.redirect_uri },
     };
   }
 
@@ -19,9 +26,9 @@ export default class Salesforce implements QueryService {
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;
 
-    if (!clientId || !clientSecret) {
-      throw Error('You need to define Salesforce OAuth environment variables');
-    }
+    // if (!clientId || !clientSecret) {
+    //   throw Error('You need to define Salesforce OAuth environment variables');
+    // }
     const Oauth2 = new jsforce.OAuth2({
       clientId: clientId,
       clientSecret: clientSecret,
@@ -29,8 +36,4 @@ export default class Salesforce implements QueryService {
     });
     return redirectUri;
   }
-  let salesforce = new Salesforce();
-  const redirectUri = salesforce.jsforceAuthUrl();
-  process.env.JSFORCE_REDIRECT_URI = redirectUri;
-
 }

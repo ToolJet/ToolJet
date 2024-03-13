@@ -23,7 +23,7 @@
   },
   "defaults": {
     "redirect_url":{
-      "value": "${JSFORCE_REDIRECT_URI}"
+      "value": ""
     }
   },
   "properties": {
