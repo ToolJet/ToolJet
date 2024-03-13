@@ -4,11 +4,8 @@ import { EntityManager, Repository } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
-import {
-  dbTransactionForAppVersionAssociationsUpdate,
-  dbTransactionWrap,
-  resolveGridPositionForComponent,
-} from 'src/helpers/utils.helper';
+import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { LayoutDimensionUnits, resolveGridPositionForComponent } from 'src/helpers/components.helper';
 
 import { EventsService } from './events_handler.service';
 import { LayoutData } from '@dto/component.dto';
@@ -239,7 +236,7 @@ export class ComponentsService {
       const { type, top, left, width, height, dimensionUnit, id } = layout;
 
       let adjustedLeftValue = left;
-      if (dimensionUnit === 'percent') {
+      if (dimensionUnit === LayoutDimensionUnits.PERCENT) {
         adjustedLeftValue = resolveGridPositionForComponent(left, type);
         manager.update(
           Layout,
@@ -247,7 +244,7 @@ export class ComponentsService {
             id,
           },
           {
-            dimensionUnit: 'count',
+            dimensionUnit: LayoutDimensionUnits.COUNT,
             left: adjustedLeftValue,
           }
         );

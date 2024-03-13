@@ -274,9 +274,3 @@ export const getMaxCopyNumber = (existNameList) => {
   const maxNumber = Math.max(...numbers, 0);
   return maxNumber + 1;
 };
-
-export const resolveGridPositionForComponent = (dimension: number, type: string) => {
-  // const numberOfGrids = type === 'desktop' ? 43 : 12;
-  const numberOfGrids = 43;
-  return Math.round((dimension * numberOfGrids) / 100);
-};
