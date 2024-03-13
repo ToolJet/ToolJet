@@ -113,7 +113,6 @@ export const AllComponents = {
   ButtonGroup,
   CustomComponent,
   VerticalDivider,
-  // PDF,
   ColorPicker,
   KanbanBoard,
   Kanban,
