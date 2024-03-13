@@ -42,7 +42,6 @@ import { Html } from './Components/Html';
 import { ButtonGroup } from './Components/ButtonGroup';
 import { CustomComponent } from './Components/CustomComponent/CustomComponent';
 import { VerticalDivider } from './Components/verticalDivider';
-// import { PDF } from './Components/PDF';
 import { ColorPicker } from './Components/ColorPicker';
 import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import { Kanban } from './Components/Kanban/Kanban';
@@ -260,7 +259,10 @@ export const Box = memo(
       if (customResolvables && !readOnly && mode === 'edit') {
         const newCustomResolvable = {};
         newCustomResolvable[id] = { ...customResolvables };
-        exposeToCodeHinter((prevState) => ({ ...prevState, ...newCustomResolvable }));
+        exposeToCodeHinter((prevState) => ({
+          ...prevState,
+          ...newCustomResolvable,
+        }));
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(customResolvables), readOnly]);
@@ -276,7 +278,10 @@ export const Box = memo(
 
       const componentEvents = events.filter((event) => event.sourceId === id);
 
-      onEvent(eventName, componentEvents, { ...options, customVariables: { ...customResolvables } });
+      onEvent(eventName, componentEvents, {
+        ...options,
+        customVariables: { ...customResolvables },
+      });
     };
     const validate = (value) =>
       validateWidget({
