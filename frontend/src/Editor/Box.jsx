@@ -282,8 +282,10 @@ export const Box = memo(
       validateWidget({
         ...{ widgetValue: value },
         ...{ validationObject: component.definition.validation, currentState },
+        ...{ component: component.component },
         customResolveObjects: customResolvables,
       });
+    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'ToggleSwitch', 'Checkbox'];
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}

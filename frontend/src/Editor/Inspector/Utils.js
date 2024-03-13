@@ -43,7 +43,9 @@ export function renderCustomStyles(
     componentConfig.component == 'Listview' ||
     componentConfig.component == 'TextInput' ||
     componentConfig.component == 'NumberInput' ||
-    componentConfig.component == 'PasswordInput'
+    componentConfig.component == 'PasswordInput' ||
+    componentConfig.component == 'ToggleSwitch' ||
+    componentConfig.component == 'Checkbox'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

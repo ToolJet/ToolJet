@@ -4,7 +4,7 @@ import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
 export class MoveVisibilityDisabledStatesToProperties1707466537651 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'Text'];
+    const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'Text', 'ToggleSwitch', 'Checkbox'];
     const batchSize = 100;
     const entityManager = queryRunner.manager;
 
@@ -54,7 +54,7 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651 implements Mi
       }
 
       // Label and value
-      if (component.type !== 'Text') {
+      if (component.type !== 'Text' && component.type !== 'ToggleSwitch' && component.type !== 'Checkbox') {
         if (properties.label == undefined || null) {
           properties.label = '';
         }
