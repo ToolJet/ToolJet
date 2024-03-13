@@ -22,6 +22,8 @@ import { shallow } from 'zustand/shallow';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { isPDFSupported } from '@/_stores/utils';
+import toast from 'react-hot-toast';
 
 const NO_OF_GRIDS = 43;
 
@@ -252,6 +254,13 @@ export const Container = ({
       accept: [ItemTypes.BOX, ItemTypes.COMMENT],
       async drop(item, monitor) {
         if (item.parent) {
+          return;
+        }
+
+        if (item.component.component === 'PDF' && !isPDFSupported()) {
+          toast.error(
+            'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
+          );
           return;
         }
 

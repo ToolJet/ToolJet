@@ -444,15 +444,37 @@ export function Table({
     }));
 
   tableData = useMemo(() => {
-    return tableData.map((row) => ({
-      ...row,
-      ...Object.fromEntries(
-        transformations.map((t) => [
-          t.key,
-          resolveReferences(t.transformation, currentState, row[t.key], { cellValue: row[t.key], rowData: row }),
-        ])
-      ),
-    }));
+    return tableData.map((row) => {
+      return {
+        ...row,
+        ...Object.fromEntries(
+          transformations.map(({ key, transformation }) => {
+            const nestedKeys = key.includes('.') && key.split('.');
+            if (nestedKeys) {
+              // Single-level nested property
+              const [nestedKey, subKey] = nestedKeys;
+              const nestedObject = row[nestedKey];
+              return [
+                nestedKey,
+                {
+                  ...nestedObject,
+                  [subKey]: resolveReferences(transformation, currentState, row[key], {
+                    cellValue: row?.[nestedKey]?.[subKey],
+                    rowData: row,
+                  }),
+                },
+              ];
+            } else {
+              // Non-nested property
+              return [
+                key,
+                resolveReferences(transformation, currentState, row[key], { cellValue: row[key], rowData: row }),
+              ];
+            }
+          })
+        ),
+      };
+    });
   }, [JSON.stringify([transformations, currentState, component.definition.properties.data.value])]);
 
   useEffect(() => {
