@@ -12,7 +12,7 @@ To establish a connection with the DynamoDB data source, you can either click on
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/dynamoDB/dynamogds-new.gif" alt="DynamoDB" />
+<img className="screenshot-full" src="/img/datasource-reference/dynamoDB/dynamogds-new.png" alt="DynamoDB" />
 
 </div>
 

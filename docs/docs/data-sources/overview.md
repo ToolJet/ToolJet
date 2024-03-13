@@ -32,7 +32,7 @@ Data Source page is available only on **ToolJet version 2.3.0 and above**.
    
   <div style={{textAlign: 'center'}}>
   
-  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/gdsadd-new.gif" alt="Overview of Data Sources" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/gdsadd-new.png" alt="Overview of Data Sources" />
   
   </div>
 
