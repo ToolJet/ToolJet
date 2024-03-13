@@ -33,6 +33,8 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
   //! Re render the component when the componentName changes as the initialValue is not updated
 
   useEffect(() => {
+    if (typeof initialValue !== 'string') return;
+
     if (fxActive && initialValue?.startsWith('{{')) {
       const _value = initialValue?.replace(/{{/g, '').replace(/}}/g, '');
       return setCurrentValue(_value);

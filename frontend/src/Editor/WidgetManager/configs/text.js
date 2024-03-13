@@ -267,7 +267,7 @@ export const textConfig = {
     },
     properties: {
       textFormat: { value: 'html' },
-      text: { value: `Hello {{globals?.currentUser?.firstName}}👋` },
+      text: { value: `Hello {{globals.currentUser.firstName}}👋` },
       loadingState: { value: `{{false}}` },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },

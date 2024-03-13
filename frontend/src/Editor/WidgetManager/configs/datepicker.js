@@ -94,7 +94,7 @@ export const datepickerConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     validation: {
-      customRule: { value: null },
+      customRule: { value: '' },
     },
     properties: {
       defaultValue: { value: '01/01/2022' },
