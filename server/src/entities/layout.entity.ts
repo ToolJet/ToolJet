@@ -28,7 +28,7 @@ export class Layout {
     type: 'enum',
     enumName: 'dimension_unit',
     name: 'dimension_unit',
-    enum: ['signup', 'invite', 'google', 'git'],
+    enum: ['count', 'percent'],
   })
   dimensionUnit: string;
 
