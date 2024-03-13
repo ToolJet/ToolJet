@@ -102,7 +102,7 @@ export class OrganizationUsersService {
     return user;
   }
 
-  async getActiveWorkspacesCount(userId) {
+  async getActiveWorkspacesCount(userId: string) {
     return await this.organizationUsersRepository.count({
       where: {
         userId,
@@ -176,12 +176,18 @@ export class OrganizationUsersService {
   }
 
   async personalWorkspaceCount(userId: string): Promise<number> {
+    const personalWorkspacesCount = await this.personalWorkspaces(userId);
+    return personalWorkspacesCount?.length;
+  }
+
+  async personalWorkspaces(userId: string): Promise<OrganizationUser[]> {
     const personalWorkspaces: Partial<OrganizationUser[]> = await this.organizationUsersRepository.find({
-      select: ['organizationId'],
+      select: ['organizationId', 'invitationToken'],
       where: { userId },
     });
-    let personalWorkspacesCount = 0;
-    for (const { organizationId } of personalWorkspaces) {
+    const personalWorkspaceArray: OrganizationUser[] = [];
+    for (const workspace of personalWorkspaces) {
+      const { organizationId } = workspace;
       const workspaceOwner = await this.organizationUsersRepository.find({
         where: { organizationId },
         order: { createdAt: 'ASC' },
@@ -189,10 +195,11 @@ export class OrganizationUsersService {
       });
       if (workspaceOwner[0]?.userId === userId) {
         /* First user of the workspace = created by the user */
-        personalWorkspacesCount++;
+        personalWorkspaceArray.push(workspace);
       }
     }
-    return personalWorkspacesCount;
+
+    return personalWorkspaceArray;
   }
 
   async lastActiveAdmin(organizationId: string): Promise<boolean> {
