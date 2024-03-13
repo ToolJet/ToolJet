@@ -29,16 +29,8 @@ export const AuthRoute = ({ children, navigate }) => {
 
   useEffect(
     () => {
-      const isInviteFlow = !!location.state?.organizationToken;
-      const isSignUpRoute = location.pathname.startsWith('/signup');
-      const shouldRedirectToSignup = isSignUpRoute && organizationSlug && !isInviteFlow;
-      if (shouldRedirectToSignup) {
-        /* workspace signup is now allowed only for invite flow */
-        navigate('/signup');
-      } else {
-        authenticationService.deleteAllAuthCookies();
-        fetchOrganizationDetails();
-      }
+      authenticationService.deleteAllAuthCookies();
+      fetchOrganizationDetails();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [location.pathname]
