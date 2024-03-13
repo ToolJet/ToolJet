@@ -708,7 +708,7 @@
 .jet-data-table{
   .table{
     .td{
-      overflow: hidden;
+      // overflow: hidden;
       &:hover{
         border: 1px solid var(--slate8);
         background-color: var(--slate4);
@@ -732,7 +732,7 @@
       }
     }
     //for select column type
-    .td.has-dropdown{
+    .td.has-dropdown,td.has-multiselect{
       .select-search-input{
         //old dropdown
         border: 0;

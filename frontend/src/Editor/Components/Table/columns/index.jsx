@@ -139,6 +139,7 @@ export default function generateColumnsData({
 
             const cellStyles = {
               color: textColor ?? '',
+              overflow: 'hidden',
             };
 
             if (isEditable) {
@@ -224,6 +225,7 @@ export default function generateColumnsData({
 
             const cellStyles = {
               color: textColor ?? '',
+              overflow: 'hidden',
             };
             if (isEditable) {
               const validationData = validateWidget({
@@ -362,6 +364,7 @@ export default function generateColumnsData({
                 )}`}
                 style={{
                   color: cellTextColor ? cellTextColor : 'inherit',
+                  overflow: 'hidden',
                 }}
               >
                 {cellValue}
