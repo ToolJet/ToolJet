@@ -3,7 +3,8 @@ id: marketplace-plugin-redshift
 title: Amazon Redshift
 ---
 
-Tooljet can connect to Amazon Redshift allowing you to connect to your application to the Redshift cluster and query data from it.
+ToolJet can connect to Amazon Redshift, enabling your applications to query data directly from a Redshift cluster.
+
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/redshift/install.gif" alt="Marketplace Plugin: Amazon Redshift" />
@@ -17,7 +18,7 @@ Tooljet can connect to Amazon Redshift allowing you to connect to your applicati
 
 To connect to Amazon Redshift, you need to provide the following details:
 
-#### Required parameters
+#### Required Parameters
 
 - **Region**: The region where your Redshift cluster is located. For example, `us-east-1`.
 - **Database Name**: The name of the database you want to connect to. 
@@ -25,7 +26,7 @@ To connect to Amazon Redshift, you need to provide the following details:
 - **Access Key**: The access key of the user you want to use to connect to the Redshift cluster. 
 - **Secret Key**: The secret key of the user you want to use to connect to the Redshift cluster.
 
-#### Optional parameters
+#### Optional Parameters
 
 - **Port**: The port number of the Redshift cluster. The default port number is `5439`.
 - **Workgroup name**: The name of the workgroup you want to use to connect to the Redshift cluster.
@@ -34,11 +35,11 @@ To connect to Amazon Redshift, you need to provide the following details:
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/redshift/creds.png" alt="Marketplace Plugin: Amazon Redshift" />
 </div>
 
-## Supported queries
+## Supported Queries
 
 Redshift supports a comprehensive set of SQL commands. You can use the SQL editor to run any SQL query on the connected Redshift cluster. Refer to the [Redshift documentation](https://docs.aws.amazon.com/redshift/latest/dg/c_SQL_commands.html) for more information on the supported SQL commands.
 
-### Read data (example)
+### Read Data 
 
 The following example demonstrates how to read data from a table in the connected Redshift cluster. The query selects all the columns from the `employee` table.
 
@@ -46,7 +47,7 @@ The following example demonstrates how to read data from a table in the connecte
 SELECT * FROM employee 
 ```
 
-### Write data (example)
+### Write Data 
 
 The following example demonstrates how to write data to a table in the connected Redshift cluster. The query inserts a new row into the `employee` table.
 
@@ -63,7 +64,7 @@ INSERT INTO employee (
 ) VALUES ( 
     'Tom', 
     'Hudson', 
-    'TomHudison@example.com', 
+    'tom.hudson@example.com', 
     '234843294323', 
     '2024-01-01', 
     'Test Automation Engineer', 
@@ -72,18 +73,18 @@ INSERT INTO employee (
 );
 ```
 
-### Update data (example)
+### Update Data 
 
 The following example demonstrates how to update data in a table in the connected Redshift cluster. The query updates the `first_name` and `last_name` columns of the `employee` table.
 
 ```sql
 UPDATE employee
-SET first_name = 'Syed',
-    last_name = 'UpdateQuery6'
+SET first_name = 'Glenn',
+    last_name = 'Jacobs'
 WHERE employee_id = 8;
 ```
 
-### Delete data (example)
+### Delete Data
 
 The following example demonstrates how to delete data from a table in the connected Redshift cluster. The query deletes a row from the `employee` table.
 
