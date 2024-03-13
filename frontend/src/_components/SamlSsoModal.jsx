@@ -198,7 +198,7 @@ export function SamlSSOModal({
   function SamlFooter() {
     const { t } = useTranslation();
     return (
-      <div className="form-footer sso-card-footer" style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
+      <div className="sso-card-footer" style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
         <ButtonSolid onClick={onClose} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>

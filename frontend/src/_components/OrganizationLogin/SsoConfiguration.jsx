@@ -369,7 +369,7 @@ class SSOConfiguration extends React.Component {
                 }}
                 data-cy="instance-sso-card"
               >
-                Instance SSO {defaultSSO ? `(${this.state.inheritedInstanceSSO})` : ''}
+                Default SSO {defaultSSO ? `(${this.state.inheritedInstanceSSO})` : ''}
                 <SolidIcon className="option-icon" name={showDropdown ? 'cheveronup' : 'cheverondown'} fill={'grey'} />
               </div>
             </Dropdown.Toggle>

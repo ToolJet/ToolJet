@@ -167,7 +167,7 @@ export class OrganizationsService {
     const isPersonalWorkspaceAllowed = await this.instanceSettingsService.getSettings(
       INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE
     );
-    const oidcEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC, organizationId);
+    //license not set at instance level for cloud, openId will be available for instance login if it is set
     const ssoConfigs = await this.getInstanceSSOConfigs();
     const enableSignUp = await this.instanceSettingsService.getSettings(INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP);
 
@@ -190,7 +190,7 @@ export class OrganizationsService {
         configs: ssoConfigMap?.git?.configs || {},
       },
       openid: {
-        enabled: ssoConfigMap?.openid?.enabled && oidcEnabled,
+        enabled: ssoConfigMap?.openid?.enabled || false,
         configs: ssoConfigMap?.openid?.configs || {},
       },
       form: {

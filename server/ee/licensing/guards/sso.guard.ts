@@ -6,11 +6,17 @@ import { SSOType } from 'src/entities/sso_config.entity';
 
 @Injectable()
 export class SSOGuard implements CanActivate {
-  constructor(private oidcGuard: OIDCGuard, private ldapGuard: LDAPGuard, private samlGuard: SAMLGuard) {}
+  constructor(
+    private oidcGuard: OIDCGuard, 
+    private ldapGuard: LDAPGuard, 
+    private samlGuard: SAMLGuard
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const type = request.body.type; // Directly extract 'type' from the request
+    const organizationId = request.headers['tj-workspace-id'];
+    request.organizationId = organizationId;
 
     // Check if type is valid
     if (!Object.values(SSOType).includes(type)) {
@@ -19,11 +25,11 @@ export class SSOGuard implements CanActivate {
 
     switch (type) {
       case 'openid':
-        return this.oidcGuard.canActivate(context);
+        return await this.oidcGuard.canActivate(context);
       case 'ldap':
-        return this.ldapGuard.canActivate(context);
+        return await this.ldapGuard.canActivate(context);
       case 'saml':
-        return this.samlGuard.canActivate(context);
+        return await this.samlGuard.canActivate(context);
       default:
         return true;
     }

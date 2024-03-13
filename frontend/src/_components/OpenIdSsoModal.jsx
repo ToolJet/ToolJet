@@ -75,7 +75,7 @@ export function OpenIdSSOModal({
   const checkChanges = () => {
     const hasClientIdChanged = clientId !== (settings?.configs?.client_id || '');
     const hasEnabledChanged = enabled !== (settings?.enabled || false);
-    const hasClientSecretChanged = clientSecret !== (settings?.client_secret || '');
+    const hasClientSecretChanged = clientSecret !== (settings?.configs?.client_secret || '');
     const hasNameChanged = name !== (settings?.configs?.name || '');
     const hasWellKnownURLChanged = wellKnownUrl != (settings?.configs?.well_known_url || '');
     setHasChanges(
@@ -205,7 +205,7 @@ export function OpenIdSSOModal({
   function OpenIdFooter() {
     const { t } = useTranslation();
     return (
-      <div className="form-footer sso-card-footer" style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
+      <div className="sso-card-footer" style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
         <ButtonSolid onClick={onClose} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>

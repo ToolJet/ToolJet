@@ -135,7 +135,6 @@ export class OauthService {
 
   async getSSOConfigs(ssoType: SSOType.GOOGLE | SSOType.GIT | SSOType.OPENID): Promise<Partial<SSOConfigs>> {
     const ssoConfigs = await this.organizationService.getInstanceSSOConfigs();
-    const oidcEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC);
 
     // Create a map from the ssoConfigs array
     const ssoConfigMap: InstanceSSOConfigMap = {};
@@ -159,7 +158,7 @@ export class OauthService {
         };
       case SSOType.OPENID:
         return {
-          enabled: ssoConfigMap.openid.enabled && oidcEnabled,
+          enabled: ssoConfigMap.openid.enabled || false,
           configs: ssoConfigMap.openid.configs || {},
         };
       default:
@@ -238,9 +237,6 @@ export class OauthService {
         break;
 
       case SSOType.OPENID:
-        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC, organizationId))) {
-          throw new UnauthorizedException('OIDC login disabled');
-        }
         userResponse = await this.oidcOAuthService.signIn(token, {
           ...configs,
           configId,
@@ -249,9 +245,6 @@ export class OauthService {
         break;
 
       case 'ldap':
-        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.LDAP, organizationId))) {
-          throw new UnauthorizedException('Ldap login disabled');
-        }
         userResponse = await this.ldapService.signIn({ username, password }, configs);
         break;
 

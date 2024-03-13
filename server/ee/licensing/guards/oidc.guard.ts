@@ -8,7 +8,7 @@ export class OIDCGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const organizationId = request.headers['tj-workspace-id'];
+    const organizationId = request.organizationId;
     if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC, organizationId))) {
       throw new HttpException('OIDC not enabled', 451);
     }
