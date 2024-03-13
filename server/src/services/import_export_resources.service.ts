@@ -47,8 +47,9 @@ export class ImportExportResourcesService {
     const tableNameMapping = {};
     const imports = { app: [], tooljet_database: [] };
     const importingVersion = importResourcesDto.tooljet_version;
+    const isTJDBEnabled = process.env.ENABLE_TOOLJET_DB === 'true';
 
-    if (importResourcesDto.tooljet_database) {
+    if (isTJDBEnabled && importResourcesDto.tooljet_database) {
       for (const tjdbImportDto of importResourcesDto.tooljet_database) {
         const transformedDto = transformTjdbImportDto(tjdbImportDto, importingVersion);
 
