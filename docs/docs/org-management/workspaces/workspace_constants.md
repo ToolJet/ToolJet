@@ -58,7 +58,7 @@ Workspace constants can be used in the app builder and the global datasource con
 
 ### Using Workspace Constants in Global Datasource Connection
 
-You can use workspace constants in the **[global datasource connection](/docs/data-sources/overview#connecting-global-datasources)** form to store sensitive information like API keys, tokens, etc. This will ensure that the data remains secure and is not exposed to the client-side. You can use the syntax `{{constants.constant_name}}` to access the value of the constant. 
+You can use workspace constants in the **[global data source connection](/docs/data-sources/overview#connecting-global-datasources)** form to store sensitive information like API keys, tokens, etc. This will ensure that the data remains secure and is not exposed to the client-side. You can use the syntax `{{constants.constant_name}}` to access the value of the constant. 
 
  <div style={{textAlign: 'center'}}>
 

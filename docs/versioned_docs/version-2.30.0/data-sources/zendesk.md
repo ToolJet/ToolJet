@@ -30,7 +30,7 @@ You can create a Zendesk data source with one of either of the two permission sc
 You must first be a verified user to make Zendesk API requests. This is configured in the Admin Center interface in **Apps and integrations > APIs > Zendesk APIs.** For more information, see Security and Authentication in the [Zendesk Support API reference](https://developer.zendesk.com/api-reference/ticketing/introduction/#security-and-authentication) or [check out Zendesk's docs](https://support.zendesk.com/hc/en-us/articles/4408845965210).
 :::
 
-To connect Zendesk datasource to your ToolJet application, go to the data source manager on the left-sidebar and click on the `+` button. Select Zendesk from the list of available datasources, provide the credentials and click **Connect to Zendesk** and authenticate via OAuth. And click **Save** to save the datasource.
+To connect Zendesk datasource to your ToolJet application, go to the data source manager on the left-sidebar and click on the `+` button. Select Zendesk from the list of available data sources, provide the credentials and click **Connect to Zendesk** and authenticate via OAuth. And click **Save** to save the datasource.
 
 <div style={{textAlign: 'center'}}>
 
