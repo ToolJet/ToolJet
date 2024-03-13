@@ -128,7 +128,7 @@ When the **Create New Table** button is clicked, a drawer opens up from the righ
 |:--------- |:----------- |:------- |
 | **serial**    | **serial** is used to generate a sequence of integers which are often used as the Primary key of a table. Whenever a new table is created in the ToolJet database, a column **id** with the serial data type is automatically created as the **primary key** of the table. | Numbers starting from 1, 2, 3, 4, 5, etc. |
 | **varchar**   | **varchar** data type is used to store characters of indefinite length | Any string value |
-| **int**       | **Int** is a numeric data type used to store whole numbers, that is, numbers without fractional components. | Numbers ranging from -2147483648 to 2147483647 |
+| **int**       | **int** is a numeric data type used to store whole numbers, that is, numbers without fractional components. | Numbers ranging from -2147483648 to 2147483647 |
 | **bigint**    | **bigint** is a numeric data type that is used to store whole numbers, that is, numbers without fractional components. | Numbers ranging from -9223372036854775808 to 9223372036854775807 |
 | **float**     | **float** is also a numeric data type that is used to store inexact, variable-precision values. | Any floating-point number, ex: 3.14 |
 | **boolean**   | **boolean** data type can hold true, false, and null values. | `true` or `false` |
@@ -165,8 +165,8 @@ A drawer from the right will open up where you can enter the details for the new
 
 - **Column Name**: Enter a unique name for the new column, serving as its key identifier.
 - **Data Type**: Choose the appropriate data type for the column from the [available options](#supported-data-types).
-- **Default Value**: Specify any default value that should be assigned to the column. Optionally, users can leave this field blank. It is mandatory to provide a value when NOT NULL is enabled for a column.
-- **NULL/NOT NULL**: Use the switch to determine whether the column should allow NULL values or not. By default, `NULL` is enabled for a column which means that the specified column may have no value (NULL) for certain rows. If you toggle the switch and enable the `NOT NULL` option, column is configured to disallow NULL values. 
+- **Default Value**: Specify any default value that should be assigned to the column. Optionally, users can leave this field blank. When a table contains rows and NOT NULL is applied to one of its existing or new columns, specifying a default value becomes compulsory.
+- **NULL/NOT NULL**: Use the switch to determine whether the column should allow NULL values or not. By default, the toggle is off, allowing the column to have blank or empty entries. If you turn it on, the column is set to NOT NULL, meaning it can't have blank or empty entries anymore. But, for text columns, even with NOT NULL on, they can still have empty text (like an empty line) but not completely blank entries
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/newcol.png" alt="ToolJet database" />
