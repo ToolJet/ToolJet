@@ -5,11 +5,13 @@ import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 import Select from '@/_ui/Select';
 import _ from 'lodash';
+import { isSerialDataType } from '../constants';
 import BigInt from '../Icons/Biginteger.svg';
 import Float from '../Icons/Float.svg';
 import Integer from '../Icons/Integer.svg';
 import CharacterVar from '../Icons/Text.svg';
 import Boolean from '../Icons/Toggle.svg';
+import Serial from '../Icons/Serial.svg';
 import './styles.scss';
 
 const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
@@ -28,6 +30,9 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
   useEffect(() => {
     if (currentValue) {
       const keysWithNullValues = Object.keys(currentValue).filter((key) => currentValue[key] === null);
+      const keysWithDefaultValues = Object.keys(currentValue).filter(
+        (key, index) => currentValue[key]?.toString() === columns[index].column_default
+      );
       setActiveTab((prevActiveTabs) => {
         const newActiveTabs = [...prevActiveTabs];
         keysWithNullValues.forEach((key) => {
@@ -36,13 +41,22 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
             newActiveTabs[index] = 'Null';
           }
         });
+        keysWithDefaultValues.forEach((key) => {
+          const index = Object.keys(currentValue).indexOf(key);
+          if (currentValue[key]?.toString() === columns[index].column_default) {
+            newActiveTabs[index] = 'Default';
+          }
+        });
         return newActiveTabs;
       });
       const initialInputValues = currentValue
-        ? Object.keys(currentValue).map((key) => {
+        ? Object.keys(currentValue).map((key, index) => {
             const value =
               currentValue[key] === null ? null : currentValue[key] === currentValue[key] ? currentValue[key] : '';
-            const disabledValue = currentValue[key] === null ? true : false;
+            const disabledValue =
+              currentValue[key] === null || currentValue[key]?.toString() === columns[index].column_default
+                ? true
+                : false;
             return { value: value, disabled: disabledValue };
           })
         : [];
@@ -216,6 +230,7 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
   };
 
   const primaryColumn = columns.find((column) => column.constraints_type.is_primary_key)?.accessor || null;
+  const serialDatatypeColumn = columns.find((column) => column.constraints_type.is_primary_key);
 
   const options = selectedTableData.map((row) => {
     return {
@@ -259,9 +274,11 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
               className="form-label d-flex align-items-center justify-content-start mb-2"
               data-cy={`${primaryColumn}-column-name-label`}
             >
-              <span style={{ width: '24px' }}>
-                <Integer width="18" height="18" className="tjdb-column-header-name" />
-              </span>
+              {isSerialDataType(serialDatatypeColumn) && (
+                <span style={{ width: '24px' }}>
+                  <Serial width="18" height="14" className="tjdb-column-header-name" />
+                </span>
+              )}
               <span>{headerText}</span>
             </div>
             <div className="edit-row-dropdown col-auto row-edit-select-container w-100" data-cy="select-row-dropdown">

@@ -30,7 +30,7 @@ export default class Mariadb implements QueryService {
         status: 'ok',
       };
     } catch (error) {
-      throw new QueryError('Connection test failed', error.message, {});
+      throw new QueryError(`Connection test failed: ${error.sqlMessage}`, error.message, {});
     }
   }
 
