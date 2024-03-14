@@ -457,10 +457,8 @@ export class AuthService {
     const invitedButNotActivated = !!alreadyInvitedUserByAdmin && !!existingUser.invitationToken;
     const activeUserWantsToSignUpToWorkspace = hasActiveWorkspaces && !!organizationId && !isAlreadyActiveInWorkspace;
     const personalWorkspaceCount = await this.organizationUsersService.personalWorkspaceCount(existingUser.id);
-    const didInstanceSignUpAlreadyButNotActive = !!existingUser?.invitationToken && personalWorkspaceCount > 0;
-    const activatedAccountNoActiveWorkspaces = !existingUser?.invitationToken && hasSomeWorkspaceInvites;
     /* Personal workspace case */
-    const adminInvitedButUserWantsInstanceSignup =
+    const hasWorkspaceInviteButUserWantsInstanceSignup =
       !!existingUser?.invitationToken && hasSomeWorkspaceInvites && !organizationId;
     const isUserAlreadyExisted = !!isAlreadyActiveInWorkspace || hasActiveWorkspaces;
     const workspaceSignupForInstanceSignedUpUserButNotActive = !!existingUser?.invitationToken && !!organizationId;
@@ -494,7 +492,6 @@ export class AuthService {
           manager,
           defaultOrganization
         );
-        break;
       }
       case activeUserWantsToSignUpToWorkspace: {
         /* Create new organizations_user entry and send an invite */
@@ -518,7 +515,7 @@ export class AuthService {
           defaultOrganization
         );
       }
-      case adminInvitedButUserWantsInstanceSignup: {
+      case hasWorkspaceInviteButUserWantsInstanceSignup: {
         const errorMessage = 'The user is already registered. Please check your inbox for the activation link';
         if (personalWorkspaceCount === 0) {
           await this.createUserOrPersonalWorkspace(
@@ -550,38 +547,6 @@ export class AuthService {
           response,
           manager
         );
-        break;
-      }
-      case activatedAccountNoActiveWorkspaces:
-      case didInstanceSignUpAlreadyButNotActive: {
-        /* Resend intance invitation */
-        const errorMessage = 'The user is already registered. Please check your inbox for the activation link';
-
-        if (!organizationId) {
-          if (activatedAccountNoActiveWorkspaces) {
-            /* Send invite to the personal workspace */
-            const personalWorkspaces = await this.organizationUsersService.personalWorkspaces(existingUser.id);
-            if (personalWorkspaces?.length) {
-              const personalWorkspaceUser = personalWorkspaces[0];
-              if (personalWorkspaceUser) {
-                const signingUpOrganization = await this.organizationsService.fetchOrganization(
-                  personalWorkspaceUser.organizationId
-                );
-                this.sendOrgInvite(
-                  { email: existingUser.email, firstName },
-                  signingUpOrganization.name,
-                  personalWorkspaceUser.invitationToken
-                );
-                return;
-              }
-            }
-          }
-        }
-
-        this.emailService
-          .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
-          .catch((err) => console.error(err));
-        throw new NotAcceptableException(errorMessage);
       }
       case isUserAlreadyExisted: {
         /* already an user of that workspace or user is trying signup again from instance signup page */
