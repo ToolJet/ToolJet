@@ -54,7 +54,7 @@ import { BoundedBox } from './Components/BoundedBox/BoundedBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
-import { validateWidget } from '@/_helpers/utils';
+import { validateWidget, isPDFSupported } from '@/_helpers/utils';
 import { componentTypes } from './WidgetManager/components';
 import {
   resolveProperties,
@@ -67,7 +67,6 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
-import { isPDFSupported } from '@/_stores/utils';
 
 export const AllComponents = {
   Button,
