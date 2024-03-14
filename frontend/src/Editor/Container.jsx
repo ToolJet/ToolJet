@@ -24,7 +24,8 @@ import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
 import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
-// eslint-disable-next-line import/no-unresolved
+import { isPDFSupported } from '@/_stores/utils';
+import toast from 'react-hot-toast';
 
 // const noOfGrids = 24;
 
@@ -323,6 +324,13 @@ export const Container = ({
         // }
 
         if (item.parent) {
+          return;
+        }
+
+        if (item.component.component === 'PDF' && !isPDFSupported()) {
+          toast.error(
+            'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
+          );
           return;
         }
 
