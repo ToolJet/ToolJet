@@ -294,16 +294,16 @@ function resetPassword(params) {
   return fetch(`${config.apiUrl}/reset-password`, requestOptions).then(handleResponse);
 }
 
-function logout(avoidRedirection = false) {
+function logout(avoidRedirection = false, organizationId = null) {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
     credentials: 'include',
   };
+  const workspaceId = getWorkspaceId() || organizationId;
 
   const redirectToLoginPage = () => {
-    const loginPath =
-      (window.public_config?.SUB_PATH || '/') + 'login' + `${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`;
+    const loginPath = (window.public_config?.SUB_PATH || '/') + 'login' + `${workspaceId ? `/${workspaceId}` : ''}`;
     if (avoidRedirection) {
       window.location.href = loginPath;
     } else {
