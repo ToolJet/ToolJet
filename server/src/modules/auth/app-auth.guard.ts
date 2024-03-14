@@ -10,10 +10,11 @@ import { App } from 'src/entities/app.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { getManager } from 'typeorm';
 import { WORKSPACE_STATUS } from 'src/helpers/user_lifecycle';
+import { UsersService } from '@services/users.service';
 
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
-  constructor() {
+  constructor(private usersService: UsersService) {
     super();
   }
 
@@ -52,9 +53,15 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       const authResult = await super.canActivate(context);
       return authResult;
     } catch (error) {
+      let organizationSlug: string;
+      if (app?.organizationId) {
+        const organization = await this.usersService.getAppOrganizationDetails(app);
+        organizationSlug = organization.slug || organization.id;
+      }
+
       throw new UnauthorizedException(
         JSON.stringify({
-          organizationId: app?.organizationId,
+          organizationId: organizationSlug,
           message: 'Authentication is required to access this app.',
         })
       );
