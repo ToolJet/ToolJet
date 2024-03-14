@@ -1,9 +1,9 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { dashboardSelector } from "Selectors/dashboard";
-import { ssoSelector } from "Selectors/manageSSO";
-import { commonText, createBackspaceText } from "Texts/common";
-import { passwordInputText } from "Texts/passwordInput";
 import { importSelectors } from "Selectors/exportImport";
+import {
+  openEditorSidebar
+} from "Support/utils/commonWidget";
+import { commonText, createBackspaceText } from "Texts/common";
 import { importText } from "Texts/exportImport";
 
 Cypress.Commands.add(
@@ -220,11 +220,13 @@ Cypress.Commands.add("notVisible", (dataCy) => {
 Cypress.Commands.add(
   "resizeWidget",
   (widgetName, x, y, autosaveStatusCheck = true) => {
-    cy.get(`.selected-component.modal-moveable .moveable-se.moveable-resizable`).trigger("mouseover", {
-      force: true,
-    });
+    cy.forceClickOnCanvas()
+    cy.wait(500)
+    openEditorSidebar(widgetName)
 
-    cy.get('.selected-component.modal-moveable .moveable-se.moveable-resizable').last().realHover().trigger("mousedown", {
+    cy.get('.selected-component .moveable-control.moveable-direction.moveable-se.moveable-resizable').invoke('show')
+
+    cy.get('.selected-component .moveable-control.moveable-direction.moveable-se.moveable-resizable').last().realHover().trigger("mousedown", {
       which: 1,
       force: true,
     });

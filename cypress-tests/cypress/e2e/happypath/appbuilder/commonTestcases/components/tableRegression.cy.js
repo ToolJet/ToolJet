@@ -179,12 +179,12 @@ describe("Table", () => {
     cy.get(tableSelector.filterInput(0)).should("be.visible");
     cy.get(tableSelector.filterClose(0)).should("be.visible");
 
-    cy.get(tableSelector.filterSelectColumn(0))
-      .click()
-      .type(`${tableText.email}{enter}`);
+    cy.get('[data-cy="select-coloumn-dropdown-0"] > .select-search > .react-select__control > .react-select__indicators > .react-select__indicator')
+      .realClick()
+      .realType(`${tableText.email}{enter}`);
     cy.get(tableSelector.filterSelectOperation(0))
-      .click()
-      .type(`${tableText.optionEquals}{enter}`);
+      .realClick()
+      .realType(`${tableText.optionEquals}{enter}`);
     cy.get(tableSelector.filterInput(0)).type(tableText.defaultInput[1].email);
     cy.get(tableSelector.filterClose(1)).click();
     cy.notVisible(tableSelector.filterClose(1));
@@ -314,7 +314,7 @@ describe("Table", () => {
     cy.get('[data-cy="inspector-close-icon"]').click();
 
     openEditorSidebar(data.widgetName);
-    openAccordion('Layout', []);
+    openAccordion('Devices', []);
 
     verifyAndModifyToggleFx(
       "Show on desktop",
@@ -1133,9 +1133,14 @@ describe("Table", () => {
       .and("contain", dataPdfAssertionHelper(tableText.defaultInput)[2]);
   });
 
-  it("should verify add new row", () => {
+  it.only("should verify add new row", () => {
     addNewRow();
     cy.contains("Save").click();
+    cy.pause()
+    cy.reload()
+    cy.waitForAppLoad()
+    resizeQueryPanel("1");
+
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("components", "Object", "1 entry ");

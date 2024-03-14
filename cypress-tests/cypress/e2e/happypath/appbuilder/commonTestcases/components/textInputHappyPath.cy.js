@@ -180,13 +180,13 @@ describe("Text Input", () => {
       commonWidgetSelector.accordion(commonWidgetText.accordionValidation)
     ).click();
     verifyLayout(data.widgetName, "Devices");
-
-    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
     cy.get(
       commonWidgetSelector.parameterTogglebutton(
         commonWidgetText.parameterShowOnDesktop
       )
     ).click();
+    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
+   
 
     openEditorSidebar(data.widgetName);
     openAccordion("Validation", [
@@ -298,7 +298,7 @@ describe("Text Input", () => {
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
     verifyContainerElements();
-    checkPaddingOfContainer(textInputText.defaultWidgetName, 1);
+    checkPaddingOfContainer(textInputText.defaultWidgetName, 2);
     cy.get('[data-cy="togglr-button-none"]').click();
     checkPaddingOfContainer(textInputText.defaultWidgetName, 0);
 

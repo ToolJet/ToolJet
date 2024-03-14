@@ -102,7 +102,7 @@ describe("Editor- component duplication", () => {
     cy.realPress(["Control", "d"]);
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      "Component cloned succesfully"
+      "Component cloned succesfully", false
     );
     cy.moveComponent("button1", 200, 200);
     cy.forceClickOnCanvas();

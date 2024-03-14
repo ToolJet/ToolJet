@@ -31,8 +31,8 @@ export const verifyAndModifyParameter = (paramName, value) => {
 export const openEditorSidebar = (widgetName = "") => {
   cy.hideTooltip();
   cy.forceClickOnCanvas()
-
-  cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).trigger('mouseover', {x:20, y:20}).then(()=>{
+cy.wait(500)
+  cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).trigger('mouseover', {x:5, y:5},{force: true}).then(()=>{
     cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click();
   })
  
@@ -90,7 +90,7 @@ export const editAndVerifyWidgetName = (
   cy.clearAndType(commonWidgetSelector.WidgetNameInputField, name);
   cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({ force: true });
 
-  cy.get(commonWidgetSelector.draggableWidget(name)).trigger("mouseover");
+  openEditorSidebar(name)
   cy.get(commonWidgetSelector.widgetConfigHandle(name))
     .click()
     .should("have.text", name);
