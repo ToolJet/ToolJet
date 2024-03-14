@@ -5,27 +5,33 @@ title: Kanban
 
 # Kanban
 
-Kanban widget allows you to visually organize and prioritize your tasks with a transparent workflow. You can set the number of columns to display, enable/disable the add cards button, and bind data to the cards.
+Kanban component allows you to visually organize and prioritize your tasks with a transparent workflow. You can set the number of columns to display, enable/disable the add cards button, and bind data to the cards.
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/kanban/kanban2/kanban2.png" alt="ToolJet - Widget Reference - Kanban widget" />
-
+<div style={{textAlign: 'center', marginBottom:'15px'}}>
+    <img className="screenshot-full" src="/img/widgets/kanban/kanban2/kanban2.png" alt="ToolJet - Component Reference - Kanban Component" />
 </div>
 
 :::caution Restricted components
-In order to avoid excessively complex situations, certain components are restricted from being placed within the **Card** and **Popout** of the Kanban component.
+Certain components are restricted from being placed within the **Card** and **Popout** of the Kanban component.
 - **Card**: Calendar, Kanban, Form, Tabs, Modal, ListView, Container
 - **Popout**: Calendar, Kanban
-
-If the builder attempts to add any of the aforementioned components inside the Kanban Card or Popout, an error message will be displayed:
-
-`<Restricted component> cannot be used as a child component within the Kanban Popout/Card.`
 :::
 
+
+## Setting Card Data
+
+To dynamically populate Kanban cards, you can use the `cardData` key.
+
+For instance, you can set the `Data` property of a Text component on a card using the below code:
+
+```js
+{{cardData.title}}
+// Replace title with the key in your data
+```
+ 
 ## Events
 
-To add an event, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
+To add an event, click on the component handle to open the component properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
 
 - **[On update](#on-update)**
 - **[On add card click](#on-add-card-click)**
@@ -36,7 +42,7 @@ To add an event, click on the widget handle to open the widget properties on the
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/kanban/kanban2/events.png" alt="ToolJet - Widget Reference - Kanban widget" width="700" />
+<img className="screenshot-full" src="/img/widgets/kanban/kanban2/events.png" alt="ToolJet - Component Reference - Kanban component" width="700" />
 
 </div>
 
@@ -70,7 +76,7 @@ This event is triggered whenever a card is clicked to open the modal.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/kanban/kanban2/props.png" alt="ToolJet - Widget Reference - Kanban widget" width="300"/>
+<img className="screenshot-full" src="/img/widgets/kanban/kanban2/props.png" alt="ToolJet - Component Reference - Kanban component" width="300"/>
 
 </div>
 
@@ -91,13 +97,13 @@ This event is triggered whenever a card is clicked to open the modal.
 ## General
 ### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/kanban/kanban2/tooltip.png" alt="ToolJet - Widget Reference - Kanban widget" width="400"/>
+<img className="screenshot-full" src="/img/widgets/kanban/kanban2/tooltip.png" alt="ToolJet - Component Reference - Kanban component" width="400"/>
 
 </div>
 
@@ -105,34 +111,34 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/kanban/kanban2/layout.png" alt="ToolJet - Widget Reference - Kanban widget" width="400"/>
+<img className="screenshot-full" src="/img/widgets/kanban/kanban2/layout.png" alt="ToolJet - component Reference - Kanban component" width="400"/>
 
 </div>
 
 | Layout          | description                                             | Expected value                                                                                        |
 | --------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. | You can programmatically set the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display the widget in mobile view.  | You can programmatically set the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle on or off to display the component in desktop view. | You can programmatically set the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display the component in mobile view.  | You can programmatically set the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 ## Styles
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/kanban/kanban2/styles.png" alt="ToolJet - Widget Reference - Kanban widget" width="400"/>
+<img className="screenshot-full" src="/img/widgets/kanban/kanban2/styles.png" alt="ToolJet - Component Reference - Kanban component" width="400"/>
 
 </div>
 
 | Style        | Description                                                                                                                                                                   |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Disable      | If disabled or set to `{{false}}` the widget will be locked and becomes non-functional. By default, its disabled i.e. its value is set to `{{true}}` .                        |
-| Visibility   | This is to control the visibility of the widget. If `{{false}}`/disabled the widget will not visible after the app is deployed. By default, it's enabled (set to `{{true}}`). |
+| Disable      | If disabled or set to `{{false}}` the component will be locked and becomes non-functional. By default, its disabled i.e. its value is set to `{{true}}` .                        |
+| Visibility   | This is to control the visibility of the component. If `{{false}}`/disabled the component will not visible after the app is deployed. By default, it's enabled (set to `{{true}}`). |
 | Accent color | You can change the accent color of the column title by entering the Hex color code or choosing a color of your choice from the color picker.                                  |
 
 ## Exposed variables
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/kanban/kanban2/exposedvar.png" alt="ToolJet - Widget Reference - Kanban widget" width="500"/>
+<img className="screenshot-full" src="/img/widgets/kanban/kanban2/exposedvar.png" alt="ToolJet - Widget Reference - Kanban component" width="500"/>
 
 </div>
 

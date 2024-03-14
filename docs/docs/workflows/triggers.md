@@ -13,8 +13,7 @@ Triggers can be used to execute a workflow. Currently, ToolJet supports two type
 
 A webhook trigger allows you to run the workflow when a webhook is received. You can configure the webhook trigger from the Triggers tab. The webhook URL is unique for each workflow.
 
-### Creating a webhook trigger
-
+### Creating a Webhook Trigger
 - Click on the **Triggers** option in the left panel to open the Triggers tab.
 
   <div style={{textAlign: 'center'}}>
@@ -55,6 +54,14 @@ A webhook trigger allows you to run the workflow when a webhook is received. You
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/triggers/token.png" alt="Triggers" />
   </div>
 
+:::info
+Currently, authentication is mandatory for webhooks. Use a bearer token in the `Authorization` header for authentication. <br/>
+**Format:**
+`Authorization: Bearer <secret_token>`<br/>
+**Example:**
+`Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+:::
+
 - Parameters can be passed to the workflow using the **Parameters** field. The parameter `key` and their `type` can be specified in the **Parameters** field. For example, if you want to pass the `name` and `age` parameters to the workflow using the webhook triggers, you can set the **Parameters** field as follows:
 
   ```json
@@ -81,7 +88,7 @@ A webhook trigger allows you to run the workflow when a webhook is received. You
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/triggers/test.png" alt="Triggers" />
   </div>
 
-### Restrictions on usage of webhook triggers
+### Restrictions on Usage of Webhook Triggers
 
 There are certain restrictions on the usage of webhook triggers that are configurable, both at the instance level and at the workspace level depending on the license. The restrictions are as follows:
 
@@ -111,7 +118,7 @@ In the application, simply click on the `+ Add` button in the query panel and se
   <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/triggers/workflowdrop.png" alt="Triggers" />
 </div>
 
-### Passing parameters
+### Passing Parameters
 
 Parameters can be passed to the workflow from the **Params** field in the query. The parameter `key` and their `value` can be specified in the **Params** field. For example, if you want to pass the `name` and `age` parameters to the workflow using the manual triggers, you can set the **Params** field as follows:
 

@@ -68,6 +68,11 @@ Check the **component specific actions** available for this component **[here](/
 | Max value         | Sets the maximum value allowed.                | Integer (e.g., `1000` for a maximum value of 1000).|
 | Custom validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.numberinput1.value<5&&"Value needs to be more than 5"}}`).           |
 
+To add regex inside `Custom Validation`, you can use the below format: 
+
+**Format**: `{{(<regexPattern>.test(<value>)) ? '' : 'Error message';}}`
+
+**Example**: `{{(/^\d{1,10}$/.test(components.numberinput1.value)) ? '' : 'Error message';}}`
 
 ## Additional Actions
 

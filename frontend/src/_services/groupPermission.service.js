@@ -102,7 +102,7 @@ function getUsersNotInGroup(searchInput, groupPermissionId) {
     credentials: 'include',
   };
   return fetch(
-    `${config.apiUrl}/group_permissions/${groupPermissionId}/addable_users?input=${searchInput}`,
+    `${config.apiUrl}/group_permissions/${groupPermissionId}/addable_users?input=${searchInput.trim()}`,
     requestOptions
   ).then(handleResponse);
 }

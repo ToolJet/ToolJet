@@ -9,7 +9,7 @@ import { dashboardSelector } from "Selectors/dashboard";
 import { updateWorkspaceName } from "Support/utils/userPermissions";
 import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
-import { addNewUser } from "../../support/utils/onboarding";
+import { addNewUser } from "Support/utils/onboarding";
 
 const data = {};
 data.groupName = fake.firstName.replaceAll("[^A-Za-z]", "");

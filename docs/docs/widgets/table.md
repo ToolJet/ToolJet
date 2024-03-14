@@ -621,7 +621,7 @@ Activate this option to visually emphasize the last clicked row. **Enabling** th
 
 To enable the selection of one or more rows from the current page of a table, you can activate the 'Bulk selection' setting in the inspector. The values of the selected rows will be exposed as '**selectedRows**'.
 
-### Default Selected Row
+### Default selected row
 
 By enabling this option, you can designate a default row to be pre-selected when the app loads. This means that whenever the app is opened for the first time, a specific row will already be highlighted in the table by default. Additionally, there is an accessible variable that stores the value for this setting. You can find a list of all accessible variables **[here](#exposed-variables)**.
 
@@ -633,6 +633,9 @@ Example:
 ```
 
 Please ensure that the value provided in the object corresponds to a valid id in the table to ensure proper functionality.
+
+### Select row on cell edit
+Enabling the `Make editable` property for a column allows the app users to edit the column. While editing, the related row will be selected by default. To stop the row from getting selected by default, turn off `Select row on cell edit`.
 
 ## Search Sort and Filter
 
