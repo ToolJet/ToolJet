@@ -17,6 +17,7 @@ import { redirectToDashboard, getRedirectTo } from '@/_helpers/routes';
 import { setCookie } from '@/_helpers/cookie';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import cx from 'classnames';
 
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -118,6 +119,12 @@ class LoginPageComponent extends React.Component {
   render() {
     const { configs, currentOrganizationName } = this.props;
     const { isLoading } = this.state;
+    const workspaceSignUpEnabled = this.organizationId && configs?.enable_sign_up;
+    const instanceSignUpEnabled = !this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up);
+    const isSignUpCTAEnabled = workspaceSignUpEnabled || instanceSignUpEnabled;
+    const signUpCTA = workspaceSignUpEnabled ? 'Sign up' : 'Create an account';
+    const signupText = workspaceSignUpEnabled ? 'New to the workspace?' : 'New to Tooljet?';
+
     return (
       <>
         <div className="common-auth-section-whole-wrapper page">
@@ -149,23 +156,30 @@ class LoginPageComponent extends React.Component {
                             </h2>
                             {this.organizationId && (
                               <p
-                                className="text-center-onboard workspace-login-description"
+                                className={cx('text-center-onboard workspace-login-description', {
+                                  'change-margin': workspaceSignUpEnabled,
+                                })}
                                 data-cy="workspace-sign-in-sub-header"
                               >
                                 Sign in to your workspace - {configs?.name}
                               </p>
                             )}
                             <div className="tj-text-input-label">
-                              {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
-                                <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
-                                  {this.props.t('newToTooljet', 'New to ToolJet?')}
+                              {isSignUpCTAEnabled && (
+                                <div
+                                  className={cx('common-auth-sub-header sign-in-sub-header', {
+                                    'change-margin': workspaceSignUpEnabled,
+                                  })}
+                                  data-cy="sign-in-sub-header"
+                                >
+                                  {this.props.t('newToTooljet', signupText)}
                                   <Link
-                                    to={'/signup'}
+                                    to={`/signup${this.paramOrganizationSlug ? `/${this.paramOrganizationSlug}` : ''}`}
                                     tabIndex="-1"
                                     style={{ marginLeft: '4px' }}
                                     data-cy="create-an-account-link"
                                   >
-                                    {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
+                                    {this.props.t('createToolJetAccount', signUpCTA)}
                                   </Link>
                                 </div>
                               )}
