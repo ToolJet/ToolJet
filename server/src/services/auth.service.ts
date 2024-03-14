@@ -113,7 +113,7 @@ export class AuthService {
     const { email, password, redirectTo } = appAuthDto;
 
     const isInviteRedirect =
-      redirectTo.startsWith('/organization-invitations/') || redirectTo.startsWith('/invitations/');
+      redirectTo?.startsWith('/organization-invitations/') || redirectTo?.startsWith('/invitations/');
 
     let user: User;
     if (isInviteRedirect) {
