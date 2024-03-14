@@ -67,13 +67,13 @@ To remove a plugin, follow these steps:
 - On the `Installed` page, click on the `Remove` button of the related plugin that you wish to remove.
 
 ## Available Plugins
-- **[Plivo](/docs/marketplace/plugins/marketplace-plugin-plivo)**
-- **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
-- **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
-- **[AWS Textract](/docs/marketplace/plugins/marketplace-plugin-textract)**
-- **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
 - **[AWS Redshift](/docs/marketplace/plugins/marketplace-plugin-redshift)**
+- **[AWS Textract](/docs/marketplace/plugins/marketplace-plugin-textract)**
 - **[AWS Lambda](/docs/marketplace/plugins/aws-lambda-plugin)**
+- **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
+- **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
+- **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
+- **[Plivo](/docs/marketplace/plugins/marketplace-plugin-plivo)**
 
 :::info For Plugin Developers
 Refer to the **[Plugin Development guide](/docs/contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.
