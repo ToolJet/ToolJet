@@ -959,7 +959,7 @@ export function Table({
             <span
               data-cy={`option-download-pdf`}
               className="pt-2 cursor-pointer"
-              onClick={() => exportData('pdf', false)}
+              onClick={() => exportData('pdf', true)}
             >
               Download as PDF
             </span>
