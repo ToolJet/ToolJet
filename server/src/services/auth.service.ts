@@ -460,7 +460,7 @@ export class AuthService {
     /* Personal workspace case */
     const hasWorkspaceInviteButUserWantsInstanceSignup =
       !!existingUser?.invitationToken && hasSomeWorkspaceInvites && !organizationId;
-    const isUserAlreadyExisted = !!isAlreadyActiveInWorkspace || hasActiveWorkspaces;
+    const isUserAlreadyExisted = !!isAlreadyActiveInWorkspace || hasActiveWorkspaces || !existingUser?.invitationToken;
     const workspaceSignupForInstanceSignedUpUserButNotActive = !!existingUser?.invitationToken && !!organizationId;
 
     switch (true) {
