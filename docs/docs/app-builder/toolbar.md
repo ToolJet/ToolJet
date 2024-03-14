@@ -35,7 +35,7 @@ Width of the component will be automatically adjusted to fit the screen while vi
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/canvasmodes-new.gif" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/canvasmodes-new2.gif" alt="App Builder: Topbar"/>
 
 </div>
 

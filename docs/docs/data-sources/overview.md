@@ -13,7 +13,7 @@ Data Source page is available only on **ToolJet version 2.3.0 and above**.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/overview/overview-new.png" alt="Data Sources: Overview" width="600"/>
+<img className="screenshot-full" src="/img/datasource-reference/overview/overview-new.png" alt="Data Sources: Overview" />
 
 </div>
 
