@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import _, { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import LogoIcon from '@assets/images/rocket.svg';
@@ -10,6 +10,7 @@ import { redirectToDashboard } from '@/_helpers/routes';
 import classNames from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import PreviewSettings from './PreviewSettings';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDefinitionFromVersion }) => {
   const { isVersionReleased, editingVersion } = useAppVersionStore(
@@ -19,6 +20,14 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
     }),
     shallow
   );
+  const { appMode } = useEditorStore(
+    (state) => ({
+      appMode: state.appMode,
+    }),
+    shallow
+  );
+
+  const showDarkModeToggle = useMemo(() => appMode === 'auto', [appMode]);
   const _renderAppNameAndLogo = () => (
     <div
       className={classNames('d-flex', 'align-items-center')}
@@ -54,9 +63,11 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
             darkMode={darkMode}
           />
         )}
-        <span className="released-version-no-header-dark-mode-icon">
-          <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
-        </span>
+        {showDarkModeToggle && (
+          <span className="released-version-no-header-dark-mode-icon">
+            <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
+          </span>
+        )}
       </>
     );
   }
@@ -76,9 +87,11 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
           darkMode={darkMode}
         />
       )}
-      <div className="d-flex align-items-center">
-        <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
-      </div>
+      {showDarkModeToggle && (
+        <div className="d-flex align-items-center">
+          <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
+        </div>
+      )}
     </Header>
   );
 };

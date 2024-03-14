@@ -146,6 +146,7 @@ export class AppsService {
           canvasMaxHeight: 2400,
           canvasBackgroundColor: '#edeff5',
           backgroundFxQuery: '',
+          appMode: 'auto',
         };
         await manager.save(appVersion);
 

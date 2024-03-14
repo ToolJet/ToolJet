@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import _, { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import LogoIcon from '@assets/images/rocket.svg';
@@ -11,6 +11,7 @@ import classNames from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import PreviewSettings from './PreviewSettings';
 import MobileNavigationMenu from './MobileNavigationMenu';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const MobileHeader = ({
   showHeader,
@@ -30,6 +31,13 @@ const MobileHeader = ({
     }),
     shallow
   );
+  const { appMode } = useEditorStore(
+    (state) => ({
+      appMode: state.appMode,
+    }),
+    shallow
+  );
+  const showDarkModeToggle = useMemo(() => appMode === 'auto', [appMode]);
 
   // Fetch the version parameter from the query string
   const searchParams = new URLSearchParams(window.location.search);
@@ -67,6 +75,7 @@ const MobileHeader = ({
       darkMode={darkMode}
       changeDarkMode={changeDarkMode}
       showHeader={showHeader}
+      showDarkModeToggle={showDarkModeToggle}
     />
   );
 
@@ -80,6 +89,7 @@ const MobileHeader = ({
   );
 
   const _renderDarkModeBtn = (args) => {
+    if (!showDarkModeToggle) return null;
     const styles = args?.styles ?? {};
     return (
       <span

@@ -71,9 +71,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
     }),
     shallow
   );
-  const { showComments } = useEditorStore(
+  const { showComments, appMode } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
+      appMode: state?.appMode,
     }),
     shallow
   );
@@ -84,7 +85,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     currentPageId,
     isDebuggerOpen: !!selectedSidebarItem,
   });
-
   const sideBarBtnRefs = useRef({});
 
   useEffect(() => {
@@ -314,9 +314,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
               />
             </div>
           )}
-          <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
+          {appMode === 'auto' && (
+            <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
+          )}
         </div>
-        {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}
       </div>
     </div>
   );

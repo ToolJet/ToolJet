@@ -22,6 +22,7 @@ import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import { ModuleContext } from '../_contexts/ModuleContext';
 import _ from 'lodash';
+import useAppDarkMode from '@/Editor/Header/useAppDarkMode';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
@@ -42,7 +43,6 @@ export const Container = ({
   zoomLevel,
   removeComponent,
   deviceWindowWidth,
-  darkMode,
   socket,
   handleUndo,
   handleRedo,
@@ -74,6 +74,7 @@ export const Container = ({
     }),
     shallow
   );
+  const { isAppDarkMode: darkMode } = useAppDarkMode();
 
   const gridWidth = canvasWidth / NO_OF_GRIDS;
   const styles = {
