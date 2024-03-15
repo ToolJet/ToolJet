@@ -163,7 +163,13 @@ class SignupPageComponent extends React.Component {
                         )}
                         <div className="signup-page-signin-redirect" data-cy="signin-redirect-text">
                           {this.props.t('loginSignupPage.alreadyHaveAnAccount', `Already have an account? `)} &nbsp;
-                          <Link to={'/login'} tabIndex="-1" data-cy="signin-redirect-link">
+                          <Link
+                            to={`/login${
+                              this.paramInviteOrganizationSlug ? `/${this.paramInviteOrganizationSlug}` : ''
+                            }`}
+                            tabIndex="-1"
+                            data-cy="signin-redirect-link"
+                          >
                             {this.props.t('loginSignupPage.signIn', `Sign in`)}
                           </Link>
                         </div>

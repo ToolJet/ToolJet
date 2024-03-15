@@ -123,7 +123,9 @@ class LoginPageComponent extends React.Component {
     const instanceSignUpEnabled = !this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up);
     const isSignUpCTAEnabled = workspaceSignUpEnabled || instanceSignUpEnabled;
     const signUpCTA = workspaceSignUpEnabled ? 'Sign up' : 'Create an account';
-    const signupText = workspaceSignUpEnabled ? 'New to the workspace?' : 'New to Tooljet?';
+    const signupText = workspaceSignUpEnabled
+      ? this.props.t('loginSignupPage.newToWorkspace', `New to this workspace?`)
+      : this.props.t('loginSignupPage.newToTooljet', `New to Tooljet?`);
 
     return (
       <>
