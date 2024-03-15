@@ -175,7 +175,7 @@ jobs:
                 "plan": "starter",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon",
-                "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
+                "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com/apps/tooljet/"
             }
           }')
 
