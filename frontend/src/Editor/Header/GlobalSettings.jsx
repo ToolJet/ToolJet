@@ -157,7 +157,7 @@ export const GlobalSettings = ({
         />
       )}
       <div id="" className={cx({ 'dark-theme': darkMode })}>
-        <div bsPrefix="global-settings-popover">
+        <div bsPrefix="global-settings-popover" className="global-settings-panel">
           <HeaderSection darkMode={darkMode}>
             <HeaderSection.PanelHeader title="Global settings" />
           </HeaderSection>
@@ -389,9 +389,12 @@ export const GlobalSettings = ({
                   </div>
                 </div>
               </div>
-              <div className="d-flex mb-3">
+              <div className="d-flex align-items-center mb-3">
                 <span data-cy={`label-maintenance-mode`}>{t('leftSidebar.Settings.appMode', 'App mode')}</span>
-                <div className="ms-auto form-check form-switch position-relative">
+                <div
+                  className="ms-auto form-check form-switch position-relative app-mode-switch"
+                  style={{ paddingLeft: '0px', width: '158px' }}
+                >
                   <ToggleGroup
                     onValueChange={(value) => {
                       onAppModeChange(value);
