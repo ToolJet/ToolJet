@@ -6,7 +6,7 @@ import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import { componentTypes } from './WidgetManager/components';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, isPDFSupported } from '@/_helpers/utils';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
 import config from 'config';
@@ -22,6 +22,7 @@ import { shallow } from 'zustand/shallow';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import toast from 'react-hot-toast';
 
 const NO_OF_GRIDS = 43;
 
@@ -252,6 +253,13 @@ export const Container = ({
       accept: [ItemTypes.BOX, ItemTypes.COMMENT],
       async drop(item, monitor) {
         if (item.parent) {
+          return;
+        }
+
+        if (item.component.component === 'PDF' && !isPDFSupported()) {
+          toast.error(
+            'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
+          );
           return;
         }
 
