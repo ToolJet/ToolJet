@@ -5,7 +5,6 @@ import { eraseRedirectUrl, getRedirectURL } from '@/_helpers/routes';
 export const onInvitedUserSignUpSuccess = (response, navigate) => {
   const { organizationInviteUrl, ...currentUser } = response;
   updateCurrentSession({
-    noWorkspaceAttachedInTheSession: currentUser?.current_organization_id ? false : true,
     currentUser,
   });
   navigate(organizationInviteUrl);
