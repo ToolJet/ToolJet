@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 const tinycolor = require('tinycolor2');
 import * as Icons from '@tabler/icons-react';
+import { getCssVariableValue } from '@/_helpers/appUtils';
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
@@ -17,6 +18,7 @@ export const Button = function Button(props) {
     type,
     iconVisibility,
   } = styles;
+
   const { loadingState, disabledState } = properties;
   const [label, setLabel] = useState(properties.text);
   const [disable, setDisable] = useState(disabledState || loadingState);
@@ -46,18 +48,25 @@ export const Button = function Button(props) {
     loading !== properties.loadingState && setLoading(properties.loadingState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.loadingState]);
-  const computedIconColor = ['#FBFCFD'].includes(iconColor) ? (type == 'primary' ? '#FBFCFD' : '#889099') : iconColor;
-  const computedTextColor = ['#fff', '#ffffff'].includes(textColor)
-    ? type == 'primary'
-      ? '#FBFCFD'
-      : '#1B1F24'
-    : textColor;
-  const computedBgColor = ['#4368E3'].includes(backgroundColor)
-    ? type == 'primary'
-      ? '#4368E3'
-      : '#ffffff'
-    : backgroundColor;
 
+  const computedIconColor =
+    getCssVariableValue('--icons-on-solid') === iconColor
+      ? type == 'primary'
+        ? getCssVariableValue('--icons-on-solid')
+        : getCssVariableValue('--icons-strong')
+      : iconColor;
+  const computedTextColor =
+    getCssVariableValue('--text-on-solid') === textColor
+      ? type == 'primary'
+        ? getCssVariableValue('--text-on-solid')
+        : getCssVariableValue('text-primary')
+      : textColor;
+  const computedBgColor =
+    getCssVariableValue('--primary-brand') === backgroundColor
+      ? type === 'primary'
+        ? getCssVariableValue('--primary-brand')
+        : getCssVariableValue('--surfaces-surface-01')
+      : backgroundColor;
   const computedStyles = {
     backgroundColor: computedBgColor,
     color: computedTextColor,
@@ -67,7 +76,7 @@ export const Button = function Button(props) {
     display: visibility ? '' : 'none',
     '--tblr-btn-color-darker': tinycolor(computedBgColor).darken(8).toString(),
     '--tblr-btn-color-clicked': tinycolor(computedBgColor).darken(15).toString(),
-    '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
+    '--loader-color': tinycolor(loaderColor ?? getCssVariableValue('--icons-on-solid')).toString(),
     borderColor: borderColor,
     boxShadow: boxShadow,
     padding: '0px 12px',
@@ -153,9 +162,10 @@ export const Button = function Button(props) {
   };
   const renderButton = () => (
     <div
-      className="widget-button"
+      className="widget-button d-flex align-items-center"
       style={{
         position: 'relative',
+        height,
       }}
     >
       <button
@@ -186,7 +196,7 @@ export const Button = function Button(props) {
         >
           <div
             style={{
-              maxHeight: '100%',
+              // maxHeight: '100%',
               overflow: 'hidden',
               marginLeft: direction == 'right' && iconVisibility && '3px',
               marginRight: direction == 'left' && iconVisibility && '3px',
