@@ -7017,6 +7017,7 @@ tbody {
   }
 
   .table-editable-parent-cell {
+    max-width: 230px;
     background-color: var(--indigo2);
     cursor: pointer;
     padding: 0rem;
@@ -9103,7 +9104,7 @@ tbody {
 .tj-database-column-header {
   color: var(--slate12);
   padding: 4px 4px 4px 8px !important;
-  text-transform: capitalize !important;
+  text-transform: none !important;
   line-height: 0px !important;
   font-weight: 500 !important;
   font-size: 12px !important;
