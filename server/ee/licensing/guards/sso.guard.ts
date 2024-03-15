@@ -6,11 +6,7 @@ import { SSOType } from 'src/entities/sso_config.entity';
 
 @Injectable()
 export class SSOGuard implements CanActivate {
-  constructor(
-    private oidcGuard: OIDCGuard, 
-    private ldapGuard: LDAPGuard, 
-    private samlGuard: SAMLGuard
-  ) {}
+  constructor(private oidcGuard: OIDCGuard, private ldapGuard: LDAPGuard, private samlGuard: SAMLGuard) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
