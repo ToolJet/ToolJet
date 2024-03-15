@@ -26,7 +26,6 @@ import UserResponse from './models/user_response';
 import { InstanceSettingsService } from '@services/instance_settings.service';
 import { Response } from 'express';
 import { LicenseService } from '@services/license.service';
-import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { LdapService } from './ldap.service';
 import { SAMLService } from './saml.service';
 import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
