@@ -134,7 +134,7 @@ export function GithubSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
         }}
       >
         <div>
-          <label className="switch">
+          <label className="switch" data-cy="github-toggle-input">
             <input type="checkbox" checked={enabled} onChange={onToggleChange} />
             <span className="slider round"></span>
           </label>
