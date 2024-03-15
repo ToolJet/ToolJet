@@ -8,6 +8,7 @@ import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { ConfigScope, SSOType } from 'src/entities/sso_config.entity';
 
 @Injectable()
 export class SeedsService {
@@ -27,7 +28,8 @@ export class SeedsService {
         ssoConfigs: [
           {
             enabled: true,
-            sso: 'form',
+            sso: SSOType.FORM,
+            configScope: ConfigScope.ORGANIZATION,
           },
         ],
         name: 'My workspace',

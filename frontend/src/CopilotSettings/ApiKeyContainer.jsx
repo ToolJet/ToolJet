@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/_ui/LeftSidebar';
 import { Alert } from '@/_ui/Alert/';
+import { FormWrapper } from '@/_components/FormWrapper';
 
 export const ApiKeyContainer = ({
   copilotApiKey = '',
@@ -44,38 +45,43 @@ export const ApiKeyContainer = ({
     );
   };
 
+  const onSubmit = () => handleOnSave(inputValue);
+
   return (
     <div className="container-xl mt-3">
       {isAdmin && (
-        <div className="row">
-          <small className="text-green">
-            <img className="encrypted-icon" src="assets/images/icons/padlock2.svg" width="12" height="12" />
-            <span className="text-success mx-2 font-500">API KEY</span>
-          </small>
-          <div className="mb-3 col-6 tj-app-input">
-            <input
-              disabled={!isCopilotEnabled}
-              type="password"
-              class="form-control"
-              name="example-text-input"
-              placeholder=""
-              value={inputValue}
-              onChange={handleOnchange}
-            />
+        <FormWrapper callback={onSubmit}>
+          <div className="row">
+            <small className="text-green">
+              <img className="encrypted-icon" src="assets/images/icons/padlock2.svg" width="12" height="12" />
+              <span className="text-success mx-2 font-500">API KEY</span>
+            </small>
+            <div className="mb-3 col-6 tj-app-input">
+              <input
+                disabled={!isCopilotEnabled}
+                type="password"
+                class="form-control"
+                name="example-text-input"
+                placeholder=""
+                value={inputValue}
+                onChange={handleOnchange}
+              />
+            </div>
+            <div className="col-auto">
+              <Button
+                type="submit"
+                onClick={onSubmit}
+                darkMode={darkMode}
+                size="md"
+                isLoading={isLoading}
+                styles={{ backgroundColor: '#3E63DD', color: '#fff' }}
+                disabled={!isCopilotEnabled}
+              >
+                <Button.Content title={'Save'} iconSrc={'assets/images/icons/save.svg'} />
+              </Button>
+            </div>
           </div>
-          <div className="col-auto">
-            <Button
-              onClick={() => handleOnSave(inputValue)}
-              darkMode={darkMode}
-              size="md"
-              isLoading={isLoading}
-              styles={{ backgroundColor: '#3E63DD', color: '#fff' }}
-              disabled={!isCopilotEnabled}
-            >
-              <Button.Content title={'Save'} iconSrc={'assets/images/icons/save.svg'} />
-            </Button>
-          </div>
-        </div>
+        </FormWrapper>
       )}
 
       <div className="alert-container">

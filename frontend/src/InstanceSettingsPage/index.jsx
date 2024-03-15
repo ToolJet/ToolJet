@@ -16,7 +16,14 @@ export function InstanceSettings(props) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const sideBarNavs = ['All users', 'All workspaces', 'Manage instance settings', 'White labelling', 'License'];
+  const sideBarNavs = [
+    'All users',
+    'All workspaces',
+    'Manage instance settings',
+    'White labelling',
+    'Instance login',
+    'License',
+  ];
 
   const defaultOrgName = (groupName) => {
     switch (groupName) {
@@ -27,6 +34,8 @@ export function InstanceSettings(props) {
         return 'Manage instance settings';
       case 'white-labelling':
         return 'White labelling';
+      case 'instance-login':
+        return 'Instance login';
       case 'License':
       case 'license':
         return 'License';

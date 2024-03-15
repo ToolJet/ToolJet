@@ -314,7 +314,7 @@ describe("Table", () => {
     cy.get('[data-cy="inspector-close-icon"]').click();
 
     openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionLayout, []);
+    openAccordion('Layout', []);
 
     verifyAndModifyToggleFx(
       "Show on desktop",
@@ -885,6 +885,7 @@ describe("Table", () => {
   });
 
   it("should verify download", () => {
+    deleteDownloadsFolder();
     cy.get(tableSelector.buttonDownloadDropdown).should("be.visible").click();
     cy.get(tableSelector.optionDownloadPdf).click();
     cy.task("readPdf", "cypress/downloads/all-data.pdf")

@@ -36,7 +36,7 @@ export class AuditLoggerService {
         resourceType,
         actionType,
         resourceName,
-        ipAddress: clientIp || requestIp.getClientIp(request),
+        ipAddress: clientIp || (request && requestIp.getClientIp(request)),
         metadata: {
           userAgent: request?.headers['user-agent'],
           tooljetVersion: globalThis.TOOLJET_VERSION,

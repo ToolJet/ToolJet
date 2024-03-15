@@ -104,6 +104,7 @@ describe('oauth controller', () => {
             sso: 'ldap',
             enabled: true,
             configs: { host: 'localhost', port: '389', ssl: {} },
+            configScope: 'organization',
           },
         ],
         enableSignUp: true,

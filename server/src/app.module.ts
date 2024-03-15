@@ -54,6 +54,7 @@ import { CustomStylesModule } from './modules/custom_styles/custom_styles.module
 import { AppGitModule } from './modules/app_git/app_git.module';
 import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { InstanceLoginConfigsModule } from './modules/instance_login_configs/instance_login_configs.module';
 
 const imports = [
   EventEmitterModule.forRoot({
@@ -125,6 +126,7 @@ const imports = [
   EventsModule,
   AppEnvironmentsModule,
   InstanceSettingsModule,
+  InstanceLoginConfigsModule,
   WhiteLabellingModule,
   LicenseModule,
   ImportExportResourcesModule,

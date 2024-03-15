@@ -543,7 +543,7 @@ const RenderEnvironmentsTab = ({
             >
               <ToolTip
                 message={'Multi-environments is a paid plan feature'}
-                show={licenseType === 'trial' && licenseValid}
+                show={licenseType === 'trial' && licenseValid && item.priority > 1}
                 placement="right"
               >
                 <div className="d-flex align-items-center">

@@ -102,15 +102,17 @@ const EditorComponent = (props) => {
   } = useEditorActions();
 
   const { setAppVersionCurrentEnvironment, setAppVersionPromoted, onEditorFreeze } = useAppVersionActions();
-  const { isVersionReleased, editingVersionId, releasedVersionId, isEditorFreezed } = useAppVersionStore(
-    (state) => ({
-      isVersionReleased: state?.isVersionReleased,
-      editingVersionId: state?.editingVersion?.id,
-      releasedVersionId: state?.releasedVersionId,
-      isEditorFreezed: state?.isEditorFreezed,
-    }),
-    shallow
-  );
+  const { isVersionReleased, editingVersionId, releasedVersionId, isEditorFreezed, isBannerMandatory } =
+    useAppVersionStore(
+      (state) => ({
+        isVersionReleased: state?.isVersionReleased,
+        editingVersionId: state?.editingVersion?.id,
+        releasedVersionId: state?.releasedVersionId,
+        isEditorFreezed: state?.isEditorFreezed,
+        isBannerMandatory: state?.isBannerMandatory,
+      }),
+      shallow
+    );
 
   const {
     appDefinition,
@@ -495,6 +497,7 @@ const EditorComponent = (props) => {
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
 
+    onEditorFreeze(true, false);
     await fetchApp(props.params.pageHandle);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
@@ -1849,7 +1852,7 @@ const EditorComponent = (props) => {
       />
       {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
       {isVersionReleased && <ReleasedVersionError />}
-      {!isVersionReleased && isEditorFreezed && creationMode !== 'GIT' && <FreezeVersionInfo />}
+      {!isVersionReleased && isEditorFreezed && isBannerMandatory && creationMode !== 'GIT' && <FreezeVersionInfo />}
       <EditorContextWrapper handleYmapEventUpdates={handleYmapEventUpdates}>
         <EditorHeader
           darkMode={props.darkMode}
