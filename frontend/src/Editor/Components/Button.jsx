@@ -196,14 +196,13 @@ export const Button = function Button(props) {
         >
           <div
             style={{
-              // maxHeight: '100%',
               overflow: 'hidden',
               marginLeft: direction == 'right' && iconVisibility && '3px',
               marginRight: direction == 'left' && iconVisibility && '3px',
             }}
           >
             <span style={{ maxWidth: ' 100%', minWidth: '0' }}>
-              <p className="" style={{ fontWeight: '500', margin: '0px', padding: '0px' }}>
+              <p className="tj-text-xsm" style={{ fontWeight: '500', margin: '0px', padding: '0px' }}>
                 {label}
               </p>
             </span>
