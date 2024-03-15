@@ -2,6 +2,7 @@ import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getMonth, getYear } from 'date-fns';
 import { range } from 'lodash';
+// import './datepicker.scss'
 
 const CustomDatePickerHeader = ({
   date,
@@ -37,16 +38,14 @@ const CustomDatePickerHeader = ({
           marginTop: 10,
           display: 'flex',
           justifyContent: 'center',
-          height: '44px',
-          borderBottom: '1px solid var(--slate7)',
         }}
       >
         <button
-          className="tj-datepicker-widget-arrows tj-datepicker-widget-left "
+          className="tj-datepicker-widget-arrows tj-datepicker-widget-left"
           onClick={decreaseMonth}
           disabled={prevMonthButtonDisabled}
         >
-          <SolidIcon name="cheveronleft" />
+          <SolidIcon name="cheveronleft" width="12" />
         </button>
         <div>
           <select
@@ -73,7 +72,7 @@ const CustomDatePickerHeader = ({
           onClick={increaseMonth}
           disabled={nextMonthButtonDisabled}
         >
-          <SolidIcon name="cheveronright" />
+          <SolidIcon name="cheveronright" width="12" />
         </button>
       </div>
     </>

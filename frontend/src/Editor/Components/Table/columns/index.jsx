@@ -569,6 +569,9 @@ export default function generateColumnsData({
                 maxTime: {
                   value: column.maxTime,
                 },
+                parseDateFormat: {
+                  value: column.parseDateFormat,
+                },
               },
               widgetValue: cellValue,
               currentState,

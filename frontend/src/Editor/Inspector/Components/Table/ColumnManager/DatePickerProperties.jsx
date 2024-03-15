@@ -66,8 +66,8 @@ const DATE_FORMAT_OPTIONS = [
 export const DatePickerProperties = ({ column, index, darkMode, currentState, onColumnItemChange, component }) => {
   const { t } = useTranslation();
   const items = [];
-  const [isDateDisplayFormatFxOn, setIsDateDisplayFormatFxOn] = useState(true);
-  const [isParseDateFormatFxOn, setIsParseDateFormatFxOn] = useState(true);
+  const [isDateDisplayFormatFxOn, setIsDateDisplayFormatFxOn] = useState(false);
+  const [isParseDateFormatFxOn, setIsParseDateFormatFxOn] = useState(false);
   items.push(
     {
       title: 'Formatting',

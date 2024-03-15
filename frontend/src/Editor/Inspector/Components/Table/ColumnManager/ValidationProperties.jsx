@@ -90,25 +90,27 @@ export const ValidationProperties = ({
       case 'select':
         return [{ property: 'customRule', dateCy: 'input-and-label-custom-rule', label: 'Custom rule' }];
       case 'datepicker': {
+        const isTimeChecked = column?.isTimeChecked;
         const properties = [];
-        properties.push(
-          [
-            {
-              property: 'minDate',
-              dateCy: 'input-and-label-min-date',
-              label: 'Min date',
-              placeholder: 'MM/DD/YYYY',
-              fieldType: 'datepicker',
-            },
-            {
-              property: 'maxDate',
-              dateCy: 'input-and-label-max-date',
-              label: 'Max date',
-              placeholder: 'MM/DD/YYYY',
-              fieldType: 'datepicker',
-            },
-          ],
-          [
+        properties.push([
+          {
+            property: 'minDate',
+            dateCy: 'input-and-label-min-date',
+            label: 'Min date',
+            placeholder: 'MM/DD/YYYY',
+            fieldType: 'datepicker',
+          },
+          {
+            property: 'maxDate',
+            dateCy: 'input-and-label-max-date',
+            label: 'Max date',
+            placeholder: 'MM/DD/YYYY',
+            fieldType: 'datepicker',
+          },
+        ]);
+
+        if (isTimeChecked) {
+          properties.push([
             {
               property: 'minTime',
               dateCy: 'input-and-label-min-time',
@@ -123,20 +125,21 @@ export const ValidationProperties = ({
               placeholder: 'HH:mm',
               fieldType: 'timepicker',
             },
-          ],
-          {
-            property: 'disabledDates',
-            dateCy: 'input-and-label-custom-rule',
-            label: 'Disabled dates',
-            placeholder: '{{[]}}',
-          },
-          {
-            property: 'customRule',
-            dateCy: 'input-and-label-custom-rule',
-            label: 'Custom rule',
-            placeholder: 'eg. {{ 1 < 2 }}',
-          }
-        );
+          ]);
+        }
+        properties.push({
+          property: 'disabledDates',
+          dateCy: 'input-and-label-custom-rule',
+          label: 'Disabled dates',
+          placeholder: '{{[]}}',
+        });
+
+        properties.push({
+          property: 'customRule',
+          dateCy: 'input-and-label-custom-rule',
+          label: 'Custom rule',
+          placeholder: 'eg. {{ 1 < 2 }}',
+        });
 
         return properties;
       }

@@ -25,6 +25,11 @@ const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnl
   );
 });
 
+export const getDateTimeFormat = (dateDisplayFormat, isTimeChecked, isTwentyFourHrFormatEnabled) => {
+  const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT';
+  return isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
+};
+
 const getDate = ({
   value,
   parseDateFormat,
@@ -69,16 +74,19 @@ export const Datepicker = function Datepicker({
   const pickerRef = React.useRef();
 
   const handleDateChange = (date) => {
-    const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT';
-    const selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
-    setDate(getDate({ value: date, parseDateFormat: selectedDateFormat }));
+    setDate(
+      getDate({
+        value: date,
+        parseDateFormat: getDateTimeFormat(parseDateFormat, isTimeChecked, isTwentyFourHrFormatEnabled),
+      })
+    );
     onChange(computeDateString(date));
   };
 
   useEffect(() => {
     const date = getDate({
       value,
-      parseDateFormat,
+      parseDateFormat: getDateTimeFormat(parseDateFormat, isTimeChecked, isTwentyFourHrFormatEnabled),
       dateDisplayFormat,
       timeZoneValue,
       timeZoneDisplay,
@@ -86,10 +94,20 @@ export const Datepicker = function Datepicker({
       parseInUnixTimestamp,
     });
     setDate(date);
-  }, [JSON.stringify(value, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay, unixTimestamp)]);
+  }, [
+    JSON.stringify(
+      value,
+      parseDateFormat,
+      dateDisplayFormat,
+      timeZoneValue,
+      timeZoneDisplay,
+      unixTimestamp,
+      isTimeChecked,
+      isTwentyFourHrFormatEnabled
+    ),
+  ]);
 
   const dateInputRef = useRef(null); // Create a ref
-
   const computeDateString = (date) => {
     const _date = getDate({
       value: date,
@@ -147,6 +165,7 @@ export const Datepicker = function Datepicker({
         renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
         shouldCloseOnSelect
         readOnly={readOnly}
+        popperProps={{ strategy: 'fixed' }}
       />
     </div>
   );
