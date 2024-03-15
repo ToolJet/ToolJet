@@ -471,7 +471,7 @@ const Table = ({ collapseSidebar }) => {
         setSelectedRowIds({});
         const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.value;
         const isCellValueDefault =
-          headerGroups[0].headers[selectedCellRef.current.columnIndex]?.column_default === cellValue.toString()
+          headerGroups[0].headers[selectedCellRef.current.columnIndex]?.column_default === cellValue?.toString()
             ? true
             : false;
         setCellVal(cellValue);
@@ -491,7 +491,7 @@ const Table = ({ collapseSidebar }) => {
           rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.column?.dataType;
         if (cellValue === null) {
           const isCellValueDefault =
-            headerGroups[0].headers[selectedCellRef.current.columnIndex]?.column_default === cellValue.toString()
+            headerGroups[0].headers[selectedCellRef.current.columnIndex]?.column_default === cellValue?.toString()
               ? true
               : false;
           setSelectedRowIds({});
@@ -756,7 +756,7 @@ const Table = ({ collapseSidebar }) => {
       ['table-editable-parent-cell', 'tjdb-td-wrapper', 'table-cell', 'cell-text'].includes(e.target.classList.value)
     ) {
       const isCellValueDefault =
-        headerGroups[0].headers[cellIndex]?.column_default === cellVal.toString() ? true : false;
+        headerGroups[0].headers[cellIndex]?.column_default === cellVal?.toString() ? true : false;
       updateCellNavigationRef(rowIndex, cellIndex, true);
       setSelectedRowIds({});
       setCellVal(cellVal);
