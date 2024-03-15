@@ -6,168 +6,6 @@ import { commonText } from "Texts/common";
 import { dashboardSelector } from "Selectors/dashboard";
 
 export const generalSettings = () => {
-<<<<<<< HEAD
-  cy.get(ssoSelector.enableSignUpToggle).then(($el) => {
-    if ($el.is(":checked")) {
-      cy.get(ssoSelector.enableSignUpToggle).uncheck();
-      cy.get(ssoSelector.cancelButton).click();
-      cy.get(ssoSelector.enableSignUpToggle).should("be.checked");
-    } else {
-      cy.get(ssoSelector.enableSignUpToggle).check();
-      cy.get(ssoSelector.cancelButton).click();
-      cy.get(ssoSelector.enableSignUpToggle).should("not.be.checked");
-      cy.get(ssoSelector.enableSignUpToggle).check();
-    }
-    cy.get(ssoSelector.allowDefaultSSOToggle).then(($el) => {
-      if ($el.is(":checked")) {
-        cy.get(ssoSelector.allowDefaultSSOToggle).uncheck();
-        cy.get(ssoSelector.cancelButton).click();
-        cy.get(ssoSelector.allowDefaultSSOToggle).should("not.be.checked");
-      } else {
-        cy.get(ssoSelector.allowDefaultSSOToggle).check();
-        cy.get(ssoSelector.cancelButton).click();
-        cy.get(ssoSelector.allowDefaultSSOToggle).should("be.checked");
-        cy.get(ssoSelector.allowDefaultSSOToggle).check();
-      }
-    });
-    cy.clearAndType(ssoSelector.allowedDomainInput, ssoText.allowedDomain);
-    cy.get(ssoSelector.saveButton).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast);
-    cy.wait(500);
-    cy.get(ssoSelector.allowedDomainInput).clear();
-    cy.get(ssoSelector.saveButton).click();
-    cy.wait(500);
-  });
-};
-
-export const googleSSOPageElements = () => {
-  cy.get(ssoSelector.googleEnableToggle).then(($el) => {
-    if ($el.is(":checked")) {
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
-      );
-      cy.get(ssoSelector.googleEnableToggle).uncheck();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("Google")
-      );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.disabledLabel
-      );
-      cy.get(ssoSelector.googleEnableToggle).check();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("Google")
-      );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
-      );
-    } else {
-      cy.get(ssoSelector.googleEnableToggle).check();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("Google")
-      );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
-      );
-
-      cy.get(ssoSelector.googleEnableToggle).uncheck();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("Google")
-      );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.disabledLabel
-      );
-      cy.get(ssoSelector.googleEnableToggle).check();
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
-      );
-    }
-    cy.clearAndType(ssoSelector.clientIdInput, ssoText.testClientId);
-    cy.get(ssoSelector.cancelButton).click();
-    cy.clearAndType(ssoSelector.clientIdInput, ssoText.clientId);
-    cy.get(ssoSelector.saveButton).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.toggleUpdateToast("Google"));
-    cy.get(ssoSelector.clientIdInput).should("have.value", ssoText.clientId);
-  });
-};
-
-export const gitSSOPageElements = () => {
-  cy.get(ssoSelector.gitEnableToggle).then(($el) => {
-    if ($el.is(":checked")) {
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
-      );
-      cy.get(ssoSelector.gitEnableToggle).uncheck();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("GitHub")
-      );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.disabledLabel
-      );
-      cy.get(ssoSelector.gitEnableToggle).check();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("GitHub")
-      );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
-      );
-    } else {
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.disabledLabel
-      );
-      cy.get(ssoSelector.gitEnableToggle).check();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("GitHub")
-      );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
-      );
-      cy.get(ssoSelector.gitEnableToggle).uncheck();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("GitHub")
-      );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.disabledLabel
-      );
-      cy.get(ssoSelector.gitEnableToggle).check();
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
-      );
-    }
-    cy.clearAndType(ssoSelector.hostNameInput, ssoText.hostName);
-    cy.clearAndType(ssoSelector.clientIdInput, ssoText.clientId);
-    cy.clearAndType(ssoSelector.clientSecretInput, ssoText.testClientId);
-    cy.get(ssoSelector.saveButton).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.toggleUpdateToast("GitHub"));
-    cy.get(ssoSelector.hostNameInput).should("have.value", ssoText.hostName);
-    cy.get(ssoSelector.clientIdInput).should("have.value", ssoText.clientId);
-    cy.get(ssoSelector.clientSecretInput).should(
-      "have.value",
-      ssoText.testClientId
-    );
-  });
-};
-=======
   cy.get(ssoSelector.enableSignUpToggle).check();
   cy.get(ssoSelector.cancelButton).click();
   cy.get(ssoSelector.enableSignUpToggle).should("not.be.checked");
@@ -280,7 +118,6 @@ export const googleSSOPageElements = () => {
 
 export const gitSSOPageElements = () => {
   cy.get(ssoSelector.gitEnableToggle).click();
->>>>>>> Tooljet/main
 
   cy.get(ssoSelector.saveButton).eq(1).click();
 
@@ -721,9 +558,6 @@ export const updateId = () => {
     dbconfig: Cypress.config("db"),
     sql: "update sso_configs set id='9628dee2-6fa9-4aca-9c98-ef950601c83e' where sso='git';",
   });
-<<<<<<< HEAD
-};
-=======
 };
 
 export const setSSOStatus = (workspaceName, ssoType, enabled) => {
@@ -757,4 +591,3 @@ export const defaultSSO = (workspaceName, enabled) => {
       } WHERE name = '${workspaceName}'`,
   });
 };
->>>>>>> Tooljet/main

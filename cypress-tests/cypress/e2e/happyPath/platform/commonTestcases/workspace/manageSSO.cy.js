@@ -23,7 +23,7 @@ describe("Manage SSO for multi workspace", () => {
     });
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      " SSO"
+      ssoText.pagetitle
     );
 
     cy.get(ssoSelector.cardTitle).verifyVisibleElement(
