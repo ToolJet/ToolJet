@@ -50,10 +50,10 @@ export class OrganizationUsersService {
     }, manager);
   }
 
-  async getOrganizationUser(organizationId: string) {
-    return this.organizationUsersRepository.findOneOrFail({
-      where: { organizationId, status: WORKSPACE_USER_STATUS.INVITED },
-    });
+  async getOrganizationUser(organizationId: string, manager?: EntityManager) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.findOne(OrganizationUser, { where: { organizationId } });
+    }, manager);
   }
 
   async changeRole(id: string, role: string) {
