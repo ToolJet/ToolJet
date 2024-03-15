@@ -1114,21 +1114,21 @@ const Table = ({ collapseSidebar }) => {
                                 cell.value !== ''
                               }
                             >
-                              <div className="tjdb-column-select-border">
-                                <div
-                                  className={cx('tjdb-td-wrapper', {
-                                    'tjdb-selected-cell':
-                                      cellClick.rowIndex === rIndex &&
-                                      cellClick.cellIndex === index &&
-                                      cellClick.editable === true &&
-                                      !isCellUpdateInProgress,
-                                    'tjdb-cell-error':
-                                      cellClick.rowIndex === rIndex &&
-                                      cellClick.cellIndex === index &&
-                                      cellClick.errorState === true,
-                                  })}
-                                  id={`tjdb-cell-row${rIndex}-column${index}`}
-                                >
+                              <div
+                                className={cx('tjdb-column-select-border', {
+                                  'tjdb-selected-cell':
+                                    cellClick.rowIndex === rIndex &&
+                                    cellClick.cellIndex === index &&
+                                    cellClick.editable === true &&
+                                    !isCellUpdateInProgress,
+                                  'tjdb-cell-error':
+                                    cellClick.rowIndex === rIndex &&
+                                    cellClick.cellIndex === index &&
+                                    cellClick.errorState === true,
+                                })}
+                                id={`tjdb-cell-row${rIndex}-column${index}`}
+                              >
+                                <div className="tjdb-td-wrapper">
                                   {cellClick.editable &&
                                   cellClick.rowIndex === rIndex &&
                                   cellClick.cellIndex === index ? (

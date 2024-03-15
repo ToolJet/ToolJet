@@ -7021,10 +7021,12 @@ tbody {
     border-color: var(--Tomato-09, #E54D2E) !important;
   }
 
-  // .tjdb-column-select-border {
-  //   border-left: 1px solid transparent;
-  //   border-right: 1px solid transparent;
-  // }
+  .tjdb-column-select-border {
+    border-left: 1.5px solid transparent;
+    border-right: 1.5px solid transparent;
+    border-top: 1.5px solid transparent;
+    border-bottom: 1.5px solid transparent;
+  }
 
   .table-columnHeader-click {
     background-color: #F8F9FA;
@@ -7061,9 +7063,9 @@ tbody {
   }
 
   .row-tj:first-child {
-    // .tjdb-column-select-border {
-    //   border-top: 1px solid transparent;
-    // }
+    .tjdb-column-select-border {
+      border-top: 1.5px solid transparent;
+    }
 
     .table-columnHeader-click {
       .tjdb-column-select-border {
@@ -7079,9 +7081,9 @@ tbody {
   }
 
   .row-tj:last-of-type {
-    // .tjdb-column-select-border {
-    //   border-bottom: 1px solid transparent;
-    // }
+    .tjdb-column-select-border {
+      border-bottom: 1.5px solid transparent;
+    }
 
     .table-columnHeader-click {
       .tjdb-column-select-border {
