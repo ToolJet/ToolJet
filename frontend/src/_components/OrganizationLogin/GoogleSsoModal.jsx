@@ -104,7 +104,7 @@ export function GoogleSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
         }}
       >
         <div>
-          <label className="switch">
+          <label className="switch" data-cy="google-enable-toggle">
             <input type="checkbox" checked={enabled} onChange={onToggleChange} />
             <span className="slider round"></span>
           </label>
