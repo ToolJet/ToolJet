@@ -150,20 +150,22 @@ export class OrganizationsService {
     return await this.organizationsRepository.findOne({ where: { id }, relations: ['ssoConfigs'] });
   }
 
-  async fetchOrganization(slug: string): Promise<Organization> {
-    let organization: Organization;
-    try {
-      organization = await this.organizationsRepository.findOneOrFail({
-        where: { slug },
-        select: ['id', 'slug', 'name'],
-      });
-    } catch (error) {
-      organization = await this.organizationsRepository.findOne({
-        where: { id: slug },
-        select: ['id', 'slug', 'name'],
-      });
-    }
-    return organization;
+  async fetchOrganization(slug: string, manager?: EntityManager): Promise<Organization> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      let organization: Organization;
+      try {
+        organization = await manager.findOneOrFail(Organization, {
+          where: { slug },
+          select: ['id', 'slug', 'name'],
+        });
+      } catch (error) {
+        organization = await manager.findOneOrFail(Organization, {
+          where: { id: slug },
+          select: ['id', 'slug', 'name'],
+        });
+      }
+      return organization;
+    }, manager);
   }
 
   async getSingleOrganization(): Promise<Organization> {
