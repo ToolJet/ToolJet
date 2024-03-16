@@ -3,8 +3,6 @@ import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
 import { validateEmail } from '../_helpers/utils';
-import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
-import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { SignupInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
@@ -18,6 +16,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import { extractErrorObj, onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { isEmpty } from 'lodash';
 import { EmailComponent } from './EmailComponent';
+import SSOLoginModule from '@/LoginPage/SSOLoginModule';
 class SignupPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -131,10 +130,9 @@ class SignupPageComponent extends React.Component {
       (isEmpty(this.state.name) && !comingFromInviteFlow) ||
       this.state.password.length < 5;
 
-    const isAllSSODisabled = !configs?.git?.enabled && !configs?.google?.enabled;
-    const isSignUpDisabled = !this.organizationToken && !configs?.enable_sign_up && !configs?.form?.enable_sign_up;
+    const isAnySSOEnabled = !!configs?.git?.enabled || !!configs?.google?.enabled;
     const shouldShowSignupDisabledCard =
-      isSignUpDisabled || (!configs?.form?.enable_sign_up && configs?.enable_sign_up && isAllSSODisabled);
+      !this.organizationToken && !configs?.enable_sign_up && !configs?.form?.enable_sign_up;
     const passwordLabelText = this.organizationToken ? 'Create a password' : 'Password';
 
     return (
@@ -179,26 +177,13 @@ class SignupPageComponent extends React.Component {
                           <>
                             {(configs?.enable_sign_up || !!this.organizationToken) && (
                               <div>
-                                {configs?.git?.enabled && (
-                                  <div className="login-sso-wrapper">
-                                    <GitSSOLoginButton
-                                      configs={configs?.git?.configs}
-                                      text={this.props.t('confirmationPage.signupWithGithub', 'Sign up with GitHub')}
-                                      setSignupOrganizationDetails={this.setSignupOrganizationDetails}
-                                    />
-                                  </div>
-                                )}
-                                {configs?.google?.enabled && (
-                                  <div className="login-sso-wrapper">
-                                    <GoogleSSOLoginButton
-                                      configs={configs?.google?.configs}
-                                      configId={configs?.google?.config_id}
-                                      text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                                      setSignupOrganizationDetails={this.setSignupOrganizationDetails}
-                                    />
-                                  </div>
-                                )}
-                                {(configs?.git?.enabled || configs?.google?.enabled) && this.isFormSignUpEnabled() && (
+                                <SSOLoginModule
+                                  configs={configs}
+                                  setSignupOrganizationDetails={() => this.setSignupOrganizationDetails()}
+                                  organizationSlug={this.paramInviteOrganizationSlug}
+                                  buttonText="Sign up with"
+                                />
+                                {isAnySSOEnabled && this.isFormSignUpEnabled() && (
                                   <div className="separator-signup">
                                     <div className="mt-2 separator" data-cy="onboarding-separator">
                                       <h2>

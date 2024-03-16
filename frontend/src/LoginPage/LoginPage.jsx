@@ -2,8 +2,6 @@ import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
-import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
-import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -18,6 +16,7 @@ import { setCookie } from '@/_helpers/cookie';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import cx from 'classnames';
+import SSOLoginModule from './SSOLoginModule';
 
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -119,6 +118,8 @@ class LoginPageComponent extends React.Component {
   render() {
     const { configs, currentOrganizationName } = this.props;
     const { isLoading } = this.state;
+    const shouldShowLoginMethods = configs?.google?.enabled || configs?.git?.enabled || configs?.form?.enabled;
+    const noLoginMethodsEnabled = !configs?.form && !configs?.git && !configs?.google;
     const workspaceSignUpEnabled = this.organizationId && configs?.enable_sign_up;
     const instanceSignUpEnabled = !this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up);
     const isSignUpCTAEnabled = workspaceSignUpEnabled || instanceSignUpEnabled;
@@ -140,7 +141,7 @@ class LoginPageComponent extends React.Component {
                     <Navigate to="/error/invalid-link" />
                   ) : (
                     <div className="common-auth-container-wrapper ">
-                      {!configs?.form && !configs?.git && !configs?.google && (
+                      {noLoginMethodsEnabled && (
                         <div className="text-center-onboard">
                           <h2 data-cy="no-login-methods-warning">
                             {this.props.t(
@@ -151,7 +152,7 @@ class LoginPageComponent extends React.Component {
                         </div>
                       )}
                       <div>
-                        {(configs?.google?.enabled || configs?.git?.enabled || configs?.form?.enabled) && (
+                        {shouldShowLoginMethods && (
                           <>
                             <h2 className="common-auth-section-header sign-in-header" data-cy="sign-in-header">
                               {this.props.t('loginSignupPage.signIn', `Sign in`)}
@@ -188,27 +189,12 @@ class LoginPageComponent extends React.Component {
                             </div>
                           </>
                         )}
-                        {configs?.git?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GitSSOLoginButton
-                              configs={configs?.git?.configs}
-                              setRedirectUrlToCookie={() => {
-                                this.setRedirectUrlToCookie();
-                              }}
-                            />
-                          </div>
-                        )}
-                        {configs?.google?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GoogleSSOLoginButton
-                              configs={configs?.google?.configs}
-                              configId={configs?.google?.config_id}
-                              setRedirectUrlToCookie={() => {
-                                this.setRedirectUrlToCookie();
-                              }}
-                            />
-                          </div>
-                        )}
+                        <SSOLoginModule
+                          configs={configs}
+                          organizationSlug={this.paramOrganizationSlug}
+                          setRedirectUrlToCookie={() => this.setRedirectUrlToCookie()}
+                          buttonText={'Sign in with'}
+                        />
                         {(configs?.google?.enabled || configs?.git?.enabled) && configs?.form?.enabled && (
                           <div className="separator-onboarding ">
                             <div className="mt-2 separator" data-cy="onboarding-separator">
