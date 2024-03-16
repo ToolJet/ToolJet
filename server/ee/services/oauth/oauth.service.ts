@@ -339,7 +339,10 @@ export class OauthService {
               defaultOrganizationId
             );
             await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
-            personalWorkspace = await this.organizationService.fetchOrganization(defaultOrganizationId);
+          }
+
+          if (defaultOrganizationId) {
+            personalWorkspace = await this.organizationService.fetchOrganization(defaultOrganizationId, manager);
           }
 
           // User account setup not done, updating source and status
