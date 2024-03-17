@@ -27,6 +27,11 @@ import { deepEqual } from '../../_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import { useDataSourcesStore } from '../../_stores/dataSourcesStore';
 import { withRouter } from '@/_hoc/withRouter';
+import './dataSourceManager.theme.scss';
+
+const DATA_SOURCE_USE_TYPE = {
+  SAMPLE: 'sample',
+};
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -105,6 +110,8 @@ class DataSourceManagerComponent extends React.Component {
         datasourceName: this.props.selectedDataSource?.name,
       });
     }
+    console.log('selected data source is ');
+    console.log(this.props.selectedDataSource);
   }
 
   getDataSourceMeta = (dataSource) => {
@@ -532,6 +539,58 @@ class DataSourceManagerComponent extends React.Component {
     );
   };
 
+  renderSampleDBModal = () => {
+    // const createApp = async (appName) => {
+    //   let _self = this;
+    //   _self.setState({ creatingApp: true });
+    //   try {
+    //     const data = await appsService.createApp({ icon: sample(iconList), name: appName });
+    //     const workspaceId = getWorkspaceId();
+    //     _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
+    //     toast.success('App created successfully!');
+    //     _self.setState({ creatingApp: false });
+    //     return true;
+    //   } catch (errorResponse) {
+    //     _self.setState({ creatingApp: false });
+    //     if (errorResponse.statusCode === 409) {
+    //       return false;
+    //     } else {
+    //       throw errorResponse;
+    //     }
+    //   }
+    // };
+    const { dataSourceMeta, selectedDataSourceIcon } = this.state;
+    return (
+      <div className="sample-db-modal-body">
+        <div className="row sample-db-title">
+          <div className="col-md-1">
+            {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
+          </div>
+          <div className="col-md-1">PostgreSQL</div>
+        </div>
+        <div className="sample-db-description">
+          <p>
+            This PostgreSQL data source is a shared resource and may show varying data
+            <br /> due to real-time updates. It&apos;s reset daily for some consistency, but please note <br />
+            it&apos;s designed for user exploration, not production use.
+          </p>
+        </div>
+        <div className="create-btn-cont">
+          <ButtonSolid
+            className={`create-app-btn`}
+            // isLoading={isSaving}
+            // disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
+            variant="primary"
+            // onClick={this.createDataSource}
+            fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
+          >
+            Create sample appplication
+          </ButtonSolid>
+        </div>
+      </div>
+    );
+  };
+
   renderCardGroup = (source, type) => {
     const openDataSourceConfirmModal = (dataSource) =>
       this.setState({
@@ -757,7 +816,7 @@ class DataSourceManagerComponent extends React.Component {
                   </div>
                 )}
                 <Modal.Title className="mt-3">
-                  {selectedDataSource && (
+                  {selectedDataSource && selectedDataSource?.type !== DATA_SOURCE_USE_TYPE.SAMPLE ? (
                     <div className="row selected-ds">
                       {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
                       <div className="input-icon" style={{ width: '160px' }}>
@@ -776,6 +835,13 @@ class DataSourceManagerComponent extends React.Component {
                           </span>
                         )}
                       </div>
+                    </div>
+                  ) : (
+                    <div className="row">
+                      <div className="col-md-2">
+                        <SolidIcon name="abc" />
+                      </div>
+                      <div className="col-md-10"> Sample data source</div>
                     </div>
                   )}
                   {!selectedDataSource && (
@@ -797,56 +863,65 @@ class DataSourceManagerComponent extends React.Component {
               {this.renderEnvironmentsTab(selectedDataSource)}
             </Modal.Header>
             <Modal.Body>
-              {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind, isPlugin)}</div>}
+              {selectedDataSource && selectedDataSource?.type != DATA_SOURCE_USE_TYPE.SAMPLE ? (
+                <div>{this.renderSourceComponent(selectedDataSource.kind, isPlugin)}</div>
+              ) : (
+                selectedDataSource &&
+                selectedDataSource?.type == DATA_SOURCE_USE_TYPE.SAMPLE && <div>{this.renderSampleDBModal()}</div>
+              )}
               {!selectedDataSource && this.segregateDataSources(this.state.suggestingDatasources, this.props.darkMode)}
             </Modal.Body>
 
             {selectedDataSource && !dataSourceMeta.customTesting && (
-              <Modal.Footer>
-                <div className="row w-100">
-                  <div className="card-body datasource-footer-info">
-                    <div className="row">
-                      <div className="col-1">
-                        <SolidIcon name="information" fill="#3E63DD" />
-                      </div>
-                      <div className="col" style={{ maxWidth: '480px' }}>
-                        <p data-cy="white-list-ip-text" className="tj-text">
-                          {this.props.t(
-                            'editor.queryManager.dataSourceManager.whiteListIP',
-                            'Please white-list our IP address if the data source is not publicly accessible.'
-                          )}
-                        </p>
-                      </div>
-                      <div className="col-auto">
-                        {isCopied ? (
-                          <center className="my-2">
-                            <span className="copied" data-cy="label-ip-copied">
-                              {this.props.t('editor.queryManager.dataSourceManager.copied', 'Copied')}
-                            </span>
-                          </center>
-                        ) : (
-                          <CopyToClipboard
-                            text={config.SERVER_IP}
-                            onCopy={() => {
-                              this.setState({ isCopied: true });
-                            }}
-                          >
-                            <ButtonSolid
-                              type="button"
-                              className={`datasource-copy-button`}
-                              data-cy="button-copy-ip"
-                              variant="tertiary"
-                              leftIcon="copy"
-                              iconWidth="12"
+              <Modal.Footer className="modal-footer-class">
+                {selectedDataSource && selectedDataSource?.type != DATA_SOURCE_USE_TYPE.SAMPLE && (
+                  <div className="row w-100">
+                    <div className="card-body datasource-footer-info">
+                      <div className="row">
+                        <div className="col-1">
+                          <SolidIcon name="information" fill="#3E63DD" />
+                        </div>
+
+                        <div className="col" style={{ maxWidth: '480px' }}>
+                          <p data-cy="white-list-ip-text" className="tj-text">
+                            {this.props.t(
+                              'editor.queryManager.dataSourceManager.whiteListIP',
+                              'Please white-list our IP address if the data source is not publicly accessible.'
+                            )}
+                          </p>
+                        </div>
+
+                        <div className="col-auto">
+                          {isCopied ? (
+                            <center className="my-2">
+                              <span className="copied" data-cy="label-ip-copied">
+                                {this.props.t('editor.queryManager.dataSourceManager.copied', 'Copied')}
+                              </span>
+                            </center>
+                          ) : (
+                            <CopyToClipboard
+                              text={config.SERVER_IP}
+                              onCopy={() => {
+                                this.setState({ isCopied: true });
+                              }}
                             >
-                              {this.props.t('editor.queryManager.dataSourceManager.copy', 'Copy')}
-                            </ButtonSolid>
-                          </CopyToClipboard>
-                        )}
+                              <ButtonSolid
+                                type="button"
+                                className={`datasource-copy-button`}
+                                data-cy="button-copy-ip"
+                                variant="tertiary"
+                                leftIcon="copy"
+                                iconWidth="12"
+                              >
+                                {this.props.t('editor.queryManager.dataSourceManager.copy', 'Copy')}
+                              </ButtonSolid>
+                            </CopyToClipboard>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {connectionTestError && (
                   <div className="row w-100">
@@ -874,7 +949,14 @@ class DataSourceManagerComponent extends React.Component {
                     {this.props.t('globals.readDocumentation', 'Read documentation')}
                   </a>
                 </div>
-                <div className="col-auto" data-cy="button-test-connection">
+                <div
+                  className={
+                    selectedDataSource?.type !== DATA_SOURCE_USE_TYPE.SAMPLE
+                      ? `col-auto`
+                      : 'col-auto test-connection-sample-db'
+                  }
+                  data-cy="button-test-connection"
+                >
                   <TestConnection
                     kind={selectedDataSource.kind}
                     pluginId={selectedDataSource?.pluginId ?? this.state.selectedDataSourcePluginId}
@@ -884,19 +966,21 @@ class DataSourceManagerComponent extends React.Component {
                     environmentId={this.props.currentEnvironment?.id}
                   />
                 </div>
-                <div className="col-auto" data-cy="db-connection-save-button">
-                  <ButtonSolid
-                    className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
-                    isLoading={isSaving}
-                    disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
-                    variant="primary"
-                    onClick={this.createDataSource}
-                    leftIcon="floppydisk"
-                    fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
-                  >
-                    {this.props.t('globals.save', 'Save')}
-                  </ButtonSolid>
-                </div>
+                {selectedDataSource?.type !== DATA_SOURCE_USE_TYPE.SAMPLE && (
+                  <div className="col-auto" data-cy="db-connection-save-button">
+                    <ButtonSolid
+                      className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
+                      isLoading={isSaving}
+                      disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
+                      variant="primary"
+                      onClick={this.createDataSource}
+                      leftIcon="floppydisk"
+                      fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
+                    >
+                      {this.props.t('globals.save', 'Save')}
+                    </ButtonSolid>
+                  </div>
+                )}
               </Modal.Footer>
             )}
 

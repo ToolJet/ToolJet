@@ -35,6 +35,7 @@ import { MetaModule } from '../meta/meta.module';
 import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
 import { SessionService } from '@services/session.service';
+import { SampleDBService } from '@services/sample_db.service';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { SessionService } from '@services/session.service';
       Credential,
       Plugin,
       Metadata,
+      DataSource,
     ]),
     CaslModule,
     MetaModule,
@@ -81,6 +83,7 @@ import { SessionService } from '@services/session.service';
     MetadataService,
     AppEnvironmentService,
     SessionService,
+    SampleDBService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
   exports: [OrganizationsService],

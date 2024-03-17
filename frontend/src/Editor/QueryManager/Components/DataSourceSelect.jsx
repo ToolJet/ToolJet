@@ -13,11 +13,14 @@ import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
 import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import './../queryManager.theme.scss';
 
 function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const [userDefinedSources, setUserDefinedSources] = useState([...dataSources, ...globalDataSources]);
+  const [expandList, setExpandList] = useState(false);
   const [dataSourcesKinds, setDataSourcesKinds] = useState([]);
   const [userDefinedSourcesOpts, setUserDefinedSourcesOpts] = useState([]);
   const { createDataQuery } = useDataQueriesActions();
@@ -26,6 +29,10 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
     createDataQuery(source);
     setPreviewData(null);
     closePopup();
+  };
+
+  const handleExpandCollapse = () => {
+    setExpandList(!expandList);
   };
 
   console.log(dataSourcesKinds);
@@ -86,6 +93,11 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
       label: (
         <span data-cy="ds-section-header-default" className="color-slate9" style={{ fontWeight: 500 }}>
           Defaults
+          {/* {!expandList ? (
+            <ButtonSolid leftIcon="arrowdown" onClick={handleExpandCollapse} />
+          ) : (
+            <ButtonSolid leftIcon="arrowup" onClick={handleExpandCollapse} />
+          )} */}
         </span>
       ),
       isDisabled: true,
@@ -125,6 +137,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
         menuPlacement="auto"
         components={{
           MenuList: MenuList,
+          GroupHeading: HideGroupHeading,
           IndicatorSeparator: () => null,
           DropdownIndicator,
         }}
@@ -226,6 +239,23 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   );
 }
 
+const HideGroupHeading = (props) => {
+  // console.log('loggin props');
+  // console.log(props);
+  return (
+    <div
+      className="collapse-group-heading"
+      onClick={() => {
+        console.log('logging query');
+        console.log(document.querySelector(`#${props.id}`));
+        document.querySelector(`#${props.id}`).parentElement.parentElement.classList.toggle('collapsed-group');
+      }}
+    >
+      <components.GroupHeading {...props} />
+    </div>
+  );
+};
+
 const MenuList = ({ children, getStyles, innerRef, ...props }) => {
   const navigate = useNavigate();
   const menuListStyles = getStyles('menuList', props);
@@ -269,3 +299,85 @@ const DropdownIndicator = (props) => {
 };
 
 export default DataSourceSelect;
+
+// import React from "react";
+
+// import Select, { components } from "react-select";
+// import { groupedOptions } from "./docs/data";
+
+// // const handleHeaderClick = (id) => {
+// //   const node = document.querySelector(`#${id}`).parentElement.parentElement;
+// //   // console.log(node);
+// //   // var children = Array.from(node.children);
+// //   // children.forEach((element) => {
+// //   //   console.log(element);
+// //   // });
+
+// //   node.classList.toggle("collapsed-group");
+// // };
+
+// const HideGroupHeading = (props) => {
+//   return (
+//     <div
+//       className="collapse-group-heading"
+//       onClick={() => {
+//         document
+//           .querySelector(`#${props.id}`)
+//           .parentElement.parentElement.classList.toggle("collapsed-group");
+//       }}
+//     >
+//       <components.GroupHeading {...props} />
+//     </div>
+//   );
+// };
+
+// const HideGroupMenuList = (props) => {
+//   let new_props = {
+//     ...props,
+//     children: Array.isArray(props.children)
+//       ? props.children.map((c, idx) =>
+//           idx === 0
+//             ? c
+//             : { ...c, props: { ...c.props, className: "collapsed-group" } }
+//         )
+//       : props.children,
+//   };
+
+//   return <components.MenuList {...new_props} />;
+// };
+
+// export default () => (
+//   <div className="container">
+//     <Select
+//       options={groupedOptions}
+//       isMulti
+//       blurInputOnSelect={false}
+//       closeMenuOnSelect={false}
+//       components={{
+//         GroupHeading: HideGroupHeading,
+//         MenuList: HideGroupMenuList,
+//       }}
+//       styles={{
+//         groupHeading: (styles) => ({
+//           ...styles,
+//           backgroundColor: "#e9ecef",
+//           margin: 0,
+//           paddingTop: "5px",
+//           paddingBottom: "5px",
+//           color: "black",
+//           fontWeight: 500,
+//           fontSize: "1rem",
+//           flex: 1,
+//         }),
+//       }}
+//       /* formatOptionLabel={(option, context) => {
+//         return (
+//           <React.Fragment>
+//             <input type="checkbox" />
+//             <label>{option.label}</label>
+//           </React.Fragment>
+//         );
+//       }} */
+//     />
+//   </div>
+// );

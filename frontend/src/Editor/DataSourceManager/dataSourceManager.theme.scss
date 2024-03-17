@@ -1,0 +1,43 @@
+@import '../../_styles/colors.scss';
+
+.sample-db-modal-body{
+    min-height: calc(100vh - 380px);;
+    
+    .sample-db-title {
+        margin-top: 40px;
+        justify-content: center;
+        display: flex;
+    }
+
+    .sample-db-description {
+        margin-top: 20px;
+        justify-content: center;
+        display: flex;
+
+        p{
+            // color: var(--);
+            font-size: 12px;
+            font-weight: 400;
+            text-align: center;
+            color: $color-light-slate-11;
+        }
+    }
+
+    .create-btn-cont{
+        justify-content: center;
+        display: flex;
+        .create-app-btn {
+        border-radius: 8px;
+        font-size: 12px;
+        height: 32px;
+        width: 168px;
+        padding: 0;
+    }
+    }
+    
+}
+.modal-footer-class{
+    .test-connection-sample-db{
+        margin-right: 90px;
+    }
+}

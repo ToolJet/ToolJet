@@ -22,6 +22,9 @@ import { shallow } from 'zustand/shallow';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import './editor.theme.scss';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import BulkIcon from '@/_ui/Icon/BulkIcons';
 
 const NO_OF_GRIDS = 43;
 
@@ -685,7 +688,63 @@ export const Container = ({
       })}
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div style={{ paddingTop: '10%' }}>
-          <div className="mx-auto w-50 p-5 bg-light no-components-box">
+          <div className="row empty-box-cont">
+            <div className="col-md-4 dotted-cont">
+              <div className="box-icon">
+                <SolidIcon name="datasource" fill="#3E63DD" width="25" />
+              </div>
+              <div className="title-text">Create a Query</div>
+              <div className="title-desc">
+                Connect to your data source or use our sample data source to start playing around!
+              </div>
+              <div className="box-link">
+                <div className="child">
+                  <a className="link-but">Connect to sample data source </a>
+                </div>
+                <div>
+                  <BulkIcon name="arrowright" fill="#3E63DD" />
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-4 dotted-cont">
+              <div className="box-icon">
+                <BulkIcon name="addtemplate" width="25" viewBox="0 0 28 28" />
+              </div>
+              <div className="title-text">Drag and drop a component</div>
+              <div className="title-desc">
+                Choose a component from the right side panel or use our pre-built templates to get started quickly!
+              </div>
+              <div className="box-link">
+                <div className="child">
+                  <a className="link-but">Explore templates </a>
+                </div>
+                <div>
+                  <BulkIcon name="arrowright" fill="#3E63DD" />
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-4 dotted-cont">
+              <div className="box-icon">
+                <BulkIcon name="invitecollab" width="25" viewBox="0 0 28 28" />
+              </div>
+              <div className="title-text">Share your application!</div>
+              <div className="title-desc">
+                Invite users to collaborate in real-time with multiplayer editing and comments for seamless development.
+              </div>
+              <div className="box-link">
+                <div className="child">
+                  <a className="link-but">Invite collaborators </a>
+                </div>
+                <div>
+                  <BulkIcon name="arrowright" fill="#3E63DD" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* <div className="mx-auto w-50 p-5 bg-light no-components-box">
             <center className="text-muted" data-cy={`empty-editor-text`}>
               You haven&apos;t added any components yet. Drag components from the right sidebar and drop here. Check out
               our&nbsp;
@@ -699,7 +758,7 @@ export const Container = ({
               </a>{' '}
               on adding components.
             </center>
-          </div>
+          </div> */}
         </div>
       )}
     </div>
