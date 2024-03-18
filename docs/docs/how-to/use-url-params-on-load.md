@@ -1,6 +1,6 @@
 ---
 id: use-url-params-on-load
-title: Use URL Parameters on page load
+title: Use URL Parameters on Page Load
 ---
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
