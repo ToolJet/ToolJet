@@ -267,7 +267,16 @@ class SSOConfiguration extends React.Component {
           <input
             type="checkbox"
             checked={isEnabled}
-            onChange={() => this.toggleSSOOption(key)}
+            onChange={(e) => {
+              e.preventDefault();
+              if (!isEnabled) {
+                // If it's about enabling, open modal without toggling state
+                this.openModal(key);
+              } else {
+                // If disabling, directly toggle state
+                this.toggleSSOOption(key);
+              }
+            }}
             data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-toggle`}
           />
           <span className="slider round"></span>
