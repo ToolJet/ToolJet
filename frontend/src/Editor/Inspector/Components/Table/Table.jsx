@@ -487,7 +487,7 @@ class TableComponent extends React.Component {
               >
                 <Droppable droppableId="droppable">
                   {({ innerRef, droppableProps, placeholder }) => (
-                    <div className="w-100" {...droppableProps} ref={innerRef}>
+                    <div className="w-100 d-flex custom-gap-4 flex-column" {...droppableProps} ref={innerRef}>
                       {columns.value.map((item, index) => {
                         const resolvedItemName = resolveReferences(item.name, this.state.currentState);
                         const columnVisibility = item?.columnVisibility ?? true;
@@ -533,6 +533,7 @@ class TableComponent extends React.Component {
                                       showCopyColumnOption={true}
                                       showVisibilityIcon={true}
                                       isColumnVisible={resolveReferences(columnVisibility, this.state.currentState)}
+                                      className={'table-column-lists'}
                                     />
                                   </div>
                                 </OverlayTrigger>
@@ -546,7 +547,7 @@ class TableComponent extends React.Component {
                   )}
                 </Droppable>
               </DragDropContext>
-              <div>
+              <div style={{ marginTop: '8px' }}>
                 {columns?.value?.length === 0 && <NoListItem text={'There are no columns'} dataCy={`-columns`} />}
                 <div>
                   <AddNewButton dataCy={`button-add-column`} onClick={this.addNewColumn}>
