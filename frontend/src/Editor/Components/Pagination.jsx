@@ -218,19 +218,23 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
 const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth }) => {
   const itemWidth = 28; // Width of each item
 
-  const [maxItems, setMaxItems] = useState(0);
+  const [maxItems, setMaxItems] = useState(0); // for max items that can fit in container
 
   useEffect(() => {
+    if (!containerWidth || isNaN(totalPages) || totalPages <= 0) {
+      return;
+    }
+
     // Calculate the maximum number of items that can fit within the container width
     const availableWidth = containerWidth;
     const calculatedMaxItems = Math.floor(availableWidth / itemWidth);
     setMaxItems(calculatedMaxItems);
-  }, [containerWidth, totalPages]); // Include totalPages to trigger recalculation when the number of pages changes
+  }, [containerWidth, totalPages]);
 
   const renderPageNumbers = () => {
     const pageNumbers = [];
 
-    // Calculate the number of page numbers that can fit, excluding arrows and ellipsis
+    // Calculate the number of page numbers that can fit, excluding arrows
     const maxPageNumbers = maxItems - 4;
 
     // Calculate the starting and ending page numbers based on the current page and the total pages
@@ -263,25 +267,39 @@ const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth
         </li>
       );
     }
-
     // If total pages exceed the maximum displayable page numbers, add ellipsis
     if (totalPages > maxPageNumbers) {
       // If there is enough space, remove one number and add ellipsis
       if (endPage < totalPages) {
-        pageNumbers.pop(); // Remove one number
+        pageNumbers.pop(); // Remove one number for ellipsis
+        pageNumbers.pop(); // Remove one number for 1
+
         pageNumbers.push(
           <li key="right-ellipsis" className="page-item">
             <span className="page-link">...</span>
+          </li>
+        );
+
+        pageNumbers.push(
+          <li key={totalPages} onClick={() => callback(totalPages)} className={`page-item`}>
+            <a className={`page-link ${darkMode && 'text-light'}`}>{totalPages}</a>
           </li>
         );
       }
 
       // If the beginning of the pages is not visible, add ellipsis and remove one number
       if (startPage > 1) {
-        pageNumbers.shift(); // Remove one number
+        pageNumbers.shift();
+        pageNumbers.shift();
+
         pageNumbers.unshift(
           <li key="left-ellipsis" className="page-item">
             <span className="page-link">...</span>
+          </li>
+        );
+        pageNumbers.unshift(
+          <li key={1} onClick={() => callback(1)} className={`page-item`}>
+            <a className={`page-link ${darkMode && 'text-light'}`}>1</a>
           </li>
         );
       }
