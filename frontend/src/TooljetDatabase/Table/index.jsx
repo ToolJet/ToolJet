@@ -1115,17 +1115,18 @@ const Table = ({ collapseSidebar }) => {
                               }
                             >
                               <div
-                                className={cx('tjdb-column-select-border', {
-                                  'tjdb-selected-cell':
-                                    cellClick.rowIndex === rIndex &&
-                                    cellClick.cellIndex === index &&
-                                    cellClick.editable === true &&
-                                    !isCellUpdateInProgress,
-                                  'tjdb-cell-error':
-                                    cellClick.rowIndex === rIndex &&
-                                    cellClick.cellIndex === index &&
-                                    cellClick.errorState === true,
-                                })}
+                                className={`${
+                                  cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index &&
+                                  cellClick.errorState === true
+                                    ? 'tjdb-cell-error'
+                                    : cellClick.rowIndex === rIndex &&
+                                      cellClick.cellIndex === index &&
+                                      cellClick.editable === true &&
+                                      !isCellUpdateInProgress
+                                    ? 'tjdb-selected-cell'
+                                    : 'tjdb-column-select-border'
+                                }`}
                                 id={`tjdb-cell-row${rIndex}-column${index}`}
                               >
                                 <div className="tjdb-td-wrapper">

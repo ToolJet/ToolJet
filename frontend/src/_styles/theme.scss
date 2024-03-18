@@ -7018,7 +7018,10 @@ tbody {
 
   .tjdb-cell-error {
     padding: 0rem;
-    border-color: var(--Tomato-09, #E54D2E) !important;
+    border-top: 1.5px solid var(--Tomato-09, #E54D2E) !important;
+    border-bottom: 1.5px solid var(--Tomato-09, #E54D2E) !important;
+    border-right: 1.5px solid var(--Tomato-09, #E54D2E) !important;
+    border-left: 1.5px solid var(--Tomato-09, #E54D2E) !important;
   }
 
   .tjdb-column-select-border {
