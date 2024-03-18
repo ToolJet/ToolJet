@@ -49,6 +49,7 @@ const sidebars = {
       },
       'items': [
         'setup/try-tooljet',
+        'setup/system-requirements',
         'setup/digitalocean',
         'setup/docker',
         'setup/ec2',
@@ -374,6 +375,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Marketplace Plugins',
           'items': [
+            'marketplace/plugins/marketplace-plugin-redshift',
             'marketplace/plugins/marketplace-plugin-textract',
             'marketplace/plugins/aws-lambda-plugin',
             'marketplace/plugins/marketplace-plugin-github',

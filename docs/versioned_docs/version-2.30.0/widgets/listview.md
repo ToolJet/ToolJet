@@ -1,24 +1,45 @@
 ---
 id: listview
-title: List view
+title: List View
 ---
 # List view
 
-List view widget allows to create a list of repeatable rows of data. Just like a container widget, you can nest other widgets inside of it and control how many times they repeat.
+List View component allows to create a list of repeatable rows of data. Just like the Container component, you can nest other components inside of it and control how many times they repeat.
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/list-view/listviewapp.png" alt="ToolJet - List view widget" />
-
+<div style={{textAlign: 'center', marginBottom: '15px'}}>
+    <img className="screenshot-full" src="/img/widgets/list-view/listviewapp.png" alt="ToolJet - List view component" />
 </div>
 
 :::caution Restricted components
-In order to avoid excessively complex situations, certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the list view component using drag-and-drop functionality.
-
-If the builder attempts to add any of the aforementioned components inside the List view, an error message will be displayed:
-
-`<Restricted component> cannot be used as a child component within the list view.`
+Certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the list view component using drag-and-drop functionality.
 :::
+
+## Setting List Data
+
+To dynamically populate List View components, you can use specific data properties.
+
+Consider this data being passed inside a List View component's `List data` property:
+
+```js
+{{[
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 1' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 2' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 3' },
+]}}
+```
+
+Based on the above data, you can set the `Data` property of a Text component inside List View using the below code:
+
+```js
+{{listItem.text}}
+```
+
+Similarly, for an Image component inside List View, you can use the below code to pass the `imageURL` value:
+
+```js
+{{listItem.imageURL}}
+```
+
 
 ## Events
 
@@ -33,7 +54,7 @@ There are two events that you can use with the List View component:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/newevents.png" alt="ToolJet - List view widget" />
+<img className="screenshot-full" src="/img/widgets/list-view/newevents.png" alt="ToolJet - List view component" />
 
 </div>
 
@@ -61,7 +82,7 @@ To get detailed information about all the **Actions**, please consult the [Actio
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/propsnew.png" alt="ToolJet - List view widget" width="300"/>
+<img className="screenshot-full" src="/img/widgets/list-view/propsnew.png" alt="ToolJet - List view component" width="300"/>
 
 </div>
 
@@ -77,16 +98,16 @@ To get detailed information about all the **Actions**, please consult the [Actio
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/gridmode.gif" alt="ToolJet - List view widget" />
+<img className="screenshot-full" src="/img/widgets/list-view/gridmode.gif" alt="ToolJet - List view component" />
 
 </div>
 
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
@@ -98,7 +119,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/listlayout.png" alt="ToolJet - List view widget" />
+<img className="screenshot-full" src="/img/widgets/list-view/listlayout.png" alt="ToolJet - List view component" />
 
 </div>
 
@@ -111,16 +132,16 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/style.png" alt="ToolJet - List view widget" />
+<img className="screenshot-full" src="/img/widgets/list-view/style.png" alt="ToolJet - List view component" />
 
 </div>
 
 | Style      | Description |
 | ----------- | ----------- |
-| Background Color |  You can change the background color of the widget by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Background Color |  You can change the background color of the component by entering the Hex color code or choosing a color of your choice from the color picker. |
 | Border Color |  You can change the border color of the listview by entering the `Hex color code` or choosing a color of your choice from the color picker. |
-| Visibility | This is to control the visibility of the widget. If `{{false}}` the widget will not be visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
-| Disable |  This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| Visibility | This is to control the visibility of the component. If `{{false}}` the component will not be visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
+| Disable |  This property only accepts boolean values. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 | Border radius | Use this property to modify the border radius of the list view. The field expects only numerical value from `1` to `100`, default is `0`. |
 
 :::info
@@ -129,11 +150,11 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 ## Example: Displaying data in the list view
 
-- Let's start by creating a new app and then dragging the List view widget onto the canvas.
+- Let's start by creating a new app and then dragging the List view component onto the canvas.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/emptylist.png" alt="ToolJet - List view widget" />
+<img className="screenshot-full" src="/img/widgets/list-view/emptylist.png" alt="ToolJet - List view component" />
 
 </div>
 
@@ -141,32 +162,32 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/data.gif" alt="ToolJet - List view widget" />
+<img className="screenshot-full" src="/img/widgets/list-view/data.gif" alt="ToolJet - List view component" />
 
 </div>
 
 
-- Now lets edit the `List data` property of the list view widget for displaying the query data. We will use JS to get the data from the query - `{{queries.restapi1.data.data}}`. Here the last `data` is a data object that includes an array of objects, the first `data` is the data resulted from the `restapi1` query. This will automatically create the rows in the widget using the data.
+- Now lets edit the `List data` property of the list view component for displaying the query data. We will use JS to get the data from the query - `{{queries.restapi1.data.data}}`. Here the last `data` is a data object that includes an array of objects, the first `data` is the data resulted from the `restapi1` query. This will automatically create the rows in the component using the data.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/datadisplay.png" alt="ToolJet - List view widget" />
+<img className="screenshot-full" src="/img/widgets/list-view/datadisplay.png" alt="ToolJet - List view component" />
 
 </div>
 
 
-- Finally, we will need to nest widgets into the first row of list view widget and the widget will automatically create the subsequent instances. The subsequent rows will appear the same way you'll display the data in the first row.
+- Finally, we will need to nest components into the first row of list view component and the component will automatically create the subsequent instances. The subsequent rows will appear the same way you'll display the data in the first row.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/addingwidgets.gif" alt="ToolJet - List view widget" />
+<img className="screenshot-full" src="/img/widgets/list-view/addingwidgets.gif" alt="ToolJet - List view component" />
 
 </div>
 
 
 :::tip
 
-Use `{{listItem.key}}` to display data on the nested widgets. Example: For displaying the images we used `{{listItem.avatar}}` where **avatar** is one of the key in the objects from the query result.
+Use `{{listItem.key}}` to display data on the nested components. Example: For displaying the images we used `{{listItem.avatar}}` where **avatar** is one of the key in the objects from the query result.
 
 :::
 
@@ -174,7 +195,7 @@ Use `{{listItem.key}}` to display data on the nested widgets. Example: For displ
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/exposed2.png" alt="ToolJet - List view widget" />
+<img className="screenshot-full" src="/img/widgets/list-view/exposed2.png" alt="ToolJet - List view component" />
 
 </div>
 
@@ -197,7 +218,7 @@ All the child components of the list view component are exposed through the `chi
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/children.png" alt="ToolJet - List view widget" />
+<img className="screenshot-full" src="/img/widgets/list-view/children.png" alt="ToolJet - List view component" />
 
 </div>
 
