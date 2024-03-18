@@ -31,7 +31,9 @@ export function handleResponse(response, avoidRedirection = false) {
     if (!response.ok) {
       if ([401].indexOf(response.status) !== -1) {
         // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
-        avoidRedirection ? authenticationService.logout() : location.reload(true);
+        const errorMessageJson = typeof data.message === 'string' ? JSON.parse(data.message) : undefined;
+        const workspaceId = errorMessageJson?.organizationId;
+        avoidRedirection ? authenticationService.logout(false, workspaceId) : location.reload(true);
       } else if ([451].indexOf(response.status) !== -1) {
         // a popup will show when the response meet the following conditions
         const url = response.url;

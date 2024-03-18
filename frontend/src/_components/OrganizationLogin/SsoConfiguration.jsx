@@ -285,8 +285,8 @@ class SSOConfiguration extends React.Component {
         <div
           className="sso-option"
           key={key}
-          onClick={isFeatureAvailable ? () => this.openModal(key) : (e) => e.preventDefault()}
-          data-cy="sso-card"
+          onClick={() => this.openModal(key)}
+          data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-sso-card`}
         >
           <div className="sso-option-label">
             {
@@ -300,25 +300,20 @@ class SSOConfiguration extends React.Component {
                 </span>
                 {
                   <img
-                    src="assets/images/EditIcon.png"
+                    src="/assets/images/EditIcon.png"
                     className="option-icon"
-                    style={{
-                      width: '14px',
-                      height: '14px',
-                      marginLeft: '8px',
-                      ...(isFeatureAvailable ? {} : { visibility: 'hidden' }),
-                    }}
+                    style={{ width: '14px', height: '14px', marginLeft: '8px' }}
                     data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-edit-icon`}
                   />
                 }
               </div>
             }
           </div>
-          <label className="switch" onClick={isFeatureAvailable && ((e) => e.stopPropagation())}>
+          <label className="switch" onClick={(e) => e.stopPropagation()}>
             <input
               type="checkbox"
               checked={isEnabled}
-              onChange={isFeatureAvailable ? () => this.toggleSSOOption(key) : (e) => e.preventDefault()}
+              onChange={() => this.toggleSSOOption(key)}
               data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-toggle`}
             />
             <span className="slider round"></span>
@@ -355,7 +350,7 @@ class SSOConfiguration extends React.Component {
                 justifyContent: 'flex-start',
               }}
               bsPrefix="no-caret-dropdown-toggle"
-              data-testid="instance-sso-toggle"
+              data-cy="dropdown-custom-toggle"
             >
               <div
                 className="sso-option-label"
@@ -413,7 +408,7 @@ class SSOConfiguration extends React.Component {
             </Dropdown.Menu>
           </Dropdown>
 
-          <label className="switch" style={{ marginLeft: '95px' }}>
+          <label className="switch" style={{ marginLeft: '95px' }} data-cy="instance-sso-toggle">
             <input type="checkbox" checked={defaultSSO} onChange={this.toggleDefaultSSO} />
             <span className="slider round"></span>
           </label>
