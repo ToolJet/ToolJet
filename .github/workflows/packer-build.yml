@@ -53,7 +53,7 @@ jobs:
 
       # build artifact
       - name: Build Artifact
-        uses: hashicorp/packer-github-actions@master
+        uses: hashicorp/packer-github-actions@main
         with:
           command: build
           #The the below argument is specific for building EE AMI image
