@@ -62,6 +62,8 @@ jobs:
           working_directory: deploy/ec2
         env:
           PACKER_LOG: 1
+          PACKER_BUILDER_TYPE: amazon-ebs
+          PACKER_BUILD_NAME: ubuntu
 
       - name: Send Slack Notification
         run: |
