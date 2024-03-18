@@ -91,7 +91,7 @@ const UsersTable = ({
                           }`}
                         />
                         <span
-                          className="mx-3 tj-text-sm"
+                          className="mx-3 tj-text tj-text-sm"
                           data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
                         >
                           {user.name}

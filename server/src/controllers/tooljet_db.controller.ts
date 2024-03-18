@@ -26,7 +26,12 @@ import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 
 import { Action, TooljetDbAbility } from 'src/modules/casl/abilities/tooljet-db-ability.factory';
 import { TooljetDbGuard } from 'src/modules/casl/tooljet-db.guard';
-import { CreatePostgrestTableDto, RenamePostgrestTableDto, PostgrestTableColumnDto } from '@dto/tooljet-db.dto';
+import {
+  CreatePostgrestTableDto,
+  RenamePostgrestTableDto,
+  PostgrestTableColumnDto,
+  EditColumnTableDto,
+} from '@dto/tooljet-db.dto';
 import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.service';
@@ -153,6 +158,21 @@ export class TooljetDbController {
     };
 
     const result = await this.tooljetDbService.perform(organizationId, 'join_tables', params);
+    return decamelizeKeys({ result });
+  }
+  @Patch('/organizations/:organizationId/table/:tableName/column')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.EditColumn, 'all'))
+  async editColumn(
+    @Body('column') columnDto: EditColumnTableDto,
+    @Param('organizationId') organizationId,
+    @Param('tableName') tableName
+  ) {
+    const params = {
+      table_name: tableName,
+      column: columnDto,
+    };
+    const result = await this.tooljetDbService.perform(organizationId, 'edit_column', params);
     return decamelizeKeys({ result });
   }
 }

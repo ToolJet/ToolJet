@@ -32,6 +32,9 @@ import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
 import { ThemeProvider } from '@/components/theme-provider';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { useSuperStore } from '../_stores/superStore';
+import { ModuleContext } from '../_contexts/ModuleContext';
 
 const AppWrapper = (props) => {
   return (
@@ -44,6 +47,7 @@ const AppWrapper = (props) => {
 };
 
 class AppComponent extends React.Component {
+  static contextType = ModuleContext;
   constructor(props) {
     super(props);
 
@@ -58,6 +62,7 @@ class AppComponent extends React.Component {
   };
   fetchMetadata = () => {
     tooljetService.fetchMetaData().then((data) => {
+      useSuperStore.getState().modules[this.context].useAppDataStore.getState().actions.setMetadata(data);
       localStorage.setItem('currentVersion', data.installed_version);
       if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
         this.setState({ updateAvailable: true });

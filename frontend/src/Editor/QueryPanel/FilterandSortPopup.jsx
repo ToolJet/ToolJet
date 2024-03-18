@@ -11,7 +11,7 @@ import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { staticDataSources } from '../QueryManager/constants';
 import { Tooltip } from 'react-tooltip';
-import { PillButton } from '../QueryManager/QueryEditors/Runjs/ParameterDetails';
+import { PillButton } from '../QueryManager/Components/ParameterDetails';
 
 const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasourcesChange, clearSelectedDataSources }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-sort-filter-popover', '#query-sort-filter-popover-btn');

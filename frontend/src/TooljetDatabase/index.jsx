@@ -31,6 +31,13 @@ export const TooljetDatabaseContext = createContext({
   setQueryFilters: () => {},
   sortFilters: {},
   setSortFilters: () => {},
+  selectRows: [],
+  setSelectRows: () => {},
+  pageCount: 1,
+  setPageCount: () => {},
+  pageSize: 50,
+  setPageSize: () => {},
+  handleRefetchQuery: () => {},
 });
 
 export const TooljetDatabase = (props) => {
@@ -42,11 +49,18 @@ export const TooljetDatabase = (props) => {
   const [searchParam, setSearchParam] = useState('');
   const [selectedTable, setSelectedTable] = useState({});
   const [selectedTableData, setSelectedTableData] = useState([]);
+  const [pageCount, setPageCount] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
 
   const [totalRecords, setTotalRecords] = useState(0);
 
   const [queryFilters, setQueryFilters] = useState({});
   const [sortFilters, setSortFilters] = useState({});
+  const [collapseSidebar, setCollapseSidebar] = useState(false);
+
+  const toggleCollapsibleSidebar = () => {
+    setCollapseSidebar(!collapseSidebar);
+  };
   const navigate = useNavigate();
   const { admin } = authenticationService.currentSessionValue;
 
@@ -61,6 +75,7 @@ export const TooljetDatabase = (props) => {
     resetSortQuery,
     resetFilterQuery,
     resetAll,
+    handleRefetchQuery,
   } = usePostgrestQueryBuilder({
     organizationId,
     selectedTable,
@@ -94,6 +109,11 @@ export const TooljetDatabase = (props) => {
       sortFilters,
       setSortFilters,
       resetAll,
+      pageCount,
+      setPageCount,
+      pageSize,
+      setPageSize,
+      handleRefetchQuery,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -121,10 +141,16 @@ export const TooljetDatabase = (props) => {
   }, [selectedTable]);
 
   return (
-    <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
+    <Layout
+      switchDarkMode={props.switchDarkMode}
+      darkMode={props.darkMode}
+      enableCollapsibleSidebar={true}
+      collapseSidebar={collapseSidebar}
+      toggleCollapsibleSidebar={toggleCollapsibleSidebar}
+    >
       <div className="page-wrapper tooljet-database">
         <TooljetDatabaseContext.Provider value={value}>
-          <TooljetDatabasePage totalTables={tables.length || 0} />
+          <TooljetDatabasePage totalTables={tables.length || 0} collapseSidebar={collapseSidebar} />
         </TooljetDatabaseContext.Provider>
       </div>
     </Layout>

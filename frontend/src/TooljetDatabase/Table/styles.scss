@@ -1,0 +1,228 @@
+.tjdb-column-header-name {
+  margin-right: 10px;
+}
+
+.tjdb-menu-icon {
+  display: none;
+}
+
+.tjdb-menu-icon-parent {
+  width: 20px;
+  height: 20px;
+}
+
+.primaryKeyTooltip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.primary-key-text {
+  font-size: 8px;
+  color: #687076;
+}
+
+.tjdb-primary-key-parent {
+  border-radius: 10px !important;
+  background-color: #D7DBDF !important;
+  padding: 0px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+}
+
+.column-popover {
+  width: 137px !important;
+}
+
+.column-popover-parent {
+  background-color: white !important;
+}
+
+.tj-table {
+  thead th {
+    z-index: 1;
+    position: sticky;
+    top: 0px;
+  }
+
+  td:nth-child(1) {
+    z-index: 1;
+    position: sticky;
+    left: 0;
+    background-color: white;
+  }
+
+  td:nth-child(2) {
+    z-index: 1;
+    position: sticky;
+    left: 66px;
+    border-right: 2px solid var(--light-slate-08, #C1C8CD);
+    background-color: white;
+  }
+
+  th {
+    border-top: 1px solid rgba(101, 109, 119, 0.16) !important;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+    border-color: inherit;
+  }
+
+  td {
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+    border-color: inherit;
+  }
+
+  th:nth-child(1) {
+    left: 0;
+    top: 0;
+    z-index: 2;
+  }
+
+  th:nth-child(2) {
+    z-index: 2;
+    left: 66px;
+    border-right: 2px solid var(--light-slate-08, #C1C8CD);
+  }
+
+  .dark-background {
+    td:nth-child(1),
+    td:nth-child(2) {
+      background-color: #2B394A;
+    }
+  }
+
+  .tjdb-td-wrapper {
+    position: relative;
+    height: 36px;
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    padding: 0.375rem 0.375rem;
+    border: 2px solid transparent;
+  }
+
+  .tjdb-selected-cell {
+    border-color: var(--Indigo-09, #3E63DD);
+  }
+
+  .card-table tr td:last-child {
+    padding: 0;
+  }
+
+}
+
+.keyPress-actions {
+
+  gap: 1.5rem;
+
+  .navigate-keyActions,
+  .enter-keyActions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+
+    .leftNav-parent-container,
+    .rightNav-parent-container,
+    .editEnter-parent-container {
+      border-radius: 6px;
+      border: 1px solid var(--slate7);
+      width: 24px;
+      text-align: center;
+    }
+  }
+}
+
+.cell-text-null {
+  background-color: var(--slate3) !important;
+  color: var(--slate11) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  border-radius: 6px;
+  width: 40px;
+  height: 20px;
+  font-size: 12px;
+}
+
+.input-cell-parent {
+
+  position: relative !important;
+  background-color: transparent;
+
+  .cell-text-null-input {
+    background-color: var(--slate3) !important;
+    color: var(--slate11) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    border-radius: 6px;
+    width: 40px;
+    height: 20px;
+    font-size: 12px;
+  }
+
+}
+
+.tjdb-cell-save-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background-color: var(--Indigo-09, #3E63DD) !important;
+
+  .tjdb-cell-save-progress-bar {
+    background-color: var(--Indigo-09, #3E63DD) !important;
+  }
+}
+
+.toojet-db-table-footer {
+  width: calc(100vw - 336px) !important;
+}
+
+.tj-db-table {
+  scroll-behavior: smooth;
+
+  .table-cell {
+    &:not(.table-cell-selected):hover {
+      background: var(--Slate-03, #F1F3F5) !important;
+    }
+  }
+
+  .table-row-selected {
+    background-color: var(--indigo4);
+
+    td:nth-child(1),
+    td:nth-child(2) {
+      background: var(--indigo4);
+    }
+  }
+
+  .dark-bg:not(.table-row-selected) {
+    &:hover {
+      background: #22303C;
+
+      td:nth-child(1),
+      td:nth-child(2) {
+        background: #22303C;
+      }
+    }
+
+    .table-cell {
+      &:hover {
+        background: #1D252F !important;
+      }
+    }
+  }
+
+  .cell-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

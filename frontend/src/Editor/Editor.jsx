@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useContext } from 'react';
 import {
   appService,
   authenticationService,
@@ -32,6 +32,7 @@ import {
   buildComponentMetaDefinition,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
+// eslint-disable-next-line import/no-unresolved
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
@@ -54,7 +55,6 @@ import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError'
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
-import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
 import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
@@ -70,6 +70,8 @@ import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import { getQueryParams } from '@/_helpers/routes';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
+import { ModuleContext } from '../_contexts/ModuleContext';
+import { useSuperStore } from '../_stores/superStore';
 
 setAutoFreeze(false);
 enablePatches();
@@ -77,6 +79,7 @@ enablePatches();
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
 const EditorComponent = (props) => {
+  const moduleName = useContext(ModuleContext);
   const { socket } = createWebsocketConnection(props?.params?.id);
   const isSocketOpen = useSocketOpen(socket);
   const mounted = useMounted();
@@ -216,18 +219,21 @@ const EditorComponent = (props) => {
         updateState({
           currentUser: appUserDetails,
         });
-        useCurrentStateStore.getState().actions.setCurrentState({
-          globals: {
-            ...currentState.globals,
-            theme: { name: props?.darkMode ? 'dark' : 'light' },
-            urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
-            currentUser: userVars,
-            /* Constant value.it will only change for viewer */
-            mode: {
-              value: 'edit',
+        useSuperStore
+          .getState()
+          .modules[moduleName].useCurrentStateStore.getState()
+          .actions.setCurrentState({
+            globals: {
+              ...currentState.globals,
+              theme: { name: props?.darkMode ? 'dark' : 'light' },
+              urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
+              currentUser: userVars,
+              /* Constant value.it will only change for viewer */
+              mode: {
+                value: 'edit',
+              },
             },
-          },
-        });
+          });
       }
     });
 
@@ -239,7 +245,7 @@ const EditorComponent = (props) => {
       socket && socket?.close();
       subscription.unsubscribe();
       if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
-      useEditorStore.getState().actions.setIsEditorActive(false);
+      useSuperStore.getState().modules[moduleName].useEditorStore.getState().actions.setIsEditorActive(false);
       prevAppDefinition.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -257,11 +263,11 @@ const EditorComponent = (props) => {
     if (mounted && didAppDefinitionChanged && currentPageId) {
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
-      computeComponentState(components);
+      computeComponentState(components, moduleName);
 
       if (appDiffOptions?.skipAutoSave === true) return;
 
-      if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
+      if (useSuperStore.getState().modules[moduleName].useEditorStore.getState().isUpdatingEditorStateInProcess) {
         autoSave();
       }
     }
@@ -271,7 +277,7 @@ const EditorComponent = (props) => {
   useEffect(
     () => {
       const components = appDefinition?.pages?.[currentPageId]?.components || {};
-      computeComponentState(components);
+      computeComponentState(components, moduleName);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentPageId]
@@ -298,7 +304,7 @@ const EditorComponent = (props) => {
 
   useEffect(() => {
     if (mounted) {
-      useCurrentStateStore.getState().actions.setCurrentState({
+      useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
         layout: currentLayout,
       });
     }
@@ -323,12 +329,14 @@ const EditorComponent = (props) => {
 
   const getEditorRef = () => {
     const editorRef = {
-      appDefinition: useEditorStore.getState().appDefinition,
-      queryConfirmationList: useEditorStore.getState().queryConfirmationList,
+      appDefinition: useSuperStore.getState().modules[moduleName].useEditorStore.getState().appDefinition,
+      queryConfirmationList: useSuperStore.getState().modules[moduleName].useEditorStore.getState()
+        .queryConfirmationList,
       updateQueryConfirmationList: updateQueryConfirmationList,
       navigate: props.navigate,
       switchPage: switchPage,
-      currentPageId: useEditorStore.getState().currentPageId,
+      currentPageId: useSuperStore.getState().modules[moduleName].useEditorStore.getState().currentPageId,
+      moduleName,
     };
     return editorRef;
   };
@@ -358,7 +366,7 @@ const EditorComponent = (props) => {
         }
       });
 
-      useCurrentStateStore.getState().actions.setCurrentState({
+      useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
         server: server_variables,
         client: client_variables,
       });
@@ -374,7 +382,7 @@ const EditorComponent = (props) => {
         orgConstants[constant.name] = constantValue;
       });
 
-      useCurrentStateStore.getState().actions.setCurrentState({
+      useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
         constants: orgConstants,
       });
     });
@@ -473,18 +481,22 @@ const EditorComponent = (props) => {
   };
 
   const fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
-    await useDataQueriesStore
+    await useSuperStore
       .getState()
-      .actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, getEditorRef());
+      .modules[moduleName].useDataQueriesStore.getState()
+      .actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, getEditorRef(), moduleName);
   };
 
   const fetchDataSources = (id) => {
-    useDataSourcesStore.getState().actions.fetchDataSources(id);
+    useSuperStore.getState().modules[moduleName].useDataSourcesStore.getState().actions.fetchDataSources(id);
   };
 
   const fetchGlobalDataSources = () => {
     const { current_organization_id: organizationId } = currentUser;
-    useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
+    useSuperStore
+      .getState()
+      .modules[moduleName].useDataSourcesStore.getState()
+      .actions.fetchGlobalDataSources(organizationId);
   };
 
   const onVersionDelete = () => {
@@ -538,6 +550,8 @@ const EditorComponent = (props) => {
   };
 
   const onNameChanged = (newName) => {
+    app.name = newName;
+    updateState({ appName: newName, app: app });
     updateState({ appName: newName });
     setWindowTitle({ page: pageTitles.EDITOR, appName: newName });
   };
@@ -555,18 +569,21 @@ const EditorComponent = (props) => {
   const computeCanvasContainerHeight = () => {
     // 45 = (height of header)
     // 85 = (the height of the query panel header when minimised) + (height of header)
-    return `calc(${100}% - ${Math.max(useQueryPanelStore.getState().queryPanelHeight + 45, 85)}px)`;
+    return `calc(${100}% - ${Math.max(
+      useSuperStore.getState().modules[moduleName].useQueryPanelStore.getState().queryPanelHeight + 45,
+      85
+    )}px)`;
   };
 
   const handleQueryPaneDragging = (bool) => setIsQueryPaneDragging(bool);
   const handleQueryPaneExpanding = (bool) => setIsQueryPaneExpanded(bool);
 
   const handleOnComponentOptionChanged = (component, optionName, value) => {
-    return onComponentOptionChanged(component, optionName, value);
+    return onComponentOptionChanged(moduleName, component, optionName, value);
   };
 
   const handleOnComponentOptionsChanged = (component, options) => {
-    return onComponentOptionsChanged(component, options);
+    return onComponentOptionsChanged(moduleName, component, options);
   };
 
   const handleComponentClick = (id, component) => {
@@ -577,21 +594,24 @@ const EditorComponent = (props) => {
 
   const sideBarDebugger = {
     error: (data) => {
-      debuggerActions.error(data);
+      debuggerActions.error(data, moduleName);
     },
     flush: () => {
-      debuggerActions.flush();
+      debuggerActions.flush(moduleName);
     },
-    generateErrorLogs: (errors) => debuggerActions.generateErrorLogs(errors),
+    generateErrorLogs: (errors) => debuggerActions.generateErrorLogs(errors, moduleName),
   };
 
   const changeDarkMode = (newMode) => {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      globals: {
-        ...currentState.globals,
-        theme: { name: newMode ? 'dark' : 'light' },
-      },
-    });
+    useSuperStore
+      .getState()
+      .modules[moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({
+        globals: {
+          ...currentState.globals,
+          theme: { name: newMode ? 'dark' : 'light' },
+        },
+      });
     props.switchDarkMode(newMode);
   };
 
@@ -606,7 +626,10 @@ const EditorComponent = (props) => {
   };
 
   const setSelectedComponent = (id, component, multiSelect = false) => {
-    const isAlreadySelected = useEditorStore.getState()?.selectedComponents.find((component) => component.id === id);
+    const isAlreadySelected = useSuperStore
+      .getState()
+      .modules[moduleName].useEditorStore.getState()
+      ?.selectedComponents.find((component) => component.id === id);
 
     if (!isAlreadySelected) {
       setSelectedComponents([{ id, component }], multiSelect);
@@ -614,7 +637,10 @@ const EditorComponent = (props) => {
   };
 
   const onVersionRelease = (versionId) => {
-    useAppVersionStore.getState().actions.updateReleasedVersionId(versionId);
+    useSuperStore
+      .getState()
+      .modules[moduleName].useAppVersionStore.getState()
+      .actions.updateReleasedVersionId(versionId);
 
     if (socket instanceof WebSocket && socket?.readyState === WebSocket.OPEN) {
       socket.send(
@@ -666,9 +692,15 @@ const EditorComponent = (props) => {
 
   const callBack = async (data, startingPageHandle, versionSwitched = false) => {
     setWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
-    useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
+    useSuperStore
+      .getState()
+      .modules[moduleName].useAppVersionStore.getState()
+      .actions.updateEditingVersion(data.editing_version);
     if (!releasedVersionId || !versionSwitched) {
-      useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
+      useSuperStore
+        .getState()
+        .modules[moduleName].useAppVersionStore.getState()
+        .actions.updateReleasedVersionId(data.current_version_id);
     }
 
     const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
@@ -705,7 +737,7 @@ const EditorComponent = (props) => {
 
     setCurrentPageId(homePageId);
 
-    useCurrentStateStore.getState().actions.setCurrentState({
+    useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
     });
 
@@ -723,7 +755,10 @@ const EditorComponent = (props) => {
       });
     }
 
-    await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id);
+    await useSuperStore
+      .getState()
+      .modules[moduleName].useDataSourcesStore.getState()
+      .actions.fetchGlobalDataSources(data?.organization_id);
     await fetchDataSources(data.editing_version?.id);
     await fetchDataQueries(data.editing_version?.id, true, true);
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
@@ -779,11 +814,13 @@ const EditorComponent = (props) => {
       });
     }
     let updatedAppDefinition;
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
+    const copyOfAppDefinition = JSON.parse(
+      JSON.stringify(useSuperStore.getState().modules[moduleName].useEditorStore.getState().appDefinition)
+    );
 
     if (opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
       updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
-        const _currentPageId = useEditorStore.getState().currentPageId;
+        const _currentPageId = useSuperStore.getState().modules[moduleName].useEditorStore.getState().currentPageId;
         if (opts?.componentDeleting) {
           const currentPageComponentIds = Object.keys(copyOfAppDefinition.pages[_currentPageId]?.components);
           const newComponentIds = Object.keys(newDefinition.pages[_currentPageId]?.components);
@@ -921,7 +958,7 @@ const EditorComponent = (props) => {
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
-    const editingVersion = useAppVersionStore.getState().editingVersion;
+    const editingVersion = useSuperStore.getState().modules[moduleName].useAppVersionStore.getState().editingVersion;
     if (isVersionReleased && !isUserSwitchedVersion) {
       updateEditorState({
         isUpdatingEditorStateInProcess: false,
@@ -951,7 +988,10 @@ const EditorComponent = (props) => {
             ...editingVersion,
             ...{ definition: appDefinition },
           };
-          useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
+          useSuperStore
+            .getState()
+            .modules[moduleName].useAppVersionStore.getState()
+            .actions.updateEditingVersion(_editingVersion);
 
           if (config.ENABLE_MULTIPLAYER_EDITING) {
             props.ymap?.set('appDef', {
@@ -1124,7 +1164,10 @@ const EditorComponent = (props) => {
 
   const componentDefinitionChanged = (componentDefinition, props) => {
     if (isVersionReleased) {
-      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
+      useSuperStore
+        .getState()
+        .modules[moduleName].useAppVersionStore.getState()
+        .actions.enableReleasedVersionPopupState();
       return;
     }
 
@@ -1182,7 +1225,10 @@ const EditorComponent = (props) => {
         componentDeleted: true,
       });
     } else {
-      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
+      useSuperStore
+        .getState()
+        .modules[moduleName].useAppVersionStore.getState()
+        .actions.enableReleasedVersionPopupState();
     }
   };
 
@@ -1190,7 +1236,9 @@ const EditorComponent = (props) => {
     const gridWidth = (1 * 100) / 43; // width of the canvas grid in percentage
     const _appDefinition = _.cloneDeep(appDefinition);
     let newComponents = _appDefinition?.pages[currentPageId].components;
-    const selectedComponents = useEditorStore.getState()?.selectedComponents;
+    const selectedComponents = useSuperStore
+      .getState()
+      .modules[moduleName].useEditorStore.getState()?.selectedComponents;
 
     for (const selectedComponent of selectedComponents) {
       let top = newComponents[selectedComponent.id].layouts[currentLayout].top;
@@ -1222,7 +1270,7 @@ const EditorComponent = (props) => {
 
   const copyComponents = () =>
     cloneComponents(
-      useEditorStore.getState()?.selectedComponents,
+      useSuperStore.getState().modules[moduleName].useEditorStore.getState()?.selectedComponents,
       appDefinition,
       currentPageId,
       appDefinitionChanged,
@@ -1231,13 +1279,16 @@ const EditorComponent = (props) => {
 
   const cutComponents = () => {
     if (isVersionReleased) {
-      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
+      useSuperStore
+        .getState()
+        .modules[moduleName].useAppVersionStore.getState()
+        .actions.enableReleasedVersionPopupState();
 
       return;
     }
 
     cloneComponents(
-      useEditorStore.getState()?.selectedComponents,
+      useSuperStore.getState().modules[moduleName].useEditorStore.getState()?.selectedComponents,
       appDefinition,
       currentPageId,
       appDefinitionChanged,
@@ -1248,11 +1299,14 @@ const EditorComponent = (props) => {
 
   const cloningComponents = () => {
     if (isVersionReleased) {
-      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
+      useSuperStore
+        .getState()
+        .modules[moduleName].useAppVersionStore.getState()
+        .actions.enableReleasedVersionPopupState();
       return;
     }
     cloneComponents(
-      useEditorStore.getState()?.selectedComponents,
+      useSuperStore.getState().modules[moduleName].useEditorStore.getState()?.selectedComponents,
       appDefinition,
       currentPageId,
       appDefinitionChanged,
@@ -1262,7 +1316,7 @@ const EditorComponent = (props) => {
   };
 
   const handleEditorEscapeKeyPress = () => {
-    if (useEditorStore.getState()?.selectedComponents?.length > 0) {
+    if (useSuperStore.getState().modules[moduleName].useEditorStore.getState()?.selectedComponents?.length > 0) {
       updateEditorState({
         selectedComponents: [],
       });
@@ -1270,7 +1324,9 @@ const EditorComponent = (props) => {
   };
 
   const removeComponents = () => {
-    const selectedComponents = useEditorStore.getState()?.selectedComponents;
+    const selectedComponents = useSuperStore
+      .getState()
+      .modules[moduleName].useEditorStore.getState()?.selectedComponents;
     if (!isVersionReleased && selectedComponents?.length > 1) {
       let newDefinition = cloneDeep(appDefinition);
 
@@ -1286,7 +1342,10 @@ const EditorComponent = (props) => {
         });
       }
     } else if (isVersionReleased) {
-      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
+      useSuperStore
+        .getState()
+        .modules[moduleName].useAppVersionStore.getState()
+        .actions.enableReleasedVersionPopupState();
     }
   };
 
@@ -1369,11 +1428,14 @@ const EditorComponent = (props) => {
     const globals = {
       ...currentState.globals,
     };
-    useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
+    useSuperStore
+      .getState()
+      .modules[moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({ globals, page });
   };
 
   const navigateToPage = (queryParams = [], handle) => {
-    const appId = useAppDataStore.getState()?.appId;
+    const appId = useSuperStore.getState().modules[moduleName].useAppDataStore.getState()?.appId;
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
     props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
@@ -1385,9 +1447,9 @@ const EditorComponent = (props) => {
 
   const switchPage = (pageId, queryParams = []) => {
     // This are fetched from store to handle runQueriesOnAppLoad
-    const currentPageId = useEditorStore.getState().currentPageId;
-    const appDefinition = useEditorStore.getState().appDefinition;
-    const pageHandle = getCurrentState().pageHandle;
+    const currentPageId = useSuperStore.getState().modules[moduleName].useEditorStore.getState().currentPageId;
+    const appDefinition = useSuperStore.getState().modules[moduleName].useEditorStore.getState().appDefinition;
+    const pageHandle = getCurrentState(moduleName).pageHandle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
       return;
@@ -1410,7 +1472,10 @@ const EditorComponent = (props) => {
       ...currentState.globals,
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
     };
-    useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
+    useSuperStore
+      .getState()
+      .modules[moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({ globals, page });
 
     setCurrentPageId(pageId);
 
@@ -1639,7 +1704,7 @@ const EditorComponent = (props) => {
   const handleCanvasContainerMouseUp = (e) => {
     if (
       ['real-canvas', 'modal'].includes(e.target.className) &&
-      useEditorStore.getState()?.selectedComponents?.length
+      useSuperStore.getState().modules[moduleName].useEditorStore.getState()?.selectedComponents?.length
     ) {
       setSelectedComponents(EMPTY_ARRAY);
     }

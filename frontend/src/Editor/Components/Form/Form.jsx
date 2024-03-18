@@ -29,6 +29,7 @@ export const Form = function Form(props) {
     onEvent,
     dataCy,
     paramUpdated,
+    adjustHeightBasedOnAlignment,
   } = props;
 
   const { events: allAppEvents } = useAppInfo();
@@ -293,6 +294,8 @@ export const Form = function Form(props) {
                     allComponents={containerProps.allComponents}
                     sideBarDebugger={containerProps.sideBarDebugger}
                     childComponents={childComponents}
+                    adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
+                    height={item.defaultSize.height}
                   />
                 </div>
               );
