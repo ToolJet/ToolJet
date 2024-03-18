@@ -44,7 +44,8 @@ const getDate = ({
     if (parseInUnixTimestamp && unixTimestamp) {
       momentObj = moment.tz(value, unixTimestamp);
     } else if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
-      momentObj = moment.tz(value, parseDateFormat, timeZoneValue).tz(timeZoneDisplay);
+      momentObj = moment(value, parseDateFormat).tz(timeZoneValue);
+      console.log(momentObj, 'momentObj');
     } else {
       momentObj = moment(value, parseDateFormat);
     }
@@ -92,6 +93,7 @@ export const Datepicker = function Datepicker({
       timeZoneDisplay,
       unixTimestamp,
       parseInUnixTimestamp,
+      isTimeChecked,
     });
     setDate(date);
   }, [
@@ -117,9 +119,15 @@ export const Datepicker = function Datepicker({
       timeZoneDisplay,
       unixTimestamp,
       parseInUnixTimestamp,
+      isTimeChecked,
     });
     const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT';
     const selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
+
+    if (isDateSelectionEnabled && isTimeChecked && timeZoneDisplay) {
+      return moment.tz(_date, timeZoneDisplay).format(selectedDateFormat);
+    }
+
     if (isDateSelectionEnabled) {
       return moment(_date).format(selectedDateFormat);
     }
