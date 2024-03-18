@@ -43,7 +43,7 @@ If a user is a Super Admin, they can switch to any workspace created by any user
 The dropdown will display all workspaces, including those created by both Super Admins and any other users.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/workspaceswitcher.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/workspaceswitcher.png" alt="Superadmin: settings" />
 </div>
 
 ### Create, Edit or Delete apps from any user's personal workspace
@@ -59,7 +59,7 @@ Super Admin can not only archive/unarchive users/admins on their workspace but a
 If a user is Super Admin, they just need to open the workspace in which they want to archive or unarchive a user. Then go to the **Workspace Settings** from the sidebar -> **Manage Users** -> **Archive/Unarchive** any user/admin
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/archiveusersa.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/archiveusersa.png" alt="Superadmin: settings" />
 </div>
 
 ###  Access ToolJet DB in any workspace
@@ -87,7 +87,7 @@ Only Super Admins can access the Settings. To access the Settings page, click on
 - **[White labelling](#white-labelling)**
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/settings.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/settings.png" alt="Superadmin: settings" />
 </div>
 
 ## All Users
@@ -97,7 +97,7 @@ Only Super Admins can access the Settings. To access the Settings page, click on
 **All Users** settings can be used to check the list of all the users available on all the workspaces in the instance. Super Admins can also promote/demote any user to/from Super Admin from this page. They can also archive/unarchive any user at an instance level from this setting.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/allusers1.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/allusers1.png" alt="Superadmin: settings" />
 </div>
 
 ### Archiving a user from all the workspaces (Instance level)
@@ -107,7 +107,7 @@ Super Admins have the authority to deactivate any user at instance level. This w
 To archive a user, go to the **All Users** settings, click on the kebab menu next to the user that is to be archived and select **Archive** option. Once the user is archived, the status will change from **Active** to **Archived**. The user will not be able to login to any workspace in the instance.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/archiveinstance.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/archiveinstance.png" alt="Superadmin: settings" />
 </div>
 
 <br/>
@@ -117,7 +117,7 @@ To archive a user, go to the **All Users** settings, click on the kebab menu nex
 **Info**: The user will be unarchived from instance level automatically if a workspace admin unarchives the user from their workspace.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/unarchiveinstance.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/unarchiveinstance.png" alt="Superadmin: settings" />
 </div>
 
 ### Reset password of any user
@@ -137,7 +137,7 @@ On selecting the **Edit user details** option, a drawer will open from the right
 From the **Edit user details** drawer, Super Admins can make any user as Super Admin or remove any Super Admin from the **All Users** settings. To make a user Super Admin, toggle on the **Super Admin** radio button. The user will become Super Admin and the Type column will update from **`Workspace`** to **`Instance`**.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/edituserdetailsinstance.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/edituserdetailsinstance.png" alt="Superadmin: settings" />
 </div>
 
 ## All workspaces
@@ -147,7 +147,7 @@ The All Workspaces tab provides a comprehensive view of all workspaces within th
 Super Admins have the authority to **archive** or **unarchive** workspaces of any user in the instance as needed. Archiving a workspace essentially sets it to an inactive state, removing it from active use. Conversely, unarchiving reactivates a previously archived workspace, making it accessible once again.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/workspaces1.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/workspaces1.png" alt="Superadmin: settings" />
 </div>
 
 ### Current Workspace
@@ -171,13 +171,13 @@ The **Archive** button on the right of the workspace name allows Super Admins to
 The **Archived** section displays a list of all archived workspaces. Super Admins can unarchive any workspace from this section by clicking the **Unarchive** button.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/workspaces2.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/workspaces2.png" alt="Superadmin: settings" />
 </div>
 
 ## Manage instance settings
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/instanceoptions.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/instanceoptions.png" alt="Superadmin: settings" />
 </div>
 
 ### Restrict creation of personal workspace of users
@@ -226,7 +226,7 @@ Super admins can enable or disable password login for the entire instance. This 
 Turning off this option restricts workspace admins from configuring the login method for their workspace. This configuration hides the Workspace Login option from the workspace settings tab.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/instancelogin.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/instancelogin.png" alt="Superadmin: settings" />
 </div>
 
 ## License

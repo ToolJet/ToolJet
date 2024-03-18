@@ -12,19 +12,17 @@ With this feature, you gain the ability to rebrand the following key elements:
 - **Application Logo**: This includes the logo displayed on the login screen, dashboard, and app-editor.
 
   <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/whitelabeln1.png" alt="ToolJet - Enterprise - White label" />
+    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/whitelabeln1.png" alt="ToolJet - Enterprise - White label" />
   </div>
 
-- **Favicon**: The small icon associated with your application.
+- **Favicon**: The small icon associated with your application. It is displayed in the browser tab.
+
+- **Page Title**: This is the text displayed in the browser tab. 
+
+Example, we have set a favicon image and page title as `Bon Ton` in the below image. 
 
   <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/newfav.png" alt="ToolJet - Enterprise - White label" />
-  </div>
-
-- **Page Title**: This is the text displayed next to the Favicon.
-
-  <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/title.png" alt="ToolJet - Enterprise - White label" />
+    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/title-and-favicon.png" alt="ToolJet - Enterprise - White label" />
   </div>
 
 ## Configuration
@@ -36,7 +34,7 @@ To enable white labelling, click on the gear icon on the bottom left of the dash
 - **Page Title**: Enter the text you want to display as your application's title. Preferred title length are 50-60 characters.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/settings.png" alt="ToolJet - Enterprise - White label" />
+    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/settings.png" alt="ToolJet - Enterprise - White label" />
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
@@ -50,7 +48,7 @@ If you are using ToolJet Cloud, click on the gear icon on the bottom left of the
 - **Favicon**: Enter the URL of the image you want to use as your application's favicon. Preferred dimensions of the favicon are: width `32px` and height `32px` or `16px` and height `16px`.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/cloud1.png" alt="ToolJet - Enterprise - White label" />
+    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/cloud1.png" alt="ToolJet - Enterprise - White label" />
 </div>
 
 </div>

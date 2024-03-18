@@ -291,16 +291,6 @@ const sidebars = {
         {
           'type': 'category',
           'label': 'User Authentication',
-          'link': {
-            'type': 'generated-index',
-            'title': 'User Authentication',
-            'description': 'Guides for setting up User Authentication and managing Single Sign-On',
-            'keywords': [
-              'SSO',
-              'authentication',
-            ],
-          },
-          'collapsed': true,
           'items': [
             'user-authentication/user-lifecycle',
             'user-authentication/workspace-login',
