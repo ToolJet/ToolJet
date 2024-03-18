@@ -83,7 +83,7 @@ export const commonSelectors = {
   workspaceSettings: '[data-cy="workspace-settings"]',
   manageUsersOption: '[data-cy="users-list-item"]',
   manageGroupsOption: '[data-cy="groups-list-item"]',
-  manageSSOOption: '[data-cy="sso-list-item"]',
+  manageSSOOption: '[data-cy="workspace-login-list-item"]',
   workspaceVariableOption: '[data-cy="workspace-variables-list-item"]',
   clearFilterButton: '[data-cy="clear-filter-button"]',
   userStatusSelect: '[data-cy="user-status-select-continer"]',
@@ -266,6 +266,7 @@ export const commonSelectors = {
   },
   defaultModalTitle: '[data-cy="modal-title"]',
   workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
+  confirmationButton: '[data-cy="confirmation-button"]',
 };
 
 export const commonWidgetSelector = {

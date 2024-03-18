@@ -18,6 +18,7 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import { toast } from 'react-hot-toast';
 import Skeleton from 'react-loading-skeleton';
 import { getWorkspaceId } from '@/_helpers/utils';
+import './auditTheme.scss';
 
 const AuditLogs = (props) => {
   const navigate = useNavigate();
@@ -158,21 +159,26 @@ const AuditLogs = (props) => {
     searchAuditLog(1, perPage, selectedSearchOptions);
   };
   const humanizeLog = (auditLog) => {
+    const darkMode = props.darkMode;
     if (auditLog.user_id === auditLog.resource_id && auditLog.resource_type === 'USER') {
       return (
-        <span>
+        <span className={darkMode ? 'log-detail-dark-mode' : ''}>
           {dateToolTip(auditLog)}&nbsp;
           <code data-cy="audit-log-user-email">{auditLog.user?.email}</code> performed{' '}
-          <mark data-cy="audit-log-action-type">{auditLog.action_type}</mark>
+          <mark className={darkMode ? 'mark-dark-mode' : ''} data-cy="audit-log-action-type">
+            {auditLog.action_type}
+          </mark>
         </span>
       );
     } else {
       return (
-        <span>
+        <span className={darkMode ? 'log-detail-dark-mode' : ''}>
           {dateToolTip(auditLog)}&nbsp;
           <code data-cy="audit-log-user-email">{auditLog.user?.email}</code> performed{' '}
-          <mark data-cy="audit-log-action-type">{auditLog.action_type}</mark> on{' '}
-          {auditLog.resource_type.toLowerCase().replaceAll('_', ' ')} - <samp>{auditLog.resource_name}</samp>
+          <mark className={darkMode ? 'mark-dark-mode' : ''} data-cy="audit-log-action-type">
+            {auditLog.action_type}
+          </mark>{' '}
+          on {auditLog.resource_type.toLowerCase().replaceAll('_', ' ')} - <samp>{auditLog.resource_name}</samp>
         </span>
       );
     }

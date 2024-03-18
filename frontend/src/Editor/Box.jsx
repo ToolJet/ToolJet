@@ -127,7 +127,9 @@ export const AllComponents = {
  * refer: https://github.com/wojtekmaj/react-pdf?tab=readme-ov-file#compatibility
  **/
 if (isPDFSupported()) {
-  AllComponents.PDF = await import('./Components/PDF').then((module) => module.PDF);
+  import('./Components/PDF').then((module) => {
+    AllComponents.PDF = module.PDF;
+  });
 }
 
 export const Box = memo(
