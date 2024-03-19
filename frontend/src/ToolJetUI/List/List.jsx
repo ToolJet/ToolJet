@@ -31,6 +31,7 @@ function ListItem({
   showVisibilityIcon = false,
   isColumnVisible = true,
   columnType,
+  isDeprecated,
   ...restProps
 }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -57,11 +58,13 @@ function ListItem({
           >
             {primaryText}
             <span className="list-item-secondary-text">{secondaryText}</span>
-            <DeprecatedColumnTooltip columnType={columnType}>
-              <span className={'list-item-deprecated-column-type'}>
-                <Icons name={'warning'} height={14} width={14} fill="#DB4324" />
-              </span>
-            </DeprecatedColumnTooltip>
+            {isDeprecated && (
+              <DeprecatedColumnTooltip columnType={columnType}>
+                <span className={'list-item-deprecated-column-type'}>
+                  <Icons name={'warning'} height={14} width={14} fill="#DB4324" />
+                </span>
+              </DeprecatedColumnTooltip>
+            )}
             {isEditable && (
               <span style={{ marginLeft: '8px' }}>
                 <Edit width={16} />
