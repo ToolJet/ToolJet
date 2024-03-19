@@ -40,6 +40,13 @@
 
             .ds-delete-btn {
                 visibility: visible;
+
+                .disabled-button{
+                    background-color: #FFFF;
+                    width: 19px;
+                    height: 19px;
+                    padding: 3px;
+                }
             }
         }
 

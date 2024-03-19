@@ -158,6 +158,9 @@ import Uppercase from './Uppercase.jsx';
 import Lowercase from './Lowercase.jsx';
 import Capitalize from './Capitalize.jsx';
 import Oblique from './Oblique.jsx';
+import InformationCircle from './InformationCircle.jsx';
+import Open from './Open.jsx';
+import TooljetIcon from './TooljetIcon.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -289,6 +292,8 @@ const Icon = (props) => {
       return <InnerJoinIcon {...props} />;
     case 'inrectangle':
       return <InRectangle {...props} />;
+    case 'informationcircle':
+      return <InformationCircle {...props} />;
     case 'interactive':
       return <Interactive {...props} />;
     case 'italic':
@@ -335,6 +340,8 @@ const Icon = (props) => {
       return <NotificationUnread {...props} />;
     case 'options':
       return <Options {...props} />;
+    case 'open':
+      return <Open {...props} />;
     case 'page':
       return <Page {...props} />;
     case 'pageAdd':
@@ -407,6 +414,8 @@ const Icon = (props) => {
       return <Table {...props} />;
     case 'tick':
       return <Tick {...props} />;
+    case 'tooljet':
+      return <TooljetIcon {...props} />;
     case 'trash':
       return <Trash {...props} />;
     case 'uparrow':

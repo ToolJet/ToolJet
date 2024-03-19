@@ -21,6 +21,7 @@ import { OrganizationList } from '@/_components/OrganizationManager/List';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import { getWorkspaceId, pageTitles, setWindowTitle } from '@/_helpers/utils';
+import { getQueryParams } from '@/_helpers/routes';
 import { withRouter } from '@/_hoc/withRouter';
 import FolderFilter from './FolderFilter';
 
@@ -75,10 +76,18 @@ class HomePageComponent extends React.Component {
     };
   }
 
+  setQueryParameter = () => {
+    const showImportTemplateModal = getQueryParams('fromtemplate');
+    this.setState({
+      showTemplateLibraryModal: showImportTemplateModal ? showImportTemplateModal : false,
+    });
+  };
+
   componentDidMount() {
     setWindowTitle({ page: pageTitles.DASHBOARD });
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
+    this.setQueryParameter();
   }
 
   fetchApps = (page = 1, folder, searchKey) => {
@@ -526,10 +535,16 @@ class HomePageComponent extends React.Component {
       });
   };
 
+  removeQueryParameters = () => {
+    const urlWithoutParams = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, urlWithoutParams);
+  };
+
   showTemplateLibraryModal = () => {
     this.setState({ showTemplateLibraryModal: true });
   };
   hideTemplateLibraryModal = () => {
+    this.removeQueryParameters();
     this.setState({ showTemplateLibraryModal: false });
   };
 

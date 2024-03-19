@@ -11,14 +11,15 @@
   width: 36px;
   height: 30px;
   margin-left: auto;
+  margin-top: auto;
   content: "";
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='20' width='20' viewBox='0 0 20 20' aria-hidden='true' focusable='false' class='css-19bqh2r'%3E%3Cpath d='M4.516 7.548c0.436-0.446 1.043-0.481 1.576 0l3.908 3.747 3.908-3.747c0.533-0.481 1.141-0.446 1.574 0 0.436 0.445 0.408 1.197 0 1.615-0.406 0.418-4.695 4.502-4.695 4.502-0.217 0.223-0.502 0.335-0.787 0.335s-0.57-0.112-0.789-0.335c0 0-4.287-4.084-4.695-4.502s-0.436-1.17 0-1.615z'%3E%3C/path%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%23dadada' d='M10 14.142L4.516 8.657 3.102 10.071 10 16.97 16.899 10.071 15.485 8.657z'/%3E%3C/svg%3E");
   background-repeat: no-repeat no-repeat;
   background-size: 1.25rem;
   background-position: center center;
-  color: rgb(197, 197, 197);
+  color: #dadada;
   transform: rotate(180deg);
-  background-color: #e9ecef;
+  background-color:none;
 }
 
 .collapsed-group .collapse-group-heading::after {
@@ -27,4 +28,54 @@
 
 .collapse-group-heading {
   display: flex;
+}
+
+
+.sample-db-data-query-picker-form-label {
+  width: auto !important;
+}
+
+.open-doc-link-container {
+  display: flex;
+  width: auto;
+  height: auto;
+  padding: 10px 12px 8px 12px;
+  border: 1px solid var(--indigo7);
+  background: var(--indigo2);
+  border-radius: 6px 6px 6px 6px;
+  margin-bottom: 10px;
+
+
+  .info-btn {
+    padding: 0px;
+    flex: 0 0 24px;
+  }
+
+  .message {
+    margin-left: 5px;
+    display: inline-block;
+    word-wrap: break-word;
+    width: auto;
+    height: auto;
+    font-size: 10px;
+    line-height: 13px;
+    color: var(--slate11);
+    
+    p{
+      padding: 0;
+      margin: 0;
+    }
+
+    .open-git-btn {
+      margin-top: 5px;
+      color: var(--indigo9);
+      font-size: 10px;
+      font-weight: 500;
+      display: inline-block;
+
+      .open-icn {
+        margin-right: 2px;
+      }
+    }
+  }
 }

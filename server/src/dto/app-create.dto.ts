@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty, MaxLength } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean } from 'class-validator';
 
 export class AppCreateDto {
   @IsNotEmpty()
@@ -9,4 +9,8 @@ export class AppCreateDto {
   @IsOptional()
   @IsString()
   icon?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isSampleApp?: boolean;
 }

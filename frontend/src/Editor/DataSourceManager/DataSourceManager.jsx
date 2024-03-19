@@ -1,10 +1,11 @@
 import React from 'react';
-import { datasourceService, pluginsService, globalDatasourceService } from '@/_services';
+import { datasourceService, pluginsService, globalDatasourceService, appsService } from '@/_services';
 import cx from 'classnames';
 import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import { TestConnection } from './TestConnection';
+import { getWorkspaceId, deepEqual } from '@/_helpers/utils';
 import {
   DataBaseSources,
   ApiSources,
@@ -15,7 +16,7 @@ import {
 } from './SourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
-import { capitalize, isEmpty } from 'lodash';
+import { capitalize, isEmpty, sample } from 'lodash';
 import { Card } from '@/_ui/Card';
 import { withTranslation, useTranslation } from 'react-i18next';
 import { camelizeKeys, decamelizeKeys } from 'humps';
@@ -23,11 +24,12 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { ConfirmDialog } from '@/_components';
-import { deepEqual } from '../../_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import { useDataSourcesStore } from '../../_stores/dataSourcesStore';
 import { withRouter } from '@/_hoc/withRouter';
 import './dataSourceManager.theme.scss';
+import configs from '../../HomePage/Configs/AppIcon.json';
+const { iconList } = configs;
 
 const DATA_SOURCE_USE_TYPE = {
   SAMPLE: 'sample',
@@ -77,6 +79,7 @@ class DataSourceManagerComponent extends React.Component {
       createdDataSource: null,
       unsavedChangesModal: false,
       datasourceName,
+      creatingApp: false,
     };
   }
 
@@ -539,27 +542,32 @@ class DataSourceManagerComponent extends React.Component {
     );
   };
 
+  createSampleApp = async () => {
+    let _self = this;
+    _self.setState({ creatingApp: true });
+    try {
+      const data = await appsService.createSampleApp({
+        icon: sample(iconList),
+        name: 'Sample app ',
+        isSampleApp: true,
+      });
+      const workspaceId = getWorkspaceId();
+      window.open(`/${workspaceId}/apps/${data.id}`, '_blank');
+      toast.success('App created successfully!');
+      _self.setState({ creatingApp: false });
+      return true;
+    } catch (errorResponse) {
+      _self.setState({ creatingApp: false });
+      if (errorResponse.statusCode === 409) {
+        return false;
+      } else {
+        throw errorResponse;
+      }
+    }
+  };
+
   renderSampleDBModal = () => {
-    // const createApp = async (appName) => {
-    //   let _self = this;
-    //   _self.setState({ creatingApp: true });
-    //   try {
-    //     const data = await appsService.createApp({ icon: sample(iconList), name: appName });
-    //     const workspaceId = getWorkspaceId();
-    //     _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
-    //     toast.success('App created successfully!');
-    //     _self.setState({ creatingApp: false });
-    //     return true;
-    //   } catch (errorResponse) {
-    //     _self.setState({ creatingApp: false });
-    //     if (errorResponse.statusCode === 409) {
-    //       return false;
-    //     } else {
-    //       throw errorResponse;
-    //     }
-    //   }
-    // };
-    const { dataSourceMeta, selectedDataSourceIcon } = this.state;
+    const { dataSourceMeta, selectedDataSourceIcon, creatingApp } = this.state;
     return (
       <div className="sample-db-modal-body">
         <div className="row sample-db-title">
@@ -578,10 +586,10 @@ class DataSourceManagerComponent extends React.Component {
         <div className="create-btn-cont">
           <ButtonSolid
             className={`create-app-btn`}
-            // isLoading={isSaving}
+            isLoading={creatingApp}
             // disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
             variant="primary"
-            // onClick={this.createDataSource}
+            onClick={this.createSampleApp}
             fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
           >
             Create sample appplication
@@ -839,7 +847,7 @@ class DataSourceManagerComponent extends React.Component {
                   ) : (
                     <div className="row">
                       <div className="col-md-2">
-                        <SolidIcon name="abc" />
+                        <SolidIcon name="tooljet" />
                       </div>
                       <div className="col-md-10"> Sample data source</div>
                     </div>

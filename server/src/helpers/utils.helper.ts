@@ -256,16 +256,16 @@ export function isVersionGreaterThanOrEqual(version1: string, version2: string) 
   return true;
 }
 
-export const getMaxCopyNumber = (existNameList) => {
+export const getMaxCopyNumber = (existNameList, splitChar = '_') => {
   if (existNameList.length == 0) return '';
   const filteredNames = existNameList.filter((name) => {
-    const parts = name.group.split('_');
+    const parts = name.split(splitChar);
     return !isNaN(parseInt(parts[parts.length - 1]));
   });
 
   // Extracting numbers from the filtered names
   const numbers = filteredNames.map((name) => {
-    const parts = name.group.split('_');
+    const parts = name.split(splitChar);
     return parseInt(parts[parts.length - 1]);
   });
 

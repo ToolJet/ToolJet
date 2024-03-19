@@ -24,13 +24,20 @@ const QueryPanel = ({
 }) => {
   const { updateQueryPanelHeight } = useQueryPanelActions();
   const dataQueries = useDataQueries();
-  const queryManagerPreferences = useRef(JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {});
+  const queryManagerPreferences = useRef(
+    JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
+      current: {
+        isExpanded: true,
+        queryPanelHeight: 100,
+      },
+    }
+  );
   const queryPaneRef = useRef(null);
   const [isExpanded, setExpanded] = useState(queryManagerPreferences.current?.isExpanded ?? true);
   const [isDragging, setDragging] = useState(false);
   const [height, setHeight] = useState(
     queryManagerPreferences.current?.queryPanelHeight > 95
-      ? 30
+      ? 50
       : queryManagerPreferences.current?.queryPanelHeight ?? 70
   );
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);

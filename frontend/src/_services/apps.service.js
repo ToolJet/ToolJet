@@ -25,6 +25,7 @@ export const appsService = {
   getAppUsers,
   getVersions,
   getTables,
+  createSampleApp,
 };
 
 function validateReleasedApp(slug) {
@@ -55,6 +56,11 @@ function getAll(page, folder, searchKey) {
 function createApp(body = {}) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
+}
+
+function createSampleApp(body = {}) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/apps/sample`, requestOptions).then(handleResponse);
 }
 
 function cloneApp(id, name) {

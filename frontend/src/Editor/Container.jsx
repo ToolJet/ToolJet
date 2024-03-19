@@ -6,7 +6,7 @@ import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import { componentTypes } from './WidgetManager/components';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, getWorkspaceId } from '@/_helpers/utils';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
 import config from 'config';
@@ -19,6 +19,9 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
+import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
+import { useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { useSampleDataSources } from '@/_stores/dataSourcesStore';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
@@ -52,6 +55,9 @@ export const Container = ({
 }) => {
   // Dont update first time to skip
   // redundant save on app definition load
+  const { createDataQuery } = useDataQueriesActions();
+  const { setPreviewData } = useQueryPanelActions();
+  const sampleDataSource = useSampleDataSources();
   const firstUpdate = useRef(true);
   const { showComments, currentLayout } = useEditorStore(
     (state) => ({
@@ -557,6 +563,22 @@ export const Container = ({
     [setIsResizing]
   );
 
+  const openDashboardImportTemplate = () => {
+    const workspaceId = getWorkspaceId();
+    window.open(`/${workspaceId}?fromtemplate=true`, '_blank');
+  };
+
+  const openAddUserWorkspaceSetting = () => {
+    const workspaceId = getWorkspaceId();
+    window.open(`/${workspaceId}/workspace-settings?adduser=true`, '_blank');
+  };
+
+  const handleChangeDataSource = () => {
+    const source = sampleDataSource[0];
+    createDataQuery(source);
+    setPreviewData(null);
+  };
+
   const draggingStatusChanged = useCallback(
     (status) => {
       setIsDragging(status);
@@ -699,7 +721,9 @@ export const Container = ({
               </div>
               <div className="box-link">
                 <div className="child">
-                  <a className="link-but">Connect to sample data source </a>
+                  <a className="link-but" onClick={handleChangeDataSource}>
+                    Connect to sample data source{' '}
+                  </a>
                 </div>
                 <div>
                   <BulkIcon name="arrowright" fill="#3E63DD" />
@@ -717,7 +741,9 @@ export const Container = ({
               </div>
               <div className="box-link">
                 <div className="child">
-                  <a className="link-but">Explore templates </a>
+                  <a className="link-but" onClick={openDashboardImportTemplate}>
+                    Explore templates{' '}
+                  </a>
                 </div>
                 <div>
                   <BulkIcon name="arrowright" fill="#3E63DD" />
@@ -735,7 +761,9 @@ export const Container = ({
               </div>
               <div className="box-link">
                 <div className="child">
-                  <a className="link-but">Invite collaborators </a>
+                  <a className="link-but" onClick={openAddUserWorkspaceSetting}>
+                    Invite collaborators{' '}
+                  </a>
                 </div>
                 <div>
                   <BulkIcon name="arrowright" fill="#3E63DD" />

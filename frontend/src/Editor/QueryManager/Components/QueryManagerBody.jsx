@@ -13,7 +13,7 @@ import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { EventManager } from '@/Editor/Inspector/EventManager';
 import { staticDataSources, customToggles, mockDataQueryAsComponent } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
-import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
+import { useDataSources, useGlobalDataSources, useSampleDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -32,6 +32,8 @@ export const QueryManagerBody = ({
   const { t } = useTranslation();
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
+  const sampleDataSource = useSampleDataSources();
+
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
   const { changeDataQuery, updateDataQuery } = useDataQueriesActions();
@@ -113,6 +115,7 @@ export const QueryManagerBody = ({
           dataSources={dataSources}
           staticDataSources={staticDataSources}
           globalDataSources={globalDataSources}
+          sampleDataSource={sampleDataSource}
           darkMode={darkMode}
         />
       </div>
@@ -234,12 +237,13 @@ export const QueryManagerBody = ({
   };
 
   const renderChangeDataSource = () => {
-    const selectableDataSources = [...globalDataSources, ...dataSources].filter(
+    const selectableDataSources = [...globalDataSources, ...dataSources, ...sampleDataSource].filter(
       (ds) => ds.kind === selectedQuery?.kind
     );
     if (isEmpty(selectableDataSources)) {
       return '';
     }
+    console.log('this is running');
     return (
       <div className={cx('mt-2 d-flex px-4 mb-3', { 'disabled ': isVersionReleased })}>
         <div
@@ -259,6 +263,10 @@ export const QueryManagerBody = ({
       </div>
     );
   };
+
+  console.log('loggign detail');
+  console.log(selectedDataSource);
+  console.log(selectedQuery);
 
   if (selectedQueryId !== selectedQuery?.id) return;
 
