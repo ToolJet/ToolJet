@@ -24,6 +24,7 @@ export const Container = function Container({
     border: `1px solid ${borderColor}`,
     height,
     display: visibility ? 'flex' : 'none',
+    // overflow: draggedSubContainer ? 'unset' : 'hidden auto',
     overflow: 'hidden auto',
     position: 'relative',
     boxShadow,

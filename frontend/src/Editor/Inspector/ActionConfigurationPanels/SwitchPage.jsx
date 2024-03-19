@@ -73,7 +73,8 @@ export function SwitchPage({ getPages, event, handlerChanged, eventIndex, darkMo
                 initialValue={event?.queryParams?.[index]?.[0]}
                 onChange={(value) => queryParamChangeHandler(index, 0, value)}
                 className="form-control codehinter-query-editor-input"
-                cyLabel={`query-param-key`}
+                height={30}
+                cyLabel={`event-query-param-key`}
               />
             </div>
             <div className="col">
@@ -82,7 +83,8 @@ export function SwitchPage({ getPages, event, handlerChanged, eventIndex, darkMo
                 initialValue={event?.queryParams?.[index]?.[1]}
                 onChange={(value) => queryParamChangeHandler(index, 1, value)}
                 className="form-control codehinter-query-editor-input"
-                cyLabel={`query-param-value`}
+                height={30}
+                cyLabel={`event-query-param-value`}
               />
             </div>
             <span className="btn-sm col-auto my-1" role="button" onClick={() => deleteQueryParam(index)}>

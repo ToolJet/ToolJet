@@ -423,6 +423,7 @@ export const EventManager = ({
             </div>
             <div className="col-9" data-cy="alert-message-type">
               <CodeHinter
+                cyLabel={`run-only-if`}
                 type="basic"
                 initialValue={event.runOnlyIf}
                 onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
@@ -714,7 +715,7 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
-                      cyLabel={`key`}
+                      cyLabel={`event-key`}
                       component={component}
                     />
                   </div>
@@ -726,7 +727,8 @@ export const EventManager = ({
                       type="basic"
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
-                      cyLabel={`variable`}
+                      enablePreview={true}
+                      cyLabel={`event-variable`}
                       component={component}
                     />
                   </div>
@@ -757,7 +759,8 @@ export const EventManager = ({
                       type="basic"
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
-                      cyLabel={`key`}
+                      enablePreview={true}
+                      cyLabel={`event-key`}
                       component={component}
                     />
                   </div>
@@ -769,7 +772,8 @@ export const EventManager = ({
                       type="basic"
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
-                      cyLabel={`variable`}
+                      enablePreview={true}
+                      cyLabel={`event-variable`}
                       component={component}
                     />
                   </div>
@@ -785,7 +789,8 @@ export const EventManager = ({
                       type="basic"
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
-                      cyLabel={`key`}
+                      enablePreview={true}
+                      cyLabel={`event-key`}
                       component={component}
                     />
                   </div>
@@ -892,9 +897,10 @@ export const EventManager = ({
             )}
             <div className="row mt-3">
               <div className="col-3 p-2">{t('editor.inspector.eventManager.debounce', 'Debounce')}</div>
-              <div className="col-9" data-cy="debounce-input-field">
+              <div className="col-9">
                 <CodeHinter
-                  type="basic"
+                  cyLabel={`debounce`}
+                  theme={darkMode ? 'monokai' : 'default'}
                   initialValue={event.debounce}
                   onChange={(value) => handlerChanged(index, 'debounce', value)}
                   usePortalEditor={false}

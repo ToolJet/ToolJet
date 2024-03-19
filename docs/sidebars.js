@@ -28,6 +28,7 @@ const sidebars = {
         'tooljet-concepts/inspector',
         'tooljet-concepts/what-are-events',
         'tooljet-concepts/actions',
+        'tooljet-concepts/variables',
         'tooljet-concepts/how-to-access-values',
         'tooljet-concepts/component-specific-actions',
         'tooljet-concepts/exposed-variables',
@@ -48,6 +49,7 @@ const sidebars = {
       },
       'items': [
         'setup/try-tooljet',
+        'setup/system-requirements',
         'setup/digitalocean',
         'setup/docker',
         'setup/ec2',
@@ -71,16 +73,6 @@ const sidebars = {
       'label': 'App Builder',
       'items': [
         'app-builder/overview',
-        'app-builder/topbar',
-        'app-builder/share',
-        'app-builder/canvas',
-        'app-builder/left-sidebar',
-        'app-builder/components-library',
-        'app-builder/query-panel',
-        'tutorial/pages',
-        'app-builder/customstyles',
-        'tutorial/keyboard-shortcuts',
-        'app-builder/importing-exporting-applications',
         {
           'type': 'category',
           'label': 'Components Catalog',
@@ -124,7 +116,6 @@ const sidebars = {
                 'widgets/qr-scanner',
                 'widgets/radio-button',
                 'widgets/range-slider',
-                'widgets/rich-text-editor',
                 'widgets/spinner',
                 'widgets/star-rating',
                 'widgets/statistics',
@@ -136,6 +127,7 @@ const sidebars = {
                 'widgets/text-input',
                 'widgets/text',
                 'widgets/textarea',
+                'widgets/rich-text-editor',
                 'widgets/timeline',
                 'widgets/timer',
                 'widgets/toggle-switch',
@@ -177,20 +169,25 @@ const sidebars = {
             },
           ],
         },
+        'app-builder/components-library',
+        'app-builder/query-panel',
+        'tutorial/pages',
+        'app-builder/topbar',
+        'app-builder/left-sidebar',
+        'app-builder/canvas',
+        'app-builder/preview',
+        'app-builder/share',
+        'app-builder/customstyles',
+        'app-builder/importing-exporting-applications',
+        'tutorial/keyboard-shortcuts',
       ],
     },
     {
       'type': 'category',
       'label': 'How To',
-      'link': {
-        'type': 'generated-index',
-        'title': 'How To Guides',
-        'description': 'How To Guides for all the things ToolJet',
-        'keywords': [
-          'how to',
-        ]
-      },
       'items': [
+        'how-to/use-url-params-on-load',
+        'how-to/use-custom-parameters',
         'how-to/setup-rsyslog',
         'how-to/use-inspector',
         'how-to/use-form-component',
@@ -219,7 +216,7 @@ const sidebars = {
     },
     {
       'type': 'category',
-      'label': 'Datasource Catalog',
+      'label': 'Data Sources',
       'items': [
         'data-sources/overview',
         {
@@ -380,6 +377,7 @@ const sidebars = {
           'label': 'Marketplace Plugins',
           'items': [
             'marketplace/plugins/marketplace-plugin-textract',
+            'marketplace/plugins/aws-lambda-plugin',
             'marketplace/plugins/marketplace-plugin-github',
             'marketplace/plugins/marketplace-plugin-harperdb',
             'marketplace/plugins/marketplace-plugin-openai',
@@ -398,13 +396,13 @@ const sidebars = {
       'items': [
         {
           'type': 'link',
-          'label': 'Releases',
-          'href': 'https://github.com/ToolJet/ToolJet/releases',
+          'label': 'Release Notes',
+          'href': 'https://app.tooljet.com/applications/tj-changelog/home',
         },
         {
           'type': 'link',
           'label': 'Roadmap',
-          'href': 'https://github.com/tooljet/tooljet/milestones',
+          'href': 'https://github.com/orgs/ToolJet/projects/15',
         },
       ],
     },

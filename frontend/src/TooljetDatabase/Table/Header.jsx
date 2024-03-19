@@ -20,15 +20,18 @@ const Header = ({
   setIsCreateColumnDrawerOpen,
   isCreateRowDrawerOpen,
   setIsCreateRowDrawerOpen,
+  setIsBulkUploadDrawerOpen,
+  isBulkUploadDrawerOpen,
   selectedRowIds,
   handleDeleteRow,
   rows,
   isEditRowDrawerOpen,
   setIsEditRowDrawerOpen,
+  setFilterEnable,
+  filterEnable,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
-  const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
   const [bulkUploadFile, setBulkUploadFile] = useState(null);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
   const [errors, setErrors] = useState({ client: [], server: [] });
@@ -46,8 +49,8 @@ const Header = ({
     handleBuildFilterQuery,
     selectedTable,
     organizationId,
-    setTotalRecords,
-    setSelectedTableData,
+    handleRefetchQuery,
+    pageSize,
   } = useContext(TooljetDatabaseContext);
 
   useEffect(() => {
@@ -67,33 +70,12 @@ const Header = ({
   useEffect(() => {
     if (isEmpty(selectedTable)) return;
 
-    const reloadTableData = async () => {
-      const { headers, data, error } = await tooljetDatabaseService.findOne(
-        organizationId,
-        selectedTable.id,
-        'order=id.desc'
-      );
-
-      if (error) {
-        toast.error(error?.message ?? 'Something went wrong');
-        return;
-      }
-      const totalRecords = headers['content-range'].split('/')[1] || 0;
-
-      if (Array.isArray(data)) {
-        setTotalRecords(totalRecords);
-        setSelectedTableData(data);
-      }
-    };
-
-    setIsBulkUploading(false);
     setBulkUploadFile(null);
     setIsBulkUploadDrawerOpen(false);
     setQueryFilters({});
-    resetFilterQuery();
     setSortFilters({});
-    resetSortQuery();
-    reloadTableData();
+    handleRefetchQuery({}, {}, 1, pageSize);
+    setIsBulkUploading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uploadResult]);
 
@@ -167,76 +149,74 @@ const Header = ({
             <div className="row align-items-center">
               <div className="col-8 align-items-center p-3 gap-1">
                 <>
-                  {columns?.length > 0 && (
+                  {Object.keys(selectedRowIds).length === 0 && (
                     <>
-                      {Object.keys(selectedRowIds).length === 0 && (
-                        <>
-                          <AddNewDataPopOver
-                            disabled={false}
-                            show={isAddNewDataMenuOpen}
-                            darkMode={darkMode}
-                            toggleAddNewDataMenu={toggleAddNewDataMenu}
-                            handleOnClickCreateNewRow={handleOnClickCreateNewRow}
-                            handleOnClickBulkUpdateData={handleOnClickBulkUpdateData}
-                          >
-                            <span className="col-auto">
-                              <ButtonSolid
-                                variant="tertiary"
-                                disabled={false}
-                                onClick={() => toggleAddNewDataMenu(true)}
-                                size="sm"
-                                className="px-1 pe-3 ps-2 gap-0"
-                              >
-                                <Plus fill="#697177" style={{ height: '16px' }} />
-                                Add new data
-                              </ButtonSolid>
-                            </span>
-                          </AddNewDataPopOver>
-                          <div style={{ width: '70px' }}>
-                            <Filter
-                              filters={queryFilters}
-                              setFilters={setQueryFilters}
-                              handleBuildFilterQuery={handleBuildFilterQuery}
-                              resetFilterQuery={resetFilterQuery}
-                            />
-                          </div>
-                          <div style={{ width: '70px' }}>
-                            <Sort
-                              filters={sortFilters}
-                              setFilters={setSortFilters}
-                              handleBuildSortQuery={handleBuildSortQuery}
-                              resetSortQuery={resetSortQuery}
-                            />
-                          </div>
-                        </>
-                      )}
-
-                      {Object.keys(selectedRowIds).length === 1 ? (
-                        <EditRowDrawer
-                          isEditRowDrawerOpen={isEditRowDrawerOpen}
-                          setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
-                          selectedRowIds={selectedRowIds}
-                          rows={rows}
-                        />
-                      ) : null}
-                      {Object.keys(selectedRowIds).length > 0 && (
-                        <div>
+                      <AddNewDataPopOver
+                        disabled={false}
+                        show={isAddNewDataMenuOpen}
+                        darkMode={darkMode}
+                        toggleAddNewDataMenu={toggleAddNewDataMenu}
+                        handleOnClickCreateNewRow={handleOnClickCreateNewRow}
+                        handleOnClickBulkUpdateData={handleOnClickBulkUpdateData}
+                      >
+                        <span className="col-auto">
                           <ButtonSolid
-                            variant="dangerTertiary"
-                            onClick={handleDeleteRow}
+                            variant="tertiary"
+                            disabled={false}
+                            onClick={() => toggleAddNewDataMenu(true)}
                             size="sm"
-                            className="gap-0"
-                            data-cy="delete-row-records-button"
-                            style={{
-                              padding: '4px 8px 4px 8px',
-                            }}
+                            className="px-1 pe-3 ps-2 gap-0"
                           >
-                            <DeleteIcon />
-                            &nbsp; {Object.keys(selectedRowIds).length === 1 ? 'Delete row' : 'Delete rows'}
+                            <Plus fill="#697177" style={{ height: '16px' }} />
+                            Add new data
                           </ButtonSolid>
-                        </div>
-                      )}
+                        </span>
+                      </AddNewDataPopOver>
+                      <div style={{ width: '70px' }}>
+                        <Filter
+                          filters={queryFilters}
+                          setFilters={setQueryFilters}
+                          handleBuildFilterQuery={handleBuildFilterQuery}
+                          resetFilterQuery={resetFilterQuery}
+                          setFilterEnable={setFilterEnable}
+                          filterEnable={filterEnable}
+                        />
+                      </div>
+                      <div style={{ width: '70px' }}>
+                        <Sort
+                          filters={sortFilters}
+                          setFilters={setSortFilters}
+                          handleBuildSortQuery={handleBuildSortQuery}
+                          resetSortQuery={resetSortQuery}
+                        />
+                      </div>
                     </>
+                  )}
+
+                  {Object.keys(selectedRowIds).length === 1 ? (
+                    <EditRowDrawer
+                      isEditRowDrawerOpen={isEditRowDrawerOpen}
+                      setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
+                      selectedRowIds={selectedRowIds}
+                      rows={rows}
+                    />
+                  ) : null}
+                  {Object.keys(selectedRowIds).length > 0 && (
+                    <div>
+                      <ButtonSolid
+                        variant="dangerTertiary"
+                        onClick={handleDeleteRow}
+                        size="sm"
+                        className="gap-0"
+                        data-cy="delete-row-records-button"
+                        style={{
+                          padding: '4px 8px 4px 8px',
+                        }}
+                      >
+                        <DeleteIcon />
+                        &nbsp; {Object.keys(selectedRowIds).length === 1 ? 'Delete row' : 'Delete rows'}
+                      </ButtonSolid>
+                    </div>
                   )}
                 </>
               </div>
@@ -250,7 +230,7 @@ const Header = ({
                         fontWeight: 500,
                       }}
                     >
-                      <span>{totalRecords} records</span>
+                      <span data-cy="total-records">{totalRecords} records</span>
                     </div>
                   )}
 
@@ -262,7 +242,7 @@ const Header = ({
                         fontWeight: 500,
                       }}
                     >
-                      <span>
+                      <span data-cy="total-records-selected">
                         {Object.keys(selectedRowIds).length}{' '}
                         {Object.keys(selectedRowIds).length > 1 ? 'records' : 'record'} selected
                       </span>
@@ -277,6 +257,7 @@ const Header = ({
       <CreateColumnDrawer
         isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
+        rows={rows}
       />
       <CreateRowDrawer
         isCreateRowDrawerOpen={isCreateRowDrawerOpen}

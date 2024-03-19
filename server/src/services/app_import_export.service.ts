@@ -17,7 +17,9 @@ import {
   catchDbException,
   extractMajorVersion,
   isTooljetVersionWithNormalizedAppDefinitionSchem,
+  isVersionGreaterThanOrEqual,
 } from 'src/helpers/utils.helper';
+import { LayoutDimensionUnits, resolveGridPositionForComponent } from 'src/helpers/components.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
@@ -235,6 +237,8 @@ export class AppImportExportService {
       ? true
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
+    const shouldUpdateForGridCompatibility = !cloning;
+
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
 
     await this.setupImportedAppAssociations(
@@ -243,7 +247,9 @@ export class AppImportExportService {
       schemaUnifiedAppParams,
       user,
       externalResourceMappings,
-      isNormalizedAppDefinitionSchema
+      isNormalizedAppDefinitionSchema,
+      shouldUpdateForGridCompatibility,
+      tooljetVersion
     );
     await this.createAdminGroupPermissions(this.entityManager, importedApp);
 
@@ -321,7 +327,9 @@ export class AppImportExportService {
     appParams: any,
     user: User,
     externalResourceMappings: Record<string, unknown>,
-    isNormalizedAppDefinitionSchema: boolean
+    isNormalizedAppDefinitionSchema: boolean,
+    shouldUpdateForGridCompatibility: boolean,
+    tooljetVersion: string
   ) {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -384,7 +392,9 @@ export class AppImportExportService {
         importingDefaultAppEnvironmentId,
         importingPages,
         importingComponents,
-        importingEvents
+        importingEvents,
+        shouldUpdateForGridCompatibility,
+        tooljetVersion
       );
 
       if (!isNormalizedAppDefinitionSchema) {
@@ -413,7 +423,8 @@ export class AppImportExportService {
                 pageComponents,
                 componentEvents,
                 appResourceMappings.componentsMapping,
-                isNormalizedAppDefinitionSchema
+                isNormalizedAppDefinitionSchema,
+                tooljetVersion
               );
 
               const componentLayouts = [];
@@ -445,7 +456,12 @@ export class AppImportExportService {
                     const newLayout = new Layout();
                     newLayout.type = type;
                     newLayout.top = layout.top;
-                    newLayout.left = layout.left;
+                    newLayout.left =
+                      layout.dimensionUnit !== LayoutDimensionUnits.COUNT
+                        ? resolveGridPositionForComponent(layout.left, type)
+                        : layout.left;
+                    newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
+                    // newLayout.left = layout.left;
                     newLayout.width = layout.width;
                     newLayout.height = layout.height;
                     newLayout.componentId = appResourceMappings.componentsMapping[componentId];
@@ -581,7 +597,9 @@ export class AppImportExportService {
     importingDefaultAppEnvironmentId: string,
     importingPages: Page[],
     importingComponents: Component[],
-    importingEvents: EventHandler[]
+    importingEvents: EventHandler[],
+    shouldUpdateForGridCompatibility: boolean,
+    tooljetVersion: string
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -735,7 +753,8 @@ export class AppImportExportService {
             const { properties, styles, general, validation, generalStyles } = migrateProperties(
               component.type as NewRevampedComponent,
               component,
-              NewRevampedComponents
+              NewRevampedComponents,
+              tooljetVersion
             );
             newComponent.id = newComponentIdsMap[component.id];
             newComponent.name = component.name;
@@ -759,7 +778,11 @@ export class AppImportExportService {
               const newLayout = new Layout();
               newLayout.type = layout.type;
               newLayout.top = layout.top;
-              newLayout.left = layout.left;
+              newLayout.left =
+                layout.dimensionUnit !== LayoutDimensionUnits.COUNT
+                  ? resolveGridPositionForComponent(layout.left, layout.type)
+                  : layout.left;
+              newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
               newLayout.width = layout.width;
               newLayout.height = layout.height;
               newLayout.component = savedComponent;
@@ -1685,8 +1708,11 @@ function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
 function migrateProperties(
   componentType: NewRevampedComponent,
   component: Component,
-  componentTypes: NewRevampedComponent[]
+  componentTypes: NewRevampedComponent[],
+  tooljetVersion: string
 ) {
+  const shouldHandleBackwardCompatibility = isVersionGreaterThanOrEqual(tooljetVersion, '2.29.0') ? false : true;
+
   const properties = { ...component.properties };
   const styles = { ...component.styles };
   const general = { ...component.general };
@@ -1714,7 +1740,10 @@ function migrateProperties(
       delete generalStyles?.boxShadow;
     }
 
-    if (componentType === 'TextInput' || componentType === 'PasswordInput' || componentType === 'NumberInput') {
+    if (
+      shouldHandleBackwardCompatibility &&
+      (componentType === 'TextInput' || componentType === 'PasswordInput' || componentType === 'NumberInput')
+    ) {
       properties.label = '';
     }
 
@@ -1737,7 +1766,8 @@ function transformComponentData(
   data: object,
   componentEvents: any[],
   componentsMapping: Record<string, string>,
-  isNormalizedAppDefinitionSchema = true
+  isNormalizedAppDefinitionSchema = true,
+  tooljetVersion: string
 ): Component[] {
   const transformedComponents: Component[] = [];
 
@@ -1786,7 +1816,8 @@ function transformComponentData(
       const { properties, styles, general, validation, generalStyles } = migrateProperties(
         componentData.component,
         componentData.definition,
-        NewRevampedComponents
+        NewRevampedComponents,
+        tooljetVersion
       );
       transformedComponent.id = uuid();
       transformedComponent.name = componentData.name;

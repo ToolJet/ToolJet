@@ -1,0 +1,192 @@
+/* SSOConfiguration.css */
+
+  .sso-configuration {
+    display: flex;
+    flex-direction: column;
+    margin-left: 5px;
+  }
+  
+  .sso-header {
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+  }
+  
+  .sso-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    transition: background-color 0.1s;
+    cursor: pointer;
+  }
+
+  .sso-option:hover {
+    background-color: #eee;
+  }
+
+  .sso-option:active {
+    background-color: #ddd;
+  }
+
+  .sso-option.clicked,
+  .sso-option.clicked:hover {
+    background-color: #ddd;
+  }
+  
+  .sso-option-label {
+    font-weight: 400;
+  }
+
+  .option-icon {
+    visibility: hidden;
+  }
+  
+  /* Show the icon on hover */
+  .sso-option:hover .option-icon {
+    visibility: visible;
+  }
+
+  .sso-option:active .option-icon {
+    visibility: visible;
+  }
+  
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 17px;
+  }
+  
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 17px;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 13px;
+    width: 13px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+  }
+  
+  input:checked + .slider {
+    background-color: var(--indigo9) !important;
+  }
+  
+  input:focus + .slider {
+    box-shadow: 0 0 1px var(--indigo9);
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(13px);
+  }
+  
+  .slider.round {
+    border-radius: 17px;
+  }
+  
+  .slider.round:before {
+    border-radius: 50%;
+  }
+
+  .sso-note {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 5px;
+    margin-left: 5px;
+  }
+  
+  .dropdown-toggle-no-caret {
+    background: none!important;
+    border: none!important;
+    box-shadow: none!important;
+  }
+  
+  .dropdown-toggle-no-caret::after {
+    display: none;
+  }
+  
+  .dropdown-menu {
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 270px !important;
+  }
+  
+  .dropdown-item {
+    padding: 0.5rem 1rem;
+    color: #212529;
+  }
+  
+  .dropdown-item:hover, .dropdown-item:focus {
+    background-color: #f8f9fa;
+    color: #212529;
+  }
+  
+  .solid-icon {
+    color: #6c757d;
+    cursor: pointer;
+  }
+
+  .dropdown-item.disabled {
+    color: #6c757d !important;
+    cursor: not-allowed;
+  }
+  .overlay-style {
+    position: fixed; /* Cover the whole screen */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.75); /* Semi-transparent */
+    z-index: 1050; /* Adjust based on your modal z-index values */                        
+}
+.theme-dark {
+  .sso-option {
+    background: unset;
+    .sso-option-label {
+      color: var(--slate12);
+    }
+    &.clicked {
+      background-color: unset;
+    }
+    .slider {
+      background-color: unset;
+    }
+  }
+  .form-label {
+    background: unset;
+  }
+}
+.dark-theme {
+  .sso-card-wrapper {
+    .form-control {
+      color: white !important
+    }
+  }
+}

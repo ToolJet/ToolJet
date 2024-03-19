@@ -13,14 +13,16 @@ export const ConfigHandle = function ConfigHandle({
   customClassName = '',
   configWidgetHandlerForModalComponent = false,
   isVersionReleased,
-  isVerticalResizingAllowed,
+  showHandle,
 }) {
   return (
     <div
       className={`config-handle ${customClassName}`}
       ref={dragRef}
       style={{
-        top: position === 'top' ? (!isVerticalResizingAllowed() ? '-20px' : '-22px') : widgetTop + widgetHeight - 10,
+        top: position === 'top' ? '-20px' : widgetTop + widgetHeight - (widgetTop < 10 ? 15 : 10),
+        visibility: showHandle && !isMultipleComponentsSelected ? 'visible' : 'hidden',
+        left: '-1px',
       }}
     >
       <span
@@ -37,6 +39,7 @@ export const ConfigHandle = function ConfigHandle({
           }}
           role="button"
           data-cy={`${component.name.toLowerCase()}-config-handle`}
+          className="text-truncate"
         >
           <img
             style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
