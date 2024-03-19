@@ -151,20 +151,11 @@ export class TooljetDbService {
   }
 
   private async createTable(organizationId: string, params) {
-    let primaryKeyExist = false;
+    const primaryKeyColumnList = [];
 
-    // primary keys are only supported as serial type
-    params.columns = params.columns.map((column) => {
-      if (column?.constraints_type?.is_primary_key ?? false) {
-        primaryKeyExist = true;
-        return { ...column, data_type: 'serial', column_default: null };
-      }
-      return column;
+    params.columns.forEach((column) => {
+      if (column?.constraints_type?.is_primary_key || false) primaryKeyColumnList.push(column.column_name);
     });
-
-    if (!primaryKeyExist) {
-      throw new BadRequestException();
-    }
 
     const {
       table_name: tableName,
@@ -192,18 +183,21 @@ export class TooljetDbService {
           columns: this.prepareColumnListForCreateTable(params?.columns),
         })
       );
+      if (primaryKeyColumnList.length) await tjdbQueryRunner.createPrimaryKey(internalTable.id, primaryKeyColumnList);
 
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await queryRunner.release();
       await tjdbQueryRunner.release();
+
       return { id: internalTable.id, table_name: tableName };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       await tjdbQueryRunner.rollbackTransaction();
       await queryRunner.release();
       await tjdbQueryRunner.release();
+
       throw err;
     }
   }
@@ -538,7 +532,8 @@ export class TooljetDbService {
           default: data_type === 'character varying' ? this.addQuotesIfString(column_default) : column_default,
         }),
         ...(constraints_type?.is_not_null ?? false ? { isNullable: false } : { isNullable: true }),
-        ...(constraints_type?.is_primary_key && { isPrimary: true }),
+        // ...(constraints_type?.is_primary_key && { isPrimary: true }),
+        ...(constraints_type?.is_unique ?? false ? { isUnique: true } : { isUnique: false }),
       };
     });
     return columnList;
