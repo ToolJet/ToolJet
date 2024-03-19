@@ -3,7 +3,7 @@ export const listviewConfig = {
   displayName: 'List View',
   description: 'List multiple items',
   defaultSize: {
-    width: 20,
+    width: 30,
     height: 300,
   },
   defaultChildren: [
@@ -11,7 +11,7 @@ export const listviewConfig = {
       componentName: 'Image',
       layout: {
         top: 15,
-        left: 6.976744186046512,
+        left: 3,
         height: 100,
       },
       properties: ['source'],
@@ -21,7 +21,7 @@ export const listviewConfig = {
       componentName: 'Text',
       layout: {
         top: 50,
-        left: 27,
+        left: 11,
         height: 30,
       },
       properties: ['text'],
@@ -31,7 +31,7 @@ export const listviewConfig = {
       componentName: 'Button',
       layout: {
         top: 50,
-        left: 60,
+        left: 26,
         height: 30,
       },
       incrementWidth: 2,

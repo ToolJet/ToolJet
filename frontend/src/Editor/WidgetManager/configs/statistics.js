@@ -4,7 +4,7 @@ export const statisticsConfig = {
   description: 'Show key metrics',
   component: 'Statistics',
   defaultSize: {
-    width: 9.2,
+    width: 9,
     height: 152,
   },
   others: {
