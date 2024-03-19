@@ -141,6 +141,7 @@ const imports = [
   ImportExportResourcesModule,
   CopilotModule,
   OrganizationConstantModule,
+  TooljetDbModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
