@@ -534,7 +534,7 @@ $border-radius: 4px;
         }
 
         .delete-field-option {
-          height: 34px;
+          height: 32.2px;
           flex: 0 0 28px;
           background: #ffffff;
           width: 34px;
@@ -1196,6 +1196,11 @@ $border-radius: 4px;
   .transformation-editor {
     margin-top: 28px;
 
+    .transformation-container {
+      min-width: 470px !important;
+      width: 100% !important;
+    }
+
     &>div.rounded-3 {
       padding: 0 24px !important;
     }
@@ -1641,7 +1646,7 @@ $border-radius: 4px;
 }
 
 .query-hinter {
-  border: 1px solid var(--slate5);
+  // border: 1px solid var(--slate5);
   border-radius: 0px 0px 6px 6px;
 
   .cm-s-base16-light.CodeMirror,

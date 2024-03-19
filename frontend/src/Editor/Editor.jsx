@@ -10,7 +10,7 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import _, { cloneDeep, isEqual, isEmpty, debounce, omit, noop } from 'lodash';
+import _, { isEqual, isEmpty, debounce, omit, noop } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -30,6 +30,7 @@ import {
   removeSelectedComponent,
   buildAppDefinition,
   buildComponentMetaDefinition,
+  runQueries,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
@@ -47,7 +48,13 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId, setWindowTitle, defaultWhiteLabellingSettings, pageTitles } from '@/_helpers/utils';
+import {
+  getWorkspaceId,
+  isValidUUID,
+  setWindowTitle,
+  defaultWhiteLabellingSettings,
+  pageTitles,
+} from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -56,7 +63,13 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
-import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, resetAllStores } from '@/_stores/utils';
+import {
+  computeAppDiff,
+  computeComponentPropertyDiff,
+  findAllEntityReferences,
+  isParamFromTableColumn,
+  resetAllStores,
+} from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { EMPTY_ARRAY, useEditorActions, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
@@ -73,6 +86,9 @@ import { getQueryParams } from '@/_helpers/routes';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
 import AutoLayoutAlert from './AutoLayoutAlert';
+import { HotkeysProvider } from 'react-hotkeys-hook';
+import { useResolveStore } from '@/_stores/resolverStore';
+import { dfs } from '@/_stores/handleReferenceTransactions';
 
 setAutoFreeze(false);
 enablePatches();
@@ -265,7 +281,7 @@ const EditorComponent = (props) => {
 
       computeComponentState(components);
 
-      if (appDiffOptions?.skipAutoSave === true) return;
+      if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
       if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
         autoSave();
@@ -457,6 +473,8 @@ const EditorComponent = (props) => {
 
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
+
+    useResolveStore.getState().actions.updateJSHints();
 
     await fetchApp(props.params.pageHandle, true);
     await fetchApps(0);
@@ -652,8 +670,7 @@ const EditorComponent = (props) => {
   };
 
   const globalSettingsChanged = (globalOptions) => {
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     for (const [key, value] of Object.entries(globalOptions)) {
       if (value?.[1]?.a == undefined) newAppDefinition.globalSettings[key] = value;
@@ -723,6 +740,8 @@ const EditorComponent = (props) => {
       isUpdatingEditorStateInProcess: false,
     });
 
+    updateState({ components: appJson.pages[homePageId]?.components });
+
     if (versionSwitched) {
       props?.navigate(`/${getWorkspaceId()}/apps/${data.slug ?? appId}/${appJson.pages[homePageId]?.handle}`, {
         state: {
@@ -731,12 +750,148 @@ const EditorComponent = (props) => {
       });
     }
 
-    await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id);
-    await fetchDataSources(data.editing_version?.id);
-    await fetchDataQueries(data.editing_version?.id, true, true);
-    const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
+    Promise.all([
+      await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id),
+      await fetchDataSources(data.editing_version?.id),
+      await fetchDataQueries(data.editing_version?.id, true, true),
+    ])
+      .then(() => {
+        useCurrentStateStore.getState().actions.setEditorReady(true);
 
-    await handleEvent('onPageLoad', currentPageEvents, {}, true);
+        const currentPageId = useEditorStore.getState().currentPageId;
+        const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components;
+
+        const referenceManager = useResolveStore.getState().referenceMapper;
+
+        const newComponents = Object.keys(currentComponents).map((componentId) => {
+          const component = currentComponents[componentId];
+
+          if (!referenceManager.get(componentId)) {
+            return {
+              id: componentId,
+              name: component.component.name,
+            };
+          }
+        });
+
+        useResolveStore.getState().actions.addEntitiesToMap(newComponents);
+      })
+      .then(() => {
+        const currentPageId = useEditorStore.getState().currentPageId;
+        const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components;
+        let dataQueries = JSON.parse(JSON.stringify(useDataQueriesStore.getState().dataQueries));
+        let allEvents = JSON.parse(JSON.stringify(useAppDataStore.getState().events));
+
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])
+          ?.map((entity) => {
+            if (entity && isValidUUID(entity)) {
+              return entity;
+            }
+          })
+          ?.filter((e) => e !== undefined);
+
+        const entityReferencesInQueryoOptions = findAllEntityReferences(dataQueries, [])
+          ?.map((entity) => {
+            if (entity && isValidUUID(entity)) {
+              return entity;
+            }
+          })
+          ?.filter((e) => e !== undefined);
+
+        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])
+          ?.map((entity) => {
+            if (entity && isValidUUID(entity)) {
+              return entity;
+            }
+          })
+          ?.filter((e) => e !== undefined);
+
+        const manager = useResolveStore.getState().referenceMapper;
+
+        if (
+          Array.isArray(entityReferencesInComponentDefinitions) &&
+          entityReferencesInComponentDefinitions?.length > 0
+        ) {
+          let newComponentDefinition = JSON.parse(JSON.stringify(currentComponents));
+
+          entityReferencesInComponentDefinitions.forEach((entity) => {
+            const entityrefExists = manager.has(entity);
+
+            if (entityrefExists) {
+              const value = manager.get(entity);
+              newComponentDefinition = dfs(newComponentDefinition, entity, value);
+            }
+          });
+
+          const newAppDefinition = produce(appJson, (draft) => {
+            draft.pages[homePageId].components = newComponentDefinition;
+          });
+
+          updateEditorState({
+            isUpdatingEditorStateInProcess: false,
+            appDefinition: newAppDefinition,
+          });
+        }
+
+        if (Array.isArray(entityReferencesInQueryoOptions) && entityReferencesInQueryoOptions?.length > 0) {
+          let newQueryOptions = {};
+          dataQueries?.forEach((query) => {
+            newQueryOptions[query.id] = query.options;
+            ``;
+          });
+
+          entityReferencesInQueryoOptions.forEach((entity) => {
+            const entityrefExists = manager.has(entity);
+
+            if (entityrefExists) {
+              const value = manager.get(entity);
+              newQueryOptions = dfs(newQueryOptions, entity, value);
+            }
+          });
+
+          dataQueries = dataQueries.map((query) => {
+            const queryId = query.id;
+            const dqOptions = newQueryOptions[queryId];
+
+            return {
+              ...query,
+              options: dqOptions,
+            };
+          });
+
+          useDataQueriesStore.getState().actions.setDataQueries(dataQueries, 'mappingUpdate');
+        }
+
+        if (Array.isArray(entityReferencesInEvents) && entityReferencesInEvents?.length > 0) {
+          let newEvents = JSON.parse(JSON.stringify(allEvents));
+
+          entityReferencesInEvents.forEach((entity) => {
+            const entityrefExists = manager.has(entity);
+
+            if (entityrefExists) {
+              const value = manager.get(entity);
+              newEvents = dfs(newEvents, entity, value);
+            }
+          });
+
+          updateState({
+            events: newEvents,
+          });
+        }
+      })
+      .finally(async () => {
+        const currentPageEvents = data.events.filter(
+          (event) => event.target === 'page' && event.sourceId === homePageId
+        );
+
+        const queuedQueriesForRunOnAppLoad = useDataQueriesStore.getState().queuedQueriesForRunOnAppLoad;
+        const editorRef = getEditorRef();
+
+        await runQueries(queuedQueriesForRunOnAppLoad, editorRef);
+        await handleEvent('onPageLoad', currentPageEvents, {}, true);
+
+        useDataQueriesStore.getState().actions.clearQueuedQueriesForRunOnAppLoad();
+      });
   };
 
   const fetchApp = async (startingPageHandle, onMount = false) => {
@@ -809,15 +964,6 @@ const EditorComponent = (props) => {
         const finalComponents = _.merge(draft?.pages[_currentPageId]?.components, currentPageComponents);
 
         draft.pages[_currentPageId].components = finalComponents;
-        // else if (opts?.componentAdding) {
-        //   const currentPageComponents = newDefinition.pages[_currentPageId]?.components;
-
-        //   const finalComponents = _.merge(draft?.pages[_currentPageId]?.components, currentPageComponents);
-
-        //   draft.pages[_currentPageId].components = finalComponents;
-        // } else {
-        //   Object.assign(draft, newDefinition);
-        // }
       });
     } else {
       updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
@@ -859,6 +1005,8 @@ const EditorComponent = (props) => {
       ) {
         setUndoStack((prev) => [...prev, undoPatches]);
         setOptsStack((prev) => ({ ...prev, undo: [...prev.undo, opts] }));
+
+        updateState({ components: updatedAppDefinition.pages[currentPageId]?.components });
       }
 
       updateAppDefinitionDiff(diffPatches);
@@ -971,6 +1119,26 @@ const EditorComponent = (props) => {
             });
           }
 
+          //Todo: Move this to a separate function or as a middleware of the api to createing a component
+          if (updateDiff?.type === 'components' && updateDiff?.operation === 'create') {
+            const componentsFromCurrentState = getCurrentState().components;
+            const newComponentIds = Object.keys(updateDiff?.updateDiff);
+            const newComponentsExposedData = {};
+            const componentEntityArray = [];
+            Object.values(componentsFromCurrentState).filter((component) => {
+              if (newComponentIds.includes(component.id)) {
+                const componentName = updateDiff?.updateDiff[component.id]?.name;
+                newComponentsExposedData[componentName] = component;
+                componentEntityArray.push({ id: component.id, name: componentName });
+              }
+            });
+
+            useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
+            useResolveStore.getState().actions.addAppSuggestions({
+              components: newComponentsExposedData,
+            });
+          }
+
           if (
             updateDiff?.type === 'components' &&
             updateDiff?.operation === 'delete' &&
@@ -986,6 +1154,7 @@ const EditorComponent = (props) => {
               events: updatedEvents,
             });
           }
+
           updateEditorState({
             saveError: false,
             isUpdatingEditorStateInProcess: false,
@@ -999,11 +1168,6 @@ const EditorComponent = (props) => {
           toast.error('App could not save.');
         })
         .finally(() => {
-          updateState({
-            appDiffOptions: {},
-          });
-        })
-        .finally(() => {
           if (appDiffOptions?.cloningComponent) {
             cloneEventsForClonedComponents(
               updateDiff.updateDiff,
@@ -1011,6 +1175,10 @@ const EditorComponent = (props) => {
               appDiffOptions?.cloningComponent
             );
           }
+
+          updateState({
+            appDiffOptions: {},
+          });
         });
     }
     updateEditorState({
@@ -1137,8 +1305,7 @@ const EditorComponent = (props) => {
     }
 
     if (appDefinition?.pages[currentPageId]?.components[componentDefinition.id]) {
-      // Create a new copy of appDefinition with lodash's cloneDeep
-      const updatedAppDefinition = _.cloneDeep(appDefinition);
+      const updatedAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
       // Update the component definition in the copy
       updatedAppDefinition.pages[currentPageId].components[componentDefinition.id].component =
@@ -1156,7 +1323,7 @@ const EditorComponent = (props) => {
   };
   const removeComponent = (componentId) => {
     if (!isVersionReleased) {
-      let newDefinition = cloneDeep(appDefinition);
+      let newDefinition = JSON.parse(JSON.stringify(appDefinition));
 
       let childComponents = [];
 
@@ -1185,23 +1352,39 @@ const EditorComponent = (props) => {
           icon: '🗑️',
         });
       }
+
+      const deleteFromMap = [componentId, ...childComponents];
+      const deletedComponentNames = deleteFromMap.map((id) => {
+        return appDefinition.pages[currentPageId].components[id].component.name;
+      });
+
       appDefinitionChanged(newDefinition, {
         componentDefinitionChanged: true,
         componentDeleted: true,
       });
+
+      const allAppHints = useResolveStore.getState().suggestions.appHints ?? [];
+      const allHintsAssociatedWithQuery = [];
+
+      if (allAppHints.length > 0) {
+        deletedComponentNames.forEach((componentName) => {
+          return allAppHints.forEach((suggestion) => {
+            if (suggestion?.hint.includes(componentName)) {
+              allHintsAssociatedWithQuery.push(suggestion.hint);
+            }
+          });
+        });
+      }
+
+      useResolveStore.getState().actions.removeEntitiesFromMap(deleteFromMap);
+      useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
     } else {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }
   };
 
   const moveComponents = (direction) => {
-    // const isAutoComputeOn = appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile';
-    // if (isAutoComputeOn) {
-    //   turnOffAutoLayout();
-    //   return;
-    // }
-    const gridWidth = (1 * 100) / noOfGrids; // width of the canvas grid in percentage
-    const _appDefinition = _.cloneDeep(appDefinition);
+    const _appDefinition = JSON.parse(JSON.stringify(appDefinition));
     let newComponents = _appDefinition?.pages[currentPageId].components;
     const selectedComponents = useEditorStore.getState()?.selectedComponents;
     for (const selectedComponent of selectedComponents) {
@@ -1295,7 +1478,7 @@ const EditorComponent = (props) => {
   const removeComponents = () => {
     const selectedComponents = useEditorStore.getState()?.selectedComponents;
     if (!isVersionReleased && selectedComponents?.length > 1) {
-      let newDefinition = cloneDeep(appDefinition);
+      let newDefinition = JSON.parse(JSON.stringify(appDefinition));
 
       removeSelectedComponent(currentPageId, newDefinition, selectedComponents, appDefinitionChanged);
       const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
@@ -1504,9 +1687,7 @@ const EditorComponent = (props) => {
       isUpdatingEditorStateInProcess: true,
     });
 
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.pages[pageId].disabled = isDisabled ?? false;
 
@@ -1521,9 +1702,7 @@ const EditorComponent = (props) => {
       isUpdatingEditorStateInProcess: true,
     });
 
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.pages[pageId].autoComputeLayout = autoComputeLayout ?? false;
 
@@ -1538,9 +1717,7 @@ const EditorComponent = (props) => {
       isUpdatingEditorStateInProcess: true,
     });
 
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.pages[pageId].hidden = true;
 
@@ -1555,9 +1732,7 @@ const EditorComponent = (props) => {
       isUpdatingEditorStateInProcess: true,
     });
 
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.pages[pageId].hidden = false;
     switchPage(pageId);
@@ -1574,7 +1749,7 @@ const EditorComponent = (props) => {
         const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
         const pages = data.pages.reduce((acc, page) => {
-          const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components));
+          const currentComponents = buildComponentMetaDefinition(JSON.parse(JSON.stringify(page?.components)));
 
           page.components = currentComponents;
 
@@ -1603,9 +1778,7 @@ const EditorComponent = (props) => {
       isUpdatingEditorStateInProcess: true,
     });
 
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.homePageId = pageId;
 
@@ -1633,7 +1806,7 @@ const EditorComponent = (props) => {
       return;
     }
 
-    const newDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newDefinition.pages[pageId].handle = newHandle;
 
@@ -1646,7 +1819,6 @@ const EditorComponent = (props) => {
   };
 
   const updateOnSortingPages = (newSortedPages) => {
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const pagesObj = newSortedPages.reduce((acc, page, index) => {
       acc[page.id] = {
         ...page,
@@ -1655,7 +1827,7 @@ const EditorComponent = (props) => {
       return acc;
     }, {});
 
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.pages = pagesObj;
 
@@ -1666,8 +1838,7 @@ const EditorComponent = (props) => {
   };
 
   const showHideViewerNavigation = () => {
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.showViewerNavigation = !newAppDefinition.showViewerNavigation;
 
@@ -1723,256 +1894,257 @@ const EditorComponent = (props) => {
     );
   }
   return (
-    <div className="editor wrapper">
-      <Confirm
-        show={queryConfirmationList?.length > 0}
-        message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
-        onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(getEditorRef(), queryConfirmationData, true)}
-        onCancel={() => onQueryConfirmOrCancel(getEditorRef(), queryConfirmationList[0])}
-        queryConfirmationData={queryConfirmationList[0]}
-        darkMode={props.darkMode}
-        key={queryConfirmationList[0]?.queryName}
-      />
-      <Confirm
-        show={showPageDeletionConfirmation?.isOpen ?? false}
-        title={'Delete Page'}
-        message={`Do you really want to delete ${showPageDeletionConfirmation?.pageName || 'this'} page?`}
-        confirmButtonLoading={isDeletingPage}
-        onConfirm={() => executeDeletepageRequest()}
-        onCancel={() => cancelDeletePageRequest()}
-        darkMode={props.darkMode}
-      />
-      {isVersionReleased && <ReleasedVersionError />}
-      <EditorContextWrapper handleYmapEventUpdates={handleYmapEventUpdates}>
-        <EditorHeader
+    <HotkeysProvider initiallyActiveScopes={['editor']}>
+      <div className="editor wrapper">
+        <Confirm
+          show={queryConfirmationList?.length > 0}
+          message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
+          onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(getEditorRef(), queryConfirmationData, true)}
+          onCancel={() => onQueryConfirmOrCancel(getEditorRef(), queryConfirmationList[0])}
+          queryConfirmationData={queryConfirmationList[0]}
           darkMode={props.darkMode}
-          appDefinition={_.cloneDeep(appDefinition)}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          handleUndo={handleUndo}
-          handleRedo={handleRedo}
-          // saveError={saveError}
-          onNameChanged={onNameChanged}
-          setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-          onVersionRelease={onVersionRelease}
-          saveEditingVersion={saveEditingVersion}
-          onVersionDelete={onVersionDelete}
-          isMaintenanceOn={isMaintenanceOn}
-          appName={appName}
-          appId={appId}
-          slug={slug}
-          isSocketOpen={isSocketOpen}
+          key={queryConfirmationList[0]?.queryName}
         />
-        <DndProvider backend={HTML5Backend}>
-          <div className="sub-section">
-            <LeftSidebar
-              globalSettingsChanged={globalSettingsChanged}
-              appId={appId}
-              darkMode={props.darkMode}
-              dataSourcesChanged={dataSourcesChanged}
-              dataQueriesChanged={dataQueriesChanged}
-              globalDataSourcesChanged={globalDataSourcesChanged}
-              onZoomChanged={onZoomChanged}
-              switchDarkMode={changeDarkMode}
-              debuggerActions={sideBarDebugger}
-              appDefinition={{
-                components: appDefinition?.pages[currentPageId]?.components ?? {},
-                pages: appDefinition?.pages ?? {},
-                homePageId: appDefinition?.homePageId ?? null,
-                showViewerNavigation: appDefinition?.showViewerNavigation,
-                globalSettings: appDefinition?.globalSettings ?? {},
-              }}
-              setSelectedComponent={setSelectedComponent}
-              removeComponent={removeComponent}
-              runQuery={(queryId, queryName) => handleRunQuery(queryId, queryName)}
-              ref={dataSourceModalRef}
-              currentPageId={currentPageId}
-              addNewPage={addNewPage}
-              switchPage={switchPage}
-              deletePage={deletePageRequest}
-              renamePage={renamePage}
-              clonePage={clonePage}
-              hidePage={hidePage}
-              unHidePage={unHidePage}
-              disableEnablePage={disableEnablePage}
-              updateHomePage={updateHomePage}
-              updatePageHandle={updatePageHandle}
-              showHideViewerNavigationControls={showHideViewerNavigation}
-              updateOnSortingPages={updateOnSortingPages}
-              setEditorMarginLeft={handleEditorMarginLeftChange}
-              isMaintenanceOn={isMaintenanceOn}
-              toggleAppMaintenance={toggleAppMaintenance}
-            />
-            {!showComments && (
-              <EditorSelecto
-                selectionRef={selectionRef}
-                canvasContainerRef={canvasContainerRef}
+        <Confirm
+          show={showPageDeletionConfirmation?.isOpen ?? false}
+          title={'Delete Page'}
+          message={`Do you really want to delete ${showPageDeletionConfirmation?.pageName || 'this'} page?`}
+          confirmButtonLoading={isDeletingPage}
+          onConfirm={() => executeDeletepageRequest()}
+          onCancel={() => cancelDeletePageRequest()}
+          darkMode={props.darkMode}
+        />
+        {isVersionReleased && <ReleasedVersionError />}
+        <EditorContextWrapper>
+          <EditorHeader
+            darkMode={props.darkMode}
+            appDefinition={JSON.parse(JSON.stringify(appDefinition))}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            handleUndo={handleUndo}
+            handleRedo={handleRedo}
+            // saveError={saveError}
+            onNameChanged={onNameChanged}
+            setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+            onVersionRelease={onVersionRelease}
+            saveEditingVersion={saveEditingVersion}
+            onVersionDelete={onVersionDelete}
+            isMaintenanceOn={isMaintenanceOn}
+            appName={appName}
+            appId={appId}
+            slug={slug}
+            isSocketOpen={isSocketOpen}
+          />
+          <DndProvider backend={HTML5Backend}>
+            <div className="sub-section">
+              <LeftSidebar
+                globalSettingsChanged={globalSettingsChanged}
+                appId={appId}
+                darkMode={props.darkMode}
+                dataSourcesChanged={dataSourcesChanged}
+                dataQueriesChanged={dataQueriesChanged}
+                globalDataSourcesChanged={globalDataSourcesChanged}
+                onZoomChanged={onZoomChanged}
+                switchDarkMode={changeDarkMode}
+                debuggerActions={sideBarDebugger}
+                appDefinition={{
+                  components: appDefinition?.pages[currentPageId]?.components ?? {},
+                  pages: appDefinition?.pages ?? {},
+                  homePageId: appDefinition?.homePageId ?? null,
+                  showViewerNavigation: appDefinition?.showViewerNavigation,
+                  globalSettings: appDefinition?.globalSettings ?? {},
+                }}
                 setSelectedComponent={setSelectedComponent}
-                selectionDragRef={selectionDragRef}
-                appDefinition={appDefinition}
+                removeComponent={removeComponent}
+                runQuery={(queryId, queryName) => handleRunQuery(queryId, queryName)}
+                ref={dataSourceModalRef}
                 currentPageId={currentPageId}
+                addNewPage={addNewPage}
+                switchPage={switchPage}
+                deletePage={deletePageRequest}
+                renamePage={renamePage}
+                clonePage={clonePage}
+                hidePage={hidePage}
+                unHidePage={unHidePage}
+                disableEnablePage={disableEnablePage}
+                updateHomePage={updateHomePage}
+                updatePageHandle={updatePageHandle}
+                showHideViewerNavigationControls={showHideViewerNavigation}
+                updateOnSortingPages={updateOnSortingPages}
+                setEditorMarginLeft={handleEditorMarginLeftChange}
+                isMaintenanceOn={isMaintenanceOn}
+                toggleAppMaintenance={toggleAppMaintenance}
               />
-            )}
-            <div
-              className={`main main-editor-canvas ${isQueryPaneDragging || isDragging ? 'hide-scrollbar' : ''}`}
-              id="main-editor-canvas"
-            >
+              {!showComments && (
+                <EditorSelecto
+                  selectionRef={selectionRef}
+                  canvasContainerRef={canvasContainerRef}
+                  setSelectedComponent={setSelectedComponent}
+                  selectionDragRef={selectionDragRef}
+                  appDefinition={appDefinition}
+                  currentPageId={currentPageId}
+                />
+              )}
               <div
-                className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
-                style={{
-                  transform: `scale(${zoomLevel})`,
-                  borderLeft:
-                    (editorMarginLeft ? editorMarginLeft - 1 : editorMarginLeft) +
-                    `px solid ${computeCanvasBackgroundColor()}`,
-                  height: computeCanvasContainerHeight(),
-                  background: !props.darkMode ? '#EBEBEF' : '#2E3035',
-                }}
-                onMouseUp={handleCanvasContainerMouseUp}
-                ref={canvasContainerRef}
-                onScroll={() => {
-                  selectionRef.current.checkScroll();
-                }}
+                className={`main main-editor-canvas ${isQueryPaneDragging || isDragging ? 'hide-scrollbar' : ''}`}
+                id="main-editor-canvas"
               >
-                <div style={{ minWidth: `calc((100vw - 300px) - 48px)` }}>
-                  <div
-                    className="canvas-area"
-                    style={{
-                      width: currentLayout === 'desktop' ? '100%' : '450px',
-                      maxWidth:
-                        +appDefinition.globalSettings.canvasMaxWidth + appDefinition.globalSettings.canvasMaxWidthType,
+                <div
+                  className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
+                  style={{
+                    transform: `scale(${zoomLevel})`,
+                    borderLeft:
+                      (editorMarginLeft ? editorMarginLeft - 1 : editorMarginLeft) +
+                      `px solid ${computeCanvasBackgroundColor()}`,
+                    height: computeCanvasContainerHeight(),
+                    background: !props.darkMode ? '#EBEBEF' : '#2E3035',
+                  }}
+                  onMouseUp={handleCanvasContainerMouseUp}
+                  ref={canvasContainerRef}
+                  onScroll={() => {
+                    selectionRef.current.checkScroll();
+                  }}
+                >
+                  <div style={{ minWidth: `calc((100vw - 300px) - 48px)` }}>
+                    <div
+                      className="canvas-area"
+                      style={{
+                        width: currentLayout === 'desktop' ? '100%' : '450px',
+                        maxWidth:
+                          +appDefinition.globalSettings.canvasMaxWidth +
+                          appDefinition.globalSettings.canvasMaxWidthType,
 
-                      backgroundColor: computeCanvasBackgroundColor(),
-                      transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
-                    }}
-                  >
-                    {config.ENABLE_MULTIPLAYER_EDITING && (
-                      <RealtimeCursors editingVersionId={editingVersionId} editingPageId={currentPageId} />
-                    )}
-                    {isLoading && (
-                      <div className="apploader">
-                        <div className="col col-* editor-center-wrapper">
-                          <div className="editor-center">
-                            <div className="canvas">
-                              <div className="mt-5 d-flex flex-column">
-                                <div className="mb-1">
-                                  <Skeleton width={'150px'} height={15} className="skeleton" />
+                        backgroundColor: computeCanvasBackgroundColor(),
+                        transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
+                      }}
+                    >
+                      {config.ENABLE_MULTIPLAYER_EDITING && (
+                        <RealtimeCursors editingVersionId={editingVersionId} editingPageId={currentPageId} />
+                      )}
+                      {isLoading && (
+                        <div className="apploader">
+                          <div className="col col-* editor-center-wrapper">
+                            <div className="editor-center">
+                              <div className="canvas">
+                                <div className="mt-5 d-flex flex-column">
+                                  <div className="mb-1">
+                                    <Skeleton width={'150px'} height={15} className="skeleton" />
+                                  </div>
+                                  {Array.from(Array(4)).map((_item, index) => (
+                                    <Skeleton key={index} width={'300px'} height={10} className="skeleton" />
+                                  ))}
+                                  <div className="align-self-end">
+                                    <Skeleton width={'100px'} className="skeleton" />
+                                  </div>
+                                  <Skeleton className="skeleton mt-4" />
+                                  <Skeleton height={'150px'} className="skeleton mt-2" />
                                 </div>
-                                {Array.from(Array(4)).map((_item, index) => (
-                                  <Skeleton key={index} width={'300px'} height={10} className="skeleton" />
-                                ))}
-                                <div className="align-self-end">
-                                  <Skeleton width={'100px'} className="skeleton" />
-                                </div>
-                                <Skeleton className="skeleton mt-4" />
-                                <Skeleton height={'150px'} className="skeleton mt-2" />
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                    {defaultComponentStateComputed && (
-                      <>
-                        <Container
-                          turnOffAutoLayout={turnOffAutoLayout}
-                          canvasWidth={getCanvasWidth()}
-                          socket={socket}
-                          appDefinition={appDefinition}
-                          appDefinitionChanged={appDefinitionChanged}
-                          snapToGrid={true}
-                          darkMode={props.darkMode}
-                          mode={
-                            appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile'
-                              ? 'view'
-                              : 'edit'
-                          }
-                          zoomLevel={zoomLevel}
-                          deviceWindowWidth={deviceWindowWidth}
-                          appLoading={isLoading}
-                          onEvent={handleEvent}
-                          onComponentOptionChanged={handleOnComponentOptionChanged}
-                          onComponentOptionsChanged={handleOnComponentOptionsChanged}
-                          setSelectedComponent={setSelectedComponent}
-                          handleUndo={handleUndo}
-                          handleRedo={handleRedo}
-                          removeComponent={removeComponent}
-                          onComponentClick={noop} // Prop is used in Viewer hence using a dummy function to prevent error in editor
-                          sideBarDebugger={sideBarDebugger}
-                          currentPageId={currentPageId}
-                        />
-                        <CustomDragLayer
-                          snapToGrid={true}
-                          canvasWidth={getCanvasWidth()}
-                          onDragging={(isDragging) => setIsDragging(isDragging)}
-                        />
-                      </>
-                    )}
+                      )}
+                      {defaultComponentStateComputed && (
+                        <>
+                          <Container
+                            turnOffAutoLayout={turnOffAutoLayout}
+                            canvasWidth={getCanvasWidth()}
+                            socket={socket}
+                            appDefinition={appDefinition}
+                            appDefinitionChanged={appDefinitionChanged}
+                            snapToGrid={true}
+                            darkMode={props.darkMode}
+                            mode={
+                              appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile'
+                                ? 'view'
+                                : 'edit'
+                            }
+                            zoomLevel={zoomLevel}
+                            deviceWindowWidth={deviceWindowWidth}
+                            appLoading={isLoading}
+                            onEvent={handleEvent}
+                            onComponentOptionChanged={handleOnComponentOptionChanged}
+                            onComponentOptionsChanged={handleOnComponentOptionsChanged}
+                            setSelectedComponent={setSelectedComponent}
+                            handleUndo={handleUndo}
+                            handleRedo={handleRedo}
+                            removeComponent={removeComponent}
+                            onComponentClick={noop} // Prop is used in Viewer hence using a dummy function to prevent error in editor
+                            sideBarDebugger={sideBarDebugger}
+                            currentPageId={currentPageId}
+                          />
+                          <CustomDragLayer
+                            snapToGrid={true}
+                            canvasWidth={getCanvasWidth()}
+                            onDragging={(isDragging) => setIsDragging(isDragging)}
+                          />
+                        </>
+                      )}
+                    </div>
                   </div>
+                  <AutoLayoutAlert
+                    show={appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile'}
+                    onClick={turnOffAutoLayout}
+                  />
                 </div>
-                <AutoLayoutAlert
-                  show={appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile'}
-                  onClick={turnOffAutoLayout}
+                <QueryPanel
+                  onQueryPaneDragging={handleQueryPaneDragging}
+                  handleQueryPaneExpanding={handleQueryPaneExpanding}
+                  dataQueriesChanged={dataQueriesChanged}
+                  fetchDataQueries={fetchDataQueries}
+                  darkMode={props.darkMode}
+                  allComponents={appDefinition?.pages[currentPageId]?.components ?? {}}
+                  appId={appId}
+                  appDefinition={appDefinition}
+                  dataSourceModalHandler={dataSourceModalHandler}
+                  editorRef={getEditorRef()}
+                />
+                <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
+              </div>
+              <div className="editor-sidebar">
+                <EditorKeyHooks
+                  moveComponents={moveComponents}
+                  cloneComponents={cloningComponents}
+                  copyComponents={copyComponents}
+                  cutComponents={cutComponents}
+                  handleEditorEscapeKeyPress={handleEditorEscapeKeyPress}
+                  removeMultipleComponents={removeComponents}
+                />
+                <RightSidebarTabManager
+                  inspectorTab={
+                    <div className="pages-container">
+                      <Inspector
+                        moveComponents={moveComponents}
+                        componentDefinitionChanged={componentDefinitionChanged}
+                        removeComponent={removeComponent}
+                        allComponents={appDefinition?.pages[currentPageId]?.components}
+                        darkMode={props.darkMode}
+                        pages={getPagesWithIds()}
+                        cloneComponents={cloningComponents}
+                      />
+                    </div>
+                  }
+                  widgetManagerTab={
+                    <WidgetManager
+                      componentTypes={componentTypes}
+                      zoomLevel={zoomLevel}
+                      darkMode={props.darkMode}
+                      disabled={appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile'}
+                    />
+                  }
+                  allComponents={appDefinition.pages[currentPageId]?.components}
                 />
               </div>
-              <QueryPanel
-                onQueryPaneDragging={handleQueryPaneDragging}
-                handleQueryPaneExpanding={handleQueryPaneExpanding}
-                dataQueriesChanged={dataQueriesChanged}
-                fetchDataQueries={fetchDataQueries}
-                darkMode={props.darkMode}
-                allComponents={appDefinition?.pages[currentPageId]?.components ?? {}}
-                appId={appId}
-                appDefinition={appDefinition}
-                dataSourceModalHandler={dataSourceModalHandler}
-                editorRef={getEditorRef()}
-              />
-              <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
+              {config.COMMENT_FEATURE_ENABLE && showComments && (
+                <CommentNotifications socket={socket} pageId={currentPageId} />
+              )}
             </div>
-            <div className="editor-sidebar">
-              <EditorKeyHooks
-                moveComponents={moveComponents}
-                cloneComponents={cloningComponents}
-                copyComponents={copyComponents}
-                cutComponents={cutComponents}
-                handleEditorEscapeKeyPress={handleEditorEscapeKeyPress}
-                removeMultipleComponents={removeComponents}
-              />
-              <RightSidebarTabManager
-                inspectorTab={
-                  <div className="pages-container">
-                    <Inspector
-                      moveComponents={moveComponents}
-                      componentDefinitionChanged={componentDefinitionChanged}
-                      removeComponent={removeComponent}
-                      allComponents={appDefinition?.pages[currentPageId]?.components}
-                      darkMode={props.darkMode}
-                      pages={getPagesWithIds()}
-                      cloneComponents={cloningComponents}
-                    />
-                  </div>
-                }
-                widgetManagerTab={
-                  <WidgetManager
-                    componentTypes={componentTypes}
-                    zoomLevel={zoomLevel}
-                    darkMode={props.darkMode}
-                    disabled={appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile'}
-                  />
-                }
-                allComponents={appDefinition.pages[currentPageId]?.components}
-              />
-            </div>
-            {config.COMMENT_FEATURE_ENABLE && showComments && (
-              <CommentNotifications socket={socket} pageId={currentPageId} />
-            )}
-          </div>
-        </DndProvider>
-      </EditorContextWrapper>
-      <ConfirmDialog confirmButtonText="Turn off" darkMode={props.darkMode} />
-    </div>
+          </DndProvider>
+        </EditorContextWrapper>
+        <ConfirmDialog confirmButtonText="Turn off" darkMode={props.darkMode} />
+      </div>
+    </HotkeysProvider>
   );
 };
-
-const getHighestParent = () => {};
 
 export const Editor = withTranslation()(withRouter(EditorComponent));

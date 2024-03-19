@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export default ({
   options = [],
@@ -29,21 +29,19 @@ export default ({
             <>
               <div className="row-container query-manager-border-color" key={index}>
                 <div className="fields-container mb-2">
-                  <div className="field col-4 overflow-hidden border-top border-bottom border-start rounded-start">
+                  <div className="field col-4 rounded-start rest-api-codehinter-key-field">
                     <CodeHinter
+                      type="basic"
                       initialValue={option[0]}
-                      theme={theme}
-                      height={'32px'}
                       placeholder="Key"
                       onChange={onChange(paramType, 0, index)}
                       componentName={`${componentName}/${tabType}::key::${index}`}
                     />
                   </div>
-                  <div className="field col overflow-hidden border ">
+                  <div className="field col rest-api-options-codehinter" style={{ width: '200px' }}>
                     <CodeHinter
+                      type="basic"
                       initialValue={option[1]}
-                      theme={theme}
-                      height={'32px'}
                       placeholder="Value"
                       onChange={onChange(paramType, 1, index)}
                       componentName={`${componentName}/${tabType}::value::${index}`}
@@ -68,12 +66,11 @@ export default ({
       {bodyToggle ? (
         <div>
           <CodeHinter
-            initialValue={jsonBody}
-            mode="javascript"
-            theme={darkMode ? 'monokai' : 'base16-light'}
+            type="multiline"
+            initialValue={jsonBody ?? ''}
+            lang="javascript"
             height={'300px'}
             className="query-hinter"
-            ignoreBraces={false}
             onChange={(value) => onJsonBodyChange(value)}
             componentName={`${componentName}/${tabType}`}
           />
