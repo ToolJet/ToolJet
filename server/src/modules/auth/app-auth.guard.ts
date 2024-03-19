@@ -1,13 +1,20 @@
-import { ExecutionContext, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  ExecutionContext,
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { App } from 'src/entities/app.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { getManager } from 'typeorm';
 import { WORKSPACE_STATUS } from 'src/helpers/user_lifecycle';
+import { UsersService } from '@services/users.service';
 
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
-  constructor() {
+  constructor(private usersService: UsersService) {
     super();
   }
 
@@ -41,6 +48,23 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       return true;
     }
 
-    return super.canActivate(context);
+    // Throw a custom exception with workspace ID if the app is not public
+    try {
+      const authResult = await super.canActivate(context);
+      return authResult;
+    } catch (error) {
+      let organizationSlug: string;
+      if (app?.organizationId) {
+        const organization = await this.usersService.getAppOrganizationDetails(app);
+        organizationSlug = organization.slug || organization.id;
+      }
+
+      throw new UnauthorizedException(
+        JSON.stringify({
+          organizationId: organizationSlug,
+          message: 'Authentication is required to access this app.',
+        })
+      );
+    }
   }
 }

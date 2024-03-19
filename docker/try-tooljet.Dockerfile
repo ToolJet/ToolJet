@@ -61,6 +61,7 @@ ENV TOOLJET_HOST=http://localhost \
     REDIS_PORT=6379 \
     REDIS_USER=default \
     REDIS_PASS= \
+    ENABLE_MARKETPLACE_FEATURE=true \
     TERM=xterm
 
 # Set the entrypoint

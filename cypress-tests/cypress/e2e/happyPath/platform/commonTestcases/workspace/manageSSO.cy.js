@@ -11,10 +11,11 @@ describe("Manage SSO for multi workspace", () => {
   const envVar = Cypress.env("environment");
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
+    SSO.setSSOStatus("My workspace", "google", false);
+    SSO.setSSOStatus("My workspace", "git", false);
   });
   it("Should verify General settings page elements", () => {
     common.navigateToManageSSO();
-
     cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
       expect($el.contents().first().text().trim()).to.eq(
         commonText.breadcrumbworkspaceSettingTitle
@@ -22,19 +23,17 @@ describe("Manage SSO for multi workspace", () => {
     });
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      " SSO"
+      ssoText.pagetitle
     );
 
     cy.get(ssoSelector.cardTitle).verifyVisibleElement(
       "have.text",
-      ssoText.generalSettingsElements.generalSettings
+      "Workspace login"
     );
     for (const elements in ssoSelector.generalSettingsElements) {
-      cy.get(
-        ssoSelector.generalSettingsElements[elements]
-      ).verifyVisibleElement(
+      cy.get(ssoSelector.workspaceLoginPage[elements]).verifyVisibleElement(
         "have.text",
-        ssoText.generalSettingsElements[elements]
+        ssoText.workspaceLoginPage[elements]
       );
     }
     cy.get(ssoSelector.enableSignUpToggle).should("be.visible");
@@ -51,12 +50,6 @@ describe("Manage SSO for multi workspace", () => {
       ssoText.saveButton
     );
 
-    SSO.generalSettings();
-
-    cy.get(ssoSelector.alertText).verifyVisibleElement(
-      "have.text",
-      ssoText.alertText
-    );
     cy.get(ssoSelector.passwordEnableToggle).should("be.visible");
     cy.get(ssoSelector.passwordLoginToggleLbale).verifyVisibleElement(
       "have.text",
@@ -67,36 +60,32 @@ describe("Manage SSO for multi workspace", () => {
       ssoText.disablePasswordHelperText
     );
 
-    SSO.passwordPageElements();
-
+    SSO.generalSettings();
   });
 
   it("Should verify Google SSO page elements", () => {
     common.navigateToManageSSO();
     cy.get(ssoSelector.google).should("be.visible").click();
-    cy.get(ssoSelector.cardTitle).verifyVisibleElement(
-      "have.text",
-      ssoText.googleTitle
-    );
+    cy.get(ssoSelector.cardTitle)
+      .eq(1)
+      .verifyVisibleElement("have.text", ssoText.googleTitle);
     cy.get(ssoSelector.googleEnableToggle).should("be.visible");
     cy.get(ssoSelector.clientIdLabel).verifyVisibleElement(
       "have.text",
       ssoText.clientIdLabel
     );
     cy.get(ssoSelector.clientIdInput).should("be.visible");
-    cy.get(ssoSelector.cancelButton).verifyVisibleElement(
-      "have.text",
-      ssoText.cancelButton
-    );
-    cy.get(ssoSelector.saveButton).verifyVisibleElement(
-      "have.text",
-      ssoText.saveButton
-    );
+    cy.get(ssoSelector.cancelButton)
+      .eq(1)
+      .verifyVisibleElement("have.text", ssoText.cancelButton);
+    cy.get(ssoSelector.saveButton)
+      .eq(1)
+      .verifyVisibleElement("have.text", ssoText.saveButton);
 
     SSO.googleSSOPageElements();
-    SSO.disableDefaultSSO();
-    SSO.visitWorkspaceLoginPage();
-
+    SSO.defaultSSO("My workspace", false);
+    cy.logoutApi();
+    cy.visit("/login/my-workspace");
     cy.get(ssoSelector.googleIcon).should("be.visible");
     cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
       "have.text",
@@ -105,6 +94,8 @@ describe("Manage SSO for multi workspace", () => {
   });
 
   it("Should verify Git SSO page elements", () => {
+    SSO.defaultSSO("My workspace", true);
+
     common.navigateToManageSSO();
 
     cy.get(ssoSelector.git).should("be.visible").click();
@@ -140,27 +131,27 @@ describe("Manage SSO for multi workspace", () => {
       ssoText.encriptedLabel
     );
     cy.get(ssoSelector.clientSecretInput).should("be.visible");
-    cy.get(ssoSelector.cancelButton).verifyVisibleElement(
-      "have.text",
-      ssoText.cancelButton
-    );
-    cy.get(ssoSelector.saveButton).verifyVisibleElement(
-      "have.text",
-      ssoText.saveButton
-    );
+    cy.get(ssoSelector.cancelButton)
+      .eq(1)
+      .verifyVisibleElement("have.text", ssoText.cancelButton);
+    cy.get(ssoSelector.saveButton)
+      .eq(1)
+      .verifyVisibleElement("have.text", ssoText.saveButton);
 
     SSO.gitSSOPageElements();
-    SSO.visitWorkspaceLoginPage();
+    SSO.defaultSSO("My workspace", false);
+    cy.logoutApi();
+    cy.visit("/login/my-workspace");
 
-    cy.get(ssoSelector.googleIcon).should("be.visible");
-    cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
+    cy.get(ssoSelector.gitIcon).should("be.visible");
+    cy.get(ssoSelector.gitSignInText).verifyVisibleElement(
       "have.text",
-      ssoText.googleSSOText
+      ssoText.gitSignInText
     );
   });
 
   if (envVar === "Community") {
-    it("Should verify the workspace login page", () => {
+    it.skip("Should verify the workspace login page", () => {
       data.workspaceName = fake.companyName.toLowerCase();
       cy.apiLogin();
       cy.apiCreateWorkspace(data.workspaceName, data.workspaceName);

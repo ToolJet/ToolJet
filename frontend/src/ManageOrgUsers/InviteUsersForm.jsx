@@ -332,7 +332,9 @@ function InviteUsersForm({
                       Files in any other format may not be recognized.{' '}
                     </p>
                     <ButtonSolid
-                      href="../../assets/csv/sample_upload.csv"
+                      href={`${window.public_config?.TOOLJET_HOST}${
+                        window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+                      }assets/csv/sample_upload.csv`}
                       download="sample_upload.csv"
                       variant="tertiary"
                       className="download-template-btn"

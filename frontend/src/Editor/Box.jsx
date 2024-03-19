@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext, useRef, memo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useContext, memo } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -42,7 +42,6 @@ import { Html } from './Components/Html';
 import { ButtonGroup } from './Components/ButtonGroup';
 import { CustomComponent } from './Components/CustomComponent/CustomComponent';
 import { VerticalDivider } from './Components/verticalDivider';
-import { PDF } from './Components/PDF';
 import { ColorPicker } from './Components/ColorPicker';
 import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import { Kanban } from './Components/Kanban/Kanban';
@@ -55,7 +54,7 @@ import { BoundedBox } from './Components/BoundedBox/BoundedBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
-import { validateWidget } from '@/_helpers/utils';
+import { validateWidget, isPDFSupported } from '@/_helpers/utils';
 import { componentTypes } from './WidgetManager/components';
 import {
   resolveProperties,
@@ -112,7 +111,6 @@ export const AllComponents = {
   ButtonGroup,
   CustomComponent,
   VerticalDivider,
-  PDF,
   ColorPicker,
   KanbanBoard,
   Kanban,
@@ -123,6 +121,16 @@ export const AllComponents = {
   Form,
   BoundedBox,
 };
+
+/**
+ * Conditionally importing PDF component since importing it breaks app in older versions of browsers.
+ * refer: https://github.com/wojtekmaj/react-pdf?tab=readme-ov-file#compatibility
+ **/
+if (isPDFSupported()) {
+  import('./Components/PDF').then((module) => {
+    AllComponents.PDF = module.PDF;
+  });
+}
 
 export const Box = memo(
   ({
@@ -281,6 +289,9 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
+
+    const shouldHideWidget = component.component === 'PDF' && !isPDFSupported();
+
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
@@ -316,7 +327,7 @@ export const Box = memo(
           role={preview ? 'BoxPreview' : 'Box'}
           className={inCanvas ? `_tooljet-${component.component} _tooljet-${component.name}` : ''}
         >
-          {!resetComponent ? (
+          {!resetComponent && !shouldHideWidget ? (
             <ComponentToRender
               onComponentClick={onComponentClick}
               onComponentOptionChanged={onComponentOptionChanged}
