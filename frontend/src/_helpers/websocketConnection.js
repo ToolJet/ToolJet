@@ -2,9 +2,10 @@ import config from 'config';
 
 class WebSocketConnection {
   static instance;
+  static appId;
 
   constructor(appId) {
-    if (WebSocketConnection.instance) {
+    if (WebSocketConnection.instance && WebSocketConnection.appId === appId) {
       return WebSocketConnection.instance;
     }
 
@@ -46,6 +47,8 @@ class WebSocketConnection {
           data: appId,
         })
       );
+
+      this.appId = appId;
     });
 
     // Connection closed
