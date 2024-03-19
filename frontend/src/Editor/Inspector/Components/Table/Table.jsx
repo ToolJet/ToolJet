@@ -21,6 +21,7 @@ import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { ModuleContext } from '../../../../_contexts/ModuleContext';
 import { useSuperStore } from '@/_stores/superStore';
+import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
 class TableComponent extends React.Component {
   static contextType = ModuleContext;
 
@@ -534,6 +535,8 @@ class TableComponent extends React.Component {
                                       showVisibilityIcon={true}
                                       isColumnVisible={resolveReferences(columnVisibility, this.state.currentState)}
                                       className={'table-column-lists'}
+                                      columnType={item?.columnType}
+                                      isDeprecated={() => checkIfTableColumnDeprecated(item?.columnType)}
                                     />
                                   </div>
                                 </OverlayTrigger>
