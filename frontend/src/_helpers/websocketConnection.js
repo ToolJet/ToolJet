@@ -1,10 +1,17 @@
 import config from 'config';
 
 class WebSocketConnection {
-  constructor(appId) {
-    this.socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.getWebsocketUrl()}`);
+  static instance;
 
+  constructor(appId) {
+    if (WebSocketConnection.instance) {
+      return WebSocketConnection.instance;
+    }
+
+    this.socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.getWebsocketUrl()}`);
     this.addListeners(appId);
+
+    WebSocketConnection.instance = this;
   }
 
   getWebsocketUrl() {
