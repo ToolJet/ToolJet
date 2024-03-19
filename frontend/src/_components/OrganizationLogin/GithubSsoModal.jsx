@@ -36,19 +36,16 @@ export function GithubSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
 
   const handleClientIdChange = (newClientId) => {
     setClientId(newClientId);
-    const changesMade = newClientId !== settings?.configs?.client_id;
     checkChanges();
   };
 
   const handleHostNameChange = (newHostName) => {
     setHostName(newHostName);
-    const changesMade = newHostName !== settings?.configs?.host_name;
     checkChanges();
   };
 
   const handleClientSecretChange = (newClientSecret) => {
     setClientSecret(newClientSecret);
-    const changesMade = newClientSecret !== settings?.configs?.client_secret;
     checkChanges();
   };
 

@@ -176,7 +176,7 @@ class SSOConfiguration extends React.Component {
     const isEnabledKey = `${key}Enabled`;
     const enabledStatus = !this.state[isEnabledKey];
 
-    if (enabledStatus === false) {
+    if (!enabledStatus) {
       try {
         await this.handleToggleSSOOption(key);
         toast.success(
@@ -238,7 +238,7 @@ class SSOConfiguration extends React.Component {
 
   renderSSOOption = (key, name) => {
     const isEnabledKey = `${key}Enabled`;
-    const isEnabled = this.state[isEnabledKey];
+    const isEnabled = this.state[isEnabledKey] || false;
 
     return (
       <div className="sso-option" key={key} onClick={() => this.openModal(key)} data-cy="sso-card">
@@ -267,15 +267,8 @@ class SSOConfiguration extends React.Component {
           <input
             type="checkbox"
             checked={isEnabled}
-            onChange={(e) => {
-              e.preventDefault();
-              if (!isEnabled) {
-                // If it's about enabling, open modal without toggling state
-                this.openModal(key);
-              } else {
-                // If disabling, directly toggle state
-                this.toggleSSOOption(key);
-              }
+            onChange={() => {
+              this.toggleSSOOption(key);
             }}
             data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-toggle`}
           />
