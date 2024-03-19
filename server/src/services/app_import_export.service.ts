@@ -436,6 +436,7 @@ export class AppImportExportService {
                 index: pagePostionIntheList,
                 disabled: page.disabled || false,
                 hidden: page.hidden || false,
+                autoComputeLayout: page.autoComputeLayout || false,
               });
               const pageCreated = await transactionalEntityManager.save(newPage);
 
@@ -703,6 +704,7 @@ export class AppImportExportService {
           index: page.index,
           disabled: page.disabled || false,
           hidden: page.hidden || false,
+          autoComputeLayout: page.autoComputeLayout || false,
         });
 
         const pageCreated = await manager.save(newPage);
