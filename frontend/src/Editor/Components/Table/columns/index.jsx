@@ -319,7 +319,7 @@ export default function generateColumnsData({
               });
               const { isValid, validationError } = validationData;
               return (
-                <div className="h-100 d-flex flex-column justify-content-center">
+                <div className="h-100 d-flex flex-column justify-content-center position-relative">
                   <textarea
                     rows="1"
                     className={`${!isValid ? 'is-invalid' : ''} form-control-plaintext text-container ${

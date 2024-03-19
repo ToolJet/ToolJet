@@ -135,6 +135,7 @@ export function Table({
     maxRowHeight,
     autoHeight,
     selectRowOnCellEdit,
+    contentWrap,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
@@ -656,7 +657,7 @@ export function Table({
             },
             Cell: ({ row }) => {
               return (
-                <div className="d-flex flex-column align-items-center">
+                <div className="d-flex flex-column align-items-center justify-content-center h-100">
                   <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} fireEvent={fireEvent} />
                 </div>
               );
@@ -1351,6 +1352,12 @@ export function Table({
             <tbody {...getTableBodyProps()} style={{ color: computeFontColor() }}>
               {page.map((row, index) => {
                 prepareRow(row);
+                let rowProps = { ...row.getRowProps() };
+                const contentWrapProp = resolveReferences(contentWrap, currentState);
+                if (contentWrapProp) {
+                  rowProps.style.maxHeight = autoHeight ? 'fit-content' : resolveReferences(maxRowHeight, currentState);
+                  rowProps.style.height = autoHeight ? 'fit-content' : resolveReferences(maxRowHeight, currentState);
+                }
                 return (
                   <tr
                     key={index}
@@ -1364,7 +1371,7 @@ export function Table({
                         ? 'selected'
                         : ''
                     }`}
-                    {...row.getRowProps()}
+                    {...rowProps}
                     onClick={async (e) => {
                       e.stopPropagation();
                       // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
@@ -1417,10 +1424,6 @@ export function Table({
                       ) {
                         cellProps.style.flex = '1 1 auto';
                       }
-                      if (cellSize === 'hugContent') {
-                        cellProps.style.maxHeight = autoHeight ? 80 : resolveReferences(maxRowHeight, currentState);
-                        cellProps.style.height = autoHeight ? 80 : resolveReferences(maxRowHeight, currentState);
-                      }
                       //should we remove this
                       const wrapAction = textWrapActions(cell.column.id);
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
@@ -1468,10 +1471,7 @@ export function Table({
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
                           className={cx(
                             `table-text-align-${cell.column.horizontalAlignment}  
-                            ${
-                              cell?.column?.Header !== 'Actions' &&
-                              (['regular', 'condensed'].includes(cellSize) ? '' : 'wrap-wrapper')
-                            }
+                            ${cell?.column?.Header !== 'Actions' && (contentWrapProp ? 'wrap-wrapper' : '')}
                             td`,
                             {
                               'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
@@ -1483,6 +1483,9 @@ export function Table({
                               'has-datepicker': cell.column.columnType === 'datepicker',
                               'align-items-center flex-column': cell.column.columnType === 'selector',
                               [cellSize]: true,
+                              'overflow-hidden':
+                                ['text', 'string', undefined, 'number'].includes(cell.column.columnType) &&
+                                !contentWrap,
                               'selector-column':
                                 cell.column.columnType === 'selector' && cell.column.id === 'selection',
                               'resizing-column': cell.column.isResizing || cell.column.id === resizingColumnId,

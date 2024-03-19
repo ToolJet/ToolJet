@@ -77,9 +77,9 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
   const defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
   const maxRowHeight = styles?.maxRowHeight ?? 80;
-  const autoHeight = styles?.autoHeight ?? false;
+  const autoHeight = styles?.autoHeight ?? true;
   const selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? true;
-
+  const contentWrap = styles?.contentWrap ?? true;
   return {
     color,
     serverSidePagination,
@@ -114,5 +114,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     maxRowHeight,
     autoHeight,
     selectRowOnCellEdit,
+    contentWrap,
   };
 }
