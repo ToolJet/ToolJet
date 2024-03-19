@@ -34,23 +34,24 @@ export const PropertiesTabElements = ({
         <Select
           meta={{
             options: [
-              { label: 'Default', value: 'default', isDeprecated: true },
               { label: 'String', value: 'string' },
               { label: 'Number', value: 'number' },
               { label: 'Text', value: 'text' },
-              { label: 'Badge', value: 'badge', isDeprecated: true },
-              { label: 'Multiple badges', value: 'badges', isDeprecated: true },
-              { label: 'Tags', value: 'tags', isDeprecated: true },
-              { label: 'Dropdown', value: 'dropdown', isDeprecated: true },
-              { label: 'Link', value: 'link' },
-              { label: 'Radio', value: 'radio', isDeprecated: true },
-              { label: 'Multiselect D', value: 'multiselect', isDeprecated: true },
-              { label: 'Toggle switch', value: 'toggle', isDeprecated: true },
               { label: 'Date Picker', value: 'datepicker' },
-              { label: 'Image', value: 'image' },
-              { label: 'Boolean', value: 'boolean' },
               { label: 'Select', value: 'select' },
               { label: 'MultiSelect', value: 'newMultiSelect' },
+              { label: 'Boolean', value: 'boolean' },
+              { label: 'Image', value: 'image' },
+              { label: 'Link', value: 'link' },
+              // Following column types are deprecated
+              { label: 'Default', value: 'default' },
+              { label: 'Dropdown', value: 'dropdown' },
+              { label: 'Multiselect', value: 'multiselect' },
+              { label: 'Toggle switch', value: 'toggle' },
+              { label: 'Radio', value: 'radio' },
+              { label: 'Badge', value: 'badge' },
+              { label: 'Multiple badges', value: 'badges' },
+              { label: 'Tags', value: 'tags' },
             ],
           }}
           onChange={(value) => {

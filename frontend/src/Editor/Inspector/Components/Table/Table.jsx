@@ -536,7 +536,7 @@ class TableComponent extends React.Component {
                                       isColumnVisible={resolveReferences(columnVisibility, this.state.currentState)}
                                       className={'table-column-lists'}
                                       columnType={item?.columnType}
-                                      isDeprecated={() => checkIfTableColumnDeprecated(item?.columnType)}
+                                      isDeprecated={checkIfTableColumnDeprecated(item?.columnType)}
                                     />
                                   </div>
                                 </OverlayTrigger>

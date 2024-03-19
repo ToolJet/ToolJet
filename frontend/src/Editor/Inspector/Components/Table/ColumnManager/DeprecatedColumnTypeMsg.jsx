@@ -3,14 +3,14 @@ import Icon from '@/_ui/Icon/solidIcons/index';
 import { ToolTip } from '@/_components/ToolTip';
 
 export const DEPRECATED_COLUMN_TYPES = [
-  { label: 'Default', value: 'default', docLink: '' },
-  { label: 'Badge', value: 'badge' },
-  { label: 'Dropdown', value: 'dropdown' },
-  { label: 'Multiple badges', value: 'badges' },
-  { label: 'Tags', value: 'tags' },
-  { label: 'Radio', value: 'radio' },
-  { label: 'Multiselect D', value: 'multiselect' },
-  { label: 'Toggle switch', value: 'toggle' },
+  { label: 'Default', value: 'default', docLink: '', currentAlternativeColumnLabel: 'String' },
+  { label: 'Badge', value: 'badge', currentAlternativeColumnLabel: 'Multiselect' },
+  { label: 'Dropdown', value: 'dropdown', currentAlternativeColumnLabel: 'Single select' },
+  { label: 'Multiple badges', value: 'badges', currentAlternativeColumnLabel: 'Multiselect' },
+  { label: 'Tags', value: 'tags', currentAlternativeColumnLabel: 'Multiselect' },
+  { label: 'Radio', value: 'radio', currentAlternativeColumnLabel: 'Single select' },
+  { label: 'Multiselect', value: 'multiselect', currentAlternativeColumnLabel: 'Multiselect' },
+  { label: 'Toggle switch', value: 'toggle', currentAlternativeColumnLabel: 'Single select' },
 ];
 
 export const checkIfTableColumnDeprecated = (columnType) => {
@@ -30,7 +30,7 @@ export const DeprecatedColumnTooltip = ({ columnType, children }) => {
   const deprecatedColumnType = DEPRECATED_COLUMN_TYPES.find((ct) => ct.value === columnType);
   return (
     <ToolTip
-      message={<TooltipBody columnLabel={deprecatedColumnType?.label} />}
+      message={<TooltipBody columnLabel={deprecatedColumnType?.currentAlternativeColumnLabel} />}
       show={deprecatedColumnType ?? false}
       placement="left"
     >
@@ -43,16 +43,13 @@ const DeprecatedColumnTypeMsg = ({ columnType }) => {
   const deprecatedColumnType = DEPRECATED_COLUMN_TYPES.find((ct) => ct.value === columnType);
   if (!deprecatedColumnType) return null;
   return (
-    <div
-      className="d-flex theme-dark dark-theme"
-      style={{ padding: '12px 16px', gap: '4px', backgroundColor: '#FCEEEF' }}
-    >
+    <div className="d-flex" style={{ padding: '12px 16px', gap: '4px', backgroundColor: '#FCEEEF' }}>
       <span>
         <Icon name={'warning'} height={16} width={16} fill="#DB4324" />
       </span>
       <span style={{ color: '#2D343B' }}>
         This column type will be deprecated by April 2023. For migration instructions, refer to the{' '}
-        <span style={{ color: '#4368E3' }}>documentation</span>
+        <span style={{ color: '#4368E3', cursor: 'pointer' }}>documentation</span>
       </span>
     </div>
   );
