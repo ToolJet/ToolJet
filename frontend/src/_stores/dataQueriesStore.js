@@ -101,6 +101,7 @@ export const useDataQueriesStore = create(
           set({ dataQueries });
           if (type === 'mappingUpdate') {
             const { actions } = useQueryPanelStore.getState();
+            actions.setSelectedQuery(null);
             const queryId = dataQueries[0]?.id;
 
             actions.setSelectedQuery(queryId);
