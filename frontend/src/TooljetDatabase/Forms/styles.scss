@@ -248,3 +248,66 @@
   color: var(--slate10);
   font-size: 12px;
 }
+
+.card-header {
+  border: none !important;
+}
+
+.column-name-description {
+  width: 111px !important;
+  color: var(--slate11) !important;
+}
+
+.dataType-description {
+  width: 111px !important;
+  margin-left: 40px !important;
+  color: var(--slate11) !important;
+}
+
+.defaultValue-description {
+  width: 111px !important;
+  margin-left: 22px !important;
+  color: var(--slate11) !important;
+}
+
+.primaryKey-description {
+  width: 111px !important;
+  margin-left: 26px !important;
+  color: var(--slate11) !important;
+}
+
+.table-schema {
+  background-color: var(--slate3) !important;
+  padding: 8px !important;
+  margin-bottom: 6px !important;
+
+  .table-schema-row {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 6px;
+
+    .foreign-key-relation {
+      width: 14px !important;
+      padding: 0px !important;
+      margin: 0px !important;
+    }
+
+    .not-null-toggle {
+      width: 100px !important;
+    }
+
+    .datatype-dropdown,
+    .defaultValue,
+    .columnName {
+      width: 125px !important;
+    }
+
+    .primary-check {
+      .form-check {
+        padding-left: 1.95rem !important;
+      }
+    }
+  }
+
+}

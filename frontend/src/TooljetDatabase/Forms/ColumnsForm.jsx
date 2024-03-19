@@ -7,6 +7,12 @@ import DeleteIcon from '../Icons/DeleteIcon.svg';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, primaryKeydataTypes } from '../constants';
 import Tick from '../Icons/Tick.svg';
 import Serial from '../Icons/Serial.svg';
+import ForeignKeyRelation from '../Icons/Fk-relation.svg';
+import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
+import SelectIcon from '../Icons/Select-column.svg';
+import MenuIcon from '../Icons/Unique-menu.svg';
+import ColumnName from '../Icons/ColumnName.svg';
+import { UniqueConstraintPopOver } from '../Table/ActionsPopover/UniqueConstraintPopOver';
 
 const ColumnsForm = ({ columns, setColumns }) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
@@ -80,7 +86,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
     <div className="">
       <div className="card-header">
         <h3 className="card-title" data-cy="add-columns-header">
-          Add columns
+          Table schema
         </h3>
       </div>
       <div className="card-body">
@@ -89,30 +95,31 @@ const ColumnsForm = ({ columns, setColumns }) => {
             'text-white': darkMode,
           })}
         >
-          <div className="row align-items-center">
-            <div className="col-3 m-0 pe-0">
-              <span data-cy="name-input-field-label">Name</span>
+          <div className="row">
+            <div className="m-0 d-flex align-items-center  column-name-description">
+              <ColumnName />
+              <span style={{ marginLeft: '6px' }} data-cy="name-input-field-label">
+                Column name
+              </span>
             </div>
-            <div className="col-3 m-0 pe-0">
+            <div className="m-0 dataType-description">
               <span data-cy="type-input-field-label">Type</span>
             </div>
-            <div className="col-3 m-0 pe-0">
+            <div className="m-0 defaultValue-description">
               <span data-cy="default-input-field-label">Default</span>
+            </div>
+            <div className="m-0 primaryKey-description">
+              <span data-cy="default-input-field-label">Primary</span>
             </div>
           </div>
         </div>
         {Object.keys(columns).map((index) => (
-          <div
-            key={index}
-            className={cx('list-group-item mb-1', {
-              'bg-gray': !darkMode,
-            })}
-          >
-            <div className="row align-items-center">
+          <div key={index} className="list-group-item mb-1 mt-2 table-schema">
+            <div className="table-schema-row">
               {/* <div className="col-1">
                   <DragIcon />
                 </div> */}
-              <div className="col-3 m-0 pe-0 ps-1" data-cy="column-name-input-field">
+              <div className="m-0 pe-0 ps-1 columnName" data-cy="column-name-input-field">
                 <input
                   onChange={(e) => {
                     e.persist();
@@ -128,7 +135,10 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   disabled={columns[index]?.constraints_type?.is_primary_key === true}
                 />
               </div>
-              <div className="col-3 pe-0 ps-1" data-cy="type-dropdown-field">
+              <div className="foreign-key-relation">
+                <ForeignKeyRelation width="14" height="14" />
+              </div>
+              <div className="p-0 datatype-dropdown" data-cy="type-dropdown-field">
                 <Select
                   width="120px"
                   height="36px"
@@ -160,7 +170,12 @@ const ColumnsForm = ({ columns, setColumns }) => {
                         <span>{columns[0].data_type}</span>
                       </div>
                     ) : (
-                      'Select...'
+                      <div>
+                        <span style={{ marginRight: '3px' }}>
+                          <SelectIcon width="17" />
+                        </span>
+                        <span style={{ color: '#889096' }}>Select...</span>
+                      </div>
                     )
                   }
                   onMenuOpen={() => {
@@ -175,7 +190,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   }}
                 />
               </div>
-              <div className="col-2 m-0 pe-0 ps-1" data-cy="column-default-input-field">
+              <div className="m-0" data-cy="column-default-input-field">
                 <input
                   onChange={(e) => {
                     e.persist();
@@ -185,52 +200,58 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   }}
                   value={columns[index].column_default}
                   type="text"
-                  className="form-control"
+                  className="form-control defaultValue"
                   data-cy="default-input-field"
-                  placeholder="NULL"
+                  placeholder={columns[index]?.constraints_type?.is_primary_key !== true ? 'Null' : 'Auto-generated'}
                   disabled={
                     columns[index]?.constraints_type?.is_primary_key === true || columns[index].data_type === 'serial'
                   }
                 />
               </div>
-              {columns[index]?.constraints_type?.is_primary_key === true && (
-                <div className="col-3">
-                  <div
-                    className={`badge badge-outline ${darkMode ? 'text-white' : 'text-indigo'}`}
-                    data-cy="primary-key-text"
-                  >
-                    Primary Key
-                  </div>
-                </div>
-              )}
-              {columns[index]?.constraints_type?.is_primary_key !== true && (
-                <div className="col-3 d-flex">
-                  <label className={`form-switch`}>
-                    <input
-                      className="form-check-input"
-                      data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
-                        .toLowerCase()
-                        .replace(/\s+/g, '-')}-checkbox`}
-                      type="checkbox"
-                      checked={columns[index]?.constraints_type?.is_not_null ?? false}
-                      onChange={(e) => {
-                        const prevColumns = { ...columns };
-                        const columnConstraints = prevColumns[index]?.constraints_type ?? {};
-                        columnConstraints.is_not_null = e.target.checked;
-                        prevColumns[index].constraints_type = { ...columnConstraints };
-                        setColumns(prevColumns);
-                      }}
-                    />
-                  </label>
-                  <span
+
+              <div className="primary-check">
+                <IndeterminateCheckbox checked={true} />
+              </div>
+
+              <div className="d-flex not-null-toggle">
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
                     data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
                       .toLowerCase()
-                      .replace(/\s+/g, '-')}-text`}
-                  >
-                    {columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL'}
-                  </span>
-                </div>
-              )}
+                      .replace(/\s+/g, '-')}-checkbox`}
+                    type="checkbox"
+                    checked={columns[index]?.constraints_type?.is_not_null ?? false}
+                    onChange={(e) => {
+                      const prevColumns = { ...columns };
+                      const columnConstraints = prevColumns[index]?.constraints_type ?? {};
+                      columnConstraints.is_not_null = e.target.checked;
+                      prevColumns[index].constraints_type = { ...columnConstraints };
+                      setColumns(prevColumns);
+                    }}
+                  />
+                </label>
+                <span
+                  data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
+                    .toLowerCase()
+                    .replace(/\s+/g, '-')}-text`}
+                >
+                  {columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL'}
+                </span>
+              </div>
+              <div onClick={() => alert('hi')}>
+                <UniqueConstraintPopOver
+                  onClick={() => alert('hi')}
+                  disabled={false}
+                  onDelete={() => handleDelete(index)}
+                  darkMode={darkMode}
+                >
+                  <div>
+                    <MenuIcon />
+                  </div>
+                </UniqueConstraintPopOver>
+              </div>
+
               <div
                 className="col-1 cursor-pointer d-flex"
                 data-cy="column-delete-icon"

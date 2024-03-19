@@ -132,7 +132,7 @@ const TableForm = ({
               </span>
             </div>
           )}
-          <div className="mb-3">
+          <div className="">
             <div className="form-label" data-cy="table-name-label">
               Table name
             </div>

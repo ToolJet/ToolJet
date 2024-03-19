@@ -25,7 +25,12 @@ export default function CreateTableDrawer() {
           Create new table
         </ButtonSolid>
       </div>
-      <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
+      <Drawer
+        isOpen={isCreateTableDrawerOpen}
+        onClose={() => setIsCreateTableDrawerOpen(false)}
+        position="right"
+        drawerStyle={{ width: '630px' }}
+      >
         <CreateTableForm
           onCreate={(tableInfo) => {
             tooljetDatabaseService.findAll(organizationId).then(({ data = [], error }) => {
