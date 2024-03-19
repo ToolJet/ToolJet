@@ -2,7 +2,7 @@
 id: use-url-params-on-load
 title: Use URL Parameters on Page Load
 ---
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingBottom:'24px'}}>
 
 In this guide, we will learn how to use URL parameters at the time of page load. The URL parameters are used to pass data from one page to another. Currently, we can add URL parameters in the following ways:
 
@@ -75,7 +75,7 @@ In the `Dashboard` page, add two table components. We will be loading the data f
  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/use-url-params/table2.png" alt="Use URL Parameters on page load" />
 </div>
 
-### Query 3: JavaScript Code to Use URL Parameters
+### Query 3: JavaScript Code To Use URL Parameters
 
 - Create a new JavaScript code query and name it as `urlparams`. We will be using this query to access the URL parameters and to check if the email parameter is present in the URL, then trigger the REST API queries.
 

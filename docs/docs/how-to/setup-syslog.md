@@ -2,7 +2,7 @@
 id: setup-rsyslog
 title: Setup Log File Generation (Rsyslog)
 ---
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingBottom:'24px'}}>
 
 The log file serves as a comprehensive record of audit logs, capturing crucial information about various activities within the ToolJet. Follow the guide below to set up and utilize the log file feature effectively.
 

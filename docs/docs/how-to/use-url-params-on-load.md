@@ -2,7 +2,7 @@
 id: use-url-params-on-load
 title: Use URL Parameters on Page Load
 ---
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingBottom:'24px'}}>
 
 In this guide, we will learn how to use URL parameters at the time of page load. The URL parameters are used to pass data from one page to another. Currently, we can add URL parameters in the following ways:
 

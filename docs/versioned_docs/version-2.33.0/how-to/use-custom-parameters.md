@@ -2,7 +2,7 @@
 id: use-custom-parameters
 title: Use Custom Parameters
 ---
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingBottom:'24px'}}>
 
 Custom parameters in your queries offer a flexible way to introduce variables without directly modifying query parameters. This guide will walk you through creating, utilizing, and calling queries with custom parameters.
 
@@ -72,7 +72,7 @@ Let's assume we have a ToolJetDB table with the following columns: `name`, `emai
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Example: Providing Custom Parameters using Events
+### Example: Providing Custom Parameters Using Events
 
 In this example, we will demonstrate how to use custom parameters in a query by providing values from an event. We will use execute a REST API query and on its success, we will execute the ToolJetDB query to create a new row with the response data.
 

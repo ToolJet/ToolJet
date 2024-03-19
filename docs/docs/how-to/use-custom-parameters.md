@@ -2,7 +2,7 @@
 id: use-custom-parameters
 title: Use Custom Parameters
 ---
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingBottom:'24px'}}>
 
 Custom parameters in your queries offer a flexible way to introduce variables without directly modifying query parameters. This guide will walk you through creating, utilizing, and calling queries with custom parameters.
 
