@@ -11,7 +11,7 @@ export const tabsConfig = {
       componentName: 'Image',
       layout: {
         top: 60,
-        left: 37,
+        left: 17,
         height: 100,
       },
       tab: 0,
@@ -24,7 +24,7 @@ export const tabsConfig = {
       componentName: 'Text',
       layout: {
         top: 100,
-        left: 17,
+        left: 5,
         height: 50,
         width: 34,
       },
@@ -39,7 +39,7 @@ export const tabsConfig = {
       layout: {
         top: 0,
         left: 1,
-        width: 42,
+        width: 41,
         height: 250,
       },
       tab: 2,
