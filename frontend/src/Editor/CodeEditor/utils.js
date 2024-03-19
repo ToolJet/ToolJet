@@ -245,7 +245,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
     }
 
     const { toResolveReference, jsExpression, jsExpMatch } = inferJSExpAndReferences(value, lookupTable.hints);
-    const isComponentValue = toResolveReference.startsWith('components.') || false; //!Notes: As we removed the updating of references on currentState changes, exposed variable of components are dynamic and cannot be controlled in any form, so we are resolving only components references with our legacy approach.
+    const isComponentValue = toResolveReference?.startsWith('components.') || false; //!Notes: As we removed the updating of references on currentState changes, exposed variable of components are dynamic and cannot be controlled in any form, so we are resolving only components references with our legacy approach.
     if (!isComponentValue && !jsExpMatch && toResolveReference && lookupTable.hints.has(toResolveReference)) {
       const idToLookUp = lookupTable.hints.get(toResolveReference);
       resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);
