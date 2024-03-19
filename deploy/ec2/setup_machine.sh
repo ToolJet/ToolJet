@@ -78,11 +78,9 @@ sudo systemctl daemon-reload
 
 # Setup app directory
 mkdir -p ~/app
-# Add private key to clone repo
-sudo echo -n $SSH_PRIVATE_KEY | base64 -d  >> ~/.ssh/id_rsa
-sudo chmod 400 ~/.ssh/id_rsa
-ssh-keyscan github.com >> .ssh/known_hosts
-git clone -b develop git@github.com:ToolJet/tj-ee.git ~/app && cd ~/app
+
+#The below url will be edited dynamically when actions is triggered
+git clone -b develop https://PAT@github.com/ToolJet/tj-ee.git ~/app && cd ~/app
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
