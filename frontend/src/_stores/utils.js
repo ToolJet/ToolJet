@@ -397,3 +397,134 @@ function extractVersion(versionStr) {
 
   return { major, minor };
 }
+export function createReferencesLookup(refState, forQueryParams = false, initalLoad = false) {
+  if (forQueryParams && _.isEmpty(refState['parameters'])) {
+    return { suggestionList: [] };
+  }
+
+  const getCurrentNodeType = (node) => Object.prototype.toString.call(node).slice(8, -1);
+
+  const state = _.cloneDeep(refState);
+  const queries = forQueryParams ? {} : state['queries'];
+  const actions = initalLoad
+    ? [
+        'runQuery',
+        'setVariable',
+        'unSetVariable',
+        'showAlert',
+        'logout',
+        'showModal',
+        'closeModal',
+        'setLocalStorage',
+        'copyToClipboard',
+        'goToApp',
+        'generateFile',
+        'setPageVariable',
+        'unsetPageVariable',
+        'switchPage',
+      ]
+    : [];
+
+  if (!forQueryParams) {
+    // eslint-disable-next-line no-unused-vars
+    _.forIn(queries, (query, key) => {
+      if (!query.hasOwnProperty('run')) {
+        query.run = true;
+      }
+    });
+  }
+
+  const currentState = !forQueryParams && initalLoad ? _.merge(state, { queries }) : state;
+  const suggestionList = [];
+  const map = new Map();
+
+  const hintsMap = new Map();
+  const resolvedRefs = new Map();
+  const resolvedRefTypes = new Map();
+
+  const buildMap = (data, path = '') => {
+    const keys = Object.keys(data);
+    keys.forEach((key, index) => {
+      const uniqueId = _.uniqueId();
+      const value = data[key];
+      const _type = Object.prototype.toString.call(value).slice(8, -1);
+      const prevType = map.get(path)?.type;
+
+      let newPath = '';
+      if (path === '') {
+        newPath = key;
+      } else if (prevType === 'Array') {
+        newPath = `${path}[${index}]`;
+      } else {
+        newPath = `${path}.${key}`;
+      }
+
+      if (_type === 'Object') {
+        map.set(newPath, { type: _type });
+        buildMap(value, newPath);
+      }
+      if (_type === 'Array') {
+        map.set(newPath, { type: _type });
+        buildMap(value, newPath);
+      } else {
+        map.set(newPath, { type: _type });
+      }
+
+      // Populate hints and refs
+
+      hintsMap.set(newPath, uniqueId);
+      resolvedRefs.set(uniqueId, value);
+      const resolveRefType = getCurrentNodeType(value);
+      resolvedRefTypes.set(uniqueId, resolveRefType);
+    });
+  };
+
+  buildMap(currentState, '');
+
+  map.forEach((__, key) => {
+    if (key.endsWith('run') && key.startsWith('queries')) {
+      return suggestionList.push({ hint: `${key}()`, type: 'Function' });
+    }
+    return suggestionList.push({ hint: key, type: resolvedRefTypes.get(hintsMap.get(key)) });
+  });
+  if (!forQueryParams && initalLoad) {
+    actions.forEach((action) => {
+      suggestionList.push({ hint: `actions.${action}()`, type: 'method' });
+    });
+  }
+
+  return { suggestionList, hintsMap, resolvedRefs };
+}
+
+export function findAllEntityReferences(node, allRefs) {
+  if (typeof node === 'object') {
+    for (let key in node) {
+      const value = node[key];
+      if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
+        const referenceExists = value;
+
+        if (referenceExists) {
+          const ref = value.replace('{{', '').replace('}}', '');
+
+          const entityName = ref.split('.')[1];
+
+          allRefs.push(entityName);
+        }
+      } else if (typeof value === 'object') {
+        findAllEntityReferences(value, allRefs);
+      }
+    }
+  }
+  return allRefs;
+}
+
+export function findEntityId(entityName, map, reverseMap) {
+  for (const [key, value] of map.entries()) {
+    const lookupid = value;
+    const reverseValue = reverseMap.get(lookupid);
+
+    if (reverseValue === entityName) {
+      return key;
+    }
+  }
+}

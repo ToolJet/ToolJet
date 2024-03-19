@@ -139,8 +139,8 @@ export const Container = ({
   const paramUpdatesOptsRef = useRef({});
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
-  useHotkeys('meta+z, control+z', () => handleUndo());
-  useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
+  useHotkeys('meta+z, control+z', () => handleUndo(), { scopes: 'editor' });
+  useHotkeys('meta+shift+z, control+shift+z', () => handleRedo(), { scopes: 'editor' });
   useHotkeys(
     'meta+v, control+v',
     async () => {
@@ -166,7 +166,8 @@ export const Container = ({
       }
       enableReleasedVersionPopupState();
     },
-    [isContainerFocused, appDefinition, focusedParentIdRef.current]
+    [isContainerFocused, appDefinition, focusedParentIdRef.current],
+    { scopes: 'editor' }
   );
 
   useEffect(() => {
@@ -481,22 +482,18 @@ export const Container = ({
         }
       }
 
+      const componentData = { ...boxes[id]['component'] };
+      componentData.parent = parent ? parent : null;
+
       return {
         ...boxesObj,
         [id]: {
           ...boxes[id],
-          component: {
-            ...boxes[id]['component'],
-            parent: parent,
-          },
+          component: componentData,
           layouts: {
             ...boxes[id]['layouts'],
             [currentLayout]: {
               ...boxes[id]['layouts'][currentLayout],
-              // ...{ top: layout.y, left: layout.x, height: layout.h, width: layout.w },
-              // width: parent
-              //   ? Math.round((boxes[id]['layouts'][currentLayout].width * gridWidth) / subContainerWidths[parent])
-              //   : boxes[id]['layouts'][currentLayout].width,
               width: _width,
               height: _height,
               top: y,
@@ -509,19 +506,6 @@ export const Container = ({
     let newBoxes = {
       ...boxes,
       ...updatedBoxes,
-      // [id]: {
-      //   ...boxes[id],
-      //   layouts: {
-      //     ...boxes[id]['layouts'],
-      //     [currentLayout]: {
-      //       ...boxes[id]['layouts'][currentLayout],
-      //       // ...{ top: layout.y, left: layout.x, height: layout.h, width: layout.w },
-      //       top: y,
-      //       left: Math.round(x / gridWidth),
-      //     },
-      //   },
-      //   parent: parent ? parent : boxes[id].parent,
-      // },
     };
     setBoxes(newBoxes);
     updateCanvasHeight(newBoxes);
