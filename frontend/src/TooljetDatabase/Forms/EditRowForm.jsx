@@ -281,15 +281,16 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
               )}
               <span>{headerText}</span>
             </div>
-            <div className="edit-row-dropdown col-auto row-edit-select-container w-100" data-cy="select-row-dropdown">
-              <Select
-                isDisabled={true}
-                useMenuPortal={false}
-                placeholder="Select a row to edit"
-                value={selectedRow}
-                options={options}
-                onChange={handleOnSelect}
-              />
+
+            <div className="edit-row-container mb-3">
+              <div style={{ position: 'relative' }}>
+                <input
+                  value={selectedRow}
+                  type="text"
+                  disabled={true}
+                  className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
+                />
+              </div>
             </div>
           </div>
 
