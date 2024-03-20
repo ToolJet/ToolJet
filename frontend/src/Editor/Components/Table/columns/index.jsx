@@ -74,6 +74,7 @@ export default function generateColumnsData({
       column.isTimeChecked = column.isTimeChecked ? column.isTimeChecked : false;
       column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
       column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
+      column.isDateSelectionEnabled = resolveReferences(column.isDateSelectionEnabled, currentState);
       sortType = (firstDate, secondDate) => {
         const columnKey = column.key || column.name;
         // Return -1 if second date is higher, 1 if first date is higher
@@ -559,6 +560,7 @@ export default function generateColumnsData({
             const isTwentyFourHrFormatEnabled = resolveReferences(column?.isTwentyFourHrFormatEnabled, currentState);
             const disabledDates = resolveReferences(column?.disabledDates, currentState);
             const parseInUnixTimestamp = resolveReferences(column?.parseInUnixTimestamp, currentState);
+            const isDateSelectionEnabled = resolveReferences(column?.isDateSelectionEnabled, currentState);
             const cellStyles = {
               color: textColor ?? '',
             };
@@ -600,7 +602,7 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   tableRef={tableRef}
-                  isDateSelectionEnabled={column.isDateSelectionEnabled}
+                  isDateSelectionEnabled={isDateSelectionEnabled}
                   isTwentyFourHrFormatEnabled={isTwentyFourHrFormatEnabled}
                   timeFormat={column.timeFormat}
                   parseTimeFormat={column.parseTimeFormat}
