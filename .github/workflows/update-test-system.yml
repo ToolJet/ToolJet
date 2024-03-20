@@ -83,13 +83,8 @@ jobs:
         run: |
           gcloud compute ssh ce-test-system --zone=us-central1-a --command "\
             ls -lah; \
-            sudo docker-compose down; \
-            sudo docker images -a | grep 'tooljet/' | awk '{print $3}' | xargs sudo docker rmi -f; \
-            sudo docker images; \
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml; \
-            cat docker-compose.yaml; \
-            sudo docker-compose up -d; \
             sudo docker ps"
+
 
       - uses: actions/github-script@v6
         with:
