@@ -30,11 +30,12 @@ export const verifyAndModifyParameter = (paramName, value) => {
 
 export const openEditorSidebar = (widgetName = "") => {
   cy.hideTooltip();
-
-  cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).trigger(
-    "mouseover"
-  );
-  cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click();
+  cy.forceClickOnCanvas()
+cy.wait(500)
+  cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).trigger('mouseover', {x:5, y:5},{force: true}).then(()=>{
+    cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click();
+  })
+ 
 };
 
 export const verifyAndModifyToggleFx = (
@@ -89,7 +90,7 @@ export const editAndVerifyWidgetName = (
   cy.clearAndType(commonWidgetSelector.WidgetNameInputField, name);
   cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({ force: true });
 
-  cy.get(commonWidgetSelector.draggableWidget(name)).trigger("mouseover");
+  openEditorSidebar(name)
   cy.get(commonWidgetSelector.widgetConfigHandle(name))
     .click()
     .should("have.text", name);
@@ -309,7 +310,10 @@ export const verifyLayout = (
     commonWidgetText.codeMirrorLabelFalse
   );
   cy.get(commonWidgetSelector.changeLayoutToMobileButton).click();
+  cy.contains('Disable auto alignment').click()
+  cy.get('[data-cy="tjdb-delete-confirmation-modal-confirm-btn"]').click()
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("exist");
+  openEditorSidebar(widgetName);
 };
 
 export const verifyPropertiesGeneralAccordion = (widgetName, tooltipText) => {

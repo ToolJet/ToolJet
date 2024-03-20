@@ -181,13 +181,14 @@ describe("Number Input", () => {
       commonWidgetSelector.accordion(commonWidgetText.accordionValidation)
     ).click();
     verifyLayout(data.widgetName, "Devices");
-
-    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
     cy.get(
       commonWidgetSelector.parameterTogglebutton(
         commonWidgetText.parameterShowOnDesktop
       )
     ).click();
+
+    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
+
 
     openEditorSidebar(data.widgetName);
     openAccordion("Validation", [
@@ -297,7 +298,7 @@ describe("Number Input", () => {
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
     verifyContainerElements();
-    checkPaddingOfContainer(numberInputText.defaultWidgetName, 1);
+    checkPaddingOfContainer(numberInputText.defaultWidgetName, 2);
     cy.get('[data-cy="togglr-button-none"]').click();
     checkPaddingOfContainer(numberInputText.defaultWidgetName, 0);
 

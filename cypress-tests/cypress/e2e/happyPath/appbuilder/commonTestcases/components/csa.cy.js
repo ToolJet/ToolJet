@@ -63,7 +63,7 @@ describe("Editor- CSA", () => {
     cy.dragAndDropWidget("Button", 700, 100);
     selectEvent("On click", "Control Component");
     selectCSA("form1", "Reset Form");
-
+    cy.get('[data-cy="draggable-widget-form1"]').click("topRight", {force:true})
     openEditorSidebar("form1");
     cy.get('[data-cy="button-to-submit-form-fx-button"] > svg').click();
     cy.get(

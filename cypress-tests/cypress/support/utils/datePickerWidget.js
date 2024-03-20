@@ -12,7 +12,7 @@ export const selectAndVerifyDate = (
   cy.get(commonSelectors.canvas).click({ force: true });
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .click()
-    .within(() => {
+    .then(() => {
       cy.get(datePickerSelector.calendarYearSelect).select(splitDate[2], {
         force: true,
       });
@@ -25,7 +25,8 @@ export const selectAndVerifyDate = (
         .contains(Number(splitDate[0]))
         .click();
     })
-    .find("input")
+    cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .click().find("input")
     .should("have.value", moment(date, "DD/MM/YYYY").format(outFormat));
 };
 

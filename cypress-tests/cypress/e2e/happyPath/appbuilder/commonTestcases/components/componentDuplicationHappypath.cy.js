@@ -5,6 +5,7 @@ import { buttonText } from "Texts/button";
 import { addBasicData, verifyBasicData } from "Support/utils/button";
 
 import { openEditorSidebar } from "Support/utils/commonWidget";
+import { resizeQueryPanel } from "Support/utils/dataSource";
 
 describe("Editor- component duplication", () => {
   const data = {};
@@ -49,18 +50,20 @@ describe("Editor- component duplication", () => {
     verifyBasicData("button2", data);
   });
   it("should verify componen paste to container", () => {
+    resizeQueryPanel(0);
     addBasicData(data);
     cy.forceClickOnCanvas();
     openEditorSidebar("button1");
     cy.realPress(["Control", "c"]);
-    cy.moveComponent("button1", 200, 90);
-    cy.dragAndDropWidget("Container", 300, 200);
-    cy.resizeWidget("container1", 800, 500);
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       "Component copied successfully",
       false
     );
+    cy.moveComponent("button1", 200, 90);
+    cy.forceClickOnCanvas()
+    cy.dragAndDropWidget("Container", 300, 200);
+    cy.resizeWidget("container1", 800, 500);
     cy.forceClickOnCanvas();
     openEditorSidebar("container1");
     cy.get(`${commonWidgetSelector.draggableWidget("container1")}>`)
@@ -88,6 +91,7 @@ describe("Editor- component duplication", () => {
     cy.moveComponent("button1", 200, 200);
     cy.forceClickOnCanvas();
     cy.wait(1000);
+    cy.forceClickOnCanvas();
     verifyBasicData("button2", data);
   });
 
@@ -98,7 +102,7 @@ describe("Editor- component duplication", () => {
     cy.realPress(["Control", "d"]);
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      "Component cloned succesfully"
+      "Component cloned succesfully", false
     );
     cy.moveComponent("button1", 200, 200);
     cy.forceClickOnCanvas();

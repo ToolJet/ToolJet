@@ -178,13 +178,14 @@ describe("Password Input", () => {
       commonWidgetSelector.accordion(commonWidgetText.accordionValidation)
     ).click();
     verifyLayout(data.widgetName, "Devices");
-
-    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
     cy.get(
       commonWidgetSelector.parameterTogglebutton(
         commonWidgetText.parameterShowOnDesktop
       )
     ).click();
+
+    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
+
 
     openEditorSidebar(data.widgetName);
     openAccordion("Validation", [
@@ -296,7 +297,7 @@ describe("Password Input", () => {
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
     verifyContainerElements();
-    checkPaddingOfContainer(passwordInputText.defaultWidgetName, 1);
+    checkPaddingOfContainer(passwordInputText.defaultWidgetName, 2);
     cy.get('[data-cy="togglr-button-none"]').click();
     checkPaddingOfContainer(passwordInputText.defaultWidgetName, 0);
 

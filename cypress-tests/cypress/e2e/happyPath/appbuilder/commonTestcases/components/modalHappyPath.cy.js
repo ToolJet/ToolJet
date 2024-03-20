@@ -154,18 +154,20 @@ describe("Modal", () => {
     cy.get('[data-cy="modal-close-button"]').click();
 
     verifyLayout(data.widgetName);
-
-    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
     cy.get(
       commonWidgetSelector.parameterTogglebutton(
         commonWidgetText.parameterShowOnDesktop
       )
     ).click();
-
     cy.get(commonWidgetSelector.widgetDocumentationLink).should(
       "have.text",
       "Read documentation for Modal"
     );
+
+    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
+    
+
+
   });
 
   it("should verify the styles of the modal widget", () => {

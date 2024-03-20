@@ -44,12 +44,13 @@ describe("Multiselect widget", () => {
     cy.apiCreateApp(`${fake.companyName}-Multiselect-App`);
     cy.openApp();
     cy.dragAndDropWidget(multiselectText.multiselect);
+    cy.get('[data-tooltip-content="Hide query panel"]').click()
   });
   afterEach(() => {
     cy.apiDeleteApp();
   });
 
-  it("should verify the properties of the widget", () => {
+  it.only("should verify the properties of the widget", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     data.label = fake.widgetName;
@@ -136,8 +137,9 @@ describe("Multiselect widget", () => {
       .click();
     cy.get(multiselectSelector.dropdownAllItems)
       .first()
-      .should("have.text", multiselectText.dropdwonOptionSelectAll)
+      .should("have.text", multiselectText.dropdwonOptionSelectAll).find(multiselectSelector.dropdownCheckbox)
       .realClick();
+      cy.log('-------------------')
 
     verifyMultiselectHeader(
       data.widgetName,

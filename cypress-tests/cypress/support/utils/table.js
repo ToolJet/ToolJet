@@ -191,12 +191,12 @@ export const addFilter = (
       }
       cy.get(tableSelector.buttonAddFilter).click();
     }
-    cy.get(tableSelector.filterSelectColumn(index))
+    cy.get(`${tableSelector.filterSelectColumn(index)} > .select-search > .react-select__control > .react-select__indicators > .react-select__indicator`)
       .click()
-      .type(`${filter.column}{enter}`);
-    cy.get(tableSelector.filterSelectOperation(index))
+      .realType(`${filter.column}{enter}`);
+    cy.get(`${tableSelector.filterSelectOperation(index)} > .select-search > .react-select__control > .react-select__indicators > .react-select__indicator`)
       .click()
-      .type(`${filter.operation}{enter}`);
+      .realType(`${filter.operation}{enter}`);
     if (filter.value) {
       cy.get(tableSelector.filterInput(index)).type(
         `{selectAll}{del}${filter.value}`

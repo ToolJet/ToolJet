@@ -43,7 +43,7 @@ export const dropWidgetToListview = (
         delay: 2000,
       });
   });
-  cy.get(`[data-cy="${listviewName.toLowerCase()}-row-0"]`).trigger("dragend");
+  cy.get(`[data-cy="${listviewName.toLowerCase()}-row-0"]`).click().trigger("dragend");
   cy.waitForAutoSave();
 };
 

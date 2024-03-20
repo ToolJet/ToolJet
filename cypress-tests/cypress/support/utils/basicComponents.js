@@ -1,9 +1,7 @@
-import { commonWidgetSelector, commonSelectors } from "Selectors/common";
+import { commonWidgetSelector } from "Selectors/common";
 import {
-  openAccordion,
-  verifyAndModifyParameter,
-  openEditorSidebar,
   editAndVerifyWidgetName,
+  openEditorSidebar
 } from "Support/utils/commonWidget";
 import { resizeQueryPanel } from "Support/utils/dataSource";
 
@@ -14,21 +12,15 @@ export const verifyComponent = (widgetName) => {
 };
 
 export const deleteComponentAndVerify = (widgetName) => {
-  cy.get(commonWidgetSelector.draggableWidget(widgetName))
-    .realHover()
-    .realHover();
+  openEditorSidebar(widgetName)
+  cy.get(`[data-cy="${widgetName}-delete-button"]`)
+    .realHover({ position: "topRight" })
+    .last()
+    .realClick();
 
-  cy.get(commonWidgetSelector.draggableWidget(widgetName))
-    .realHover()
-    .then(() => {
-      cy.get(`[data-cy="${widgetName}-delete-button"]`)
-        .realHover({ position: "topRight" })
-        .last()
-        .realClick();
-    });
   cy.verifyToastMessage(
     `[class=go3958317564]`,
-    "Component deleted! (ctrl + Z to undo)"
+    "Component deleted! (⌘ + Z to undo)"
   );
   cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
 };

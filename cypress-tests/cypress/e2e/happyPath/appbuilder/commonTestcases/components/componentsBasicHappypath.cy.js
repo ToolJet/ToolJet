@@ -164,6 +164,7 @@ describe("Basic components", () => {
 
     openEditorSidebar("starrating1");
     editAndVerifyWidgetName("starrating2");
+    openEditorSidebar("starrating2");
     cy.resizeWidget("starrating2", 650, 400, false);
 
     verifyAndModifyParameter(commonWidgetText.parameterLabel, "label");
