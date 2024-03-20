@@ -83,9 +83,18 @@ jobs:
         run: |
           ssh-keygen -t rsa -f ~/.ssh/google_compute_engine -C 'adish@tooljet.com' -q -N ''
 
-      - name: SSH into Remote Instance and list files
+      - name: Set up SSH key
         run: |
-          gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us" --ssh-key-file=~/.ssh/google_compute_engine -- ls -T
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/google_compute_engine
+          chmod 600 ~/.ssh/google_compute_engine
+
+      - id: compute-ssh
+        uses: google-github-actions/ssh-compute@v1
+        with:
+          instance_name: 'example-instance'
+          zone: 'us-central1-a'
+          ssh_private_key: $SSH_PRIVATE_KEY
+          command: 'ls -la'
 
       - uses: actions/github-script@v6
         with:
