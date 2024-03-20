@@ -20,7 +20,7 @@ export const dataTypes = [
   { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
 ];
 
-export const primaryKeydataTypes = [
+export const defaultdataType = [
   { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
 ];
 
