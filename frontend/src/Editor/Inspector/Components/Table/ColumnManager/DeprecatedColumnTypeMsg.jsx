@@ -21,7 +21,7 @@ export const TooltipBody = ({ columnLabel }) => {
   return (
     <div style={{ padding: '8px 4px', textAlign: 'left' }}>
       <div className="font-weight-bold mb-2">Deprecating column type</div>
-      <div>{`"This column type is deprecated and will be removed in a future update.  We recommend using the new ${columnLabel} when creating applications moving forward."`}</div>
+      <div>{`This column type is deprecated and will be removed in a future update.  We recommend using the new ${columnLabel} when creating applications moving forward.`}</div>
     </div>
   );
 };
@@ -48,8 +48,7 @@ const DeprecatedColumnTypeMsg = ({ columnType }) => {
         <Icon name={'warning'} height={16} width={16} fill="#DB4324" />
       </span>
       <span style={{ color: '#2D343B' }}>
-        This column type will be deprecated by April 2023. For migration instructions, refer to the{' '}
-        <span style={{ color: '#4368E3', cursor: 'pointer' }}>documentation</span>
+        {`This column type is deprecated and will be removed in a future update.  We recommend using the new ${deprecatedColumnType.currentAlternativeColumnLabel} when creating applications moving forward.`}
       </span>
     </div>
   );
