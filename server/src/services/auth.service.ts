@@ -301,7 +301,7 @@ export class AuthService {
     }
     const forgotPasswordToken = uuid.v4();
     await this.usersService.updateUser(user.id, { forgotPasswordToken });
-    await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken);
+    await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken, user.firstName);
   }
 
   async resetPassword(token: string, password: string) {
