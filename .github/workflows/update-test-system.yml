@@ -79,9 +79,13 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: SSH into VM and run Docker commands
+      - name: Generate SSH Keys
         run: |
-          gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us" --command "ls"
+          ssh-keygen -t rsa -f ~/.ssh/google_compute_engine -C 'adish@tooljet.com' -q -N ''
+
+      - name: SSH into Remote Instance
+        run: |
+          gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us" --ssh-key-file=~/.ssh/google_compute_engine
 
       - uses: actions/github-script@v6
         with:
