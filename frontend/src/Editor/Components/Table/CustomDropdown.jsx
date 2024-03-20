@@ -71,7 +71,7 @@ export const CustomDropdown = ({ options, value, multiple, onChange, isEditable,
           maxWidth: containerWidth,
           width: containerWidth,
           background: 'var(--surfaces-surface-01)',
-          display: 'flex',
+          display: 'inline-flex',
           flexWrap: 'wrap',
           gap: '10px',
           padding: '16px',
@@ -113,7 +113,7 @@ export const CustomDropdown = ({ options, value, multiple, onChange, isEditable,
     <OverlayTrigger
       placement="bottom"
       overlay={multiple && getOverlay(value, width, options)}
-      trigger={multiple && value?.length >= 1 && ['focus']}
+      trigger={multiple && value?.length >= 1 && ['hover']}
       rootClose={true}
       show={multiple && value?.length >= 1 && showOverlay}
     >

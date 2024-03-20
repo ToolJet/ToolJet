@@ -69,13 +69,26 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
           borderRadius: '6px',
           boxShadow:
             '0px 8px 16px 0px var(--elevation-400-box-shadow), 0px 0px 1px 0px var(--elevation-400-box-shadow)',
+          wordWrap: 'break-word', // Add word-wrap property for content wrapping
         }}
         className={`overlay-multiselect-table ${darkMode && 'dark-theme'}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         {value?.map((tag, index) => {
-          return <span key={index}>{renderTag(tag)}</span>;
+          return (
+            <span
+              key={index}
+              style={{
+                wordWrap: 'break-word', // Add word-wrap property for content wrapping
+                display: 'flex',
+                flexWrap: 'wrap',
+                overflow: 'auto',
+              }}
+            >
+              {renderTag(tag)}
+            </span>
+          );
         })}
       </div>
     ) : (
@@ -111,7 +124,10 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
         )}
         {/* Container for renderTags */}
         {!showForm && (
-          <div className="render-tags-container" style={{ width: '80%', overflow: 'hidden' }}>
+          <div
+            className="render-tags-container h-100 d-flex flex-wrap custom-gap-3"
+            style={{ width: '80%', overflow: 'hidden' }}
+          >
             {value.map((item, index) => (
               <span key={index} className="col-auto tag-wrapper">
                 {renderTag(item)}
