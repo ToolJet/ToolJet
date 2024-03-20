@@ -92,49 +92,64 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
-    return await this.tooljetDbManager.query(
-      `
-    SELECT
-      c.COLUMN_NAME,
-      c.DATA_TYPE,
-      CASE
-          WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN c.Column_default
-          WHEN c.Column_default LIKE '%::%' THEN REPLACE(SUBSTRING(c.Column_default FROM '^''?(.*?)''?::'), '''', '')
-          ELSE c.Column_default
-      END AS Column_default,
-      c.character_maximum_length,
-      c.numeric_precision,
-      JSON_BUILD_OBJECT(
-          'is_not_null',
-          CASE WHEN c.is_nullable = 'NO' THEN true ELSE false END,
-          'is_primary_key',
-          CASE WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN true ELSE false END
-      ) AS constraints_type,
-      CASE WHEN pk.COLUMN_NAME IS NOT NULL THEN 'PRIMARY KEY' ELSE '' END AS KeyType
-   FROM
-      INFORMATION_SCHEMA.COLUMNS c
-  LEFT JOIN (
-      SELECT
-          ku.TABLE_CATALOG,
-          ku.TABLE_SCHEMA,
-          ku.TABLE_NAME,
-          ku.COLUMN_NAME,
-          tc.CONSTRAINT_TYPE
-      FROM
-          INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
-      INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
-  ) pk ON c.TABLE_CATALOG = pk.TABLE_CATALOG
-      AND c.TABLE_SCHEMA = pk.TABLE_SCHEMA
-      AND c.TABLE_NAME = pk.TABLE_NAME
-      AND c.COLUMN_NAME = pk.COLUMN_NAME
-  WHERE
-      c.TABLE_NAME = '${internalTable.id}'
-  ORDER BY
-      c.TABLE_SCHEMA,
-      c.TABLE_NAME,
-      c.ORDINAL_POSITION;
-  `
-    );
+    return await this.tooljetDbManager.query(`
+    SELECT c.COLUMN_NAME,
+        c.DATA_TYPE,
+        CASE
+            WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN c.Column_default
+            WHEN c.Column_default LIKE '%::%' THEN REPLACE(SUBSTRING(c.Column_default FROM '^''?(.*?)''?::'), '''', '')
+            ELSE c.Column_default
+        END AS Column_default,
+        c.character_maximum_length,
+        c.numeric_precision,
+        JSON_BUILD_OBJECT(
+            'is_not_null',
+            CASE WHEN c.is_nullable = 'NO' THEN true ELSE false END,
+            'is_primary_key',
+            CASE WHEN pk.is_primary = true THEN true ELSE false END,
+            'is_unique',
+            CASE WHEN uk.is_unique = true THEN true ELSE false END
+        ) AS constraints_type,
+        CASE WHEN pk.COLUMN_NAME IS NOT NULL THEN 'PRIMARY KEY' ELSE '' END AS KeyType
+    FROM INFORMATION_SCHEMA.COLUMNS c
+    LEFT JOIN (
+          SELECT
+            ku.TABLE_CATALOG,
+            ku.TABLE_SCHEMA,
+            ku.TABLE_NAME,
+            ku.COLUMN_NAME,
+            tc.CONSTRAINT_TYPE,
+            CASE WHEN tc.constraint_type = 'PRIMARY KEY' THEN true else false END AS is_primary
+        FROM
+            INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
+        INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
+          where tc.constraint_type = 'PRIMARY KEY'
+    ) pk ON c.TABLE_CATALOG = pk.TABLE_CATALOG
+        AND c.TABLE_SCHEMA = pk.TABLE_SCHEMA
+        AND c.TABLE_NAME = pk.TABLE_NAME
+        AND c.COLUMN_NAME = pk.COLUMN_NAME
+    LEFT JOIN (
+          SELECT
+            ku.TABLE_CATALOG,
+            ku.TABLE_SCHEMA,
+            ku.TABLE_NAME,
+            ku.COLUMN_NAME,
+            tc.CONSTRAINT_TYPE,
+            CASE WHEN tc.constraint_type = 'UNIQUE' THEN true else false END AS is_unique
+        FROM
+            INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
+        INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
+          where tc.constraint_type = 'UNIQUE'
+    ) as uk ON c.TABLE_CATALOG = uk.TABLE_CATALOG
+        AND c.TABLE_SCHEMA = uk.TABLE_SCHEMA
+        AND c.TABLE_NAME = uk.TABLE_NAME
+        AND c.COLUMN_NAME = uk.COLUMN_NAME
+    WHERE c.TABLE_NAME = '${internalTable.id}'
+    ORDER BY
+        c.TABLE_SCHEMA,
+        c.TABLE_NAME,
+        c.ORDINAL_POSITION;
+    `);
   }
 
   private async viewTables(organizationId: string) {
