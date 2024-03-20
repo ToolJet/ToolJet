@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import AppLogo from '@/_components/AppLogo';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
@@ -16,7 +15,6 @@ import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { redirectToDashboard } from '@/_helpers/routes';
 import queryString from 'query-string';
 import { isEmpty } from 'lodash';
 import LogoNavDropdown from '@/_components/LogoNavDropdown';
@@ -35,7 +33,6 @@ export default function EditorHeader({
   onVersionDelete,
   slug,
   darkMode,
-  isSocketOpen,
 }) {
   const currentUser = useCurrentUser();
 
@@ -80,6 +77,8 @@ export default function EditorHeader({
     setAppPreviewLink(appVersionPreviewLink);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, currentVersionId, editingVersion]);
+
+  const shouldRenderReleaseButton = !!app?.id;
 
   return (
     <div className="header" style={{ width: '100%' }}>
@@ -191,7 +190,7 @@ export default function EditorHeader({
                   </div>
                 </div>
 
-                {isSocketOpen && (
+                {shouldRenderReleaseButton && (
                   <div className="nav-item dropdown promote-release-btn">
                     <ReleaseVersionButton
                       appId={appId}
