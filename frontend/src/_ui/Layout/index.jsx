@@ -133,7 +133,7 @@ function Layout({
                 to={getPrivateRoute('dashboard')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               >
-                {whiteLabelLogo ? <img src={whiteLabelLogo} height={26} /> : <Logo />}
+                {whiteLabelLogo ? <img src={whiteLabelLogo} /> : <Logo />}
               </Link>
             </div>
             <div>
