@@ -83,13 +83,9 @@ jobs:
         run: |
           ssh-keygen -t rsa -f ~/.ssh/google_compute_engine -C 'adish@tooljet.com' -q -N ''
 
-      - name: SSH into Remote Instance
+      - name: SSH into Remote Instance and list files
         run: |
-          gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us" --ssh-key-file=~/.ssh/google_compute_engine
-
-      - name: Docker commands
-        run: |
-          ls
+          gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us" --ssh-key-file=~/.ssh/google_compute_engine -- ls
 
       - uses: actions/github-script@v6
         with:
