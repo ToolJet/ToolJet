@@ -587,6 +587,7 @@ export default function generateColumnsData({
                   underlineColor={column.underlineColor}
                   underline={column.underline}
                   displayText={column.displayText}
+                  darkMode={darkMode}
                 />
               </div>
             );

@@ -1,7 +1,8 @@
 import React from 'react';
 
-export const Link = ({ cellValue, linkTarget, underline, underlineColor, linkColor, displayText }) => {
-  console.log('linkTarget---', linkTarget);
+export const Link = ({ cellValue, linkTarget, underline, underlineColor, linkColor, displayText, darkMode }) => {
+  const linkTextColor =
+    linkColor !== '#1B1F24' ? linkColor : darkMode && linkColor === '#1B1F24' ? '#FFFFFF' : linkColor;
   return (
     <div className="w-100 table-link-column">
       <a
@@ -12,7 +13,7 @@ export const Link = ({ cellValue, linkTarget, underline, underlineColor, linkCol
           e.stopPropagation();
         }}
         style={{
-          color: linkColor,
+          color: linkTextColor,
           textDecoration: underline === 'always' && 'underline', // Apply underline always or only on hover
           textDecorationColor: underlineColor,
         }}

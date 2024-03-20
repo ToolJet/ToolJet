@@ -1431,7 +1431,6 @@ export function Table({
                         'badge',
                         'badges',
                         'tags',
-                        'link',
                         'radio',
                         'multiselect',
                         'toggle',

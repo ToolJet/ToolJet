@@ -203,7 +203,7 @@ export const StylesTabElements = ({
         </>
       )}
 
-      {['link'].includes(column.columnType) && (
+      {column.columnType === 'link' && (
         <>
           <div data-cy={`input-and-label-text-color`} className="field">
             <ProgramaticallyHandleProperties
