@@ -87,6 +87,10 @@ jobs:
         run: |
           gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us" --ssh-key-file=~/.ssh/google_compute_engine
 
+      - name: Docker commands
+        run: |
+          ls
+
       - uses: actions/github-script@v6
         with:
           script: |
