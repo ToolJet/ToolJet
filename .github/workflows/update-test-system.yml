@@ -82,6 +82,8 @@ jobs:
       - name: Generate SSH Keys
         run: |
           ssh-keygen -t rsa -f ~/.ssh/google_compute_engine -C 'adish@tooljet.com' -q -N ''
+          PRIVATE_KEY=$(<~/.ssh/google_compute_engine)
+          echo "::set-env name=SSH_PRIVATE_KEY::$PRIVATE_KEY"
 
       - name: Set up SSH key
         run: |
