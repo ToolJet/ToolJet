@@ -19,7 +19,7 @@ jobs:
 
     steps:
 
-      - name: Check authorization
+      - name: Check authorization s
         run: |
           allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
           allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
