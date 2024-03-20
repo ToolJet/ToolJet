@@ -94,7 +94,7 @@ jobs:
         with:
           instance_name: 'example-instance'
           zone: 'us-central1-a'
-          ssh_private_key: ${{ PRIVATE_KEY }}
+          ssh_private_key: ${{ env.PRIVATE_KEY }}
           command: 'ls -la'
 
       - uses: actions/github-script@v6
