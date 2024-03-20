@@ -93,7 +93,9 @@ jobs:
 
       - name: Test SSH connection
         run: |
-          ssh -i ~/.ssh/google_compute_engine ${{ env.SSH_USERNAME }}@34.123.181.150
+          ssh-keygen -R "34.123.181.150"   # Remove old key if present
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/google_compute_engine ${{ env.SSH_USERNAME }}@34.123.181.150
+
 
       - uses: actions/github-script@v6
         with:
