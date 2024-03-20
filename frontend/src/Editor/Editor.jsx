@@ -645,7 +645,9 @@ const EditorComponent = (props) => {
   };
 
   const computeCanvasBackgroundColor = () => {
-    const { canvasBackgroundColor } = appDefinition?.globalSettings ?? '#edeff5';
+    const canvasBackgroundColor = appDefinition?.globalSettings?.canvasBackgroundColor
+      ? appDefinition?.globalSettings?.canvasBackgroundColor
+      : '#edeff5';
     if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
       return isAppDarkMode ? '#2f3c4c' : '#edeff5';
     }
