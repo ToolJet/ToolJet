@@ -18,6 +18,7 @@ import { useMounted } from '@/_hooks/use-mount';
 import { useEditorStore } from '@/_stores/editorStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { isPDFSupported } from '@/_stores/utils';
 
 const NO_OF_GRIDS = 43;
 
@@ -308,6 +309,13 @@ export const SubContainer = ({
     () => ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
+        if (item.component.component === 'PDF' && !isPDFSupported()) {
+          toast.error(
+            'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
+          );
+          return;
+        }
+
         const componentMeta = _.cloneDeep(
           componentTypes.find((component) => component.component === item.component.component)
         );

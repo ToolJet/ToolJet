@@ -1155,7 +1155,7 @@ export const widgets = [
           transformation: 'none',
           fontStyle: 'normal',
           lineHeight: 1.5,
-          textIndent: '0',
+          textIndent: '-1',
           letterSpacing: '0',
           wordSpacing: '0',
           fontVariant: 'normal',
@@ -2427,7 +2427,7 @@ export const widgets = [
       },
       defaultValue: {
         type: 'toggle',
-        displayName: 'Default Status',
+        displayName: 'Default status',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -2447,7 +2447,7 @@ export const widgets = [
       },
       checkboxColor: {
         type: 'color',
-        displayName: 'Checkbox Color',
+        displayName: 'Checkbox color',
         validation: {
           schema: { type: 'string' },
         },
@@ -2624,7 +2624,7 @@ export const widgets = [
       },
       defaultValue: {
         type: 'toggle',
-        displayName: 'Default Status',
+        displayName: 'Default status',
         validation: {
           schema: { type: 'boolean' },
         },

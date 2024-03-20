@@ -1,0 +1,15 @@
+{
+  "name": "Saas license management",
+  "description": "Simplify subscription management for your SaaS products with automated tracking and controls.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "saas-license-management",
+  "category": "customer-support"
+}
