@@ -249,8 +249,11 @@
   font-size: 12px;
 }
 
-.card-header {
-  border: none !important;
+.create-column-drawer {
+  .card-header {
+    border: none !important;
+    padding: 12px 16px 0px 16px !important;
+  }
 }
 
 .column-name-description {

@@ -10,7 +10,13 @@ import WarningInfo from '../Icons/Edit-information.svg';
 
 const TableForm = ({
   selectedTable = {},
-  selectedColumns = { 0: { column_name: 'id', data_type: 'serial', constraints_type: { is_primary_key: true } } },
+  selectedColumns = {
+    0: {
+      column_name: 'id',
+      data_type: 'serial',
+      constraints_type: { is_primary_key: true, is_not_null: true, is_unique: true },
+    },
+  },
   onCreate,
   onEdit,
   onClose,
@@ -65,7 +71,7 @@ const TableForm = ({
     }
 
     toast.success(`${tableName} created successfully`);
-    onCreate && onCreate({ id: data.result.id, table_name: tableName });
+    // onCreate && onCreate({ id: data.result.id, table_name: tableName });
   };
 
   function handleKeyPress(e) {
@@ -164,7 +170,8 @@ const TableForm = ({
         onCreate={handleCreate}
         shouldDisableCreateBtn={
           isEmpty(tableName) ||
-          (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
+          (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
+          isEmpty(columns)
         }
       />
     </div>
