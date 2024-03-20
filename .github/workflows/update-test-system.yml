@@ -79,23 +79,9 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: SSH into remote instance and generate SSH keys
+      - name: SSH into VM and run Docker commands
         run: |
-          gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us"
-          ls -lah ~/.ssh/google_compute_engine*
-
-          # Output public SSH key
-          cat ~/.ssh/google_compute_engine.pub >> "${GITHUB_WORKSPACE}/public_ssh_key"
-          # Extract username from the public SSH key and store it as a variable
-          SSH_USERNAME=$(awk '{print $3}' ~/.ssh/google_compute_engine.pub | cut -d@ -f1)
-          echo "SSH_USERNAME=${SSH_USERNAME}" >> "${GITHUB_ENV}"
-          # Store this output as a secret in your GitHub repository
-
-      - name: Test SSH connection
-        run: |
-          ssh-keygen -R "34.123.181.150"   # Remove old key if present
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/google_compute_engine ${{ env.SSH_USERNAME }}@34.123.181.150
-
+          gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us" --command "ls"
 
       - uses: actions/github-script@v6
         with:
