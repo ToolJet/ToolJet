@@ -114,7 +114,15 @@ export default function generateColumnsData({
       sortType,
       columnVisibility: column?.columnVisibility ?? true,
       horizontalAlignment: column?.horizontalAlignment ?? 'left',
-      Cell: function ({ cell, isEditable, newRowsChangeSet = null, horizontalAlignment, cellTextColor = '' }) {
+      Cell: function ({
+        cell,
+        isEditable,
+        newRowsChangeSet = null,
+        horizontalAlignment,
+        cellTextColor = '',
+        contentWrap = true,
+        autoHeight = true,
+      }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
@@ -467,7 +475,7 @@ export default function generateColumnsData({
           case 'badges': {
             return (
               <div
-                className={`h-100 d-flex align-items-center justify-content-${determineJustifyContentValue(
+                className={`h-100 w-100 d-flex align-items-center justify-content-${determineJustifyContentValue(
                   horizontalAlignment
                 )}`}
               >
@@ -481,6 +489,8 @@ export default function generateColumnsData({
                   darkMode={darkMode}
                   isEditable={isEditable}
                   width={width}
+                  contentWrap={contentWrap}
+                  autoHeight={autoHeight}
                 />
               </div>
             );

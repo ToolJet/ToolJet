@@ -135,7 +135,7 @@ export function Table({
     maxRowHeight,
     autoHeight,
     selectRowOnCellEdit,
-    contentWrap,
+    contentWrapProperty,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
@@ -1353,10 +1353,13 @@ export function Table({
               {page.map((row, index) => {
                 prepareRow(row);
                 let rowProps = { ...row.getRowProps() };
-                const contentWrapProp = resolveReferences(contentWrap, currentState);
-                if (contentWrapProp) {
+                const contentWrap = resolveReferences(contentWrapProperty, currentState);
+                if (contentWrap) {
                   rowProps.style.maxHeight = autoHeight ? 'fit-content' : resolveReferences(maxRowHeight, currentState);
                   rowProps.style.height = autoHeight ? 'fit-content' : resolveReferences(maxRowHeight, currentState);
+                } else {
+                  rowProps.style.maxHeight = cellSize === 'condensed' ? '40px' : '46px';
+                  rowProps.style.height = cellSize === 'condensed' ? '40px' : '46px';
                 }
                 return (
                   <tr
@@ -1471,7 +1474,7 @@ export function Table({
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
                           className={cx(
                             `table-text-align-${cell.column.horizontalAlignment}  
-                            ${cell?.column?.Header !== 'Actions' && (contentWrapProp ? 'wrap-wrapper' : '')}
+                            ${cell?.column?.Header !== 'Actions' && (contentWrap ? 'wrap-wrapper' : '')}
                             td`,
                             {
                               'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
@@ -1482,6 +1485,7 @@ export function Table({
                               'has-multiselect': cell.column.columnType === 'multiselect',
                               'has-datepicker': cell.column.columnType === 'datepicker',
                               'align-items-center flex-column': cell.column.columnType === 'selector',
+                              'has-badge': ['badge', 'badges'].includes(cell.column.columnType),
                               [cellSize]: true,
                               'overflow-hidden':
                                 ['text', 'string', undefined, 'number'].includes(cell.column.columnType) &&
@@ -1524,6 +1528,8 @@ export function Table({
                                 isEditable,
                                 horizontalAlignment,
                                 cellTextColor,
+                                contentWrap,
+                                autoHeight,
                               })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
