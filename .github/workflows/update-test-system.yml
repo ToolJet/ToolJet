@@ -85,7 +85,7 @@ jobs:
 
       - name: SSH into Remote Instance and list files
         run: |
-          gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us" --ssh-key-file=~/.ssh/google_compute_engine -- ls
+          gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us" --ssh-key-file=~/.ssh/google_compute_engine -- ls -t
 
       - uses: actions/github-script@v6
         with:
