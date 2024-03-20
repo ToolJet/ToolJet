@@ -162,7 +162,8 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   formatOptionLabel={formatOptionLabel}
                   placeholder={
                     columns[index]?.constraints_type?.is_primary_key === true &&
-                    columns[index]?.column_name === 'id' ? (
+                    columns[index]?.column_name === 'id' &&
+                    columns[index].data_type === 'serial' ? (
                       <div>
                         <span style={{ marginRight: '5px' }}>
                           <Serial width="16" />
@@ -202,8 +203,18 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   type="text"
                   className="form-control defaultValue"
                   data-cy="default-input-field"
-                  placeholder={columns[index].data_type !== 'serial' ? 'Null' : 'Auto-generated'}
-                  disabled={columns[index].data_type === 'serial'}
+                  placeholder={
+                    (columns[index].data_type === 'serial' &&
+                      columns[index]?.constraints_type?.is_primary_key === true) ||
+                    columns[index].data_type === 'serial'
+                      ? 'Auto-generated'
+                      : 'Null'
+                  }
+                  disabled={
+                    (columns[index].data_type === 'serial' &&
+                      columns[index]?.constraints_type?.is_primary_key === true) ||
+                    columns[index].data_type === 'serial'
+                  }
                 />
               </div>
 
@@ -213,10 +224,12 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   onChange={(e) => {
                     const prevColumns = { ...columns };
                     const columnConstraints = prevColumns[index]?.constraints_type ?? {};
+                    const data = e.target.checked === true ? true : false;
                     columnConstraints.is_primary_key = e.target.checked;
                     columnConstraints.is_not_null = true;
                     columnConstraints.is_unique = true;
                     prevColumns[index].constraints_type = { ...columnConstraints };
+                    prevColumns[index].data_type = data === false && '';
                     setColumns(prevColumns);
                   }}
                 />
