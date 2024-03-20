@@ -85,7 +85,7 @@ jobs:
           instance_name: 'ce-test-system'
           zone: 'us-central1-a'
           ssh_private_key: '${{ secrets.GCP_SSH_PRIVATE_KEY }}'
-          script: |
+          command: |
             ls -lah
 
             # # Stop the Docker containers
