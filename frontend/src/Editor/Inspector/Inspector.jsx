@@ -472,9 +472,9 @@ const widgetsWithStyleConditions = {
     conditions: [
       {
         definition: 'styles',
-        property: 'cellSize',
+        property: 'contentWrap',
         conditionStyles: ['maxRowHeight', 'autoHeight'],
-        type: 'select',
+        type: 'toggle',
       },
     ],
   },

@@ -105,7 +105,6 @@
   }
 
   td {
-    min-height: 40px;
     overflow-x: initial;
 
     .text-container {
@@ -121,15 +120,11 @@
   }
 
   td.regular {
-    max-height: 46px;
-    height:46px;
     white-space: nowrap; /* Prevent text wrapping */
 
   }
 
   td.condensed {
-    max-height: 40px;
-    height:40px;
     white-space: nowrap; /* Prevent text wrapping */
   }
 

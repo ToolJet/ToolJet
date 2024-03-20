@@ -391,10 +391,16 @@ export const widgets = [
         options: [
           { name: 'Condensed', value: 'condensed' },
           { name: 'Regular', value: 'regular' },
-          { name: 'Hug content', value: 'hugContent' },
         ],
         validation: {
           schema: { type: 'string' },
+        },
+      },
+      contentWrap: {
+        type: 'toggle',
+        displayName: 'Content wrapper',
+        validation: {
+          schema: { type: 'boolean' },
         },
       },
       maxRowHeight: {
@@ -582,7 +588,8 @@ export const widgets = [
         borderRadius: { value: '4' },
         tableType: { value: 'table-classic' },
         maxRowHeight: { value: '80px' },
-        autoHeight: { value: '{{false}}' },
+        contentWrap: { value: '{{true}}' },
+        autoHeight: { value: '{{true}}' },
       },
     },
   },

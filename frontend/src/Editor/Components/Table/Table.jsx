@@ -1354,9 +1354,14 @@ export function Table({
                 prepareRow(row);
                 let rowProps = { ...row.getRowProps() };
                 const contentWrap = resolveReferences(contentWrapProperty, currentState);
+                const autoHeightProp = resolveReferences(autoHeight, currentState);
                 if (contentWrap) {
-                  rowProps.style.maxHeight = autoHeight ? 'fit-content' : resolveReferences(maxRowHeight, currentState);
-                  rowProps.style.height = autoHeight ? 'fit-content' : resolveReferences(maxRowHeight, currentState);
+                  rowProps.style.maxHeight = autoHeightProp
+                    ? 'fit-content'
+                    : resolveReferences(maxRowHeight, currentState);
+                  rowProps.style.height = autoHeightProp
+                    ? 'fit-content'
+                    : resolveReferences(maxRowHeight, currentState);
                 } else {
                   rowProps.style.maxHeight = cellSize === 'condensed' ? '40px' : '46px';
                   rowProps.style.height = cellSize === 'condensed' ? '40px' : '46px';
