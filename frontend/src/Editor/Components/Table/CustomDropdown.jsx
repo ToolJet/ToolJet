@@ -118,7 +118,7 @@ export const CustomDropdown = ({ options, value, multiple, onChange, isEditable,
       show={multiple && value?.length >= 1 && showOverlay}
     >
       <div
-        className={`custom-select table-custom-select-badge-badges w-100 h-100 position-relative ${
+        className={`custom-select d-flex align-items-center table-custom-select-badge-badges w-100 h-100 position-relative ${
           contentWrap
             ? autoHeight
               ? 'content--wrap'

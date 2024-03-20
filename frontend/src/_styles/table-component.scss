@@ -941,6 +941,8 @@
       max-height: 100% !important;
       height: 100% !important;
       .select-search-value{
+        display: flex;
+        align-items: center;
         overflow: hidden !important;
         max-height: 100% !important;
         height: 100% !important;
