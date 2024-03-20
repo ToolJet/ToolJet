@@ -79,6 +79,15 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
+      - name: Connect to VM
+        uses: appleboy/ssh-action@master
+        with:
+          host: 34.123.140.107
+          username: auto
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          script: |
+            ls -lah
+
       - name: SSH into GCP VM instance
         uses: 'google-github-actions/ssh-compute@v1'
         with:
