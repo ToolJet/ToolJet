@@ -83,15 +83,6 @@ export default function DragContainer({
     },
   };
 
-  const DimensionViewableForSub = {
-    name: 'dimensionViewableForSub',
-    props: [],
-    events: [],
-    render() {
-      return configHandleForMultiple('multiple-components-config-handle-sub');
-    },
-  };
-
   const MouseCustomAble = {
     name: 'mouseTest',
     props: {},
@@ -117,8 +108,6 @@ export default function DragContainer({
   const childMoveableRefs = useRef({});
   const groupResizeDataRef = useRef([]);
   const isDraggingRef = useRef(false);
-  const [movableTargets, setMovableTargets] = useState({});
-  const noOfGrids = 43;
   const boxList = boxes
     .filter((box) =>
       ['{{true}}', true].includes(
@@ -186,7 +175,6 @@ export default function DragContainer({
     if (openModalWidgetId) {
       const children = findChildrenAndGrandchildren(openModalWidgetId, boxes);
       const controlBoxes = document.querySelectorAll('.moveable-control-box[target-id]');
-      const childElems = children.map((childId) => ({ ...widgets[childId], id: childId }));
       controlBoxes.forEach((box) => {
         const id = box.getAttribute('target-id');
         if (!children.includes(id)) {
@@ -216,8 +204,6 @@ export default function DragContainer({
         return component.id;
       })
     );
-    const selectedBoxs = boxes.filter((box) => selectedComponentsId.has(box.id));
-    const parentId = selectedBoxs.find((comp) => comp.component.parent)?.component?.parent;
 
     // Get all elements with the old class name
     var elements = document.getElementsByClassName('selected-component');
@@ -242,22 +228,6 @@ export default function DragContainer({
     setList(boxList);
   }, [JSON.stringify(boxes)]);
 
-  const getDimensions = (id) => {
-    const box = boxes.find((b) => b.id === id);
-    const layoutData = box?.layouts?.[currentLayout];
-    if (isEmpty(layoutData)) {
-      return {};
-    }
-    // const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
-    const width = gridWidth * layoutData.width;
-
-    return {
-      width: width + 'px',
-      height: layoutData.height + 'px',
-      transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
-    };
-  };
-
   const groupedTargets = [
     ...findHighestLevelofSelection(selectedComponents)
       // .filter((component) => !component?.component?.parent)
@@ -267,41 +237,6 @@ export default function DragContainer({
   useEffect(() => {
     reloadGrid();
   }, [selectedComponents, openModalWidgetId]);
-
-  // Function to limit the resizing of element within the parent
-  const setResizingLimit = (e, i) => {
-    const elemLayout = widgets[e.target.id]?.layouts[currentLayout];
-    const parentLayout = widgets[i.parent]?.layouts[currentLayout];
-    let maxWidth = null,
-      maxHeight = null,
-      parentgW = subContainerWidths[i.parent] || gridWidth,
-      elemSize = 0;
-
-    const [leftRight, topBottom] = e.direction;
-    if (leftRight === 0) {
-      if (topBottom === -1) {
-        //Resize with top handle
-        elemSize = elemLayout?.top + elemLayout?.height;
-      } else {
-        //Resize with top handle
-        const parentHeight = document.getElementById(`canvas-${i.parent}`)?.offsetHeight ?? parentLayout?.height;
-        elemSize = parentHeight - elemLayout?.top;
-      }
-      maxHeight = elemSize;
-    } else {
-      if (leftRight === -1) {
-        //Resize with left handle
-        elemSize = (noOfGrids - (elemLayout?.left + elemLayout?.width)) * parentgW;
-      } else {
-        //Resize with right handle
-        elemSize = elemLayout?.left * parentgW;
-      }
-      maxWidth = noOfGrids * parentgW - elemSize;
-    }
-
-    e.setMax([maxWidth, maxHeight]);
-    e.setMin([gridWidth, 10]);
-  };
 
   const updateNewPosition = (events, parent = null) => {
     const posWithParent = {
@@ -453,9 +388,7 @@ export default function DragContainer({
           parentElm.classList.add('show-grid');
         }}
         onResizeGroup={({ events }) => {
-          const newBoxs = [];
           const parentElm = events[0].target.closest('.real-canvas');
-          parentElm.classList.remove('show-grid');
           const parentWidth = parentElm?.clientWidth;
           const parentHeight = parentElm?.clientHeight;
 
@@ -591,7 +524,6 @@ export default function DragContainer({
             }
 
             const _gridWidth = subContainerWidths[draggedOverElemId] || gridWidth;
-            const parentElem = list.find(({ id }) => id === draggedOverElemId);
             const currentParentId = boxes.find(({ id: widgetId }) => e.target.id === widgetId)?.component?.parent;
             let left = e.lastEvent.translate[0];
             let top = e.lastEvent.translate[1];
@@ -689,7 +621,6 @@ export default function DragContainer({
             );
           }
 
-          let draggedOverElemId;
           if (document.elementFromPoint(e.clientX, e.clientY)) {
             const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
             const draggedOverElements = targetElems.filter(
@@ -708,7 +639,6 @@ export default function DragContainer({
             const parentWidgetId = draggedOverContainer.getAttribute('data-parent') || draggedOverElem?.id;
             document.getElementById('canvas-' + parentWidgetId)?.classList.add('show-grid');
 
-            draggedOverElemId = draggedOverElem?.id;
             if (
               draggedOverElemRef.current?.id !== draggedOverContainer?.id &&
               !draggedOverContainer.classList.contains('hide-grid')

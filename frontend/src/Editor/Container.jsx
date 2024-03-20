@@ -24,7 +24,8 @@ import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
 import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
-// eslint-disable-next-line import/no-unresolved
+import { isPDFSupported } from '@/_stores/utils';
+import toast from 'react-hot-toast';
 
 // const noOfGrids = 24;
 
@@ -291,10 +292,6 @@ export const Container = ({
     }
   });
 
-  function convertXToPercentage(x, canvasWidth) {
-    return (x * 100) / canvasWidth;
-  }
-
   const updateCanvasHeight = useCallback(
     (components) => {
       const maxHeight = Object.values(components).reduce((max, component) => {
@@ -327,6 +324,13 @@ export const Container = ({
         // }
 
         if (item.parent) {
+          return;
+        }
+
+        if (item.component.component === 'PDF' && !isPDFSupported()) {
+          toast.error(
+            'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
+          );
           return;
         }
 
@@ -432,7 +436,6 @@ export const Container = ({
   };
 
   function onDragStop(boxPositions) {
-    const startTime = performance.now();
     const updatedBoxes = boxPositions.reduce((boxesObj, { id, x, y, parent }) => {
       let _width = boxes[id]['layouts'][currentLayout].width;
       let _height = boxes[id]['layouts'][currentLayout].height;
@@ -660,140 +663,6 @@ export const Container = ({
     });
     return componentWithChildren;
   }, [components]);
-
-  const resizingStatusChanged = useCallback(
-    (status) => {
-      setIsResizing(status);
-    },
-    [setIsResizing]
-  );
-
-  const draggingStatusChanged = useCallback(
-    (status) => {
-      setIsDragging(status);
-    },
-    [setIsDragging]
-  );
-  const containerProps = useMemo(() => {
-    return {
-      mode,
-      snapToGrid,
-      onComponentClick,
-      onEvent,
-      appDefinition,
-      appDefinitionChanged,
-      currentState,
-      onComponentOptionChanged,
-      onComponentOptionsChanged,
-      appLoading,
-      zoomLevel,
-      setSelectedComponent,
-      removeComponent,
-      currentLayout,
-      deviceWindowWidth,
-      darkMode,
-      sideBarDebugger,
-      currentPageId,
-      childComponents,
-    };
-  }, [
-    mode,
-    snapToGrid,
-    onComponentClick,
-    onEvent,
-    appDefinition,
-    appDefinitionChanged,
-    currentState,
-    onComponentOptionChanged,
-    onComponentOptionsChanged,
-    appLoading,
-    zoomLevel,
-    setSelectedComponent,
-    removeComponent,
-    currentLayout,
-    deviceWindowWidth,
-    darkMode,
-    sideBarDebugger,
-    currentPageId,
-    childComponents,
-  ]);
-
-  const renderWidget = (key, height, setIsChildDragged) => {
-    const box = boxes[key];
-    if (!box) {
-      return '';
-    }
-    const canShowInCurrentLayout =
-      box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
-    const addDefaultChildren = box.withDefaultChildren;
-    if (!box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
-      return (
-        <DraggableBox
-          className={showComments && 'pointer-events-none'}
-          canvasWidth={canvasWidth}
-          onComponentClick={
-            config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
-          }
-          onEvent={onEvent}
-          height={height}
-          onComponentOptionChanged={onComponentOptionChanged}
-          onComponentOptionsChanged={onComponentOptionsChanged}
-          key={key}
-          paramUpdated={paramUpdated}
-          id={key}
-          {...boxes[key]}
-          mode={mode}
-          resizingStatusChanged={(status) => setIsResizing(status)}
-          draggingStatusChanged={(status) => setIsDragging(status)}
-          inCanvas={true}
-          zoomLevel={zoomLevel}
-          setSelectedComponent={setSelectedComponent}
-          removeComponent={removeComponent}
-          deviceWindowWidth={deviceWindowWidth}
-          isSelectedComponent={mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false}
-          darkMode={darkMode}
-          // onComponentHover={onComponentHover}
-          // hoveredComponent={hoveredComponent}
-          sideBarDebugger={sideBarDebugger}
-          isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
-          childComponents={childComponents[key]}
-          containerProps={{
-            // turnOffAutoLayout,
-            mode,
-            snapToGrid,
-            onComponentClick,
-            onEvent,
-            appDefinition,
-            appDefinitionChanged,
-            currentState,
-            onComponentOptionChanged,
-            onComponentOptionsChanged,
-            appLoading,
-            zoomLevel,
-            setSelectedComponent,
-            removeComponent,
-            currentLayout,
-            deviceWindowWidth,
-            selectedComponents,
-            darkMode,
-            // onComponentHover,
-            // hoveredComponent,
-            sideBarDebugger,
-            addDefaultChildren,
-            currentPageId,
-            childComponents,
-            setIsChildDragged,
-            setSubContainerWidths: (id, width) => setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
-            parentGridWidth: gridWidth,
-            subContainerWidths,
-            draggedSubContainer,
-          }}
-          isVersionReleased={isVersionReleased}
-        />
-      );
-    }
-    return '';
-  };
 
   return (
     <ContainerWrapper

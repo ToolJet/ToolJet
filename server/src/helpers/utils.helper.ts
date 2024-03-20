@@ -236,13 +236,6 @@ export function isTooljetVersionWithNormalizedAppDefinitionSchem(version) {
   return semver.satisfies(semver.coerce(version), '>= 2.24.0');
 }
 
-/**
- * Checks if a given Tooljet version is compatible with the grid compatibility fix.
- */
-export function shouldApplyGridCompatibilityFix(version) {
-  return semver.satisfies(semver.coerce(version), '>= 2.24.0 < 2.27.8');
-}
-
 export function isVersionGreaterThanOrEqual(version1: string, version2: string) {
   if (!version1) return false;
 
@@ -280,10 +273,4 @@ export const getMaxCopyNumber = (existNameList) => {
   // Creating the new name with maxNumber + 1
   const maxNumber = Math.max(...numbers, 0);
   return maxNumber + 1;
-};
-
-export const resolveGridPositionForComponent = (dimension: number, type: string) => {
-  // const numberOfGrids = type === 'desktop' ? 43 : 12;
-  const numberOfGrids = 43;
-  return Math.round((dimension * numberOfGrids) / 100);
 };
