@@ -56,10 +56,10 @@ export function GithubSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
   };
 
   const checkChanges = () => {
-    const hasClientIdChanged = clientId !== settings?.configs?.client_id;
-    const hasEnabledChanged = enabled !== settings?.enabled;
-    const hasHostNameChanged = hostName !== settings?.configs?.host_name;
-    const hasClientSecretChanged = clientSecret != settings?.configs?.client_secret;
+    const hasClientIdChanged = clientId !== (settings?.configs?.client_id || '');
+    const hasEnabledChanged = enabled !== (settings?.enabled || false);
+    const hasHostNameChanged = hostName !== (settings?.configs?.host_name || '');
+    const hasClientSecretChanged = clientSecret != (settings?.configs?.client_secret || '');
     setHasChanges(hasClientIdChanged || hasEnabledChanged || hasHostNameChanged || hasClientSecretChanged);
   };
 
