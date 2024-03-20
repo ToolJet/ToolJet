@@ -79,18 +79,22 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: SSH into GCE instance and run commands
+      - name: SSH into remote instance and generate SSH keys
         run: |
-          gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us"
+          gcloud compute ssh --zone "us-central1-a" "ce-test-system" --project "tooljet-us"
+          ls -lah ~/.ssh/google_compute_engine*
 
-      - name: SSH into GCP VM instance and run commands
-        uses: 'google-github-actions/ssh-compute@v1'
-        with:
-          instance_name: 'automation-testing'
-          zone: 'us-central1-a'
-          ssh_private_key_path: '/.ssh'
-          command: |
-            ls -lah
+          # Output public SSH key
+          cat ~/.ssh/google_compute_engine.pub
+          # Extract username from the public SSH key and store it as a variable
+          SSH_USERNAME=$(awk '{print $3}' ~/.ssh/google_compute_engine.pub | cut -d@ -f1)
+          echo "::set-env name=SSH_USERNAME::$SSH_USERNAME"
+          # Store this output as a secret in your GitHub repository
+
+      - name: Test SSH connection
+        run: |
+          ssh -i ~/.ssh/google_compute_engine ${{ env.SSH_USERNAME }}@34.123.181.150
+          ls -lah
 
       - uses: actions/github-script@v6
         with:
