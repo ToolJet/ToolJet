@@ -18,6 +18,18 @@ jobs:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'test-system-deploy' }}
 
     steps:
+
+      - name: Check authorization
+        run: |
+          allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
+          allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
+          allowed_user3=${{ secrets.ALLOWED_USER3_USERNAME }}
+          
+          if [[ "${{ github.actor }}" != "$allowed_user1" && "${{ github.actor }}" != "$allowed_user2" && "${{ github.actor }}" != "$allowed_user3" ]]; then
+            echo "User not authorized to trigger this workflow"
+            exit 1
+          fi
+              
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -59,33 +71,38 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: SSH into EC2 instance
-        uses: appleboy/ssh-action@master
+      - name: Authenticate GCP profile
+        uses: 'google-github-actions/auth@v2'
         with:
-          host: ${{ secrets.EC2_INSTANCE_IP }}
-          username: admin
-          key: ${{ secrets.EC2_INSTANCE_SSH_KEY }}
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: SSH into GCP VM instance
+        uses: 'google-github-actions/ssh-compute@v1'
+        with:
+          instance_name: 'ce-test-system'
+          zone: 'us-central1-a'
+          ssh_private_key: '${{ secrets.GCP_SSH_PRIVATE_KEY }}'
           script: |
             ls -lah
 
-            # Stop the Docker containers
-            sudo docker-compose down
+            # # Stop the Docker containers
+            # sudo docker-compose down
 
-            # Remove the existing tooljet/* images
-            sudo docker images -a | grep 'tooljet/' | awk '{print $3}' | xargs sudo docker rmi -f
+            # # Remove the existing tooljet/* images
+            # sudo docker images -a | grep 'tooljet/' | awk '{print $3}' | xargs sudo docker rmi -f
 
-            #checking images
-            sudo docker images
+            # #checking images
+            # sudo docker images
 
-            # Update docker-compose.yml with the new image
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+            # # Update docker-compose.yml with the new image
+            # sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
 
-            # Start the Docker containers
-            cat docker-compose.yaml
-            sudo docker-compose up -d
+            # # Start the Docker containers
+            # cat docker-compose.yaml
+            # sudo docker-compose up -d
 
             #View containers
-            sudo docker ps
+            # sudo docker ps
 
       - uses: actions/github-script@v6
         with:
