@@ -81,7 +81,7 @@ jobs:
 
       - name: SSH into remote instance and generate SSH keys
         run: |
-          gcloud compute ssh --zone "us-central1-a" "ce-test-system" --project "tooljet-us"
+          gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us"
           ls -lah ~/.ssh/google_compute_engine*
 
           # Output public SSH key
