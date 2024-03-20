@@ -166,7 +166,7 @@ export const StylesTabElements = ({
         </div>
       )}
 
-      {['string', 'default', undefined, 'number', 'boolean', 'select', 'text', 'newMultiSelect'].includes(
+      {['string', 'default', undefined, 'number', 'boolean', 'select', 'text', 'newMultiSelect', 'datepicker'].includes(
         column.columnType
       ) && (
         <>

@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import SelectSearch from 'react-select-search';
-import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
+import { resolveReferences, validateWidget, determineJustifyContentValue, validateDates } from '@/_helpers/utils';
 import { CustomDropdown } from '../CustomDropdown';
 import { Tags } from '../Tags';
 import { Radio } from '../Radio';
@@ -554,21 +554,63 @@ export default function generateColumnsData({
             );
           }
           case 'datepicker': {
+            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
+            const isTimeChecked = resolveReferences(column?.isTimeChecked, currentState);
+            const isTwentyFourHrFormatEnabled = resolveReferences(column?.isTwentyFourHrFormatEnabled, currentState);
+            const disabledDates = resolveReferences(column?.disabledDates, currentState);
+            const parseInUnixTimestamp = resolveReferences(column?.parseInUnixTimestamp, currentState);
+            const cellStyles = {
+              color: textColor ?? '',
+            };
+            const validationData = validateDates({
+              validationObject: {
+                minDate: {
+                  value: column.minDate,
+                },
+                maxDate: {
+                  value: column.maxDate,
+                },
+                minTime: {
+                  value: column.minTime,
+                },
+                maxTime: {
+                  value: column.maxTime,
+                },
+                parseDateFormat: {
+                  value: column.parseDateFormat,
+                },
+              },
+              widgetValue: cellValue,
+              currentState,
+              customResolveObjects: { cellValue },
+            });
+
+            const { isValid, validationError } = validationData;
             return (
-              <div className="h-100 d-flex align-items-center">
+              <div className="h-100 d-flex flex-column justify-content-center">
                 <Datepicker
                   timeZoneValue={column.timeZoneValue}
                   timeZoneDisplay={column.timeZoneDisplay}
                   dateDisplayFormat={column.dateFormat}
-                  isTimeChecked={column.isTimeChecked}
+                  isTimeChecked={isTimeChecked}
                   value={cellValue}
-                  readOnly={isEditable}
+                  readOnly={!isEditable}
                   parseDateFormat={column.parseDateFormat}
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   tableRef={tableRef}
+                  isDateSelectionEnabled={column.isDateSelectionEnabled}
+                  isTwentyFourHrFormatEnabled={isTwentyFourHrFormatEnabled}
+                  timeFormat={column.timeFormat}
+                  parseTimeFormat={column.parseTimeFormat}
+                  parseInUnixTimestamp={parseInUnixTimestamp}
+                  unixTimeStamp={column.unixTimestamp}
+                  disabledDates={disabledDates}
+                  unixTimestamp={column.unixTimestamp}
+                  cellStyles={cellStyles}
                 />
+                {isEditable && <div className={isValid ? '' : 'invalid-feedback d-block'}>{validationError}</div>}
               </div>
             );
           }

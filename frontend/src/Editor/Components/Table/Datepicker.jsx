@@ -1,25 +1,56 @@
-import React from 'react';
-import Datetime from 'react-datetime';
+import React, { forwardRef, useEffect, useRef } from 'react';
 import moment from 'moment-timezone';
-import 'react-datetime/css/react-datetime.css';
-import '@/_styles/custom.scss';
+import DatePickerComponent from 'react-datepicker';
+import CustomDatePickerHeader from './CustomDatePickerHeader';
+import 'react-datepicker/dist/react-datepicker.css';
+import './datepicker.scss';
+import classNames from 'classnames';
 
-const getDate = (value, parseDateFormat, displayFormat, timeZoneValue, timeZoneDisplay) => {
+const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
+
+const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnly }, ref) => {
+  return (
+    <input
+      onBlur={(e) => {
+        e.stopPropagation();
+      }}
+      className={classNames('table-column-datepicker-input', {
+        'pointer-events-none': readOnly,
+      })}
+      value={value}
+      onClick={onClick}
+      ref={dateInputRef}
+      style={styles}
+    ></input>
+  );
+});
+
+export const getDateTimeFormat = (dateDisplayFormat, isTimeChecked, isTwentyFourHrFormatEnabled) => {
+  const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT';
+  return isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
+};
+
+const getDate = ({
+  value,
+  parseDateFormat,
+  timeZoneValue,
+  timeZoneDisplay,
+  unixTimestamp,
+  parseInUnixTimestamp,
+  isTimeChecked,
+}) => {
+  let momentObj = null;
   if (value) {
-    const dateString = value;
-    if (timeZoneValue && timeZoneDisplay) {
-      let momentString = moment
-        .tz(dateString, parseDateFormat, timeZoneValue)
-        .tz(timeZoneDisplay)
-        .format(displayFormat);
-      return momentString;
+    if (parseInUnixTimestamp && unixTimestamp) {
+      momentObj = moment.tz(value, unixTimestamp);
+    } else if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
+      momentObj = moment(value, parseDateFormat).tz(timeZoneValue);
+      console.log(momentObj, 'momentObj');
     } else {
-      const momentObj = moment(dateString, parseDateFormat);
-      const momentString = momentObj.format(displayFormat);
-      return momentString;
+      momentObj = moment(value, parseDateFormat);
     }
   }
-  return '';
+  return momentObj?.isValid() ? momentObj.toDate() : null;
 };
 
 export const Datepicker = function Datepicker({
@@ -32,63 +63,117 @@ export const Datepicker = function Datepicker({
   parseDateFormat, //?Parse date format
   timeZoneValue,
   timeZoneDisplay,
+  isDateSelectionEnabled,
+  isTwentyFourHrFormatEnabled,
+  disabledDates,
+  unixTimestamp,
+  parseInUnixTimestamp,
+  cellStyles,
 }) {
-  const [date, setDate] = React.useState(() =>
-    getDate(value, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay)
-  );
+  const [date, setDate] = React.useState(null);
+  const [excludedDates, setExcludedDates] = React.useState([]);
   const pickerRef = React.useRef();
 
-  const dateChange = (event) => {
-    const value = event._isAMomentObject ? event.format() : event;
-    let selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} LT` : dateDisplayFormat;
-    const dateString = moment(value).format(selectedDateFormat);
-    setDate(() => dateString);
+  const handleDateChange = (date) => {
+    setDate(
+      getDate({
+        value: date,
+        parseDateFormat: getDateTimeFormat(parseDateFormat, isTimeChecked, isTwentyFourHrFormatEnabled),
+      })
+    );
+    onChange(computeDateString(date));
   };
 
-  React.useEffect(() => {
-    let selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} LT` : dateDisplayFormat;
-    const dateString = getDate(value, parseDateFormat, selectedDateFormat, timeZoneValue, timeZoneDisplay);
-    setDate(() => dateString);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTimeChecked, readOnly, dateDisplayFormat]);
+  useEffect(() => {
+    const date = getDate({
+      value,
+      parseDateFormat: getDateTimeFormat(parseDateFormat, isTimeChecked, isTwentyFourHrFormatEnabled),
+      dateDisplayFormat,
+      timeZoneValue,
+      timeZoneDisplay,
+      unixTimestamp,
+      parseInUnixTimestamp,
+      isTimeChecked,
+    });
+    setDate(date);
+  }, [
+    JSON.stringify(
+      value,
+      parseDateFormat,
+      dateDisplayFormat,
+      timeZoneValue,
+      timeZoneDisplay,
+      unixTimestamp,
+      isTimeChecked,
+      isTwentyFourHrFormatEnabled
+    ),
+  ]);
 
-  const onDatepickerClose = () => {
-    onChange(date);
-  };
+  const dateInputRef = useRef(null); // Create a ref
+  const computeDateString = (date) => {
+    const _date = getDate({
+      value: date,
+      parseDateFormat,
+      dateDisplayFormat,
+      timeZoneValue,
+      timeZoneDisplay,
+      unixTimestamp,
+      parseInUnixTimestamp,
+      isTimeChecked,
+    });
+    const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT';
+    const selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
 
-  let inputProps = {
-    disabled: !readOnly,
-  };
+    if (isDateSelectionEnabled && isTimeChecked && timeZoneDisplay) {
+      return moment.tz(_date, timeZoneDisplay).format(selectedDateFormat);
+    }
 
-  const calculatePosition = () => {
-    const dropdown = pickerRef.current && pickerRef.current.querySelectorAll('.rdtPicker')[0];
-    if (dropdown && tableRef.current) {
-      const tablePos = tableRef.current.getBoundingClientRect();
-      const dropDownPos = pickerRef.current.getBoundingClientRect();
-      const left = dropDownPos.left - tablePos.left;
-      const top = dropDownPos.bottom - tablePos.top;
-      dropdown.style.left = `${left}px`;
-      dropdown.style.top = `${top}px`;
+    if (isDateSelectionEnabled) {
+      return moment(_date).format(selectedDateFormat);
+    }
+
+    if (!isDateSelectionEnabled && isTimeChecked) {
+      return moment(_date).format(timeFormat);
     }
   };
 
+  useEffect(() => {
+    if (Array.isArray(disabledDates) && disabledDates.length > 0) {
+      const _exluded = [];
+      disabledDates?.map((item) => {
+        if (moment(item, DISABLED_DATE_FORMAT).isValid()) {
+          _exluded.push(moment(item, DISABLED_DATE_FORMAT).toDate());
+        }
+      });
+      setExcludedDates(_exluded);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledDates]);
+
   return (
     <div ref={pickerRef}>
-      <Datetime
-        inputProps={inputProps}
-        timeFormat={isTimeChecked}
-        className="cell-type-datepicker"
+      <DatePickerComponent
+        className={`input-field form-control tj-text-input-widget validation-without-icon px-2`}
+        popperClassName={`tj-datepicker-widget`}
+        selected={date}
+        onChange={(date) => handleDateChange(date)}
+        value={date !== null ? computeDateString(date) : 'Invalid date'}
         dateFormat={dateDisplayFormat}
-        value={date}
-        onChange={dateChange}
-        closeOnSelect={true}
-        onClose={onDatepickerClose}
-        disabled={readOnly}
-        renderView={(viewMode, renderDefault) => {
-          calculatePosition();
-          return renderDefault();
-        }}
-        closeOnTab={false}
+        customInput={
+          <TjDatepicker dateInputRef={dateInputRef} readOnly={readOnly} styles={{ color: cellStyles.color }} />
+        }
+        timeFormat={'HH:mm'}
+        showTimeSelect={isTimeChecked}
+        showTimeSelectOnly={!isDateSelectionEnabled && isTimeChecked}
+        showMonthDropdown
+        showYearDropdown
+        dropdownMode="select"
+        excludeDates={excludedDates}
+        showPopperArrow={false}
+        renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
+        shouldCloseOnSelect
+        readOnly={readOnly}
+        popperProps={{ strategy: 'fixed' }}
       />
     </div>
   );

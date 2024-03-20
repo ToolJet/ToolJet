@@ -12743,3 +12743,13 @@ tbody {
     -moz-appearance: textfield !important;
   }
 }
+
+.inspector-validation-date-picker {
+  .react-datepicker-wrapper { 
+    input {
+      width: 100%;
+      border: 1px solid var(--slate5);
+      padding: 5px 5px;
+    }
+  }
+}

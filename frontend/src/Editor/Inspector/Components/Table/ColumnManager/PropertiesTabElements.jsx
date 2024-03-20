@@ -7,6 +7,8 @@ import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandlePropert
 import { OptionsList } from '../SelectOptionsList/OptionsList';
 import { ValidationProperties } from './ValidationProperties';
 import { Select } from '@/Editor/CodeBuilder/Elements/Select';
+import DatepickerProperties from './DatepickerProperties';
+
 export const PropertiesTabElements = ({
   column,
   index,
@@ -169,87 +171,15 @@ export const PropertiesTabElements = ({
         </div>
       )}
       {column.columnType === 'datepicker' && (
-        <div>
-          <label data-cy={`label-date-display-format`} className="form-label">
-            {t('widget.Table.dateDisplayformat', 'Date Display Format')}
-          </label>
-          <div data-cy={`input-date-display-format`} className="field mb-2">
-            <CodeHinter
-              currentState={currentState}
-              initialValue={column.dateFormat}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={'DD-MM-YYYY'}
-              onChange={(value) => onColumnItemChange(index, 'dateFormat', value)}
-              componentName={getPopoverFieldSource(column.columnType, 'dateFormat')}
-              popOverCallback={(showing) => {
-                setColumnPopoverRootCloseBlocker('dateFormat', showing);
-              }}
-            />
-          </div>
-          <label data-cy={`label-date-parse-format`} className="form-label">
-            {t('widget.Table.dateParseformat', 'Date Parse Format')}
-          </label>
-          <div className="field mb-2 tj-app-input">
-            <input
-              data-cy={`input-date-parse-format`}
-              type="text"
-              className="form-control text-field"
-              onChange={(e) => {
-                e.stopPropagation();
-                onColumnItemChange(index, 'parseDateFormat', e.target.value);
-              }}
-              defaultValue={column.parseDateFormat}
-              placeholder={'DD-MM-YYYY'}
-            />
-          </div>
-          <label data-cy={`label-parse-timezone`} className="form-label">
-            Parse in timezone
-          </label>
-          <div data-cy={`input-parse-timezone`} className="field mb-2">
-            <Select
-              meta={{
-                options: timeZoneOptions,
-              }}
-              onChange={(value) => {
-                onColumnItemChange(index, 'timeZoneValue', value);
-              }}
-              value={column.timeZoneValue}
-              width={'100%'}
-            />
-          </div>
-          <label data-cy={`label-display-time-zone`} className="form-label">
-            Display in timezone
-          </label>
-          <div ata-cy={`input-display-time-zone`} className="field mb-2">
-            <Select
-              meta={{
-                options: timeZoneOptions,
-              }}
-              onChange={(value) => {
-                onColumnItemChange(index, 'timeZoneDisplay', value);
-              }}
-              value={column.timeZoneDisplay}
-              width={'100%'}
-            />
-          </div>
-          <div className="field mb-2">
-            <div className="form-check form-switch my-2">
-              <input
-                data-cy={`toggle-show-time`}
-                className="form-check-input"
-                type="checkbox"
-                onClick={() => {
-                  onColumnItemChange(index, 'isTimeChecked', !column.isTimeChecked);
-                }}
-                checked={column.isTimeChecked}
-              />
-              <span data-cy={`label-show-time`} className="form-check-label">
-                {t('widget.Table.showTime', 'show time')}
-              </span>
-            </div>
-          </div>
+        <div className="field">
+          <DatepickerProperties
+            column={column}
+            index={index}
+            darkMode={darkMode}
+            currentState={currentState}
+            onColumnItemChange={onColumnItemChange}
+            component={component}
+          />
         </div>
       )}
       {column.columnType === 'link' && (
