@@ -536,6 +536,7 @@ export default function generateColumnsData({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
+                  containerWidth={width}
                 />
               </div>
             );

@@ -971,7 +971,24 @@
 }
 .table-radio-column-cell{
   overflow: hidden;
+  div{
+    height: 100%;
+    display: flex;
+    flex-flow: wrap;
+    gap: 3px;
+  }
 }
 .table-column-lists.list-group-item{
   margin-bottom: 0 !important;
+}
+.overlay-radio-table{
+  span{
+    font-family: 'IBM Plex Sans';
+    line-height: 20px;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+    color: var(--text-primary);
+
+  }
 }
