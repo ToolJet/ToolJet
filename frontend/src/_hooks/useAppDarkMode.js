@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
-import { useEditorStore } from '../../_stores/editorStore';
-import { useAppDataStore } from '../../_stores/appDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
 const useAppDarkMode = () => {
@@ -33,15 +33,13 @@ const useAppDarkMode = () => {
   };
 
   const isAppDarkMode = useMemo(() => {
-    let isDarkMode = false;
     if (appMode === 'light') {
-      isDarkMode = false;
+      return false;
     } else if (appMode === 'dark') {
-      isDarkMode = true;
+      return true;
     } else {
-      isDarkMode = localStorage.getItem('darkMode') === 'true';
+      return localStorage.getItem('darkMode') === 'true';
     }
-    return isDarkMode;
   }, [appMode, isTJDarkMode]);
 
   return {

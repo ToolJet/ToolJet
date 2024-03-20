@@ -22,7 +22,6 @@ import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import { ModuleContext } from '../_contexts/ModuleContext';
 import _ from 'lodash';
-import useAppDarkMode from '@/Editor/Header/useAppDarkMode';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
@@ -48,6 +47,7 @@ export const Container = ({
   handleRedo,
   sideBarDebugger,
   currentPageId,
+  darkMode,
 }) => {
   // Dont update first time to skip
   // redundant save on app definition load
@@ -74,7 +74,6 @@ export const Container = ({
     }),
     shallow
   );
-  const { isAppDarkMode: darkMode } = useAppDarkMode();
 
   const gridWidth = canvasWidth / NO_OF_GRIDS;
   const styles = {

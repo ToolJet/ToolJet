@@ -31,13 +31,12 @@ const MobileHeader = ({
     }),
     shallow
   );
-  const { appMode } = useEditorStore(
+  const { showDarkModeToggle } = useEditorStore(
     (state) => ({
-      appMode: state.appMode,
+      showDarkModeToggle: state.appMode === 'auto',
     }),
     shallow
   );
-  const showDarkModeToggle = useMemo(() => appMode === 'auto', [appMode]);
 
   // Fetch the version parameter from the query string
   const searchParams = new URLSearchParams(window.location.search);

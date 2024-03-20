@@ -20,14 +20,13 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
     }),
     shallow
   );
-  const { appMode } = useEditorStore(
+  const { showDarkModeToggle } = useEditorStore(
     (state) => ({
-      appMode: state.appMode,
+      showDarkModeToggle: state.appMode === 'auto',
     }),
     shallow
   );
 
-  const showDarkModeToggle = useMemo(() => appMode === 'auto', [appMode]);
   const _renderAppNameAndLogo = () => (
     <div
       className={classNames('d-flex', 'align-items-center')}

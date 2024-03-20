@@ -15,15 +15,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
-import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
-import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
-import useAppDarkMode from './useAppDarkMode';
-
-const APP_MODES = [
-  { label: 'Light', value: 'light' },
-  { label: 'Dark', value: 'dark' },
-  { label: 'Auto', value: 'auto' },
-];
+import AppModeToggle from './AppModeToggle';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -52,7 +44,6 @@ export const GlobalSettings = ({
     shallow
   );
   const { app, slug: oldSlug } = useAppInfo();
-  const { onAppModeChange, appMode } = useAppDarkMode();
 
   const coverStyles = {
     position: 'fixed',
@@ -389,27 +380,7 @@ export const GlobalSettings = ({
                   </div>
                 </div>
               </div>
-              <div className="d-flex align-items-center mb-3">
-                <span data-cy={`label-maintenance-mode`}>{t('leftSidebar.Settings.appMode', 'App mode')}</span>
-                <div
-                  className="ms-auto form-check form-switch position-relative app-mode-switch"
-                  style={{ paddingLeft: '0px', width: '158px' }}
-                >
-                  <ToggleGroup
-                    onValueChange={(value) => {
-                      onAppModeChange(value);
-                      globalSettingsChanged({ appMode: value });
-                    }}
-                    defaultValue={appMode}
-                  >
-                    {APP_MODES.map((appMode) => (
-                      <ToggleGroupItem key={appMode.value} value={appMode.value}>
-                        {appMode.label}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-                </div>
-              </div>
+              <AppModeToggle globalSettingsChanged={globalSettingsChanged} />
               <div className="d-flex align-items-center  global-popover-div-wrap mb-3">
                 <p className="tj-text-xsm color-slate12 w-full m-auto">Export app</p>
                 <div>

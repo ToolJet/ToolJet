@@ -48,8 +48,7 @@ import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
 import MobileHeader from './Viewer/MobileHeader';
 import DesktopHeader from './Viewer/DesktopHeader';
 import './Viewer/viewer.scss';
-import useAppDarkMode from './Header/useAppDarkMode';
-import classNames from 'classnames';
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
 class ViewerComponent extends React.Component {
   static contextType = ModuleContext;
@@ -648,7 +647,7 @@ class ViewerComponent extends React.Component {
     } else {
       return (
         <div
-          className={classNames('viewer wrapper', {
+          className={cx('viewer wrapper', {
             'mobile-layout': this.props.currentLayout,
             'theme-dark dark-theme': this.props.darkMode,
           })}
@@ -777,6 +776,7 @@ class ViewerComponent extends React.Component {
                                 canvasWidth={this.getCanvasWidth()}
                                 dataQueries={dataQueries}
                                 currentPageId={this.state.currentPageId}
+                                darkMode={this.props.darkMode}
                               />
                             )}
                           </>

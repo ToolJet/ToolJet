@@ -65,7 +65,7 @@ import EditorSelecto from './EditorSelecto';
 import { useSocketOpen } from '@/_hooks/use-socket-open';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import useAppDarkMode from './Header/useAppDarkMode';
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import { getQueryParams } from '@/_helpers/routes';
 import RightSidebarTabManager from './RightSidebarTabManager';
@@ -1888,7 +1888,7 @@ const EditorComponent = (props) => {
                           appDefinition={appDefinition}
                           appDefinitionChanged={appDefinitionChanged}
                           snapToGrid={true}
-                          darkMode={props.darkMode}
+                          darkMode={isAppDarkMode}
                           mode={'edit'}
                           zoomLevel={zoomLevel}
                           deviceWindowWidth={deviceWindowWidth}
