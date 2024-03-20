@@ -83,11 +83,10 @@ jobs:
         run: |
           ssh-keygen -t rsa -f ~/.ssh/google_compute_engine -C 'adish@tooljet.com' -q -N ''
           PRIVATE_KEY=$(<~/.ssh/google_compute_engine)
-          echo "::set-env name=SSH_PRIVATE_KEY::$PRIVATE_KEY"
 
       - name: Set up SSH key
         run: |
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/google_compute_engine
+          echo "$PRIVATE_KEY" > ~/.ssh/google_compute_engine
           chmod 600 ~/.ssh/google_compute_engine
 
       - id: compute-ssh
@@ -95,7 +94,7 @@ jobs:
         with:
           instance_name: 'example-instance'
           zone: 'us-central1-a'
-          ssh_private_key: $SSH_PRIVATE_KEY
+          ssh_private_key: ${{ PRIVATE_KEY }}
           command: 'ls -la'
 
       - uses: actions/github-script@v6
