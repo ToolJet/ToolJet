@@ -1432,6 +1432,7 @@ export function Table({
                         'badges',
                         'tags',
                         'radio',
+                        'link',
                         'multiselect',
                         'toggle',
                       ].includes(cell?.column?.columnType)
