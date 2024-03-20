@@ -5,7 +5,7 @@ title: Custom Styles
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
-Custom Styles feature enables the implementation of theming on ToolJet apps, allowing users to inject their own CSS styling to override the default app styling. This feature fulfills the requirement of allowing users to easily customize the appearance of their apps.
+Custom Styles features enables the implementation of theming on ToolJet apps, allowing users to inject their own CSS styling to override the default app styling. This feature fulfills the requirement of allowing users to easily customize the appearance of their apps.
 
 Custom Styles helps in maintaining consistent themes across the ToolJet apps, alleviating the repetitive burden of styling components whenever a new app is created. By enabling users to apply standardized styles, this feature ensures that each app adheres to a unified theme without the need to manually restyle the components from scratch. As a result, the ToolJet app development process becomes more efficient, and the visual coherence of the apps is preserved, providing users with a seamless experience across all applications.
 
