@@ -9,6 +9,7 @@ import AlignLeft from '@/_ui/Icon/solidIcons/AlignLeft';
 import AlignCenter from '@/_ui/Icon/solidIcons/AlignCenter';
 import AlignRight from '@/_ui/Icon/solidIcons/AlignRight';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
+import { Select } from '@/Editor/CodeBuilder/Elements/Select';
 
 export const StylesTabElements = ({
   column,
@@ -43,14 +44,14 @@ export const StylesTabElements = ({
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
-      {['string', 'default', 'number', undefined].includes(column.columnType) && (
+      {/* {['string', 'default', 'number', undefined].includes(column.columnType) && (
         <div className="d-flex flex-column custom-gap-16">
           <div data-cy={`input-overflow`} className="field  d-flex custom-gap-12 align-items-center align-self-stretch">
             <label data-cy={`label-overflow`} className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
               {t('widget.Table.overflow', 'Overflow')}
             </label>
             <ToggleGroup
-              onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
+              onValueChange={(_value) => onColumnItemChange(index, 'textWrap', _value)}
               defaultValue={column.textWrap || 'wrap'}
               style={{ flex: '1 1 0' }}
             >
@@ -60,7 +61,7 @@ export const StylesTabElements = ({
             </ToggleGroup>
           </div>
         </div>
-      )}
+      )} */}
       {column.columnType === 'toggle' && (
         <div>
           <div className="field">
@@ -117,14 +118,16 @@ export const StylesTabElements = ({
             />
           </div>
           <div data-cy={`input-and-label-object-fit`} className="field">
-            <label className="form-label">{t('widget.Table.objectFit', 'Object fit')}</label>
-            <SelectSearch
+            <label className="form-label">{t('widget.Table.imageFit', 'Image fit')}</label>
+            <Select
               className={'select-search'}
-              options={[
-                { name: 'Cover', value: 'cover' },
-                { name: 'Contain', value: 'contain' },
-                { name: 'Fill', value: 'fill' },
-              ]}
+              meta={{
+                options: [
+                  { label: 'Cover', value: 'cover' },
+                  { label: 'Contain', value: 'contain' },
+                  { label: 'Fill', value: 'fill' },
+                ],
+              }}
               value={column.objectFit}
               search={true}
               closeOnSelect={true}
@@ -133,6 +136,7 @@ export const StylesTabElements = ({
               }}
               fuzzySearch
               placeholder={t('Select') + '...'}
+              width={'100%'}
             />
           </div>
         </>

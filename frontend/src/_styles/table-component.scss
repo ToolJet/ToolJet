@@ -123,11 +123,14 @@
   }
 
   td.regular {
-    min-height: 46px;
+    max-height: 46px;
+    height: 46px;
   }
 
   td.condensed {
-    min-height: 36px;
+    max-height: 36px;
+    height: 36px;
+
   }
 
   .has-dropdown,
@@ -143,9 +146,13 @@
     margin: 0;
   }
 
+  .overflow-x-hidden {
+    overflow-x: hidden !important;
+  }
+
   .wrap-wrapper {
     white-space: normal !important;
-    word-break: break-all;
+    word-break: break-word;
   }
 
   .scroll-wrapper {
@@ -767,6 +774,8 @@
 .jet-data-table {
   .table {
     .td {
+
+      // overflow: hidden;
       &:hover {
         border: 1px solid var(--slate8);
         background-color: var(--slate4);
@@ -796,7 +805,8 @@
     }
 
     //for select column type
-    .td.has-dropdown {
+    .td.has-dropdown,
+    td.has-multiselect {
       .select-search-input {
         //old dropdown
         border: 0;
@@ -987,6 +997,41 @@
     0px 0px 1px 0px var(--elevation-400-box-shadow);
 
   }
+}
+
+.table-custom-select-badge-badges {
+  .select-search-value {
+    overflow: hidden;
+    width: 90%;
+  }
+}
+
+.table-tags {
+  flex-direction: row-reverse;
+
+  .tag-wrapper {
+    width: 100px;
+    /* Adjust width as needed */
+  }
+
+  .add-tag-button {
+    width: 30px;
+    /* Adjust width as needed */
+  }
+
+  input[type="text"] {
+    width: 100px;
+    /* Adjust width as needed */
+  }
+
+}
+
+.table-radio-column-cell {
+  overflow: hidden;
+}
+
+.table-column-lists.list-group-item {
+  margin-bottom: 0 !important;
 }
 
 .table-link-hover:hover {

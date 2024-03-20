@@ -42,7 +42,7 @@ export const PropertiesTabElements = ({
               { name: 'Dropdown', value: 'dropdown' },
               { name: 'Link', value: 'link' },
               { name: 'Radio', value: 'radio' },
-              { name: 'Multiselect deprecated', value: 'multiselect' },
+              { name: 'Multiselect D', value: 'multiselect' },
               { name: 'Toggle switch', value: 'toggle' },
               { name: 'Date Picker', value: 'datepicker' },
               { name: 'Image', value: 'image' },

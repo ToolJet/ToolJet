@@ -76,6 +76,8 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const showAddNewRowButton = properties?.showAddNewRowButton ?? true;
   const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
   const defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
+  const maxRowHeight = styles?.maxRowHeight ?? 80;
+  const autoHeight = styles?.autoHeight ?? false;
   const selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? true;
 
   return {
@@ -109,6 +111,8 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     defaultSelectedRow,
     showAddNewRowButton,
     allowSelection,
+    maxRowHeight,
+    autoHeight,
     selectRowOnCellEdit,
   };
 }

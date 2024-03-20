@@ -728,7 +728,8 @@
             "addNewColumn": "Add new column",
             "noActionMessage": "This table doesn't have any action buttons",
             "horizontalAlignment":"Horizontal alignment",
-            "deciamalPlaces":"Decimal Places"
+            "deciamalPlaces":"Decimal Places",
+            "imageFit":"Image fit"
         },
         "Button": {
             "displayName": "Button",

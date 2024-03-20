@@ -138,6 +138,7 @@ export default function generateColumnsData({
             const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
             const cellStyles = {
               color: textColor ?? '',
+              overflow: 'hidden',
             };
 
             if (isEditable) {
@@ -223,6 +224,7 @@ export default function generateColumnsData({
 
             const cellStyles = {
               color: textColor ?? '',
+              overflow: 'hidden',
             };
             if (isEditable) {
               const validationData = validateWidget({
@@ -361,6 +363,7 @@ export default function generateColumnsData({
                 )}`}
                 style={{
                   color: cellTextColor ? cellTextColor : 'inherit',
+                  overflow: 'hidden',
                 }}
               >
                 {cellValue}
@@ -483,15 +486,14 @@ export default function generateColumnsData({
           }
           case 'tags': {
             return (
-              <div>
-                <Tags
-                  value={cellValue}
-                  onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                  }}
-                  readOnly={!isEditable}
-                />
-              </div>
+              <Tags
+                value={cellValue}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+                readOnly={!isEditable}
+                containerWidth={width}
+              />
             );
           }
           case 'image': {

@@ -3,11 +3,13 @@ import './list.scss';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import classNames from 'classnames';
 import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import MoreVertical from '@/_ui/Icon/solidIcons/MoreVertical';
 import SortableList from '@/_components/SortableList';
+import { resolveReferences } from '@/_helpers/utils';
 function List({ children, ...restProps }) {
   return <ListGroup {...restProps}>{children}</ListGroup>;
 }
@@ -23,11 +25,13 @@ function ListItem({
   isEditable,
   isDraggable,
   deleteIconOutsideMenu = false,
+  showCopyColumnOption = false,
+  showVisibilityIcon = false,
+  isColumnVisible = true,
   ...restProps
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
-
   return (
     <div>
       <ListGroup.Item
@@ -53,6 +57,11 @@ function ListItem({
             {isEditable && (
               <span style={{ marginLeft: '8px' }}>
                 <Edit width={16} />
+              </span>
+            )}
+            {showVisibilityIcon && !isColumnVisible && (
+              <span style={{ marginLeft: '8px' }}>
+                <SolidIcon name="eyedisable" width={16} />
               </span>
             )}
           </div>
@@ -111,6 +120,22 @@ function ListItem({
                 )}
               </span>
             </OverlayTrigger>
+            {showCopyColumnOption && (
+              <ButtonSolid
+                variant="ghostBlack"
+                size="xs"
+                className={'copy-column-icon'}
+                // data-cy={'page-menu'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMenuOptionClick(primaryText, 'copyColumn');
+                }}
+              >
+                <span className="d-flex">
+                  <SolidIcon name="copy" fill={'var(--icons-strong)'} width={16} />
+                </span>
+              </ButtonSolid>
+            )}
             {deleteIconOutsideMenu && (
               <ButtonSolid
                 variant="danger"
