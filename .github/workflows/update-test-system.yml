@@ -79,43 +79,9 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: Connect to VM
-        uses: appleboy/ssh-action@master
-        with:
-          host: 34.123.140.107
-          username: auto
-          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
-          script: |
-            ls -lah
-
-      - name: SSH into GCP VM instance
-        uses: 'google-github-actions/ssh-compute@v1'
-        with:
-          instance_name: 'ce-test-system'
-          zone: 'us-central1-a'
-          ssh_private_key: '${{ secrets.GCP_SSH_PRIVATE_KEY }}'
-          passphrase: auto
-          command: |
-            ls -lah
-
-            # # Stop the Docker containers
-            # sudo docker-compose down
-
-            # # Remove the existing tooljet/* images
-            # sudo docker images -a | grep 'tooljet/' | awk '{print $3}' | xargs sudo docker rmi -f
-
-            # #checking images
-            # sudo docker images
-
-            # # Update docker-compose.yml with the new image
-            # sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
-
-            # # Start the Docker containers
-            # cat docker-compose.yaml
-            # sudo docker-compose up -d
-
-            #View containers
-            # sudo docker ps
+      - name: SSH into GCE instance and run commands
+        run: |
+          gcloud compute ssh ce-test-system --zone=us-central1-a --command "ls -lah"
 
       - uses: actions/github-script@v6
         with:
