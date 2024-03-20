@@ -202,12 +202,8 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   type="text"
                   className="form-control defaultValue"
                   data-cy="default-input-field"
-                  placeholder={
-                    columns[index]?.constraints_type?.is_primary_key !== true || columns[index].data_type !== 'serial'
-                      ? 'Null'
-                      : 'Auto-generated'
-                  }
-                  disabled={columns[index]?.constraints_type?.is_primary_key === true}
+                  placeholder={columns[index].data_type !== 'serial' ? 'Null' : 'Auto-generated'}
+                  disabled={columns[index].data_type === 'serial'}
                 />
               </div>
 

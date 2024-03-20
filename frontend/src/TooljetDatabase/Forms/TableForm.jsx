@@ -71,7 +71,7 @@ const TableForm = ({
     }
 
     toast.success(`${tableName} created successfully`);
-    // onCreate && onCreate({ id: data.result.id, table_name: tableName });
+    onCreate && onCreate({ id: data.result.id, table_name: tableName });
   };
 
   function handleKeyPress(e) {
