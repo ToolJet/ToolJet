@@ -81,11 +81,7 @@ jobs:
 
       - name: SSH into GCE instance
         run: |
-          gcloud compute ssh ce-test-system --zone=us-central1-a --command "ls -lah"
-
-      - name: Docker command
-        run: |
-          sudo docker ps
+          gcloud compute ssh ce-test-system --zone=us-central1-a --command "sudo docker ps"
 
       - uses: actions/github-script@v6
         with:
