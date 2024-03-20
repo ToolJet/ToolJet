@@ -13,6 +13,7 @@ import SelectIcon from '../Icons/Select-column.svg';
 import MenuIcon from '../Icons/Unique-menu.svg';
 import ColumnName from '../Icons/ColumnName.svg';
 import { UniqueConstraintPopOver } from '../Table/ActionsPopover/UniqueConstraintPopOver';
+import { ToolTip } from '@/_components/ToolTip';
 
 const ColumnsForm = ({ columns, setColumns }) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
@@ -81,6 +82,10 @@ const ColumnsForm = ({ columns, setColumns }) => {
     darkBorder,
     dropdownContainerWidth
   );
+
+  const toolTipPlacementStyle = {
+    width: '126px',
+  };
 
   return (
     <div className="create-column-drawer">
@@ -235,33 +240,94 @@ const ColumnsForm = ({ columns, setColumns }) => {
                 />
               </div>
 
-              <div className="d-flex not-null-toggle">
-                <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
+              {columns[index]?.constraints_type?.is_primary_key === true ? (
+                <ToolTip
+                  message="Primary key values
+cannot be null"
+                  placement="top"
+                  tooltipClassName="tootip-table"
+                  style={toolTipPlacementStyle}
+                >
+                  <div className="d-flex not-null-toggle">
+                    <label className={`form-switch`}>
+                      <input
+                        className="form-check-input"
+                        data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
+                          .toLowerCase()
+                          .replace(/\s+/g, '-')}-checkbox`}
+                        type="checkbox"
+                        checked={columns[index]?.constraints_type?.is_not_null ?? false}
+                        onChange={(e) => {
+                          const prevColumns = { ...columns };
+                          const columnConstraints = prevColumns[index]?.constraints_type ?? {};
+                          columnConstraints.is_not_null = e.target.checked;
+                          prevColumns[index].constraints_type = { ...columnConstraints };
+                          setColumns(prevColumns);
+                        }}
+                        disabled={columns[index]?.constraints_type?.is_primary_key === true}
+                      />
+                    </label>
+                    <p
+                      data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
+                        .toLowerCase()
+                        .replace(/\s+/g, '-')}-text`}
+                      className="m-0"
+                    >
+                      {columns[index]?.constraints_type?.is_not_null ?? false ? (
+                        <span
+                          className={`${
+                            columns[index]?.constraints_type?.is_primary_key === true ? 'not-null-with-disable' : ''
+                          }`}
+                        >
+                          NOT NULL
+                        </span>
+                      ) : (
+                        <span>NULL</span>
+                      )}
+                    </p>
+                  </div>
+                </ToolTip>
+              ) : (
+                <div className="d-flex not-null-toggle">
+                  <label className={`form-switch`}>
+                    <input
+                      className="form-check-input"
+                      data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
+                        .toLowerCase()
+                        .replace(/\s+/g, '-')}-checkbox`}
+                      type="checkbox"
+                      checked={columns[index]?.constraints_type?.is_not_null ?? false}
+                      onChange={(e) => {
+                        const prevColumns = { ...columns };
+                        const columnConstraints = prevColumns[index]?.constraints_type ?? {};
+                        columnConstraints.is_not_null = e.target.checked;
+                        prevColumns[index].constraints_type = { ...columnConstraints };
+                        setColumns(prevColumns);
+                      }}
+                      disabled={columns[index]?.constraints_type?.is_primary_key === true}
+                    />
+                  </label>
+                  <p
                     data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
                       .toLowerCase()
-                      .replace(/\s+/g, '-')}-checkbox`}
-                    type="checkbox"
-                    checked={columns[index]?.constraints_type?.is_not_null ?? false}
-                    onChange={(e) => {
-                      const prevColumns = { ...columns };
-                      const columnConstraints = prevColumns[index]?.constraints_type ?? {};
-                      columnConstraints.is_not_null = e.target.checked;
-                      prevColumns[index].constraints_type = { ...columnConstraints };
-                      setColumns(prevColumns);
-                    }}
-                    disabled={columns[index]?.constraints_type?.is_primary_key === true}
-                  />
-                </label>
-                <span
-                  data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
-                    .toLowerCase()
-                    .replace(/\s+/g, '-')}-text`}
-                >
-                  {columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL'}
-                </span>
-              </div>
+                      .replace(/\s+/g, '-')}-text`}
+                    className="m-0"
+                  >
+                    {columns[index]?.constraints_type?.is_not_null ?? false ? (
+                      <span
+                        className={`${
+                          columns[index]?.constraints_type?.is_primary_key === true ? 'not-null-with-disable' : ''
+                        }`}
+                      >
+                        NOT NULL
+                      </span>
+                    ) : (
+                      <span>NULL</span>
+                    )}
+                  </p>
+                </div>
+              )}
+
               <div>
                 <UniqueConstraintPopOver
                   disabled={false}

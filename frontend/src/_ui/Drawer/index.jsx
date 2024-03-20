@@ -80,7 +80,11 @@ const Drawer = ({
 
   return createPortal(
     <ErrorBoundary showFallback={true}>
-      <FocusTrap focusTrapOptions={{ initialFocus: false, allowOutsideClick: true }} active={isOpen && !disableFocus}>
+      <FocusTrap
+        // The allowOutsideClick option is used to enable or disable clicks outside the popover for functions that are inside the popover but not within the focus trap. On the other hand, clickOutsideDeactivates is used to unfocus the last focused element which is outside the popover.
+        focusTrapOptions={{ initialFocus: false, allowOutsideClick: true, clickOutsideDeactivates: true }}
+        active={isOpen && !disableFocus}
+      >
         <div
           aria-hidden={`${!isOpen}`}
           className={cx('drawer-container', {

@@ -284,6 +284,10 @@
   padding: 8px !important;
   margin-bottom: 6px !important;
 
+  .not-null-with-disable {
+    color: var(--slate9) !important;
+  }
+
   .table-schema-row {
     display: flex;
     align-items: center;

@@ -3,33 +3,66 @@ import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import DeleteIcon from '../../Icons/DeleteIcon.svg';
+import { ToolTip } from '@/_components/ToolTip';
 
 // eslint-disable-next-line no-unused-vars
 export const UniqueConstraintPopOver = ({ disabled, children, onDelete, darkMode, columns, setColumns, index }) => {
   if (disabled) return children;
+  const toolTipPlacementStyle = {
+    width: '126px',
+  };
   const popover = (
     <Popover className={`create-table-list-items ${darkMode && 'dark-theme'}`}>
       <Popover.Body>
         <div className="unique-constraint-parent">
           <div className="column-popover row cursor-pointer p-1">
-            <div className="d-flex not-null-toggle">
-              <label className={`form-switch`}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={columns[index]?.constraints_type?.is_unique ?? false}
-                  onChange={(e) => {
-                    const prevColumns = { ...columns };
-                    const columnConstraints = prevColumns[index]?.constraints_type ?? {};
-                    columnConstraints.is_unique = e.target.checked;
-                    prevColumns[index].constraints_type = { ...columnConstraints };
-                    setColumns(prevColumns);
-                  }}
-                  disabled={columns[index]?.constraints_type?.is_primary_key === true}
-                />
-              </label>
-              <span className="unique-tag">Unique</span>
-            </div>
+            {columns[index]?.constraints_type?.is_primary_key === true ? (
+              <ToolTip
+                message="Primary key values
+        must be unique"
+                placement="top"
+                tooltipClassName="tootip-table"
+                style={toolTipPlacementStyle}
+              >
+                <div className="d-flex not-null-toggle">
+                  <label className={`form-switch`}>
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={columns[index]?.constraints_type?.is_unique ?? false}
+                      onChange={(e) => {
+                        const prevColumns = { ...columns };
+                        const columnConstraints = prevColumns[index]?.constraints_type ?? {};
+                        columnConstraints.is_unique = e.target.checked;
+                        prevColumns[index].constraints_type = { ...columnConstraints };
+                        setColumns(prevColumns);
+                      }}
+                      disabled={columns[index]?.constraints_type?.is_primary_key === true}
+                    />
+                  </label>
+                  <span className="unique-tag">Unique</span>
+                </div>
+              </ToolTip>
+            ) : (
+              <div className="d-flex not-null-toggle">
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={columns[index]?.constraints_type?.is_unique ?? false}
+                    onChange={(e) => {
+                      const prevColumns = { ...columns };
+                      const columnConstraints = prevColumns[index]?.constraints_type ?? {};
+                      columnConstraints.is_unique = e.target.checked;
+                      prevColumns[index].constraints_type = { ...columnConstraints };
+                      setColumns(prevColumns);
+                    }}
+                    disabled={columns[index]?.constraints_type?.is_primary_key === true}
+                  />
+                </label>
+                <span className="unique-tag">Unique</span>
+              </div>
+            )}
           </div>
           <div className="col text-truncate unique-helper-text px-2 py-1">Unique value constraint is added</div>
         </div>
