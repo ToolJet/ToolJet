@@ -330,8 +330,7 @@ button {
 
   .resizer-select,
   .resizer-active {
-    outline: solid 1px $primary !important;
-
+    // border: solid 1px $primary !important;
 
     .top-right,
     .top-left,
@@ -2321,11 +2320,11 @@ body {
   color: #5890ff;
 }
 
-.transformation-editor {
-  .CodeMirror {
-    min-height: 70px;
-  }
-}
+// .transformation-editor {
+//   .CodeMirror {
+//     min-height: 70px;
+//   }
+// }
 
 .chart-data-input {
   .CodeMirror {
@@ -2493,11 +2492,11 @@ body {
   margin-bottom: 0px;
 }
 
-.transformation-editor {
-  .CodeMirror {
-    min-height: 220px;
-  }
-}
+// .transformation-editor {
+//   .CodeMirror {
+//     min-height: 220px;
+//   }
+// }
 
 hr {
   margin: 1rem 0;
@@ -2577,6 +2576,13 @@ hr {
   }
 }
 
+.multiple-components-config-handle{
+  position: absolute;
+  left: 54px;
+  top: -20px;
+  transform: translate(-50%, 0px);
+  width: 110px;
+}
 .draggable-box {
   .config-handle {
     top: -20px;
@@ -2584,7 +2590,9 @@ hr {
     max-height: 10px;
     z-index: 100;
     min-width: 108px;
-
+  }
+}
+.draggable-box .config-handle, .multiple-components-config-handle{
     .handle-content {
       cursor: move;
       color: #ffffff;
@@ -2612,10 +2620,23 @@ hr {
       }
     }
   }
-}
 
 .draggable-box-in-editor:hover {
   z-index: 3 !important;
+}
+
+.config-handle:hover,
+.widget-in-canvas:hover .config-handle{
+  visibility: visible;
+}
+
+.config-handle{
+  visibility: hidden;
+  transition: all .15s ease-in-out;
+}
+
+.canvas-area #modal-container .modal-component > .config-handle{
+  visibility: visible !important;
 }
 
 .modal-content {
@@ -4004,6 +4025,9 @@ input[type="text"] {
 .popup-btn {
   cursor: pointer !important;
   display: block;
+  padding: 2px;
+  border-radius: 4px;
+  border: 1px solid rgba(204, 209, 213, 1);
 }
 
 .preview-icons {
@@ -12311,11 +12335,7 @@ tbody {
   align-items: center;
 }
 
-.copilot-codehinter-wrap {
-  .CodeMirror.cm-s-monokai.CodeMirror-wrap {
-    border-radius: 0px;
-  }
-}
+
 
 .avatar-list-stacked {
   display: flex;
@@ -12725,4 +12745,40 @@ tbody {
   input[type="number"] {
     -moz-appearance: textfield !important;
   }
+}
+
+.rest-api-url-codehinter {
+  .cm-content>.cm-line {
+    max-width: 505px !important;
+  }
+}
+
+.rest-api-options-codehinter {
+  .cm-content>.cm-line {
+    max-width: 357px !important;
+  }
+}
+
+.rest-api-codehinter-key-field {
+  .cm-content>.cm-line {
+    max-width: 184px !important;
+  }
+}
+
+.rest-api-codehinter-key-field,
+.rest-api-url-codehinter,
+.rest-api-options-codehinter {
+  .cm-content>.cm-line {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+}
+
+.fx-button-container {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.wrapper-div-code-editor:hover .fx-button-container {
+  opacity: 1;
 }

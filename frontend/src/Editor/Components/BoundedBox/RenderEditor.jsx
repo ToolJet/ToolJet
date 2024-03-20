@@ -53,7 +53,8 @@ export const RenderEditor = ({
         }}
         className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
         useCustomStyles={true}
-        useMenuPortal={false}
+        // useMenuPortal={false}
+        useMenuPortal
         styles={selectElementStyles(darkMode, '100%')}
       />
     </div>

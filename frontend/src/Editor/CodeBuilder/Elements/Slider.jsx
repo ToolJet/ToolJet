@@ -8,10 +8,11 @@ import { debounce } from 'lodash';
 function Slider1({ value, onChange, component }) {
   const [sliderValue, setSliderValue] = useState(value ? value : 33); // Initial value of the slider
 
+  const isDisbaled = component?.component?.definition?.styles?.auto?.value || false;
   useEffect(() => {
     setSliderValue(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [component.id]);
+  }, [component?.id]);
 
   const debouncedOnChange = debounce((value) => {
     onChange(value);
@@ -32,7 +33,7 @@ function Slider1({ value, onChange, component }) {
   return (
     <div className="d-flex flex-column " style={{ width: '142px', position: 'relative' }}>
       <CustomInput
-        disabled={component.component.definition.styles.auto.value}
+        disabled={isDisbaled}
         value={sliderValue}
         staticText="% of the field"
         onInputChange={onInputChange}
@@ -50,7 +51,7 @@ function Slider1({ value, onChange, component }) {
           onValueCommit={(value) => {
             onChange(value);
           }}
-          disabled={component.component.definition.styles.auto.value}
+          disabled={isDisbaled}
         >
           <Slider.Track className="SliderTrack">
             <Slider.Range className="SliderRange" />

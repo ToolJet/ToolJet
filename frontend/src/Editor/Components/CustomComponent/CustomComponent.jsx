@@ -3,11 +3,26 @@ import { isEqual } from 'lodash';
 import iframeContent from './iframe.html';
 
 import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { useGridStore } from '@/_stores/gridStore';
 import { isQueryRunnable } from '@/_helpers/utils';
+import { shallow } from 'zustand/shallow';
 
 export const CustomComponent = (props) => {
-  const dataQueries = useDataQueries();
   const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataCy, component } = props;
+  const dataQueries = useDataQueries();
+
+  const showPlaceholder = useGridStore((state) => {
+    const { resizingComponentId, draggingComponentId } = state;
+    if (
+      (resizingComponentId === null && draggingComponentId === id) ||
+      (draggingComponentId === null && resizingComponentId === id) ||
+      id === 'resizingComponentId'
+    ) {
+      return true;
+    }
+    return false;
+  }, shallow);
+
   const { visibility, boxShadow } = styles;
   const { code, data } = properties;
   const [customProps, setCustomProps] = useState(data);
@@ -106,12 +121,14 @@ export const CustomComponent = (props) => {
 
   return (
     <div className="card" style={{ display: visibility ? '' : 'none', height, boxShadow }} data-cy={dataCy}>
-      <iframe
-        srcDoc={iframeContent}
-        style={{ width: '100%', height: '100%', border: 'none' }}
-        ref={iFrameRef}
-        data-id={id}
-      ></iframe>
+      {showPlaceholder ? null : (
+        <iframe
+          srcDoc={iframeContent}
+          style={{ width: '100%', height: '100%', border: 'none' }}
+          ref={iFrameRef}
+          data-id={id}
+        ></iframe>
+      )}
     </div>
   );
 };

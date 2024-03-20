@@ -1,5 +1,10 @@
+import _ from 'lodash';
 import { create } from './utils';
 import { v4 as uuid } from 'uuid';
+import { useAppDataStore } from './appDataStore';
+import { useResolveStore } from './resolverStore';
+import { shallow } from 'zustand/shallow';
+import { useCurrentState, useCurrentStateStore } from './currentStateStore';
 const STORE_NAME = 'Editor';
 
 export const EMPTY_ARRAY = [];
@@ -56,11 +61,13 @@ export const useEditorStore = create(
         set({ showComments: !get().showComments }, false, {
           type: ACTIONS.TOGGLE_COMMENTS,
         }),
-      toggleCurrentLayout: (currentLayout) =>
+      toggleCurrentLayout: (currentLayout) => {
+        set({ selectedComponents: EMPTY_ARRAY });
         set({ currentLayout }, false, {
           type: ACTIONS.TOGGLE_CURRENT_LAYOUT,
           currentLayout,
-        }),
+        });
+      },
       setIsEditorActive: (isEditorActive) => set(() => ({ isEditorActive })),
       updateEditorState: (state) => set((prev) => ({ ...prev, ...state })),
       updateQueryConfirmationList: (queryConfirmationList) => set({ queryConfirmationList }),

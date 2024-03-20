@@ -376,6 +376,12 @@ $btn-dark-color: #FFFFFF;
   border: none;
 }
 
+#inspector-tabpane-properties .code-hinter textarea {
+  border: 0;
+  overflow: hidden;
+  max-height: 22.5px;
+}
+
 // Style for Chart component
 .widget-chart{
   .js-plotly-plot{
