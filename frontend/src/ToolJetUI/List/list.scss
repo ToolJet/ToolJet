@@ -106,3 +106,10 @@ button:focus:not(:focus-visible) {
     border: 1px solid var(--borders-strong) !important;
   }
 }
+
+.list-item-deprecated-column-type {
+  margin-left: 8px;
+   svg {
+    margin-bottom: 2px
+   }
+}
