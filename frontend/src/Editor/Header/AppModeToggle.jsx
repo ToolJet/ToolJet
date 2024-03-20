@@ -17,10 +17,7 @@ const AppModeToggle = ({ globalSettingsChanged }) => {
   return (
     <div className="d-flex align-items-center mb-3">
       <span data-cy={`label-maintenance-mode`}>{t('leftSidebar.Settings.appMode', 'App mode')}</span>
-      <div
-        className="ms-auto form-check form-switch position-relative app-mode-switch"
-        style={{ paddingLeft: '0px', width: '158px' }}
-      >
+      <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px', width: '158px' }}>
         <ToggleGroup
           onValueChange={(value) => {
             onAppModeChange(value);

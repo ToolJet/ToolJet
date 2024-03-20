@@ -163,7 +163,15 @@
 .global-settings-panel {
   .app-mode-switch {
     .ToggleGroup {
-     width : 100%
+     width : 100%;
+    }
+    .ToggleGroupItem {
+      font-size: 12px;
+    }
+    .ToggleGroupItem[data-state='on'] {
+      .toggle-item {
+        font-size: 12px;
+      }
     }
   }
 }
