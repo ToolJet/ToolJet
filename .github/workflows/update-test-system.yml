@@ -90,8 +90,13 @@ jobs:
       - name: GCP 
         run: gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us"
 
-      - name: ssh into vm
-        run: ssh -v -T runner@34.123.181.150 'ls -l'
+      - name: 'Deploy'
+        uses: appleboy/ssh-action@master
+        with:
+          host: 34.123.181.150
+          username: auto
+          port: 22
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
 
       - uses: actions/github-script@v6
         with:
