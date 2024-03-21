@@ -1,5 +1,4 @@
 /** @type { import('@storybook/react').Preview } */
-// import 'bootstrap/dist/css/bootstrap.min.css';
 import '../src/_styles/theme.scss';
 import './preview.scss'
 

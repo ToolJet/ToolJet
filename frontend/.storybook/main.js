@@ -1,6 +1,5 @@
-/** @type { import('@storybook/react-webpack5').StorybookConfig } */
-import custom from '../webpack.config'
-const path = require('path');
+import customWebpackConfig from '../webpack.config';
+import path from 'path';
 
 const config = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
@@ -17,16 +16,19 @@ const config = {
   docs: {
     autodocs: "tag",
   },
-  webpackFinal: async (config) => {
+  webpackFinal: async (storybookConfig) => {
     return {
-      ...config,
-      module: { ...config.module, rules: [...config.module.rules, ...custom.module.rules] },
-      resolve : {
-        alias : {
-          '@': path.resolve(__dirname, 'src/')
+      ...storybookConfig,
+      module: { ...storybookConfig.module, rules: [...storybookConfig.module.rules, ...customWebpackConfig.module.rules] },
+      resolve: {
+        ...storybookConfig.resolve,
+        alias: {
+          ...storybookConfig.resolve.alias,
+          '@': path.resolve(__dirname, '../src/') // Adjust the path to your src folder
         }
       }
     };
   },
 };
+
 export default config;

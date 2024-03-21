@@ -40,7 +40,7 @@ const buttonVariants = cva('flex justify-center items-center', {
   },
 });
 
-const getButtonFill = (variant) => {
+const getDefaultIconFillColor = (variant) => {
   switch (variant) {
     case 'primary':
     case 'dangerPrimary':
@@ -78,11 +78,11 @@ const Button = React.forwardRef(
     const Comp = asChild ? Slot : 'button';
 
     const leadingIconElement = leadingIcon && (
-      <SolidIcon name={'leadingIcon'} height="16" width="16" fill={fill ?? getButtonFill(variant)} />
-    ); // Render leading icon
+      <SolidIcon name={'leadingIcon'} height="16" width="16" fill={fill ?? getDefaultIconFillColor(variant)} />
+    );
     const trailingIconElement = trailingIcon && (
-      <SolidIcon name={'trailingIcon'} height="16" width="16" fill={fill ?? getButtonFill(variant)} />
-    ); // Render trailing icon
+      <SolidIcon name={'trailingIcon'} height="16" width="16" fill={fill ?? getDefaultIconFillColor(variant)} />
+    );
 
     return (
       <Comp
@@ -125,6 +125,18 @@ Button.propTypes = {
   fill: PropTypes.string,
   leadingIcon: PropTypes.string,
   trailingIcon: PropTypes.string,
+};
+Button.defaultProps = {
+  className: '',
+  variant: 'primary',
+  size: 'default',
+  loading: false,
+  disabled: false,
+  asChild: false,
+  iconOnly: false,
+  fill: '',
+  leadingIcon: '',
+  trailingIcon: '',
 };
 
 export { Button, buttonVariants };
