@@ -7,6 +7,8 @@ import { TooljetDatabaseContext } from '../index';
 import { isEmpty } from 'lodash';
 import { BreadCrumbContext } from '@/App/App';
 import WarningInfo from '../Icons/Edit-information.svg';
+import ArrowRight from '../Icons/ArrowRight.svg';
+import { ConfirmDialog } from '@/_components';
 
 const TableForm = ({
   selectedTable = {},
@@ -17,16 +19,22 @@ const TableForm = ({
       constraints_type: { is_primary_key: true, is_not_null: true, is_unique: true },
     },
   },
+  selectedTableData = {},
+  selectedTableDetails = {},
   onCreate,
   onEdit,
   onClose,
   updateSelectedTable,
 }) => {
-  const [fetching, setFetching] = useState(false);
-  const [tableName, setTableName] = useState(selectedTable.table_name);
-  const [columns, setColumns] = useState(selectedColumns);
-  const { organizationId } = useContext(TooljetDatabaseContext);
   const isEditMode = !isEmpty(selectedTable);
+  const selectedTableColumns = isEditMode ? selectedTableData : selectedColumns;
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const [fetching, setFetching] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [tableName, setTableName] = useState(selectedTable.table_name);
+  const [columns, setColumns] = useState(selectedTableColumns);
+  const { organizationId } = useContext(TooljetDatabaseContext);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
@@ -112,6 +120,21 @@ const TableForm = ({
     return true;
   };
 
+  const footerStyle = {
+    borderTop: '1px solid var(--slate5)',
+    paddingTop: '12px',
+    marginTop: '0px',
+  };
+
+  const currentPrimaryKeyIcons = [
+    { icon: <WarningInfo />, columnName: 'WarningInfo' },
+    { icon: <ArrowRight />, columnName: 'ArrowRight' },
+  ];
+  const newPrimaryKeyIcons = [
+    { icon: <WarningInfo />, columnName: 'WarningInfo' },
+    { icon: <ArrowRight />, columnName: 'ArrowRight' },
+  ];
+
   return (
     <div className="drawer-card-wrapper">
       <div className="card-header">
@@ -133,7 +156,7 @@ const TableForm = ({
               <div className="edit-warning-icon">
                 <WarningInfo />
               </div>
-              <span className="edit-warning-text">
+              <span className="edit-warning-text" style={{ marginTop: '0.1rem' }}>
                 Editing the table name could break queries and apps connected with this table.
               </span>
             </div>
@@ -160,19 +183,38 @@ const TableForm = ({
             </div>
           </div>
         </div>
-        {!isEditMode && <CreateColumnsForm columns={columns} setColumns={setColumns} />}
+        <CreateColumnsForm columns={columns} setColumns={setColumns} isEditMode={isEditMode} />
       </div>
       <DrawerFooter
         fetching={fetching}
         isEditMode={isEditMode}
         onClose={onClose}
-        onEdit={handleEdit}
+        onEdit={() => setShowModal(true)}
         onCreate={handleCreate}
         shouldDisableCreateBtn={
           isEmpty(tableName) ||
           (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
           isEmpty(columns)
         }
+      />
+      <ConfirmDialog
+        title={'Change in primary key'}
+        show={showModal}
+        message={
+          'Updating the table will drop the current primary key contraints and add the new one. This action is cannot be reversed. Are you sure you want to continue?'
+        }
+        onConfirm={handleEdit}
+        onCancel={() => setShowModal(false)}
+        darkMode={darkMode}
+        confirmButtonType="primary"
+        cancelButtonType="tertiary"
+        onCloseIconClick={() => setShowModal(false)}
+        confirmButtonText={'Continue'}
+        cancelButtonText={'Cancel'}
+        footerStyle={footerStyle}
+        currentPrimaryKeyIcons={currentPrimaryKeyIcons}
+        newPrimaryKeyIcons={newPrimaryKeyIcons}
+        isEditToolJetDbTable={true}
       />
     </div>
   );

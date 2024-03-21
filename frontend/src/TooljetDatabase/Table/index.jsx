@@ -831,6 +831,12 @@ const Table = ({ collapseSidebar }) => {
     return false;
   }
 
+  const footerStyle = {
+    borderTop: '1px solid var(--slate5)',
+    paddingTop: '12px',
+    marginTop: '0px',
+  };
+
   return (
     <div>
       <TjdbTableHeader
@@ -1386,6 +1392,7 @@ const Table = ({ collapseSidebar }) => {
         confirmButtonText={'Delete Column'}
         cancelButtonText={'Cancel'}
         confirmIcon={<DeleteIcon />}
+        footerStyle={footerStyle}
       />
     </div>
   );
