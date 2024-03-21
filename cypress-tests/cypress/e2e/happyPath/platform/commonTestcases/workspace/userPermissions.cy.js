@@ -207,7 +207,7 @@ describe("User permissions", () => {
     common.navigateToWorkspaceVariable();
     cy.get('[data-cy="alert-info-text"]>>.text-muted').verifyVisibleElement(
       "have.text",
-      "There are no Workspace variables. Workspace variables are being deprecated soon, so please use Workspace constants instead."
+      "Workspace variables will no longer be supported after April 30, 2024. To maintain optimal performance, please make the switch to Workspace constants"
     );
     cy.get(
       '[data-cy="go-to-workspace-constants-option-button"]'
