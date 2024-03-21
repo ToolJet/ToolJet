@@ -227,7 +227,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                   </label>
                   <Select
                     options={TIMEZONE_OPTIONS}
-                    value={column?.timeZoneDisplay ?? 'Etc/UTC'}
+                    value={column?.timeZoneDisplay ?? ''}
                     search={true}
                     closeOnSelect={true}
                     onChange={(value) => {
@@ -363,7 +363,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                     </label>
                     <Select
                       options={TIMEZONE_OPTIONS}
-                      value={column?.timeZoneValue ?? 'Etc/UTC'}
+                      value={column?.timeZoneValue ?? ''}
                       search={true}
                       closeOnSelect={true}
                       onChange={(value) => {
