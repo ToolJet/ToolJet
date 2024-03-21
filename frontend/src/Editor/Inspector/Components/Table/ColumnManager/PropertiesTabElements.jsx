@@ -170,18 +170,6 @@ export const PropertiesTabElements = ({
           </div>
         </div>
       )}
-      {column.columnType === 'datepicker' && (
-        <div className="field">
-          <DatepickerProperties
-            column={column}
-            index={index}
-            darkMode={darkMode}
-            currentState={currentState}
-            onColumnItemChange={onColumnItemChange}
-            component={component}
-          />
-        </div>
-      )}
       {column.columnType === 'link' && (
         <div className="field">
           <ProgramaticallyHandleProperties
@@ -268,6 +256,18 @@ export const PropertiesTabElements = ({
           />
         </div>
       </div>
+      {column.columnType === 'datepicker' && (
+        <div className="field">
+          <DatepickerProperties
+            column={column}
+            index={index}
+            darkMode={darkMode}
+            currentState={currentState}
+            onColumnItemChange={onColumnItemChange}
+            component={component}
+          />
+        </div>
+      )}
       {['select', 'newMultiSelect'].includes(column.columnType) && (
         <OptionsList
           column={column}

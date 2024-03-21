@@ -451,7 +451,7 @@ export function validateDates({ validationObject, widgetValue, currentState, cus
   );
 
   // Minimum date validation
-  if (resolvedMinDate !== undefined) {
+  if (resolvedMinDate !== undefined && moment(resolvedMinDate).isValid()) {
     if (!moment(resolvedMinDate, validationDateFormat).isBefore(moment(_widgetDateValue, validationDateFormat))) {
       return {
         isValid: false,
@@ -461,7 +461,7 @@ export function validateDates({ validationObject, widgetValue, currentState, cus
   }
 
   // Maximum date validation
-  if (resolvedMaxDate !== undefined) {
+  if (resolvedMaxDate !== undefined && moment(resolvedMaxDate).isValid()) {
     if (!moment(resolvedMaxDate, validationDateFormat).isAfter(moment(_widgetDateValue, validationDateFormat))) {
       return {
         isValid: false,
@@ -471,7 +471,7 @@ export function validateDates({ validationObject, widgetValue, currentState, cus
   }
 
   // Minimum time validation
-  if (resolvedMinTime !== undefined) {
+  if (resolvedMinTime !== undefined && moment(resolvedMinTime).isValid()) {
     if (!moment(resolvedMinTime, validationTimeFormat).isBefore(moment(_widgetTimeValue, validationTimeFormat))) {
       return {
         isValid: false,
@@ -481,7 +481,7 @@ export function validateDates({ validationObject, widgetValue, currentState, cus
   }
 
   // Maximum time validation
-  if (resolvedMaxTime !== undefined) {
+  if (resolvedMaxTime !== undefined && moment(resolvedMaxTime).isValid()) {
     if (!moment(resolvedMaxTime, validationTimeFormat).isAfter(moment(_widgetTimeValue, validationTimeFormat))) {
       return {
         isValid: false,

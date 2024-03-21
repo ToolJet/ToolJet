@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import Select from '@/_ui/Select';
 import { useTranslation } from 'react-i18next';
@@ -63,11 +63,23 @@ const DATE_FORMAT_OPTIONS = [
   },
 ];
 
+const UNIX_TIMESTAMP_OPTIONS = [
+  {
+    label: 's',
+    value: 'seconds',
+  },
+  {
+    label: 'ms',
+    value: 'milliseconds',
+  },
+];
+
 const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnItemChange, component }) => {
   const { t } = useTranslation();
   const items = [];
   const [isDateDisplayFormatFxOn, setIsDateDisplayFormatFxOn] = useState(true);
   const [isParseDateFormatFxOn, setIsParseDateFormatFxOn] = useState(true);
+
   items.push(
     {
       title: 'Formatting',
@@ -103,8 +115,15 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                     <span>
                       <FxButton
                         active={isDateDisplayFormatFxOn}
-                        onPress={() => {
+                        onPress={(active) => {
+                          console.log(active, 'active');
                           setIsDateDisplayFormatFxOn(!isDateDisplayFormatFxOn);
+                          // if (active) {
+                          //   console.log('Yes')
+                          //   onColumnItemChange(index, 'notActiveFxActiveFields', ['fxActiveFields'])
+                          // } else {
+                          //   onColumnItemChange(index, 'notActiveFxActiveFields', [''])
+                          // }
                         }}
                       />
                     </span>
@@ -243,15 +262,18 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                 <label data-cy={`label-date-parse-format`} className="form-label">
                   {t('widget.Table.unixTimestamp', 'Unix timestamp')}
                 </label>
-                <input
-                  type="number"
-                  className="form-control text-field"
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    onColumnItemChange(index, 'unixTimestamp', e.target.value);
+                <Select
+                  options={UNIX_TIMESTAMP_OPTIONS}
+                  value={column?.unixTimestamp ?? 'seconds'}
+                  search={true}
+                  closeOnSelect={true}
+                  onChange={(value) => {
+                    onColumnItemChange(index, 'unixTimestamp', value);
                   }}
-                  defaultValue={column?.unixTimestamp}
-                  placeholder={'eg. 170477864'}
+                  fuzzySearch
+                  // placeholder="Select.."
+                  useCustomStyles={true}
+                  styles={styles(darkMode, '100%')}
                 />
               </div>
             </div>
@@ -274,7 +296,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                   </div>
                   {isParseDateFormatFxOn ? (
                     <CodeHinter
-                      initialValue={column?.dateFormat}
+                      initialValue={column?.parseDateFormat}
                       theme={darkMode ? 'monokai' : 'default'}
                       mode="javascript"
                       lineNumbers={false}

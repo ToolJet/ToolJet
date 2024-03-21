@@ -42,10 +42,10 @@ const getDate = ({
   let momentObj = null;
   if (value) {
     if (parseInUnixTimestamp && unixTimestamp) {
-      momentObj = moment.tz(value, unixTimestamp);
+      momentObj = unixTimestamp === 'seconds' ? moment.unix(value) : moment(parseInt(value));
     } else if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
-      momentObj = moment(value, parseDateFormat).tz(timeZoneValue);
-      console.log(momentObj, 'momentObj');
+      // momentObj = moment(value, parseDateFormat).tz(timeZoneValue);
+      momentObj = moment.tz(value, parseDateFormat, timeZoneValue).tz(timeZoneDisplay);
     } else {
       momentObj = moment(value, parseDateFormat);
     }
@@ -111,8 +111,9 @@ export const Datepicker = function Datepicker({
 
   const dateInputRef = useRef(null); // Create a ref
   const computeDateString = (date) => {
+    // if (!date) return
     const _date = getDate({
-      value: date,
+      value,
       parseDateFormat,
       dateDisplayFormat,
       timeZoneValue,
