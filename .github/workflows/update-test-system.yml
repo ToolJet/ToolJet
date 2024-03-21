@@ -97,6 +97,9 @@ jobs:
           username: workflow
           port: 22
           key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          script: |
+            whoami
+            ls -al
 
       - uses: actions/github-script@v6
         with:
