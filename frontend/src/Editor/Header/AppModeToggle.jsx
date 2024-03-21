@@ -4,10 +4,13 @@ import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import { useTranslation } from 'react-i18next';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
+export const TOOLTIP_DARK_MODE_TOOGLE_MSG =
+  'This option is disabled due to the app mode being set to either light or dark.';
+
 const APP_MODES = [
+  { label: 'Auto', value: 'auto' },
   { label: 'Light', value: 'light' },
   { label: 'Dark', value: 'dark' },
-  { label: 'Auto', value: 'auto' },
 ];
 
 const AppModeToggle = ({ globalSettingsChanged }) => {

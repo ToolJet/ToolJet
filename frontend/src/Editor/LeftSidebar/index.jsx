@@ -21,6 +21,7 @@ import useDebugger from './SidebarDebugger/useDebugger';
 import { GlobalSettings } from '../Header/GlobalSettings';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import { TOOLTIP_DARK_MODE_TOOGLE_MSG } from '../Header/AppModeToggle';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -314,9 +315,14 @@ export const LeftSidebar = forwardRef((props, ref) => {
               />
             </div>
           )}
-          {appMode === 'auto' && (
-            <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
-          )}
+
+          <DarkModeToggle
+            switchDarkMode={switchDarkMode}
+            darkMode={darkMode}
+            tooltipPlacement="right"
+            disabled={appMode !== 'auto'}
+            tooltipMessage={TOOLTIP_DARK_MODE_TOOGLE_MSG}
+          />
         </div>
       </div>
     </div>

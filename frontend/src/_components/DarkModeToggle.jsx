@@ -3,16 +3,20 @@ import { useSpring, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { useTranslation } from 'react-i18next';
+import classnames from 'classnames';
 
 export const DarkModeToggle = function DarkModeToggle({
   darkMode = false,
   switchDarkMode,
   tooltipPlacement = 'bottom',
   showText = false,
+  disabled = false,
+  tooltipMessage = '',
 }) {
   const toggleDarkMode = () => {
     switchDarkMode(!darkMode);
   };
+
   const { t } = useTranslation();
   const properties = {
     sun: {
@@ -51,17 +55,20 @@ export const DarkModeToggle = function DarkModeToggle({
     <OverlayTrigger
       placement={tooltipPlacement}
       delay={{ show: 250, hide: 400 }}
+      trigger={'hover'}
       overlay={
         <Tooltip id="button-tooltip">
-          {darkMode
+          {disabled
+            ? tooltipMessage ?? ''
+            : darkMode
             ? t('header.darkModeToggle.activateLightMode', 'Activate light mode')
             : t('header.darkModeToggle.activateDarkMode', 'Activate dark mode')}
         </Tooltip>
       }
     >
       <div
-        className="unstyled-button dark-theme-toggle-btn  sidebar-svg-icon  left-sidebar-item "
-        onClick={toggleDarkMode}
+        className={classnames('unstyled-button dark-theme-toggle-btn  sidebar-svg-icon  left-sidebar-item')}
+        onClick={!disabled && toggleDarkMode}
       >
         <animated.svg
           xmlns="http://www.w3.org/2000/svg"
