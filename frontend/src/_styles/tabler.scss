@@ -2576,6 +2576,8 @@ textarea.form-control-lg {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
 }
 
 .form-check-input[type=checkbox] {

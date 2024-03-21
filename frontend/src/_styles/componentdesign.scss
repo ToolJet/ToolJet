@@ -1,0 +1,215 @@
+:root {
+    //page
+    --page-default: #F6F8FA;
+    --page-weak: #FFFFFF;
+
+
+    //background
+    --background-surface-layer-01: #FFFFFF;
+    --background-surface-layer-02: #F6F8FA;
+    --background-surface-layer-03: #E4E7EB;
+    --background-accent-strong: #4368E3;
+    --background-accent-weak: #ECF0FE;
+    --background-success-strong: #1E823B;
+    --background-success-weak: #E8F3EB;
+    --background-error-strong: #D72D39;
+    --background-error-weak: #FCEEEF;
+    --background-warning-stong: #BF4F03;
+    --background-warning-weak: #FAEFE7;
+    --background-Inverse: #1B1F24;
+
+
+    //text
+    --text-default: #1B1F24;
+    --text-medium: #2D343B;
+    --text-placeholder: #6A727C;
+    --text-inverse: #F6F8FA;
+    --text-brand: #4368E3;
+    --text-selected: #4368E3;
+    --text-success: #1E823B;
+    --text-warning: #BF4F03;
+    --text-danger: #D72D39;
+    --text-on-solid: #FFFFFF;
+    --text-disabled: #ACB2B9;
+    --text-disabled-on-solid: #FFFFFF99;
+
+
+    //icon
+    --icon-strong: #6A727C;
+    --icon-default: #ACB2B9;
+    --icon-weak: #CCD1D5;
+    --icon-inverse: #FFFFFF;
+    --icon-on-solid: #FFFFFF;
+    --icon-accent: #4368E3;
+    --icon-brand: #4368E3;
+    --icon-success: #1E823B;
+    --icon-warning: #BF4F03;
+    --icon-danger: #D72D39;
+    --icon-disabled: #E4E7EB;
+
+
+    //border
+    --border-strong: #ACB2B9;
+    --border-default: #CCD1D5;
+    --border-weak: #E4E7EB;
+    --border-accent-strong: #4368E3;
+    --border-accent-weak: #97AEFC;
+    --border-success-strong: #1E823B;
+    --border-success-weak: #7FBF92;
+    --border-warning-strong: #BF4F03;
+    --border-warning-weak: #E7A274;
+    --border-danger-strong: #D72D39;
+    --border-danger-weak: #F4979E;
+    --border-disabled: #F6F8FA;
+
+
+    //interactive overlays 
+    --interactive-weak: #FFFFFF00;
+    --interactive-default: #CCD1D54D;
+    --interactive-hover: #ACB2B959;
+    --interactive-selected: #ACB2B973;
+    --interactive-disabled: #FFFFFF00;
+    --interactive-focus-outline: #4368E3;
+    --interactive-focus-active: #4368E3;
+    --interactive-focus-inner-shadow: #FFFFFF;
+
+
+    //button
+    --button-primary: #4368E3;
+    --button-primary-hover: #2D50C5;
+    --button-primary-pressed: #1E3C9E;
+    --button-primary-disabled: #C2CFFD;
+    --button-secondary: #FFFFFF;
+    --button-secondary-hover: #ECF0FE;
+    --button-secondary-pressed: #DEE5FE;
+    --button-secondary-disabled: #FFFFFF;
+    --button-outline: #FFFFFF;
+    --button-outline-hover: #ACB2B94D;
+    --button-outline-pressed: #ACB2B966;
+    --button-outline-disabled: #FFFFFF;
+    --button-danger-primary: #D72D39;
+    --button-danger-primary-hover: #B5121D;
+    --button-danger-primary-pressed: #8E0811;
+    --button-danger-primary-disabled: #F9C2C6;
+    --button-danger-secondary: #FFFFFF;
+    --button-danger-Secondary-hover: #FCEEEF;
+    --button-danger-secondary-pressed: #FBDFE1;
+    --button-danger-secondary-disabled: #FFFFFF;
+
+
+    //controls
+    --switch-tab: #ffffff;
+    --switch-tag: #CCD1D54D;
+    --switch-background-off: #FFFFFF;
+    --switch-background-on: #4368E3;
+    --slider-handle: #FFFFFF;
+    --slider-track: #E4E7EB;
+    --slider-fill: #4368E3;
+}
+
+:darkmode {
+    //page
+    --page-default: #181B1F;
+    --page-weak: #1E2226;
+
+
+    //background
+    --background-surface-layer-01: #1E2226;
+    --background-surface-layer-02: #2B3036;
+    --background-surface-layer-03: #3C434B;
+    --background-accent-strong: #4A6DD9;
+    --background-accent-weak: #0D183C;
+    --background-success-strong: #318344;
+    --background-success-weak: #05200B;
+    --background-warning-stong: #BA5722;
+    --background-warning-weak: #301100;
+    --background-error-strong: #D03F43;
+    --background-error-weak: #390809;
+    --background-Inverse: #FAFCFF;
+
+
+    //text
+    --text-default: #FAFCFF;
+    --text-medium: #CFD3D8;
+    --text-placeholder: #858C94;
+    --text-inverse: #181B1F;
+    --text-accent: #4A6DD9;
+    --text-success: #318344;
+    --text-warning: #BA5722;
+    --text-danger: #D03F43;
+    --text-on-solid: #FFFFFF;
+    --text-disabled: #545B64;
+    --text-disabled-on-solid: #FAFCFF66;
+
+
+    //icon
+    --icon-strong: #CFD3D8E5;
+    --icon-default: #CFD3D8A6;
+    --icon-weak: #CFD3D859;
+    --icon-inverse: #181B1F;
+    --icon-on-solid: #FAFCFF;
+    --icon-accent: #4A6DD9;
+    --icon-brand: #4A6DD9;
+    --icon-success: #1E823B;
+    --icon-warning: #BA5722;
+    --icon-danger: #D03F43;
+    --icon-disabled: #CFD3D833;
+
+
+    //border
+    --border-strong: #545B64;
+    --border-default: #3C434B;
+    --border-weak: #2B3036;
+    --border-accent-strong: #4A6DD9;
+    --border-accent-weak: #4A6DD966;
+    --border-success-strong: #519B62;
+    --border-success-weak: #31834466;
+    --border-warning-strong: #BA5722;
+    --border-warning-weak: #BA572266;
+    --border-danger-strong: #E26367;
+    --border-danger-weak: #D03F4366;
+    --border-disabled: #2B3036B2;
+
+
+    //interactive overlays 
+    --interactive-weak: #00000000;
+    --interactive-default: #A1A7AE1F;
+    --interactive-hover: #A1A7AE29;
+    --interactive-selected: #A1A7AE38;
+    --interactive-disabled: #00000000;
+    --interactive-focus-outline: #4A6DD9;
+    --interactive-focus-inner-shadow: #121518;
+
+
+    //button
+    --button-primary: #4A6DD9;
+    --button-primary-hover: #6787E8;
+    --button-primary-pressed: #8AA3F2;
+    --button-primary-disabled: #162A69;
+    --button-secondary: #1E2226;
+    --button-secondary-hover: #162A69;
+    --button-secondary-pressed: #213C90;
+    --button-secondary-disabled: #121518;
+    --button-outline: #A1A7AE1A;
+    --button-outline-hover: #A1A7AE33;
+    --button-outline-pressed: #A1A7AE4D;
+    --button-outline-disabled: #121518;
+    --button-danger-primary: blue;
+    --button-danger-primary-hover: #E26367;
+    --button-danger-primary-pressed: #EC8B8E;
+    --button-danger-primary-disabled: #620D0F;
+    --button-danger-secondary: #121518;
+    --button-danger-Secondary-hover: #620D0F;
+    --button-danger-secondary-pressed: #841417;
+    --button-danger-secondary-disabled: #121518;
+
+
+    //controls
+    --switch-tab: #2B3036;
+    --switch-tag: #121518;
+    --switch-background-off: #121518;
+    --switch-background-on: #4A6DD9;
+    --slider-handle: #121518;
+    --slider-track: #2B3036;
+    --slider-fill: #4A6DD9;
+}
