@@ -79,25 +79,25 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - id: compute-ssh
-        uses: google-github-actions/ssh-compute@v1
-        with:
-          instance_name: 'automation-testing'
-          zone: 'us-central1-a'
-          ssh_private_key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
-          command: 'ls -la'
+      # - id: compute-ssh
+      #   uses: google-github-actions/ssh-compute@v1
+      #   with:
+      #     instance_name: 'automation-testing'
+      #     zone: 'us-central1-a'
+      #     ssh_private_key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+      #     command: 'ls -la'
 
       # - name: GCP 
       #   run: gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us"
 
-      # - name: 'Deploy'
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: 34.123.181.150
-      #     username: auto
-      #     port: 22
-      #     key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
-      #     passphrase: auto
+      - name: 'Deploy'
+        uses: appleboy/ssh-action@master
+        with:
+          host: 34.123.181.150
+          username: auto
+          port: 22
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          passphrase: auto
 
       - uses: actions/github-script@v6
         with:
