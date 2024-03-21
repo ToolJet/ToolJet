@@ -1,15 +1,9 @@
-import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddAutoCommitColumnToOrgGitTable1708320592518 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.addColumn(
-      'organization_git_sync',
-      new TableColumn({
-        name: 'auto_commit',
-        type: 'boolean',
-        default: false,
-        isNullable: false,
-      })
+    await queryRunner.query(
+      `ALTER TABLE "organization_git_sync" ADD COLUMN IF NOT EXISTS "auto_commit" boolean NOT NULL DEFAULT false`
     );
   }
 

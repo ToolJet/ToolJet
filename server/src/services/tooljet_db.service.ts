@@ -1,5 +1,14 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException, Optional } from '@nestjs/common';
-import { EntityManager, In, ObjectLiteral, QueryFailedError, SelectQueryBuilder, TypeORMError } from 'typeorm';
+import {
+  EntityManager,
+  In,
+  ObjectLiteral,
+  QueryFailedError,
+  SelectQueryBuilder,
+  Table,
+  TableColumn,
+  TypeORMError,
+} from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { LicenseService } from './license.service';
@@ -166,12 +175,16 @@ export class TooljetDbService {
 
     const {
       table_name: tableName,
-      columns: [column, ...restColumns],
+      // columns: [column, ...restColumns],
     } = params;
 
     const queryRunner = this.manager.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.startTransaction();
 
     try {
       const internalTable = queryRunner.manager.create(InternalTable, {
@@ -180,32 +193,25 @@ export class TooljetDbService {
       });
       await queryRunner.manager.save(internalTable);
 
-      const createTableString = `CREATE TABLE "${internalTable.id}" `;
-      let query = `${column['column_name']} ${column['data_type']}`;
-      if (column['column_default']) query += ` DEFAULT ${this.addQuotesIfString(column['column_default'])}`;
-      if (column?.constraints_type?.is_primary_key ?? false) query += ` PRIMARY KEY`;
-      if (column?.constraints_type?.is_not_null ?? false) query += ` NOT NULL`;
-
-      if (restColumns)
-        for (const col of restColumns) {
-          query += `, ${col['column_name']} ${col['data_type']}`;
-          if (col['column_default']) query += ` DEFAULT ${this.addQuotesIfString(col['column_default'])}`;
-          if (col?.constraints_type?.is_primary_key ?? false) query += ` PRIMARY KEY`;
-          if (col?.constraints_type?.is_not_null ?? false) query += ` NOT NULL`;
-        }
-
-      // if tooljetdb query fails in this connection, we must rollback internal table
-      // created in the other connection
-      await this.tooljetDbManager.query(createTableString + '(' + query + ');');
+      await tjdbQueryRunner.createTable(
+        new Table({
+          name: internalTable.id,
+          columns: this.prepareColumnListForCreateTable(params?.columns),
+        })
+      );
 
       await queryRunner.commitTransaction();
+      await tjdbQueryRunner.commitTransaction();
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await queryRunner.release();
+      await tjdbQueryRunner.release();
       return { id: internalTable.id, table_name: tableName };
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await tjdbQueryRunner.rollbackTransaction();
       await queryRunner.release();
+      await tjdbQueryRunner.release();
+      throw err;
     }
   }
 
@@ -266,14 +272,34 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
-    let query = `ALTER TABLE "${internalTable.id}" ADD ${column['column_name']} ${column['data_type']}`;
-    if (column['column_default']) query += ` DEFAULT ${this.addQuotesIfString(column['column_default'])}`;
-    if (column?.constraints_type?.is_primary_key ?? false) query += ` PRIMARY KEY`;
-    if (column?.constraints_type?.is_not_null ?? false) query += ` NOT NULL`;
+    const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
+    await tjdbQueryRunnner.connect();
+    await tjdbQueryRunnner.startTransaction();
 
-    const result = await this.tooljetDbManager.query(query);
-    await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-    return result;
+    try {
+      await tjdbQueryRunnner.addColumn(
+        internalTable.id,
+        new TableColumn({
+          name: column['column_name'],
+          type: column['data_type'],
+          ...(column['column_default'] && {
+            default:
+              column['data_type'] === 'character varying'
+                ? this.addQuotesIfString(column['column_default'])
+                : column['column_default'],
+          }),
+          ...(column?.constraints_type?.is_not_null ?? false ? { isNullable: false } : { isNullable: true }),
+          ...(column?.constraints_type?.is_primary_key ? { isPrimary: true } : {}),
+        })
+      );
+      await tjdbQueryRunnner.commitTransaction();
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await tjdbQueryRunnner.release();
+    } catch (err) {
+      await tjdbQueryRunnner.rollbackTransaction();
+      await tjdbQueryRunnner.release();
+      throw err;
+    }
   }
 
   private async dropColumn(organizationId: string, params) {
@@ -495,29 +521,36 @@ export class TooljetDbService {
     });
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
-    let query = '';
-
-    if ('column_default' in column) {
-      column.column_default.length
-        ? (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${
-            column.column_name
-          } SET DEFAULT ${this.addQuotesIfString(column['column_default'])};`)
-        : (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${column.column_name} DROP DEFAULT;`);
-    }
-
-    if ('is_not_null' in constraints_type) {
-      constraints_type.is_not_null
-        ? (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${column.column_name} SET NOT NULL;`)
-        : (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${column.column_name} DROP NOT NULL;`);
-    }
-
-    if (column?.column_name && column?.new_column_name)
-      query += `ALTER TABLE "${internalTable.id}" RENAME COLUMN ${column.column_name} TO ${column.new_column_name};`;
     const internalTableInfo = {};
+
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.startTransaction();
+
     try {
-      const result = await this.tooljetDbManager.query(query);
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      return result;
+      await tjdbQueryRunner.changeColumn(
+        internalTable.id,
+        column.column_name,
+        new TableColumn({
+          name: column.column_name,
+          type: column['data_type'],
+          ...(column['column_default'] && {
+            default:
+              column['data_type'] === 'character varying'
+                ? this.addQuotesIfString(column['column_default'])
+                : column['column_default'],
+          }),
+          ...(constraints_type?.is_not_null ? { isNullable: false } : { isNullable: true }),
+        })
+      );
+
+      if (column?.column_name && column?.new_column_name) {
+        await tjdbQueryRunner.renameColumn(internalTable.id, column?.column_name, column?.new_column_name);
+      }
+
+      await tjdbQueryRunner.commitTransaction();
+      await tjdbQueryRunner.query("NOTIFY pgrst, 'reload schema'");
+      await tjdbQueryRunner.release();
     } catch (error) {
       internalTableInfo[internalTable.id] = tableName;
       if (error instanceof QueryFailedError || error instanceof TypeORMError) {
@@ -527,7 +560,26 @@ export class TooljetDbService {
         });
         throw new HttpException(customErrorMessage, 422);
       }
+      await tjdbQueryRunner.rollbackTransaction();
+      await tjdbQueryRunner.release();
       throw error;
     }
+  }
+
+  private prepareColumnListForCreateTable(columns) {
+    const columnList = columns.map((column) => {
+      const { column_name, data_type, column_default = undefined, constraints_type = {} } = column;
+
+      return {
+        name: column_name,
+        type: data_type,
+        ...(column_default && {
+          default: data_type === 'character varying' ? this.addQuotesIfString(column_default) : column_default,
+        }),
+        ...(constraints_type?.is_not_null ?? false ? { isNullable: false } : { isNullable: true }),
+        ...(constraints_type?.is_primary_key && { isPrimary: true }),
+      };
+    });
+    return columnList;
   }
 }
