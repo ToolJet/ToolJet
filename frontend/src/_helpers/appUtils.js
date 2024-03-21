@@ -198,9 +198,7 @@ async function executeRunPycode(_ref, code, query, isPreview, mode, currentState
 }
 
 async function exceutePycode(queryResult, code, currentState, query, mode) {
-  const codeWithoutComments = code.replace(/#.*$/gm, '').replace(/^\s+/g, '').replace('return ', '');
-
-  return { data: await evaluatePythonCode({ queryResult, code: codeWithoutComments, query, mode, currentState }) };
+  return await evaluatePythonCode({ queryResult, code, query, mode, currentState });
 }
 
 export async function runPythonTransformation(currentState, rawData, transformation, query, mode) {
