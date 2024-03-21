@@ -79,22 +79,12 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: Generate SSH Keys
-        run: |
-          ssh-keygen -t rsa -f ~/.ssh/google_compute_engine -C 'adish@tooljet.com' -q -N ''
-          PRIVATE_KEY=$(<~/.ssh/google_compute_engine)
-
-      - name: Set up SSH key
-        run: |
-          echo "$PRIVATE_KEY" > ~/.ssh/google_compute_engine
-          chmod 600 ~/.ssh/google_compute_engine
-
       - id: compute-ssh
         uses: google-github-actions/ssh-compute@v1
         with:
-          instance_name: 'example-instance'
+          instance_name: 'automation-testing'
           zone: 'us-central1-a'
-          ssh_private_key: ${{ env.PRIVATE_KEY }}
+          ssh_private_key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
           command: 'ls -la'
 
       - uses: actions/github-script@v6
