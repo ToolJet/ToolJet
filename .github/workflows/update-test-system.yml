@@ -94,10 +94,9 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: 34.123.181.150
-          username: auto
+          username: workflow
           port: 22
           key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
-          passphrase: auto
 
       - uses: actions/github-script@v6
         with:
