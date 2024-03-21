@@ -1,5 +1,5 @@
 import React from 'react';
-import { datasourceService, pluginsService, globalDatasourceService, appsService } from '@/_services';
+import { datasourceService, pluginsService, globalDatasourceService, libraryAppService } from '@/_services';
 import cx from 'classnames';
 import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
@@ -16,7 +16,7 @@ import {
 } from './SourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
-import { capitalize, isEmpty, sample } from 'lodash';
+import { capitalize, isEmpty } from 'lodash';
 import { Card } from '@/_ui/Card';
 import { withTranslation, useTranslation } from 'react-i18next';
 import { camelizeKeys, decamelizeKeys } from 'humps';
@@ -28,8 +28,6 @@ import { shallow } from 'zustand/shallow';
 import { useDataSourcesStore } from '../../_stores/dataSourcesStore';
 import { withRouter } from '@/_hoc/withRouter';
 import './dataSourceManager.theme.scss';
-import configs from '../../HomePage/Configs/AppIcon.json';
-const { iconList } = configs;
 
 const DATA_SOURCE_USE_TYPE = {
   SAMPLE: 'sample',
@@ -546,13 +544,9 @@ class DataSourceManagerComponent extends React.Component {
     let _self = this;
     _self.setState({ creatingApp: true });
     try {
-      const data = await appsService.createSampleApp({
-        icon: sample(iconList),
-        name: 'Sample app ',
-        isSampleApp: true,
-      });
+      const data = await libraryAppService.createSampleApp();
       const workspaceId = getWorkspaceId();
-      window.open(`/${workspaceId}/apps/${data.id}`, '_blank');
+      window.open(`/${workspaceId}/apps/${data.app[0].id}`, '_blank');
       toast.success('App created successfully!');
       _self.setState({ creatingApp: false });
       return true;
@@ -592,8 +586,11 @@ class DataSourceManagerComponent extends React.Component {
             onClick={this.createSampleApp}
             fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
           >
-            Create sample appplication
+            Create sample application
           </ButtonSolid>
+        </div>
+        <div className="image-container">
+          <img src="assets/images/Sample data source.png" className="img-sample-db" alt="Sample data source" />
         </div>
       </div>
     );
@@ -788,6 +785,13 @@ class DataSourceManagerComponent extends React.Component {
     const createSelectedDataSource = (dataSource) => {
       this.selectDataSource(dataSource);
     };
+
+    const sampleDBmodalBodyStyle =
+      selectedDataSource?.type === DATA_SOURCE_USE_TYPE.SAMPLE
+        ? { paddingBottom: '0px', borderBottom: '1px solid #E6E8EB' }
+        : {};
+    const sampleDBmodalFooterStyle =
+      selectedDataSource?.type === DATA_SOURCE_USE_TYPE.SAMPLE ? { paddingTop: '8px' } : {};
     const isSaveDisabled = selectedDataSource
       ? deepEqual(options, selectedDataSource?.options, ['encrypted']) && selectedDataSource?.name === datasourceName
       : true;
@@ -870,7 +874,7 @@ class DataSourceManagerComponent extends React.Component {
               </div>
               {this.renderEnvironmentsTab(selectedDataSource)}
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body style={sampleDBmodalBodyStyle}>
               {selectedDataSource && selectedDataSource?.type != DATA_SOURCE_USE_TYPE.SAMPLE ? (
                 <div>{this.renderSourceComponent(selectedDataSource.kind, isPlugin)}</div>
               ) : (
@@ -881,7 +885,7 @@ class DataSourceManagerComponent extends React.Component {
             </Modal.Body>
 
             {selectedDataSource && !dataSourceMeta.customTesting && (
-              <Modal.Footer className="modal-footer-class">
+              <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
                 {selectedDataSource && selectedDataSource?.type != DATA_SOURCE_USE_TYPE.SAMPLE && (
                   <div className="row w-100">
                     <div className="card-body datasource-footer-info">

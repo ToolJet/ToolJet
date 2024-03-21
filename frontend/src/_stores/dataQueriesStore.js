@@ -132,10 +132,11 @@ export const useDataQueriesStore = create(
           actions.setSelectedQuery(selectedQuery.id);
         },
         // createDataQuery: (appId, appVersionId, options, kind, name, selectedDataSource, shouldRunQuery) => {
-        createDataQuery: (selectedDataSource, shouldRunQuery) => {
+        createDataQuery: (selectedDataSource, shouldRunQuery, customOptions = {}) => {
           const appVersionId = useAppVersionStore.getState().editingVersion?.id;
           const appId = useAppDataStore.getState().appId;
-          const { options, name } = getDefaultOptions(selectedDataSource);
+          const { options: defaultOptions, name } = getDefaultOptions(selectedDataSource);
+          const options = { ...defaultOptions, ...customOptions };
           const kind = selectedDataSource.kind;
           const tempId = uuidv4();
           set({ creatingQueryInProcessId: tempId });

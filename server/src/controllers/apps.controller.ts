@@ -25,7 +25,7 @@ import { AppUpdateDto } from '@dto/app-update.dto';
 import { AppCreateDto } from '@dto/app-create.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
 import { VersionEditDto } from '@dto/version-edit.dto';
-import { dbTransactionWrap, getMaxCopyNumber } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
@@ -62,18 +62,6 @@ export class AppsController {
 
       return decamelizeKeys(app);
     });
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('sample')
-  async createSample(@User() user, @Body() appCreateDto: AppCreateDto) {
-    const isSampleApp = appCreateDto.isSampleApp;
-    if (!isSampleApp) return;
-    const allSampleApps = await this.appsService.findAll(user?.organizationId, { name: appCreateDto.name });
-    const existNameList = allSampleApps.map((app) => app.name);
-    const maxNumber = getMaxCopyNumber(existNameList, ' ');
-    appCreateDto.name = `${appCreateDto.name} ${maxNumber}`;
-    return await this.create(user, appCreateDto);
   }
 
   @UseGuards(JwtAuthGuard)

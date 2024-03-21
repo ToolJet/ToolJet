@@ -1,7 +1,12 @@
 @import '../../_styles/colors.scss';
 
+
+
+
 .sample-db-modal-body{
     min-height: calc(100vh - 380px);;
+    margin-bottom: 0;
+    padding-top: 40px;
     
     .sample-db-title {
         margin-top: 40px;
@@ -34,8 +39,18 @@
         padding: 0;
     }
     }
+
+    .img-sample-db{
+        height: 40%;
+        width: 70%;
+        position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    }
     
 }
+
 .modal-footer-class{
     .test-connection-sample-db{
         margin-right: 90px;
