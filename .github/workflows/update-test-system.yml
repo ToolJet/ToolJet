@@ -79,6 +79,9 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
+      - name: GCP 
+        run: gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us"
+
       - name: GCP ssh
         id: compute-ssh
         uses: google-github-actions/ssh-compute@v1
@@ -87,9 +90,6 @@ jobs:
           zone: 'us-central1-a'
           ssh_private_key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
           command: 'ls -la'
-
-      # - name: GCP 
-      #   run: gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us"
 
       - uses: actions/github-script@v6
         with:
