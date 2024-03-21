@@ -79,12 +79,13 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: executing remote ssh commands using password
-        uses: appleboy/ssh-action@v1.0.3
+      - id: compute-ssh
+        uses: google-github-actions/ssh-compute@v1
         with:
-          host: 34.123.181.150
-          password: ${{ secrets.CP_SSH_PRIVATE_KEY }}
-          passphrase: auto
+          instance_name: 'automation-testing'
+          zone: 'us-central1-a'
+          ssh_private_key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          command: 'ls -la'
 
       - uses: actions/github-script@v6
         with:
