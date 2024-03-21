@@ -5,6 +5,8 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
 
+  const elem = document.querySelector('.table-tags-col-container');
+
   useEffect(() => {
     if (hovered) {
       setShowOverlay(true);
@@ -100,9 +102,19 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
     <OverlayTrigger
       placement="bottom"
       overlay={getOverlay(value, containerWidth)}
-      trigger={!showForm && value?.length >= 1 && ['click']}
+      trigger={
+        elem &&
+        (elem?.clientHeight < elem?.scrollHeight || elem?.clientWidth < elem?.scrollWidth) &&
+        !showForm &&
+        value?.length >= 1 && ['click']
+      }
       rootClose={true}
-      show={value?.length >= 1 && showOverlay}
+      show={
+        elem &&
+        (elem?.clientHeight < elem?.scrollHeight || elem?.clientWidth < elem?.scrollWidth) &&
+        value?.length >= 1 &&
+        showOverlay
+      }
     >
       <div
         className="tags row h-100"
@@ -125,7 +137,7 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
         {/* Container for renderTags */}
         {!showForm && (
           <div
-            className="render-tags-container h-100 d-flex flex-wrap custom-gap-3"
+            className="render-tags-container table-tags-col-container h-100 d-flex flex-wrap custom-gap-3"
             style={{ width: '80%', overflow: 'hidden' }}
           >
             {value.map((item, index) => (

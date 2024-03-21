@@ -7,6 +7,10 @@ export const CustomDropdown = ({ options, value, multiple, onChange, isEditable,
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
 
+  const elem = document.querySelector(
+    '.table-custom-select-badge-badges .select-search-container.select-search-is-multiple .select-search-value > div'
+  );
+
   useEffect(() => {
     if (hovered) {
       setShowOverlay(true);
@@ -112,10 +116,10 @@ export const CustomDropdown = ({ options, value, multiple, onChange, isEditable,
   return (
     <OverlayTrigger
       placement="bottom"
-      overlay={multiple && getOverlay(value, width, options)}
-      trigger={multiple && value?.length >= 1 && ['hover']}
+      overlay={multiple && elem && elem?.clientHeight < elem?.scrollHeight && getOverlay(value, width, options)}
+      trigger={multiple && elem && elem?.clientHeight < elem?.scrollHeight && value?.length >= 1 && ['hover']}
       rootClose={true}
-      show={multiple && value?.length >= 1 && showOverlay}
+      show={multiple && elem && elem?.clientHeight < elem?.scrollHeight && value?.length >= 1 && showOverlay}
     >
       <div
         className={`custom-select d-flex align-items-center table-custom-select-badge-badges w-100 h-100 position-relative ${
@@ -128,7 +132,7 @@ export const CustomDropdown = ({ options, value, multiple, onChange, isEditable,
         onMouseMove={() => {
           if (!hovered) setHovered(true);
         }}
-        onMouseOut={() => setHovered(false)}
+        onMouseLeave={() => setHovered(false)}
       >
         <SelectSearch
           options={options}
