@@ -241,7 +241,12 @@ class SSOConfiguration extends React.Component {
     const isEnabled = this.state[isEnabledKey] || false;
 
     return (
-      <div className="sso-option" key={key} onClick={() => this.openModal(key)} data-cy="sso-card">
+      <div
+        className="sso-option"
+        key={key}
+        onClick={() => this.openModal(key)}
+        data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-sso-card`}
+      >
         <div className="sso-option-label">
           {
             <div
@@ -305,7 +310,7 @@ class SSOConfiguration extends React.Component {
                 justifyContent: 'flex-start',
               }}
               bsPrefix="no-caret-dropdown-toggle"
-              data-testid="instance-sso-toggle"
+              data-cy="dropdown-custom-toggle"
             >
               <div
                 className="sso-option-label"
@@ -348,7 +353,7 @@ class SSOConfiguration extends React.Component {
             </Dropdown.Menu>
           </Dropdown>
 
-          <label className="switch" style={{ marginLeft: '95px' }}>
+          <label className="switch" style={{ marginLeft: '95px' }} data-cy="instance-sso-toggle">
             <input type="checkbox" checked={defaultSSO} onChange={this.toggleDefaultSSO} />
             <span className="slider round"></span>
           </label>
