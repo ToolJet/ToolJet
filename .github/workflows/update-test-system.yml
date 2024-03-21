@@ -79,6 +79,17 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
+      - name: Connect to GCP
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: tooljet-us
+          version: '>= 363.0.0'
+
+      - name: Install Google Cloud SDK
+        run: |
+          gcloud components install gke-gcloud-auth-plugin
+          gcloud init
+
       - name: GCP 
         run: gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us"
 
