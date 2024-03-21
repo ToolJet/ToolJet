@@ -8,6 +8,7 @@ import { ToolTip } from '@/_components';
 import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
+import { dataTypes } from '../constants';
 
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -83,6 +84,40 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHovered]);
 
+  const filterObjectsByDataType = (dataTypes, col) => {
+    const filteredDataTypes = dataTypes.filter((dataType) => {
+      return col.some((obj) => obj.dataType === dataType.value);
+    });
+
+    return filteredDataTypes;
+  };
+
+  // const primarKeyObjectsByDataType = (dataTypes, col) => {
+  //   const filteredDataTypes = col.filter((item) => {
+  //     return dataTypes.some((obj) => obj.value === item.dataType && item?.constraints_type?.is_primary_key);
+  //   });
+
+  //   return filteredDataTypes;
+  // };
+
+  const selectedColumnDetails = columns.map((item, index) => {
+    const matchedDataTypes = filterObjectsByDataType(dataTypes, [item]); // Get all matched data type objects
+    // const primary = primarKeyObjectsByDataType(dataTypes, [item]);
+    return {
+      [index]: {
+        column_name: item.Header,
+        data_type: item.dataType,
+        constraints_type: item.constraints_type,
+        dataTypeDetails: matchedDataTypes.length > 0 ? matchedDataTypes : null, // Add matched data types or null if no match found
+        column_default: item.column_default,
+        // primary: primary.length > 0 ? primary : null,
+      },
+    };
+  });
+
+  const selectedTableDetails = Object.assign({}, ...selectedColumnDetails);
+  console.log('first', selectedTableDetails);
+
   return (
     <div
       onMouseEnter={() => setIsHovered(true)}
@@ -129,10 +164,13 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         isOpen={isEditTableDrawerOpen}
         onClose={() => setIsEditTableDrawerOpen(false)}
         position="right"
+        drawerStyle={{ width: '630px' }}
       >
         <EditTableForm
           selectedColumns={formColumns}
           selectedTable={selectedTable}
+          selectedTableData={selectedTableDetails}
+          selectedTableDetails={selectedTableDetails}
           updateSelectedTable={updateSelectedTable}
           onEdit={() => setIsEditTableDrawerOpen(false)}
           onClose={() => setIsEditTableDrawerOpen(false)}

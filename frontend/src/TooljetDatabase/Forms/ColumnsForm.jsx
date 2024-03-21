@@ -4,8 +4,9 @@ import cx from 'classnames';
 import AddColumnIcon from '../Icons/AddColumnIcon.svg';
 import ColumnName from '../Icons/ColumnName.svg';
 import TableSchema from './TableSchema';
+import { dataTypes } from '../constants';
 
-const ColumnsForm = ({ columns, setColumns }) => {
+const ColumnsForm = ({ columns, setColumns, isEditMode }) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
 
   const handleDelete = (index) => {
@@ -55,6 +56,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
           columnSelection={columnSelection}
           setColumnSelection={setColumnSelection}
           handleDelete={handleDelete}
+          isEditMode={isEditMode}
         />
 
         <div
