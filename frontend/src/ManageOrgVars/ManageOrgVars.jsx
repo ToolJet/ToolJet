@@ -295,7 +295,7 @@ class ManageOrgVarsComponent extends React.Component {
                         >
                           <Button.Content
                             iconSrc="assets/images/icons/arrow-right.svg"
-                            title={'Go to workspace constants'}
+                            title={'Go to Workspace constants'}
                             direction="right"
                           />
                         </Button>
