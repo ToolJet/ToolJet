@@ -21,7 +21,7 @@ import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
-import { useSampleDataSources } from '@/_stores/dataSourcesStore';
+import { useSampleDataSource } from '@/_stores/dataSourcesStore';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
@@ -57,7 +57,7 @@ export const Container = ({
   // redundant save on app definition load
   const { createDataQuery } = useDataQueriesActions();
   const { setPreviewData } = useQueryPanelActions();
-  const sampleDataSource = useSampleDataSources();
+  const sampleDataSource = useSampleDataSource();
   const firstUpdate = useRef(true);
   const { showComments, currentLayout } = useEditorStore(
     (state) => ({
@@ -563,18 +563,13 @@ export const Container = ({
     [setIsResizing]
   );
 
-  const openDashboardImportTemplate = () => {
-    const workspaceId = getWorkspaceId();
-    window.open(`/${workspaceId}?fromtemplate=true`, '_blank');
-  };
-
   const openAddUserWorkspaceSetting = () => {
     const workspaceId = getWorkspaceId();
     window.open(`/${workspaceId}/workspace-settings?adduser=true`, '_blank');
   };
 
-  const handleChangeDataSource = () => {
-    const source = sampleDataSource[0];
+  const handleConnectSampleDB = () => {
+    const source = sampleDataSource;
     const query = `SELECT tablename \nFROM pg_catalog.pg_tables \nWHERE schemaname='public';`;
     createDataQuery(source, true, { query });
     setPreviewData(null);
@@ -731,7 +726,7 @@ export const Container = ({
               </div>
               <div className="box-link">
                 <div className="child">
-                  <a className="link-but" onClick={handleChangeDataSource}>
+                  <a className="link-but" onClick={handleConnectSampleDB}>
                     Connect to sample data source{' '}
                   </a>
                 </div>

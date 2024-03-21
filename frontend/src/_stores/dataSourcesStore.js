@@ -6,7 +6,7 @@ const initialState = {
   dataSources: [],
   loadingDataSources: true,
   globalDataSources: [],
-  sampleDataSources: [],
+  sampleDataSource: null,
   globalDataSourceStatus: {
     isSaving: false,
     isEditing: false,
@@ -34,7 +34,7 @@ export const useDataSourcesStore = create(
           globalDatasourceService.getAll(organizationId).then((data) => {
             set({
               globalDataSources: data.data_sources?.filter((source) => source?.type != DATA_SOURCE_TYPE.SAMPLE),
-              sampleDataSources: data.data_sources?.filter((source) => source?.type == DATA_SOURCE_TYPE.SAMPLE),
+              sampleDataSource: data.data_sources?.filter((source) => source?.type == DATA_SOURCE_TYPE.SAMPLE)[0],
             });
           });
         },
@@ -53,7 +53,7 @@ export const useDataSourcesStore = create(
 
 export const useDataSources = () => useDataSourcesStore((state) => state.dataSources);
 export const useGlobalDataSources = () => useDataSourcesStore((state) => state.globalDataSources);
-export const useSampleDataSources = () => useDataSourcesStore((state) => state.sampleDataSources);
+export const useSampleDataSource = () => useDataSourcesStore((state) => state.sampleDataSource);
 export const useLoadingDataSources = () => useDataSourcesStore((state) => state.loadingDataSources);
 export const useDataSourcesActions = () => useDataSourcesStore((state) => state.actions);
 export const useGlobalDataSourcesStatus = () => useDataSourcesStore((state) => state.globalDataSourceStatus);

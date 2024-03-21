@@ -27,11 +27,8 @@ import { ConfirmDialog } from '@/_components';
 import { shallow } from 'zustand/shallow';
 import { useDataSourcesStore } from '../../_stores/dataSourcesStore';
 import { withRouter } from '@/_hoc/withRouter';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import './dataSourceManager.theme.scss';
-
-const DATA_SOURCE_USE_TYPE = {
-  SAMPLE: 'sample',
-};
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -785,13 +782,9 @@ class DataSourceManagerComponent extends React.Component {
     const createSelectedDataSource = (dataSource) => {
       this.selectDataSource(dataSource);
     };
-
-    const sampleDBmodalBodyStyle =
-      selectedDataSource?.type === DATA_SOURCE_USE_TYPE.SAMPLE
-        ? { paddingBottom: '0px', borderBottom: '1px solid #E6E8EB' }
-        : {};
-    const sampleDBmodalFooterStyle =
-      selectedDataSource?.type === DATA_SOURCE_USE_TYPE.SAMPLE ? { paddingTop: '8px' } : {};
+    const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
+    const sampleDBmodalBodyStyle = isSampleDb ? { paddingBottom: '0px', borderBottom: '1px solid #E6E8EB' } : {};
+    const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
     const isSaveDisabled = selectedDataSource
       ? deepEqual(options, selectedDataSource?.options, ['encrypted']) && selectedDataSource?.name === datasourceName
       : true;
@@ -828,7 +821,7 @@ class DataSourceManagerComponent extends React.Component {
                   </div>
                 )}
                 <Modal.Title className="mt-3">
-                  {selectedDataSource && selectedDataSource?.type !== DATA_SOURCE_USE_TYPE.SAMPLE ? (
+                  {selectedDataSource && isSampleDb ? (
                     <div className="row selected-ds">
                       {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
                       <div className="input-icon" style={{ width: '160px' }}>
@@ -875,18 +868,17 @@ class DataSourceManagerComponent extends React.Component {
               {this.renderEnvironmentsTab(selectedDataSource)}
             </Modal.Header>
             <Modal.Body style={sampleDBmodalBodyStyle}>
-              {selectedDataSource && selectedDataSource?.type != DATA_SOURCE_USE_TYPE.SAMPLE ? (
+              {selectedDataSource && isSampleDb ? (
                 <div>{this.renderSourceComponent(selectedDataSource.kind, isPlugin)}</div>
               ) : (
-                selectedDataSource &&
-                selectedDataSource?.type == DATA_SOURCE_USE_TYPE.SAMPLE && <div>{this.renderSampleDBModal()}</div>
+                selectedDataSource && isSampleDb && <div>{this.renderSampleDBModal()}</div>
               )}
               {!selectedDataSource && this.segregateDataSources(this.state.suggestingDatasources, this.props.darkMode)}
             </Modal.Body>
 
             {selectedDataSource && !dataSourceMeta.customTesting && (
               <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
-                {selectedDataSource && selectedDataSource?.type != DATA_SOURCE_USE_TYPE.SAMPLE && (
+                {selectedDataSource && isSampleDb && (
                   <div className="row w-100">
                     <div className="card-body datasource-footer-info">
                       <div className="row">
@@ -962,11 +954,7 @@ class DataSourceManagerComponent extends React.Component {
                   </a>
                 </div>
                 <div
-                  className={
-                    selectedDataSource?.type !== DATA_SOURCE_USE_TYPE.SAMPLE
-                      ? `col-auto`
-                      : 'col-auto test-connection-sample-db'
-                  }
+                  className={isSampleDb ? `col-auto` : 'col-auto test-connection-sample-db'}
                   data-cy="button-test-connection"
                 >
                   <TestConnection
@@ -978,7 +966,7 @@ class DataSourceManagerComponent extends React.Component {
                     environmentId={this.props.currentEnvironment?.id}
                   />
                 </div>
-                {selectedDataSource?.type !== DATA_SOURCE_USE_TYPE.SAMPLE && (
+                {isSampleDb && (
                   <div className="col-auto" data-cy="db-connection-save-button">
                     <ButtonSolid
                       className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
