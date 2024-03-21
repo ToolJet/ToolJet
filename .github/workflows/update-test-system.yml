@@ -88,10 +88,10 @@ jobs:
       #     command: 'ls -la'
 
       - name: GCP 
-        run: |
-          gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us"
-          gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us"
+        run: gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us"
 
+      - name: ssh into vm
+        run: ssh -T runner@34.123.181.150 'ls -l'
 
       - uses: actions/github-script@v6
         with:
