@@ -44,7 +44,6 @@ const getDate = ({
     if (parseInUnixTimestamp && unixTimestamp) {
       momentObj = unixTimestamp === 'seconds' ? moment.unix(value) : moment(parseInt(value));
     } else if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
-      // momentObj = moment(value, parseDateFormat).tz(timeZoneValue);
       momentObj = moment.tz(value, parseDateFormat, timeZoneValue).tz(timeZoneDisplay);
     } else {
       momentObj = moment(value, parseDateFormat);
@@ -58,7 +57,6 @@ export const Datepicker = function Datepicker({
   onChange,
   readOnly,
   isTimeChecked,
-  tableRef,
   dateDisplayFormat, //?Display date format
   parseDateFormat, //?Parse date format
   timeZoneValue,
@@ -110,8 +108,8 @@ export const Datepicker = function Datepicker({
   ]);
 
   const dateInputRef = useRef(null); // Create a ref
-  const computeDateString = (date) => {
-    // if (!date) return
+
+  const computeDateString = () => {
     const _date = getDate({
       value,
       parseDateFormat,
@@ -155,15 +153,14 @@ export const Datepicker = function Datepicker({
     <div ref={pickerRef}>
       <DatePickerComponent
         className={`input-field form-control tj-text-input-widget validation-without-icon px-2`}
-        popperClassName={`tj-datepicker-widget`}
+        popperClassName={!isDateSelectionEnabled && isTimeChecked ? `tj-timepicker-widget` : `tj-datepicker-widget `}
         selected={date}
         onChange={(date) => handleDateChange(date)}
-        value={date !== null ? computeDateString(date) : 'Invalid date'}
+        value={date !== null ? computeDateString() : 'Invalid date'}
         dateFormat={dateDisplayFormat}
         customInput={
           <TjDatepicker dateInputRef={dateInputRef} readOnly={readOnly} styles={{ color: cellStyles.color }} />
         }
-        timeFormat={'HH:mm'}
         showTimeSelect={isTimeChecked}
         showTimeSelectOnly={!isDateSelectionEnabled && isTimeChecked}
         showMonthDropdown

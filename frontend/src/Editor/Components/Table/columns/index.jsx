@@ -74,7 +74,7 @@ export default function generateColumnsData({
       column.isTimeChecked = column.isTimeChecked ? column.isTimeChecked : false;
       column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
       column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
-      column.isDateSelectionEnabled = column.parseDateFormat ?? true;
+      column.isDateSelectionEnabled = column.isDateSelectionEnabled ?? true;
       sortType = (firstDate, secondDate) => {
         const columnKey = column.key || column.name;
         // Return -1 if second date is higher, 1 if first date is higher
