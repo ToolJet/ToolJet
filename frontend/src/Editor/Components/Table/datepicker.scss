@@ -10,6 +10,10 @@
     &.react-datepicker-popper {
         background-color: unset;
     }
+    .react-datepicker__time-container {
+        right: 0px
+    }
+
 }
 
 .react-datepicker__header {
@@ -228,7 +232,7 @@ select {
     padding: 0px;
     height: 24px;
     text-align: center;
-    margin-right: 6px !important;
+    // margin-right: 6px !important;
     color: #1B1F24;
     font-weight: 500;
 

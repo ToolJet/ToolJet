@@ -4,4 +4,9 @@
     padding: 10px;
     background-color: transparent;
     color: var(--text-primary);
+
+    .react-datepicker__time-container {
+        right: 0px
+    }
 }
+

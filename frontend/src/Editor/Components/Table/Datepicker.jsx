@@ -172,6 +172,7 @@ export const Datepicker = function Datepicker({
         shouldCloseOnSelect
         readOnly={readOnly}
         popperProps={{ strategy: 'fixed' }}
+        timeIntervals={15}
       />
     </div>
   );

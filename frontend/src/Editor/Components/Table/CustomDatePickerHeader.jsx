@@ -41,15 +41,19 @@ const CustomDatePickerHeader = ({
       >
         <button
           className="tj-datepicker-widget-arrows tj-datepicker-widget-left"
-          onClick={decreaseMonth}
+          onClick={(e) => {
+            e.stopPropagation();
+            decreaseMonth();
+          }}
           disabled={prevMonthButtonDisabled}
         >
           <SolidIcon name="cheveronleft" width="12" />
         </button>
-        <div>
+        <div style={{ marginRight: '8px' }}>
           <select
             value={months[getMonth(date)]}
             onChange={({ target: { value } }) => changeMonth(months.indexOf(value))}
+            style={{ width: '45px' }}
           >
             {months.map((option) => (
               <option key={option} value={option}>
@@ -68,7 +72,10 @@ const CustomDatePickerHeader = ({
 
         <button
           className="tj-datepicker-widget-arrows tj-datepicker-widget-right "
-          onClick={increaseMonth}
+          onClick={(e) => {
+            e.stopPropagation();
+            increaseMonth();
+          }}
           disabled={nextMonthButtonDisabled}
         >
           <SolidIcon name="cheveronright" width="12" />

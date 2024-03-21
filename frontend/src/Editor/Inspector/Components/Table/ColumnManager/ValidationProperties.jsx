@@ -4,6 +4,7 @@ import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
 import ReactDatePicker from 'react-datepicker';
 import moment from 'moment';
 import Timepicker from '@/ToolJetUI/TimePicker/Timepicker';
+import CustomDatePickerHeader from '@/Editor/Components/Table/CustomDatePickerHeader';
 
 const getDate = (date, format) => {
   const dateMomentInstance = date && moment(date, format);
@@ -168,6 +169,7 @@ export const ValidationProperties = ({
               onChange={(date) => onColumnItemChange(index, validation.property, moment(date).format('MM/DD/YYYY'))}
               showTimeSelectOnly={validation.showOnlyTime}
               placeholderText={validation?.placeholder ?? ''}
+              renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
             />
           </div>
         );

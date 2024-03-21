@@ -77,8 +77,12 @@ const UNIX_TIMESTAMP_OPTIONS = [
 const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnItemChange, component }) => {
   const { t } = useTranslation();
   const items = [];
-  const [isDateDisplayFormatFxOn, setIsDateDisplayFormatFxOn] = useState(true);
-  const [isParseDateFormatFxOn, setIsParseDateFormatFxOn] = useState(true);
+  const [isDateDisplayFormatFxOn, setIsDateDisplayFormatFxOn] = useState(
+    !column?.notActiveFxActiveFields?.includes('dateFormat') ?? true
+  );
+  const [isParseDateFormatFxOn, setIsParseDateFormatFxOn] = useState(
+    !column?.notActiveFxActiveFields?.includes('parseDateFormat') ?? true
+  );
 
   items.push(
     {
@@ -115,15 +119,16 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                     <span>
                       <FxButton
                         active={isDateDisplayFormatFxOn}
-                        onPress={(active) => {
-                          console.log(active, 'active');
+                        onPress={() => {
+                          let resultFxActiveFields = column?.notActiveFxActiveFields || [];
+                          if (isDateDisplayFormatFxOn) {
+                            resultFxActiveFields.push('dateFormat');
+                          } else {
+                            resultFxActiveFields = resultFxActiveFields.filter((field) => field !== 'dateFormat');
+                          }
                           setIsDateDisplayFormatFxOn(!isDateDisplayFormatFxOn);
-                          // if (active) {
-                          //   console.log('Yes')
-                          //   onColumnItemChange(index, 'notActiveFxActiveFields', ['fxActiveFields'])
-                          // } else {
-                          //   onColumnItemChange(index, 'notActiveFxActiveFields', [''])
-                          // }
+                          console.log(resultFxActiveFields);
+                          onColumnItemChange(index, 'notActiveFxActiveFields', resultFxActiveFields);
                         }}
                       />
                     </span>
@@ -289,7 +294,14 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                       <FxButton
                         active={isParseDateFormatFxOn}
                         onPress={() => {
+                          let resultFxActiveFields = column?.notActiveFxActiveFields || [];
+                          if (isDateDisplayFormatFxOn) {
+                            resultFxActiveFields.push('parseDateFormat');
+                          } else {
+                            resultFxActiveFields = resultFxActiveFields.filter((field) => field !== 'parseDateFormat');
+                          }
                           setIsParseDateFormatFxOn(!isParseDateFormatFxOn);
+                          onColumnItemChange(index, 'notActiveFxActiveFields', resultFxActiveFields);
                         }}
                       />
                     </span>
