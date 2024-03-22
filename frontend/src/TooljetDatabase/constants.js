@@ -5,6 +5,7 @@ import Integer from './Icons/Integer.svg';
 import CharacterVar from './Icons/Text.svg';
 import Boolean from './Icons/Toggle.svg';
 import Serial from './Icons/Serial.svg';
+import ArrowRight from './Icons/ArrowRight.svg';
 
 export const dataTypes = [
   {
@@ -17,9 +18,10 @@ export const dataTypes = [
   { name: 'Integers up to 8 bytes', label: 'bigint', icon: <BigInt width="16" height="16" />, value: 'bigint' },
   { name: 'Decimal numbers', label: 'float', icon: <Float width="16" height="16" />, value: 'double precision' },
   { name: 'Boolean True/False', label: 'boolean', icon: <Boolean width="16" height="16" />, value: 'boolean' },
+  { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
 ];
 
-export const primaryKeydataTypes = [
+export const defaultdataType = [
   { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
 ];
 
@@ -55,6 +57,37 @@ export const isSerialDataType = (columnDetails) => {
     if (column_default.includes(serialDatatypeDefaultValuePattern)) return true;
   }
   return false;
+};
+
+export const ChangesComponent = ({ currentPrimaryKeyIcons, newPrimaryKeyIcons }) => {
+  return (
+    <div className="new-changes-container">
+      <div className="changes-title">
+        <span>Current primary key</span>
+        <ArrowRight />
+        <span>New primary key</span>
+      </div>
+      <div className="key-changes-container">
+        <div className="primarykeyDetails-container">
+          {currentPrimaryKeyIcons.map((item, index) => (
+            <div className="currentKey-details" key={index}>
+              {item.icon}
+              <span className="currentPrimaryKey-columnName">{item.columnName}</span>
+            </div>
+          ))}
+        </div>
+        <div className="newkeyDetails-container">
+          {newPrimaryKeyIcons.map((item, index) => (
+            <div className="newKey-details" key={index}>
+              {item.icon}
+              <span className="newPrimaryKey-columnName">{item.columnName}</span>
+            </div>
+          ))}
+        </div>
+        <div></div>
+      </div>
+    </div>
+  );
 };
 
 export default function tjdbDropdownStyles(

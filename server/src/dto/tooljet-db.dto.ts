@@ -108,6 +108,11 @@ export class ConstraintTypeDto {
   @IsOptional()
   @Validate(SQLInjectionValidator)
   is_primary_key: Array<string>;
+
+  @IsOptional()
+  @IsBoolean()
+  @Validate(SQLInjectionValidator)
+  is_unique: boolean;
 }
 
 export class CreatePostgrestTableDto {
