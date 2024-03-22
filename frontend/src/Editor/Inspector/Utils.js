@@ -43,7 +43,8 @@ export function renderCustomStyles(
     componentConfig.component == 'Listview' ||
     componentConfig.component == 'TextInput' ||
     componentConfig.component == 'NumberInput' ||
-    componentConfig.component == 'PasswordInput'
+    componentConfig.component == 'PasswordInput' ||
+    componentConfig.component == 'Button'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

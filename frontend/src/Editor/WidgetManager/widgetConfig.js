@@ -575,8 +575,8 @@ export const widgets = [
     description: 'Trigger actions: queries, alerts, set variables etc.',
     component: 'Button',
     defaultSize: {
-      width: 3,
-      height: 30,
+      width: 4,
+      height: 40,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -593,9 +593,27 @@ export const widgets = [
       loadingState: {
         type: 'toggle',
         displayName: 'Loading state',
-        validation: {
-          schema: { type: 'boolean' },
-        },
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      tooltip: {
+        type: 'code',
+        displayName: 'Tooltip',
+        validation: { schema: { type: 'string' } },
+        section: 'additionalActions',
+        placeholder: 'Enter tooltip text',
       },
     },
     events: {
@@ -603,6 +621,16 @@ export const widgets = [
       onHover: { displayName: 'On hover' },
     },
     styles: {
+      type: {
+        type: 'switch',
+        displayName: 'Type',
+        validation: { schema: { type: 'string' } },
+        options: [
+          { displayName: 'Primary', value: 'primary' },
+          { displayName: 'Outline', value: 'outline' },
+        ],
+        accordian: 'button',
+      },
       backgroundColor: {
         type: 'color',
         displayName: 'Background color',
@@ -610,6 +638,7 @@ export const widgets = [
           schema: { type: 'string' },
           defaultValue: false,
         },
+        accordian: 'button',
       },
       textColor: {
         type: 'color',
@@ -618,6 +647,7 @@ export const widgets = [
           schema: { type: 'string' },
           defaultValue: false,
         },
+        accordian: 'button',
       },
       loaderColor: {
         type: 'color',
@@ -626,42 +656,70 @@ export const widgets = [
           schema: { type: 'string' },
           defaultValue: false,
         },
+        accordian: 'button',
       },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schema: { type: 'boolean' },
-          defaultValue: false,
-        },
+
+      icon: {
+        type: 'icon',
+        displayName: 'Icon',
+        validation: { schema: { type: 'string' } },
+        accordian: 'button',
+
+        visibility: false,
       },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schema: { type: 'boolean' },
-          defaultValue: false,
-        },
+      iconColor: {
+        type: 'color',
+        displayName: 'Icon color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'button',
+
+        visibility: false,
+      },
+
+      direction: {
+        type: 'switch',
+        displayName: '',
+        validation: { schema: { type: 'string' } },
+        showLabel: false,
+        isIcon: true,
+        options: [
+          { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+          { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+        ],
+        accordian: 'button',
       },
       borderRadius: {
-        type: 'number',
+        type: 'numberInput',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'number' },
+          validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
           defaultValue: false,
         },
+        accordian: 'button',
       },
-      borderColor: {
-        type: 'color',
-        displayName: 'Border color',
-        validation: {
-          schema: { type: 'string' },
-          defaultValue: false,
-        },
+      boxShadow: {
+        type: 'boxShadow',
+        displayName: 'Box shadow',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'button',
+      },
+
+      padding: {
+        type: 'switch',
+        displayName: 'Padding',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        options: [
+          { displayName: 'Default', value: 'default' },
+          { displayName: 'None', value: 'none' },
+        ],
+        accordian: 'container',
       },
     },
     exposedVariables: {
       buttonText: 'Button',
+      isVisible: true,
+      isDisabled: false,
+      isLoading: false,
     },
     actions: [
       {
@@ -675,18 +733,33 @@ export const widgets = [
       },
       {
         handle: 'disable',
-        displayName: 'Disable',
+        displayName: 'Disable(deprecated)',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
       {
         handle: 'visibility',
-        displayName: 'Visibility',
+        displayName: 'Visibility(deprecated)',
         params: [{ handle: 'visible', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
       {
         handle: 'loading',
-        displayName: 'Loading',
+        displayName: 'Loading(deprecated)',
         params: [{ handle: 'loading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      },
+      {
+        handle: 'setVisibility',
+        displayName: 'setVisibility',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setDisable',
+        displayName: 'setDisable',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setLoading',
+        displayName: 'setLoading',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
     ],
     definition: {
@@ -696,17 +769,24 @@ export const widgets = [
       },
       properties: {
         text: { value: `Button` },
-        loadingState: { value: `{{false}}` },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+        loadingState: { value: '{{false}}' },
+        tooltip: { value: '' },
       },
       events: [],
       styles: {
-        backgroundColor: { value: '#375FCF' },
-        textColor: { value: '#fff' },
-        loaderColor: { value: '#fff' },
-        visibility: { value: '{{true}}' },
-        borderRadius: { value: '{{4}}' },
-        borderColor: { value: '#375FCF' },
-        disabledState: { value: '{{false}}' },
+        textColor: { value: '#FFFFFF' },
+        loaderColor: { value: '#FFFFFF' },
+        borderRadius: { value: '{{6}}' },
+        backgroundColor: { value: '#4368E3' },
+        iconColor: { value: '#FFFFFF' },
+        direction: { value: 'right' },
+        padding: { value: 'default' },
+        boxShadow: { value: '0px 0px 0px 0px #00000040' },
+        icon: { value: 'IconAlignBoxBottomLeft' },
+        iconVisibility: { value: false },
+        type: { value: 'primary' },
       },
     },
   },
@@ -1610,7 +1690,7 @@ export const widgets = [
       },
       boxShadow: {
         type: 'boxShadow',
-        displayName: 'Box Shadow',
+        displayName: 'Box shadow',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'field',
       },
@@ -1754,10 +1834,10 @@ export const widgets = [
       },
       decimalPlaces: {
         type: 'code',
-        displayName: 'Decimal places',
-        validation: {
-          schema: { type: 'number' },
-        },
+        displayName: 'Tooltip',
+        validation: { schema: { type: 'string' } },
+        section: 'additionalActions',
+        placeholder: 'Enter tooltip text',
       },
       loadingState: {
         type: 'toggle',
@@ -1847,6 +1927,7 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
+
       borderColor: {
         type: 'color',
         displayName: 'Border',
@@ -1894,7 +1975,7 @@ export const widgets = [
       },
       boxShadow: {
         type: 'boxShadow',
-        displayName: 'Box Shadow',
+        displayName: 'Box shadow',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'field',
       },
