@@ -49,6 +49,7 @@ const sidebars = {
       },
       'items': [
         'setup/try-tooljet',
+        'setup/system-requirements',
         'setup/digitalocean',
         'setup/docker',
         'setup/ec2',
@@ -185,6 +186,7 @@ const sidebars = {
       'type': 'category',
       'label': 'How To',
       'items': [
+        'how-to/use-url-params-on-load',
         'how-to/use-custom-parameters',
         'how-to/setup-rsyslog',
         'how-to/use-inspector',

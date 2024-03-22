@@ -12,11 +12,13 @@ ToolJet allows you to execute various [actions](/docs/actions/show-alert) within
 **Syntax:**
 
 ```js
-queries.queryName.run();
+queries.getSalesData.run()
+// replace getSalesData with your query name
 ```
 or
 ```js
-await actions.runQuery('queryName');
+await actions.runQuery('getSalesData') 
+// replace getSalesData with your query name
 ```
 
 **Example:**
