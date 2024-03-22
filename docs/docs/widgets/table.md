@@ -62,6 +62,10 @@ The table data can be downloaded in various file formats, including:
 - **Excel**
 - **PDF**
 
+The name of the downloaded file will be in the following format: <br/>
+`Tablename_DD-MM-YYYY_HH-mm.filetype` <br/><br/>
+Example: <i>Customers_25-03-2022_16-10.csv</i>
+
 You have the option to **[hide the download button](/docs/widgets/table#show-download-button)** in the table properties.
 
 :::tip
@@ -520,6 +524,11 @@ Enter the number for the maximum length of characters allowed.
 ### Custom rule
 
 If the condition is true, the validation passes, otherwise return a string that should be displayed as the error message. For example: `{{components.table1.selectedRow.id==1&&"This row can't be deleted"}}`
+
+## Make all columns editable
+
+To make all the columns editable in your table, you can enable the `Make all columns editable` toggle. If you disable the `Make editable` property of any individual column, `Make all columns editable` will automatically switch to disabled.
+
 
 ## Action buttons
 
