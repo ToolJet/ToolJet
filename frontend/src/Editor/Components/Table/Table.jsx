@@ -54,6 +54,7 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import moment from 'moment';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -342,6 +343,10 @@ export function Table({
       // Returning false as downloading of file is already taken care of
       return false;
     }
+  }
+
+  function getExportFileName() {
+    return `${component?.name}_${moment().format('DD-MM-YYYY_HH-mm')}`;
   }
 
   function onPageIndexChanged(page) {
@@ -633,6 +638,7 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
+      getExportFileName,
       disableSortBy: !enabledSort,
       manualSortBy: serverSideSort,
       stateReducer: (newState, action, prevState) => {
