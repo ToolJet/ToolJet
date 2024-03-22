@@ -463,7 +463,6 @@ export default function DragContainer({
         }}
         checkInput
         onDragStart={(e) => {
-          console.log('onDragStart->', e.inputEvent.target);
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
           const box = boxes.find((box) => box.id === e.target.id);
           let isDragOnTable = false;
