@@ -857,12 +857,17 @@ const Table = ({ collapseSidebar }) => {
         )}
         ref={tooljetDbTableRef}
       >
+        <div
+          className={cx(`tjdb-th-bg`, {
+            'tjdb-th-bg-dark': darkMode,
+          })}
+        />
         {loadingState ? (
           <table
             className={`table card-table loading-table table-vcenter text-nowrap datatable ${
               darkMode && 'dark-background'
             }`}
-            style={{ position: 'relative' }}
+            style={{ position: 'relative', top: '-32px' }}
           >
             <thead>
               <tr>
@@ -898,7 +903,7 @@ const Table = ({ collapseSidebar }) => {
           <table
             {...getTableProps()}
             className={`table card-table table-vcenter text-nowrap datatable ${darkMode && 'dark-background'}`}
-            style={{ position: 'relative' }}
+            style={{ position: 'relative', top: '-32px' }}
           >
             <thead>
               {headerGroups.map((headerGroup, index) => (
