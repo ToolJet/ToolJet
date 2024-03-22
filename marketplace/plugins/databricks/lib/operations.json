@@ -1,0 +1,9 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Databricks datasource",
+  "description": "A schema defining Databricks datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {}
+}
