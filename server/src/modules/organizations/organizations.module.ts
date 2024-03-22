@@ -44,6 +44,10 @@ import { SessionService } from '@services/session.service';
 import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
 import { TooljetDbService } from '@services/tooljet_db.service';
 import { PostgrestProxyService } from '@services/postgrest_proxy.service';
+import { SSOGuard } from '@ee/licensing/guards/sso.guard';
+import { LDAPGuard } from '@ee/licensing/guards/ldap.guard';
+import { OIDCGuard } from '@ee/licensing/guards/oidc.guard';
+import { SAMLGuard } from '@ee/licensing/guards/saml.guard';
 
 @Module({
   imports: [
@@ -99,6 +103,10 @@ import { PostgrestProxyService } from '@services/postgrest_proxy.service';
     TooljetDbOperationsService,
     TooljetDbService,
     PostgrestProxyService,
+    SSOGuard,
+    OIDCGuard,
+    LDAPGuard,
+    SAMLGuard,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
   exports: [OrganizationsService],

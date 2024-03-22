@@ -285,7 +285,7 @@ class SSOConfiguration extends React.Component {
         <div
           className="sso-option"
           key={key}
-          onClick={() => this.openModal(key)}
+          onClick={isFeatureAvailable ? () => this.openModal(key) : (e) => e.preventDefault()}
           data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-sso-card`}
         >
           <div className="sso-option-label">
@@ -302,18 +302,23 @@ class SSOConfiguration extends React.Component {
                   <img
                     src="/assets/images/EditIcon.png"
                     className="option-icon"
-                    style={{ width: '14px', height: '14px', marginLeft: '8px' }}
+                    style={{
+                      width: '14px',
+                      height: '14px',
+                      marginLeft: '8px',
+                      ...(isFeatureAvailable ? {} : { visibility: 'hidden' }),
+                    }}
                     data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-edit-icon`}
                   />
                 }
               </div>
             }
           </div>
-          <label className="switch" onClick={(e) => e.stopPropagation()}>
+          <label className="switch" onClick={isFeatureAvailable && ((e) => e.stopPropagation())}>
             <input
               type="checkbox"
               checked={isEnabled}
-              onChange={() => this.toggleSSOOption(key)}
+              onChange={isFeatureAvailable ? () => this.toggleSSOOption(key) : (e) => e.preventDefault()}
               data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-toggle`}
             />
             <span className="slider round"></span>
