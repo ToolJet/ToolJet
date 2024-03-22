@@ -11,10 +11,10 @@ export default class Salesforce implements QueryService {
     };
   }
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    sourceOptions.redirect_uri = this.jsforceAuthUrl();
+    const authUrl = this.jsforceAuthUrl();
     return {
       status: 'ok',
-      data: { message: 'Connection successful', redirect_uri: sourceOptions.redirect_uri },
+      data: { auth_url: authUrl },
     };
   }
 
@@ -24,16 +24,16 @@ export default class Salesforce implements QueryService {
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
-    const redirectUri = `${fullUrl}oauth2/authorize`;
+    const redirectUri = `${fullUrl}oauth2/callback`;
 
     // if (!clientId || !clientSecret) {
     //   throw Error('You need to define Salesforce OAuth environment variables');
     // }
-    const Oauth2 = new jsforce.OAuth2({
+    const OAuth2 = new jsforce.OAuth2({
       clientId: clientId,
       clientSecret: clientSecret,
       redirectUri: redirectUri,
     });
-    return redirectUri;
+    return OAuth2.getAuthorizationUrl({ scope: 'api id web' });
   }
 }

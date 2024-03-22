@@ -19,7 +19,9 @@
       "redirect_url":{
         "type":"string"
       }
-    }
+    },
+    "customTesting": true,
+    "hideSave": true
   },
   "defaults": {
     "redirect_url":{
@@ -27,20 +29,11 @@
     }
   },
   "properties": {
-    "api_version": {
-      "label": "API Version",
-      "type": "text",
-      "key":"api_version",
-      "title": "API Version",
-      "description": "API version of Salesforce"
-    },
-    "redirect_url": {
-      "label": "Redirect URL",
-      "type": "text",
-      "key":"redirect_url",
-      "title": "Redirect URL",
-      "description": "Redirect URL for Salesforce",
-      "helpText": "In Salesforce, use the URL above when prompted to enter an OAuth callback or redirect URL"
+    "salesforce":{
+      "label": "",
+      "key": "salesforce",
+      "type": "react-component-salesforce",
+      "description": "A component for salesforce"
     }
 
   },
