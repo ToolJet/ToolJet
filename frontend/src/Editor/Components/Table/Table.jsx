@@ -1499,6 +1499,10 @@ export function Table({
                                 cell.column.columnType === 'selector' && cell.column.id === 'selection',
                               'resizing-column': cell.column.isResizing || cell.column.id === resizingColumnId,
                               'has-select': ['select', 'newMultiSelect'].includes(cell.column.columnType),
+                              'has-tags': cell.column.columnType === 'tags',
+                              'has-link': cell.column.columnType === 'link',
+                              'has-radio': cell.column.columnType === 'radio',
+                              'has-toggle': cell.column.columnType === 'toggle',
                             }
                           )}
                           {...cellProps}

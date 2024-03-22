@@ -6,7 +6,6 @@ export const Radio = ({ options, value, onChange, readOnly, containerWidth }) =>
   options = Array.isArray(options) ? options : [];
 
   const elem = document.querySelector('.table-radio-column-list');
-  console.log('manish ::', { elem, sh: elem?.scrollHeight, ch: elem?.clientHeight });
 
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -70,10 +69,14 @@ export const Radio = ({ options, value, onChange, readOnly, containerWidth }) =>
   return (
     <OverlayTrigger
       placement="bottom"
-      overlay={elem && elem?.clientHeight < elem?.scrollHeight && getOverlay(options, containerWidth)}
-      trigger={elem && elem?.clientHeight < elem?.scrollHeight && ['focus']}
+      overlay={
+        elem &&
+        (elem?.clientHeight < elem?.scrollHeight || elem?.clientWidth < elem?.scrollWidth) &&
+        getOverlay(options, containerWidth)
+      }
+      trigger={elem && (elem?.clientHeight < elem?.scrollHeight || elem?.clientWidth < elem?.scrollWidth) && ['focus']}
       rootClose={true}
-      show={elem && elem?.clientHeight < elem?.scrollHeight && showOverlay}
+      show={elem && (elem?.clientHeight < elem?.scrollHeight || elem?.clientWidth < elem?.scrollWidth) && showOverlay}
     >
       <div
         className="table-radio-column-cell radio row h-100"

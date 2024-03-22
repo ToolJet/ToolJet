@@ -27,6 +27,7 @@ export const CustomDropdown = ({ options, value, multiple, onChange, isEditable,
     const nonPremitiveValueExits = value.find((singleValue) => typeof singleValue === 'object');
     return nonPremitiveValueExits ? [] : value;
   };
+
   value = multiple ? checkForValidValue(value) : value;
   const { t } = useTranslation();
 
@@ -116,10 +117,26 @@ export const CustomDropdown = ({ options, value, multiple, onChange, isEditable,
   return (
     <OverlayTrigger
       placement="bottom"
-      overlay={multiple && elem && elem?.clientHeight < elem?.scrollHeight && getOverlay(value, width, options)}
-      trigger={multiple && elem && elem?.clientHeight < elem?.scrollHeight && value?.length >= 1 && ['hover']}
+      overlay={
+        multiple &&
+        elem &&
+        (elem?.clientHeight < elem?.scrollHeight || elem?.clientWidth < elem?.scrollWidth) &&
+        getOverlay(value, width, options)
+      }
+      trigger={
+        multiple &&
+        elem &&
+        (elem?.clientHeight < elem?.scrollHeight || elem?.clientWidth < elem?.scrollWidth) &&
+        value?.length >= 1 && ['hover']
+      }
       rootClose={true}
-      show={multiple && elem && elem?.clientHeight < elem?.scrollHeight && value?.length >= 1 && showOverlay}
+      show={
+        multiple &&
+        elem &&
+        (elem?.clientHeight < elem?.scrollHeight || elem?.clientWidth < elem?.scrollWidth) &&
+        value?.length >= 1 &&
+        showOverlay
+      }
     >
       <div
         className={`custom-select d-flex align-items-center table-custom-select-badge-badges w-100 h-100 position-relative ${
