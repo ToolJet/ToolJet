@@ -53,7 +53,16 @@
     }
 
     &:last-child {
-      border-left: 1px solid;
+      &::before {
+        content: '';
+        position: absolute;
+        display: block;
+        top: 0px;
+        left: -1px;
+        width: 1px;
+        height: 100%;
+        background-color: rgba(101, 109, 119, 0.16) !important;
+      }
       border-right: 0px;
       border-color: inherit;
     }
@@ -98,7 +107,16 @@
     }
 
     &:last-child {
-      border-left: 1px solid;
+      &::before {
+        content: '';
+        position: absolute;
+        display: block;
+        top: 0px;
+        left: -1px;
+        width: 1px;
+        height: 100%;
+        background-color: rgba(101, 109, 119, 0.16) !important;
+      }
       border-right: 0px;
       border-color: inherit;
     }
