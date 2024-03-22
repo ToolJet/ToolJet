@@ -32,6 +32,7 @@ describe("Groups duplication", () => {
             ],
             "All users"
         );
+        cy.apiCreateApp(data.appName);
     });
     it("Should verify the group duplication feature", () => {
         data.firstName = fake.firstName;
@@ -55,7 +56,6 @@ describe("Groups duplication", () => {
             "disable"
         );
 
-        cy.apiCreateApp(data.appName);
         createGroupAddAppAndUserToGroup(data.groupName, data.email);
 
         groupPermission(

@@ -51,13 +51,22 @@ jobs:
           target: .
           working_directory: deploy/ec2
 
+      # Echo RENDER_GITHUB_PAT
+      - name: Set PACKER_GITHUB_PAT
+        run: echo "PACKER_GITHUB_PAT=${{ secrets.PACKER_GITHUB_PAT}}" >> $GITHUB_ENV
+
+      # Dynamically update setup_machine.sh with PAT
+      - name: Validate PAT
+        run: |
+          sed -i "s|https://PAT@github.com/ToolJet/tj-ee.git|https://${{ env.PACKER_GITHUB_PAT }}@github.com/ToolJet/tj-ee|g" ./deploy/ec2/setup_machine.sh
+        
       # build artifact
       - name: Build Artifact
         uses: hashicorp/packer-github-actions@master
         with:
           command: build
           #The the below argument is specific for building EE AMI image
-          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal -var ssh_private_key=${{ secrets.SSH_PRIVATE_KEY }}
+          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal
           target: .
           working_directory: deploy/ec2
         env:

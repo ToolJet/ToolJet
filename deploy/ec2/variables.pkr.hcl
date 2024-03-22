@@ -25,3 +25,13 @@ variable "ami_regions" {
 variable "ssh_private_key" {
   type = string
 }
+
+variable "PACKER_BUILDER_TYPE" {
+  type    = string
+  default = "amazon-ebs"
+}
+
+variable "PACKER_BUILD_NAME" {
+  type    = string
+  default = "ubuntu"
+}
