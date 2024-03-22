@@ -116,7 +116,6 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   });
 
   const selectedTableDetails = Object.assign({}, ...selectedColumnDetails);
-  console.log('first', selectedTableDetails);
 
   return (
     <div

@@ -135,6 +135,8 @@ const TableForm = ({
     { icon: <ArrowRight />, columnName: 'ArrowRight' },
   ];
 
+  const hasPrimaryKey = Object.values(columns).some((e) => e?.constraints_type?.is_primary_key === true);
+
   return (
     <div className="drawer-card-wrapper">
       <div className="card-header">
@@ -194,7 +196,8 @@ const TableForm = ({
         shouldDisableCreateBtn={
           isEmpty(tableName) ||
           (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
-          isEmpty(columns)
+          isEmpty(columns) ||
+          hasPrimaryKey !== true
         }
       />
       <ConfirmDialog
