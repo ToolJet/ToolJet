@@ -15,7 +15,6 @@ export default function AutoLayoutAlert({ show, onClick }) {
         width: '300px',
         padding: 'var(--7, 16px)',
         background: 'var(--base)',
-        boxShadow: '0px 4px 8px 0px rgba(48, 49, 51, 0.10), 0px 0px 1px 0px rgba(48, 49, 51, 0.05)',
         margin: '10px',
       }}
       className="d-flex flex-row"
