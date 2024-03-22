@@ -16,7 +16,12 @@ function Logs({ logProps, idx }) {
       ? 'Completed'
       : logProps?.type === 'component'
       ? `Invalid property detected: ${logProps?.message}.`
-      : `${startCase(logProps?.type)} failed: ${logProps?.message ? logProps?.message : logProps?.error?.message}`;
+      : `${startCase(logProps?.type)} failed: ${
+          logProps?.description ||
+          logProps?.message ||
+          (isString(logProps?.error?.description) && logProps?.error?.description) || //added string check since description can be an object. eg: runpy
+          logProps?.error?.message
+        }`;
 
   const defaultStyles = {
     transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
@@ -93,5 +98,7 @@ function Logs({ logProps, idx }) {
     </div>
   );
 }
+
+let isString = (value) => typeof value === 'string' || value instanceof String;
 
 export default Logs;
