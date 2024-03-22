@@ -19,6 +19,7 @@ import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { ModuleContext } from '../../../../_contexts/ModuleContext';
 import { useSuperStore } from '@/_stores/superStore';
+
 class TableComponent extends React.Component {
   static contextType = ModuleContext;
 
@@ -936,7 +937,11 @@ class TableComponent extends React.Component {
   addNewColumn = () => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4(), fxActiveFields: [] });
+    newValue.push({
+      name: this.generateNewColumnName(columns.value),
+      id: uuidv4(),
+      isEditable: this.props.component.component.definition.properties.isAllColumnsEditable?.value,
+    });
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
   };
 
@@ -957,12 +962,45 @@ class TableComponent extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
-
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
 
+    // When column type is link, we need to make it non-editable
+    if (newColumns[index].columnType === 'link') {
+      newColumns[index].isEditable = '{{false}}';
+    }
+
+    if (item === 'columnType' && value !== 'link') {
+      newColumns[index].isEditable = this.props.component.component.definition.properties.isAllColumnsEditable?.value;
+    }
+
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
+
+    // setTimeout is required since there is a bug where param updated if consecutively called, then only the last param updated is being reflected
+    setTimeout(() => {
+      // When any of the column is not editable, we need to disable "make all columns editable" toggle
+      if (
+        item === 'isEditable' &&
+        !resolveReferences(value) &&
+        resolveReferences(this.props.component.component.definition.properties.isAllColumnsEditable?.value)
+      ) {
+        this.props.paramUpdated({ name: 'isAllColumnsEditable' }, 'value', value, 'properties');
+      }
+      // Check if all columns are editable and also if we have disabled "make all columns editable" toggle, if yes then enable it
+      if (
+        item === 'isEditable' &&
+        resolveReferences(value) &&
+        !resolveReferences(this.props.component.component.definition.properties.isAllColumnsEditable?.value)
+      ) {
+        const isAllColumnsEditable = newColumns
+          .filter((column) => column.columnType !== 'link')
+          .every((column) => resolveReferences(column.isEditable));
+        if (isAllColumnsEditable) {
+          this.props.paramUpdated({ name: 'isAllColumnsEditable' }, 'value', value, 'properties');
+        }
+      }
+    }, 500);
   };
 
   getItemStyle = (isDragging, draggableStyle) => ({
@@ -1004,6 +1042,24 @@ class TableComponent extends React.Component {
   getPopoverFieldSource = (column, field) =>
     `component/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
 
+  handleMakeAllColumnsEditable = (value) => {
+    const columns = resolveReferences(
+      this.props.component.component.definition.properties.columns,
+      this.props.currentState
+    );
+
+    const newValue = columns.value.map((column) => ({
+      ...column,
+      isEditable: column.columnType !== 'link' ? value : '{{false}}', // Link columns are not editable
+    }));
+
+    this.props.paramUpdated({ name: 'isAllColumnsEditable' }, 'value', value, 'properties');
+    // setTimeout is required since there is a bug where param updated if consecutively called, then only the last is being reflected
+    setTimeout(() => {
+      this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
+    }, 500);
+  };
+
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
 
@@ -1041,6 +1097,11 @@ class TableComponent extends React.Component {
       ? resolveReferences(component.component.definition.properties.allowSelection?.value, currentState)
       : resolveReferences(component.component.definition.properties.highlightSelectedRow.value, currentState) ||
         resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
+
+    const isAllColumnsEditable = component.component.definition.properties.isAllColumnsEditable?.value
+      ? resolveReferences(component.component.definition.properties.isAllColumnsEditable?.value, currentState) ?? false
+      : false;
+
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
     };
@@ -1130,11 +1191,24 @@ class TableComponent extends React.Component {
               </DragDropContext>
               <div>
                 {columns?.value?.length === 0 && <NoListItem text={'There are no columns'} dataCy={`-columns`} />}
-                <div>
+                <div className="mb-2">
                   <AddNewButton dataCy={`button-add-column`} onClick={this.addNewColumn}>
                     {this.props.t('widget.Table.addNewColumn', ' Add new column')}
                   </AddNewButton>
                 </div>
+                <ProgramaticallyHandleProperties
+                  label="Make all columns editable'"
+                  currentState={this.state.currentState}
+                  darkMode={this.props.darkMode}
+                  callbackFunction={(index, property, value) => {
+                    this.handleMakeAllColumnsEditable(value);
+                  }}
+                  property="isAllColumnsEditable"
+                  props={{ isAllColumnsEditable }}
+                  component={this.props.component}
+                  paramMeta={{ type: 'toggle', displayName: 'Make all columns editable' }}
+                  paramType="properties"
+                />
               </div>
             </List>
           )}
