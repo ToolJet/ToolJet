@@ -102,7 +102,6 @@ export default function generateColumnsData({
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
-
         const rowData = tableData?.[cell?.row?.index];
         if (
           cell.row.index === 0 &&
@@ -113,14 +112,12 @@ export default function generateColumnsData({
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
-        cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
-
+        cellValue = cellValue === undefined ? '' : cellValue;
         switch (columnType) {
           case 'string':
           case undefined:
           case 'default': {
             const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
-
             const cellStyles = {
               color: textColor ?? '',
             };
@@ -155,6 +152,7 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="text"
+                    id={`table-input-${column.id}`}
                     style={{ ...cellStyles }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -227,6 +225,7 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="number"
+                    id={`table-input-${column.id}`}
                     style={{ ...cellStyles }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
