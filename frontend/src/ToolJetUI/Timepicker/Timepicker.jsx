@@ -2,10 +2,11 @@ import React from 'react';
 // eslint-disable-next-line import/no-unresolved
 import DatePickerComponent from 'react-datepicker';
 import './timepicker.scss';
+import cx from 'classnames';
 
-const Timepicker = ({ timeFormat, onChange, selected, maxTime, minTime, ...props }) => {
+const Timepicker = ({ timeFormat, onChange, selected, maxTime, minTime, darkMode, ...props }) => {
   return (
-    <div>
+    <div className="tj-timepicker">
       <DatePickerComponent
         {...props}
         selected={selected}
@@ -19,7 +20,7 @@ const Timepicker = ({ timeFormat, onChange, selected, maxTime, minTime, ...props
         timeFormat={timeFormat}
         minTime={minTime}
         timeInputLabel=""
-        className="tj-timepicker"
+        popperClassName={cx('tj-timepicker-popper', { 'theme-dark dark-theme': darkMode })}
       />
     </div>
   );

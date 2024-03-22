@@ -611,6 +611,7 @@ export default function generateColumnsData({
                   disabledDates={disabledDates}
                   unixTimestamp={column.unixTimestamp}
                   cellStyles={cellStyles}
+                  darkMode={darkMode}
                 />
                 {isEditable && <div className={isValid ? '' : 'invalid-feedback d-block'}>{validationError}</div>}
               </div>

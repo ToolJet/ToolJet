@@ -1,4 +1,12 @@
 .tj-timepicker {
+    input {
+        background-color: var(--base);
+        border: 1px solid var(--slate7) !important;
+    }
+}
+
+
+.tj-timepicker-popper {
     height: 28px !important;
     border: 1px solid var(--tj-text-input-widget-border-default);
     padding: 10px;
@@ -6,7 +14,10 @@
     color: var(--text-primary);
 
     .react-datepicker__time-container {
-        right: 0px
+        right: 0px;
+      .react-datepicker__time {
+          background-color: var(--base);
+      }
     }
 }
 

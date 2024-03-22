@@ -12748,8 +12748,15 @@ tbody {
   .react-datepicker-wrapper { 
     input {
       width: 100%;
-      border: 1px solid var(--slate5);
+      border: 1px solid var(--slate7);
       padding: 5px 5px;
+      background-color: var(--base);
+    }
+}
+
+  .dark-theme {
+    .react-datepicker__day {
+      color: white;
     }
   }
 }

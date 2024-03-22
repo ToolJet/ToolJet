@@ -17,7 +17,7 @@
 }
 
 .react-datepicker__header {
-    background-color: #fff;
+    background-color: var(--base);
     padding: 6px 0px;
     border: none;
 }
@@ -55,6 +55,7 @@
 .react-datepicker {
     width: 278px;
     border: none;
+    background-color: var(--base);
 }
 
 .react-datepicker__month {
@@ -161,7 +162,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .dark-theme {
-
+    
     .react-datepicker-popper,
     .tj-datepicker-widget {
         background-color: #232e3c;
@@ -178,8 +179,24 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         color: #fff;
     }
 
+    .react-datepicker__month-container {
+        background-color: #232e3c;
+        color: #fff;
+        .react-datepicker__month {
+            background-color: #232e3c;
+            .react-datepicker__day {
+                color: #fff;
+            }
+        }
+
+    }
+
+
     li.react-datepicker__time-list-item:hover {
         background-color: #CCD1D533 !important;
+    }
+    select {
+        color : #fff
     }
 }
 
@@ -233,7 +250,7 @@ select {
     height: 24px;
     text-align: center;
     // margin-right: 6px !important;
-    color: #1B1F24;
+    color: var(--text-primary);
     font-weight: 500;
 
 }
@@ -251,6 +268,12 @@ select:focus {
     background: inherit;
     text-align: left;
     width: 100%;
+}
+
+.table-dark {
+    .table-column-datepicker-input {
+        color: #fff
+    }
 }
 
 .react-datepicker-wrapper {
@@ -299,7 +322,7 @@ select:focus {
     
     .react-datepicker__time-list-item {
         height: 28px !important;
-        color: #1B1F24 !important;  
+        color: var(--text-primary) !important;  
         font-weight: 400 !important;       
         padding: 0px !important;
         display: flex;

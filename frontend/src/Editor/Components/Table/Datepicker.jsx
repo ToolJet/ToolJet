@@ -4,7 +4,7 @@ import DatePickerComponent from 'react-datepicker';
 import CustomDatePickerHeader from './CustomDatePickerHeader';
 import 'react-datepicker/dist/react-datepicker.css';
 import './datepicker.scss';
-import classNames from 'classnames';
+import cx from 'classnames';
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 
@@ -14,7 +14,7 @@ const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnl
       onBlur={(e) => {
         e.stopPropagation();
       }}
-      className={classNames('table-column-datepicker-input', {
+      className={cx('table-column-datepicker-input', {
         'pointer-events-none': readOnly,
       })}
       value={value}
@@ -67,6 +67,7 @@ export const Datepicker = function Datepicker({
   unixTimestamp,
   parseInUnixTimestamp,
   cellStyles,
+  darkMode,
 }) {
   const [date, setDate] = React.useState(null);
   const [excludedDates, setExcludedDates] = React.useState([]);
@@ -148,12 +149,15 @@ export const Datepicker = function Datepicker({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledDates]);
-
   return (
     <div ref={pickerRef}>
       <DatePickerComponent
-        className={`input-field form-control tj-text-input-widget validation-without-icon px-2`}
-        popperClassName={!isDateSelectionEnabled && isTimeChecked ? `tj-timepicker-widget` : `tj-datepicker-widget `}
+        className={`input-field form-control validation-without-icon px-2`}
+        popperClassName={cx({
+          'tj-timepicker-widget': !isDateSelectionEnabled && isTimeChecked,
+          'tj-datepicker-widget': isDateSelectionEnabled && !isTimeChecked,
+          'theme-dark dark-theme': darkMode,
+        })}
         selected={date}
         onChange={(date) => handleDateChange(date)}
         value={date !== null ? computeDateString() : 'Invalid date'}

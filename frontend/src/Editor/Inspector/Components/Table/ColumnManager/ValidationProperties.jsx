@@ -170,6 +170,7 @@ export const ValidationProperties = ({
               showTimeSelectOnly={validation.showOnlyTime}
               placeholderText={validation?.placeholder ?? ''}
               renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
+              popperClassName={darkMode && 'theme-dark dark-theme'}
             />
           </div>
         );
@@ -186,6 +187,7 @@ export const ValidationProperties = ({
               onChange={(date) => onColumnItemChange(index, validation.property, moment(date).format('HH:mm'))}
               placeholderText={validation?.placeholder ?? ''}
               timeFormat={'HH:mm'}
+              darkMode={darkMode}
             />
           </div>
         );
