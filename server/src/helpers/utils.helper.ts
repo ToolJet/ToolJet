@@ -326,6 +326,10 @@ export function extractMajorVersion(version) {
   return semver.valid(semver.coerce(version));
 }
 
+export function checkVersionCompatibility(importingVersion) {
+  return semver.gte(semver.coerce(globalThis.TOOLJET_VERSION), semver.coerce(importingVersion));
+}
+
 /**
  * Checks if a given Tooljet version is compatible with normalized app definition schemas.
  *
