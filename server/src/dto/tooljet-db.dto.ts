@@ -158,7 +158,7 @@ export class PostgrestTableColumnDto {
   @Match('data_type', {
     message: 'Default value must match the data type',
   })
-  @Validate(SQLInjectionValidator, { message: 'Default value does not support special characters except "." and "@"' })
+  // @Validate(SQLInjectionValidator, { message: 'Default value does not support special characters except "." and "@"' })
   column_default: string | number | boolean;
 
   @IsOptional()
@@ -230,7 +230,7 @@ export class EditColumnTableDto {
   @Match('data_type', {
     message: 'Default value must match the data type',
   })
-  @Validate(SQLInjectionValidator, { message: 'Default value does not support special characters except "." and "@"' })
+  // @Validate(SQLInjectionValidator, { message: 'Default value does not support special characters except "." and "@"' })
   column_default: string | number | boolean;
 
   @IsOptional()
