@@ -5,8 +5,8 @@
 
 [template.environment]
   NODE_ENV = "production"  
-  NODE_VERSION = "14.17.3"
-  NPM_VERSION = "7.20.0"
+  NODE_VERSION = "18.18.2"
+  NPM_VERSION = "9.8.1"
 
 [[redirects]]
   from = "/*"
