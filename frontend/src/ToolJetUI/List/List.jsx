@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import './list.scss';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
-// import Trash from '@/_ui/Icon/solidIcons/Trash';
-// import classNames from 'classnames';
-// import Edit from '@/_ui/Icon/bulkIcons/Edit';
-// import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-// import MoreVertical from '@/_ui/Icon/solidIcons/MoreVertical';
-// import SortableList from '@/_components/SortableList';
+import Trash from '@/_ui/Icon/solidIcons/Trash';
+import classNames from 'classnames';
+import Edit from '@/_ui/Icon/bulkIcons/Edit';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import MoreVertical from '@/_ui/Icon/solidIcons/MoreVertical';
+import SortableList from '@/_components/SortableList';
 function List({ children, ...restProps }) {
   return <ListGroup {...restProps}>{children}</ListGroup>;
 }
@@ -35,7 +35,7 @@ function ListItem({
         onMouseLeave={() => setIsHovered(false)}
         {...restProps}
       >
-        {/* <div className="row">
+        <div className="row">
           {(Icon || isDraggable) && (
             <div className="col-auto d-flex align-items-center">
               {!isHovered && Icon && <Icon />}
@@ -111,7 +111,7 @@ function ListItem({
               </span>
             </OverlayTrigger>
           </div>
-        </div> */}
+        </div>
       </ListGroup.Item>
     </div>
   );

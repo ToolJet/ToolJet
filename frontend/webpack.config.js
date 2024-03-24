@@ -149,19 +149,6 @@ module.exports = {
           {
             loader: 'postcss-loader',
           },
-
-          // {
-          //   loader: 'postcss-loader',
-          //   options: {
-          //     postcssOptions: {
-          //       plugins: [
-          //         require('tailwindcss'),
-          //         require('autoprefixer'),
-          //         // Other PostCSS plugins if needed
-          //       ],
-          //     },
-          //   },
-          // },
           {
             loader: 'sass-loader',
           },
