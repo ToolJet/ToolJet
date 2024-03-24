@@ -13,7 +13,7 @@ Upon the creation of a new app, it is automatically assigned a unique app name.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/appnamenew-new.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/appnamenew-v2.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -39,7 +39,7 @@ Whenever a change is made on the component or the query panel/queries, the chang
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/changessaved-new.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/changessaved-v2.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -49,7 +49,7 @@ This will show a profile picture of the developer who is currently working on th
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/profile-new.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/profile-v2.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -65,7 +65,7 @@ Versioning is also helpful when working with **[multiple environments](/docs/rel
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/versionsnew-new.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/versionsnew-v2.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -77,7 +77,7 @@ You can also use **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)** to 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/undonew-new.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/undonew-v2.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -94,7 +94,7 @@ Learn more about **[Sharing](/docs/app-builder/share)** your tooljet application
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/sharenew-new.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/sharenew-v2.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -104,7 +104,7 @@ Clicking on **Preview** button will open up the currently opened version of the 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/previewnew-new.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/previewnew-v2.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -118,6 +118,6 @@ ToolJet will block editing of the Released version of an app and will display a 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/releasenew-new.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/releasenew-v2.png" alt="App Builder: Topbar"/>
 
 </div>

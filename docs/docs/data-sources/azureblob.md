@@ -13,7 +13,7 @@ To connect ToolJet with the Azure Blob data source, you have two options:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/azureblob/gdsazure-new.png" alt="Azure Blob - ToolJet" />
+<img className="screenshot-full" src="/img/datasource-reference/azureblob/gdsazure-v2.png" alt="Azure Blob - ToolJet" />
 
 </div>
 

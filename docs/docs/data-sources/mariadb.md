@@ -13,7 +13,7 @@ To establish a connection with the MariaDB global datasource, you can either cli
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/gdsmaria-new.png" alt="MariaDB" />
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/gdsmaria-v2.png" alt="MariaDB" />
 
 </div>
 

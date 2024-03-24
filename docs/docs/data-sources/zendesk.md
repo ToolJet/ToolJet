@@ -34,7 +34,7 @@ To connect Zendesk datasource to your ToolJet application, go to the data source
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Zendesk](/img/datasource-reference/zendesk/zendesk-new.gif)
+![ToolJet - Data source - Zendesk](/img/datasource-reference/zendesk/zendesk-v2.gif)
 
 </div>
 

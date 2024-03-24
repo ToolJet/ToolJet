@@ -8,16 +8,18 @@ ToolJet offers the capability to establish a connection with Azure Blob storage 
 ## Connection
 
 To connect ToolJet with the Azure Blob data source, you have two options:
+
 1. Click on the `+Add new data source` button in the query panel.
 2. Go to the **[Data Sources](/docs/data-sources/overview)** page on the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/azureblob/gdsazure.gif" alt="Azure Blob - ToolJet" />
+<img className="screenshot-full" src="/img/datasource-reference/azureblob/gdsazure-v2.png" alt="Azure Blob - ToolJet" />
 
 </div>
 
 To successfully establish the connection, ToolJet requires the following details:
+
 - **Connection String**: The connection string can be found on the dashboard of Azure Blob Storage.
 
 Once you have entered the connection string, click on the **Test connection** button to verify the connection's success. To save the data source, click on the **Save** button.
@@ -52,14 +54,13 @@ Query results can be transformed using Transformation. For more information on t
 5. **[Read Blob](#read-blob)**
 6. **[Delete Blob](#delete-blob)**
 
-
 ### Create Container
 
 The create container operation enables the creation of new containers within Azure Blob storage. Containers serve as logical units for organizing and managing blob data. Users can provide a unique name for the container. Once created, the container is available for use in storing and organizing blob data. If the container with the same name already exists, the operation fails.
 
 #### Required Parameters:
 
-- **Container Name:** Name of the container that you want to create. 
+- **Container Name:** Name of the container that you want to create.
 
 <div style={{textAlign: 'center'}}>
 
@@ -79,14 +80,14 @@ The list container operation allows you to retrieve a list of containers within 
 
 ### List Blobs
 
-The list blobs operation enables you to retrieve a list of blobs within a specific container in Azure Blob storage. 
+The list blobs operation enables you to retrieve a list of blobs within a specific container in Azure Blob storage.
 
 #### Required Parameter:
 
 - **Container:** Specify the name of the container from which you wish to retrieve a list of blobs.
 - **Page Size:** Specify the maximum number of blobs to be returned per page or request.
 
-#### Optional Parameters: 
+#### Optional Parameters:
 
 - **Prefix:** Filter the list of blobs based on a specific prefix or prefix pattern, allowing you to narrow down the results to blobs with names that start with the specified prefix.
 - **Continuation Token:** A marker or token used to retrieve the next page of results when there are more blobs available beyond the initial page.

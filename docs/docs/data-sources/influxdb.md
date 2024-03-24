@@ -22,7 +22,7 @@ For generating API Token visit [InfluxDB docs](https://docs.influxdata.com/influ
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - influxDB](/img/datasource-reference/influxdb/influxauth-new.png)
+![ToolJet - Data source - influxDB](/img/datasource-reference/influxdb/influxauth-v2.png)
 
 </div>
 
@@ -51,7 +51,7 @@ For generating API Token visit [InfluxDB docs](https://docs.influxdata.com/influ
 - [Delete a bucket](#delete-a-bucket)
 
 
-<img className="screenshot-full" src="/img/datasource-reference/influxdb/operations-new.png" alt="influx operations" />
+<img className="screenshot-full" src="/img/datasource-reference/influxdb/operations-v2.png" alt="influx operations" />
 
 
 ### Write data 
