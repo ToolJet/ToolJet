@@ -4,34 +4,75 @@ import { Slot } from '@radix-ui/react-slot';
 // eslint-disable-next-line import/no-unresolved
 import { cva } from 'class-variance-authority';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import Loader from './loader';
 import PropTypes from 'prop-types';
 import { cn } from '@/lib/utils';
 import './button.scss';
 
-const buttonVariants = cva('flex justify-center items-center', {
+const buttonVariants = cva('flex justify-center items-center font-medium', {
   variants: {
     variant: {
-      primary:
-        'text-text-on-solid bg-button-primary hover:bg-button-primary-hover active:bg-button-primary-pressed active:border-border-accent-strong disabled:bg-button-primary-disabled  border-none focus-visible:shadow-focusActive',
-      secondary: ` text-text-default border-1 border-solid border-border-accent-weak bg-button-secondary hover:border-border-accent-strong hover:bg-button-secondary-hover active:bg-button-secondary-pressed active:border-border-accent-strong disabled:borer-border-default disabled:bg-button-secondary-disabled disabled:text-text-text-disabled focus-visible:border-border-accent-weak focus-visible:shadow-focusActive`,
-      outline: `text-text-default border-1 border-solid border-border-default bg-button-secondary hover:border-border-default hover:bg-button-outline-hover active:bg-button-outline-pressed active:border-border-strong disabled:border-border-default disabled:bg-button-outline-disabled disabled:text-text-text-disabled focus-visible:border-border-default focus-visible:bg-button-outline focus-visible:shadow-focusActive`,
-      ghostBrand:
-        'text-text-accent hover:bg-button-secondary-hove active:bg-button-secondary-pressed,  focus-visible:bg-button-outline disabled:text-text-disabled focus-visible:shadow-focusActive',
-      ghost:
-        'text-text-default hover:bg-button-outline-hover  active:button-outline-pressed  focus-visible:bg-button-outline disabled:text-text-disabled focus-visible:shadow-focusActive',
-      dangerPrimary:
-        'text-text-on-solid bg-button-danger-primary hover:bg-button-danger-primary-hover active:bg-button-danger-primary-pressed disabled:bg-button-danger-primary-disabled  border-none focus-visible:shadow-focusActive',
-      dangerSecondary: `text-text-default border-1 border-solid border-border-danger-weak bg-button-secondary hover:border-border-danger-strong hover:bg-button-danger-secondary-hover active:border-border-danger-strong active:bg-button-secondary-pressed disabled:borer-border-default disabled:bg-button-danger-secondary-disabled disabled:text-text-text-disabled focus-visible:border-border-danger-strong focus-visible:shadow-focusActive`,
-      dangerGhost: `text-text-default bg-button-secondary hover:bg-button-danger-secondary-hover active:bg-button-secondary-pressed disabled:borer-border-default disabled:bg-button-danger-secondary-disabled disabled:text-text-text-disabled focus-visible:shadow-focusActive`,
+      primary: `
+        text-text-on-solid bg-button-primary hover:bg-button-primary-hover
+        active:bg-button-primary-pressed active:border-border-accent-strong
+        disabled:bg-button-primary-disabled border-none
+        interactice-focus focus-visible:outline-none	`,
+      secondary: `
+        text-text-default border-1 border-solid border-border-accent-weak
+        bg-button-secondary hover:border-border-accent-strong
+        hover:bg-button-secondary-hover active:bg-button-secondary-pressed
+        active:border-border-accent-strong 
+        disabled:border-border-default 
+        disabled:bg-button-secondary-disabled disabled:text-text-disabled  focus-visible:border-border-accent-weak
+        interactive-focus-nonsolid  focus-visible:outline-none 	
+      `,
+      outline: `
+        text-text-default border-1 border-solid border-border-default
+        bg-button-secondary hover:border-border-default
+        hover:bg-button-outline-hover active:bg-button-outline-pressed
+        active:border-border-strong 
+        disabled:border-border-default 
+        disabled:bg-button-outline-disabled disabled:text-text-disabled focus-visible:border-border-default
+        interactive-focus-nonsolid focus-visible:interactive-focus-outline 	
+      `,
+      ghost: `
+        border-none text-text-default bg-[#ffffff00] hover:bg-button-outline-hover
+        active:bg-button-outline-pressed focus-visible:bg-button-outline
+        interactive-focus-nonsolid disabled:text-text-disabled focus-visible:interactive-focus-outline border-none
+        	
+      `,
+      ghostBrand: `
+        border-none text-text-accent bg-[#ffffff00] hover:bg-button-secondary-hover
+        active:bg-button-secondary-pressed focus-visible:bg-button-outline
+        disabled:text-text-disabled focus-visible:interactive-focus-outline border-none interactive-focus-nonsolid
+        	
+      `,
+      dangerPrimary: `
+        text-text-on-solid bg-button-danger-primary hover:bg-button-danger-primary-hover
+        active:bg-button-danger-primary-pressed disabled:bg-button-danger-primary-disabled
+        border-none interactice-focus focus-visible:outline-none	
+      `,
+      dangerSecondary: `
+        text-text-default border-1 border-solid border-border-danger-weak
+        bg-button-secondary hover:border-border-danger-strong
+        hover:bg-button-danger-secondary-hover
+        active:border-border-danger-strong active:bg-button-danger-secondary-pressed
+        disabled:text-text-disabled disabled:border-border-default disabled:bg-button-danger-secondary-disabled
+        focus-visible:border-border-danger-weak focus-visible:interactive-focus-outline interactive-focus-nonsolid
+        	
+      `,
+      dangerGhost: `
+        border-none text-text-default bg-button-secondary hover:bg-button-danger-secondary-hover
+        active:bg-button-danger-secondary-pressed disabled:border-border-default
+        disabled:bg-button-danger-secondary-disabled
+        disabled:text-text-disabled focus-visible:interactive-focus-outline interactive-focus-nonsolid 	
+      `,
     },
     size: {
-      large: 'h-10 gap-[8px] px-[20px] py-[10px] rounded-[10px]',
-      default: 'h-8 gap-[6px] px-[12px] py-7px] rounded-[8px]',
-      medium: 'h-7 gap-[6px] px-[10px] py-[5px] rounded-[6px]',
-      small: 'h-4 gap-[6px] px-[8px] py-[2px] rounded-[4px]',
-    },
-    isLoading: {
-      true: 'button-loading',
+      large: 'h-[40px] gap-[8px] px-[20px] py-[10px] rounded-[10px] text-lg',
+      default: 'h-[32px] gap-[6px] px-[12px] py-7px] rounded-[8px] text-base',
+      medium: 'h-[28px] gap-[6px] px-[10px] py-[5px] rounded-[6px] text-base',
+      small: 'h-[20px] gap-[6px] px-[8px] py-[2px] rounded-[4px] text-sm',
     },
   },
   defaultVariants: {
@@ -58,6 +99,7 @@ const getDefaultIconFillColor = (variant) => {
       return '';
   }
 };
+const variantIconFillColors = ['#FFFFFF', '#4368E3', '#ACB2B9', '#D72D39']; // all default fill colors
 
 const Button = React.forwardRef(
   (
@@ -70,18 +112,18 @@ const Button = React.forwardRef(
       isLoading,
       disabled,
       asChild = false,
-      fill,
+      fill = '',
       ...props
     },
     ref
   ) => {
+    const iconFillColor = !variantIconFillColors.includes(fill) && fill ? fill : getDefaultIconFillColor(variant);
     const Comp = asChild ? Slot : 'button';
-    console.log('leadingIcon---', leadingIcon);
     const leadingIconElement = leadingIcon && (
-      <SolidIcon name={leadingIcon} height="16" width="16" fill={fill ?? getDefaultIconFillColor(variant)} />
+      <SolidIcon name={leadingIcon} height="16" width="16" fill={iconFillColor} />
     );
     const trailingIconElement = trailingIcon && (
-      <SolidIcon name={trailingIcon} height="16" width="16" fill={fill ?? getDefaultIconFillColor(variant)} />
+      <SolidIcon name={trailingIcon} height="16" width="16" fill={iconFillColor} />
     );
 
     return (
@@ -92,7 +134,7 @@ const Button = React.forwardRef(
         {...props}
       >
         {isLoading ? (
-          'loading...'
+          <Loader color={iconFillColor} />
         ) : (
           <>
             {leadingIconElement}
@@ -112,14 +154,14 @@ Button.propTypes = {
     'primary',
     'secondary',
     'outline',
-    'ghostBrand',
     'ghost',
+    'ghostBrand',
     'dangerPrimary',
     'dangerSecondary',
     'dangerGhost',
   ]),
   size: PropTypes.oneOf(['large', 'default', 'medium', 'small']),
-  loading: PropTypes.bool,
+  isLoading: PropTypes.bool,
   disabled: PropTypes.bool,
   asChild: PropTypes.bool,
   fill: PropTypes.string,
@@ -130,7 +172,7 @@ Button.defaultProps = {
   className: '',
   variant: 'primary',
   size: 'default',
-  loading: false,
+  isLoading: false,
   disabled: false,
   asChild: false,
   iconOnly: false,

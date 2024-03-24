@@ -24,7 +24,7 @@ const config = {
         ...storybookConfig.resolve,
         alias: {
           ...storybookConfig.resolve.alias,
-          '@': path.resolve(__dirname, '../src/') // Adjust the path to your src folder
+          '@': path.resolve(__dirname, '../src/') 
         }
       }
     };
