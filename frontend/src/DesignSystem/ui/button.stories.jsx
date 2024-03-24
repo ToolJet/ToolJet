@@ -28,7 +28,6 @@ const getDefaultIconFillColor = (variant, customFill = '') => {
 export default {
   title: 'Components/Button',
   component: Button,
-  // decorators: [withColorScheme], // Decorator function to apply color scheme based on Storybook theme
   tags: ['autodocs'],
   parameters: {
     layout: 'centered',
