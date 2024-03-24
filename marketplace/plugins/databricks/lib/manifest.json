@@ -15,6 +15,43 @@
     "options": {}
   },
   "defaults": {},
-  "properties": {},
+  "properties": {
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "host.cloud.databricks.com"
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "443"
+    },
+    "http_path": {
+      "label": "HTTP Path",
+      "key": "http_path",
+      "type": "text",
+      "description": "/sql/2.0/warehouse/id"
+    },
+    "default_catalog": {
+      "label": "Default Catalog",
+      "key": "default_catalog",
+      "type": "text",
+      "description": "tooljet_metastore"
+    },
+    "default_schema": {
+      "label": "Default Schema",
+      "key": "default_schema",
+      "type": "text",
+      "description": "default"
+    },
+    "personal_access_token": {
+      "label": "Personal Access Token",
+      "key": "personal_access_token",
+      "type": "password",
+      "description": "default"
+    }
+  },
   "required": []
 }

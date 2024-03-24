@@ -29,5 +29,8 @@
     "start:dev": "npm run build && npm run start:watch",
     "lint": "eslint .  '**/*.ts'",
     "format": "eslint . --fix '**/*.ts'"
+  },
+  "dependencies": {
+    "@nrwl/nx-darwin-arm64": "^15.9.3"
   }
 }
