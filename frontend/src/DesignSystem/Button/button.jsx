@@ -4,7 +4,7 @@ import { Slot } from '@radix-ui/react-slot';
 // eslint-disable-next-line import/no-unresolved
 import { cva } from 'class-variance-authority';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import Loader from './loader';
+import Loader from '../utilComponents/loader';
 import PropTypes from 'prop-types';
 import { cn } from '@/lib/utils';
 import './button.scss';
