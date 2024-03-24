@@ -1,34 +1,7 @@
 import { Button } from './button';
 import * as React from 'react';
 
-export default {
-  title: 'Components/Button',
-  component: Button,
-  tags: ['autodocs'],
-  parameters: {
-    layout: 'centered',
-  },
-  argTypes: {
-    handleClick: { action: 'handleClick' },
-    variant: {
-      control: {
-        type: 'select',
-        options: [
-          'primary',
-          'secondary',
-          'outline',
-          'ghost',
-          'ghostBrand',
-          'dangerPrimary',
-          'dangerSecondary',
-          'dangerGhost',
-        ],
-      },
-    },
-    fill: { control: 'color' },
-  },
-};
-
+// Function to determine default icon fill color
 const getDefaultIconFillColor = (variant, customFill = '') => {
   if (customFill) {
     return customFill;
@@ -51,8 +24,40 @@ const getDefaultIconFillColor = (variant, customFill = '') => {
   }
 };
 
+// Storybook configuration
+export default {
+  title: 'Components/Button',
+  component: Button,
+  // decorators: [withColorScheme], // Decorator function to apply color scheme based on Storybook theme
+  tags: ['autodocs'],
+  parameters: {
+    layout: 'centered',
+  },
+  argTypes: {
+    onClick: { action: 'Clicked' },
+    variant: {
+      control: {
+        type: 'select',
+        options: [
+          'primary',
+          'secondary',
+          'outline',
+          'ghost',
+          'ghostBrand',
+          'dangerPrimary',
+          'dangerSecondary',
+          'dangerGhost',
+        ],
+      },
+    },
+    fill: { control: 'color' },
+  },
+};
+
+// Button template
 const Template = (args) => <Button {...args} />;
 
+// Primary button story
 export const RocketButton = Template.bind({});
 RocketButton.args = {
   variant: 'primary',
@@ -60,9 +65,10 @@ RocketButton.args = {
   size: 'default',
 };
 
+// Button with leading icon story
 export const RocketButtonWithIcon = (args) => {
   const variant = args.variant || 'primary';
-  const fill = ''; //if fill is provided by user it will use that else will fallback to defaults
+  const fill = ''; // If fill is provided by user, it will be used; otherwise, it falls back to defaults
   const color = getDefaultIconFillColor(variant, fill);
 
   return <Button {...args} fill={color} leadingIcon="smilerectangle" />;
@@ -71,6 +77,7 @@ RocketButtonWithIcon.args = {
   ...RocketButton.args,
 };
 
+// Button with trailing icon story
 export const RocketButtonWithTrailingIcon = (args) => {
   const variant = args.variant || 'primary';
   const fill = '';
@@ -82,6 +89,7 @@ RocketButtonWithTrailingIcon.args = {
   ...RocketButton.args,
 };
 
+// Button with icon only story
 export const Icon = (args) => {
   const variant = args.variant || 'primary';
   const fill = '';

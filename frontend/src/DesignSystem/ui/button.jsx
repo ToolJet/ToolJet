@@ -99,7 +99,7 @@ const getDefaultIconFillColor = (variant) => {
       return '';
   }
 };
-const variantIconFillColors = ['#FFFFFF', '#4368E3', '#ACB2B9', '#D72D39']; // all default fill colors
+const defaultButtonFillColour = ['#FFFFFF', '#4368E3', '#ACB2B9', '#D72D39']; // all default fill colors
 
 const Button = React.forwardRef(
   (
@@ -117,7 +117,7 @@ const Button = React.forwardRef(
     },
     ref
   ) => {
-    const iconFillColor = !variantIconFillColors.includes(fill) && fill ? fill : getDefaultIconFillColor(variant);
+    const iconFillColor = !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant);
     const Comp = asChild ? Slot : 'button';
     const leadingIconElement = leadingIcon && (
       <SolidIcon name={leadingIcon} height="16" width="16" fill={iconFillColor} />

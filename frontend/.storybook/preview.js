@@ -1,6 +1,8 @@
 /** @type { import('@storybook/react').Preview } */
+
 import '../src/_styles/theme.scss';
-import './preview.scss'
+import './preview.scss';
+import { withColorScheme } from './decorators'; // Import the decorator
 
 const preview = {
   parameters: {
@@ -12,6 +14,7 @@ const preview = {
       },
     },
   },
+  decorators: [withColorScheme], // Adding the decorator to the decorators array
 };
 
 export default preview;

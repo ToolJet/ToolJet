@@ -11,21 +11,3 @@
         // outline: none;
     }
 }
-
-.loader-x {
-    width: 18px;
-    height: 18px;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background:
-        radial-gradient(farthest-side, #FFFFFF 90%, transparent 94%) top/4px 4px no-repeat,
-        conic-gradient(#0000 30%, #FFFFFF);
-    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
-    animation: l13 1s infinite linear;
-}
-
-@keyframes l13 {
-    100% {
-        transform: rotate(1turn)
-    }
-}
