@@ -10,9 +10,6 @@ import urlJoin from 'url-join';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
-// import Button from '@/components/ui/test';
-import { Button } from '@/components/ui/button';
-import Toast from '@/_ui/Toast';
 
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 import { validateName } from '@/_helpers/utils';
@@ -72,21 +69,8 @@ export default function AppCard({
   }
 
   return (
-    <div className="">
-      <Button
-        variant="dangerPrimary"
-        size="default"
-        // leadingIcon={<SolidIcon name="xx" />}
-        trailingIcon={<SolidIcon name="xx" width="16px" />}
-        disabled={false}
-        loading={false}
-        onClick={() => console.log('Button clicked')}
-        // disabled={true}
-        // isLoading={true}
-      >
-        Click Me
-      </Button>
-      {/* <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
+    <div className="card homepage-app-card">
+      <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
             <div>
@@ -146,7 +130,7 @@ export default function AppCard({
                 >
                   <button type="button" className="tj-primary-btn edit-button tj-text-xsm" data-cy="edit-button">
                     <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#11181C' : '#FDFDFE'} />
-                    &nbsp;{t('globals.edit', 'Edit')}xx
+                    &nbsp;{t('globals.edit', 'Edit')}
                   </button>
                 </Link>
               </ToolTip>
@@ -197,7 +181,7 @@ export default function AppCard({
             </ToolTip>
           </div>
         </div>
-      </div> */}
+      </div>
     </div>
   );
 }
