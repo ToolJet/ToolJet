@@ -7,7 +7,7 @@ title: Mailgun
 
 ToolJet can connect to your Mailgun account to send emails.
 
-<img class="screenshot-full" src="/img/datasource-reference/mailgun/mailgun-datasource.png" alt="ToolJet - Data source - Mailgun" height="420" />
+<img class="screenshot-full" src="/img/datasource-reference/mailgun/mailgun-datasource-new.png" alt="ToolJet - Data source - Mailgun" height="420" />
 
 :::info
 The Mailgun API Datasource supports for interaction with the mail endpoint of the [Mailgun API](https://documentation.mailgun.com/en/latest/api-intro.html#authentication-1).
@@ -41,8 +41,6 @@ Required parameters:
 Optional parameters:
 
 - Body as HTML
-
-<img class="screenshot-full" src="/img/datasource-reference/MailGun/mailgun_query_body.png" alt="ToolJet - Query Mailgun" height="420"/>
 
 :::info
 **Send mail to** - accepts a single email id. 

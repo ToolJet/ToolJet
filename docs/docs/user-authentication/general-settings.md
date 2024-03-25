@@ -8,14 +8,14 @@ title: General Settings
 - Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/general/workside2.png" alt="General Settings: SSO" width="500"/>
+  <img className="screenshot-full" src="/img/sso/general/workside2-new.png" alt="General Settings: SSO" width="500"/>
 
   </div>
 
 - Select `SSO` from sidebar and then select **General Settings**
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/general/sso2.png" alt="General Settings: SSO" width="500"/>
+  <img className="screenshot-full" src="/img/sso/general/sso2-new.png" alt="General Settings: SSO" width="500"/>
 
   </div>
 
@@ -33,6 +33,6 @@ You can use the login URL to login directly to the workspace. This will be hidde
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/sso/general/generalsettings2.png" alt="General Settings: SSO" />
+<img className="screenshot-full" src="/img/sso/general/generalsettings2-new.png" alt="General Settings: SSO" />
 
 </div>

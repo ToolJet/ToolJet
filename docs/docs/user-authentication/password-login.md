@@ -13,7 +13,7 @@ Password login is a method of user authentication where user can login using the
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/sso/general/password-login.png" alt="General Settings: Password login" />
+<img className="screenshot-full" src="/img/sso/general/password-login-new.png" alt="General Settings: Password login" />
 
 </div>
 

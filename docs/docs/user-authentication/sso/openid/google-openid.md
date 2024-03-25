@@ -6,14 +6,14 @@ title: Google (Open ID)
 - Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/general/workside2.png" alt="Google Open ID" width="500"/>
+  <img className="screenshot-full" src="/img/sso/general/workside2-new.png" alt="Google Open ID" width="500"/>
 
   </div>
 
 - Select `SSO` from workspace options
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/okta/sso2.png" alt="Google Open ID" width="500"/> 
+  <img className="screenshot-full" src="/img/sso/okta/sso2-new.png" alt="Google Open ID" width="500"/> 
 
   </div>
 

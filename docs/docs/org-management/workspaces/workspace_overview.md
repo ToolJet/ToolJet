@@ -9,7 +9,7 @@ The user who creates the workspace will automatically be assigned as its adminis
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/multiworkspace/multiwork2.gif" alt="multi workspace" />
+<img className="screenshot-full" src="/img/multiworkspace/multiwork2-new.gif" alt="multi workspace" />
 
 </div>
 
