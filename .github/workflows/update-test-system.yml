@@ -90,8 +90,10 @@ jobs:
           gcloud components install gke-gcloud-auth-plugin
           gcloud init
 
-      - name: GCP 
-        run: gcloud compute ssh --zone "us-central1-a" "ce-test-system" --project "tooljet-us"
+      - name: GCP
+        run: |
+          gcloud compute ssh --zone "us-central1-a" "ce-test-system" --project "tooljet-us"
+          ssh -i /home/runner/.ssh/google_compute_engine runner@34.123.140.107
 
       - name: GCP ssh
         id: compute-ssh
