@@ -33,12 +33,6 @@ Switch the canvas to mobile layout by clicking the mobile icon on the topbar. Dr
 Width of the component will be automatically adjusted to fit the screen while viewing the application in app viewer.
 :::
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/canvasmodes-v2.gif" alt="App Builder: Topbar"/>
-
-</div>
-
 ### Changes saved indicator
 
 Whenever a change is made on the component or the query panel/queries, the changes are saved automatically. The changes saved indicator will be displayed on the topbar. This helps the developer to know if the changes are saved or not.
@@ -91,7 +85,7 @@ You can also use **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)** to 
 
 Share your applications with a unique URL generated automatically or edit the URL slug to personalize it.
 
-- When **Make application public** toggle is off and **Shareable app link** is shared then the users will have to login to ToolJet to use the application. Toggle on to make the application public and accessible to anyone on the internet without requiring a ToolJet login. Only released apps can be accessed using the **Shareable app link**.
+- When **Make application public** toggle is off and **Shareable app link** is shared then the users will have to login to ToolJet to use the application. Toggle on to make the application public and accessible to anyone on the internet without requiring a ToolJet login. Only released apps can be accessed using the **Shareable app link**. 
 - ToolJet generates the **Embedded link** which can be used to embed application on the webpages.
 
 :::tip
