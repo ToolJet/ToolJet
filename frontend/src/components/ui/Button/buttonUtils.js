@@ -36,24 +36,24 @@ export const getButtonWidth = (size, iconOnly) => {
   if (iconOnly) {
     switch (size) {
       case 'large':
-        return 'w-[40px] px-[10px]';
+        return 'tw-w-[40px] tw-px-[10px]';
       case 'default':
-        return 'w-[32px] px-[7px]';
+        return 'tw-w-[32px] tw-px-[7px]';
       case 'medium':
-        return 'w-[28px] px-[5px]';
+        return 'tw-w-[28px] tw-px-[5px]';
       case 'small':
-        return 'w-[20px] px-[2px]';
+        return 'tw-w-[20px] tw-px-[2px]';
     }
   } else {
     switch (size) {
       case 'large':
-        return 'px-[20px]';
+        return 'tw-px-[20px]';
       case 'default':
-        return 'px-[12px]';
+        return 'tw-px-[12px]';
       case 'medium':
-        return 'px-[10px]';
+        return 'tw-px-[10px]';
       case 'small':
-        return 'px-[8px]';
+        return 'tw-px-[8px]';
     }
   }
 };

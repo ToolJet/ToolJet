@@ -62,6 +62,7 @@ RocketButton.args = {
   variant: 'primary',
   children: 'Button',
   size: 'default',
+  iconOnly: false,
 };
 
 // Button with leading icon story
@@ -70,7 +71,7 @@ export const RocketButtonWithIcon = (args) => {
   const fill = ''; // If fill is provided by user, it will be used; otherwise, it falls back to defaults
   const color = getDefaultIconFillColor(variant, fill);
 
-  return <Button {...args} fill={color} leadingIcon="smilerectangle" />;
+  return <Button {...args} fill={color} iconOnly={false} leadingIcon="smilerectangle" />;
 };
 RocketButtonWithIcon.args = {
   ...RocketButton.args,
@@ -82,7 +83,7 @@ export const RocketButtonWithTrailingIcon = (args) => {
   const fill = '';
   const color = getDefaultIconFillColor(variant, fill);
 
-  return <Button {...args} fill={color} trailingIcon="smilerectangle" />;
+  return <Button {...args} fill={color} iconOnly={false} trailingIcon="smilerectangle" />;
 };
 RocketButtonWithTrailingIcon.args = {
   ...RocketButton.args,
