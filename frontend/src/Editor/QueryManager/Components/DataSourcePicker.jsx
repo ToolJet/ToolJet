@@ -94,23 +94,19 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
           Sample data sources
         </label>
         <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
-          {sampleDataSource.map((source) => {
-            return (
-              <ButtonSolid
-                key={`${source.id}-${source.kind}`}
-                variant="tertiary"
-                size="sm"
-                onClick={() => {
-                  handleChangeDataSource(source);
-                }}
-                className="text-truncate"
-                data-cy={`${source.kind.toLowerCase().replace(/\s+/g, '-')}-sample-db-add-query-card`}
-              >
-                <DataSourceIcon source={source} height={14} />{' '}
-                {source.kind == 'postgresql' ? 'PostgreSQL' : 'ToolJetDB'}
-              </ButtonSolid>
-            );
-          })}
+          <ButtonSolid
+            key={`${sampleDataSource.id}-${sampleDataSource.kind}`}
+            variant="tertiary"
+            size="sm"
+            onClick={() => {
+              handleChangeDataSource(sampleDataSource);
+            }}
+            className="text-truncate"
+            data-cy={`${sampleDataSource.kind.toLowerCase().replace(/\s+/g, '-')}-sample-db-add-query-card`}
+          >
+            <DataSourceIcon source={sampleDataSource} height={14} />{' '}
+            {sampleDataSource.kind == 'postgresql' ? 'PostgreSQL' : 'ToolJetDB'}
+          </ButtonSolid>
         </div>
 
         {/* Info icon */}

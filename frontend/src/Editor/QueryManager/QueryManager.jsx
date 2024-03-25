@@ -8,7 +8,7 @@ import {
   useDataSources,
   useGlobalDataSources,
   useLoadingDataSources,
-  useSampleDataSources,
+  useSampleDataSource,
 } from '@/_stores/dataSourcesStore';
 import { useQueryToBeRun, useSelectedQuery, useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { CodeHinterContext } from '@/Editor/CodeBuilder/CodeHinterContext';
@@ -17,7 +17,7 @@ import { resolveReferences } from '@/_helpers/utils';
 const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinition, editorRef }) => {
   const loadingDataSources = useLoadingDataSources();
   const dataSources = useDataSources();
-  const sampleDataSources = useSampleDataSources();
+  const sampleDataSource = useSampleDataSource();
   const globalDataSources = useGlobalDataSources();
   const queryToBeRun = useQueryToBeRun();
   const selectedQuery = useSelectedQuery();
@@ -38,7 +38,7 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
 
   useEffect(() => {
     if (selectedQuery) {
-      const selectedDS = [...dataSources, ...globalDataSources, ...sampleDataSources].find(
+      const selectedDS = [...dataSources, ...globalDataSources, sampleDataSource].find(
         (datasource) => datasource.id === selectedQuery?.data_source_id
       );
       console.log('logging selectd DS');

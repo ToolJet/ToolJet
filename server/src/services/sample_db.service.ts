@@ -25,26 +25,26 @@ export class SampleDBService {
     const options = [
       {
         key: 'host',
-        value: this.configService.get<string>('SAMPLE_PG_DB_HOST'),
+        value: this.configService.get<string>('PG_HOST'),
         encrypted: true,
       },
       {
         key: 'port',
-        value: this.configService.get<string>('SAMPLE_PG_DB_PORT'),
+        value: this.configService.get<string>('PG_PORT'),
         encrypted: true,
       },
       {
         key: 'database',
-        value: this.configService.get<string>('SAMPLE_DB'),
+        value: 'sample_db',
       },
       {
         key: 'username',
-        value: this.configService.get<string>('SAMPLE_PG_DB_USER'),
+        value: this.configService.get<string>('PG_USER'),
         encrypted: true,
       },
       {
         key: 'password',
-        value: this.configService.get<string>('SAMPLE_PG_DB_PASS'),
+        value: this.configService.get<string>('PG_PASS'),
         encrypted: true,
       },
       {
@@ -59,12 +59,8 @@ export class SampleDBService {
     ).map((_, index) => `$${index + 1}`)}) RETURNING "id", "type", "scope", "created_at", "updated_at"`;
     const insertValues = Object.values(config);
 
-    console.log('logging query');
-    console.log(insertQueryText);
-
     const dataSourceList = await manager.query(insertQueryText, insertValues);
     const dataSource: DataSource = dataSourceList[0];
-    console.log(dataSource);
 
     const allEnvs = await this.appEnvironmentService.getAll(organizationId, manager);
     await Promise.all(
@@ -72,8 +68,6 @@ export class SampleDBService {
         const parsedOptions = await this.dataSourceService.parseOptionsForCreate(options);
         const insertQuery = `INSERT INTO "data_source_options" ( environment_id , data_source_id, options ) VALUES ( $1 , $2 , $3)`;
         const values = [env.id, dataSource.id, parsedOptions];
-        console.log(insertQuery);
-        console.log(values);
 
         await manager.query(insertQuery, values);
       })

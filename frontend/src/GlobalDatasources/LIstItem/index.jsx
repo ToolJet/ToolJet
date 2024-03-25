@@ -6,6 +6,7 @@ import { getSvgIcon } from '@/_helpers/appUtils';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedDatasource }) => {
   const {
@@ -30,7 +31,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
   // sourceMeta would be missing on development setup when switching between branches
   // if ds is already in branch while not available in another
   const icon =
-    dataSource.type === 'sample' ? (
+    dataSource.type === DATA_SOURCE_TYPE.SAMPLE ? (
       <SolidIcon name="tooljet" />
     ) : (
       getSvgIcon(sourceMeta?.kind?.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data)
@@ -50,7 +51,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
     updateSelectedDatasource(dataSource?.name);
   };
 
-  const isSampleDb = dataSource.type == 'sample';
+  const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
 
   return (
     <div

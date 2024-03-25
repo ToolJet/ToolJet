@@ -43,7 +43,6 @@ export async function populateSampleData(envVars) {
           await dropTable(client, tableName);
 
           // Create table query
-          console.log(parsedData.data[0]);
           await createTable(client, tableName, parsedData);
 
           //insert data to table
@@ -59,7 +58,6 @@ export async function populateSampleData(envVars) {
 
 // Drop PostgreSQL table if it exists
 async function dropTable(client: Client, tableName) {
-  console.log('Dropping tables');
   const dropTableQuery = `DROP TABLE IF EXISTS ${tableName};`;
   await client.query(dropTableQuery);
 }
@@ -75,16 +73,12 @@ async function createTable(client, tableName, parsedData) {
 
     // Analyze the data to determine the appropriate data type
     if (columnValues.every((value) => typeof value === 'string' && value.length <= 255)) {
-      console.log('it is varchar');
       dataType = 'VARCHAR';
     } else if (columnValues.every((value) => typeof value === 'number')) {
-      console.log('numeric ');
       dataType = 'NUMERIC';
     } else if (columnValues.every((value) => value instanceof Date || !isNaN(Date.parse(value)))) {
-      console.log('date');
       dataType = 'DATE';
     } else {
-      console.log('anything');
       dataType = 'VARCHAR(255)'; // Default to VARCHAR if data type is uncertain
     }
     createTableQuery += `${columnName
@@ -98,7 +92,6 @@ async function createTable(client, tableName, parsedData) {
 
   createTableQuery = createTableQuery.slice(0, -2); // Remove the last comma
   createTableQuery += ' );';
-  console.log(createTableQuery);
 
   await client.query(createTableQuery);
 }
@@ -135,8 +128,6 @@ async function insertData(client: Client, tableName: string, data) {
           .join(', ')})`
     )
     .join(', ')}`;
-  console.log(insertQuery.slice(0, 1000));
 
   await client.query(insertQuery);
-  console.log(`Data inserted into ${tableName} successfully.`);
 }

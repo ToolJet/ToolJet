@@ -42,10 +42,8 @@ async function createDatabase(): Promise<void> {
     if (process.env.ENABLE_TOOLJET_DB === 'true') {
       await createTooljetDb(envVars, envVars.TOOLJET_DB);
     }
-    if (process.env.ENABLE_SAMPLE_PG_DB === 'true') {
-      await createSampleDb(envVars, envVars.SAMPLE_DB);
-      await populateSampleData(envVars);
-    }
+    await createSampleDb(envVars, envVars.SAMPLE_DB);
+    await populateSampleData(envVars);
   }
 }
 

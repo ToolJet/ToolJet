@@ -2,6 +2,7 @@ import { schemaUnavailableOptions } from '@/Editor/QueryManager/constants';
 import { allOperations } from '@tooljet/plugins/client';
 import { capitalize } from 'lodash';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 export const getDefaultOptions = (source) => {
   const isSchemaUnavailable = Object.keys(schemaUnavailableOptions).includes(source.kind);
@@ -43,14 +44,14 @@ const computeQueryName = (source) => {
   const { kind, type } = source;
   const dataQueries = useDataQueriesStore.getState().dataQueries;
   let currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
-  if (type == 'sample') {
+  if (type == DATA_SOURCE_TYPE.SAMPLE) {
     currentQueriesForKind = currentQueriesForKind.filter((query) => query.data_source_id === source.id);
   }
   let currentNumber = currentQueriesForKind.length + 1;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const newName = `${type != 'sample' ? kind : 'SMPL_query_'}${currentNumber}`;
+    const newName = `${type != DATA_SOURCE_TYPE.SAMPLE ? kind : 'SMPL_query_'}${currentNumber}`;
     if (dataQueries.find((query) => query.name === newName) === undefined) {
       return newName;
     }

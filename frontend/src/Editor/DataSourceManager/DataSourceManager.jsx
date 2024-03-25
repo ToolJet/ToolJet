@@ -108,8 +108,6 @@ class DataSourceManagerComponent extends React.Component {
         datasourceName: this.props.selectedDataSource?.name,
       });
     }
-    console.log('selected data source is ');
-    console.log(this.props.selectedDataSource);
   }
 
   getDataSourceMeta = (dataSource) => {

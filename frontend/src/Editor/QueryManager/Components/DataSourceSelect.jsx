@@ -6,7 +6,7 @@ import DataSourceIcon from './DataSourceIcon';
 import { authenticationService } from '@/_services';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { useDataSources, useGlobalDataSources, useSampleDataSources } from '@/_stores/dataSourcesStore';
+import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { staticDataSources } from '../constants';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
@@ -20,13 +20,12 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
-  const sampleDataSources = useSampleDataSources();
+  const sampleDataSource = useSampleDataSource();
   const [userDefinedSources, setUserDefinedSources] = useState([
     ...dataSources,
     ...globalDataSources,
-    ...sampleDataSources,
+    sampleDataSource,
   ]);
-  const [expandList, setExpandList] = useState(false);
   const [dataSourcesKinds, setDataSourcesKinds] = useState([]);
   const [userDefinedSourcesOpts, setUserDefinedSourcesOpts] = useState([]);
   const { createDataQuery } = useDataQueriesActions();
@@ -37,14 +36,8 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
     closePopup();
   };
 
-  const handleExpandCollapse = () => {
-    setExpandList(!expandList);
-  };
-
-  console.log(dataSourcesKinds);
-
   useEffect(() => {
-    const allDataSources = [...dataSources, ...globalDataSources, ...sampleDataSources];
+    const allDataSources = [...dataSources, ...globalDataSources, sampleDataSource];
     setUserDefinedSources(allDataSources);
     const dataSourceKindsList = [...DataBaseSources, ...ApiSources, ...CloudStorageSources];
     allDataSources.forEach(({ plugin }) => {
@@ -114,11 +107,6 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
       label: (
         <span data-cy="ds-section-header-default" className="color-slate9" style={{ fontWeight: 500 }}>
           Defaults
-          {/* {!expandList ? (
-            <ButtonSolid leftIcon="arrowdown" onClick={handleExpandCollapse} />
-          ) : (
-            <ButtonSolid leftIcon="arrowup" onClick={handleExpandCollapse} />
-          )} */}
         </span>
       ),
       isDisabled: true,
@@ -261,14 +249,10 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
 }
 
 const HideGroupHeading = (props) => {
-  // console.log('loggin props');
-  // console.log(props);
   return (
     <div
       className="collapse-group-heading"
       onClick={() => {
-        console.log('logging query');
-        console.log(document.querySelector(`#${props.id}`));
         document.querySelector(`#${props.id}`).parentElement.parentElement.classList.toggle('collapsed-group');
       }}
     >
@@ -320,85 +304,3 @@ const DropdownIndicator = (props) => {
 };
 
 export default DataSourceSelect;
-
-// import React from "react";
-
-// import Select, { components } from "react-select";
-// import { groupedOptions } from "./docs/data";
-
-// // const handleHeaderClick = (id) => {
-// //   const node = document.querySelector(`#${id}`).parentElement.parentElement;
-// //   // console.log(node);
-// //   // var children = Array.from(node.children);
-// //   // children.forEach((element) => {
-// //   //   console.log(element);
-// //   // });
-
-// //   node.classList.toggle("collapsed-group");
-// // };
-
-// const HideGroupHeading = (props) => {
-//   return (
-//     <div
-//       className="collapse-group-heading"
-//       onClick={() => {
-//         document
-//           .querySelector(`#${props.id}`)
-//           .parentElement.parentElement.classList.toggle("collapsed-group");
-//       }}
-//     >
-//       <components.GroupHeading {...props} />
-//     </div>
-//   );
-// };
-
-// const HideGroupMenuList = (props) => {
-//   let new_props = {
-//     ...props,
-//     children: Array.isArray(props.children)
-//       ? props.children.map((c, idx) =>
-//           idx === 0
-//             ? c
-//             : { ...c, props: { ...c.props, className: "collapsed-group" } }
-//         )
-//       : props.children,
-//   };
-
-//   return <components.MenuList {...new_props} />;
-// };
-
-// export default () => (
-//   <div className="container">
-//     <Select
-//       options={groupedOptions}
-//       isMulti
-//       blurInputOnSelect={false}
-//       closeMenuOnSelect={false}
-//       components={{
-//         GroupHeading: HideGroupHeading,
-//         MenuList: HideGroupMenuList,
-//       }}
-//       styles={{
-//         groupHeading: (styles) => ({
-//           ...styles,
-//           backgroundColor: "#e9ecef",
-//           margin: 0,
-//           paddingTop: "5px",
-//           paddingBottom: "5px",
-//           color: "black",
-//           fontWeight: 500,
-//           fontSize: "1rem",
-//           flex: 1,
-//         }),
-//       }}
-//       /* formatOptionLabel={(option, context) => {
-//         return (
-//           <React.Fragment>
-//             <input type="checkbox" />
-//             <label>{option.label}</label>
-//           </React.Fragment>
-//         );
-//       }} */
-//     />
-//   </div>
-// );
