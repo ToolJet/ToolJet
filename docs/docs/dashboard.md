@@ -9,7 +9,7 @@ Furthermore, the dashboard serves as a gateway to various essential sections, su
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/dashboardoptions.png" alt="App menu options"/>
+<img className="screenshot-full" src="/img/dashboard/dashboardoptions-v2.png" alt="App menu options"/>
 
 </div>
 
@@ -19,7 +19,7 @@ The workspace manager is located on the bottom left corner of the dashboard. Cli
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/workspacemenu.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/workspacemenu-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -39,7 +39,7 @@ Previously, the workspace slug was an automatically generated workspace ID, like
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/newworkmodal.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/new-workspace-modal-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -53,7 +53,7 @@ To create a new app, click on the `Create new app` button on the top left corner
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/newappmodal.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/new-app-modal-v2.png" alt="Dashboard"/>
 
 </div>
 <br/>
@@ -69,7 +69,7 @@ This option will open a modal with a list of pre-built templates. You can choose
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/choosefromtemplate.gif" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/choosefromtemplate-v2.gif" alt="Dashboard"/>
 
 </div>
 
@@ -79,7 +79,7 @@ This option will open a file picker to import a JSON file. This JSON file should
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/import.gif" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/import-app-v2.gif" alt="Dashboard"/>
 
 </div>
 
@@ -115,7 +115,7 @@ A folder can be **deleted** or **renamed**. To delete or rename a folder, click 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/newfolder.gif" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/newfolder-v2.gif" alt="Dashboard"/>
 
 </div>
 
@@ -125,7 +125,7 @@ Folders can be searched by clicking on the search icon on the left drawer of the
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/search.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/search-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -135,11 +135,11 @@ The folder's URL slug is generated automatically from its name, providing direct
 
 To get the URL of a specific folder, the user will have to select that folder and then copy the URL from the address bar of the browser. The copied URL can be used to share with other users of the workspace.
 
-Example: If the name of the folder is `customer support`, The folder can be accessed directly from the URL `https://tooljet.com/<workspace-name>?folder=customer%20support`.
+Example: If the name of the folder is `Customer Support`, The folder can be accessed directly from the URL `https://tooljet.com/<workspace-name>?folder=Customer%20Support`.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/appurl.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/app-url-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -149,7 +149,7 @@ The dashboard displays all the apps created in the workspace as cards. These car
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/appcard.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/appcard-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -157,6 +157,7 @@ The dashboard displays all the apps created in the workspace as cards. These car
 
 The app menu is located on the top right corner of the app card. Clicking on the app menu will open a dropdown menu with a list of options. These options are:
 
+- **[Rename app](#rename-app)**
 - **[Change Icon](#change-icon)**
 - **[Add to folder](#add-to-folder)**
 - **[Clone app](#clone-app)**
@@ -165,7 +166,17 @@ The app menu is located on the top right corner of the app card. Clicking on the
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/appmenu.gif" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/app-menu-v2.gif" alt="Dashboard"/>
+
+</div>
+
+### Rename app
+
+This option will open a modal that will allow you to rename your app.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/dashboard/rename-app.png" alt="Dashboard"/>
 
 </div>
 
@@ -175,7 +186,7 @@ This option will open a modal with a list of icons. You can choose any icon from
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/changeicon.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/change-icon-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -185,17 +196,17 @@ This option will open a modal with a list of folders. You can choose any folder 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/addtofolder.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/add-to-folder-v2.png" alt="Dashboard"/>
 
 </div>
 
 ### Clone app
 
-Selecting this option will immediately open the cloned app in the app builder with the same configuration as the original app. The new app will be named as `<original app name>` followed by unix timestamp. Example: `<original app name> 1627980000`.
+Selecting this option will open a modal where you can enter the desired name for the cloned app. After providing the desired name, click on the Clone app button. This will immediately open the cloned app in the app builder with the same configuration as the original app.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/cloneapp.gif" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/clone-app-v2.gif" alt="Dashboard"/>
 
 </div>
 
@@ -213,7 +224,7 @@ This JSON file can be used to [import](#importing-app-connected-to-tooljet-table
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/exportapp.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/export-app-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -223,7 +234,7 @@ This option will open a confirmation modal to delete the app. Click on the `Dele
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/deleteapp.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/delete-app-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -233,7 +244,7 @@ Apps can be searched by clicking on the search bar on the center of the dashboar
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/searchapp.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/search-app-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -243,6 +254,6 @@ The current version of ToolJet is displayed on the top right corner of the dashb
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/currentversion.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/current-version-v2.png" alt="Dashboard"/>
 
 </div>
