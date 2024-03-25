@@ -208,7 +208,7 @@
     "format": "eslint . --fix '**/*.{js,jsx}'",
     "test": "jest",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "npm run build-storybook"
   },
   "eslintConfig": {
     "extends": "react-app"
