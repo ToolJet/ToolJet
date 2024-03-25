@@ -36,12 +36,12 @@ To create workspace constants, follow these steps:
 - Access the ToolJet Dashboard and navigate to Workspace Settings.
 - Select the Workspace Constants tab.
 - Click on the **Create New Constant** button.
-- A drawer will appear; enter the desired name and value for the constant.
+- A drawer will appear. Enter the desired name and value for the constant.
 - Click the **Add Constant** button to save the constant.
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/workspace-const/createconstant-v2.gif" alt="Workspace constants: create"/>
+<img className="screenshot-full" src="/img/workspace-const/create-constant-v2.gif" alt="Workspace constants: create"/>
     
 </div>
 
@@ -49,7 +49,7 @@ To create workspace constants, follow these steps:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/workspace-const/editdelete-v2.png" alt="Workspace constants: edit/delete"/>
+<img className="screenshot-full" src="/img/workspace-const/edit-delete-v2.png" alt="Workspace constants: edit/delete"/>
 
 </div>
 
