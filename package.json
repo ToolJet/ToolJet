@@ -51,6 +51,7 @@
     "deploy": "cp -a frontend/build/. public/",
     "heroku-postbuild": "./heroku-postbuild.sh",
     "prepare": "husky install",
-    "update-version": "node update-version.js"
+    "update-version": "node update-version.js",
+    "build-storybook": "npm run build-storybook"
   }
 }
