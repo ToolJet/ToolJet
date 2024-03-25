@@ -42,7 +42,6 @@ export default function EditorHeader({
   setCurrentAppVersionPromoted,
   fetchEnvironments,
   isEditorFreezed,
-  isSocketOpen,
 }) {
   const currentUser = useCurrentUser();
   const {
@@ -286,7 +285,7 @@ export default function EditorHeader({
                   </div>
                 </div>
                 <div className="nav-item dropdown promote-release-btn">
-                  {isSocketOpen && !isEmpty(featureAccess) && shouldRenderPromoteButton && (
+                  {!isEmpty(featureAccess) && shouldRenderPromoteButton && (
                     <ButtonSolid
                       variant="primary"
                       onClick={handlePromote}
@@ -313,7 +312,7 @@ export default function EditorHeader({
                     </ButtonSolid>
                   )}
 
-                  {isSocketOpen && shouldRenderReleaseButton && (
+                  {shouldRenderReleaseButton && (
                     <ReleaseVersionButton
                       appId={appId}
                       appName={app.name}
