@@ -1199,17 +1199,11 @@ const EditorComponent = (props) => {
 
       let childComponents = [];
 
-      if (newDefinition.pages[currentPageId].components?.[componentId].component.component === 'Tabs') {
-        childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter((key) =>
-          newDefinition.pages[currentPageId].components[key].component.parent?.startsWith(componentId)
-        );
-      } else {
-        const componentList = Object.entries(newDefinition.pages[currentPageId].components).map(([id, component]) => ({
-          ...component,
-          id,
-        }));
-        childComponents = getChildComponentIds(componentList, componentId);
-      }
+      const componentList = Object.entries(newDefinition.pages[currentPageId].components).map(([id, component]) => ({
+        ...component,
+        id,
+      }));
+      childComponents = getChildComponentIds(componentList, componentId);
 
       childComponents.forEach((componentId) => {
         delete newDefinition.pages[currentPageId].components[componentId];
