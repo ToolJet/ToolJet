@@ -1,9 +1,9 @@
 import React from 'react';
 
-const Loader = ({ color }) => {
+const Loader = ({ color, width }) => {
   const loaderStyle = {
-    width: '18px',
-    height: '18px',
+    width,
+    height: width,
     aspectRatio: '1',
     borderRadius: '50%',
     background: `radial-gradient(farthest-side, ${

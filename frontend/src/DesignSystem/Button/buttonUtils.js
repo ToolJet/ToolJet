@@ -53,7 +53,7 @@ export const getButtonWidth = (size, iconOnly) => {
       case 'medium':
         return 'px-[10px]';
       case 'small':
-        return ' px-[8px]';
+        return 'px-[8px]';
     }
   }
 };

@@ -118,7 +118,7 @@ const Button = React.forwardRef(
         {...props}
       >
         {isLoading ? (
-          <Loader color={iconFillColor} />
+          <Loader color={iconFillColor} width={getIconSize(size)} />
         ) : (
           <>
             {leadingIconElement}
