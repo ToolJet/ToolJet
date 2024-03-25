@@ -1197,3 +1197,37 @@ export const setWindowTitle = async (pageDetails, location) => {
     document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
   }
 };
+
+export const getChildComponentIds = (components, parentId) => {
+  let childComponents = [];
+  childComponents = components.filter((component) => isChildComponentOf(component, parentId, components));
+  return childComponents.map((component) => component.id);
+};
+
+const isChildComponentOf = (component, parentId, allComponents) => {
+  const parent = allComponents.find((comp) => comp.id === parentId);
+  const parentType = parent.component.component;
+  if (component.component.parent === parentId) {
+    return true;
+  }
+
+  /**
+   * Kanban: elements in modal have parent id suffixed with `-modal`
+   * Calendar: elements in popup have parent id suffixed with `-popup`
+   * Tabs: elements in tabs have parent id suffixed with `-{tabId}`
+   */
+  if (['Kanban', 'Calendar', 'Tabs'].includes(parentType)) {
+    return (component.component.parent || '').startsWith(parentId);
+  }
+
+  /** Check if the elements parent is a child of component */
+  if (component.component.parent) {
+    const parentComponent = allComponents.find((comp) => comp.id === component.component.parent);
+    /** Certain components have a parent ID assigned but lack an actual parent element on the page, primarily due to past issues or bugs. */
+    if (parentComponent) {
+      return isChildComponentOf(parentComponent, parentId, allComponents);
+    }
+  }
+
+  return false;
+};

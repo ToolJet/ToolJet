@@ -48,7 +48,13 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId, setWindowTitle, defaultWhiteLabellingSettings, pageTitles } from '@/_helpers/utils';
+import {
+  getWorkspaceId,
+  setWindowTitle,
+  defaultWhiteLabellingSettings,
+  pageTitles,
+  getChildComponentIds,
+} from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -1198,9 +1204,11 @@ const EditorComponent = (props) => {
           newDefinition.pages[currentPageId].components[key].component.parent?.startsWith(componentId)
         );
       } else {
-        childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter(
-          (key) => newDefinition.pages[currentPageId].components[key].component.parent === componentId
-        );
+        const componentList = Object.entries(newDefinition.pages[currentPageId].components).map(([id, component]) => ({
+          ...component,
+          id,
+        }));
+        childComponents = getChildComponentIds(componentList, componentId);
       }
 
       childComponents.forEach((componentId) => {
