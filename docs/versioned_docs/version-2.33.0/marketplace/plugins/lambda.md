@@ -1,5 +1,5 @@
 ---
-id: aws-lambda-plugin
+id: marketplace-plugin-aws-lambda
 title: AWS Lambda
 ---
 
