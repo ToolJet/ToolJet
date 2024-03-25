@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  HttpException,
-  Injectable,
-  NotAcceptableException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotAcceptableException } from '@nestjs/common';
 import * as csv from 'fast-csv';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -775,10 +769,6 @@ export class OrganizationsService {
 
     if (!(type && ['git', 'google', 'form', 'openid', 'ldap', 'saml'].includes(type))) {
       throw new BadRequestException();
-    }
-
-    if (type === 'openid' && !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC, organizationId))) {
-      throw new HttpException('OIDC disabled', 451);
     }
 
     await this.encryptSecret(configs);

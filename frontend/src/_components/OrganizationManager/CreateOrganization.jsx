@@ -164,7 +164,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 className={`form-control ${name?.error ? 'is-invalid' : 'is-valid'}`}
                 placeholder={t('header.organization.workspaceName', 'Workspace name')}
                 disabled={isCreating}
-                onKeyDown={handleKeyDown}
                 maxLength={50}
                 data-cy="workspace-name-input-field"
                 autoFocus

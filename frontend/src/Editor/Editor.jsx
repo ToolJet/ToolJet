@@ -64,7 +64,6 @@ import { EMPTY_ARRAY, useEditorActions, useEditorState, useEditorStore } from '@
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
-import { useSocketOpen } from '@/_hooks/use-socket-open';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
@@ -80,7 +79,6 @@ const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).to
 
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
-  const isSocketOpen = useSocketOpen(socket);
   const mounted = useMounted();
 
   const {
@@ -1878,7 +1876,6 @@ const EditorComponent = (props) => {
           setCurrentAppVersionPromoted={(isCurrentVersionPromoted) => setAppVersionPromoted(isCurrentVersionPromoted)}
           fetchEnvironments={fetchEnvironments}
           isEditorFreezed={isEditorFreezed}
-          isSocketOpen={isSocketOpen}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">

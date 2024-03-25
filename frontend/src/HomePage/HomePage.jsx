@@ -37,6 +37,7 @@ import ModalBase from '@/_ui/Modal';
 import Skeleton from 'react-loading-skeleton';
 import { LicenseBanner } from '@/LicenseBanner';
 import FolderFilter from './FolderFilter';
+import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
 
 const { iconList, defaultIcon } = configs;
 
@@ -340,7 +341,7 @@ class HomePageComponent extends React.Component {
       if (error.statusCode === 409) {
         return false;
       }
-      toast.error("Couldn't import the app");
+      toast.error(error?.error || 'App import failed');
     }
   };
 
