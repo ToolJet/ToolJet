@@ -99,4 +99,5 @@ export const Icon = (args) => {
 Icon.args = {
   ...RocketButton.args,
   children: null,
+  iconOnly: true,
 };

@@ -1,5 +1,5 @@
 [build]
-  base = "/frontend"
+  base = "frontend"
   publish = "frontend/storybook-static/"
   command = "npx storybook build"
 

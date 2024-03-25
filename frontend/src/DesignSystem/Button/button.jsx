@@ -113,6 +113,7 @@ const Button = React.forwardRef(
       disabled,
       asChild = false,
       fill = '',
+      iconOnly = false,
       ...props
     },
     ref
@@ -120,10 +121,20 @@ const Button = React.forwardRef(
     const iconFillColor = !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant);
     const Comp = asChild ? Slot : 'button';
     const leadingIconElement = leadingIcon && (
-      <SolidIcon name={leadingIcon} height="16" width="16" fill={iconFillColor} />
+      <SolidIcon
+        name={leadingIcon}
+        height={iconOnly ? '20' : '16'}
+        width={iconOnly ? '20' : '16'}
+        fill={iconFillColor}
+      />
     );
     const trailingIconElement = trailingIcon && (
-      <SolidIcon name={trailingIcon} height="16" width="16" fill={iconFillColor} />
+      <SolidIcon
+        name={trailingIcon}
+        height={iconOnly ? '20' : '16'}
+        width={iconOnly ? '20' : '16'}
+        fill={iconFillColor}
+      />
     );
 
     return (
@@ -162,6 +173,7 @@ Button.propTypes = {
   ]),
   size: PropTypes.oneOf(['large', 'default', 'medium', 'small']),
   isLoading: PropTypes.bool,
+  iconOnly: PropTypes.bool,
   disabled: PropTypes.bool,
   asChild: PropTypes.bool,
   fill: PropTypes.string,
