@@ -337,6 +337,8 @@ const Table = ({ collapseSidebar }) => {
         return <Boolean width="18" height="18" className="tjdb-column-header-name" />;
       case 'double precision':
         return <Float width="18" height="18" className="tjdb-column-header-name" />;
+      case 'serial':
+        return <Serial width="18" height="14" className="tjdb-column-header-name" />;
       default:
         return type;
     }
@@ -780,17 +782,16 @@ const Table = ({ collapseSidebar }) => {
     document.getElementById('edit-input-blur').blur();
   };
 
-  function showTooltipForId(column) {
-    return (
-      <ToolTip message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
-        <div className="primaryKeyTooltip">
+  function tableHeaderContent(column) {
+    const { constraints_type = {} } = column;
+    const { is_primary_key } = constraints_type;
+
+    return is_primary_key ? (
+      <ToolTip show message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
+        <div className="primaryKeyTooltip w-100">
           <div>
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
-              {isSerialDataType(column) ? (
-                <Serial width="18" height="14" className="tjdb-column-header-name" />
-              ) : (
-                checkDataType(column?.dataType)
-              )}
+              {checkDataType(isSerialDataType(column) ? 'serial' : column?.dataType)}
             </span>
             {column.render('Header')}
           </div>
@@ -799,6 +800,13 @@ const Table = ({ collapseSidebar }) => {
           </div>
         </div>
       </ToolTip>
+    ) : (
+      <div className="tj-db-headerText">
+        <span className="tj-text-xsm tj-db-dataype text-lowercase">
+          {checkDataType(isSerialDataType(column) ? 'serial' : column?.dataType)}
+        </span>
+        {column.render('Header')}
+      </div>
     );
   }
 
@@ -821,15 +829,6 @@ const Table = ({ collapseSidebar }) => {
     ? 'No data found matching the criteria specified in current filters.'
     : 'Use Add Row from the menu or directly click on + icon to add a row. You may use the bulk upload option to add multiple rows of data using a csv file.';
   const emptyMainData = filterEnable ? 'No results found' : 'No data added yet';
-  function isSerialDataType(columnDetails) {
-    const { dataType = '', column_default = '' } = columnDetails;
-    const serialDatatypeDefaultValuePattern = 'nextval(';
-
-    if (dataType === 'integer' && column_default) {
-      if (column_default.includes(serialDatatypeDefaultValuePattern)) return true;
-    }
-    return false;
-  }
 
   const footerStyle = {
     borderTop: '1px solid var(--slate5)',
@@ -939,7 +938,7 @@ const Table = ({ collapseSidebar }) => {
                       key={column.Header}
                       width={isSerialDataType(column) ? 150 : 230}
                       style={{ height: index === 0 ? '32px' : '' }}
-                      title={index === 0 ? '' : column?.Header}
+                      title={column?.constraints_type?.is_primary_key ?? false ? '' : column?.Header}
                       className={
                         darkMode
                           ? 'table-header-dark tj-database-column-header tj-text-xsm'
@@ -954,18 +953,9 @@ const Table = ({ collapseSidebar }) => {
                       onMouseOver={() => handleMouseOver(index)}
                       onMouseOut={() => handleMouseOut()}
                     >
-                      {column.Header !== 'id' && index > 0 ? (
-                        <div className="d-flex align-items-center justify-content-between">
-                          <div className="tj-db-headerText">
-                            <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                              {isSerialDataType(column) ? (
-                                <Serial width="18" height="18" className="tjdb-column-header-name" />
-                              ) : (
-                                checkDataType(column?.dataType)
-                              )}
-                            </span>
-                            {column.render('Header')}
-                          </div>
+                      <div className="d-flex align-items-center justify-content-between">
+                        {tableHeaderContent(column)}
+                        {!column?.constraints_type?.is_primary_key && (
                           <TablePopover
                             onEdit={() => {
                               setSelectedColumn(column);
@@ -987,21 +977,8 @@ const Table = ({ collapseSidebar }) => {
                               />
                             </div>
                           </TablePopover>
-                        </div>
-                      ) : isSerialDataType(column) ? (
-                        showTooltipForId(column)
-                      ) : (
-                        <>
-                          <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                            {isSerialDataType(column) ? (
-                              <Serial width="18" height="18" className="tjdb-column-header-name" />
-                            ) : (
-                              checkDataType(column?.dataType)
-                            )}
-                          </span>
-                          {/* {column.render('Header')} */}
-                        </>
-                      )}
+                        )}
+                      </div>
                     </th>
                   ))}
                   <th
