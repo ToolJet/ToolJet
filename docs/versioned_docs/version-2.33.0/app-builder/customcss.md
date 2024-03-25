@@ -11,7 +11,7 @@ Custom Styles helps in maintaining consistent themes across the ToolJet apps, al
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/customcss-new.gif" alt="Custom CSS" />
+<img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/customcss-v2.gif" alt="Custom CSS" />
 
 </div>
 
@@ -20,39 +20,37 @@ Custom Styles helps in maintaining consistent themes across the ToolJet apps, al
 To add Custom Styles to ToolJet apps, users should follow these steps:
 
 1. Go to the **Custom Styles** Page, accessible under **Workspace Settings** from the ToolJet dashboard.
-<div style={{textAlign: 'center'}}>
+ <div style={{textAlign: 'center'}}>
 
  <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/settings-v2.png" alt="Custom CSS" />
 
  </div>
 
 2. When creating a new app on ToolJet, the default button color is **blue**. If you wish to change the default button color to **red**, you must identify the class of the button component, which follows the format `_tooljet-<component>`.
-
-- The browser's inspector can also help you find the class of the component. Classes are added for both **pages** and **components**, and there are two types of selectors for classes: **Common** (`_tooljet-<component>`) and **Individual** (`_tooljet-<defaultComponentName>`).
-<div style={{textAlign: 'center'}}>
+ - The browser's inspector can also help you find the class of the component. Classes are added for both **pages** and **components**, and there are two types of selectors for classes: **Common** (`_tooljet-<component>`) and **Individual** (`_tooljet-<defaultComponentName>`).
+ <div style={{textAlign: 'center'}}>
 
  <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/selectors.png" alt="Custom CSS" />
 
  </div>
 
 3. Once the class (**`_tooljet-Button`**) is identified, navigate to the Custom Styles page and apply the desired CSS changes for that class, as shown in the following CSS code:
-
-```css
-._tooljet-Button button {
-  background: red !important;
-}
-._tooljet-Button button:hover {
-  background: green !important;
-}
-```
+ ```css
+ ._tooljet-Button button {
+     background: red !important;
+ }
+ ._tooljet-Button button:hover {
+     background: green !important;
+ }
+ ```
 
 4. By applying this custom styles, all future instances of the app will have buttons with a red default color, and they will turn green on hover. This eliminates the need for users to individually edit button properties, streamlining the customization process.
-   :::info
-   Custom Styles are injected at the workspace level, ensuring consistent theming across all apps within the workspace.
-   :::
+ :::info
+ Custom Styles are injected at the workspace level, ensuring consistent theming across all apps within the workspace.
+ :::
 
  <div style={{textAlign: 'center'}}>
 
- <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/styledapp-new.gif" alt="Custom CSS" />
+ <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/styledapp-v2.gif" alt="Custom CSS" />
 
  </div>

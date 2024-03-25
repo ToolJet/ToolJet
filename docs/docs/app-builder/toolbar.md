@@ -77,7 +77,7 @@ You can also use **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)** to 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/undonew-v2.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/undo-v3.png" alt="App Builder: Topbar"/>
 
 </div>
 

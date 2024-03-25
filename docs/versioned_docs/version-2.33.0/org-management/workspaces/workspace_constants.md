@@ -41,7 +41,7 @@ To create workspace constants, follow these steps:
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/workspace-const/createconstant-new.gif" alt="Workspace constants: create"/>
+<img className="screenshot-full" src="/img/workspace-const/createconstant-v2.gif" alt="Workspace constants: create"/>
     
 </div>
 
