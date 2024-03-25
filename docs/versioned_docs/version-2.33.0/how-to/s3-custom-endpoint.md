@@ -1,7 +1,8 @@
 ---
 id: s3-custom-endpoints
-title: Use custom endpoint for s3 hosts
+title: Use Custom Endpoint for s3 Hosts
 ---
+<div style={{paddingBottom:'24px'}}>
 
 In this how-to guide, we will see how we can connect to different **S3 compatible object storages** using the custom endpoint. In this guide, we are using Minio since it is an S3-compatible object storage. 
 
@@ -10,9 +11,11 @@ In this how-to guide, we will see how we can connect to different **S3 compatibl
 - Now the connection modal will pop-up
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/how-to/s3-custom/connection.png" alt="Custom Endpoint - S3 hosts" width="500" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/s3-custom/connection.png" alt="Custom Endpoint - S3 hosts" width="500" />
 
     </div>
 - To get the **Credentials** which is **Access Key** and **Secret Key**, you'll need to go to the Minio console to generate the keys
 - Enable the **Custom Endpoint** toggle switch, and enter the custom host URL i.e where your Minio server API is exposed 
 - Once entered the details, you can click on the **Test Connection** button to check the connection
+
+</div>
