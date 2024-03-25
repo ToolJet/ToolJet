@@ -7,7 +7,7 @@ export function withColorScheme(story, context) {
   const className = darkMode ? 'theme-dark dark-theme' : '';
 
   return (
-    <div className={className} style={{ backgroundColor: darkMode ? '#333333' : '#F8F8F8' }}>
+    <div className={className} style={{ backgroundColor: 'transparent' }}>
       {story()}
     </div>
   );
