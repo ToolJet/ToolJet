@@ -16,6 +16,7 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
     setQueryFilters,
   } = useContext(TooljetDatabaseContext);
 
+  // order=id.desc&
   return (
     <>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
@@ -25,7 +26,7 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
             setSortFilters({});
             setQueryFilters({});
             tooljetDatabaseService
-              .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}`)
+              .findOne(organizationId, selectedTable.id, `limit=${limit}`)
               .then(({ headers, data = [], error }) => {
                 if (error) {
                   toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);

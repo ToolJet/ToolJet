@@ -152,7 +152,7 @@ export default function tjdbDropdownStyles(
       height: '36px !important',
       minHeight: '36px',
     }),
-    menuList: (provided, state) => ({
+    menuList: (provided, _state) => ({
       ...provided,
       padding: '8px',
       color: darkMode ? '#fff' : '#232e3c',
@@ -176,3 +176,30 @@ export default function tjdbDropdownStyles(
     }),
   };
 }
+
+export const renderDatatypeIcon = (type) => {
+  switch (type) {
+    case 'integer':
+      return <Integer width="18" height="18" className="tjdb-column-header-name" />;
+    case 'bigint':
+      return <BigInt width="18" height="18" className="tjdb-column-header-name" />;
+    case 'character varying':
+      return <CharacterVar width="18" height="18" className="tjdb-column-header-name" />;
+    case 'boolean':
+      return <Boolean width="18" height="18" className="tjdb-column-header-name" />;
+    case 'double precision':
+      return <Float width="18" height="18" className="tjdb-column-header-name" />;
+    case 'serial':
+      return <Serial width="18" height="14" className="tjdb-column-header-name" />;
+    default:
+      return type;
+  }
+};
+
+export const listAllPrimaryKeyColumns = (columns) => {
+  const primarykeyColumns = [];
+  columns.forEach((column) => {
+    if ((column?.constraints_type?.is_primary_key ?? false) && column.accessor) primarykeyColumns.push(column.accessor);
+  });
+  return primarykeyColumns;
+};

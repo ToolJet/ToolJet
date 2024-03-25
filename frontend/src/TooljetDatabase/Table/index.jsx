@@ -14,14 +14,7 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
-import { isSerialDataType } from '../constants';
-import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
-import BigInt from '../Icons/Biginteger.svg';
-import Float from '../Icons/Float.svg';
-import Integer from '../Icons/Integer.svg';
-import CharacterVar from '../Icons/Text.svg';
-import Boolean from '../Icons/Toggle.svg';
-import Serial from '../Icons/Serial.svg';
+import { isSerialDataType, renderDatatypeIcon } from '../constants';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
@@ -324,25 +317,6 @@ const Table = ({ collapseSidebar }) => {
         : columns,
     [loading, columns]
   );
-
-  const checkDataType = (type) => {
-    switch (type) {
-      case 'integer':
-        return <Integer width="18" height="18" className="tjdb-column-header-name" />;
-      case 'bigint':
-        return <BigInt width="18" height="18" className="tjdb-column-header-name" />;
-      case 'character varying':
-        return <CharacterVar width="18" height="18" className="tjdb-column-header-name" />;
-      case 'boolean':
-        return <Boolean width="18" height="18" className="tjdb-column-header-name" />;
-      case 'double precision':
-        return <Float width="18" height="18" className="tjdb-column-header-name" />;
-      case 'serial':
-        return <Serial width="18" height="14" className="tjdb-column-header-name" />;
-      default:
-        return type;
-    }
-  };
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
     {
@@ -775,7 +749,7 @@ const Table = ({ collapseSidebar }) => {
     }
   };
 
-  const closeEditPopover = (previousValue, cellIndex) => {
+  const closeEditPopover = (previousValue, _cellIndex) => {
     setEditPopover(false);
     previousValue === null ? setNullValue(true) : setNullValue(false);
     setCellVal(previousValue);
@@ -791,7 +765,7 @@ const Table = ({ collapseSidebar }) => {
         <div className="primaryKeyTooltip w-100">
           <div>
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
-              {checkDataType(isSerialDataType(column) ? 'serial' : column?.dataType)}
+              {renderDatatypeIcon(isSerialDataType(column) ? 'serial' : column?.dataType)}
             </span>
             {column.render('Header')}
           </div>
@@ -803,7 +777,7 @@ const Table = ({ collapseSidebar }) => {
     ) : (
       <div className="tj-db-headerText">
         <span className="tj-text-xsm tj-db-dataype text-lowercase">
-          {checkDataType(isSerialDataType(column) ? 'serial' : column?.dataType)}
+          {renderDatatypeIcon(isSerialDataType(column) ? 'serial' : column?.dataType)}
         </span>
         {column.render('Header')}
       </div>
