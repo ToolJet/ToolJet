@@ -101,6 +101,16 @@ jobs:
           username: runner
           key: /home/runner/.ssh/google_compute_engine
 
+      - name: ls -a via ssh
+        uses: fifsky/ssh-action@master
+        with:
+          command: |
+            cd /tmp
+            ls -a
+          host: 34.123.140.107
+          user: testing
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+
       # - name: GCP ssh
       #   id: compute-ssh
       #   uses: google-github-actions/ssh-compute@v1
