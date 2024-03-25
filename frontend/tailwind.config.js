@@ -114,7 +114,6 @@ module.exports = {
         semibold: '600',
         bold: '700',
         extrabold: '800',
-        'extra-bold': '800',
         black: '900',
       },
     },

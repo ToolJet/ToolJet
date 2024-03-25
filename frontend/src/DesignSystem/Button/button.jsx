@@ -17,7 +17,7 @@ const buttonVariants = cva('flex justify-center items-center font-medium', {
         text-text-on-solid bg-button-primary hover:bg-button-primary-hover
         active:bg-button-primary-pressed active:border-border-accent-strong
         disabled:bg-button-primary-disabled border-none
-        interactice-focus focus-visible:outline-none	`,
+        interactice-focus focus-visible:outline-none`,
       secondary: `
         text-text-default border-1 border-solid border-border-accent-weak
         bg-button-secondary hover:border-border-accent-strong
@@ -25,8 +25,7 @@ const buttonVariants = cva('flex justify-center items-center font-medium', {
         active:border-border-accent-strong 
         disabled:border-border-default 
         disabled:bg-button-secondary-disabled disabled:text-text-disabled  focus-visible:border-border-accent-weak
-        interactive-focus-nonsolid  focus-visible:outline-none 	
-      `,
+        interactive-focus-nonsolid  focus-visible:outline-none`,
       outline: `
         text-text-default border-1 border-solid border-border-default
         bg-button-secondary hover:border-border-default
@@ -34,40 +33,31 @@ const buttonVariants = cva('flex justify-center items-center font-medium', {
         active:border-border-strong 
         disabled:border-border-default 
         disabled:bg-button-outline-disabled disabled:text-text-disabled focus-visible:border-border-default
-        interactive-focus-nonsolid focus-visible:interactive-focus-outline 	
-      `,
+        interactive-focus-nonsolid focus-visible:interactive-focus-outline`,
       ghost: `
         border-none text-text-default bg-[#ffffff00] hover:bg-button-outline-hover
         active:bg-button-outline-pressed focus-visible:bg-button-outline
-        interactive-focus-nonsolid disabled:text-text-disabled focus-visible:interactive-focus-outline border-none
-        	
-      `,
+        interactive-focus-nonsolid disabled:text-text-disabled focus-visible:interactive-focus-outline border-none`,
       ghostBrand: `
         border-none text-text-accent bg-[#ffffff00] hover:bg-button-secondary-hover
         active:bg-button-secondary-pressed focus-visible:bg-button-outline
-        disabled:text-text-disabled focus-visible:interactive-focus-outline border-none interactive-focus-nonsolid
-        	
-      `,
+        disabled:text-text-disabled focus-visible:interactive-focus-outline border-none interactive-focus-nonsolid`,
       dangerPrimary: `
         text-text-on-solid bg-button-danger-primary hover:bg-button-danger-primary-hover
         active:bg-button-danger-primary-pressed disabled:bg-button-danger-primary-disabled
-        border-none interactice-focus focus-visible:outline-none	
-      `,
+        border-none interactice-focus focus-visible:outline-none`,
       dangerSecondary: `
         text-text-default border-1 border-solid border-border-danger-weak
         bg-button-secondary hover:border-border-danger-strong
         hover:bg-button-danger-secondary-hover
         active:border-border-danger-strong active:bg-button-danger-secondary-pressed
         disabled:text-text-disabled disabled:border-border-default disabled:bg-button-danger-secondary-disabled
-        focus-visible:border-border-danger-weak focus-visible:interactive-focus-outline interactive-focus-nonsolid
-        	
-      `,
+        focus-visible:border-border-danger-weak focus-visible:interactive-focus-outline interactive-focus-nonsolid`,
       dangerGhost: `
         border-none bg-[#ffffff00] text-text-default hover:bg-button-danger-secondary-hover
         active:bg-button-danger-secondary-pressed disabled:border-border-default
         disabled:bg-button-danger-secondary-disabled
-        disabled:text-text-disabled focus-visible:interactive-focus-outline interactive-focus-nonsolid 	
-      `,
+        disabled:text-text-disabled focus-visible:interactive-focus-outline interactive-focus-nonsolid`,
     },
     size: {
       large: `h-[40px]  gap-[8px] py-[10px] rounded-[10px] text-lg`,
@@ -82,7 +72,7 @@ const buttonVariants = cva('flex justify-center items-center font-medium', {
   },
 });
 
-const Button = React.forwardRef(
+const Button = forwardRef(
   (
     {
       className,
