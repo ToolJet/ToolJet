@@ -91,13 +91,13 @@ jobs:
           gcloud init
 
       - name: GCP 
-        run: gcloud compute ssh --zone "us-central1-a" "automation-testing" --project "tooljet-us"
+        run: gcloud compute ssh --zone "us-central1-a" "ce-test-system" --project "tooljet-us"
 
       - name: GCP ssh
         id: compute-ssh
         uses: google-github-actions/ssh-compute@v1
         with:
-          instance_name: 'automation-testing'
+          instance_name: 'ce-test-system'
           zone: 'us-central1-a'
           ssh_private_key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
           command: 'ls -la'
