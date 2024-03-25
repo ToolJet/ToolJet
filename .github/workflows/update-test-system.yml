@@ -95,7 +95,7 @@ jobs:
           gcloud compute ssh --zone "us-central1-a" "ce-test-system" --project "tooljet-us"
 
       - name: connect using ssh 
-        run: gcloud compute ssh --zone "us-central1-a" ce-test-system
+        run: gcloud compute ssh --zone "us-central1-a" ce-test-system -T
 
       # - name: GCP ssh
       #   id: compute-ssh
