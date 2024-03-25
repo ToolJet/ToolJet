@@ -12733,3 +12733,13 @@ tbody {
     -moz-appearance: textfield !important;
   }
 }
+
+.component-spinner {
+  animation: l13 1s infinite linear;
+}
+
+@keyframes l13 {
+  100% {
+    transform: rotate(1turn)
+  }
+}

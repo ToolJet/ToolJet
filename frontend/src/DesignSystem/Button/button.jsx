@@ -1,13 +1,14 @@
-import * as React from 'react';
+import React, { forwardRef } from 'react';
+import PropTypes from 'prop-types';
+import { cn } from '@/lib/utils';
+import Loader from '../utilComponents/loader';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 // eslint-disable-next-line import/no-unresolved
 import { Slot } from '@radix-ui/react-slot';
 // eslint-disable-next-line import/no-unresolved
 import { cva } from 'class-variance-authority';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import Loader from '../utilComponents/loader';
-import PropTypes from 'prop-types';
-import { cn } from '@/lib/utils';
 import './button.scss';
+import { getDefaultIconFillColor, defaultButtonFillColour, getIconSize, getButtonWidth } from './buttonUtils.js';
 
 const buttonVariants = cva('flex justify-center items-center font-medium', {
   variants: {
@@ -62,17 +63,17 @@ const buttonVariants = cva('flex justify-center items-center font-medium', {
         	
       `,
       dangerGhost: `
-        border-none text-text-default bg-button-secondary hover:bg-button-danger-secondary-hover
+        border-none bg-[#ffffff00] text-text-default hover:bg-button-danger-secondary-hover
         active:bg-button-danger-secondary-pressed disabled:border-border-default
         disabled:bg-button-danger-secondary-disabled
         disabled:text-text-disabled focus-visible:interactive-focus-outline interactive-focus-nonsolid 	
       `,
     },
     size: {
-      large: 'h-[40px] gap-[8px] px-[20px] py-[10px] rounded-[10px] text-lg',
-      default: 'h-[32px] gap-[6px] px-[12px] py-7px] rounded-[8px] text-base',
-      medium: 'h-[28px] gap-[6px] px-[10px] py-[5px] rounded-[6px] text-base',
-      small: 'h-[20px] gap-[6px] px-[8px] py-[2px] rounded-[4px] text-sm',
+      large: `h-[40px]  gap-[8px]  py-[10px] rounded-[10px] text-lg`,
+      default: `h-[32px] gap-[6px]  py-7px] rounded-[8px] text-base`,
+      medium: `h-[28px]  gap-[6px]  py-[5px] rounded-[6px] text-base`,
+      small: `h-[20px] gap-[4px] px-[8px] py-[2px] rounded-[4px] text-sm`,
     },
   },
   defaultVariants: {
@@ -80,26 +81,6 @@ const buttonVariants = cva('flex justify-center items-center font-medium', {
     size: 'default',
   },
 });
-
-const getDefaultIconFillColor = (variant) => {
-  switch (variant) {
-    case 'primary':
-    case 'dangerPrimary':
-      return 'var(--icon-on-solid)';
-    case 'secondary':
-    case 'ghostBrand':
-      return 'var(--icon-brand)';
-    case 'outline':
-    case 'ghost':
-      return 'var(--icon-strong)';
-    case 'dangerSecondary':
-    case 'dangerGhost':
-      return 'var(--icon-danger)';
-    default:
-      return '';
-  }
-};
-const defaultButtonFillColour = ['#FFFFFF', '#4368E3', '#ACB2B9', '#D72D39']; // all default fill colors
 
 const Button = React.forwardRef(
   (
@@ -113,7 +94,7 @@ const Button = React.forwardRef(
       disabled,
       asChild = false,
       fill = '',
-      iconOnly = false,
+      iconOnly = false, // as normal button and icon have diff styles make sure to pass it as truw when icon only button is used
       ...props
     },
     ref
@@ -121,25 +102,17 @@ const Button = React.forwardRef(
     const iconFillColor = !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant);
     const Comp = asChild ? Slot : 'button';
     const leadingIconElement = leadingIcon && (
-      <SolidIcon
-        name={leadingIcon}
-        height={iconOnly ? '20' : '16'}
-        width={iconOnly ? '20' : '16'}
-        fill={iconFillColor}
-      />
+      <SolidIcon name={leadingIcon} height={getIconSize(size)} width={getIconSize(size)} fill={iconFillColor} />
     );
     const trailingIconElement = trailingIcon && (
-      <SolidIcon
-        name={trailingIcon}
-        height={iconOnly ? '20' : '16'}
-        width={iconOnly ? '20' : '16'}
-        fill={iconFillColor}
-      />
+      <SolidIcon name={trailingIcon} height={getIconSize(size)} width={getIconSize(size)} fill={iconFillColor} />
     );
 
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, isLoading, className }))}
+        className={
+          cn(buttonVariants({ variant, size, isLoading, className, iconOnly })) + ' ' + getButtonWidth(size, iconOnly)
+        }
         ref={ref}
         disabled={disabled}
         {...props}

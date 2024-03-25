@@ -1,12 +1,12 @@
 [build]
-  base = "/frontend"
-  publish = "frontend/storybook-static/"
-  command = "npx storybook build"
+  base = "/"
+  publish = "frontend/build/"
+  command = "npm run build:plugins:prod && npm run build:frontend"
 
 [template.environment]
   NODE_ENV = "production"  
-  NODE_VERSION = "18.18.2"
-  NPM_VERSION = "9.8.1"
+  NODE_VERSION = "14.17.3"
+  NPM_VERSION = "7.20.0"
 
 [[redirects]]
   from = "/*"
