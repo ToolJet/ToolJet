@@ -85,10 +85,10 @@ jobs:
           project_id: tooljet-us
           version: '>= 363.0.0'
 
-      - name: Install Google Cloud SDK
-        run: |
-          gcloud components install gke-gcloud-auth-plugin
-          gcloud init
+      # - name: Install Google Cloud SDK
+      #   run: |
+      #     gcloud components install gke-gcloud-auth-plugin
+      #     gcloud init
 
       - name: GCP
         run: |
