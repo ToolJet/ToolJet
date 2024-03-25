@@ -119,7 +119,7 @@ async function createSampleDb(envVars, dbName): Promise<void> {
   } catch (error) {
     if (error.message.includes(`database "${dbName}" already exists`)) {
       console.log(
-        `Alreddy present Sample database\n${dbName}\n HOST: ${envVars.SAMPLE_PG_DB_HOST}\n PORT: ${envVars.SSAMPLE_PG_DB_PORT}`
+        `Already present Sample database\n${dbName}\n HOST: ${envVars.SAMPLE_PG_DB_HOST}\n PORT: ${envVars.SSAMPLE_PG_DB_PORT}`
       );
     } else {
       throw error;

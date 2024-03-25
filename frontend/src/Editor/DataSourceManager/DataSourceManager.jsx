@@ -819,7 +819,7 @@ class DataSourceManagerComponent extends React.Component {
                   </div>
                 )}
                 <Modal.Title className="mt-3">
-                  {selectedDataSource && isSampleDb ? (
+                  {selectedDataSource && !isSampleDb ? (
                     <div className="row selected-ds">
                       {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
                       <div className="input-icon" style={{ width: '160px' }}>
@@ -866,7 +866,7 @@ class DataSourceManagerComponent extends React.Component {
               {this.renderEnvironmentsTab(selectedDataSource)}
             </Modal.Header>
             <Modal.Body style={sampleDBmodalBodyStyle}>
-              {selectedDataSource && isSampleDb ? (
+              {selectedDataSource && !isSampleDb ? (
                 <div>{this.renderSourceComponent(selectedDataSource.kind, isPlugin)}</div>
               ) : (
                 selectedDataSource && isSampleDb && <div>{this.renderSampleDBModal()}</div>
@@ -876,7 +876,7 @@ class DataSourceManagerComponent extends React.Component {
 
             {selectedDataSource && !dataSourceMeta.customTesting && (
               <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
-                {selectedDataSource && isSampleDb && (
+                {selectedDataSource && !isSampleDb && (
                   <div className="row w-100">
                     <div className="card-body datasource-footer-info">
                       <div className="row">
@@ -952,7 +952,7 @@ class DataSourceManagerComponent extends React.Component {
                   </a>
                 </div>
                 <div
-                  className={isSampleDb ? `col-auto` : 'col-auto test-connection-sample-db'}
+                  className={!isSampleDb ? `col-auto` : 'col-auto test-connection-sample-db'}
                   data-cy="button-test-connection"
                 >
                   <TestConnection
@@ -964,7 +964,7 @@ class DataSourceManagerComponent extends React.Component {
                     environmentId={this.props.currentEnvironment?.id}
                   />
                 </div>
-                {isSampleDb && (
+                {!isSampleDb && (
                   <div className="col-auto" data-cy="db-connection-save-button">
                     <ButtonSolid
                       className={`m-2 ${isSaving ? 'btn-loading' : ''}`}

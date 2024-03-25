@@ -66,8 +66,6 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
         key={dataQuery.id}
         onClick={() => {
           if (selectedQuery?.id === dataQuery?.id) return;
-          // console.log("selecting query");
-          console.log(dataQuery);
           setSelectedQuery(dataQuery?.id);
           setPreviewData(null);
         }}

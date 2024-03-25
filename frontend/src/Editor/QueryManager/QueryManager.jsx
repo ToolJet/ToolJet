@@ -41,8 +41,6 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
       const selectedDS = [...dataSources, ...globalDataSources, sampleDataSource].find(
         (datasource) => datasource.id === selectedQuery?.data_source_id
       );
-      console.log('logging selectd DS');
-      console.log(selectedDS);
       //TODO: currently type is not taken into account. May create issues in importing REST apis. to be revamped when import app is revamped
       if (
         selectedQuery?.kind in defaultSources &&
