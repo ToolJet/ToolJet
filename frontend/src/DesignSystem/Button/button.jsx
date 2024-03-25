@@ -118,7 +118,10 @@ const Button = React.forwardRef(
         {...props}
       >
         {isLoading ? (
-          <Loader color={iconFillColor} width={getIconSize(size)} />
+          <div className="flex justify-center	items-center">
+            <Loader color={iconFillColor} width={getIconSize(size)} />
+            <a className="invisible">{props.children}</a>
+          </div>
         ) : (
           <>
             {leadingIconElement}
