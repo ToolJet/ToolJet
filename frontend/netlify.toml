@@ -1,6 +1,6 @@
 [build]
-  base = "/"
-  publish = "frontend/storybook-static/"
+  base = "frontend/"
+  publish = "storybook-static"
   command = "npx storybook build"
 
 [template.environment]
