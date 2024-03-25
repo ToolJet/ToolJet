@@ -15,7 +15,7 @@ Furthermore, the dashboard serves as a gateway to various essential sections, su
 
 ## Workspace Manager
 
-The workspace manager is located on the bottom left corner of the dashboard. Clicking on the workspace manager will open a dropdown menu with a list of all the workspaces you are a part of. You can switch between workspaces by clicking on the workspace name from the dropdown menu.
+The workspace manager is located on the bottom left corner of the dashboard. Clicking on the workspace manager will open a dropdown menu listing all the workspaces you belong to. You can switch between workspaces by clicking on the workspace name from the dropdown menu.
 
 <div style={{textAlign: 'center'}}>
 
@@ -75,7 +75,7 @@ This option will open a modal with a list of pre-built templates. You can choose
 
 ### Import
 
-This option will open a file picker to import a JSON file. This JSON file should be the app exported from ToolJet.
+This option will open a file picker to import a JSON file. This JSON file should contain the app data exported from ToolJet.
 
 <div style={{textAlign: 'center'}}>
 
@@ -83,21 +83,21 @@ This option will open a file picker to import a JSON file. This JSON file should
 
 </div>
 
-### Importing app connected to marketplace plugins
+### Importing an app connected to Marketplace plugins
 
-When importing an app with marketplace plugins, the marketplace plugin should be installed in the tooljet workspace where the app is being imported. If the marketplace plugin is not installed, the app will be imported without the queries for that plugin.
+When importing an app with Marketplace plugins, the Marketplace plugin should be installed in the ToolJet workspace where the app is being imported. If the Marketplace plugin is not installed, the app will be imported without the queries for that plugin.
 
-#### When marketplace plugin is installed
+#### When Marketplace plugin is installed
 
-If marketplace plugin is installed in the tooljet workspace where the app is being imported, the queries connected to the marketplace plugin will be available in the imported application. The queries will be linked to the data source with the same name if it is already present. If the data source is not present, a new data source will be created of that marketplace plugin and linked to the queries.
+If Marketplace plugin is installed in the ToolJet workspace where the app is being imported, the queries connected to the Marketplace plugin will be available in the imported application. The queries will be linked to the data source with the same name if it is already present. If the data source is not present, a new data source will be created of that Marketplace plugin and linked to the queries.
 
-#### When marketplace plugin is not installed
+#### When Marketplace plugin is not installed
 
-If you have an app with a query linked to a marketplace plugin, and you import that app in a tooljet workspace where the marketplace plugin is not installed as the data source, the queries will be not be available in the imported application.
+If you have an app with a query linked to a Marketplace plugin, and you import that app in a ToolJet workspace where the Marketplace plugin is not installed as the data source, the queries will be not be available in the imported application.
 
-### Importing app connected to tooljet table
+### Importing app connected to ToolJet table
 
-When the app(JSON file) that includes the table schema is imported, and the table is not present in the tooljet database of the workspace where the app is being imported, a new table will be created in the tooljet database with the same name as the table in the imported app.
+When the app(JSON file) that includes the table schema is imported, and the table is not present in the ToolJet database of the workspace where the app is being imported, a new table will be created in the ToolJet database with the same name as the table in the imported app.
 
 If the table with the same name is already present in the workspace, the new table will be created with the name `<table name>_<unix timestamp>`. Example: `<tablename>_1627980000`.
 
@@ -156,7 +156,7 @@ The dashboard displays all the apps created in the workspace as cards. These car
 
 ## App menu
 
-The app menu is located on the top right corner of the app card. Clicking on the app menu will open a dropdown menu with a list of options. These options are:
+The app menu is located on the top right corner of the app card. Clicking on the app menu will open a dropdown menu containing various options. These options are:
 
 - **[Rename app](#rename-app)**
 - **[Change Icon](#change-icon)**
@@ -213,13 +213,13 @@ Selecting this option will open a modal where you can enter the desired name for
 
 ### Export app
 
-This option will download a JSON file of the application. This JSON file can be [imported](#import) to ToolJet to create a new app. The exported app will include all the queries connected to global data sources including the data source created from Marketplace plugins.
+This option downloads a JSON file containing the application data. This JSON file can be [imported](#import) to ToolJet to create a new app. The exported app will include all the queries connected to global data sources including the data source created from Marketplace plugins.
 
 This option allows you to select a specific version of the app to export or export all the versions of the app. To export a specific version of the app, select a version from the list of available versions in the modal and click on the `Export selected version` and to export all the versions of the app, click on the `Export All` button.
 
 #### Export ToolJet table schema
 
-Selecting this option will include the schema of the tooljet table connected to that application in the exported JSON file. This option is available for all the apps on ToolJet however only the apps with a tooljet table connected(includes tjdb query) will have the schema included in the exported JSON file.
+Selecting this option will include the schema of the ToolJet table connected to that application in the exported JSON file. This option is available for all the apps on ToolJet however only the apps with a ToolJet table connected(includes tjdb query) will have the schema included in the exported JSON file.
 
 This JSON file can be used to [import](#importing-app-connected-to-tooljet-table) the application to ToolJet along with the table schema that was connected to the application.
 
