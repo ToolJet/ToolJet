@@ -69,7 +69,7 @@ To remove a plugin, follow these steps:
 ## Available Plugins
 - **[AWS Redshift](/docs/marketplace/plugins/marketplace-plugin-redshift)**
 - **[AWS Textract](/docs/marketplace/plugins/marketplace-plugin-textract)**
-- **[AWS Lambda](/docs/marketplace/plugins/aws-lambda-plugin)**
+- **[AWS Lambda](/docs/marketplace/plugins/marketplace-plugin-aws-lambda)**
 - **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
 - **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
