@@ -27,7 +27,7 @@ export const AppVersionsManager = function ({
     versionName: '',
     showModal: false,
   });
-  const { setPreviewData } = useQueryPanelActions();
+  const { setPreviewData, setSelectedQuery } = useQueryPanelActions();
 
   const { releasedVersionId, editingVersion, appVersions, setAppVersions } = useAppVersionStore(
     (state) => ({
@@ -64,6 +64,7 @@ export const AppVersionsManager = function ({
         const isCurrentVersionReleased = data.currentVersionId ? true : false;
         setAppDefinitionFromVersion(data, isCurrentVersionReleased);
         setPreviewData('');
+        setSelectedQuery(null);
       })
       .catch((error) => {
         toast.error(error);
