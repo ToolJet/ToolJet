@@ -108,7 +108,7 @@ jobs:
             cd /tmp
             ls -a
           host: 34.123.140.107
-          user: testing
+          user: adish@tooljet.com
           key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
 
       # - name: GCP ssh
