@@ -95,7 +95,7 @@ jobs:
           gcloud compute ssh --zone "us-central1-a" "ce-test-system" --project "tooljet-us"
 
       - name: connect using ssh 
-        run: ssh -i /home/runner/.ssh/google_compute_engine runner@34.123.140.107
+        run: ssh -i ${{ secrets.GCP_SSH_PRIVATE_KEY }} runner@34.123.140.107
 
       # - name: GCP ssh
       #   id: compute-ssh
