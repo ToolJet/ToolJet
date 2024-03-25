@@ -98,8 +98,8 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: 34.123.140.107
+          username: runner
           key: /home/runner/.ssh/google_compute_engine
-          port: 22
 
       # - name: GCP ssh
       #   id: compute-ssh
