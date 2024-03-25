@@ -70,10 +70,10 @@ const buttonVariants = cva('flex justify-center items-center font-medium', {
       `,
     },
     size: {
-      large: `h-[40px]  gap-[8px]  py-[10px] rounded-[10px] text-lg`,
-      default: `h-[32px] gap-[6px]  py-7px] rounded-[8px] text-base`,
-      medium: `h-[28px]  gap-[6px]  py-[5px] rounded-[6px] text-base`,
-      small: `h-[20px] gap-[4px] px-[8px] py-[2px] rounded-[4px] text-sm`,
+      large: `h-[40px]  gap-[8px] py-[10px] rounded-[10px] text-lg`,
+      default: `h-[32px] gap-[6px] py-7px] rounded-[8px] text-base`,
+      medium: `h-[28px]  gap-[6px] py-[5px] rounded-[6px] text-base`,
+      small: `h-[20px] gap-[4px] py-[2px] rounded-[4px] text-sm`,
     },
   },
   defaultVariants: {
