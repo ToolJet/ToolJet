@@ -92,7 +92,7 @@ jobs:
 
       - name: GCP
         run: |
-          gcloud compute ssh --zone "us-central1-a" "ce-test-system" --project "tooljet-us"
+          gcloud compute ssh --zone "us-central1-a" "ce-test-system" --project "tooljet-us" --command="nc 0.0.0.0 22"
 
       # - name: executing remote ssh commands using ssh key
       #   uses: appleboy/ssh-action@master
