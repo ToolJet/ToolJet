@@ -94,8 +94,12 @@ jobs:
         run: |
           gcloud compute ssh --zone "us-central1-a" "ce-test-system" --project "tooljet-us"
 
-      - name: connect using ssh 
-        run: gcloud compute ssh --zone "us-central1-a" ce-test-system -T
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
+        with:
+          host: 34.123.140.107
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          port: 22
 
       # - name: GCP ssh
       #   id: compute-ssh
