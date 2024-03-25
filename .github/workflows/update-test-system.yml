@@ -93,16 +93,18 @@ jobs:
       - name: GCP
         run: |
           gcloud compute ssh --zone "us-central1-a" "ce-test-system" --project "tooljet-us"
-          ssh -i /home/runner/.ssh/google_compute_engine runner@34.123.140.107
 
-      - name: GCP ssh
-        id: compute-ssh
-        uses: google-github-actions/ssh-compute@v1
-        with:
-          instance_name: 'ce-test-system'
-          zone: 'us-central1-a'
-          ssh_private_key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
-          command: 'ls -la'
+      - name: connect using ssh 
+        run: ssh -i /home/runner/.ssh/google_compute_engine runner@34.123.140.107
+
+      # - name: GCP ssh
+      #   id: compute-ssh
+      #   uses: google-github-actions/ssh-compute@v1
+      #   with:
+      #     instance_name: 'ce-test-system'
+      #     zone: 'us-central1-a'
+      #     ssh_private_key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+      #     command: 'ls -la'
 
       - uses: actions/github-script@v6
         with:
