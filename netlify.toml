@@ -1,7 +1,7 @@
 [build]
   base = "/"
   publish = "frontend/storybook-static/"
-  command = "npm run build:plugins:prod && npm run build:frontend && npm run build-storybook"
+  command = "npm run build-storybook"
 
 [template.environment]
   NODE_ENV = "production"  
