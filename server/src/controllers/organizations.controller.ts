@@ -25,6 +25,7 @@ import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization.
 import { Response } from 'express';
 import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
+import { SSOGuard } from '@ee/licensing/guards/sso.guard';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -151,7 +152,7 @@ export class OrganizationsController {
     return {};
   }
 
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard, SSOGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
   @Patch('/configs')
   async updateConfigs(@Body() body, @User() user) {
