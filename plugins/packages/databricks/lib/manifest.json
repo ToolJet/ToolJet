@@ -53,5 +53,5 @@
       "description": "default"
     }
   },
-  "required": []
+  "required": ["host", "http_path", "personal_access_token"]
 }
