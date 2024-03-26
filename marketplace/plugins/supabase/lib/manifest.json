@@ -1,0 +1,42 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Supabase datasource",
+  "description": "A schema defining Supabase datasource",
+  "type": "api",
+  "source": {
+    "name": "Supabase",
+    "kind": "supabase",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "project_url": {
+        "type": "string"
+      },
+      "service_role_secret": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "project_url": {
+      "label": "Project URL",
+      "key": "project_url",
+      "type": "text",
+      "description": "Supabase project url"
+    },
+    "service_role_secret": {
+      "label": "Service Role Secret",
+      "key": "service_role_secret",
+      "type": "textarea",
+      "encrypted": true,
+      "description": "Enter service role key of supabase account"
+    }
+  },
+  "required": ["project_url", "service_role_secret"]
+}
