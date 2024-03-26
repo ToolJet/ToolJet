@@ -2,8 +2,13 @@
 id: loading-image-pdf-from-db
 title: Upload And View Images and PDFs Using Base64 String
 ---
+<div style={{paddingBottom:'24px'}}>
 
 This guide shows how to upload and view images and PDFs using the base64 string format. 
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## 1. Start by Creating a New Table In ToolJet Database
 
@@ -17,6 +22,10 @@ This guide shows how to upload and view images and PDFs using the base64 string 
 <div style={{ width: '100%', marginBottom:'15px', marginTop:'15px'}}>
 <img className="screenshot-full" src="/img/how-to/load-base64/create-new-table.png" alt="New Table"  />
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## 2. Upload Files To The Database
 
@@ -69,6 +78,10 @@ This guide shows how to upload and view images and PDFs using the base64 string 
 
 The upload process is now complete. Whenever files are selected in the Filepicker components and the *upload* button is clicked, the base64 strings of these files will be automatically written to the database.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## 3. View Image and PDF Files 
 
 - Create a query named *getFiles* to retrieve base64 strings from testDB: Click on **+ Add** button in the query panel, select Tooljet as Database, `testDB` as Table name, and `List rows` as Operations.
@@ -111,3 +124,5 @@ You can also use transformations in the query response and concat `data:image/jp
 <br/>
 
 Using the above logic, you can upload and view files in ToolJet using the base64 data.
+
+</div>

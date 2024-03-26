@@ -2,8 +2,13 @@
 id: setup-rsyslog
 title: Setup Log File Generation (Rsyslog)
 ---
+<div style={{paddingBottom:'24px'}}>
 
 The log file serves as a comprehensive record of audit logs, capturing crucial information about various activities within the ToolJet. Follow the guide below to set up and utilize the log file feature effectively.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Activation and Configuration
 
@@ -26,6 +31,10 @@ The log file serves as a comprehensive record of audit logs, capturing crucial i
 - After configuring the log file environment variable, it's essential to **restart the server** to initiate the log file generation process.
 
 - This step ensures that the server recognizes the new configuration and begins recording audit logs.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Log Rotation and Organization
 
@@ -87,4 +96,6 @@ The log file feature automatically creates a folder in the home path with the sp
 
 <div style={{textAlign: 'center'}}>
   <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/setup-rsyslog/folder.png" alt="Setup log file generation" />
+</div>
+
 </div>

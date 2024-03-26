@@ -1,9 +1,10 @@
 ---
 id: upload-files-aws
-title: Upload files on AWS S3 bucket
+title: Upload Files on AWS S3 Bucket
 ---
+<div style={{paddingBottom:'24px'}}>
 
-# Upload and download files on AWS S3 bucket
+# Upload and Download Files on AWS S3 Bucket
 
 This guide will help you in quickly building a basic UI for uploading or downloading files from AWS S3 buckets.
 
@@ -22,6 +23,10 @@ Once you have successfully added the AWS data source, build a basic UI using the
 
 </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Queries
 
 We'll create the following queries:
@@ -30,6 +35,10 @@ We'll create the following queries:
 2. **listObjects**
 3. **uploadToS3**
 4. **download**
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### getBuckets
 
@@ -55,6 +64,10 @@ You can later add an event handler for running the **listObject** query whenever
 
 </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### listObjects
 
 This query will list all the objects inside the selected Bucket in dropdown. Select **List objects in a bucket** operation, enter `{{components.dropdown1.value}}` in the Bucket field - this will dynamically get the field value from the selected option in dropdown.
@@ -79,6 +92,10 @@ Edit the properties of **table** widget:
 
 </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### download
 
 Create a new query and select **Signed URL for download** operation. In the Bucket field, enter `{{components.dropdown1.value}}` and in Key enter `{{components.table1.selectedRow.Key}}`.
@@ -90,6 +107,10 @@ Create a new query and select **Signed URL for download** operation. In the Buck
 </div>
 
 Edit the **properties** of the table, add a Event handler for running the `download` query for `Row clicked` event. This will generate a signed url for download every time a row is clicked on the table.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### uploadToS3
 
@@ -106,7 +127,11 @@ Create a new query, select the **Upload object** operation. Enter the following 
 
 </div>
 
-#### Configure the file picker:
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+#### Configure the File Picker:
 
 Click on the widget handle to edit the file picker properties: 
 
@@ -135,3 +160,5 @@ Click on the widget handle to edit the file picker properties:
 </div>
 
 Final steps, go to the **Advanced** tab of the **uploadToS3** query and add a query to run **listObjects** query so that whenever a file is uploaded the tabled is refreshed.
+
+</div>

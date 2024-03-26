@@ -2,8 +2,13 @@
 id: conditionally-format-table
 title: Conditional Formatting in Table
 ---
+<div style={{paddingBottom:'24px'}}>
 
 Conditional formatting enhances the visual representation of data by allowing you to dynamically adjust the appearance of cells in table component based on specific conditions. This how-to guide will guide you through the process of implementing advanced conditional formatting for text color and background color in a Table component.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Create a New Application and Set Up Data Source
 
@@ -24,6 +29,10 @@ Conditional formatting enhances the visual representation of data by allowing yo
       <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/conditionally-format/query.png" alt="Table Component With Data" />
    </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Display Data on the Table
 
 1. Hide the Query Panel and click on the Table component to open its properties panel.
@@ -36,6 +45,10 @@ Conditional formatting enhances the visual representation of data by allowing yo
    <div style={{textAlign: 'center'}}>
       <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/conditionally-format/tabledata.png" alt="Table Component With Data" />
    </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Enabling Conditional Formatting
 
@@ -51,7 +64,15 @@ Conditional formatting enhances the visual representation of data by allowing yo
       <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/conditionally-format/column.png" alt="Table Component With Data" />
    </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Conditional Formatting using Cell Value
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Example 1: Changing Text Color Based on Cell Value
 
@@ -69,6 +90,9 @@ Conditional formatting enhances the visual representation of data by allowing yo
       <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/conditionally-format/textcv.png" alt="Table Component With Data" />
    </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Example 2: Changing Cell Background Color Based on Cell Value
 
@@ -84,7 +108,15 @@ Conditional formatting enhances the visual representation of data by allowing yo
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/conditionally-format/cellcv.png" alt="Table Component With Data" />
   </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Conditional Formatting using Row Data
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Example 1: Changing Text Color Based on Row Data
 
@@ -99,6 +131,10 @@ Conditional formatting enhances the visual representation of data by allowing yo
   <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/conditionally-format/textrd.png" alt="Table Component With Data" />
   </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Example 2: Changing Cell Background Color based on Row Data
 
@@ -115,6 +151,8 @@ Conditional formatting enhances the visual representation of data by allowing yo
   <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/conditionally-format/cellrd.png" alt="Table Component With Data" />
   </div>
+
+</div>
 
 
 

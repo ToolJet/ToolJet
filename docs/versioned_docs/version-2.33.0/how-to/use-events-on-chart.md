@@ -2,12 +2,17 @@
 id: use-events-on-chart
 title: Use Events on Chart
 ---
+<div style={{paddingBottom:'24px'}}>
 
 Currently, the chart component does not support events. However, you can use the Custom Component to create a chart using a third-party library that supports events. Plotly is one of the libraries that supports events. In this tutorial, we will build a chart using Plotly and add events to it.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0'}} className="screenshot-full" src="/img/how-to/events-chart/plotly-chart.png" alt="Plotly Chart" />
+    <img style={{ marginBottom:'15px', border:'0'}} className="screenshot-full" src="/img/how-to/events-chart/plotly-chart.png" alt="Plotly Chart" />
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Step 1: Add a Custom Component
 
@@ -15,7 +20,11 @@ Open the App Builder and add a Custom Component to the page. Then, click on the 
 
 Note: If you are not familiar with the Custom Component, please read the [Custom Component](/docs/widgets/custom-component/) doc.
 
-## Step 2: Add the code to the Custom Component
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Step 2: Add the Code to the Custom Component
 
 ```js
 import React from 'https://cdn.skypack.dev/react';
@@ -256,7 +265,11 @@ const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent); // conne
 ReactDOM.render(<ConnectedComponent />, document.body); // render the component
 ```
 
-## Step 3: Using events from the Custom Component
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Step 3: Using Events from the Custom Component
 
 In the code above, we created a function called `barOnClick` that will be called when the user clicks on the bar. This function holds the code that will be executed when the user clicks on the bar. 
 
@@ -275,3 +288,5 @@ const barOnClick = ({points}) => {
 ```
 
 `runQuery` is a function which accepts a query name as a string used to run the query from the custom component. Learn more about the custom component [here](/docs/widgets/custom-component/).
+
+</div>
