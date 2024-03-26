@@ -1,0 +1,16 @@
+{
+  "name": "Digital marketing campaign manager",
+  "description": "Effortlessly create and track the performance of marketing campaigns using UTM tag builder.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "digital-marketing-campaign-manager",
+  "category": "sales-and-marketing"
+}
