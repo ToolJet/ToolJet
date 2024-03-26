@@ -398,9 +398,15 @@ export const useDataQueriesStore = create(
 
 const sortByAttribute = (data, sortBy, order) => {
   if (order === 'asc') {
+    if (sortBy === 'kind') {
+      return data.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => a.kind.localeCompare(b.kind));
+    }
     return data.sort((a, b) => (a[sortBy] > b[sortBy] ? 1 : -1));
   }
   if (order === 'desc') {
+    if (sortBy === 'kind') {
+      return data.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => b.kind.localeCompare(a.kind));
+    }
     return data.sort((a, b) => (a[sortBy] < b[sortBy] ? 1 : -1));
   }
 };
