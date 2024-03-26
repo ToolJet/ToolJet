@@ -108,22 +108,13 @@ export class InstanceSettingsService {
         params.map(async (param) => {
           const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
           // Find the config by id or key
-          let config;
-          if (param.id) {
-            config = await manager.findOne(InstanceSettings, {
-              where: {
-                id: param.id,
-                type: INSTANCE_SETTINGS_TYPE.USER,
-              },
-            });
-          } else if (param.key) {
-            config = await manager.findOne(InstanceSettings, {
-              where: {
-                key: param.key,
-                type: INSTANCE_SETTINGS_TYPE.USER,
-              },
-            });
-          }
+          const config = await manager.findOneOrFail(InstanceSettings, {
+            where: {
+              ...(param.id ? { id: param.id } : {}),
+              ...(param.key ? { key: param.key } : {}),
+              type: INSTANCE_SETTINGS_TYPE.USER,
+            },
+          });
           if (config) {
             param.id = config.id;
           }
