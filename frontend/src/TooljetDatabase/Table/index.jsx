@@ -769,9 +769,7 @@ const Table = ({ collapseSidebar }) => {
             </span>
             {column.render('Header')}
           </div>
-          <div className="tjdb-primary-key-parent" data-cy="primary-key-label">
-            <span className="primary-key-text">Primary key</span>
-          </div>
+          <SolidIcon name="primarykey" />
         </div>
       </ToolTip>
     ) : (
