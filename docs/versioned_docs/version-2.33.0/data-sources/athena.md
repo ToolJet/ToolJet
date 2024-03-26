@@ -7,6 +7,8 @@ ToolJet can connect to Amazon Athena which is an interactive query service that 
 - [Querying-athena](#querying-amazon-athena)
 - [Basic Operation](#basic-queries)
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 To establish a connection with the Amazon Athena data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
@@ -24,8 +26,11 @@ You can also configure for **[additional optional parameters](https://github.com
 :::
 
 
-<img className="screenshot-full" src="/img/datasource-reference/athena/athena-connection.png" alt="Athena connection" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/athena/athena-connection.png" alt="Athena connection" />
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying Amazon Athena
 
@@ -37,9 +42,13 @@ You can also configure for **[additional optional parameters](https://github.com
 **Refer amazon athena docs here for more info:** [link](https://docs.aws.amazon.com/athena/latest/ug/what-is.html)
 :::
 
-### Basic queries
+</div>
 
-#### Creating table 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Basic Queries
+
+#### Creating Table 
 
 
 ```sql
@@ -49,15 +58,17 @@ CREATE EXTERNAL TABLE student (
 )  LOCATION 's3://athena-express-akiatfa53s-2022/';
 ```
 
-#### Inserting to table
+#### Inserting to Table
 
 ```sql
 INSERT INTO student
 VALUES ('Lansing',1)
 ```
 
-#### Select operation
+#### Select Operation
 
 ```sql
 SELECT * from student WHERE AGE=1
 ```
+
+</div>

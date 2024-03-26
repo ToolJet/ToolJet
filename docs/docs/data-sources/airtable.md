@@ -5,6 +5,8 @@ title: Airtable
 
 # Airtable
 
+<div style={{paddingBottom:'24px'}}>
+
 ToolJet can connect to your Airtable account to read and write data. **Personal Access Token** is required to connect to the Airtable data source on ToolJet. You can generate the Personal Access Token by visiting [Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions).
 
 <div style={{textAlign: 'center'}}>
@@ -17,6 +19,10 @@ ToolJet can connect to your Airtable account to read and write data. **Personal 
 Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here **[Airtable API](https://airtable.com/api)**.
 :::
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Supported Operations
 
 - **[List records](#list-records)**
@@ -25,17 +31,21 @@ Airtable API has a rate limit, and at the time of writing this documentation, th
 - **[Update record](#update-record)**
 - **[Delete record](#delete-record)**
 
-### List records
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### List Records
 
 This operation returns a list of records from the specified table.
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Base ID:** To find the Base ID, first visit **airtable.com/api**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
 
 - **Table name:** The name of the table from which you want to fetch the records.
 
-#### Optional parameters:
+#### Optional Parameters:
 
 - **Page size:** The number of records returned in each request. Default is 100 records.  
 
@@ -75,9 +85,13 @@ Example response from Airtable:
 }
 ```
 
-### Retrieve record
+</div>
 
-#### Required parameters:
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Retrieve Record
+
+#### Required Parameters:
 
 - **Base ID**: To find the Base ID, first visit **airtable.com/api**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
 
@@ -98,10 +112,13 @@ Example response from Airtable:
   "createdTime": "2021-05-12T14:30:33.000Z"
 }
 ```
+</div>
 
-### Create record
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-#### Required parameters:
+### Create Record
+
+#### Required Parameters:
 
 - **Base ID**: To find the Base ID, first visit **airtable.com/api**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
 
@@ -153,9 +170,13 @@ Query returns the following response when the records are created successfully:
 }
 ```
 
-### Update record
+</div>
 
-#### Required parameters:
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Update Record
+
+#### Required Parameters:
 
 - **Base ID**: To find the Base ID, first visit **airtable.com/api**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
 
@@ -187,9 +208,13 @@ Query returns the following response when the record is updated successfully:
 }
 ```
 
-### Delete record
+</div>
 
-#### Required parameters:
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Delete Record
+
+#### Required Parameters:
 
 - **Base ID**
 - **Table name**
@@ -203,3 +228,4 @@ Query returns the following response when the record is deleted successfully:
     id: "recIKsyZgqI4zoqS7"
 }
 ```
+</div>

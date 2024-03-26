@@ -7,6 +7,9 @@ title: Appwrite
 
 ToolJet can connect to appwrite database to read/write data.
 
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection 
 
 ToolJet connects to your Appwrite app using :
@@ -24,9 +27,13 @@ To establish a connection with the Appwrite data source, you can either click on
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/connectv2.png" alt="Appwrite intro" width="600"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/appwrite/connectv2.png" alt="Appwrite intro" width="600"/>
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying Appwrite 
 
@@ -44,7 +51,11 @@ After selecting Appwrite datasource, select the operation that you want to perfo
 Query results can be transformed using Transformations. Read our **Transformation documentation** [here](/docs/tutorial/transformations)
 :::
 
-## Supported operations
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Supported Operations
 
 1.  **[List documents](#list-documents)**
 2.  **[Get document](#get-document)**
@@ -53,15 +64,19 @@ Query results can be transformed using Transformations. Read our **Transformatio
 5.  **[Delete document](#delete-document)**
 6.  **[Bulk update using document id](#bulk-update-using-document-id)**
 
-### List documents
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### List Documents
 
 This operation can be used to get a list of all the user documents.
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Collection ID:** You can create a new collection using the Database service [server integration](https://appwrite.io/docs/server/database#createCollection) or appwrite console. The value for collection ID field should be of `String` type. 
 
-#### Optional parameters: 
+#### Optional Parameters: 
 
 - **Limit:** Maximum number of documents to return in the response. By default, it will return a maximum of 25 results. A maximum of 100 results is allowed per request. The Limit value should be of `integer` type.
 - **Order fields:** Array of attributes used to sort results. The order field value should be an `array`.
@@ -70,15 +85,17 @@ This operation can be used to get a list of all the user documents.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/listv2.png" alt="Appwrite List" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/appwrite/listv2.png" alt="Appwrite List" />
 
 </div>
 
-### Get document
+</div>
+
+### Get Document
 
 Use this operation to get a document from a collection by its unique ID. 
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Collection ID:** You can create a new collection using the Database service [server integration](https://appwrite.io/docs/server/database#createCollection) or appwrite console. The value for collection ID should be of `String` type. 
 
@@ -90,11 +107,13 @@ Use this operation to get a document from a collection by its unique ID.
 
 </div>
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Add Document to Collection
 
 Use this operation to create a new document in a collection.
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Collection ID:** You can create a new collection using the Database service [server integration](https://appwrite.io/docs/server/database#createCollection) or appwrite console. The collection ID should be of `String` type. 
 
@@ -102,15 +121,19 @@ Use this operation to create a new document in a collection.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/addv2.png" alt="Appwrite add" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/appwrite/addv2.png" alt="Appwrite add" />
 
 </div>
 
-### Update document
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Update Document
 
 Use this operation to update a document.
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Collection ID:** You can create a new collection using the Database service [server integration](https://appwrite.io/docs/server/database#createCollection) or appwrite console. The value for collection ID should be of `String` type. 
 
@@ -120,15 +143,19 @@ Use this operation to update a document.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/updv2.png" alt="Appwrite update" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/appwrite/updv2.png" alt="Appwrite update" />
 
 </div>
 
-### Delete document
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Delete Document
 
 Use this operation for deleting a document in the collection.
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Collection ID:** You can create a new collection using the Database service [server integration](https://appwrite.io/docs/server/database#createCollection) or appwrite console. The value for collection ID should be of `String` type. 
 
@@ -136,15 +163,19 @@ Use this operation for deleting a document in the collection.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/delv2.png" alt="Appwrite delete"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/appwrite/delv2.png" alt="Appwrite delete"/>
 
 </div>
 
-### Bulk update using document id
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Bulk Update Using Document Id
 
 Use this operation for bulk updating a document in a collection.
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Collection ID:** You can create a new collection using the Database service [server integration](https://appwrite.io/docs/server/database#createCollection) or appwrite console. The value for collection ID should be of `String` type. 
 
@@ -155,6 +186,8 @@ and these objects must contain a key-value pair to point unique record in the da
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/bulkv2.png" alt="Appwrite bulk update" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/appwrite/bulkv2.png" alt="Appwrite bulk update" />
+
+</div>
 
 </div>
