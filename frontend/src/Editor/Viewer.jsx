@@ -4,7 +4,6 @@ import {
   authenticationService,
   orgEnvironmentVariableService,
   orgEnvironmentConstantService,
-  dataqueryService,
   appService,
   appEnvironmentService,
 } from '@/_services';
@@ -21,11 +20,11 @@ import {
   runQuery,
   computeComponentState,
   buildAppDefinition,
+  runQueries,
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
-import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable, setWindowTitle, pageTitles } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, setWindowTitle, pageTitles, isValidUUID } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -46,6 +45,10 @@ import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
 import MobileHeader from './Viewer/MobileHeader';
 import DesktopHeader from './Viewer/DesktopHeader';
 import './Viewer/viewer.scss';
+import { findAllEntityReferences } from '@/_stores/utils';
+import { useResolveStore } from '@/_stores/resolverStore';
+import { dfs } from '@/_stores/handleReferenceTransactions';
+const { produce } = require('immer');
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -117,41 +120,26 @@ class ViewerComponent extends React.Component {
     let dataQueries = [];
 
     if (appVersionId) {
-      const { data_queries } = await dataqueryService.getAll(appVersionId);
-      dataQueries = data_queries;
+      await useDataQueriesStore.getState().actions.fetchDataQueries(appVersionId, false, true);
     } else {
       dataQueries = data.data_queries;
-    }
-    const queryConfirmationList = [];
 
-    if (dataQueries.length > 0) {
-      dataQueries.forEach((query) => {
-        if (query?.options && query?.options?.requestConfirmation && query?.options?.runOnPageLoad) {
-          queryConfirmationList.push({ queryId: query.id, queryName: query.name });
-        }
+      const referencesManager = useResolveStore.getState().referenceMapper;
+      const newQueries = dataQueries
+        .map((dq) => {
+          if (!referencesManager.get(dq.id)) {
+            return {
+              id: dq.id,
+              name: dq.name,
+            };
+          }
+        })
+        .filter((c) => c !== undefined);
 
-        if (query.pluginId || query?.plugin?.id) {
-          const exposedVariables =
-            query.plugin?.manifestFile?.data?.source?.exposedVariables ||
-            query.plugin?.manifest_file?.data?.source?.exposed_variables;
-
-          queryState[query.name] = {
-            ...exposedVariables,
-            ...this.props.currentState.queries[query.name],
-          };
-        } else {
-          const dataSourceTypeDetail = DataSourceTypes.find((source) => source.kind === query.kind);
-          queryState[query.name] = {
-            ...dataSourceTypeDetail.exposedVariables,
-            ...this.props.currentState.queries[query.name],
-          };
-        }
-      });
+      useResolveStore.getState().actions.addEntitiesToMap(newQueries);
+      useDataQueriesStore.getState().actions.setDataQueries(dataQueries);
     }
 
-    if (queryConfirmationList.length !== 0) {
-      this.updateQueryConfirmationList(queryConfirmationList);
-    }
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
     const constants = await this.fetchOrgEnvironmentConstants(data.slug, data.is_public);
 
@@ -161,7 +149,25 @@ class ViewerComponent extends React.Component {
     const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
 
-    useDataQueriesStore.getState().actions.setDataQueries(dataQueries);
+    const currentComponents = appDefData?.pages?.[currentPageId]?.components;
+
+    if (currentComponents && Object.keys(currentComponents).length > 0) {
+      const referenceManager = useResolveStore.getState().referenceMapper;
+
+      const newComponents = Object.keys(currentComponents).map((componentId) => {
+        const component = currentComponents[componentId];
+
+        if (!referenceManager.get(componentId)) {
+          return {
+            id: componentId,
+            name: component.component.name,
+          };
+        }
+      });
+
+      useResolveStore.getState().actions.addEntitiesToMap(newComponents);
+    }
+
     this.props.setCurrentState({
       queries: queryState,
       components: {},
@@ -185,6 +191,7 @@ class ViewerComponent extends React.Component {
     });
     useEditorStore.getState().actions.toggleCurrentLayout(this.props?.currentLayout == 'mobile' ? 'mobile' : 'desktop');
     this.props.updateState({ events: data.events ?? [] });
+
     this.setState(
       {
         currentUser,
@@ -202,18 +209,120 @@ class ViewerComponent extends React.Component {
         events: data.events ?? [],
       },
       () => {
-        const components = appDefData?.pages[currentPageId]?.components || {};
+        let components = this.state.appDefinition?.pages[currentPageId]?.components || {};
+        let allEvents = data.events || [];
+        let allDataQueries = this.state.dataQueries || [];
+        let newComponentDefinition = JSON.parse(JSON.stringify(components));
 
-        computeComponentState(components).then(async () => {
-          this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
-          this.runQueries(dataQueries);
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(newComponentDefinition, [])
+          ?.map((entity) => {
+            if (entity && isValidUUID(entity)) {
+              return entity;
+            }
+          })
+          ?.filter((e) => e !== undefined);
 
-          const currentPageEvents = this.state.events.filter(
-            (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
-          );
+        const entityReferencesInQueryoOptions = findAllEntityReferences(allDataQueries, [])
+          ?.map((entity) => {
+            if (entity && isValidUUID(entity)) {
+              return entity;
+            }
+          })
+          ?.filter((e) => e !== undefined);
 
-          await this.handleEvent('onPageLoad', currentPageEvents);
-        });
+        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])
+          ?.map((entity) => {
+            if (entity && isValidUUID(entity)) {
+              return entity;
+            }
+          })
+          ?.filter((e) => e !== undefined);
+
+        const manager = useResolveStore.getState().referenceMapper;
+
+        if (
+          Array.isArray(entityReferencesInComponentDefinitions) &&
+          entityReferencesInComponentDefinitions?.length > 0
+        ) {
+          entityReferencesInComponentDefinitions.forEach((entity) => {
+            const entityrefExists = manager.has(entity);
+
+            if (entityrefExists) {
+              const value = manager.get(entity);
+              newComponentDefinition = dfs(newComponentDefinition, entity, value);
+            }
+            const newAppDefinition = produce(this.state.appDefinition, (draft) => {
+              draft.pages[homePageId].components = newComponentDefinition;
+            });
+
+            components = newComponentDefinition;
+
+            this.setState({
+              appDefinition: newAppDefinition,
+            });
+          });
+
+          if (Array.isArray(entityReferencesInQueryoOptions) && entityReferencesInQueryoOptions?.length > 0) {
+            let newQueryOptions = {};
+            allDataQueries?.forEach((query) => {
+              newQueryOptions[query.id] = query.options;
+            });
+
+            entityReferencesInQueryoOptions.forEach((entity) => {
+              const entityrefExists = manager.has(entity);
+
+              if (entityrefExists) {
+                const value = manager.get(entity);
+                newQueryOptions = dfs(newQueryOptions, entity, value);
+              }
+            });
+
+            allDataQueries = allDataQueries.map((query) => {
+              const queryId = query.id;
+              const dqOptions = newQueryOptions[queryId];
+
+              return {
+                ...query,
+                options: dqOptions,
+              };
+            });
+
+            useDataQueriesStore.getState().actions.setDataQueries(allDataQueries);
+          }
+
+          if (Array.isArray(entityReferencesInEvents) && entityReferencesInEvents?.length > 0) {
+            let newEvents = JSON.parse(JSON.stringify(allEvents));
+
+            entityReferencesInEvents.forEach((entity) => {
+              const entityrefExists = manager.has(entity);
+
+              if (entityrefExists) {
+                const value = manager.get(entity);
+                newEvents = dfs(newEvents, entity, value);
+              }
+            });
+
+            this.props.updateState({ events: newEvents });
+          }
+        }
+
+        computeComponentState(newComponentDefinition)
+          .then(async () => {
+            this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
+
+            const queuedQueriesForRunOnAppLoad = useDataQueriesStore.getState().queuedQueriesForRunOnAppLoad;
+            const viewerRef = this.getViewerRef();
+            await runQueries(queuedQueriesForRunOnAppLoad, viewerRef, 'view');
+
+            useDataQueriesStore.getState().actions.clearQueuedQueriesForRunOnAppLoad();
+          })
+          .finally(async () => {
+            const currentPageEvents = data.events.filter(
+              (event) => event.target === 'page' && event.sourceId === homePageId
+            );
+
+            await this.handleEvent('onPageLoad', currentPageEvents);
+          });
       }
     );
   };
