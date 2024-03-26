@@ -28,6 +28,7 @@ import { CredentialsService } from '@services/credentials.service';
 import { Credential } from 'src/entities/credential.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
+import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 
 @Module({
   controllers: [OrgEnvironmentVariablesController],
@@ -50,6 +51,7 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       Credential,
     ]),
     CaslModule,
+    TooljetDbModule,
   ],
   providers: [
     OrgEnvironmentVariablesService,

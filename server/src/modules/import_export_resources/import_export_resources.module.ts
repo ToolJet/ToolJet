@@ -20,11 +20,13 @@ import { AppsService } from '@services/apps.service';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppUser } from 'src/entities/app_user.entity';
+import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 
 const imports = [
   PluginsModule,
   CaslModule,
   TypeOrmModule.forFeature([AppUser, AppVersion, App, Credential, Plugin, DataSource]),
+  TooljetDbModule,
 ];
 
 if (process.env.ENABLE_TOOLJET_DB === 'true') {

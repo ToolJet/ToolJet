@@ -57,7 +57,7 @@ export class TooljetDbController {
   @UseGuards(OrganizationAuthGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ProxyPostgrest, 'all'))
   async proxy(@Req() req, @Res() res, @Next() next) {
-    return this.postgrestProxyService.perform(req, res, next);
+    return this.postgrestProxyService.proxy(req, res, next);
   }
 
   @Get('/organizations/:organizationId/tables')
