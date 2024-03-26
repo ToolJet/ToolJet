@@ -1342,6 +1342,7 @@ const EditorComponent = (props) => {
       });
 
       delete newDefinition.pages[currentPageId].components[componentId];
+
       const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
       if (platform.toLowerCase().indexOf('mac') > -1) {
         toast('Component deleted! (⌘ + Z to undo)', {
@@ -1357,6 +1358,14 @@ const EditorComponent = (props) => {
       const deletedComponentNames = deleteFromMap.map((id) => {
         return appDefinition.pages[currentPageId].components[id].component.name;
       });
+
+      const currentComponents = newDefinition.pages[currentPageId].components;
+
+      const newComponentDefinition = useResolveStore
+        .getState()
+        .actions.findAndReplaceReferences(currentComponents, deletedComponentNames);
+
+      newDefinition.pages[currentPageId].components = newComponentDefinition;
 
       appDefinitionChanged(newDefinition, {
         componentDefinitionChanged: true,

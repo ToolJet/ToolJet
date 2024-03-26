@@ -464,7 +464,7 @@ export const useDataQueriesStore = create(
             set({ queuedActions: { ...get().queuedActions, saveData: newValues } });
             return;
           }
-          const entityIdMappedOptions = useResolveStore.getState().actions.findReferences(newValues?.options);
+          const entityIdMappedOptions = useResolveStore.getState().actions.findAndReplaceReferences(newValues?.options);
 
           useAppDataStore.getState().actions.setIsSaving(true);
           set({ isUpdatingQueryInProcess: true });

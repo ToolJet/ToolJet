@@ -56,7 +56,7 @@ export const useAppDataStore = create(
             let updateDiff = appDefinitionDiff.updateDiff;
 
             if (appDefinitionDiff.operation === 'update') {
-              updateDiff = useResolveStore.getState().actions.findReferences(updateDiff);
+              updateDiff = useResolveStore.getState().actions.findAndReplaceReferences(updateDiff);
             }
 
             appVersionService
@@ -91,7 +91,7 @@ export const useAppDataStore = create(
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
-          const entityIdMappingData = useResolveStore.getState().actions.findReferences(events);
+          const entityIdMappingData = useResolveStore.getState().actions.findAndReplaceReferences(events);
 
           const response = await appVersionService.saveAppVersionEventHandlers(
             appId,
