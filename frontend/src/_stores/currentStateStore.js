@@ -36,12 +36,6 @@ export function createCurrentStateStore(moduleName) {
           setErrors: (error) => {
             set({ errors: { ...get().errors, ...error } }, false, { type: 'SET_ERRORS', error });
           },
-          setTheme: (_theme) => {
-            set({ globals: { ...get().globals, theme: { name: _theme } } }, false, {
-              type: 'SET_THEME',
-              _theme,
-            });
-          },
         },
       }),
       { name: 'Current State' }

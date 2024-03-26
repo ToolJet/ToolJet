@@ -1,6 +1,8 @@
 import React from 'react';
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
 const JSONTreeValueNode = ({ data, type }) => {
+  const { appMode } = useAppDarkMode();
   if (type === 'Function') {
     return;
     // const functionString = `${data.toString().split('{')[0].trim()}{...}`;
@@ -23,13 +25,29 @@ const JSONTreeValueNode = ({ data, type }) => {
 
   const clsForUndefinedOrNull = (type === 'Undefined' || type === 'Null') && 'badge badge-secondary';
   return (
-    <span
-      className={`mx-2 json-tree-valuetype json-tree-node-${String(
-        type
-      ).toLowerCase()} text-break ${clsForUndefinedOrNull}`}
-    >
-      {value}
-    </span>
+    <>
+      <span
+        className={`mx-2 json-tree-valuetype json-tree-node-${String(
+          type
+        ).toLowerCase()} text-break ${clsForUndefinedOrNull}`}
+      >
+        {value}
+      </span>
+      {appMode === 'auto' && (data === 'light' || data === 'dark') && (
+        <span
+          style={{
+            fontSize: '10px',
+            backgroundColor: '#CCD1D5',
+            borderRadius: '50%',
+            padding: '3px 6px',
+            fontWeight: '500',
+            color: '#6A727C',
+          }}
+        >
+          auto
+        </span>
+      )}
+    </>
   );
 };
 
