@@ -5,7 +5,7 @@ import './styles.scss';
 
 function DrawerFooter({ fetching, onClose, isEditMode, onCreate, onEdit, shouldDisableCreateBtn }) {
   return (
-    <div className="position-sticky bottom-0 right-0 w-100  mt-auto">
+    <div className="position-sticky bottom-0 right-0 w-100  mt-auto z-2">
       <div className="d-flex justify-content-between drawer-footer-btn-wrap">
         <div className="d-flex align-items-center">
           <Student />

@@ -161,6 +161,7 @@ export default function tjdbDropdownStyles(
       ...base,
       width: dropdownContainerWidth,
       background: darkMode ? 'rgb(31,40,55)' : 'white',
+      zIndex: 10,
     }),
     singleValue: (provided) => ({
       ...provided,

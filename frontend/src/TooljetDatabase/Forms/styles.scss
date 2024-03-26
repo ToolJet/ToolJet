@@ -379,3 +379,53 @@
   }
 
 }
+
+.foreignkey-relation-container {
+
+  margin-top: 24px !important;
+
+  .foreign-key-heading {
+    span {
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      color: var(--text-black-000) !important;
+    }
+  }
+
+  .empty-foreignkey-container {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='black' stroke-width='1' stroke-dasharray='6%2c 8' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    height: 40px;
+    width: 270px !important;
+    border-radius: 6px !important;
+    margin-top: 10px !important;
+  }
+
+}
+
+.foreignKeyRelation-form-container {
+  height: 100% !important;
+
+  .relations-container {
+    padding: 12px 24px !important;
+    height: 100% !important;
+
+    .source-title {
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      color: var(--text-secondary) !important;
+      margin-left: 10px;
+    }
+
+    .source-description {
+      font-size: 12px !important;
+      font-weight: 400 !important;
+      color: var(--slate10) !important;
+    }
+
+    .keyRelation-column-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+  }
+}

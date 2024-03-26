@@ -29,6 +29,8 @@ const Drawer = ({
   const portalRootRef = useRef(document.getElementById('tooljet-drawer-root') || createPortalRoot());
   const isTransitioning = useMountTransition(isOpen, 300);
 
+  // console.log('first', isOpen ? 'yes' : 'no');
+
   // Append portal root on mount
   useEffect(() => {
     bodyRef.current.appendChild(portalRootRef.current);
@@ -82,7 +84,12 @@ const Drawer = ({
     <ErrorBoundary showFallback={true}>
       <FocusTrap
         // The allowOutsideClick option is used to enable or disable clicks outside the popover for functions that are inside the popover but not within the focus trap. On the other hand, clickOutsideDeactivates is used to unfocus the last focused element which is outside the popover.
-        focusTrapOptions={{ initialFocus: false, allowOutsideClick: true, clickOutsideDeactivates: true }}
+        focusTrapOptions={{
+          initialFocus: false,
+          allowOutsideClick: true,
+          clickOutsideDeactivates: true,
+          onDeactivate: () => console.log('first', 'Focus trap DeActivated'),
+        }}
         active={isOpen && !disableFocus}
       >
         <div

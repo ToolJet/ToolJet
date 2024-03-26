@@ -4,6 +4,7 @@ import cx from 'classnames';
 import AddColumnIcon from '../Icons/AddColumnIcon.svg';
 import ColumnName from '../Icons/ColumnName.svg';
 import TableSchema from './TableSchema';
+import ForeignKeyRelation from './ForeignKeyRelation';
 import { dataTypes } from '../constants';
 
 const ColumnsForm = ({ columns, setColumns, isEditMode }) => {
@@ -70,6 +71,8 @@ const ColumnsForm = ({ columns, setColumns, isEditMode }) => {
           <AddColumnIcon />
           &nbsp;&nbsp; Add more columns
         </div>
+
+        <ForeignKeyRelation />
       </div>
     </div>
   );
