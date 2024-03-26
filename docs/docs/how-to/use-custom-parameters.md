@@ -2,8 +2,11 @@
 id: use-custom-parameters
 title: Use Custom Parameters
 ---
+<div style={{paddingBottom:'24px'}}>
 
 Custom parameters in your queries offer a flexible way to introduce variables without directly modifying query parameters. This guide will walk you through creating, utilizing, and calling queries with custom parameters.
+
+</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -36,7 +39,7 @@ Use `parameters.<identifier>` in your query to employ custom parameters. Note th
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Example: Create row in ToolJetDB with Custom Parameters
+### Example: Create Row in ToolJetDB with Custom Parameters
 
 Let's assume we have a ToolJetDB table with the following columns: `name`, `email`, and `contact`. We will create a new row in the table using custom parameters.
 
@@ -47,12 +50,8 @@ Let's assume we have a ToolJetDB table with the following columns: `name`, `emai
   2. **name:** `email` and **value:** `shubh@email.com`
   3. **name:** `contact` and **value:** `4638563845`
 
-  <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
   <div style={{textAlign: 'center'}}>
    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/custom-parameters/params1.png" alt="How to: use custom parameters" />
-  </div>
-  
   </div>
 
 - Add the columns to the query and use the custom parameters to set the values.
@@ -62,13 +61,9 @@ Let's assume we have a ToolJetDB table with the following columns: `name`, `emai
   | name   | `{{parameters.name}}` |
   | email  | `{{parameters.email}}` |
   | contact| `{{parameters.contact}}` |
-  
-  <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
   <div style={{textAlign: 'center'}}>
    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/custom-parameters/params2.png" alt="How to: use custom parameters" />
-  </div>
-
   </div>
 
 - Finally, execute the query to create a new row in the ToolJetDB table with the values provided in the custom parameters.
@@ -77,7 +72,7 @@ Let's assume we have a ToolJetDB table with the following columns: `name`, `emai
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Example: Providing Custom Parameters using Events
+### Example: Providing Custom Parameters Using Events
 
 In this example, we will demonstrate how to use custom parameters in a query by providing values from an event. We will use execute a REST API query and on its success, we will execute the ToolJetDB query to create a new row with the response data.
 
