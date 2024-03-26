@@ -125,7 +125,7 @@ export default function GenerateEachCellValue({
               __html: htmlElement,
             }}
             tabIndex={0}
-            className={`form-control-plaintext form-control-plaintext-sm ${columnType === 'text' && 'h-100 my-1'}`}
+            className={`table-column-type-div-element ${columnType === 'text' && 'h-100 my-1'}`}
           ></div>
           <div
             style={{
