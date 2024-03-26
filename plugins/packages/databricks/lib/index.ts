@@ -3,12 +3,16 @@ import { SourceOptions, QueryOptions } from './types';
 import { DBSQLClient } from '@databricks/sql';
 import IDBSQLSession from '@databricks/sql/dist/contracts/IDBSQLSession';
 import IOperation from '@databricks/sql/dist/contracts/IOperation';
+import Int64 from 'node-int64';
 
 export default class Databricks implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const client = await this.getConnection(sourceOptions);
     const session: IDBSQLSession = await client.openSession();
-    const queryOperation: IOperation = await session.executeStatement('SELECT 1');
+    const queryOperation: IOperation = await session.executeStatement('SELECT 1', {
+      runAsync: true,
+      queryTimeout: new Int64(100),
+    });
     let result;
     try {
       result = await queryOperation.fetchAll();
@@ -41,7 +45,10 @@ export default class Databricks implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const client = await this.getConnection(sourceOptions);
     const session: IDBSQLSession = await client.openSession();
-    const queryOperation: IOperation = await session.executeStatement(queryOptions.sql_query);
+    const queryOperation: IOperation = await session.executeStatement(queryOptions.sql_query, {
+      runAsync: true,
+      queryTimeout: new Int64(100),
+    });
     let result;
     try {
       result = await queryOperation.fetchAll();
