@@ -33,13 +33,13 @@ export default class Databricks implements QueryService {
       host: sourceOptions.host,
       path: sourceOptions.http_path,
       token: sourceOptions.personal_access_token,
-      socketTimeout: 3,
+      socketTimeout: 60 * 1000,
     };
     try {
       const client = new DBSQLClient();
       client.connect(credentials);
       client.on('error', (error) => {
-        throw new Error('Error in connection: ' + error.message);
+        console.log('Error in connection: ' + error.message);
       });
       return client;
     } catch (error) {
@@ -47,14 +47,16 @@ export default class Databricks implements QueryService {
     }
   }
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    const client = await this.getConnection(sourceOptions);
-    const session: IDBSQLSession = await client.openSession();
-    const queryOperation: IOperation = await session.executeStatement(queryOptions.sql_query, {
-      runAsync: true,
-      queryTimeout: new Int64(10000),
-    });
     let result;
+    let client;
+    let session;
     try {
+      const client = await this.getConnection(sourceOptions);
+      const session: IDBSQLSession = await client.openSession();
+      const queryOperation: IOperation = await session.executeStatement(queryOptions.sql_query, {
+        runAsync: true,
+        queryTimeout: new Int64(10000),
+      });
       result = await queryOperation.fetchAll();
     } catch (error) {
       throw new QueryError('Error fetching query result', error.message, {});
@@ -62,7 +64,6 @@ export default class Databricks implements QueryService {
       await session.close();
       await client.close();
     }
-
     return {
       status: 'ok',
       data: result,
