@@ -17,6 +17,7 @@ import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '..
 
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
+import { SupabaseFilter, SupabaseSort } from './Supabase';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
@@ -153,6 +154,10 @@ const DynamicForm = ({
         return OpenApi;
       case 'react-component-zendesk':
         return Zendesk;
+      case 'react-component-supabase-filter':
+        return SupabaseFilter;
+      case 'react-component-supabase-sort':
+        return SupabaseSort;
       default:
         return <div>Type is invalid</div>;
     }
@@ -183,6 +188,7 @@ const DynamicForm = ({
     className,
     controller,
     encrypted,
+    placeholders = {},
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -353,6 +359,22 @@ const DynamicForm = ({
           custom_query_params: options.custom_query_params?.value,
           spec: options.spec?.value,
           workspaceConstants: currentOrgEnvironmentConstants,
+        };
+      case 'react-component-supabase-filter':
+        return {
+          operators: list || [],
+          value: options?.[key] ?? {},
+          onChange: (value) => optionchanged(key, value),
+          width: width || '100%',
+          placeholders,
+        };
+      case 'react-component-supabase-sort':
+        return {
+          orders: list || [],
+          value: options?.[key] ?? {},
+          onChange: (value) => optionchanged(key, value),
+          width: width || '100%',
+          placeholders,
         };
       default:
         return {};
