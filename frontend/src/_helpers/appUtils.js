@@ -9,6 +9,7 @@ import {
   generateAppActions,
   loadPyodide,
   isQueryRunnable,
+  addJsonDumpsForGenerateFile,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _, { isArray } from 'lodash';
@@ -158,6 +159,8 @@ async function executeRunPycode(_ref, code, query, isPreview, mode, currentState
         };
       }
 
+      const updatedCode = addJsonDumpsForGenerateFile(code);
+
       await pyodide.globals.set('components', currentState['components']);
       await pyodide.globals.set('queries', currentState['queries']);
       await pyodide.globals.set('tj_globals', currentState['globals']);
@@ -172,7 +175,7 @@ async function executeRunPycode(_ref, code, query, isPreview, mode, currentState
 
       await pyodide.loadPackage('micropip', log);
 
-      let pyresult = await pyodide.runPythonAsync(code);
+      let pyresult = await pyodide.runPythonAsync(updatedCode);
       result = await pyresult;
     } catch (err) {
       console.error(err);
@@ -530,7 +533,14 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'generate-file': {
         // const fileType = event.fileType;
-        const data = resolveReferences(event.data, getCurrentState(), undefined, customVariables) ?? [];
+        let newData;
+        try {
+          const fileTypes = ['plaintext'];
+          newData = fileTypes.includes(event.fileType) ? event.data : JSON.parse(event.data);
+        } catch (err) {
+          newData = event.data;
+        }
+        const data = resolveReferences(newData, getCurrentState(), undefined, customVariables) ?? [];
         const fileName = resolveReferences(event.fileName, getCurrentState(), undefined, customVariables) ?? 'data.txt';
         const fileType = resolveReferences(event.fileType, getCurrentState(), undefined, customVariables) ?? 'csv';
         const fileData = {

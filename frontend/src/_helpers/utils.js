@@ -834,6 +834,22 @@ export function safelyParseJSON(json) {
   return;
 }
 
+export const addJsonDumpsForGenerateFile = (code) => {
+  // Regular expression to capture actions.generateFile
+  const pattern = /(actions\.generateFile\(([^,]+),\s*([^,]+),\s*([^\)]*?)\s*\))/g;
+  let updatedCode = code.replace(pattern, (match, fullMatch, firstParam, secondParam, thirdParam) => {
+    if (secondParam.includes('plaintext')) {
+      return `actions.generateFile(${firstParam}, ${secondParam}, ${thirdParam})`;
+    }
+    // Replace the third value with json.dumps
+    return `actions.generateFile(${firstParam}, ${secondParam}, json.dumps(${thirdParam}))`;
+  });
+  if (!code.includes('import json')) {
+    updatedCode = `import json\n${updatedCode}`;
+  }
+  return updatedCode;
+};
+
 export const getuserName = (formData) => {
   let nameArray = formData?.name?.trim().split(' ');
   if (nameArray?.length > 0)
