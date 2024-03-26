@@ -214,29 +214,17 @@ class ViewerComponent extends React.Component {
         let allDataQueries = this.state.dataQueries || [];
         let newComponentDefinition = JSON.parse(JSON.stringify(components));
 
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(newComponentDefinition, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(newComponentDefinition, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
 
-        const entityReferencesInQueryoOptions = findAllEntityReferences(allDataQueries, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
+        const entityReferencesInQueryoOptions = findAllEntityReferences(allDataQueries, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
 
-        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
+        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
 
         const manager = useResolveStore.getState().referenceMapper;
 

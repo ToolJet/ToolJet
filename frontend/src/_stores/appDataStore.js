@@ -111,13 +111,9 @@ export const useAppDataStore = create(
             }
           });
 
-          const entityReferencesInEvents = findAllEntityReferences(updatedEvents, [])
-            ?.map((entity) => {
-              if (entity && isValidUUID(entity)) {
-                return entity;
-              }
-            })
-            ?.filter((e) => e !== undefined);
+          const entityReferencesInEvents = findAllEntityReferences(updatedEvents, [])?.filter(
+            (entity) => entity && isValidUUID(entity)
+          );
           const manager = useResolveStore.getState().referenceMapper;
           let newEvents = JSON.parse(JSON.stringify(updatedEvents));
 
