@@ -55,13 +55,5 @@
     "id": "aws-lambda",
     "author": "Tooljet",
     "timestamp": "Tue, 05 Dec 2023 00:27:16 GMT"
-  },
-  {
-    "name": "databricks",
-    "description": "database plugin from databricks",
-    "version": "1.0.0",
-    "id": "databricks",
-    "author": "Tooljet",
-    "timestamp": "Fri, 22 Mar 2024 11:42:02 GMT"
   }
 ]

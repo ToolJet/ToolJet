@@ -1,5 +1,5 @@
 {
-  "name": "@tooljet-marketplace/databricks",
+  "name": "@tooljet-plugins/databricks",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,13 +12,13 @@
   ],
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
-    "build": "ncc build lib/index.ts -o dist",
-    "watch": "ncc build lib/index.ts -o dist --watch"
+    "build": "tsc -b",
+    "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@databricks/sql": "^1.8.2",
-    "@tooljet-marketplace/common": "^1.0.0"
+    "@tooljet-plugins/common": "file:../common"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.34.0",
