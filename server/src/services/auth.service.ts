@@ -54,6 +54,7 @@ import { LICENSE_TRIAL_API } from 'src/helpers/license.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
+import { INSTANCE_SYSTEM_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
 export class AuthService {
@@ -433,6 +434,16 @@ export class AuthService {
       );
       await this.organizationUsersService.create(user, organization, false, manager);
       if (requestedTrial) await this.activateTrial(new TrialUserDto(userCreateDto));
+      await this.instanceSettingsService.updateSystemParams({
+        [INSTANCE_SYSTEM_SETTINGS.ENABLE_WORKSPACE_LOGIN_CONFIGURATION]: false,
+        [INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP]: false,
+      });
+      await this.instanceSettingsService.updateParams([
+        {
+          key: 'ALLOW_PERSONAL_WORKSPACE',
+          value: false,
+        },
+      ]);
       return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 
