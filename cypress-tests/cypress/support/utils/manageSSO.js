@@ -5,6 +5,8 @@ import * as common from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { dashboardSelector } from "Selectors/dashboard";
 
+const envVar = Cypress.env("environment");
+
 export const generalSettings = () => {
   cy.get(ssoSelector.enableSignUpToggle).check();
   cy.get(ssoSelector.cancelButton).click();
@@ -27,10 +29,24 @@ export const generalSettings = () => {
 
   cy.get(ssoSelector.passwordEnableToggle).uncheck();
   cy.get(commonSelectors.modalComponent).should("be.visible");
-  cy.get(commonSelectors.modalMessage).verifyVisibleElement(
-    "have.text",
-    ssoText.passwordDisableWarning
-  );
+  if (envVar === "Community") {
+    cy.get(commonSelectors.modalMessage).verifyVisibleElement(
+      "have.text",
+      ssoText.passwordDisableWarning
+    );
+  }
+  if (envVar === "enterprise") {
+    cy.get(commonSelectors.modalMessage).verifyVisibleElement(
+      "have.text",
+      "Please ensure SSO is configured successfully before disabling password login or else you will get locked out. Are you sure you want to continue?"
+    );
+    cy.get('[data-cy="superadmin-info-text"]').verifyVisibleElement(
+      "have.text",
+      ""
+    );
+    cy.get('[data-cy="copy-icon"]:eq(1)').should("be.visible");
+  }
+
   cy.get(commonSelectors.cancelButton).eq(1).click();
   cy.get(ssoSelector.passwordEnableToggle).uncheck();
   cy.get(commonSelectors.confirmationButton).click();
@@ -584,10 +600,30 @@ export const setSSOStatus = (workspaceName, ssoType, enabled) => {
   });
 };
 
-export const defaultSSO = (workspaceName, enabled) => {
-  cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `UPDATE organizations SET inherit_sso = ${enabled ? "true" : "false"
-      } WHERE name = '${workspaceName}'`,
+// export const defaultSSO = (workspaceName, enabled) => {
+//   cy.task("updateId", {
+//     dbconfig: Cypress.env("app_db"),
+//     sql: `UPDATE organizations SET inherit_sso = ${enabled ? "true" : "false"
+//       } WHERE name = '${workspaceName}'`,
+//   });
+// };
+
+
+export const defaultSSO = (enable) => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request(
+      {
+        method: "PATCH",
+        url: "http://localhost:3000/api/organizations",
+        headers: {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        },
+        body: { inheritSSO: enable },
+      },
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(200);
+    });
   });
 };

@@ -23,7 +23,7 @@ function DisablePasswordLoginModal({ show, disablePasswordLogin, setShowModal, r
 
   const modalContent = (
     <div>
-      <p>
+      <p data-cy="modal-message">
         Please ensure SSO is configured successfully before disabling password login or else you will get locked out.
         Are you sure you want to continue?
       </p>
@@ -41,12 +41,13 @@ function DisablePasswordLoginModal({ show, disablePasswordLogin, setShowModal, r
             fontWeight: '400',
           }}
         >
-          <div>
+          <div data-cy="superadmin-info-text">
             {'Super admin can still access their account via '}
             <span
               style={{
                 color: '#3E63DD',
               }}
+              data-cy="superadmin-login-link"
             >
               {`${window.public_config?.TOOLJET_HOST}${
                 window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
@@ -64,7 +65,7 @@ function DisablePasswordLoginModal({ show, disablePasswordLogin, setShowModal, r
       <ButtonSolid variant="tertiary" onClick={handleClose} data-cy="cancel-button">
         Cancel
       </ButtonSolid>
-      <ButtonSolid variant={'dangerPrimary'} onClick={handleDisable}>
+      <ButtonSolid variant={'dangerPrimary'} onClick={handleDisable} data-cy="confirmation-button">
         Disable
       </ButtonSolid>
     </>

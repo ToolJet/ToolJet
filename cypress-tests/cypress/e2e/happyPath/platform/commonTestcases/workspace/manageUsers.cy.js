@@ -23,7 +23,7 @@ describe("Manage Users", () => {
     workspaceId,
     userId,
     url = "";
-  it.only("Should verify the Manage users page", () => {
+  it("Should verify the Manage users page", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     common.navigateToManageUsers();

@@ -1,7 +1,7 @@
 import { commonSelectors } from "Selectors/common";
 import { commonEeSelectors, ssoEeSelector } from "Selectors/eeCommon";
 import { commonEeText, ssoEeText } from "Texts/eeCommon";
-import { enableSignUp } from "Support/utils/manageSSO";
+import { enableSignUp, setSSOStatus } from "Support/utils/manageSSO";
 import { usersText } from "Texts/manageUsers";
 import { fake } from "Fixtures/fake";
 import {
@@ -19,6 +19,7 @@ import {
     enableToggle,
     disableToggle,
     VerifyWorkspaceInvitePageElements,
+    setSignupStatus
 } from "Support/utils/eeCommon";
 
 import { addAppToGroup, addUserToGroup } from "Support/utils/manageGroups";
@@ -29,12 +30,12 @@ describe("LDAP flow", () => {
 
     beforeEach(() => {
         cy.appUILogin();
-        cy.skipWalkthrough();
     });
 
     it("Verify the LDAP UI and user onboarding", () => {
+        setSSOStatus("My workspace", "ldap", false);
         navigateToManageSSO();
-        cy.get('[data-cy="ldap-list-item"]')
+        cy.get('[data-cy="ldap-sso-card"]')
             .verifyVisibleElement("have.text", "LDAP")
             .click();
         cy.get(ssoEeSelector.ldapToggle).should("be.visible");
@@ -51,14 +52,12 @@ describe("LDAP flow", () => {
         cy.get(ssoEeSelector.portInput).should("be.visible");
         cy.get(ssoEeSelector.baseDnInput).should("be.visible");
         cy.get(ssoEeSelector.sslToggleInput).should("be.visible");
-        cy.get(commonSelectors.cancelButton).verifyVisibleElement(
-            "have.text",
-            "Cancel"
-        );
-        cy.get(commonEeSelectors.saveButton).verifyVisibleElement(
-            "have.text",
-            "Save changes"
-        );
+        cy.get(commonSelectors.cancelButton)
+            .eq(1)
+            .verifyVisibleElement("have.text", "Cancel");
+        cy.get(commonEeSelectors.saveButton)
+            .eq(1)
+            .verifyVisibleElement("have.text", "Save changes");
 
         enableToggle(ssoEeSelector.sslToggleInput);
 
@@ -73,10 +72,14 @@ describe("LDAP flow", () => {
         cy.clearAndType(ssoEeSelector.baseDnInput, Cypress.env("ldap_base_dn"));
         cy.get(ssoEeSelector.sslToggleInput).uncheck();
 
-        enableToggle(ssoEeSelector.ldapToggle);
+        cy.get(ssoEeSelector.ldapToggle).click();
         disableToggle(ssoEeSelector.sslToggleInput);
-        cy.get(commonEeSelectors.saveButton).click();
-
+        cy.get(commonEeSelectors.saveButton).eq(1).click();
+        cy.verifyToastMessage(
+            commonSelectors.toastMessage,
+            ssoText.toggleUpdateToast("LDAP")
+        );
+        cy.get(commonSelectors.cancelButton).eq(1).click();
         logout();
         cy.get(ssoEeSelector.ldapSSOText).verifyVisibleElement(
             "have.text",
@@ -107,9 +110,8 @@ describe("LDAP flow", () => {
             "LDAP login failed - User does not exist in the workspace"
         );
 
-        cy.visit("/");
-        cy.appUILogin();
-        enableSignUp();
+        cy.defaultWorkspaceLogin()
+        setSignupStatus(true)
         logout();
 
         cy.get(ssoEeSelector.ldapSSOText).click();
@@ -131,6 +133,7 @@ describe("LDAP flow", () => {
     });
     it("Verify the LDAP SSO user info on inspector", () => {
         cy.intercept("GET", "api/library_apps").as("apps");
+        cy.skipWalkthrough();
 
         cy.createApp(data.appName);
         cy.dragAndDropWidget("Table", 250, 250);
