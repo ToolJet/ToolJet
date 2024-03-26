@@ -14,7 +14,7 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
-import { isSerialDataType, renderDatatypeIcon } from '../constants';
+import { isSerialDataType, renderDatatypeIcon, listAllPrimaryKeyColumns } from '../constants';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
@@ -23,6 +23,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
+import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
 import './styles.scss';
 
@@ -605,10 +606,22 @@ const Table = ({ collapseSidebar }) => {
     requestAnimationFrame(updateProgress);
   };
 
+  // Invoked when the boolean toggle is clicked and the save button in the Cell edit menu is clicked.
   const handleToggleCellEdit = async (cellValue, rowId, index, rIndex, directToggle, oldValue) => {
+    const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
+    const filterQuery = new PostgrestQueryBuilder();
+    const sortQuery = new PostgrestQueryBuilder();
+
+    primaryKeyColumns.forEach((primaryKeyColumnName) => {
+      if (rows[rIndex]?.values[primaryKeyColumnName]) {
+        filterQuery.filter(primaryKeyColumnName, 'eq', rows[rIndex]?.values[primaryKeyColumnName]);
+        sortQuery.order(primaryKeyColumnName, 'desc');
+      }
+    });
+
     setIsCellUpdateInProgress(true);
     const cellKey = headerGroups[0].headers[index].id;
-    const query = `id=eq.${rowId}&order=id`;
+    const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
     const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
 
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
