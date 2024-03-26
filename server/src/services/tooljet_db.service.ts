@@ -292,6 +292,7 @@ export class TooljetDbService {
           }),
           ...(column?.constraints_type?.is_not_null ?? false ? { isNullable: false } : { isNullable: true }),
           ...(column?.constraints_type?.is_primary_key ? { isPrimary: true } : {}),
+          ...(column?.constraints_type?.is_unique ?? false ? { isUnique: true } : { isUnique: false }),
         })
       );
       await tjdbQueryRunnner.commitTransaction();
