@@ -1,0 +1,41 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Salesforce datasource",
+  "description": "A schema defining Salesforce datasource",
+  "type": "api",
+  "source": {
+    "name": "Salesforce",
+    "kind": "salesforce",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_version":{
+        "type":"string"
+      },
+      "redirect_url":{
+        "type":"string"
+      }
+    },
+    "customTesting": true,
+    "hideSave": true
+  },
+  "defaults": {
+    "redirect_url":{
+      "value": ""
+    }
+  },
+  "properties": {
+    "salesforce":{
+      "label": "",
+      "key": "salesforce",
+      "type": "react-component-salesforce",
+      "description": "A component for salesforce"
+    }
+
+  },
+  "required": []
+}
