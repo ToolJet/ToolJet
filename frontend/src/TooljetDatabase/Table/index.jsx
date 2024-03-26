@@ -379,7 +379,7 @@ const Table = ({ collapseSidebar }) => {
       !cellClick.errorState &&
       !isCellUpdateInProgress &&
       allowListForKeys.includes(e.keyCode) &&
-      selectedCellRef.current.columnIndex !== 0
+      shouldOpenCellEditMenu(selectedCellRef.current.columnIndex)
     ) {
       e.preventDefault();
       const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex].value;
@@ -443,7 +443,7 @@ const Table = ({ collapseSidebar }) => {
         const newRowIndex =
           selectedCellRef.current.rowIndex === rows.length - 1 ? rows.length - 1 : selectedCellRef.current.rowIndex + 1;
         patchCellNavigationRef(newRowIndex, 'row', true);
-      } else if (e.key === 'Enter' && selectedCellRef.current.columnIndex !== 0) {
+      } else if (e.key === 'Enter' && shouldOpenCellEditMenu(selectedCellRef.current.columnIndex)) {
         setSelectedRowIds({});
         const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.value;
         const isCellValueDefault =
@@ -461,7 +461,7 @@ const Table = ({ collapseSidebar }) => {
         setDefaultValue(isCellValueDefault);
         setEditPopover(true);
         document.getElementById('edit-input-blur').focus();
-      } else if (e.key === 'Backspace' && !editPopover && selectedCellRef.current.columnIndex !== 0) {
+      } else if (e.key === 'Backspace' && !editPopover && shouldOpenCellEditMenu(selectedCellRef.current.columnIndex)) {
         const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.value;
         const cellDataType =
           rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.column?.dataType;
@@ -755,6 +755,19 @@ const Table = ({ collapseSidebar }) => {
     setCellVal(previousValue);
     document.getElementById('edit-input-blur').blur();
   };
+
+  function shouldOpenCellEditMenu(cellColumnIndex) {
+    // Should not be Primary Key & Serial Data-type
+    if (headerGroups.length && headerGroups[0].headers.length) {
+      const tableHeaderList = headerGroups[0].headers;
+      const { constraints_type = {} } = tableHeaderList[cellColumnIndex];
+      if (constraints_type.is_primary_key) return false;
+      if (isSerialDataType(tableHeaderList[cellColumnIndex])) return false;
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   const getTooltipTextForCell = (cellValue, cellColumnIndex) => {
     if (headerGroups.length && headerGroups[0].headers.length) {
@@ -1100,7 +1113,7 @@ const Table = ({ collapseSidebar }) => {
                                   cellClick.rowIndex === rIndex &&
                                   cellClick.cellIndex === index ? (
                                     <CellEditMenu
-                                      show={index === 0 ? false : editPopover}
+                                      show={shouldOpenCellEditMenu(index) ? editPopover : false}
                                       close={() => closeEditPopover(cell.value, index)}
                                       columnDetails={headerGroups[0].headers[index]}
                                       saveFunction={(newValue) => {
@@ -1119,7 +1132,7 @@ const Table = ({ collapseSidebar }) => {
                                       <div
                                         className="input-cell-parent"
                                         onClick={() => {
-                                          if (index !== 0) setEditPopover(true);
+                                          if (shouldOpenCellEditMenu(index)) setEditPopover(true);
                                         }}
                                       >
                                         {cellVal === null ? (
@@ -1129,7 +1142,7 @@ const Table = ({ collapseSidebar }) => {
                                             className="row"
                                             style={{ marginLeft: '0px' }}
                                             onClick={() => {
-                                              if (index !== 0) setEditPopover(true);
+                                              if (shouldOpenCellEditMenu(index)) setEditPopover(true);
                                             }}
                                           >
                                             <div className="col-1 p-0">
@@ -1141,7 +1154,7 @@ const Table = ({ collapseSidebar }) => {
                                                   type="checkbox"
                                                   checked={editPopover ? cellVal : cell.value}
                                                   onChange={() => {
-                                                    if (!editPopover && index !== 0)
+                                                    if (!editPopover && shouldOpenCellEditMenu(index))
                                                       handleToggleCellEdit(
                                                         cell.value,
                                                         row.values.id,
@@ -1169,7 +1182,7 @@ const Table = ({ collapseSidebar }) => {
                                             id="edit-input-blur"
                                             value={cellVal === null ? '' : cellVal}
                                             onChange={(e) => {
-                                              if (index !== 0) setCellVal(e.target.value);
+                                              if (shouldOpenCellEditMenu(index)) setCellVal(e.target.value);
                                               if (e.target.value !== headerGroups[0].headers[index].column_default) {
                                                 setDefaultValue(false);
                                               } else {
@@ -1177,9 +1190,11 @@ const Table = ({ collapseSidebar }) => {
                                               }
                                             }}
                                             onFocus={() => {
-                                              if (index !== 0) setEditPopover(true);
+                                              if (shouldOpenCellEditMenu(index)) setEditPopover(true);
                                             }}
-                                            disabled={nullValue === true || index === 0 ? true : false}
+                                            disabled={
+                                              nullValue === true || !shouldOpenCellEditMenu(index) ? true : false
+                                            }
                                           />
                                         )}
                                       </div>
@@ -1197,7 +1212,7 @@ const Table = ({ collapseSidebar }) => {
                                                 type="checkbox"
                                                 checked={cell.value}
                                                 onChange={() => {
-                                                  if (index !== 0) {
+                                                  if (shouldOpenCellEditMenu(index)) {
                                                     handleToggleCellEdit(
                                                       cell.value,
                                                       row.values.id,
@@ -1219,7 +1234,7 @@ const Table = ({ collapseSidebar }) => {
                                       )}
                                     </>
                                   )}
-                                  {cellClick.cellIndex !== 0 &&
+                                  {shouldOpenCellEditMenu(index) &&
                                   cellClick.rowIndex === rIndex &&
                                   cellClick.cellIndex === index &&
                                   isCellUpdateInProgress ? (
