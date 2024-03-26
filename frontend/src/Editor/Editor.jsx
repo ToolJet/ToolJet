@@ -1359,16 +1359,6 @@ const EditorComponent = (props) => {
         return appDefinition.pages[currentPageId].components[id].component.name;
       });
 
-      // const currentComponents = newDefinition.pages[currentPageId].components;
-
-      // // const newComponentDefinition = useResolveStore
-      // //   .getState()
-      // //   .actions.findAndReplaceReferences(currentComponents, deletedComponentNames);
-
-      // // newDefinition.pages[currentPageId].components = newComponentDefinition;
-
-      // console.log('---arpit:::', { deletedComponentNames, currentComponents });
-
       appDefinitionChanged(newDefinition, {
         componentDefinitionChanged: true,
         componentDeleted: true,
