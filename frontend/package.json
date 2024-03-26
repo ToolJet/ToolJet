@@ -52,6 +52,7 @@
     "moment-timezone": "^0.5.40",
     "papaparse": "^5.3.2",
     "plotly.js-basic-dist-min": "^2.18.1",
+    "plotly.js-dist-min": "^2.29.1",
     "posthog-js": "^1.50.8",
     "psl": "^1.9.0",
     "query-string": "^8.1.0",
