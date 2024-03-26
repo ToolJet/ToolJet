@@ -23,7 +23,7 @@ A Oracle DB can be connected with the following credentials:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - OracleDB](/img/datasource-reference/oracledb/oracleauth.png)
+![ToolJet - Data source - OracleDB](/img/datasource-reference/oracledb/oracleauth-v2.png)
 
 </div>
 
