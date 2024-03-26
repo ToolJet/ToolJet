@@ -1379,10 +1379,21 @@ const EditorComponent = (props) => {
 
       const newAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
       const currentComponents = newAppDefinition.pages[currentPageId].components;
+      const currentDataQueries = useDataQueriesStore.getState().dataQueries;
 
       const newComponentDefinition = useResolveStore
         .getState()
         .actions.findAndReplaceReferences(currentComponents, deletedComponentNames);
+
+      const entityReferencesInQuerries = findAllEntityReferences(currentDataQueries, []);
+
+      if (entityReferencesInQuerries.length > 0) {
+        const newDataQueries = useResolveStore
+          .getState()
+          .actions.findAndReplaceReferences(currentDataQueries, deletedComponentNames);
+
+        useDataQueriesStore.getState().actions.setDataQueries(newDataQueries, 'mappingUpdate');
+      }
 
       newAppDefinition.pages[currentPageId].components = newComponentDefinition;
 
