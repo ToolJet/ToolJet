@@ -512,6 +512,7 @@ export class TooljetDbService {
                 : column['column_default'],
           }),
           ...(constraints_type?.is_not_null ? { isNullable: false } : { isNullable: true }),
+          ...(constraints_type?.is_unique ?? false ? { isUnique: true } : { isUnique: false }),
         })
       );
 

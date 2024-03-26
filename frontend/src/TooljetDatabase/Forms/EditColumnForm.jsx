@@ -9,17 +9,19 @@ import WarningInfo from '../Icons/Edit-information.svg';
 import { isEmpty } from 'lodash';
 
 const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
-  const nullValue = selectedColumn.constraints_type.is_not_null;
+  const nullValue = selectedColumn?.constraints_type?.is_not_null ?? false;
+  const uniqueConstraintValue = selectedColumn?.constraints_type?.is_unique ?? false;
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
   const [defaultValue, setDefaultValue] = useState(selectedColumn?.column_default);
   const [dataType, setDataType] = useState(selectedColumn?.dataType);
   const [fetching, setFetching] = useState(false);
   const [isNotNull, setIsNotNull] = useState(nullValue);
+  const [isUniqueConstraint, setIsUniqueConstraint] = useState(uniqueConstraintValue);
   const { organizationId, selectedTable, handleRefetchQuery, queryFilters, pageCount, pageSize, sortFilters } =
     useContext(TooljetDatabaseContext);
   const disabledDataType = dataTypes.find((e) => e.value === dataType);
-  const [defaultValueLength, setDefaultValueLength] = useState(defaultValue?.length);
+  const [defaultValueLength] = useState(defaultValue?.length);
 
   const darkDisabledBackground = '#1f2936';
   const lightDisabledBackground = '#f4f6fa';
@@ -72,6 +74,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
         column_default: defaultValue,
         constraints_type: {
           is_not_null: isNotNull,
+          is_unique: isUniqueConstraint,
         },
         ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
       },
@@ -81,7 +84,8 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
       columnName !== selectedColumn?.Header ||
       defaultValue?.length > 0 ||
       defaultValue !== selectedColumn?.column_default ||
-      nullValue !== isNotNull
+      nullValue !== isNotNull ||
+      uniqueConstraintValue !== isUniqueConstraint
     ) {
       setFetching(true);
       const { error } = await tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
@@ -113,32 +117,6 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
     toast.success(`Column edited successfully`);
     onClose && onClose();
   };
-
-  // const handleEdit = async () => {
-  //   if (isEmpty(columnName)) {
-  //     toast.error('Column name cannot be empty');
-  //     return;
-  //   }
-  //   if (isEmpty(dataType?.value)) {
-  //     toast.error('Data type cannot be empty');
-  //     return;
-  //   }
-  // setFetching(true);
-  // const { error } = await tooljetDatabaseService.updateColumn(
-  //   organizationId,
-  //   selectedTable.table_name,
-  //   columnName,
-  //   dataType?.value,
-  //   defaultValue
-  // );
-  // setFetching(false);
-  // if (error) {
-  //   toast.error(error?.message ?? `Failed to create a new column in "${selectedTable.table_name}" table`);
-  //   return;
-  // }
-  // toast.success(`Column created successfully`);
-  //   onCreate && onCreate();
-  // };
 
   return (
     <div className="drawer-card-wrapper ">
@@ -223,6 +201,26 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
             <p className="m-0 p-0 fw-500">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
             <p className="fw-400 secondary-text">
               {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
+            </p>
+          </div>
+        </div>
+        <div className="row mb-3">
+          <div className="col-1">
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={isUniqueConstraint}
+                onChange={(e) => {
+                  setIsUniqueConstraint(e.target.checked);
+                }}
+              />
+            </label>
+          </div>
+          <div className="col d-flex flex-column">
+            <p className="m-0 p-0 fw-500">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
+            <p className="fw-400 secondary-text">
+              {isNotNull ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
             </p>
           </div>
         </div>
