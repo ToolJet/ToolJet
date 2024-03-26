@@ -1,0 +1,16 @@
+{
+  "name": "Lorem Ipsum generator",
+  "description": "Generate placeholder text, names, emails, URLs with customizable options for prototyping or testing purposes.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "lorem-Ipsum-generator",
+  "category": "utilities"
+}
