@@ -7,14 +7,17 @@ import Int64 from 'node-int64';
 
 export default class Databricks implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const client = await this.getConnection(sourceOptions);
-    const session: IDBSQLSession = await client.openSession();
-    const queryOperation: IOperation = await session.executeStatement('SELECT 1', {
-      runAsync: true,
-      queryTimeout: new Int64(10000),
-    });
     let result;
+    let client;
+    let session;
     try {
+      const client = await this.getConnection(sourceOptions);
+      const session: IDBSQLSession = await client.openSession();
+      const queryOperation: IOperation = await session.executeStatement('SELECT 1', {
+        runAsync: true,
+        queryTimeout: new Int64(10000),
+      });
+
       result = await queryOperation.fetchAll();
     } catch (error) {
       throw new Error('Error in connection: ' + error.message);
