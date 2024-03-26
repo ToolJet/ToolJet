@@ -211,7 +211,7 @@ describe("User permissions", () => {
     );
     cy.get(
       '[data-cy="go-to-workspace-constants-option-button"]'
-    ).verifyVisibleElement("have.text", "Go to workspace constants");
+    ).verifyVisibleElement("have.text", "Go to Workspace constants");
     cy.logoutApi();
   });
 });
