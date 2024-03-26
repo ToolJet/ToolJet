@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Select from '@/_ui/Select';
 import { appsService } from '@/_services';
-import { CodeHinter } from '@/Editor/CodeEditor/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 import './workflows-query.scss';
 import { v4 as uuidv4 } from 'uuid';
 

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import './styles.scss';
 import QueryNode from '../Nodes/Query';
-import { CodeHinter } from '@/Editor/CodeEditor/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 import WorkflowEditorContext from '../../context';
 import DeleteIcon from '@assets/images/icons/delete.svg';
 import { dataqueryService } from '@/_services';

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 import { LicenseBanner } from '@/LicenseBanner';
 import { licenseService, customStylesService } from '@/_services';
 import { toast } from 'react-hot-toast';

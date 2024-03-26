@@ -1,5 +1,6 @@
 import { Layout } from 'src/entities/layout.entity';
-import { MigrationProgress, processDataInBatches } from 'src/helpers/utils.helper';
+import { MigrationProgress } from 'src/helpers/migration.helper';
+import { processDataInBatches } from 'src/helpers/utils.helper';
 import { EntityManager, In, MigrationInterface, QueryRunner } from 'typeorm';
 
 export class BackFillLayoutDimensionUnit1709615280120 implements MigrationInterface {

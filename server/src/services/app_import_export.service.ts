@@ -238,7 +238,7 @@ export class AppImportExportService {
       ? true
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
-    const shouldUpdateForGridCompatibility = !cloning;
+    const currentTooljetVersion = !cloning ? tooljetVersion : null;
 
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
 
@@ -249,7 +249,6 @@ export class AppImportExportService {
       user,
       externalResourceMappings,
       isNormalizedAppDefinitionSchema,
-      shouldUpdateForGridCompatibility,
       currentTooljetVersion
     );
     await this.createAdminGroupPermissions(this.entityManager, importedApp);
@@ -330,7 +329,6 @@ export class AppImportExportService {
     user: User,
     externalResourceMappings: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean,
-    shouldUpdateForGridCompatibility: boolean,
     tooljetVersion: string | null
   ) {
     // Old version without app version
@@ -395,7 +393,6 @@ export class AppImportExportService {
         importingPages,
         importingComponents,
         importingEvents,
-        shouldUpdateForGridCompatibility,
         tooljetVersion
       );
 
@@ -601,7 +598,6 @@ export class AppImportExportService {
     importingPages: Page[],
     importingComponents: Component[],
     importingEvents: EventHandler[],
-    shouldUpdateForGridCompatibility: boolean,
     tooljetVersion: string | null
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
