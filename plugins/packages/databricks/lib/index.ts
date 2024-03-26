@@ -11,7 +11,7 @@ export default class Databricks implements QueryService {
     const session: IDBSQLSession = await client.openSession();
     const queryOperation: IOperation = await session.executeStatement('SELECT 1', {
       runAsync: true,
-      queryTimeout: new Int64(100),
+      queryTimeout: new Int64(10000),
     });
     let result;
     try {
@@ -33,10 +33,14 @@ export default class Databricks implements QueryService {
       host: sourceOptions.host,
       path: sourceOptions.http_path,
       token: sourceOptions.personal_access_token,
+      socketTimeout: 3,
     };
     try {
       const client = new DBSQLClient();
       client.connect(credentials);
+      client.on('error', (error) => {
+        throw new Error('Error in connection: ' + error.message);
+      });
       return client;
     } catch (error) {
       throw new Error('Error in connection: ' + error.message);
@@ -47,7 +51,7 @@ export default class Databricks implements QueryService {
     const session: IDBSQLSession = await client.openSession();
     const queryOperation: IOperation = await session.executeStatement(queryOptions.sql_query, {
       runAsync: true,
-      queryTimeout: new Int64(100),
+      queryTimeout: new Int64(10000),
     });
     let result;
     try {
