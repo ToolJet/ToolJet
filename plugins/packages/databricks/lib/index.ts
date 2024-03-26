@@ -8,10 +8,7 @@ export default class Databricks implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const client = await this.getConnection(sourceOptions);
     const session: IDBSQLSession = await client.openSession();
-    const queryOperation: IOperation = await session.executeStatement('SELECT 1', {
-      runAsync: true,
-      maxRows: 10000,
-    });
+    const queryOperation: IOperation = await session.executeStatement('SELECT 1');
     let result;
     try {
       result = await queryOperation.fetchAll();
@@ -33,25 +30,18 @@ export default class Databricks implements QueryService {
       path: sourceOptions.http_path,
       token: sourceOptions.personal_access_token,
     };
-    if (credentials.host === '' || credentials.path === '' || credentials.token === '') {
-      throw new Error(
-        'Cannot find Server Hostname, HTTP Path, or personal access token. ' +
-          'Check the environment variables DATABRICKS_SERVER_HOSTNAME, ' +
-          'DATABRICKS_HTTP_PATH, and DATABRICKS_TOKEN.'
-      );
-    } else {
+    try {
       const client = new DBSQLClient();
       client.connect(credentials);
       return client;
+    } catch (error) {
+      throw new Error('Error in connection: ' + error.message);
     }
   }
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const client = await this.getConnection(sourceOptions);
     const session: IDBSQLSession = await client.openSession();
-    const queryOperation: IOperation = await session.executeStatement(queryOptions.sql_query, {
-      runAsync: true,
-      maxRows: 10000,
-    });
+    const queryOperation: IOperation = await session.executeStatement(queryOptions.sql_query);
     let result;
     try {
       result = await queryOperation.fetchAll();
