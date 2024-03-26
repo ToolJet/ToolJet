@@ -1,13 +1,13 @@
-import 'codemirror/theme/duotone-light.css';
+// import 'codemirror/theme/duotone-light.css';
 
 import React from 'react';
 import { isEmpty, defaults } from 'lodash';
 import Tabs from './Tabs';
 import Select from '@/_ui/Select';
 import { changeOption } from '../utils';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { BaseUrl } from './BaseUrl';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import CodeHinter from '@/Editor/CodeEditor';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -135,7 +135,7 @@ class Restapi extends React.Component {
     return (
       <div className={`${this.props?.queryName !== 'workflowNode' && 'd-flex'}`}>
         <div className="form-label flex-shrink-0">Request</div>
-        <div className="flex-grow-1 overflow-hidden">
+        <div className="flex-grow-1">
           <div className="rest-api-methods-select-element-container">
             <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
               <label className="font-weight-bold color-slate12">Method</label>
@@ -166,19 +166,20 @@ class Restapi extends React.Component {
                 {dataSourceURL && (
                   <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
                 )}
-                <div className={`flex-grow-1  ${dataSourceURL ? 'url-input-group' : ''}`}>
+                <div
+                  className={`flex-grow-1 rest-api-url-codehinter  ${dataSourceURL ? 'url-input-group' : ''}`}
+                  style={{ width: '530px' }}
+                >
                   <CodeHinter
+                    type="basic"
                     currentState={this.props.currentState}
                     initialValue={options.url}
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => {
                       changeOption(this, 'url', value);
                     }}
                     placeholder={dataSourceURL ? 'Enter request endpoint' : 'Enter request URL'}
                     componentName={`${queryName}::url`}
-                    mode="javascript"
-                    lineNumbers={false}
-                    height={'32px'}
+                    lang="javascript"
                   />
                 </div>
               </div>

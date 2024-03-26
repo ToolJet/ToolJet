@@ -65,7 +65,7 @@ function getResult(suggestionList, query) {
   return suggestions;
 }
 
-export function getSuggestionKeys(refState, refSource) {
+export function getSuggestionKeys(refState) {
   const state = _.cloneDeep(refState);
   const queries = state['queries'];
   const actions = [
@@ -135,11 +135,15 @@ export function getSuggestionKeys(refState, refSource) {
     return suggestionList.push(key);
   });
 
-  if (['Runjs', 'Runpy'].includes(refSource)) {
-    actions.forEach((action) => {
-      suggestionList.push(`actions.${action}()`);
-    });
-  }
+  // if (['Runjs', 'Runpy'].includes(refSource)) {
+  //   actions.forEach((action) => {
+  //     suggestionList.push(`actions.${action}()`);
+  //   });
+  // }
+
+  actions.forEach((action) => {
+    suggestionList.push(`actions.${action}()`);
+  });
 
   return suggestionList;
 }

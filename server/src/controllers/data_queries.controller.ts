@@ -19,7 +19,7 @@ import { DataSourcesService } from '../../src/services/data_sources.service';
 import { QueryAuthGuard } from 'src/modules/auth/query-auth.guard';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { AppsService } from '@services/apps.service';
-import { CreateDataQueryDto, UpdateDataQueryDto } from '@dto/data-query.dto';
+import { CreateDataQueryDto, UpdateDataQueryDto, UpdatingReferencesOptionsDto } from '@dto/data-query.dto';
 import { User } from 'src/decorators/user.decorator';
 import { decode } from 'js-base64';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
@@ -211,6 +211,21 @@ export class DataQueriesController {
     const decamelizedQuery = decamelizeKeys({ ...dataQuery, ...result });
     decamelizedQuery['options'] = result.options;
     return decamelizedQuery;
+  }
+
+  //* On Updating references, need update the options of multiple queries
+  @UseGuards(JwtAuthGuard)
+  @Patch()
+  async bulkUpdate(@User() user, @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto) {
+    const appVersionId = updatingReferencesOptions.app_version_id;
+    const app = await this.appsService.findAppFromVersion(appVersionId);
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+
+    if (!ability.can('getQueries', app)) {
+      throw new ForbiddenException('you do not have permissions to perform this action');
+    }
+
+    return await this.dataQueriesService.bulkUpdateQueryOptions(updatingReferencesOptions.data_queries_options);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -1,6 +1,6 @@
 import { resolveReferences } from '@/_helpers/utils';
 import React from 'react';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const ProgramaticallyHandleProperties = ({
   darkMode,
@@ -96,14 +96,11 @@ export const ProgramaticallyHandleProperties = ({
   return (
     <div className={`mb-2 field ${options.className}`} onClick={(e) => e.stopPropagation()}>
       <CodeHinter
-        enablePreview={true}
+        type="fxEditor"
         initialValue={initialValue}
-        mode={options.mode}
-        theme={darkMode ? 'monokai' : options.theme}
-        lineWrapping={true}
         onChange={(value) => callbackFunction(index, property, value)}
         componentName={`component/${component?.component?.name}::${param.name}`}
-        type={paramMeta.type}
+        paramType={paramMeta.type}
         paramName={param.name}
         paramLabel={paramMeta.displayName}
         fieldMeta={paramMeta}

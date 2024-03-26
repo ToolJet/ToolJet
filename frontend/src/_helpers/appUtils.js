@@ -37,6 +37,8 @@ import SolidIcon from '../_ui/Icon/SolidIcons';
 import { camelizeKeys } from 'humps';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useGridStore } from '@/_stores/gridStore';
+import { useResolveStore } from '@/_stores/resolverStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -1268,6 +1270,14 @@ export function runQuery(
               },
             },
           });
+
+          useResolveStore.getState().actions.addAppSuggestions({
+            queries: {
+              [queryName]: {
+                data: [...finalData],
+              },
+            },
+          });
           resolve({ status: 'ok', data: finalData });
           onEvent(_self, 'onDataQuerySuccess', queryEvents, mode);
         }
@@ -1582,7 +1592,7 @@ export const cloneComponents = (
   }
 
   if (isCloning) {
-    const parentId = selectedComponents[0]['component']?.parent ?? undefined;
+    const parentId = allComponents[selectedComponents[0]?.id]?.['component']?.parent ?? undefined;
 
     addComponents(currentPageId, appDefinition, updateAppDefinition, parentId, newComponentObj, true);
     toast.success('Component cloned succesfully');
@@ -1764,10 +1774,9 @@ export const addNewWidgetToTheEditor = (
 ) => {
   const componentMetaData = _.cloneDeep(componentMeta);
   const componentData = _.cloneDeep(componentMetaData);
+  const noOfGrid = useGridStore.getState().noOfGrid;
 
-  const defaultWidth = isInSubContainer
-    ? (componentMetaData.defaultSize.width * 100) / 43
-    : componentMetaData.defaultSize.width;
+  const defaultWidth = componentMetaData.defaultSize.width;
   const defaultHeight = componentMetaData.defaultSize.height;
 
   componentData.name = computeComponentName(componentData.component, currentComponents);
@@ -1806,7 +1815,10 @@ export const addNewWidgetToTheEditor = (
     [left, top] = snapToGrid(subContainerWidth, left, top);
   }
 
-  left = (left * 100) / subContainerWidth;
+  const gridWidth = subContainerWidth / noOfGrid;
+  left = Math.round(left / gridWidth);
+  console.log('Top calc', { top, initialClientOffset, delta, zoomLevel, offsetFromTopOfWindow, subContainerWidth });
+  // left = (left * 100) / subContainerWidth;
 
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = false;
@@ -1841,7 +1853,7 @@ export const addNewWidgetToTheEditor = (
 };
 
 export function snapToGrid(canvasWidth, x, y) {
-  const gridX = canvasWidth / 43;
+  const gridX = canvasWidth / useGridStore.getState().noOfGrid;
 
   const snappedX = Math.round(x / gridX) * gridX;
   const snappedY = Math.round(y / 10) * 10;

@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { Col, Container, Row } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
@@ -12,6 +11,7 @@ import JoinSelect from './JoinSelect';
 import JoinSort from './JoinSort';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { filterOperatorOptions, nullOperatorOptions } from './util';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -91,7 +91,7 @@ const SelectTableMenu = ({ darkMode }) => {
       {/* Join Section */}
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">From</label>
-        <div className="field flex-grow-1 mt-1 overflow-hidden">
+        <div className="field flex-grow-1 mt-1">
           {joins.map((join, joinIndex) => (
             <JoinConstraint
               darkMode={darkMode}
@@ -134,27 +134,26 @@ const SelectTableMenu = ({ darkMode }) => {
       {/* Filter Section */}
       <div className="tdb-join-filtersection field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Filter</label>
-        <div className="field flex-grow-1 overflow-hidden">
+        <div className="field flex-grow-1">
           <RenderFilterSection darkMode={darkMode} />
         </div>
       </div>
       {/* Sort Section */}
       <div className="field-container tooljetdb-worflow-operations d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Sort</label>
-        <div className="field flex-grow-1 overflow-hidden">
+        <div className="field flex-grow-1">
           <JoinSort darkMode={darkMode} />
         </div>
       </div>
       {/* Limit Section */}
       <div className="field-container tooljetdb-worflow-operations d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Limit</label>
-        <div className="field flex-grow-1 overflow-hidden">
+        <div className="field flex-grow-1">
           <CodeHinter
+            type="basic"
             className="tjdb-codehinter border rounded"
-            theme={darkMode ? 'monokai' : 'default'}
             height={'32px'}
             placeholder="Enter limit"
-            type="code"
             initialValue={joinTableOptions?.limit ?? ''}
             onChange={(value) => {
               if (value.length) {
@@ -169,13 +168,11 @@ const SelectTableMenu = ({ darkMode }) => {
       {/* Offset Section */}
       <div className="field-container tooljetdb-worflow-operations d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Offset</label>
-        <div className="field flex-grow-1 overflow-hidden">
+        <div className="field flex-grow-1">
           <CodeHinter
             className="tjdb-codehinter border rounded"
-            theme={darkMode ? 'monokai' : 'default'}
-            height={'32px'}
             placeholder="Enter offset"
-            type="code"
+            type="basic"
             initialValue={joinTableOptions?.offset ?? ''}
             onChange={(value) => {
               if (value.length) {
@@ -190,7 +187,7 @@ const SelectTableMenu = ({ darkMode }) => {
       {/* Select Section */}
       <div className="field-container tooljetdb-worflow-operations d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Select</label>
-        <div className="field flex-grow-1 overflow-hidden">
+        <div className="field flex-grow-1">
           <JoinSelect darkMode={darkMode} />
         </div>
       </div>
@@ -433,7 +430,7 @@ const RenderFilterSection = ({ darkMode }) => {
           />
         </Col>
         <Col sm="4" className="p-0 d-flex">
-          <div className="flex-grow-1 overflow-hidden">
+          <div className="flex-grow-1">
             {operator === 'IS' ? (
               <DropDownSelect
                 buttonClasses="border border-end-0"
@@ -447,6 +444,7 @@ const RenderFilterSection = ({ darkMode }) => {
               />
             ) : (
               <CodeHinter
+                type="basic"
                 initialValue={
                   rightField?.value
                     ? typeof rightField?.value === 'string'
@@ -455,8 +453,6 @@ const RenderFilterSection = ({ darkMode }) => {
                     : rightField?.value
                 }
                 className="border border-end-0 fs-12 tjdb-codehinter"
-                theme={darkMode ? 'monokai' : 'default'}
-                height={'30px'}
                 placeholder="Value"
                 onChange={(newValue) =>
                   updateFilterConditionEntry('Value', index, { value: newValue, isLeftSideCondition: false })

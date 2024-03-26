@@ -584,12 +584,26 @@ export const handleCircularStructureToJSON = () => {
 };
 
 export function hasCircularDependency(obj) {
-  try {
-    JSON.stringify(obj);
-  } catch (e) {
-    return String(e).includes('Converting circular structure to JSON');
+  let seenObjects = new WeakSet();
+
+  function detect(obj) {
+    if (obj && typeof obj === 'object') {
+      if (seenObjects.has(obj)) {
+        // Circular reference found
+        return true;
+      }
+      seenObjects.add(obj);
+
+      for (let key in obj) {
+        if (obj.hasOwnProperty(key) && detect(obj[key])) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
-  return false;
+
+  return detect(obj);
 }
 
 export const hightlightMentionedUserInComment = (comment) => {
@@ -1227,6 +1241,11 @@ export const determineJustifyContentValue = (value) => {
       return 'start';
   }
 };
+
+export function isValidUUID(uuid) {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
 
 export const USER_DRAWER_MODES = {
   EDIT: 'EDIT',

@@ -19,6 +19,7 @@ import {
   isTooljetVersionWithNormalizedAppDefinitionSchem,
   isVersionGreaterThanOrEqual,
 } from 'src/helpers/utils.helper';
+import { LayoutDimensionUnits, resolveGridPositionForComponent } from 'src/helpers/components.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
@@ -237,8 +238,9 @@ export class AppImportExportService {
       ? true
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
-    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user, isGitApp);
-    const currentTooljetVersion = !cloning ? tooljetVersion : null;
+    const shouldUpdateForGridCompatibility = !cloning;
+
+    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
 
     await this.setupImportedAppAssociations(
       this.entityManager,
@@ -247,6 +249,7 @@ export class AppImportExportService {
       user,
       externalResourceMappings,
       isNormalizedAppDefinitionSchema,
+      shouldUpdateForGridCompatibility,
       currentTooljetVersion
     );
     await this.createAdminGroupPermissions(this.entityManager, importedApp);
@@ -327,6 +330,7 @@ export class AppImportExportService {
     user: User,
     externalResourceMappings: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean,
+    shouldUpdateForGridCompatibility: boolean,
     tooljetVersion: string | null
   ) {
     // Old version without app version
@@ -391,6 +395,7 @@ export class AppImportExportService {
         importingPages,
         importingComponents,
         importingEvents,
+        shouldUpdateForGridCompatibility,
         tooljetVersion
       );
 
@@ -433,6 +438,7 @@ export class AppImportExportService {
                 index: pagePostionIntheList,
                 disabled: page.disabled || false,
                 hidden: page.hidden || false,
+                autoComputeLayout: page.autoComputeLayout || false,
               });
               const pageCreated = await transactionalEntityManager.save(newPage);
 
@@ -453,7 +459,12 @@ export class AppImportExportService {
                     const newLayout = new Layout();
                     newLayout.type = type;
                     newLayout.top = layout.top;
-                    newLayout.left = layout.left;
+                    newLayout.left =
+                      layout.dimensionUnit !== LayoutDimensionUnits.COUNT
+                        ? resolveGridPositionForComponent(layout.left, type)
+                        : layout.left;
+                    newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
+                    // newLayout.left = layout.left;
                     newLayout.width = layout.width;
                     newLayout.height = layout.height;
                     newLayout.componentId = appResourceMappings.componentsMapping[componentId];
@@ -590,6 +601,7 @@ export class AppImportExportService {
     importingPages: Page[],
     importingComponents: Component[],
     importingEvents: EventHandler[],
+    shouldUpdateForGridCompatibility: boolean,
     tooljetVersion: string | null
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
@@ -694,6 +706,7 @@ export class AppImportExportService {
           index: page.index,
           disabled: page.disabled || false,
           hidden: page.hidden || false,
+          autoComputeLayout: page.autoComputeLayout || false,
         });
 
         const pageCreated = await manager.save(newPage);
@@ -769,7 +782,11 @@ export class AppImportExportService {
               const newLayout = new Layout();
               newLayout.type = layout.type;
               newLayout.top = layout.top;
-              newLayout.left = layout.left;
+              newLayout.left =
+                layout.dimensionUnit !== LayoutDimensionUnits.COUNT
+                  ? resolveGridPositionForComponent(layout.left, layout.type)
+                  : layout.left;
+              newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
               newLayout.width = layout.width;
               newLayout.height = layout.height;
               newLayout.component = savedComponent;

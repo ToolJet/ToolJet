@@ -16,7 +16,7 @@ import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
-import _, { isEmpty } from 'lodash';
+import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
@@ -93,11 +93,17 @@ export const Inspector = ({
     shallow
   );
   const { t } = useTranslation();
-  useHotkeys('backspace', () => {
-    if (isVersionReleased || isEditorFreezed) return;
-    setWidgetDeleteConfirmation(true);
+  useHotkeys(
+    'backspace',
+    () => {
+      if (isVersionReleased || isEditorFreezed) return;
+      setWidgetDeleteConfirmation(true);
+    },
+    { scopes: 'editor' }
+  );
+  useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY), {
+    scopes: 'editor',
   });
-  useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY));
 
   const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component.component === comp.component));
 

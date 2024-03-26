@@ -2,11 +2,11 @@ import React, { useContext } from 'react';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const DeleteRows = React.memo(({ darkMode }) => {
   const { columns, deleteOperationLimitOptionChanged, deleteRowsOptions, handleDeleteRowsOptionsChange } =
@@ -90,10 +90,9 @@ export const DeleteRows = React.memo(({ darkMode }) => {
         </label>
         <div className="field flex-grow-1">
           <CodeHinter
+            type="basic"
             initialValue={deleteRowsOptions?.limit ?? 1}
             className="codehinter-plugins"
-            theme={darkMode ? 'monokai' : 'default'}
-            height={'32px'}
             placeholder="Enter limit. Default is 1"
             onChange={(newValue) => deleteOperationLimitOptionChanged(newValue)}
           />
@@ -132,7 +131,7 @@ const RenderFilterFields = ({
   };
 
   return (
-    <div className="mt-1 row-container">
+    <div className="mt-1 row-container w-100">
       <div className="d-flex fields-container delete-filter">
         <div className="field col">
           <Select
@@ -166,10 +165,9 @@ const RenderFilterFields = ({
             />
           ) : (
             <CodeHinter
+              type="basic"
               initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
               className="codehinter-plugins"
-              theme={darkMode ? 'monokai' : 'default'}
-              height={'32px'}
               placeholder="key"
               onChange={(newValue) => handleValueChange(newValue)}
             />

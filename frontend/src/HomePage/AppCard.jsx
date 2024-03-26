@@ -173,6 +173,7 @@ export default function AppCard({
                   to={getPrivateRoute('editor', {
                     slug: isValidSlug(app.slug) ? app.slug : app.id,
                   })}
+                  reloadDocument
                 >
                   <button
                     type="button"

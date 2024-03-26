@@ -4,7 +4,6 @@ import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import FxButton from '../CodeBuilder/Elements/FxButton';
-import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { resolveReferences, validateName, getWorkspaceId } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
@@ -15,6 +14,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
+import CodeHinter from '../CodeEditor';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -354,11 +354,8 @@ export const GlobalSettings = ({
                     {!forceCodeBox && (
                       <CodeHinter
                         cyLabel={`canvas-bg-colour`}
-                        currentState={realState}
                         initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
-                        value={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
-                        theme={darkMode ? 'monokai' : 'duotone-light'}
-                        mode="javascript"
+                        lang="javascript"
                         className="canvas-hinter-wrap"
                         lineNumbers={false}
                         onChange={(color) => {

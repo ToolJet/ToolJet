@@ -3,6 +3,7 @@ import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
+import { useGridStore } from '@/_stores/gridStore';
 var tinycolor = require('tinycolor2');
 
 export const Modal = function Modal({
@@ -18,6 +19,7 @@ export const Modal = function Modal({
   fireEvent,
   dataCy,
   height,
+  mode,
 }) {
   const [showModal, setShowModal] = useState(false);
 
@@ -42,9 +44,26 @@ export const Modal = function Modal({
     boxShadow,
   } = styles;
   const parentRef = useRef(null);
+  const controlBoxRef = useRef(null);
 
   const title = properties.title ?? '';
   const size = properties.size ?? 'lg';
+
+  /**** Start - Logic to reset the zIndex of modal control box ****/
+  useEffect(() => {
+    if (!showModal && mode === 'edit') {
+      controlBoxRef.current?.classList?.remove('modal-moveable');
+      controlBoxRef.current = null;
+    }
+    if (showModal) {
+      useGridStore.getState().actions.setOpenModalWidgetId(id);
+    } else {
+      if (useGridStore.getState().openModalWidgetId === id) {
+        useGridStore.getState().actions.setOpenModalWidgetId(null);
+      }
+    }
+  }, [showModal]);
+  /**** End - Logic to reset the zIndex of modal control box ****/
 
   useEffect(() => {
     const exposedVariables = {
@@ -188,6 +207,13 @@ export const Modal = function Modal({
           className="jet-button btn btn-primary p-1 overflow-hidden"
           style={customStyles.buttonStyles}
           onClick={(event) => {
+            /**** Start - Logic to reduce the zIndex of modal control box ****/
+            controlBoxRef.current = document.querySelector(`.selected-component.sc-${id}`)?.parentElement;
+            if (mode === 'edit' && controlBoxRef.current) {
+              controlBoxRef.current.classList.add('modal-moveable');
+            }
+            /**** End - Logic to reduce the zIndex of modal control box ****/
+
             event.stopPropagation();
             setShowModal(true);
             setExposedVariable('show', true);

@@ -1,8 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
-import _ from 'lodash';
 import { Pagination } from '@/_components/Pagination';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
+import _ from 'lodash';
 
 export const Listview = function Listview({
   id,
@@ -18,6 +18,7 @@ export const Listview = function Listview({
   setExposedVariables,
   darkMode,
   dataCy,
+  childComponents,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -80,7 +81,6 @@ export const Listview = function Listview({
 
   useEffect(() => {
     const childrenDataClone = _.cloneDeep(childrenData);
-
     const exposedVariables = {
       data: removeFunctionObjects(childrenDataClone),
       children: childrenData,
@@ -94,7 +94,35 @@ export const Listview = function Listview({
       setExposedVariables(exposedVariables);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childrenData]);
+  }, [childrenData, childComponents]);
+
+  function filterComponents() {
+    if (!childrenData || childrenData.length === 0) {
+      return [];
+    }
+
+    const componentNamesSet = new Set(
+      Object.values(childComponents ?? {}).map((component) => component.component.name)
+    );
+    const filteredData = _.cloneDeep(childrenData);
+    if (filteredData?.[0]) {
+      Object.keys(filteredData?.[0]).forEach((item) => {
+        if (!componentNamesSet?.has(item)) {
+          for (const key in filteredData) {
+            delete filteredData[key][item];
+          }
+        }
+      });
+    }
+
+    return filteredData;
+  }
+
+  useEffect(() => {
+    const data = filterComponents(childComponents, childrenData);
+    setChildrenData(data);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childComponents]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageChanged = (page) => {

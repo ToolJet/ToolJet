@@ -193,10 +193,9 @@ export const Box = memo(
       validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
     }
     const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
-    const [validatedGeneralProperties, generalPropertiesErrors] =
-      mode === 'edit' && component.validate
-        ? validateProperties(resolvedGeneralProperties, componentMeta.general)
-        : [resolvedGeneralProperties, []];
+    const [validatedGeneralProperties, generalPropertiesErrors] = component.validate
+      ? validateProperties(resolvedGeneralProperties, componentMeta.general)
+      : [resolvedGeneralProperties, []];
 
     const resolvedGeneralStyles = resolveGeneralStyles(component, currentState, null, customResolvables);
 
@@ -259,7 +258,7 @@ export const Box = memo(
       }
 
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
+    }, [JSON.stringify({ validatedProperties, validatedStyles })]);
 
     useEffect(() => {
       if (customResolvables && !readOnly && mode === 'edit') {
