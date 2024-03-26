@@ -5903,7 +5903,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       pageControls: { type: 'toggle', displayName: 'Show page controls', validation: { schema: { type: 'boolean' } } },
       showDownloadOption: {
         type: 'toggle',
-        displayName: 'Show the download',
+        displayName: 'Show download button',
         validation: { schema: { type: 'boolean' } },
       },
     },
