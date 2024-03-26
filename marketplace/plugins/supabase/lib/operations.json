@@ -113,6 +113,16 @@
             "name": "Dscending"
           }
         ]
+      },
+      "get_limit": {
+        "label": "Limit",
+        "key": "get_limit",
+        "type": "codehinter",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "lineNumbers": false,
+        "description": "Enter limit value to get number of rows",
+        "placeholder": "Enter limit"
       }
     },
     "create_row": {

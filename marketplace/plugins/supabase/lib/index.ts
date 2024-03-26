@@ -12,12 +12,15 @@ export default class Supabase implements QueryService {
     try {
       switch (operation) {
         case 'get_rows':
-          const {get_table_name, get_filters, get_sort} = queryOptions;
+          const {get_table_name, get_filters, get_sort, get_limit} = queryOptions;
           const getFiltersData = Object.values(get_filters);
           const getSorts = Object.values(get_sort);
           let query = supabaseClient.from(get_table_name).select();
           this.addQueryFilters(query, getFiltersData);
           this.addQuerySort(query, getSorts);
+          if(get_limit){
+            query = query.limit(Number(get_limit));
+          };
           const getRes = await query;
           error = getRes.error;
           result = getRes.data;

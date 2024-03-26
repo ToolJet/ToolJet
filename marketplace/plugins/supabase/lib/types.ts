@@ -23,6 +23,7 @@ export type QueryOptions = {
   update_sort: object;
   delete_sort: object;
   delete_limit: number;
+  get_limit: number;
   update_column_value: string;
   create_body: string;
 };

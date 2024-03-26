@@ -58,7 +58,7 @@
   },
   {
     "name": "supabase",
-    "description": "api plugin from supabase",
+    "description": "Plugin for supabase",
     "version": "1.0.0",
     "id": "supabase",
     "author": "Tooljet",
