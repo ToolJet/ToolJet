@@ -375,7 +375,7 @@ export const NumberInput = function NumberInput({
                 <SolidIcon
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
                   height={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  fill={'var(--icons-weak-disabled)'}
+                  fill={'var(--icons-default)'}
                   style={{
                     top: defaultAlignment === 'top' && label?.length > 0 && width > 0 ? '21px' : '1px',
                     right:
@@ -397,13 +397,13 @@ export const NumberInput = function NumberInput({
                     zIndex: 3,
                   }}
                   className="numberinput-up-arrow arrow"
-                  name="traingledowncenter"
+                  name="TriangleDownCenter"
                 ></SolidIcon>
               </div>
 
               <div onClick={(e) => handleDecrement(e)}>
                 <SolidIcon
-                  fill={'var(--icons-weak-disabled)'}
+                  fill={'var(--icons-default)'}
                   style={{
                     right:
                       labelWidth == 0
@@ -427,7 +427,7 @@ export const NumberInput = function NumberInput({
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
                   height={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
                   className="numberinput-down-arrow arrow"
-                  name="traingleupcenter"
+                  name="TriangleUpCenter"
                 ></SolidIcon>
               </div>
             </>

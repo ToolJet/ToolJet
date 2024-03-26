@@ -158,8 +158,8 @@ import Uppercase from './Uppercase.jsx';
 import Lowercase from './Lowercase.jsx';
 import Capitalize from './Capitalize.jsx';
 import Oblique from './Oblique.jsx';
-import TraingleUpCenter from './TraingleUpCenter.jsx';
-import TraingleDownCenter from './TraingleDownCenter.jsx';
+import TriangleUpCenter from './TriangleUpCenter.jsx';
+import TriangleDownCenter from './TriangleDownCenter.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -481,10 +481,10 @@ const Icon = (props) => {
       return <Capitalize {...props} />;
     case 'oblique':
       return <Oblique {...props} />;
-    case 'traingleupcenter':
-      return <TraingleUpCenter {...props} />;
-    case 'traingledowncenter':
-      return <TraingleDownCenter {...props} />;
+    case 'TriangleUpCenter':
+      return <TriangleUpCenter {...props} />;
+    case 'TriangleDownCenter':
+      return <TriangleDownCenter {...props} />;
     default:
       return <Apps {...props} />;
   }
