@@ -756,6 +756,18 @@ const Table = ({ collapseSidebar }) => {
     document.getElementById('edit-input-blur').blur();
   };
 
+  const getTooltipTextForCell = (cellValue, cellColumnIndex) => {
+    if (headerGroups.length && headerGroups[0].headers.length) {
+      const tableHeaderList = headerGroups[0].headers;
+      const { constraints_type = {} } = tableHeaderList[cellColumnIndex];
+      if (constraints_type.is_primary_key) return 'Cannot edit primary key values';
+      if (isSerialDataType(tableHeaderList[cellColumnIndex])) return 'Serial type values cannot be modified';
+      return cellValue || '';
+    } else {
+      return cellValue || '';
+    }
+  };
+
   function tableHeaderContent(column) {
     const { constraints_type = {} } = column;
     const { is_primary_key } = constraints_type;
@@ -1055,7 +1067,7 @@ const Table = ({ collapseSidebar }) => {
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
                             <ToolTip
-                              message={index === 0 ? 'Cannot edit primary key values' : cell.value || ''}
+                              message={getTooltipTextForCell(cell.value, index)}
                               placement="bottom"
                               delay={{ show: 200, hide: 0 }}
                               show={
