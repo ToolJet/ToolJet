@@ -1359,13 +1359,15 @@ const EditorComponent = (props) => {
         return appDefinition.pages[currentPageId].components[id].component.name;
       });
 
-      const currentComponents = newDefinition.pages[currentPageId].components;
+      // const currentComponents = newDefinition.pages[currentPageId].components;
 
-      const newComponentDefinition = useResolveStore
-        .getState()
-        .actions.findAndReplaceReferences(currentComponents, deletedComponentNames);
+      // // const newComponentDefinition = useResolveStore
+      // //   .getState()
+      // //   .actions.findAndReplaceReferences(currentComponents, deletedComponentNames);
 
-      newDefinition.pages[currentPageId].components = newComponentDefinition;
+      // // newDefinition.pages[currentPageId].components = newComponentDefinition;
+
+      // console.log('---arpit:::', { deletedComponentNames, currentComponents });
 
       appDefinitionChanged(newDefinition, {
         componentDefinitionChanged: true,
@@ -1384,6 +1386,20 @@ const EditorComponent = (props) => {
           });
         });
       }
+
+      const newAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
+      const currentComponents = newAppDefinition.pages[currentPageId].components;
+
+      const newComponentDefinition = useResolveStore
+        .getState()
+        .actions.findAndReplaceReferences(currentComponents, deletedComponentNames);
+
+      newAppDefinition.pages[currentPageId].components = newComponentDefinition;
+
+      useEditorStore.getState().actions.updateEditorState({
+        appDefinition: newAppDefinition,
+        isUpdatingEditorStateInProcess: true,
+      });
 
       useResolveStore.getState().actions.removeEntitiesFromMap(deleteFromMap);
       useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
