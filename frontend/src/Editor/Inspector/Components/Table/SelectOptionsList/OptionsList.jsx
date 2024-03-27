@@ -224,6 +224,10 @@ export const OptionsList = ({
               popOverCallback={(showing) => {
                 setColumnPopoverRootCloseBlocker('dynamicOptions', showing);
               }}
+              placeholder={`{{[{ label: 'Jane Cooper', value: 'Jane Cooper' },
+                { label: 'Cameron Williamson', value: 'Cameron Williamson' },
+                { label: 'Leslie Alexander', value: 'Leslie Alexander' },
+                { label: 'Brooklyn Simmons', value: 'Brooklyn Simmons' }]}}`}
             />
             <ProgramaticallyHandleProperties
               label="Options loading state"

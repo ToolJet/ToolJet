@@ -77,7 +77,7 @@ export const PropertiesTabElements = ({
         />
       </div>
       <div data-cy={`input-and-label-key`} className="field">
-        <label className="form-label">{t('widget.Table.key', 'key')}</label>
+        <label className="form-label">{t('widget.Table.key', 'Key')}</label>
         <CodeHinter
           currentState={currentState}
           initialValue={column.key}

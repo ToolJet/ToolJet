@@ -987,7 +987,7 @@
   }
 }
 .table-column-lists.list-group-item{
-  margin-bottom: 0 !important;
+  margin-bottom: 0 !important;  
 }
 .overlay-radio-table{
   span{
@@ -998,5 +998,11 @@
     text-align: left;
     color: var(--text-primary);
 
+  }
+}
+.active-column-list{
+  background-color: var(--interactive-overlays-fill-hover) !important;
+  &.list-group-item:hover{
+    background-color: var(--interactive-overlays-fill-hover) !important;
   }
 }

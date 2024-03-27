@@ -76,7 +76,15 @@ export const ValidationProperties = ({
         ];
       case 'dropdown':
       case 'select':
-        return [{ property: 'customRule', dateCy: 'input-and-label-custom-rule', label: 'Custom rule' }];
+      case 'newMultiSelect':
+        return [
+          {
+            property: 'customRule',
+            dateCy: 'input-and-label-custom-rule',
+            label: 'Custom rule',
+            placeholder: 'eg. {{ 1 < 2 }}',
+          },
+        ];
       default:
         return [];
     }

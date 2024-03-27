@@ -50,6 +50,7 @@ class TableComponent extends React.Component {
       actionPopOverRootClose: true,
       showPopOver: false,
       popOverRootCloseBlockers: [],
+      activeColumnPopoverIndex: null,
     };
   }
   componentDidMount() {
@@ -98,6 +99,12 @@ class TableComponent extends React.Component {
     };
 
     this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties', true);
+  };
+
+  handleToggleColumnPopover = (index) => {
+    this.setState({
+      activeColumnPopoverIndex: index,
+    });
   };
 
   actionButtonEventOptionUpdated = (event, option, value, extraData) => {
@@ -336,7 +343,12 @@ class TableComponent extends React.Component {
   addNewColumn = () => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4(), fxActiveFields: [] });
+    newValue.push({
+      name: this.generateNewColumnName(columns.value),
+      id: uuidv4(),
+      fxActiveFields: [],
+      columnType: 'string',
+    });
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
   };
 
@@ -506,6 +518,13 @@ class TableComponent extends React.Component {
                                   placement="left"
                                   rootClose={this.state.popOverRootCloseBlockers.length === 0}
                                   overlay={this.columnPopover(item, index)}
+                                  onToggle={(show) => {
+                                    if (show) {
+                                      this.handleToggleColumnPopover(index);
+                                    } else {
+                                      this.handleToggleColumnPopover(null);
+                                    }
+                                  }}
                                 >
                                   <div key={resolvedItemName}>
                                     <List.Item
@@ -533,7 +552,9 @@ class TableComponent extends React.Component {
                                       showCopyColumnOption={true}
                                       showVisibilityIcon={true}
                                       isColumnVisible={resolveReferences(columnVisibility, this.state.currentState)}
-                                      className={'table-column-lists'}
+                                      className={`table-column-lists ${
+                                        this.state.activeColumnPopoverIndex === index && 'active-column-list'
+                                      }`}
                                     />
                                   </div>
                                 </OverlayTrigger>
