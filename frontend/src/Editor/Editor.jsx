@@ -1914,7 +1914,6 @@ const EditorComponent = (props) => {
             canRedo={canRedo}
             handleUndo={handleUndo}
             handleRedo={handleRedo}
-            // saveError={saveError}
             onNameChanged={onNameChanged}
             setAppDefinitionFromVersion={setAppDefinitionFromVersion}
             onVersionRelease={onVersionRelease}
@@ -2039,7 +2038,6 @@ const EditorComponent = (props) => {
                           <Container
                             canvasWidth={getCanvasWidth()}
                             socket={socket}
-                            // appDefinition={appDefinition}
                             appDefinitionChanged={appDefinitionChanged}
                             snapToGrid={true}
                             darkMode={props.darkMode}
