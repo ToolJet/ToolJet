@@ -209,7 +209,7 @@ class TableComponent extends React.Component {
     return (
       <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'}`}>
         <Popover.Body className="table-action-popover d-flex flex-column custom-gap-16">
-          <div className="field">
+          <div className="field tj-app-input">
             <label data-cy={`label-action-button-text`} className="form-label">
               {this.props.t('widget.Table.buttonText', 'Button Text')}
             </label>
