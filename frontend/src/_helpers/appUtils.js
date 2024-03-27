@@ -1232,7 +1232,7 @@ export function runQuery(
           useResolveStore.getState().actions.addAppSuggestions({
             queries: {
               [queryName]: {
-                data: [...finalData],
+                data: finalData,
               },
             },
           });
