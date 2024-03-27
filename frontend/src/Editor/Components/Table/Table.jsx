@@ -1355,6 +1355,7 @@ export function Table({
                 let rowProps = { ...row.getRowProps() };
                 const contentWrap = resolveReferences(contentWrapProperty, currentState);
                 const autoHeightProp = resolveReferences(autoHeight, currentState);
+                // const isMaxRowHeightAuto = maxRowHeight === 'auto';
                 if (contentWrap) {
                   rowProps.style.maxHeight = autoHeightProp
                     ? 'fit-content'
@@ -1362,6 +1363,15 @@ export function Table({
                   rowProps.style.height = autoHeightProp
                     ? 'fit-content'
                     : resolveReferences(maxRowHeight, currentState);
+
+                  /*
+                  rowProps.style.maxHeight = isMaxRowHeightAuto
+                    ? 'fit-content'
+                    : resolveReferences(maxRowHeightValue, currentState);
+                  rowProps.style.height = isMaxRowHeightAuto
+                    ? 'fit-content'
+                    : resolveReferences(maxRowHeightValue, currentState);
+                    */
                 } else {
                   rowProps.style.maxHeight = cellSize === 'condensed' ? '40px' : '46px';
                   rowProps.style.height = cellSize === 'condensed' ? '40px' : '46px';
