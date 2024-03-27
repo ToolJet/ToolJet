@@ -7,6 +7,8 @@ title: BigQuery
 
 ToolJet can connect to BigQuery databases to run BigQuery queries.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 To connect to BigQuery, you need to enable BigQuery API in your Google Cloud Console. You can follow the steps to enable BigQuery API from [this link](https://cloud.google.com/bigquery/docs/bigquery-web-ui). 
@@ -34,18 +36,22 @@ Now, copy and paste the data from the downloaded JSON file into the **Private ke
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-create.png" alt="BQ create" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/bigquery/bq-create.png" alt="BQ create" />
 
 </div>
 
 Click on **Test connection** button to verify if the credentials are correct and that the API is accessible to ToolJet server. Click on **Save** button to save the data source.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying BigQuery
 
 Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. Select the operation that you want to perform and click **Save** to create the query.
 
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-query.png" alt="BQ query" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/bigquery/bq-query.png" alt="BQ query" />
 
 
 
@@ -53,7 +59,11 @@ Click on `+` button of the query manager at the bottom panel of the editor and s
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
 :::
 
-## Supported operations
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Supported Operations
 
 -  [List Datasets](#list-datatsets)
 
@@ -76,7 +86,9 @@ Query results can be transformed using transformations. Read our transformations
 
 -  [Delete Table](#create-table)
 
+</div>
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### List Datasets
 
@@ -87,7 +99,11 @@ Returns list of datasets.
 - **Options:** This can be used to filter the list.
 
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/list_datasets.png" alt="BQ list datasets"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/bigquery/list_datasets.png" alt="BQ list datasets"/>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### List Tables
 
@@ -98,8 +114,11 @@ Return list of tables within a dataset
 - **Dataset:** Enter the dataset name.
 
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/listtables.png"  alt="BQ list tables"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/bigquery/listtables.png"  alt="BQ list tables"/>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Query
 
@@ -107,43 +126,62 @@ Return data based on the `Query`. `Query options` ([Reference](https://cloud.goo
 
 
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/query.png" alt="BQ query"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/bigquery/query.png" alt="BQ query"/>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Insert Record
 - To insert a record.
 
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-insert.png" alt="BQ insert" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/bigquery/bq-insert.png" alt="BQ insert" />
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Delete Record 
 - To delete a record.
 
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-delete.png"  alt="BQ delete" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/bigquery/bq-delete.png"  alt="BQ delete" />
 
 
 :::info
 NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be deleted!
 :::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Update Record
 - To update a record.
 
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-update.png" alt="BQ update" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/bigquery/bq-update.png" alt="BQ update" />
 
 
 :::info
 NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be updated!
 :::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Create View
 
 - To create a view.
 
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-view.png" alt="BQ create view" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/bigquery/bq-view.png" alt="BQ create view" />
 
+</div>
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Create Table
 
@@ -153,5 +191,11 @@ NOTE: Be careful when deleting records in a table. If you omit the WHERE clause,
 NOTE: visit -https://github.com/googleapis/nodejs-bigquery/blob/main/samples/createTable.js for more info on schema.
 :::
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Delete Table
 - To delete a table.
+
+</div>

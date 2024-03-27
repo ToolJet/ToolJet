@@ -13,7 +13,7 @@ ToolJet Copilot is currently in private beta for **Business** and **Enterprise**
 
 ## Activating Copilot
 
-To gain access to Copilots (updated), all users, including administrators, can individually sign up for the waitlist program. Upon successful sign up, each user will be issued a distinctive API key linked to their account. However, the exclusive authority to activate Copilot within the workspace settings lies solely with administrators. Administrators can proceed to the Copilot section in the workspace settings, where they can utilize their respective API key to set the "Enable Copilot" toggle option.
+To gain access to Copilot, all users, including administrators, can individually sign up for the waitlist program. Upon successful sign up, each user will be issued a distinctive API key linked to their account. However, the exclusive authority to activate Copilot within the workspace settings lies solely with administrators. Administrators can proceed to the Copilot section in the workspace settings, where they can utilize their respective API key to set the "Enable Copilot" toggle option.
 
 You can join the waitlist here: **https://tooljet.com/copilot**
 
