@@ -36,7 +36,7 @@ export const Container = ({
   snapToGrid,
   onComponentClick,
   onEvent,
-  appDefinition,
+  // appDefinition,
   appDefinitionChanged,
   // onComponentOptionChanged,
   // onComponentOptionsChanged,
@@ -52,6 +52,8 @@ export const Container = ({
   // sideBarDebugger,
   currentPageId,
 }) => {
+  const appDefinition = useEditorStore.getState().appDefinition;
+
   // Dont update first time to skip
   // redundant save on app definition load
   const firstUpdate = useRef(true);
@@ -322,76 +324,6 @@ export const Container = ({
   //   setIsDragging(draggingState);
   // }, [draggingState]);
 
-  // const [{ isOver, canDrop }, drop] = useDrop(
-  //   () => ({
-  //     accept: [ItemTypes.BOX, ItemTypes.COMMENT],
-  //     async drop(item, monitor) {
-  //       console.log('---arpit:: checking [main container]', { isOver, canDrop });
-
-  //       if (item.parent) {
-  //         return;
-  //       }
-
-  //       if (item.component.component === 'PDF' && !isPDFSupported()) {
-  //         toast.error(
-  //           'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
-  //         );
-  //         return;
-  //       }
-
-  //       if (item.name === 'comment') {
-  //         const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-  //         const offsetFromTopOfWindow = canvasBoundingRect.top;
-  //         const offsetFromLeftOfWindow = canvasBoundingRect.left;
-  //         const currentOffset = monitor.getSourceClientOffset();
-
-  //         const xOffset = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
-  //         const y = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
-
-  //         const x = (xOffset * 100) / canvasWidth;
-
-  //         const element = document.getElementById(`thread-${item.threadId}`);
-  //         element.style.transform = `translate(${xOffset}px, ${y}px)`;
-  //         commentsService.updateThread(item.threadId, { x, y });
-  //         return undefined;
-  //       }
-
-  //       const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-  //       const componentMeta = _.cloneDeep(
-  //         componentTypes.find((component) => component.component === item.component.component)
-  //       );
-
-  //       const newComponent = addNewWidgetToTheEditor(
-  //         componentMeta,
-  //         monitor,
-  //         boxes,
-  //         canvasBoundingRect,
-  //         item.currentLayout,
-  //         snapToGrid,
-  //         zoomLevel
-  //       );
-
-  //       const newBoxes = {
-  //         ...boxes,
-  //         [newComponent.id]: {
-  //           component: newComponent.component,
-  //           layouts: {
-  //             ...newComponent.layout,
-  //           },
-  //           withDefaultChildren: newComponent.withDefaultChildren,
-  //         },
-  //       };
-
-  //       setBoxes(newBoxes);
-
-  //       setSelectedComponent(newComponent.id, newComponent.component);
-
-  //       return undefined;
-  //     },
-  //   }),
-  //   [moveBox]
-  // );
-
   const [{ isOver, isOverCurrent }, drop] = useDrop(
     () => ({
       accept: ItemTypes.BOX,
@@ -572,7 +504,7 @@ export const Container = ({
       componentData.parent = parent ? parent : null;
 
       return {
-        ...boxesObj,
+        ...copyOfBoxes,
         [id]: {
           ...copyOfBoxes[id],
           component: componentData,
