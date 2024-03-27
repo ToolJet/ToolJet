@@ -782,29 +782,17 @@ const EditorComponent = (props) => {
         let dataQueries = JSON.parse(JSON.stringify(useDataQueriesStore.getState().dataQueries));
         let allEvents = JSON.parse(JSON.stringify(useAppDataStore.getState().events));
 
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
 
-        const entityReferencesInQueryoOptions = findAllEntityReferences(dataQueries, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
+        const entityReferencesInQueryoOptions = findAllEntityReferences(dataQueries, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
 
-        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
+        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
 
         const manager = useResolveStore.getState().referenceMapper;
 
