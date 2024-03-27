@@ -8,11 +8,9 @@ import Int64 from 'node-int64';
 export default class Databricks implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     let result;
-    let client;
-    let session;
+    const client = await this.getConnection(sourceOptions);
+    const session: IDBSQLSession = await client.openSession();
     try {
-      const client = await this.getConnection(sourceOptions);
-      const session: IDBSQLSession = await client.openSession();
       const queryOperation: IOperation = await session.executeStatement('SELECT version();', {
         runAsync: true,
         queryTimeout: new Int64(10000),
@@ -22,8 +20,8 @@ export default class Databricks implements QueryService {
     } catch (error) {
       throw new Error('Error in connection: ' + error.message);
     } finally {
-      await session?.close();
-      await client?.close();
+      await session.close();
+      await client.close();
     }
 
     return {
@@ -51,11 +49,9 @@ export default class Databricks implements QueryService {
   }
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     let result;
-    let client;
-    let session;
+    const client = await this.getConnection(sourceOptions);
+    const session: IDBSQLSession = await client.openSession();
     try {
-      const client = await this.getConnection(sourceOptions);
-      const session: IDBSQLSession = await client.openSession();
       const queryOperation: IOperation = await session.executeStatement(queryOptions.sql_query, {
         runAsync: true,
         queryTimeout: new Int64(10000),
