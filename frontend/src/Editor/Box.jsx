@@ -1,56 +1,13 @@
 import React, { useEffect, useState, useMemo, useContext, memo } from 'react';
-import { Button } from './Components/Button';
-import { Image } from './Components/Image';
-import { Text } from './Components/Text';
-import { Table } from './Components/Table/Table';
-import { TextInput } from './Components/TextInput';
-import { NumberInput } from './Components/NumberInput';
-import { TextArea } from './Components/TextArea';
-import { Container } from './Components/Container';
-import { Tabs } from './Components/Tabs';
-import { RichTextEditor } from './Components/RichTextEditor';
-import { DropDown } from './Components/DropDown';
-import { Checkbox } from './Components/Checkbox';
-import { Datepicker } from './Components/Datepicker';
-import { DaterangePicker } from './Components/DaterangePicker';
-import { Multiselect } from './Components/Multiselect';
-import { Modal } from './Components/Modal';
-import { Chart } from './Components/Chart';
-import { Map } from './Components/Map/Map';
-import { QrScanner } from './Components/QrScanner/QrScanner';
-import { ToggleSwitch } from './Components/Toggle';
-import { RadioButton } from './Components/RadioButton';
-import { StarRating } from './Components/StarRating';
-import { Divider } from './Components/Divider';
-import { FilePicker } from './Components/FilePicker';
-import { PasswordInput } from './Components/PasswordInput';
-import { Calendar } from './Components/Calendar';
-import { Listview } from './Components/Listview';
-import { IFrame } from './Components/IFrame';
-import { CodeEditor } from './Components/CodeEditor';
-import { Timer } from './Components/Timer';
-import { Statistics } from './Components/Statistics';
-import { Pagination } from './Components/Pagination';
-import { Tags } from './Components/Tags';
-import { Spinner } from './Components/Spinner';
-import { CircularProgressBar } from './Components/CirularProgressbar';
-import { renderTooltip, getComponentName } from '@/_helpers/appUtils';
-import { RangeSlider } from './Components/RangeSlider';
-import { Timeline } from './Components/Timeline';
-import { SvgImage } from './Components/SvgImage';
-import { Html } from './Components/Html';
-import { ButtonGroup } from './Components/ButtonGroup';
-import { CustomComponent } from './Components/CustomComponent/CustomComponent';
-import { VerticalDivider } from './Components/verticalDivider';
-import { ColorPicker } from './Components/ColorPicker';
-import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
-import { Kanban } from './Components/Kanban/Kanban';
-import { Steps } from './Components/Steps';
-import { TreeSelect } from './Components/TreeSelect';
-import { Icon } from './Components/Icon';
-import { Link } from './Components/Link';
-import { Form } from './Components/Form/Form';
-import { BoundedBox } from './Components/BoundedBox/BoundedBox';
+
+import {
+  renderTooltip,
+  getComponentName,
+  onComponentOptionChanged,
+  onComponentOptionsChanged,
+  debuggerActions,
+} from '@/_helpers/appUtils';
+
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
@@ -68,68 +25,16 @@ import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { isPDFSupported } from '@/_stores/utils';
-
-export const AllComponents = {
-  Button,
-  Image,
-  Text,
-  TextInput,
-  NumberInput,
-  Table,
-  TextArea,
-  Container,
-  Tabs,
-  RichTextEditor,
-  DropDown,
-  Checkbox,
-  Datepicker,
-  DaterangePicker,
-  Multiselect,
-  Modal,
-  Chart,
-  Map,
-  QrScanner,
-  ToggleSwitch,
-  RadioButton,
-  StarRating,
-  Divider,
-  FilePicker,
-  PasswordInput,
-  Calendar,
-  IFrame,
-  CodeEditor,
-  Listview,
-  Timer,
-  Statistics,
-  Pagination,
-  Tags,
-  Spinner,
-  CircularProgressBar,
-  RangeSlider,
-  Timeline,
-  SvgImage,
-  Html,
-  ButtonGroup,
-  CustomComponent,
-  VerticalDivider,
-  ColorPicker,
-  KanbanBoard,
-  Kanban,
-  Steps,
-  TreeSelect,
-  Link,
-  Icon,
-  Form,
-  BoundedBox,
-};
+import { getComponentToRender } from '@/_helpers/editorHelpers';
+import ControlledComponentToRender from './ControlledComponentToRender';
 
 /**
  * Conditionally importing PDF component since importing it breaks app in older versions of browsers.
  * refer: https://github.com/wojtekmaj/react-pdf?tab=readme-ov-file#compatibility
  **/
-if (isPDFSupported()) {
-  AllComponents.PDF = await import('./Components/PDF').then((module) => module.PDF);
-}
+// if (isPDFSupported()) {
+//   AllComponents.PDF = await import('./Components/PDF').then((module) => module.PDF);
+// }
 
 export const Box = memo(
   ({
@@ -142,22 +47,23 @@ export const Box = memo(
     inCanvas,
     onComponentClick,
     onEvent,
-    onComponentOptionChanged,
-    onComponentOptionsChanged,
+    // onComponentOptionChanged,
+    // onComponentOptionsChanged,
     paramUpdated,
     changeCanDrag,
-    containerProps,
+    // containerProps,
     removeComponent,
     canvasWidth,
     mode,
     customResolvables,
     parentId,
-    sideBarDebugger,
+    // sideBarDebugger,
     readOnly,
-    childComponents,
-    isResizing,
-    adjustHeightBasedOnAlignment,
+    // childComponents,
+    // isResizing,
+    // adjustHeightBasedOnAlignment,
     currentLayout,
+    getContainerProps,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
@@ -169,7 +75,8 @@ export const Box = memo(
       return componentTypes.find((comp) => component.component === comp.component);
     }, [component]);
 
-    const ComponentToRender = AllComponents[component.component];
+    const ComponentToRender = getComponentToRender(component.component);
+    // const ComponentToRender = AllComponents(component.component);
     const [renderCount, setRenderCount] = useState(0);
     const [renderStartTime, setRenderStartTime] = useState(new Date());
     const [resetComponent, setResetStatus] = useState(false);
@@ -217,7 +124,7 @@ export const Box = memo(
     }
     useEffect(() => {
       if (!component?.parent) {
-        onComponentOptionChanged && onComponentOptionChanged(component, 'id', id);
+        onComponentOptionChanged(component, 'id', id);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); /*computeComponentState was not getting the id on initial render therefore exposed variables were not set.
@@ -240,7 +147,7 @@ export const Box = memo(
           },
         ])
       );
-      sideBarDebugger?.error(errorLog);
+      debuggerActions?.error(errorLog);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify({ propertyErrors, styleErrors, generalPropertiesErrors })]);
 
@@ -325,7 +232,8 @@ export const Box = memo(
           role={preview ? 'BoxPreview' : 'Box'}
         >
           {!resetComponent && !shouldHideWidget ? (
-            <ComponentToRender
+            <ControlledComponentToRender
+              componentName={component.component}
               onComponentClick={onComponentClick}
               onComponentOptionChanged={onComponentOptionChanged}
               currentState={currentState}
@@ -337,7 +245,7 @@ export const Box = memo(
               onComponentOptionsChanged={onComponentOptionsChanged}
               height={height}
               component={component}
-              containerProps={containerProps}
+              containerProps={getContainerProps(id)}
               darkMode={darkMode}
               removeComponent={removeComponent}
               canvasWidth={canvasWidth}
@@ -364,12 +272,12 @@ export const Box = memo(
               }}
               mode={mode}
               resetComponent={() => setResetStatus(true)}
-              childComponents={childComponents}
+              // childComponents={childComponents}
               dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
-              isResizing={isResizing}
-              adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
+              // isResizing={isResizing}
+              // adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
               currentLayout={currentLayout}
-            ></ComponentToRender>
+            ></ControlledComponentToRender>
           ) : (
             <></>
           )}
