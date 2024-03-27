@@ -31,7 +31,7 @@ import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
 
 const deviceWindowWidth = EditorConstants.deviceWindowWidth;
 
-const Container = ({
+export const Container = ({
   canvasWidth,
   mode,
   snapToGrid,
@@ -1009,10 +1009,3 @@ const ResizeGhostWidget = ({ resizingComponentId, widgets, currentLayout, canvas
     />
   );
 };
-
-Container.whyDidYouRender = {
-  logOnDifferentValues: true,
-  customName: 'WDYRContainer',
-};
-
-export { Container };
