@@ -1081,6 +1081,8 @@ const EditorComponent = (props) => {
       const paramDiff = computeComponentPropertyDiff(appDefinitionDiff, appDefinition, appDiffOptions);
       const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions, currentLayout);
 
+      console.log('updateDiff', updateDiff);
+
       if (updateDiff['error']) {
         const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
         const isPlatformMac = platform.toLowerCase().indexOf('mac') > -1;
@@ -2042,7 +2044,6 @@ const EditorComponent = (props) => {
                       {defaultComponentStateComputed && (
                         <>
                           <Container
-                            turnOffAutoLayout={turnOffAutoLayout}
                             canvasWidth={getCanvasWidth()}
                             socket={socket}
                             appDefinition={appDefinition}
