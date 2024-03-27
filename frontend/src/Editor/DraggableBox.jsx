@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import cx from 'classnames';
 import { useDrag } from 'react-dnd';
-import { ItemTypes } from './ItemTypes';
+import { ItemTypes } from './editorConstants';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
 import { ConfigHandle } from './ConfigHandle';
@@ -258,9 +258,9 @@ const DraggableBox = React.memo(
   }
 );
 
-DraggableBox.whyDidYouRender = {
-  logOnDifferentValues: true,
-  customName: 'WDYRDraggableBox',
-};
+// DraggableBox.whyDidYouRender = {
+//   logOnDifferentValues: true,
+//   customName: 'WDYRDraggableBox',
+// };
 
 export { DraggableBox };

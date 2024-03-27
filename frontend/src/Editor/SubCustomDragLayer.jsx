@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDragLayer } from 'react-dnd';
-import { ItemTypes } from './ItemTypes';
+import { ItemTypes } from './editorConstants';
 import { BoxDragPreview } from './BoxDragPreview';
 import { snapToGrid } from '@/_helpers/appUtils';
 const layerStyles = {

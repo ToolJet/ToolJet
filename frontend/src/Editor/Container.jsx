@@ -1,8 +1,8 @@
 /* eslint-disable import/no-named-as-default */
 import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
 import cx from 'classnames';
-import { useDrop, useDragLayer, useDragDropManager } from 'react-dnd';
-import { ItemTypes } from './ItemTypes';
+import { useDrop, useDragLayer } from 'react-dnd';
+import { ItemTypes, EditorConstants } from './editorConstants';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import { componentTypes } from './WidgetManager/components';
@@ -23,35 +23,29 @@ import _, { cloneDeep, isEmpty } from 'lodash';
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
-// import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
 import { isPDFSupported } from '@/_stores/utils';
 import toast from 'react-hot-toast';
 import { isOnlyLayoutUpdate } from '@/_helpers/editorHelpers';
 import GhostWidget from './GhostWidget';
 import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
 
-// const noOfGrids = 24;
+const deviceWindowWidth = EditorConstants.deviceWindowWidth;
 
-export const Container = ({
+const Container = ({
   canvasWidth,
   mode,
   snapToGrid,
   onComponentClick,
   onEvent,
-  // appDefinition,
   appDefinitionChanged,
-  // onComponentOptionChanged,
-  // onComponentOptionsChanged,
   appLoading,
   setSelectedComponent,
   zoomLevel,
   removeComponent,
-  deviceWindowWidth,
   darkMode,
   socket,
   handleUndo,
   handleRedo,
-  // sideBarDebugger,
   currentPageId,
 }) => {
   const appDefinition = useEditorStore.getState().appDefinition;
@@ -83,7 +77,7 @@ export const Container = ({
   const { appId } = useAppInfo();
 
   const currentState = useCurrentState();
-  const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+  const { appVersionsId, isVersionReleased } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
@@ -701,7 +695,7 @@ export const Container = ({
       setSelectedComponent,
       removeComponent,
       currentLayout,
-      deviceWindowWidth,
+      // deviceWindowWidth,
       selectedComponents,
       darkMode,
       // sideBarDebugger,
@@ -799,7 +793,7 @@ export const Container = ({
                     zoomLevel={zoomLevel}
                     // setSelectedComponent={setSelectedComponent}
                     removeComponent={removeComponent}
-                    deviceWindowWidth={deviceWindowWidth}
+                    // deviceWindowWidth={deviceWindowWidth}
                     isSelectedComponent={
                       mode === 'edit' ? selectedComponents.find((component) => component.id === id) : false
                     }
@@ -1015,3 +1009,10 @@ const ResizeGhostWidget = ({ resizingComponentId, widgets, currentLayout, canvas
     />
   );
 };
+
+Container.whyDidYouRender = {
+  logOnDifferentValues: true,
+  customName: 'WDYRContainer',
+};
+
+export { Container };
