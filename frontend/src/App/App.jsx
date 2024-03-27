@@ -36,7 +36,6 @@ import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
 import { ManageOrgVars } from '@/ManageOrgVars';
-import { CopilotSetting } from '@/CopilotSettings';
 
 const AppWrapper = (props) => {
   return (
@@ -258,12 +257,6 @@ class AppComponent extends React.Component {
                 <Route
                   path="workspace-variables"
                   element={<ManageOrgVars switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
-                />
-                <Route
-                  path="copilot"
-                  element={<CopilotSetting />}
-                  switchDarkMode={this.switchDarkMode}
-                  darkMode={darkMode}
                 />
               </Route>
               <Route

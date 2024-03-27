@@ -20,15 +20,14 @@ export function OrganizationSettings(props) {
   const sideBarNavs = ['Users', 'Groups', 'Workspace login', 'Workspace variables'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
-      case 'Users':
       case 'users':
-        return 'Users & permissions';
-      case 'Groups':
-        return 'manageGroups';
-      case 'Workspace login':
-        return 'manageWorkspaceLogin';
-      case 'Workspace variables':
-        return 'manageEnvVars';
+        return 'Users';
+      case 'groups':
+        return 'Groups';
+      case 'workspace-login':
+        return 'Workspace login';
+      case 'workspace-variables':
+        return 'Workspace variables';
       default:
         return groupName;
     }
@@ -37,10 +36,6 @@ export function OrganizationSettings(props) {
   if (!admin) {
     navigate('/');
   }
-
-  const goTooOrgConstantsDashboard = () => {
-    navigate(`/${getWorkspaceId()}/workspace-constants`);
-  };
 
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
@@ -58,7 +53,7 @@ export function OrganizationSettings(props) {
     } else {
       setSelectedTab(defaultOrgName(selectedTabFromRoute));
     }
-    //updateSidebarNAV(defaultOrgName(selectedTabFromRoute));
+    updateSidebarNAV(defaultOrgName(selectedTabFromRoute));
   }, [navigate, workspaceId, authenticationService.currentSessionValue?.admin]);
 
   return (
