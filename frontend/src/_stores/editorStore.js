@@ -45,6 +45,7 @@ const initialState = {
   queryConfirmationList: [],
   currentPageId: null,
   currentSessionId: uuid(),
+  firstEditorStateComputed: false,
 };
 
 export const useEditorStore = create(

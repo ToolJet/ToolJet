@@ -26,7 +26,7 @@ export const Tabs = function Tabs({
   // config for tabs. Includes title
   const tabs = isExpectedDataType(resolveReferences(component.definition.properties.tabs.value, currentState), 'array');
   let parsedTabs = tabs;
-  parsedTabs = resolveWidgetFieldValue(parsedTabs, currentState);
+  // parsedTabs = resolveWidgetFieldValue(parsedTabs, currentState);
   const hideTabs = component.definition.properties?.hideTabs?.value ?? false;
 
   // renderOnlyActiveTab - TRUE (renders only the content of the active tab)

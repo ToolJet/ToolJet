@@ -8,10 +8,17 @@ import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { getCurrentState } from '@/_stores/currentStateStore';
+import { getCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
+import {
+  inferJSExpAndReferences,
+  resolveMultiDynamicReferences,
+  resolveWorkspaceVariables,
+} from '@/Editor/CodeEditor/utils';
+import { useResolveStore } from '@/_stores/resolverStore';
+import { useEditorStore } from '@/_stores/editorStore';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -157,6 +164,11 @@ export function resolveReferences(
   withError = false,
   forPreviewBox = false
 ) {
+  const isResolverStoreReady = useEditorStore.getState().firstEditorStateComputed;
+  console.log('---pikuuuu::: isEditorReady', isResolverStoreReady);
+
+  if (isResolverStoreReady) return resolveReferences2(object, customObjects);
+
   if (object === '{{{}}}') return '';
   const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
   object = _.clone(object);
@@ -252,6 +264,59 @@ export function resolveReferences(
     }
   }
 }
+
+const resolveReferences2 = (query, customResolvers = {}) => {
+  if (!query || typeof query !== 'string') return [false, null, null];
+
+  let resolvedValue = query;
+  let error = null;
+
+  const currentState = useCurrentStateStore.getState();
+
+  //Todo : remove resolveWorkspaceVariables when workspace variables are removed
+  if (query?.startsWith('%%') && query?.endsWith('%%')) {
+    return resolveWorkspaceVariables(query, currentState);
+  }
+
+  if (!query?.includes('{{') || !query?.includes('}}')) {
+    return resolvedValue;
+  }
+
+  const hasMultiDynamicVariables = getDynamicVariables(query);
+
+  const { lookupTable } = useResolveStore.getState();
+  if (hasMultiDynamicVariables) {
+    resolvedValue = resolveMultiDynamicReferences(query, lookupTable);
+  } else {
+    let value = typeof query === 'string' ? query?.replace(/{{|}}/g, '').trim() : query;
+
+    // const { toResolveReference, jsExpression, jsExpMatch } = inferJSExpAndReferences(value, lookupTable.hints);
+
+    const idToLookUp = lookupTable.hints.get(value);
+
+    if (idToLookUp) {
+      resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);
+    } else {
+      const [resolvedCode, errorRef] = resolveCode(value, currentState, customResolvers, true, [], true);
+
+      resolvedValue = resolvedCode;
+      error = errorRef || null;
+    }
+  }
+
+  console.log('---mohh', { resolvedValue, query, error });
+
+  if (error) {
+    return query;
+  }
+
+  if (hasCircularDependency(resolvedValue)) {
+    console.log(`${resolvedValue} has circular dependency, unable to resolve`);
+    return '';
+  }
+
+  return resolvedValue;
+};
 
 export function getDynamicVariables(text) {
   const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);

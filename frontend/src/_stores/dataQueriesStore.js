@@ -9,7 +9,7 @@ import { runQueries } from '@/_helpers/appUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
 import _, { isEmpty, throttle } from 'lodash';
-import { useEditorStore } from './editorStore';
+import { useEditorActions, useEditorStore } from './editorStore';
 import { shallow } from 'zustand/shallow';
 import { getCurrentState, useCurrentStateStore } from './currentStateStore';
 import { useResolveStore } from './resolverStore';
@@ -540,6 +540,12 @@ export const useDataQueriesStore = create(
         },
         clearQueuedQueriesForRunOnAppLoad: () => {
           set({ queuedQueriesForRunOnAppLoad: [] });
+
+          setTimeout(() => {
+            useEditorStore.getState().actions.updateEditorState({
+              firstEditorStateComputed: true,
+            });
+          }, 3000);
         },
         updateQueryOptionsState: (queryOptionsList) => {
           set({ isUpdatingQueryInProcess: true });

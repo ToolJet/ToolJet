@@ -97,7 +97,7 @@ export const createJavaScriptSuggestions = () => {
   return allMethods;
 };
 
-const resolveWorkspaceVariables = (query, state) => {
+export const resolveWorkspaceVariables = (query, state) => {
   let resolvedStr = query;
   let error = null;
   let valid = false;
@@ -180,7 +180,7 @@ function getDynamicVariables(text) {
   const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
   return matchedParams;
 }
-const resolveMultiDynamicReferences = (code, lookupTable) => {
+export const resolveMultiDynamicReferences = (code, lookupTable) => {
   let resolvedValue = code;
 
   const isComponentValue = code.includes('components.') || false;
@@ -288,7 +288,7 @@ export const paramValidation = (expectedType, value) => {
   return type === expectedType;
 };
 
-const inferJSExpAndReferences = (code, hintsMap) => {
+export const inferJSExpAndReferences = (code, hintsMap) => {
   if (!code) return { toResolveReference: null, jsExpression: null };
 
   //check starts with JS expression like JSON.parse or JSON.stringify !

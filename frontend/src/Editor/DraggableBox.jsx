@@ -216,7 +216,7 @@ const DraggableBox = React.memo(
                   showHandle={configWidgetHandlerForModalComponent || isSelectedComponent}
                 />
               )}
-              <Sentry.ErrorBoundary
+              <ErrorBoundary
                 fallback={<h2>Something went wrong.</h2>}
                 beforeCapture={(scope) => {
                   scope.setTag('errorType', 'component');
@@ -242,7 +242,7 @@ const DraggableBox = React.memo(
                   // allComponents={allComponents}
                   getContainerProps={getContainerProps}
                 />
-              </Sentry.ErrorBoundary>
+              </ErrorBoundary>
             </div>
             {/* </Rnd> */}
           </div>
