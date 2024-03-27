@@ -19,7 +19,7 @@ const buttonVariants = cva('tw-flex tw-justify-center tw-items-center tw-font-me
         disabled:tw-bg-button-primary-disabled tw-border-none
         tw-interactice-focus tw-focus-visible:tw-outline-none`,
       secondary: `
-        tw-text-text-default tw-border-1 tw-border-solid tw-border-border-accent-weak
+        tw-text-text-default tw-border tw-border-solid tw-border-border-accent-weak
         tw-bg-button-secondary hover:tw-border-border-accent-strong
         hover:tw-bg-button-secondary-hover active:tw-bg-button-secondary-pressed
         active:tw-border-border-accent-strong 
@@ -28,7 +28,7 @@ const buttonVariants = cva('tw-flex tw-justify-center tw-items-center tw-font-me
         tw-focus-visible:tw-border-border-accent-weak
         tw-interactive-focus-nonsolid  tw-focus-visible:tw-outline-none`,
       outline: `
-        tw-text-text-default tw-border-1 tw-border-solid tw-border-border-default
+        tw-text-text-default tw-border tw-border-solid tw-border-border-default
         tw-bg-button-secondary hover:tw-border-border-default
         hover:tw-bg-button-outline-hover active:tw-bg-button-outline-pressed
         active:tw-border-border-strong 
@@ -49,7 +49,7 @@ const buttonVariants = cva('tw-flex tw-justify-center tw-items-center tw-font-me
         active:tw-bg-button-danger-primary-pressed disabled:tw-bg-button-danger-primary-disabled
         tw-border-none tw-interactice-focus tw-focus-visible:tw-outline-none`,
       dangerSecondary: `
-        tw-text-text-default tw-border-1 tw-border-solid tw-border-border-danger-weak
+        tw-text-text-default tw-border tw-border-solid tw-border-border-danger-weak
         tw-bg-button-secondary hover:tw-border-border-danger-strong
         hover:tw-bg-button-danger-secondary-hover
         active:tw-border-border-danger-strong active:tw-bg-button-danger-secondary-pressed
