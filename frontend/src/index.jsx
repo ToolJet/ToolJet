@@ -1,3 +1,4 @@
+// import './wdyr'; // <--- first import
 import React from 'react';
 import { render } from 'react-dom';
 // import { createRoot } from 'react-dom/client';

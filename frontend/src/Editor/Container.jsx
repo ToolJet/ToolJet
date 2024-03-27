@@ -1,7 +1,7 @@
 /* eslint-disable import/no-named-as-default */
 import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
 import cx from 'classnames';
-import { useDrop, useDragLayer } from 'react-dnd';
+import { useDrop, useDragLayer, useDragDropManager } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
@@ -26,6 +26,7 @@ import { compact, correctBounds } from './gridUtils';
 import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
 import { isPDFSupported } from '@/_stores/utils';
 import toast from 'react-hot-toast';
+import { isOnlyLayoutUpdate } from '@/_helpers/editorHelpers';
 
 // const noOfGrids = 24;
 
@@ -37,8 +38,8 @@ export const Container = ({
   onEvent,
   appDefinition,
   appDefinitionChanged,
-  onComponentOptionChanged,
-  onComponentOptionsChanged,
+  // onComponentOptionChanged,
+  // onComponentOptionsChanged,
   appLoading,
   setSelectedComponent,
   zoomLevel,
@@ -48,7 +49,7 @@ export const Container = ({
   socket,
   handleUndo,
   handleRedo,
-  sideBarDebugger,
+  // sideBarDebugger,
   currentPageId,
 }) => {
   // Dont update first time to skip
@@ -65,7 +66,6 @@ export const Container = ({
     }),
     shallow
   );
-  // const [dragTarget] = useDragTarget();
 
   const { showComments, currentLayout, selectedComponents } = useEditorStore(
     (state) => ({
@@ -98,10 +98,10 @@ export const Container = ({
   const components = useMemo(
     () => appDefinition.pages[currentPageId]?.components ?? {},
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(appDefinition), currentPageId]
+    [JSON.stringify(appDefinition.pages[currentPageId]?.components), currentPageId]
   );
 
-  const [boxes, setBoxes] = useState([]);
+  const [boxes, setBoxes] = useState(() => components);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
@@ -194,7 +194,11 @@ export const Container = ({
       console.log(updatedBoxes);
       setBoxes({ ...updatedBoxes });
     } else {
-      setBoxes(components);
+      const diffState = diff(components, boxes);
+
+      if (!_.isEmpty(diffState) && !isOnlyLayoutUpdate(diffState)) {
+        setBoxes(components);
+      }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -281,17 +285,17 @@ export const Container = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 
-  const { draggingState } = useDragLayer((monitor) => {
-    if (monitor.isDragging()) {
-      if (!monitor.getItem().parent) {
-        return { draggingState: true };
-      } else {
-        return { draggingState: false };
-      }
-    } else {
-      return { draggingState: false };
-    }
-  });
+  // const { draggingState } = useDragLayer((monitor) => {
+  //   if (monitor.isDragging()) {
+  //     if (!monitor.getItem().parent) {
+  //       return { draggingState: true };
+  //     } else {
+  //       return { draggingState: false };
+  //     }
+  //   } else {
+  //     return { draggingState: false };
+  //   }
+  // });
 
   const updateCanvasHeight = useCallback(
     (components) => {
@@ -311,18 +315,89 @@ export const Container = ({
     [setCanvasHeight, currentLayout, mode]
   );
 
-  useEffect(() => {
-    setIsDragging(draggingState);
-  }, [draggingState]);
+  // useEffect(() => {
+  //   setIsDragging(draggingState);
+  // }, [draggingState]);
 
-  const [, drop] = useDrop(
+  // const [{ isOver, canDrop }, drop] = useDrop(
+  //   () => ({
+  //     accept: [ItemTypes.BOX, ItemTypes.COMMENT],
+  //     async drop(item, monitor) {
+  //       console.log('---arpit:: checking [main container]', { isOver, canDrop });
+
+  //       if (item.parent) {
+  //         return;
+  //       }
+
+  //       if (item.component.component === 'PDF' && !isPDFSupported()) {
+  //         toast.error(
+  //           'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
+  //         );
+  //         return;
+  //       }
+
+  //       if (item.name === 'comment') {
+  //         const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+  //         const offsetFromTopOfWindow = canvasBoundingRect.top;
+  //         const offsetFromLeftOfWindow = canvasBoundingRect.left;
+  //         const currentOffset = monitor.getSourceClientOffset();
+
+  //         const xOffset = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+  //         const y = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
+
+  //         const x = (xOffset * 100) / canvasWidth;
+
+  //         const element = document.getElementById(`thread-${item.threadId}`);
+  //         element.style.transform = `translate(${xOffset}px, ${y}px)`;
+  //         commentsService.updateThread(item.threadId, { x, y });
+  //         return undefined;
+  //       }
+
+  //       const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+  //       const componentMeta = _.cloneDeep(
+  //         componentTypes.find((component) => component.component === item.component.component)
+  //       );
+
+  //       const newComponent = addNewWidgetToTheEditor(
+  //         componentMeta,
+  //         monitor,
+  //         boxes,
+  //         canvasBoundingRect,
+  //         item.currentLayout,
+  //         snapToGrid,
+  //         zoomLevel
+  //       );
+
+  //       const newBoxes = {
+  //         ...boxes,
+  //         [newComponent.id]: {
+  //           component: newComponent.component,
+  //           layouts: {
+  //             ...newComponent.layout,
+  //           },
+  //           withDefaultChildren: newComponent.withDefaultChildren,
+  //         },
+  //       };
+
+  //       setBoxes(newBoxes);
+
+  //       setSelectedComponent(newComponent.id, newComponent.component);
+
+  //       return undefined;
+  //     },
+  //   }),
+  //   [moveBox]
+  // );
+
+  const [{ isOver, isOverCurrent }, drop] = useDrop(
     () => ({
-      accept: [ItemTypes.BOX, ItemTypes.COMMENT],
-      async drop(item, monitor) {
-        // if (item.currentLayout === 'mobile' && item.autoComputeLayout) {
-        //   turnOffAutoLayout();
-        //   return false;
-        // }
+      accept: ItemTypes.BOX,
+      drop(item, monitor) {
+        const didDrop = monitor.didDrop();
+        if (didDrop) {
+          return;
+        }
+        console.log('---arpit::: main container drop', { item, isOver, isOverCurrent, didDrop });
 
         if (item.parent) {
           return;
@@ -356,6 +431,7 @@ export const Container = ({
         const componentMeta = _.cloneDeep(
           componentTypes.find((component) => component.component === item.component.component)
         );
+
         const newComponent = addNewWidgetToTheEditor(
           componentMeta,
           monitor,
@@ -383,8 +459,12 @@ export const Container = ({
 
         return undefined;
       },
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+        isOverCurrent: monitor.isOver({ shallow: true }),
+      }),
     }),
-    [moveBox]
+    []
   );
 
   const onResizeStop = (boxList) => {
@@ -427,6 +507,7 @@ export const Container = ({
         },
       };
     }, {});
+    //here
     let updatedBoxes = {
       ...boxes,
       ...newBoxes,
@@ -437,14 +518,16 @@ export const Container = ({
   };
 
   function onDragStop(boxPositions) {
+    const copyOfBoxes = JSON.parse(JSON.stringify(boxes));
+
     const updatedBoxes = boxPositions.reduce((boxesObj, { id, x, y, parent }) => {
-      let _width = boxes[id]['layouts'][currentLayout].width;
-      let _height = boxes[id]['layouts'][currentLayout].height;
+      let _width = copyOfBoxes[id]['layouts'][currentLayout].width;
+      let _height = copyOfBoxes[id]['layouts'][currentLayout].height;
       const containerWidth = parent ? subContainerWidths[parent] : gridWidth;
-      if (parent !== boxes[id]['component']?.parent) {
-        if (boxes[id]['component']?.parent) {
+      if (parent !== copyOfBoxes[id]['component']?.parent) {
+        if (copyOfBoxes[id]['component']?.parent) {
           _width = Math.round(
-            (boxes[id]['layouts'][currentLayout].width * subContainerWidths[boxes[id]['component']?.parent]) /
+            (copyOfBoxes[id]['layouts'][currentLayout].width * subContainerWidths[boxes[id]['component']?.parent]) /
               containerWidth
           );
         } else {
@@ -473,8 +556,8 @@ export const Container = ({
 
       if (parent) {
         const parentElem = document.getElementById(`canvas-${parent}`);
-        const parentId = boxes[parent] ? parent : parent?.split('-').slice(0, -1).join('-');
-        const compoenentType = boxes[parentId]?.component.component;
+        const parentId = copyOfBoxes[parent] ? parent : parent?.split('-').slice(0, -1).join('-');
+        const compoenentType = copyOfBoxes[parentId]?.component.component;
         var parentHeight = parentElem?.clientHeight || _height;
         if (_height > parentHeight && ['Tabs', 'Listview'].includes(compoenentType)) {
           _height = parentHeight;
@@ -482,18 +565,18 @@ export const Container = ({
         }
       }
 
-      const componentData = { ...boxes[id]['component'] };
+      const componentData = JSON.parse(JSON.stringify(copyOfBoxes[id]['component']));
       componentData.parent = parent ? parent : null;
 
       return {
         ...boxesObj,
         [id]: {
-          ...boxes[id],
+          ...copyOfBoxes[id],
           component: componentData,
           layouts: {
-            ...boxes[id]['layouts'],
+            ...copyOfBoxes[id]['layouts'],
             [currentLayout]: {
-              ...boxes[id]['layouts'][currentLayout],
+              ...copyOfBoxes[id]['layouts'][currentLayout],
               width: _width,
               height: _height,
               top: y,
@@ -504,10 +587,25 @@ export const Container = ({
       };
     }, {});
     let newBoxes = {
-      ...boxes,
+      ...copyOfBoxes,
       ...updatedBoxes,
     };
-    setBoxes(newBoxes);
+    const diffState = diff(boxes, newBoxes);
+
+    setBoxes((prev) => {
+      const updatedComponentsAsperDiff = Object.keys(diffState).reduce((acc, key) => {
+        const component = newBoxes[key];
+        if (component) {
+          acc[key] = component;
+        }
+        return acc;
+      }, {});
+
+      return {
+        ...prev,
+        ...updatedComponentsAsperDiff,
+      };
+    });
     updateCanvasHeight(newBoxes);
   }
 
@@ -648,6 +746,36 @@ export const Container = ({
     return componentWithChildren;
   }, [components]);
 
+  const getContainerProps = React.useCallback((componentId) => {
+    const withDefaultChildren = boxes[componentId]?.withDefaultChildren;
+
+    return {
+      mode,
+      snapToGrid,
+      onComponentClick,
+      onEvent,
+      appDefinition,
+      appDefinitionChanged,
+      currentState,
+      appLoading,
+      zoomLevel,
+      setSelectedComponent,
+      removeComponent,
+      currentLayout,
+      deviceWindowWidth,
+      selectedComponents,
+      darkMode,
+      // sideBarDebugger,
+      addDefaultChildren: withDefaultChildren,
+      currentPageId,
+      childComponents: childComponents[componentId],
+      setSubContainerWidths: (id, width) => setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
+      parentGridWidth: gridWidth,
+      subContainerWidths,
+      draggedSubContainer,
+    };
+  }, []);
+
   return (
     <ContainerWrapper
       showComments={showComments}
@@ -718,18 +846,18 @@ export const Container = ({
                     }
                     onEvent={onEvent}
                     // height={height}
-                    onComponentOptionChanged={onComponentOptionChanged}
-                    onComponentOptionsChanged={onComponentOptionsChanged}
+                    // onComponentOptionChanged={onComponentOptionChanged}
+                    // onComponentOptionsChanged={onComponentOptionsChanged}
                     key={id}
                     paramUpdated={paramUpdated}
                     id={id}
                     {...box}
                     mode={mode}
-                    resizingStatusChanged={(status) => setIsResizing(status)}
-                    draggingStatusChanged={(status) => setIsDragging(status)}
+                    // resizingStatusChanged={(status) => setIsResizing(status)}
+                    // draggingStatusChanged={(status) => setIsDragging(status)}
                     inCanvas={true}
                     zoomLevel={zoomLevel}
-                    setSelectedComponent={setSelectedComponent}
+                    // setSelectedComponent={setSelectedComponent}
                     removeComponent={removeComponent}
                     deviceWindowWidth={deviceWindowWidth}
                     isSelectedComponent={
@@ -738,41 +866,42 @@ export const Container = ({
                     darkMode={darkMode}
                     // onComponentHover={onComponentHover}
                     // hoveredComponent={hoveredComponent}
-                    sideBarDebugger={sideBarDebugger}
+                    // sideBarDebugger={sideBarDebugger}
                     isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
-                    childComponents={childComponents[id]}
-                    containerProps={{
-                      // turnOffAutoLayout,
-                      mode,
-                      snapToGrid,
-                      onComponentClick,
-                      onEvent,
-                      appDefinition,
-                      appDefinitionChanged,
-                      currentState,
-                      onComponentOptionChanged,
-                      onComponentOptionsChanged,
-                      appLoading,
-                      zoomLevel,
-                      setSelectedComponent,
-                      removeComponent,
-                      currentLayout,
-                      deviceWindowWidth,
-                      selectedComponents,
-                      darkMode,
-                      // onComponentHover,
-                      // hoveredComponent,
-                      sideBarDebugger,
-                      addDefaultChildren: box.withDefaultChildren,
-                      currentPageId,
-                      childComponents,
-                      // setIsChildDragged,
-                      setSubContainerWidths: (id, width) =>
-                        setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
-                      parentGridWidth: gridWidth,
-                      subContainerWidths,
-                      draggedSubContainer,
-                    }}
+                    // childComponents={childComponents[id]}
+                    getContainerProps={getContainerProps}
+                    // containerProps={{
+                    //   // turnOffAutoLayout,
+                    //   mode,
+                    //   snapToGrid,
+                    //   onComponentClick,
+                    //   onEvent,
+                    //   appDefinition,
+                    //   appDefinitionChanged,
+                    //   currentState,
+                    //   // onComponentOptionChanged,
+                    //   // onComponentOptionsChanged,
+                    //   appLoading,
+                    //   zoomLevel,
+                    //   setSelectedComponent,
+                    //   removeComponent,
+                    //   currentLayout,
+                    //   deviceWindowWidth,
+                    //   selectedComponents,
+                    //   darkMode,
+                    //   // onComponentHover,
+                    //   // hoveredComponent,
+                    //   sideBarDebugger,
+                    //   addDefaultChildren: box.withDefaultChildren,
+                    //   currentPageId,
+                    //   childComponents,
+                    //   // setIsChildDragged,
+                    //   setSubContainerWidths: (id, width) =>
+                    //     setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
+                    //   parentGridWidth: gridWidth,
+                    //   subContainerWidths,
+                    //   draggedSubContainer,
+                    // }}
                     isVersionReleased={isVersionReleased}
                   />
                 </WidgetWrapper>
@@ -826,7 +955,7 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
   } = widget;
   const { isSelected, isHovered } = useEditorStore((state) => {
     const isSelected = !!(state.selectedComponents || []).find((selected) => selected?.id === id);
-    console.log('state.selectedComponents--', state.selectedComponents, id, isSelected);
+    // console.log('state.selectedComponents--', state.selectedComponents, id, isSelected);
     const isHovered = state?.hoveredComponent == id;
     return { isSelected, isHovered };
   }, shallow);
@@ -850,7 +979,7 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
     ...(isWidgetActive ? { zIndex: 3 } : {}),
   };
 
-  console.log('state.selectedComponents--', isWidgetActive, id, isSelected, isDragging);
+  // console.log('state.selectedComponents--', isWidgetActive, id, isSelected, isDragging);
 
   return (
     <>
