@@ -20,7 +20,7 @@
         "type": "string",
         "encrypted": true
       },
-      "SigningKey":{
+      "signingKey":{
         "type":"string"
       },
       "endpoint": {
@@ -36,7 +36,7 @@
     "apiSecret":{
       "value": ""
     },
-    "SigningKey":{
+    "signingKey":{
       "value":""
     },
     "endpoint": {
@@ -48,22 +48,22 @@
   },
   "properties": {
     "apiKey": {
-      "label": "X-ENGAGESPOT-KEY",
+      "label": "Api Key",
       "key": "apiKey",
       "type": "text",
-      "description": "Enter the Api Key"
+      "description": "The unique identifier of your engagespot app (X-ENGAGESPOT-API-KEY)"
     },
     "apiSecret": {
-      "label": "X-ENGAGESPOT-SECRET",
+      "label": "Api Secret",
       "key": "apiSecret",
       "type": "password",
-      "description": "Enter the  secret key"
+      "description": "Engagespot Api secret key (X-ENGAGESPOT-API-SECRET)"
     },
-    "SigningKey": {
-      "label": "SigningKey",
-      "key": "SigningKey",
+    "signingKey": {
+      "label": "Signing Key",
+      "key": "signingKey",
       "type": "text",
-      "description": "Enter the SigningKey"
+      "description": "The secret signing key that you'll use to sign your user's authentication tokens in engagespot"
     },
     "endpoint_enabled": {
       "label": "Custom Endpoint",
@@ -79,7 +79,7 @@
     } 
   },
   "required": [
-    "X-ENGAGESPOT-KEY",
-    "X-ENGAGESPOT-SECRET"
+    "Api Key",
+    "Api Secret"
   ]
 }

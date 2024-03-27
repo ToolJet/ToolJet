@@ -49,8 +49,8 @@
     "timestamp": "Tue, 05 Dec 2023 00:27:16 GMT"
   },
   {
-    "name": "engagespot",
-    "description": "api plugin from engagespot",
+    "name": "Engagespot",
+    "description": "Plugin for engagespot APIs",
     "version": "1.0.0",
     "id": "engagespot",
     "author": "Tooljet",
