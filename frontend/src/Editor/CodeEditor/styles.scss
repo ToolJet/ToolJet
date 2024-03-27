@@ -24,6 +24,10 @@
     }
 }
 
+.cm-widgetBuffer {
+    display: none !important;
+}
+
 
 
 .cm-base-autocomplete {
@@ -159,10 +163,14 @@
     height: 100%;
 
     .cm-content {
-        max-width: 220px !important;
+        max-width: 100% !important;
         white-space: pre-wrap;
         word-wrap: break-word;
     }
+}
+
+.cm-placeholder {
+    width: 220px;
 }
 
 .code-hinter-wrapper {
