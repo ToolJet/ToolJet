@@ -25,14 +25,12 @@ import {
   onQueryConfirmOrCancel,
   runQuery,
   computeComponentState,
-  debuggerActions,
   cloneComponents,
   removeSelectedComponent,
   buildAppDefinition,
   buildComponentMetaDefinition,
   runQueries,
 } from '@/_helpers/appUtils';
-import { memoizeFunction } from '@/_helpers/editorHelpers';
 import { Confirm } from './Viewer/Confirm';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import CommentNotifications from './CommentNotifications';
@@ -61,7 +59,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
+import { useAppVersionStore, useAppVersionActions } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
 import {
@@ -73,7 +71,7 @@ import {
 } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { EMPTY_ARRAY, useEditorActions, useEditorStore } from '@/_stores/editorStore';
-import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useNoOfGrid } from '@/_stores/gridStore';
 import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
@@ -90,11 +88,10 @@ import AutoLayoutAlert from './AutoLayoutAlert';
 import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
+import { decimalToHex } from './editorConstants';
 
 setAutoFreeze(false);
 enablePatches();
-
-const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
@@ -624,13 +621,13 @@ const EditorComponent = (props) => {
     dataSourceModalRef.current.dataSourceModalToggleStateHandler();
   };
 
-  const setSelectedComponent = (id, component, multiSelect = false) => {
+  const setSelectedComponent = React.useCallback((id, component, multiSelect = false) => {
     const isAlreadySelected = useEditorStore.getState()?.selectedComponents.find((component) => component.id === id);
 
     if (!isAlreadySelected) {
       setSelectedComponents([{ id, component }], multiSelect);
     }
-  };
+  }, []);
 
   const onVersionRelease = (versionId) => {
     useAppVersionStore.getState().actions.updateReleasedVersionId(versionId);
@@ -1862,8 +1859,6 @@ const EditorComponent = (props) => {
     }
   };
 
-  const deviceWindowWidth = 450;
-
   if (isLoading) {
     return (
       <div className="apploader">
@@ -2044,7 +2039,7 @@ const EditorComponent = (props) => {
                           <Container
                             canvasWidth={getCanvasWidth()}
                             socket={socket}
-                            appDefinition={appDefinition}
+                            // appDefinition={appDefinition}
                             appDefinitionChanged={appDefinitionChanged}
                             snapToGrid={true}
                             darkMode={props.darkMode}
@@ -2054,7 +2049,8 @@ const EditorComponent = (props) => {
                                 : 'edit'
                             }
                             zoomLevel={zoomLevel}
-                            deviceWindowWidth={deviceWindowWidth}
+                            EditorConstants
+                            // deviceWindowWidth={deviceWindowWidth}
                             appLoading={isLoading}
                             onEvent={handleEvent}
                             setSelectedComponent={setSelectedComponent}

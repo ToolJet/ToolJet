@@ -1,7 +1,7 @@
 /* eslint-disable import/no-named-as-default */
 import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
-import { useDrop, useDragLayer } from 'react-dnd';
-import { ItemTypes } from './ItemTypes';
+import { useDrop } from 'react-dnd';
+import { EditorConstants, ItemTypes } from './editorConstants';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import _, { isEmpty } from 'lodash';
@@ -21,7 +21,7 @@ import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
 import { isPDFSupported } from '@/_stores/utils';
 import GhostWidget from './GhostWidget';
 
-// const NO_OF_GRIDS = 43;
+const deviceWindowWidth = EditorConstants.deviceWindowWidth;
 
 export const SubContainer = ({
   mode,
@@ -37,7 +37,7 @@ export const SubContainer = ({
   parent,
   parentRef,
   setSelectedComponent,
-  deviceWindowWidth,
+  // deviceWindowWidth,
   selectedComponent,
   currentLayout,
   removeComponent,
@@ -598,7 +598,7 @@ export const SubContainer = ({
       setSelectedComponent,
       removeComponent,
       currentLayout,
-      deviceWindowWidth,
+      // deviceWindowWidth,
       selectedComponents,
       darkMode,
       readOnly,
@@ -691,7 +691,7 @@ export const SubContainer = ({
                       zoomLevel={zoomLevel}
                       // setSelectedComponent={setSelectedComponent}
                       selectedComponent={selectedComponent}
-                      deviceWindowWidth={deviceWindowWidth}
+                      // deviceWindowWidth={deviceWindowWidth}
                       isSelectedComponent={
                         mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false
                       }
