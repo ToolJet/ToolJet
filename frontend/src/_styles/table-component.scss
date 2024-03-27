@@ -581,15 +581,17 @@
       align-items: center;
       background: inherit;
     }
-    .warning-no-data-text{
-      color: var(--slate11) !important;
-      /* Paragraph/Small/Medium */
-      font-size: 14px;
-      font-style: normal;
-      font-weight: 500;
-      line-height: 20px; /* 142.857% */
-    }
   }
+
+  .warning-no-data-text{
+    color: var(--slate11) !important;
+    /* Paragraph/Small/Medium */
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px; /* 142.857% */
+  }
+
 
 }
 .table-striped > tbody > tr:nth-of-type(even){
