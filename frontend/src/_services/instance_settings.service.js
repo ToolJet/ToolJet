@@ -28,11 +28,12 @@ async function updateGeneralConfigs(settings) {
     body: JSON.stringify(settings),
     credentials: 'include',
   };
-  const updatedConfigs = await fetch(`${config.apiUrl}/instance-login-configs`, requestOptions).then(handleResponse);
+  const response = await fetch(`${config.apiUrl}/instance-login-configs`, requestOptions);
   //update global instance settings of application
-  appService.getConfig().then((config) => {
+  await appService.getConfig().then((config) => {
     window.public_config = config;
   });
+  const updatedConfigs = await handleResponse(response);
   return updatedConfigs;
 }
 
@@ -51,10 +52,11 @@ async function update(settings) {
 
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
 
-  const updatedSettings = await fetch(`${config.apiUrl}/instance-settings`, requestOptions).then(handleResponse);
+  const response = await fetch(`${config.apiUrl}/instance-settings`, requestOptions);
   //update global instance settings of application
-  appService.getConfig().then((config) => {
+  await appService.getConfig().then((config) => {
     window.public_config = config;
   });
+  const updatedSettings = await handleResponse(response);
   return updatedSettings;
 }

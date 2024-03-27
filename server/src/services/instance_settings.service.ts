@@ -3,7 +3,11 @@ import { BASIC_PLAN_SETTINGS } from '@ee/licensing/configs/PlanTerms';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
-import { INSTANCE_SETTINGS_TYPE } from 'src/helpers/instance_settings.constants';
+import {
+  INSTANCE_SETTINGS_TYPE,
+  INSTANCE_SYSTEM_SETTINGS,
+  INSTANCE_USER_SETTINGS,
+} from 'src/helpers/instance_settings.constants';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager, In, Repository } from 'typeorm';
@@ -101,8 +105,21 @@ export class InstanceSettingsService {
     );
   }
 
+  private async validateUserParams(params: any): Promise<void> {
+    const requiresValidation = params.some(
+      (param) => param.key === INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE && param.value === 'false'
+    );
+    if (requiresValidation) {
+      const isSignUpEnabled = await this.getSettings(INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP);
+      if (isSignUpEnabled === 'true') {
+        throw new Error('Enable personal workspace to enable sign up');
+      }
+    }
+  }
+
   async updateParams(params: any) {
     // Only Instance settings of USER type can edited using this function
+    await this.validateUserParams(params);
     await dbTransactionWrap(async (manager: EntityManager) => {
       await Promise.all(
         params.map(async (param) => {
