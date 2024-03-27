@@ -63,6 +63,7 @@ const DraggableBox = React.memo(
   }) => {
     // const [isResizing, setResizing] = useState(false);
     // const [isDragging2, setDragging] = useState(false);
+    const isResizing = useGridStore((state) => state.resizingComponentId === id);
     const [canDrag, setCanDrag] = useState(true);
     const noOfGrid = useNoOfGrid();
     const {
@@ -240,7 +241,7 @@ const DraggableBox = React.memo(
             }}
             style={getStyles(isDragging, isSelectedComponent)}
           >
-            <div ref={preview} role="DraggableBox" style={{ opacity: 1 }}>
+            <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
               {mode === 'edit' && !readOnly && (
                 <ConfigHandle
                   id={id}
