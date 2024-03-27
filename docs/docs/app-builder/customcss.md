@@ -11,7 +11,7 @@ Custom Styles helps in maintaining consistent themes across the ToolJet apps, al
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/customcss.gif" alt="Custom CSS" />
+<img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/customcss-v2.gif" alt="Custom CSS" />
 
 </div>
 
@@ -22,7 +22,7 @@ To add Custom Styles to ToolJet apps, users should follow these steps:
 1. Go to the **Custom Styles** Page, accessible under **Workspace Settings** from the ToolJet dashboard.
  <div style={{textAlign: 'center'}}>
 
- <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/settings.png" alt="Custom CSS" />
+ <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/settings-v2.png" alt="Custom CSS" />
 
  </div>
 
@@ -51,6 +51,6 @@ To add Custom Styles to ToolJet apps, users should follow these steps:
 
  <div style={{textAlign: 'center'}}>
 
- <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/styledapp.gif" alt="Custom CSS" />
+ <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/styledapp-v2.gif" alt="Custom CSS" />
 
  </div>

@@ -13,7 +13,7 @@ Upon the creation of a new app, it is automatically assigned a unique app name.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/appnamenew.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/appnamenew-v2.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -33,19 +33,13 @@ Switch the canvas to mobile layout by clicking the mobile icon on the topbar. Dr
 Width of the component will be automatically adjusted to fit the screen while viewing the application in app viewer.
 :::
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/canvasmodes.gif" alt="App Builder: Topbar"/>
-
-</div>
-
 ### Changes saved indicator
 
 Whenever a change is made on the component or the query panel/queries, the changes are saved automatically. The changes saved indicator will be displayed on the topbar. This helps the developer to know if the changes are saved or not.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/changessaved.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/changessaved-v2.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -55,7 +49,7 @@ This will show a profile picture of the developer who is currently working on th
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/profile.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/profile-v2.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -71,7 +65,7 @@ Versioning is also helpful when working with **[multiple environments](/docs/rel
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/versionsnew.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/versionsnew-v2.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -83,7 +77,7 @@ You can also use **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)** to 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/undonew.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/undo-v3.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -100,7 +94,7 @@ Learn more about **[Sharing](/docs/app-builder/share)** your tooljet application
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/sharenew.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/sharenew-v2.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -110,7 +104,7 @@ Clicking on **Preview** button will open up the currently opened version of the 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/previewnew.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/previewnew-v2.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -124,6 +118,6 @@ ToolJet will block editing of the Released version of an app and will display a 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/releasenew.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/releasenew-v2.png" alt="App Builder: Topbar"/>
 
 </div>

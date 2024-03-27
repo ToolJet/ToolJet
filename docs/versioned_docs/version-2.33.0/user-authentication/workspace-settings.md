@@ -8,7 +8,7 @@ title: Workspace Login
 To access the Workspace Login, navigate to the ToolJet dashboard and click on the gear icon (⚙️) located at the bottom of the left sidebar. From the dropdown, select `Workspace Settings` and then select the `Workspace Login` tab. Workspace login/SSO can be configured by both workspace admins and super admins.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/workspace-settings/gear.png" alt="Workspace settings" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/workspace-settings/login-sso-v2.png" alt="Workspace settings" />
 </div>
 
 ## Workspace login state: Enabled/Inherited
@@ -16,7 +16,7 @@ To access the Workspace Login, navigate to the ToolJet dashboard and click on th
 The workspace login state can be either `Enabled` or `Inherited`. When the workspace login state is `Enabled`, it overrides the instance login configurations, including allowed domains, enable sign-up toggle, and password login toggle. Workspace admins can separately choose to enable or disable the SSO options of the workspace.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/workspace-settings/enabled.png" alt="Workspace settings" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/workspace-settings/enabled-v2.png" alt="Workspace settings" />
 </div>
 
 When the workspace login state is `Inherited`, the workspace login settings are inherited from the instance login settings. The workspace login settings are disabled, and the workspace admins cannot change the SSO settings. Only super admins can change the SSO settings from the instance login settings.
@@ -60,7 +60,7 @@ There are two ways through which a user can reset their password. The first meth
 - Follow the prompts to set a new password.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/general/forgot-password.png" alt="Workspace settings" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/general/forgot-password-v2.png" alt="Workspace settings" />
 </div>
 
 #### 2. **Super Admin**

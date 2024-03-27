@@ -10,7 +10,7 @@ title: Airtable
 ToolJet can connect to your Airtable account to read and write data. **Personal Access Token** is required to connect to the Airtable data source on ToolJet. You can generate the Personal Access Token by visiting [Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions).
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/airtable/airtableconnect.gif" alt="Airtable Data Source Connection" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/airtable/airtableconnect-v2.gif" alt="Airtable Data Source Connection" />
 </div>
 
 <br/>
@@ -47,7 +47,7 @@ This operation returns a list of records from the specified table.
 
 #### Optional Parameters:
 
-- **Page size:** The number of records returned in each request. Default is 100 records.  
+- **Page size:** The number of records returned in each request. Default is 100 records.
 
 - **offset:** The offset value is used to fetch the next set of records. The offset value is returned in the response of the previous request.
 
@@ -99,7 +99,6 @@ Example response from Airtable:
 
 - **Record ID**: The ID of the record you want to retrieve.
 
-
 Example response from Airtable:
 
 ```json
@@ -127,7 +126,7 @@ Example response from Airtable:
 - **Records**: The records you want to create. The records should be in the form of an array of objects. Each object should have a `fields` key, which contains the fields of the record. The field names should be the same as the field names in the Airtable table.
 
   **Example creating two records:**
-  
+
   ```json title="Records"
   [
     {
@@ -187,7 +186,7 @@ Query returns the following response when the records are created successfully:
 - **Body**: The fields you want to update. The fields should be in the form of an object. The field names should be the same as the field names in the Airtable table.
 
   **Example updating a record:**
-  
+
   ```json title="Body"
   {
     "Notes": "Example Notes",
