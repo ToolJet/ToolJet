@@ -7,6 +7,7 @@ title: CouchDB
 
 ToolJet can connect to CouchDB databases to read and write data. CocuhDB uses basic auth for authentication , username and password for the database is required to create an CouchDB data source on ToolJet. For more info visit [CouchDB docs](https://docs.couchdb.org/en/stable/).
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Supported Queries: 
 
@@ -21,6 +22,11 @@ ToolJet can connect to CouchDB databases to read and write data. CocuhDB uses ba
 :::info
 NOTE: Record ID is same as document ID("_id") .
 :::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Listing Records 
 
 This query lists all the records in a database.
@@ -80,6 +86,10 @@ Example response from CouchDb:
 }
 ```
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Retrieving a Record 
 
 #### Required Parameters: 
@@ -104,6 +114,9 @@ Example response from CouchDb:
 ```
 The returned JSON is the JSON of the document, including the document ID and revision number:
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Creating a Record
 
@@ -129,6 +142,10 @@ Example response from CouchDb:
 }
 
 ```
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Updating a Record
 
@@ -165,6 +182,10 @@ Example response from CouchDb:
 }
 ```
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Deleting a Record
 
 #### Required Parameters:
@@ -188,6 +209,10 @@ Example response from CouchDb:
     "rev": "1-2b99ef28c03e68ea70bb668ee55ffb7b"
 }
 ```
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Find 
 
@@ -231,6 +256,9 @@ Example response from CouchDb:
 
 <img className="screenshot-full" src="/img/datasource-reference/couchdb/find_response.png" alt="Couch find response" />
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Retrieving a View
 
@@ -302,3 +330,5 @@ Example response from CouchDb:
     ]
 }
 ```
+
+</div>

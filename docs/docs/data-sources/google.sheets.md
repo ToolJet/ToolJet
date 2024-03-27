@@ -7,6 +7,8 @@ title: Google Sheets
 
 ToolJet has the capability to establish a connection with Google Sheet for both reading and writing data. By utilizing OAuth 2.0, ToolJet can establish a secure connection with Google Sheet, ensuring that the application's access to a user's account is restricted and limited appropriately.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Self-Hosted Configuration
 
 If you decide to self-host ToolJet, there are a few additional steps you need to take:
@@ -18,9 +20,17 @@ If you decide to self-host ToolJet, there are a few additional steps you need to
    - `TOOLJET_HOST`
 3. Activate the Google Sheets API within the Google Cloud Platform (GCP) console.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 To establish a connection with Google Sheet, you have two options. First, you can click on the **+Add new global datasource** button found on the query panel. Alternatively, you can go to the **[Global Datasources](/docs/data-sources/overview)** page within the ToolJet dashboard.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Authorization Scopes
 
@@ -31,9 +41,13 @@ When connecting to a Google Sheets datasource, you can choose between two permis
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/sheetconnect-v2.png" alt="Google Sheet" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/google-sheets/sheetconnect-v2.png" alt="Google Sheet" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying Google Sheet
 
@@ -49,11 +63,15 @@ Using Google sheets data source you can perform several operations from your app
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/operations.png" alt="Google Sheet Operations" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/google-sheets/operations.png" alt="Google Sheet Operations" />
 
 </div>
 
-### Read data from a sheet
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Read Data From a Sheet
 
 This operation allows you to retrieve the table data from a spreadsheet in the form of a JSON object.
 
@@ -65,11 +83,15 @@ This operation allows you to retrieve the table data from a spreadsheet in the f
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/read-data-op.png" alt="Google Sheet Operations" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/google-sheets/read-data-op.png" alt="Google Sheet Operations" />
 
 </div>
 
-### Append data to a sheet
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Append Data to a Sheet
 
 Add additional rows to a table by using the append operation.
 
@@ -81,11 +103,15 @@ Add additional rows to a table by using the append operation.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/append-data-op.png" alt="Google Sheet Operations" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/google-sheets/append-data-op.png" alt="Google Sheet Operations" />
 
 </div>
 
-### Update single row of a sheet
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Update Single Row of a Sheet
 
 This operation allows you to update existing data in a sheet.
 
@@ -101,11 +127,15 @@ This operation allows you to update existing data in a sheet.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/upd.png" alt="Google Sheet Operations" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/google-sheets/upd.png" alt="Google Sheet Operations" />
 
 </div>
 
-### Delete row from a sheet
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Delete Row from a Sheet
 
 This operation allows you to delete a specific row from the sheet.
 
@@ -117,11 +147,15 @@ This operation allows you to delete a specific row from the sheet.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/del.png" alt="google sheets delete"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/google-sheets/del.png" alt="google sheets delete"/>
 
 </div>
 
-### Get spreadsheet info
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Get Spreadsheet Info
 
 The "Get spreadsheet info" operation allows you to retrieve basic information about the spreadsheet, including the number of sheets, theme, time zone, format, and URL, among others.
 
@@ -129,6 +163,8 @@ Here is a preview of the query that utilizes the "Get spreadsheet info" operatio
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/infoo.png" alt="google sheets get info" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/google-sheets/infoo.png" alt="google sheets get info" />
+
+</div>
 
 </div>
