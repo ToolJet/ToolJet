@@ -9,7 +9,6 @@ import { BreadCrumbContext } from '@/App/App';
 import WarningInfo from '../Icons/Edit-information.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import { ConfirmDialog } from '@/_components';
-import ForeignKeyTableForm from './ForeignKeyTableForm';
 
 const TableForm = ({
   selectedTable = {},
@@ -187,7 +186,6 @@ const TableForm = ({
           </div>
         </div>
         <CreateColumnsForm columns={columns} setColumns={setColumns} isEditMode={isEditMode} />
-        {/* <ForeignKeyTableForm /> */}
       </div>
       <DrawerFooter
         fetching={fetching}

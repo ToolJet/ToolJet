@@ -7,9 +7,7 @@ import ForeignKeyTableForm from './ForeignKeyTableForm';
 
 function ForeignKeyRelation() {
   const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
-  //   const handleOpenDrawer = () => {
-  //     setIsCreateTableDrawerOpen(true);
-  //   };
+
   return (
     <>
       <div className="foreignkey-relation-container">
@@ -39,6 +37,7 @@ function ForeignKeyRelation() {
         onClose={() => setIsForeignKeyDraweOpen(false)}
         position="right"
         drawerStyle={{ width: '500px' }}
+        isForeignKeyRelation={true}
       >
         <ForeignKeyTableForm />
       </Drawer>

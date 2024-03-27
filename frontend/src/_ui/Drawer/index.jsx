@@ -24,12 +24,11 @@ const Drawer = ({
   position = 'left',
   removeWhenClosed = true,
   drawerStyle,
+  isForeignKeyRelation = false,
 }) => {
   const bodyRef = useRef(document.querySelector('body'));
   const portalRootRef = useRef(document.getElementById('tooljet-drawer-root') || createPortalRoot());
   const isTransitioning = useMountTransition(isOpen, 300);
-
-  // console.log('first', isOpen ? 'yes' : 'no');
 
   // Append portal root on mount
   useEffect(() => {
@@ -80,6 +79,9 @@ const Drawer = ({
     };
   }
 
+  const isForeignKeyDrawer = isForeignKeyRelation ? 'foreignKeyDrawerRight' : '';
+  const isForeignKeyBackdrop = isForeignKeyRelation ? 'foreignKeyBackdrop' : '';
+
   return createPortal(
     <ErrorBoundary showFallback={true}>
       <FocusTrap
@@ -102,10 +104,10 @@ const Drawer = ({
           })}
         >
           <Toast toastOptions={toastOptions} />
-          <div className={cx('drawer', position)} role="dialog" style={drawerStyle}>
+          <div className={cx('drawer', position, isForeignKeyDrawer)} role="dialog" style={drawerStyle}>
             {children}
           </div>
-          <div className="backdrop" onClick={onClose} />
+          <div className={cx('backdrop', isForeignKeyBackdrop)} onClick={onClose} />
         </div>
       </FocusTrap>
     </ErrorBoundary>,
