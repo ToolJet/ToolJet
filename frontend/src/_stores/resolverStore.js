@@ -195,8 +195,9 @@ export const useResolveStore = create(
         }
       },
 
-      findReferences: (obj) => {
-        const entityNameReferences = findAllEntityReferences(obj, []);
+      findAndReplaceReferences: (obj, targetEntityNames = []) => {
+        const entityNameReferences =
+          targetEntityNames.length === 0 ? findAllEntityReferences(obj, []) : targetEntityNames;
 
         if (entityNameReferences.length === 0) return obj;
 
