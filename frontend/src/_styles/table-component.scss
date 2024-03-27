@@ -5,7 +5,7 @@
     padding: 8px;
     &.jet-table {
       background-color: var(--surfaces-surface-01);
-      box-shadow: var(--elevation-200-box-shadow) !important;
+      box-shadow: var(--elevation-200-box-shadow);
       border: 1px solid var(--borders-weak-disabled) !important;
     }
     .table-filters{

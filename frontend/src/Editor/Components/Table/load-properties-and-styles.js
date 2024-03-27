@@ -79,7 +79,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const contentWrap = properties?.contentWrap ?? false;
   const maxRowHeight = styles?.maxRowHeight ?? 'auto';
   const maxRowHeightValue = styles?.maxRowHeightValue ?? 80;
-
+  const boxShadow = styles?.boxShadow;
   // const autoHeight = styles?.autoHeight ?? false;  // commented out as it is not used in updated design
   const selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? true;
 
@@ -118,5 +118,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     maxRowHeight,
     maxRowHeightValue,
     selectRowOnCellEdit,
+    boxShadow,
   };
 }

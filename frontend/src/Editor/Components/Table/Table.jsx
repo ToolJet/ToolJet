@@ -135,8 +135,8 @@ export function Table({
     maxRowHeight,
     autoHeight,
     selectRowOnCellEdit,
+    boxShadow,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
-
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
   const { events: allAppEvents } = useAppInfo();
@@ -1041,7 +1041,7 @@ export function Table({
         display: parsedWidgetVisibility ? '' : 'none',
         overflow: 'hidden',
         borderRadius: Number.parseFloat(borderRadius),
-        boxShadow: styles.boxShadow,
+        boxShadow,
         padding: '8px',
       }}
       onClick={(event) => {

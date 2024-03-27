@@ -106,7 +106,7 @@ export function renderElement(
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
   const meta = componentMeta[paramType][param];
-  console.log(meta, componentMeta, paramType, param, 'Beliver');
+
   if (
     componentConfig.component == 'DropDown' ||
     componentConfig.component == 'Form' ||
