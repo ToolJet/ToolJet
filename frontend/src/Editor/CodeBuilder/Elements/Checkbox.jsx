@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
-function Checkbox({ value, onChange }) {
+function Checkbox({ value, onChange, meta }) {
   const [isChecked, setIsChecked] = useState(value); // Initial state of the checkbox
-
   useEffect(() => {
     setIsChecked(value);
   }, [value]);
 
   return (
-    <div className="d-flex align-items-center color-slate12" style={{ width: '142px', marginTop: '16px' }}>
+    <div className="d-flex align-items-center color-slate12" style={{ width: '142px' }}>
       <input
         data-cy={`auto-width-checkbox`}
         type="checkbox"
@@ -21,7 +20,7 @@ function Checkbox({ value, onChange }) {
         style={{ height: '16px', width: '16px' }}
       />
       <span className="tj-text-xsm" style={{ marginLeft: '8px' }} data-cy={`auto-width-label`}>
-        Auto width
+        {meta?.checkboxLabel}
       </span>
     </div>
   );

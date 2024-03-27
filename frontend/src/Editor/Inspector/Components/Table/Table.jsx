@@ -606,6 +606,8 @@ class TableComponent extends React.Component {
       'hideColumnSelectorButton',
       'loadingState',
       'showBulkUpdateActions',
+      'visibility',
+      'disabledState',
     ];
 
     items.push({
