@@ -12,6 +12,10 @@
 @import "./ui-operations.scss";
 @import 'react-loading-skeleton/dist/skeleton.css';
 @import './table-component.scss';
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import "./componentdesign.scss";
 
 /* ibm-plex-sans-100 - latin */
 @font-face {
@@ -4589,9 +4593,7 @@ input[type="text"] {
   }
 
   .modal-footer-btn {
-    justify-content: end;
-
-    button {
+    justify-content: flex-end button {
       margin-left: 16px;
     }
   }
@@ -5378,6 +5380,7 @@ div#driver-page-overlay {
       margin-bottom: 4px !important;
       color: var(--slate12);
     }
+
     .card-footer {
       display: flex;
       justify-content: flex-end;
@@ -5390,13 +5393,15 @@ div#driver-page-overlay {
       align-Self: 'stretch';
       height: 88px;
     }
+
     .card-body {
       height: 467px;
       padding: 24px;
-      .form-group{
-        .tj-app-input{
-          .form-control{
-            &:disabled{
+
+      .form-group {
+        .tj-app-input {
+          .form-control {
+            &:disabled {
               background: var(--slate3) !important;
             }
           }
@@ -5795,7 +5800,7 @@ div#driver-page-overlay {
   border-bottom: 1px solid #eee;
   padding: 5px;
   display: flex;
-  justify-content: end;
+  justify-content: flex-end
 }
 
 .autosave-indicator {
@@ -9979,7 +9984,8 @@ tbody {
   border-top: 1px solid var(--slate5) !important;
   display: flex;
   gap: 8px;
-  justify-content: end;
+
+  justify-content: flex-end;
 
   .invite-btn {
     width: 140px;
@@ -10283,7 +10289,7 @@ tbody {
   display: flex;
   align-items: center;
   gap: 8px;
-  justify-content: end;
+  justify-content: flex-end
 }
 
 .add-users-button {
@@ -11085,7 +11091,7 @@ tbody {
 
 
   .input-with-icon {
-    justify-content: end;
+    justify-content: flex-end
   }
 
   .form-check-input {
@@ -12639,8 +12645,10 @@ tbody {
 }
 
 .modal-custom-height {
-  height: 700px !important; /* Set the desired width */
+  height: 700px !important;
+  /* Set the desired width */
 }
+
 .tj-text-input-widget {
   border: 1px solid var(--tj-text-input-widget-border-default);
   background-color: var(--tj-text-input-widget-field-default);
@@ -12724,5 +12732,16 @@ tbody {
 .tj-number-input-widget {
   input[type="number"] {
     -moz-appearance: textfield !important;
+  }
+}
+
+.component-spinner {
+  animation: l13 1s infinite linear;
+  position: absolute;
+}
+
+@keyframes l13 {
+  100% {
+    transform: rotate(1turn)
   }
 }
