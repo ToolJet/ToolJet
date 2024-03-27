@@ -86,6 +86,7 @@
     "tsconfig-paths": "^3.10.1",
     "typeorm": "^0.2.38",
     "ws": "^7.5.5",
+    "xlsx": "^0.18.5",
     "y-websocket": "^1.4.0"
   },
   "peerDependencies": {
