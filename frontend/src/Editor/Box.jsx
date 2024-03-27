@@ -25,7 +25,6 @@ import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { isPDFSupported } from '@/_stores/utils';
-import { getComponentToRender } from '@/_helpers/editorHelpers';
 import ControlledComponentToRender from './ControlledComponentToRender';
 
 /**
@@ -47,21 +46,14 @@ export const Box = memo(
     inCanvas,
     onComponentClick,
     onEvent,
-    // onComponentOptionChanged,
-    // onComponentOptionsChanged,
     paramUpdated,
     changeCanDrag,
-    // containerProps,
     removeComponent,
     canvasWidth,
     mode,
     customResolvables,
     parentId,
-    // sideBarDebugger,
     readOnly,
-    // childComponents,
-    // isResizing,
-    // adjustHeightBasedOnAlignment,
     currentLayout,
     getContainerProps,
   }) => {
@@ -75,8 +67,6 @@ export const Box = memo(
       return componentTypes.find((comp) => component.component === comp.component);
     }, [component]);
 
-    const ComponentToRender = getComponentToRender(component.component);
-    // const ComponentToRender = AllComponents(component.component);
     const [renderCount, setRenderCount] = useState(0);
     const [renderStartTime, setRenderStartTime] = useState(new Date());
     const [resetComponent, setResetStatus] = useState(false);
@@ -272,10 +262,7 @@ export const Box = memo(
               }}
               mode={mode}
               resetComponent={() => setResetStatus(true)}
-              // childComponents={childComponents}
               dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
-              // isResizing={isResizing}
-              // adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
               currentLayout={currentLayout}
             ></ControlledComponentToRender>
           ) : (
