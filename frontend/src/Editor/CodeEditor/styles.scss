@@ -278,6 +278,7 @@
     overflow-y: auto !important;
     overflow-x: hidden !important;
     padding: 2px !important;
+    overscroll-behavior: contain;
 }
 
 .cm-focused {
