@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
+    "@types/node-int64": "^0.4.32",
     "@databricks/sql": "^1.8.2",
     "@tooljet-plugins/common": "file:../common"
   },

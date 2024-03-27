@@ -13,7 +13,7 @@ export default class Databricks implements QueryService {
     try {
       const client = await this.getConnection(sourceOptions);
       const session: IDBSQLSession = await client.openSession();
-      const queryOperation: IOperation = await session.executeStatement('SELECT 1', {
+      const queryOperation: IOperation = await session.executeStatement('SELECT version();', {
         runAsync: true,
         queryTimeout: new Int64(10000),
       });
@@ -22,8 +22,8 @@ export default class Databricks implements QueryService {
     } catch (error) {
       throw new Error('Error in connection: ' + error.message);
     } finally {
-      await session.close();
-      await client.close();
+      await session?.close();
+      await client?.close();
     }
 
     return {
