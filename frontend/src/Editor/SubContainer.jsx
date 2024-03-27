@@ -16,10 +16,10 @@ import { useMounted } from '@/_hooks/use-mount';
 import { useEditorStore } from '@/_stores/editorStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+// eslint-disable-next-line import/namespace
 import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
-import { SUBCONTAINER_WITH_SCROLL } from './constants';
 import { isPDFSupported } from '@/_stores/utils';
-import { memoizeFunction } from '@/_helpers/editorHelpers';
+import GhostWidget from './GhostWidget';
 
 // const NO_OF_GRIDS = 43;
 
@@ -57,7 +57,7 @@ export const SubContainer = ({
   childComponents = null,
   listmode = null,
   columns = 1,
-  setSubContainerWidths,
+  // setSubContainerWidths,
   parentWidgetId,
   // turnOffAutoLayout,
 }) => {
@@ -77,6 +77,7 @@ export const SubContainer = ({
     }),
     shallow
   );
+
   const resizingComponentId = useResizingComponentId();
 
   // const [noOfGrids] = useNoOfGrid();
@@ -215,7 +216,7 @@ export const SubContainer = ({
   };
 
   useEffect(() => {
-    setSubContainerWidths(parent, containerWidth / noOfGrids);
+    useGridStore.getState().actions.setSubContainerWidths(parent, containerWidth / noOfGrids);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerWidth]);
 
@@ -607,7 +608,6 @@ export const SubContainer = ({
       addDefaultChildren,
       currentPageId,
       childComponents,
-      setSubContainerWidths,
     };
   };
 
@@ -631,8 +631,8 @@ export const SubContainer = ({
           {checkParentVisibility() &&
             Object.entries({
               ...childWidgets,
-              ...(resizingComponentId &&
-                childWidgets[resizingComponentId] && { resizingComponentId: childWidgets[resizingComponentId] }),
+              // ...(resizingComponentId &&
+              //   childWidgets[resizingComponentId] && { resizingComponentId: childWidgets[resizingComponentId] }),
             }).map(([key, box]) => {
               const canShowInCurrentLayout =
                 box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
@@ -740,6 +740,13 @@ export const SubContainer = ({
                 );
               }
             })}
+          <ResizeGhostWidget
+            resizingComponentId={resizingComponentId}
+            widgets={childWidgets}
+            currentLayout={currentLayout}
+            canvasWidth={_containerCanvasWidth}
+            gridWidth={gridWidth}
+          />
         </div>
       </div>
       {appLoading && (
@@ -751,7 +758,23 @@ export const SubContainer = ({
           </center>
         </div>
       )}
+      {/* <GhostWidget layout={childWidgets[]} */}
     </SubContianerWrapper>
+  );
+};
+
+const ResizeGhostWidget = ({ resizingComponentId, widgets, currentLayout, canvasWidth, gridWidth }) => {
+  if (!resizingComponentId) {
+    return '';
+  }
+
+  return (
+    <GhostWidget
+      layouts={widgets?.[resizingComponentId]?.layouts}
+      currentLayout={currentLayout}
+      canvasWidth={canvasWidth}
+      gridWidth={gridWidth}
+    />
   );
 };
 

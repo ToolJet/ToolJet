@@ -2042,7 +2042,6 @@ const EditorComponent = (props) => {
                       {defaultComponentStateComputed && (
                         <>
                           <Container
-                            turnOffAutoLayout={turnOffAutoLayout}
                             canvasWidth={getCanvasWidth()}
                             socket={socket}
                             appDefinition={appDefinition}
