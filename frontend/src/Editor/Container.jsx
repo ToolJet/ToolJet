@@ -257,7 +257,10 @@ export const Container = ({
         ...appDefinition.pages,
         [currentPageId]: {
           ...appDefinition.pages[currentPageId],
-          components: boxes,
+          components: {
+            ...appDefinition.pages[currentPageId].components,
+            ...boxes,
+          },
         },
       },
     };

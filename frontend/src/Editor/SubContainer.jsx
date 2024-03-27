@@ -118,14 +118,17 @@ export const SubContainer = ({
     if (parent) {
       const _childWidgets = {};
 
-      console.log('---arpit:: changed =>', { allChildComponents, allComponents });
       Object.entries(allComponents).forEach(([componentId, componentData]) => {
         if (componentData?.component?.parent === parent) {
           _childWidgets[componentId] = componentData;
         }
       });
 
-      setChildWidgets(_childWidgets);
+      const shouldUpdate = !_.isEqual(allChildComponents, _childWidgets);
+
+      if (shouldUpdate) {
+        setChildWidgets(_childWidgets);
+      }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
