@@ -23,23 +23,7 @@ export const CustomSelect = ({
   containerWidth,
   optionsLoadingState = false,
 }) => {
-  const containerRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
-  const [inputValue, setInputValue] = useState(value);
-  const onDomClick = (e) => {
-    let menu = containerRef?.current?.querySelector('.select__menu');
-    if (!containerRef?.current?.contains(e.target) || !menu || !menu?.contains(e.target)) {
-      setIsFocused(false);
-      setInputValue('');
-    }
-  };
-  useEffect(() => {
-    document.addEventListener('mousedown', onDomClick);
-
-    return () => {
-      document.removeEventListener('mousedown', onDomClick);
-    };
-  }, []);
 
   const customStyles = {
     ...defaultStyles(darkMode, '100%'),
@@ -90,7 +74,7 @@ export const CustomSelect = ({
     DropdownIndicator,
     ...(isMulti && {
       MultiValueRemove,
-      MultiValueContainer: customMultiValueContainer,
+      MultiValueContainer: CustomMultiValueContainer,
     }),
   };
 
@@ -115,9 +99,6 @@ export const CustomSelect = ({
           onChange={(value) => {
             onChange(value);
             setIsFocused(false);
-          }}
-          onInputChange={(val) => {
-            setInputValue(val);
           }}
           {...{
             menuIsOpen: isFocused || undefined,
@@ -207,7 +188,7 @@ const MultiValueRemove = (props) => {
   return <div {...innerProps} />;
 };
 
-const customMultiValueContainer = (props) => {
+const CustomMultiValueContainer = (props) => {
   return (
     <div
       style={{

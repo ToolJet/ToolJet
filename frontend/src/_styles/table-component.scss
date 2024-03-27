@@ -750,6 +750,14 @@
         background: inherit !important;
       }
       .table-select-search{
+        height: 100%;
+        .react-select__control{
+          height: 100%;
+        }
+        .react-select__indicators{
+
+          height: 100%;
+        }
         .react-select__dropdown-indicator{
           svg{
             background-color: var(--slate7) !important;
