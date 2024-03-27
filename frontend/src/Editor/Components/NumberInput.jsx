@@ -19,8 +19,6 @@ export const NumberInput = function NumberInput({
   darkMode,
   dataCy,
   isResizing,
-  adjustHeightBasedOnAlignment,
-  currentLayout,
 }) {
   const { loadingState, disabledState, label, placeholder } = properties;
   const {
@@ -61,13 +59,6 @@ export const NumberInput = function NumberInput({
     setExposedVariable('label', label);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label]);
-
-  useEffect(() => {
-    if (alignment == 'top' && ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)))
-      adjustHeightBasedOnAlignment(true);
-    else adjustHeightBasedOnAlignment(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length, currentLayout, width, auto]);
 
   useEffect(() => {
     setValue(Number(parseFloat(value).toFixed(properties.decimalPlaces)));
