@@ -2049,8 +2049,6 @@ const EditorComponent = (props) => {
                                 : 'edit'
                             }
                             zoomLevel={zoomLevel}
-                            EditorConstants
-                            // deviceWindowWidth={deviceWindowWidth}
                             appLoading={isLoading}
                             onEvent={handleEvent}
                             setSelectedComponent={setSelectedComponent}
