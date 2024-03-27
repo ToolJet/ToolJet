@@ -28,7 +28,7 @@ export const SubContainer = ({
   snapToGrid,
   onComponentClick,
   onEvent,
-  appDefinition,
+  // appDefinition,
   appDefinitionChanged,
   // onComponentOptionChanged,
   // onComponentOptionsChanged,
@@ -66,6 +66,8 @@ export const SubContainer = ({
   const widgetResolvables = Object.freeze({
     Listview: 'listItem',
   });
+
+  const appDefinition = useEditorStore((state) => state.appDefinition, shallow);
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
   const currentState = useCurrentState();
@@ -124,7 +126,7 @@ export const SubContainer = ({
         }
       });
 
-      const shouldUpdate = !_.isEqual(allChildComponents, _childWidgets);
+      const shouldUpdate = !_.isEqual(childWidgets, _childWidgets);
 
       if (shouldUpdate) {
         setChildWidgets(_childWidgets);
