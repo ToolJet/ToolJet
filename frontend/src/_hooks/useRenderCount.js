@@ -5,13 +5,13 @@ function useRenderCount(componentName) {
 
   useEffect(() => {
     return () => {
-      console.log(`Component ${componentName} rendered unmounting ${renderCountRef.current} times.`);
+      console.log(`--Component ${componentName} rendered unmounting ${renderCountRef.current} times.`);
     };
   }, []);
 
   renderCountRef.current++;
 
-  console.log(`renderCountRef- Component ${componentName} rendered ${renderCountRef.current} times.`);
+  console.log(`CountingRender- Component ${componentName} rendered ${renderCountRef.current} times.`);
   //   return renderCountRef.current;
 }
 

@@ -1232,7 +1232,7 @@ export function runQuery(
           useResolveStore.getState().actions.addAppSuggestions({
             queries: {
               [queryName]: {
-                data: [...finalData],
+                data: finalData,
               },
             },
           });
@@ -1333,7 +1333,7 @@ export function computeComponentState(components = {}) {
       useEditorStore.getState().actions.updateEditorState({
         defaultComponentStateComputed: true,
       });
-      resolve();
+      resolve('CURRENT_STATE_UPDATED');
     });
   } catch (error) {
     console.log(error);

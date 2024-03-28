@@ -107,8 +107,13 @@ const EditorComponent = (props) => {
     autoUpdateEventStore,
   } = useAppDataActions();
 
-  const { updateEditorState, updateQueryConfirmationList, setSelectedComponents, setCurrentPageId } =
-    useEditorActions();
+  const {
+    updateEditorState,
+    updateQueryConfirmationList,
+    setSelectedComponents,
+    setCurrentPageId,
+    updateComponentsNeedsUpdateOnNextRender,
+  } = useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
   const { isVersionReleased, editingVersionId, releasedVersionId } = useAppVersionStore(
@@ -267,6 +272,50 @@ const EditorComponent = (props) => {
 
   const lastKeyPressTimestamp = useDebouncedArrowKeyPress(500); // 500 milliseconds delay
 
+  function findReferenceInComponent(node, changedCurrentState) {
+    if (!node) return false;
+
+    if (typeof node === 'object') {
+      for (let key in node) {
+        const value = node[key];
+        if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
+          // Extract the referenced entity from the string
+          const ref = value.match(/{{(.*?)}}/)[1];
+          // Check if the referenced entity is in the changedCurrentState
+          if (changedCurrentState.some((state) => value.includes(state))) {
+            // Return true immediately upon finding a match
+            return true;
+          }
+        } else if (typeof value === 'object') {
+          // Recursively search within objects
+          const found = findReferenceInComponent(value, changedCurrentState);
+          // If found in the nested object, propagate the true value up
+          if (found) return true;
+        }
+      }
+    }
+    // Return false if no reference is found in the component
+    return false;
+  }
+
+  // Function to find which component ids contain the references
+  function findComponentsWithReferences(components, changedCurrentState) {
+    const componentIdsWithReferences = [];
+
+    if (!components) return componentIdsWithReferences;
+
+    Object.entries(components).forEach(([componentId, componentData]) => {
+      const hasReference = findReferenceInComponent(componentData, changedCurrentState);
+      if (hasReference) {
+        componentIdsWithReferences.push(componentId);
+      }
+    });
+
+    return componentIdsWithReferences;
+  }
+
+  // Example usage
+
   useEffect(() => {
     const didAppDefinitionChanged = !_.isEqual(appDefinition, prevAppDefinition.current);
 
@@ -287,6 +336,23 @@ const EditorComponent = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
+
+  const currentStateDiff = useEditorStore.getState().currentStateDiff;
+  useEffect(() => {
+    const isEditorReady = useCurrentStateStore.getState().isEditorReady;
+
+    if (isEditorReady && currentStateDiff?.length > 0) {
+      const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
+      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStateDiff);
+
+      if (componentIdsWithReferences.length > 0) {
+        console.log('-abhinaba---TJ', { componentIdsWithReferences });
+
+        updateComponentsNeedsUpdateOnNextRender(componentIdsWithReferences);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(currentStateDiff)]);
 
   useEffect(
     () => {
@@ -1859,7 +1925,13 @@ const EditorComponent = (props) => {
     }
   };
 
-  if (isLoading) {
+  const isEditorReady = useCurrentStateStore((state) => state.isEditorReady);
+
+  useEffect(() => {
+    console.log('----arpit:: piku editor', { isEditorReady, defaultComponentStateComputed });
+  }, [isEditorReady]);
+
+  if (isLoading && !isEditorReady) {
     return (
       <div className="apploader">
         <div className="col col-* editor-center-wrapper">

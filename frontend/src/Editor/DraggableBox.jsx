@@ -8,7 +8,7 @@ import { Box } from './Box';
 import { ConfigHandle } from './ConfigHandle';
 import { resolveWidgetFieldValue, resolveReferences } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { useCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import { useNoOfGrid, useGridStore } from '@/_stores/gridStore';
@@ -160,6 +160,8 @@ const DraggableBox = React.memo(
       [id]
     );
 
+    // console.log('dora----diff', { componentsNeedsUpdateOnNextRender });
+
     return (
       <div
         className={
@@ -241,6 +243,8 @@ const DraggableBox = React.memo(
                   parentId={parentId}
                   // allComponents={allComponents}
                   getContainerProps={getContainerProps}
+                  // currentState={currentState}
+                  // componentsNeedsUpdateOnNextRender={componentsNeedsUpdateOnNextRender}
                 />
               </Sentry.ErrorBoundary>
             </div>

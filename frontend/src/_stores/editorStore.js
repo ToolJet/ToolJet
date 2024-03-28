@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _, { update } from 'lodash';
 import { create } from './utils';
 import { v4 as uuid } from 'uuid';
 import { useAppDataStore } from './appDataStore';
@@ -45,6 +45,8 @@ const initialState = {
   queryConfirmationList: [],
   currentPageId: null,
   currentSessionId: uuid(),
+  currentStateDiff: [],
+  componentsNeedsUpdateOnNextRender: [],
 };
 
 export const useEditorStore = create(
@@ -70,6 +72,11 @@ export const useEditorStore = create(
       },
       setIsEditorActive: (isEditorActive) => set(() => ({ isEditorActive })),
       updateEditorState: (state) => set((prev) => ({ ...prev, ...state })),
+      updateCurrentStateDiff: (currentStateDiff) => set(() => ({ currentStateDiff })),
+      updateComponentsNeedsUpdateOnNextRender: (componentsNeedsUpdateOnNextRender) =>
+        set(() => ({ componentsNeedsUpdateOnNextRender })),
+      flushComponentsNeedsUpdateOnNextRender: () => set(() => ({ componentsNeedsUpdateOnNextRender: [] })),
+
       updateQueryConfirmationList: (queryConfirmationList) => set({ queryConfirmationList }),
       setHoveredComponent: (hoveredComponent) =>
         set({ hoveredComponent }, false, {
@@ -102,3 +109,11 @@ export const useEditorStore = create(
 
 export const useEditorActions = () => useEditorStore((state) => state.actions);
 export const useEditorState = () => useEditorStore((state) => state);
+
+export const getComponentsToRenders = () => {
+  return useEditorStore.getState().componentsNeedsUpdateOnNextRender;
+};
+
+export const flushComponentsToRender = () => {
+  useEditorStore.getState().actions.flushComponentsNeedsUpdateOnNextRender();
+};
