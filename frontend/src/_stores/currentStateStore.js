@@ -38,7 +38,7 @@ export const useCurrentStateStore = create(
     (set, get) => ({
       ...initialState,
       actions: {
-        setCurrentState: debounce((currentState) => {
+        setCurrentState: (currentState) => {
           const currentStateEntites = Object.keys(currentState);
 
           const existingStateOfEntities = currentStateEntites.reduce((acc, entity) => {
@@ -51,7 +51,7 @@ export const useCurrentStateStore = create(
           if (_.isEmpty(diffState)) return;
 
           set({ ...currentState }, false, { type: 'SET_CURRENT_STATE', currentState });
-        }, 300),
+        },
         setErrors: (error) => {
           set({ errors: { ...get().errors, ...error } }, false, { type: 'SET_ERRORS', error });
         },
