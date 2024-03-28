@@ -347,7 +347,6 @@ export class DataSourcesService {
       if (!service?.testConnection) {
         throw new NotImplementedException('testConnection method not implemented');
       }
-      console.log({ sourceOptionss: sourceOptions });
       result = await service.testConnection(sourceOptions);
     } catch (error) {
       result = {
