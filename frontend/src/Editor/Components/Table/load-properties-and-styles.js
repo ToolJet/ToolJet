@@ -1,7 +1,6 @@
 import { has } from 'lodash';
 
 export default function loadPropertiesAndStyles(properties, styles, darkMode, component) {
-  console.log('manish ::', { styles });
   const color = styles.textColor !== '#000' ? styles.textColor : darkMode && '#fff';
 
   const serverSideSearch = properties.serverSideSearch ?? false;

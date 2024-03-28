@@ -420,7 +420,6 @@ class TableComponent extends React.Component {
     const columns = this.props.component.component.definition.properties?.columns ?? [];
     const newColumns = columns.value;
     let columnToBeDuplicated = newColumns?.[index];
-    console.log('manish ::', { columnToBeDuplicated });
     columnToBeDuplicated = { ...columnToBeDuplicated, id: uuidv4() };
     newColumns.push(columnToBeDuplicated);
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
