@@ -7,6 +7,8 @@ title: CosmosDB
 
 ToolJet can connect to CosmosDB databases to read and write data.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 To establish a connection with the CosmosDB data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
@@ -28,6 +30,10 @@ You can find the endpoint and key in the **[Azure Portal](https://portal.azure.c
 
 </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Supported Queries:
 
 - [Listing databases](#listing-databases)
@@ -37,9 +43,17 @@ You can find the endpoint and key in the **[Azure Portal](https://portal.azure.c
 - [Deleting an item](#deleting-an-item)
 - [Querying documents](#querying-documents)
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Listing Databases
 
 This query lists all the databases in a Cosmos DB.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Listing Containers
 
@@ -48,6 +62,10 @@ This query lists all the containers of a database in a Cosmos DB.
 | Fields   | Description        |
 | -------- | ------------------ |
 | database | id of the database |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Inserting Item(s)
 
@@ -59,6 +77,10 @@ This query inserts one or more items in a container of a database in a Cosmos DB
 | container | id of the container                                                                |
 | items     | items to be inserted. Example: `{{[{name: "one", val: 1}, {name:"two", val: 2}]}}` |
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Retrieving An Item
 
 To read a single item from a container of a database in a Cosmos DB, use the following query.
@@ -68,6 +90,10 @@ To read a single item from a container of a database in a Cosmos DB, use the fol
 | database  | id of the database  |
 | container | id of the container |
 | item      | id of the item      |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Deleting An Item
 
@@ -79,6 +105,10 @@ To delete an item from a container of a database in a Cosmos DB, use the followi
 | container | id of the container |
 | item      | id of the item      |
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Querying Documents
 
 To query documents from a container of a database in a Cosmos DB using SQL-like syntax, use the following query.
@@ -88,3 +118,5 @@ To query documents from a container of a database in a Cosmos DB using SQL-like 
 | database  | id of the database                                                                |
 | container | id of the container                                                               |
 | query     | query to be executed. Example: `SELECT * FROM c WHERE c.age > 20 AND c.age <= 30` |
+
+</div>

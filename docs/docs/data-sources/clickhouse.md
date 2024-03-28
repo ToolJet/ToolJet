@@ -11,6 +11,8 @@ ToolJet can connect to the ClickHouse to read and write data.
 ToolJet uses this [NodeJS](https://github.com/TimonKK/clickhouse) client for ClickHouse.
 :::
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 To establish a connection with the Clickhouse data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
@@ -29,6 +31,12 @@ ToolJet requires the following to connect to your ClickHouse Database:
 - **Debug**
 - **Raw**
 
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/clickhouse/connection.png" alt="ClickHouse connection" />
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 <img className="screenshot-full" src="/img/datasource-reference/clickhouse/connection-v2.png" alt="ClickHouse connection" />
 
 ## Querying ClickHouse
@@ -39,6 +47,9 @@ After setting up the ClickHouse data source, you can click on the `+` button of 
 For more details on clickhouse visit [Clickhouse docs](https://clickhouse.com/docs/en/quick-start).
 :::
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Supported Operations: 
 
@@ -152,7 +163,7 @@ Use this to operation to enter **[ClickHouse SQL Statements](https://clickhouse.
 
 	<div style={{textAlign: 'center'}}>
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/step1.png" alt="ClickHouse SQL Statement operation" />
+	<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/clickhouse/step1.png" alt="ClickHouse SQL Statement operation" />
 
 	</div>
 
@@ -177,7 +188,11 @@ Use this to operation to enter **[ClickHouse SQL Statements](https://clickhouse.
 	```
 	:::
 
-### Insert array of objects
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Insert Array of Objects
 
 Use this operation for inserting array of objects.
 
@@ -208,4 +223,6 @@ Use this operation for inserting array of objects.
 		];
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/insertarray.png" alt="ClickHouse Insert array of objects operation" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/clickhouse/insertarray.png" alt="ClickHouse Insert array of objects operation" />
+
+</div>

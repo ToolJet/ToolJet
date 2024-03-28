@@ -7,6 +7,8 @@ title: MongoDB
 
 ToolJet can connect to MongoDB to read and write data.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Manual Connection
 
 Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
@@ -26,6 +28,10 @@ It is recommended to create a new MongoDB user so that you can control the acces
 
 Click on 'Test connection' button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on 'Save' button to save the data source.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connect Using Connecting String
 
 You can also use a **Connection String** by switching the method from the dropdown. You will be prompted to enter the details of your MongoDB connection. 
@@ -39,6 +45,9 @@ For example: `mongodb+srv://tooljettest:fakepassword@cluster0.urul7.mongodb.net/
 
 Make sure to replace username, password, cluster, and database with your actual MongoDB details. If your MongoDB instance requires additional connection options, you can usually append these options to the connection string.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying MongoDB
 
@@ -145,6 +154,10 @@ Delete many records based on the filter. [Reference](https://docs.mongodb.com/dr
 
 Perform bulk operations. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/bulkWrite/)
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Dynamic Quries
 
 ```javascript
@@ -158,3 +171,5 @@ Perform bulk operations. [Reference](https://docs.mongodb.com/drivers/node/v4.0/
 ```
 
 Reference on [mongodb extended JSON](https://docs.mongodb.com/manual/reference/mongodb-extended-json/) supported data types
+
+</div>

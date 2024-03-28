@@ -8,6 +8,8 @@ title: MS SQL Server / Azure SQL databases
 
 ToolJet can connect to MS SQL Server & Azure SQL databases to read and write data. 
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
@@ -26,17 +28,22 @@ It is recommended to create a new database user so that you can control the acce
 
 Click on 'Test connection' button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on 'Save' button to save the data source.
 
-<img className="screenshot-full" src="/img/datasource-reference/mssql/connect.gif" alt="ToolJet - Redis connection" height="420"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/mssql/connect.gif" alt="ToolJet - Redis connection" height="420"/>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying SQL Server / Azure SQL databases
 Click on '+' button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. 
 
 Click on the 'run' button to run the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/mssql/query.gif" alt="ToolJet - Redis connection" height="420"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/mssql/query.gif" alt="ToolJet - Redis connection" height="420"/>
 
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
 :::
+
+</div>

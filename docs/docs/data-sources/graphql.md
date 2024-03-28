@@ -5,13 +5,15 @@ title: GraphQL
 
 ToolJet can establish connections with GraphQL endpoints, enabling the execution of queries and mutations.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 To establish a connection with the GraphQL global datasource, you can either click on the **Add new global datasource** button located on the query panel or navigate to the **[Global Datasources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/graphql/graphgds-v2.png" alt="ToolJet - Data source - REST API" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/graphql/graphgds-v2.png" alt="ToolJet - Data source - REST API" />
 
 </div>
 
@@ -24,6 +26,10 @@ ToolJet requires the following to connect to a GraphQL datasource:
   - **Basic**: Requires Username and Password
   - **Bearer**: Requires a token, typically a JSON Web Token (JWT), to grant access
   - **OAuth 2.0**: The OAuth 2.0 protocol mandates the provision of the following parameters: access token URL, access token URL custom headers, client ID, client secret, scopes, custom query parameters, authorization URL, custom authentication parameters, and client authentication.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying GraphQL
 
@@ -38,7 +44,7 @@ Click on **`+Add`** button of the query manager at the bottom panel of the edito
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/graphql/headers.png" alt="ToolJet - Data source - GraphQl"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/graphql/headers.png" alt="ToolJet - Data source - GraphQl"/>
 
 </div>
 
@@ -48,3 +54,6 @@ Click on the **Create** button to create the query or Click on the **Run** butto
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
 :::
+
+
+</div>
