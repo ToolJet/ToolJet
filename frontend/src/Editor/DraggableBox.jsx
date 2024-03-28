@@ -6,9 +6,9 @@ import { ItemTypes } from './editorConstants';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
 import { ConfigHandle } from './ConfigHandle';
-import { resolveWidgetFieldValue, resolveReferences } from '@/_helpers/utils';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
-import { useCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import { useNoOfGrid, useGridStore } from '@/_stores/gridStore';
@@ -39,7 +39,6 @@ const DraggableBox = React.memo(
     mode,
     title,
     parent,
-    // allComponents,
     component,
     index,
     inCanvas,
@@ -105,22 +104,6 @@ const DraggableBox = React.memo(
       preview(getEmptyImage(), { captureDraggingState: true });
     }, [isDragging]);
 
-    // useEffect(() => {
-    //   if (resizingStatusChanged) {
-    //     resizingStatusChanged(isResizing);
-    //   }
-    // }, [isResizing]);
-
-    // useEffect(() => {
-    //   if (draggingStatusChanged) {
-    //     draggingStatusChanged(isDragging2);
-    //   }
-
-    //   if (isDragging2 && !isSelectedComponent) {
-    //     setSelectedComponent(id, component);
-    //   }
-    // }, [isDragging2]);
-
     let _refProps = {};
 
     if (mode === 'edit' && canDrag) {
@@ -159,8 +142,6 @@ const DraggableBox = React.memo(
       },
       [id]
     );
-
-    // console.log('dora----diff', { componentsNeedsUpdateOnNextRender });
 
     return (
       <div
@@ -241,14 +222,10 @@ const DraggableBox = React.memo(
                   readOnly={readOnly}
                   customResolvables={customResolvables}
                   parentId={parentId}
-                  // allComponents={allComponents}
                   getContainerProps={getContainerProps}
-                  // currentState={currentState}
-                  // componentsNeedsUpdateOnNextRender={componentsNeedsUpdateOnNextRender}
                 />
               </Sentry.ErrorBoundary>
             </div>
-            {/* </Rnd> */}
           </div>
         ) : (
           <div ref={drag} role="DraggableBox" className="draggable-box" style={{ height: '100%' }}>

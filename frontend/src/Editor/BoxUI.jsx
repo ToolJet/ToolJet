@@ -1,13 +1,6 @@
-// BoxUI.js
 import React, { useContext, useEffect } from 'react';
 import ControlledComponentToRender from './ControlledComponentToRender';
-import {
-  renderTooltip,
-  getComponentName,
-  onComponentOptionChanged,
-  onComponentOptionsChanged,
-  debuggerActions,
-} from '@/_helpers/appUtils';
+import { renderTooltip, onComponentOptionChanged, onComponentOptionsChanged } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';

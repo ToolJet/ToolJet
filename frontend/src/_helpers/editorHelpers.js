@@ -129,3 +129,47 @@ export function isOnlyLayoutUpdate(diffState) {
 
   return componentDiff.length > 0;
 }
+
+function findReferenceInComponent(node, changedCurrentState) {
+  if (!node) return false;
+
+  try {
+    if (typeof node === 'object') {
+      for (let key in node) {
+        const value = node[key];
+        if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
+          // Check if the referenced entity is in the state
+          if (changedCurrentState.some((state) => value.includes(state))) {
+            return true;
+          }
+        } else if (typeof value === 'object') {
+          const found = findReferenceInComponent(value, changedCurrentState);
+
+          if (found) return true;
+        }
+      }
+    }
+
+    return false;
+  } catch (error) {
+    console.log('error', { error });
+
+    return false;
+  }
+}
+
+// Function to find which component ids contain the references
+export function findComponentsWithReferences(components, changedCurrentState) {
+  const componentIdsWithReferences = [];
+
+  if (!components) return componentIdsWithReferences;
+
+  Object.entries(components).forEach(([componentId, componentData]) => {
+    const hasReference = findReferenceInComponent(componentData, changedCurrentState);
+    if (hasReference) {
+      componentIdsWithReferences.push(componentId);
+    }
+  });
+
+  return componentIdsWithReferences;
+}

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   resolveGeneralProperties,
   resolveGeneralStyles,
@@ -23,7 +23,6 @@ const HydrateWithResolveReferences = ({ id, mode, component, customResolvables, 
   const currentState = useCurrentState();
 
   const resolvedProperties = useMemo(() => {
-    // console.log('---piku resol--arpit', { x, component });
     return resolveProperties(component, currentState, null, customResolvables, id);
   }, [component, currentState, customResolvables, id]);
 
@@ -38,8 +37,6 @@ const HydrateWithResolveReferences = ({ id, mode, component, customResolvables, 
   const resolvedGeneralStyles = useMemo(() => {
     return resolveGeneralStyles(component, currentState, null, customResolvables);
   }, [component, currentState, customResolvables]);
-
-  //!-----
 
   const [validatedProperties, propertyErrors] =
     mode === 'edit' && component.validate

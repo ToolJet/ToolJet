@@ -1,7 +1,7 @@
 import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
-import _, { debounce, omit } from 'lodash';
-import { getEntityIdFromResolverTable, useResolverStoreActions, useResolveStore } from './resolverStore';
+import _, { omit } from 'lodash';
+import { useResolveStore } from './resolverStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { useEditorStore } from './editorStore';
