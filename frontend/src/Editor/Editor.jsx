@@ -89,6 +89,7 @@ import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex } from './editorConstants';
+import { findComponentsWithReferences } from '@/_helpers/editorHelpers';
 
 setAutoFreeze(false);
 enablePatches();
@@ -272,50 +273,6 @@ const EditorComponent = (props) => {
 
   const lastKeyPressTimestamp = useDebouncedArrowKeyPress(500); // 500 milliseconds delay
 
-  function findReferenceInComponent(node, changedCurrentState) {
-    if (!node) return false;
-
-    if (typeof node === 'object') {
-      for (let key in node) {
-        const value = node[key];
-        if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
-          // Extract the referenced entity from the string
-          const ref = value.match(/{{(.*?)}}/)[1];
-          // Check if the referenced entity is in the changedCurrentState
-          if (changedCurrentState.some((state) => value.includes(state))) {
-            // Return true immediately upon finding a match
-            return true;
-          }
-        } else if (typeof value === 'object') {
-          // Recursively search within objects
-          const found = findReferenceInComponent(value, changedCurrentState);
-          // If found in the nested object, propagate the true value up
-          if (found) return true;
-        }
-      }
-    }
-    // Return false if no reference is found in the component
-    return false;
-  }
-
-  // Function to find which component ids contain the references
-  function findComponentsWithReferences(components, changedCurrentState) {
-    const componentIdsWithReferences = [];
-
-    if (!components) return componentIdsWithReferences;
-
-    Object.entries(components).forEach(([componentId, componentData]) => {
-      const hasReference = findReferenceInComponent(componentData, changedCurrentState);
-      if (hasReference) {
-        componentIdsWithReferences.push(componentId);
-      }
-    });
-
-    return componentIdsWithReferences;
-  }
-
-  // Example usage
-
   useEffect(() => {
     const didAppDefinitionChanged = !_.isEqual(appDefinition, prevAppDefinition.current);
 
@@ -346,8 +303,6 @@ const EditorComponent = (props) => {
       const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStateDiff);
 
       if (componentIdsWithReferences.length > 0) {
-        console.log('-abhinaba---TJ', { componentIdsWithReferences });
-
         updateComponentsNeedsUpdateOnNextRender(componentIdsWithReferences);
       }
     }

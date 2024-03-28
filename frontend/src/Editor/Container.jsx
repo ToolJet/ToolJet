@@ -52,9 +52,9 @@ export const Container = ({
   // Dont update first time to skip
   // redundant save on app definition load
   const firstUpdate = useRef(true);
-  // const [noOfGrids, setNoOfGrids] = useNoOfGrid();
+
   const noOfGrids = 43;
-  // const [subContainerWidths, setSubContainerWidths] = useState({});
+
   const draggedSubContainer = useDraggedSubContainer(false);
   const { resizingComponentId, isGridDragging } = useGridStore(
     (state) => ({
@@ -695,16 +695,12 @@ export const Container = ({
       setSelectedComponent,
       removeComponent,
       currentLayout,
-      // deviceWindowWidth,
       selectedComponents,
       darkMode,
-      // sideBarDebugger,
       addDefaultChildren: withDefaultChildren,
       currentPageId,
       childComponents: childComponents[componentId],
-      // setSubContainerWidths: (id, width) => setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
       parentGridWidth: gridWidth,
-      // subContainerWidths,
       draggedSubContainer,
     };
   }, []);
@@ -719,8 +715,6 @@ export const Container = ({
       }}
       styles={styles}
       isDropping={draggingState}
-      // isDragging={isDragging}
-      // isResizing={isResizing}
       canvasHeight={canvasHeight}
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
@@ -752,8 +746,6 @@ export const Container = ({
         <div className="container-fluid rm-container p-0">
           {Object.entries({
             ...boxes,
-            // ...(resizingComponentId &&
-            //   boxes[resizingComponentId] && { resizingComponentId: boxes[resizingComponentId] }),
           })
             .filter(([, box]) => isEmpty(box?.component?.parent))
             .map(([id, box]) => {
@@ -779,63 +771,20 @@ export const Container = ({
                       config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
                     }
                     onEvent={onEvent}
-                    // height={height}
-                    // onComponentOptionChanged={onComponentOptionChanged}
-                    // onComponentOptionsChanged={onComponentOptionsChanged}
                     key={id}
                     paramUpdated={paramUpdated}
                     id={id}
                     {...box}
                     mode={mode}
-                    // resizingStatusChanged={(status) => setIsResizing(status)}
-                    // draggingStatusChanged={(status) => setIsDragging(status)}
                     inCanvas={true}
                     zoomLevel={zoomLevel}
-                    // setSelectedComponent={setSelectedComponent}
                     removeComponent={removeComponent}
-                    // deviceWindowWidth={deviceWindowWidth}
                     isSelectedComponent={
                       mode === 'edit' ? selectedComponents.find((component) => component.id === id) : false
                     }
                     darkMode={darkMode}
-                    // onComponentHover={onComponentHover}
-                    // hoveredComponent={hoveredComponent}
-                    // sideBarDebugger={sideBarDebugger}
                     isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
-                    // childComponents={childComponents[id]}
                     getContainerProps={getContainerProps}
-                    // containerProps={{
-                    //   // turnOffAutoLayout,
-                    //   mode,
-                    //   snapToGrid,
-                    //   onComponentClick,
-                    //   onEvent,
-                    //   appDefinition,
-                    //   appDefinitionChanged,
-                    //   currentState,
-                    //   // onComponentOptionChanged,
-                    //   // onComponentOptionsChanged,
-                    //   appLoading,
-                    //   zoomLevel,
-                    //   setSelectedComponent,
-                    //   removeComponent,
-                    //   currentLayout,
-                    //   deviceWindowWidth,
-                    //   selectedComponents,
-                    //   darkMode,
-                    //   // onComponentHover,
-                    //   // hoveredComponent,
-                    //   sideBarDebugger,
-                    //   addDefaultChildren: box.withDefaultChildren,
-                    //   currentPageId,
-                    //   childComponents,
-                    //   // setIsChildDragged,
-                    //   setSubContainerWidths: (id, width) =>
-                    //     setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
-                    //   parentGridWidth: gridWidth,
-                    //   subContainerWidths,
-                    //   draggedSubContainer,
-                    // }}
                     isVersionReleased={isVersionReleased}
                   />
                 </WidgetWrapper>

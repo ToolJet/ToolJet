@@ -1,10 +1,6 @@
-import _, { update } from 'lodash';
+import _ from 'lodash';
 import { create } from './utils';
 import { v4 as uuid } from 'uuid';
-import { useAppDataStore } from './appDataStore';
-import { useResolveStore } from './resolverStore';
-import { shallow } from 'zustand/shallow';
-import { useCurrentState, useCurrentStateStore } from './currentStateStore';
 const STORE_NAME = 'Editor';
 
 export const EMPTY_ARRAY = [];
