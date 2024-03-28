@@ -6,17 +6,34 @@ import { ImportExportResourcesService } from './import_export_resources.service'
 import { ImportResourcesDto } from '@dto/import-resources.dto';
 import { AppImportExportService } from './app_import_export.service';
 import { isVersionGreaterThanOrEqual } from 'src/helpers/utils.helper';
+import { AppsService } from './apps.service';
+import { getMaxCopyNumber } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class LibraryAppCreationService {
   constructor(
     private readonly importExportResourcesService: ImportExportResourcesService,
     private readonly appImportExportService: AppImportExportService,
+    private readonly appsService: AppsService,
     private readonly logger: Logger
   ) {}
 
   async perform(currentUser: User, identifier: string, appName: string) {
     const templateDefinition = this.findTemplateDefinition(identifier);
+    return this.importTemplate(currentUser, templateDefinition, appName);
+  }
+
+  async createSampleApp(currentUser: User) {
+    let name = 'Sample app ';
+    const allSampleApps = await this.appsService.findAll(currentUser?.organizationId, { name });
+    const existNameList = allSampleApps.map((app) => app.name);
+    const maxNumber = getMaxCopyNumber(existNameList, ' ');
+    name = `${name} ${maxNumber}`;
+    const sampleAppDef = JSON.parse(readFileSync(`templates/sample_app_def.json`, 'utf-8'));
+    return this.importTemplate(currentUser, sampleAppDef, name);
+  }
+
+  async importTemplate(currentUser: User, templateDefinition: any, appName: string) {
     const importDto = new ImportResourcesDto();
     importDto.organization_id = currentUser.organizationId;
     importDto.app = templateDefinition.app || templateDefinition.appV2;

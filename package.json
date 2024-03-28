@@ -52,5 +52,9 @@
     "heroku-postbuild": "./heroku-postbuild.sh",
     "prepare": "husky install",
     "update-version": "node update-version.js"
+  },
+  "dependencies": {
+    "papaparse": "^5.4.1",
+    "xlsx": "^0.18.5"
   }
 }

@@ -49,6 +49,11 @@ function buildDbConfigFromDatabaseURL(data): any {
     TOOLJET_DB_PORT: TJDBconfig?.port || data.TOOLJET_DB_PORT,
     TOOLJET_DB_PASS: TJDBconfig?.password || data.TOOLJET_DB_PASS,
     TOOLJET_DB_USER: TJDBconfig?.user || data.TOOLJET_DB_USER,
+    SAMPLE_DB: data.SAMPLE_DB || 'sample_db',
+    SAMPLE_PG_DB_HOST: config?.host || data.PG_HOST || data.SAMPLE_PG_DB_HOST,
+    SAMPLE_PG_DB_PORT: config?.port || data.PG_PORT || data.SAMPLE_PG_DB_PORT,
+    SAMPLE_PG_DB_USER: config?.user || data.PG_USER || data.SAMPLE_PG_DB_USER,
+    SAMPLE_PG_DB_PASS: config?.password || data.PG_PASS || data.SAMPLE_PG_DB_PASS,
   });
 
   if (error) {
@@ -100,6 +105,13 @@ function validateDatabaseConfig(dbConfig: any): Joi.ValidationResult {
         TOOLJET_DB: Joi.string().default('tooljet_db'),
         TOOLJET_DB_OWNER: Joi.string().default('true'),
       }),
+      ...{
+        SAMPLE_PG_DB_HOST: Joi.string().default('localhost'),
+        SAMPLE_PG_DB_PORT: Joi.number().positive().default(5432),
+        SAMPLE_PG_DB_PASS: Joi.string().default(''),
+        SAMPLE_PG_DB_USER: Joi.string().required(),
+        SAMPLE_DB: Joi.string().default('sample_db'),
+      },
     })
     .unknown();
 
@@ -122,6 +134,12 @@ export function buildAndValidateDatabaseConfig(): Joi.ValidationResult {
     TOOLJET_DB_PASS: config.TOOLJET_DB_PASS,
     TOOLJET_DB_USER: config.TOOLJET_DB_USER,
     TOOLJET_DB_OWNER: config.TOOLJET_DB_OWNER,
+    ENABLE_SAMPLE_PG_DB: config.ENABLE_SAMPLE_PG_DB,
+    SAMPLE_DB: config.SAMPLE_DB || 'sample_db',
+    SAMPLE_PG_DB_HOST: config.SAMPLE_PG_DB_HOST || config.PG_HOST,
+    SAMPLE_PG_DB_PORT: config.SAMPLE_PG_DB_PORT || config.PG_PORT,
+    SAMPLE_PG_DB_USER: config.SAMPLE_PG_DB_USER || config.PG_USER,
+    SAMPLE_PG_DB_PASS: config.SAMPLE_PG_DB_PASS || config.PG_PASS,
   };
 
   return validateDatabaseConfig(dbConfig);

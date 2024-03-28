@@ -33,6 +33,7 @@ import { Response } from 'express';
 import { AppEnvironmentService } from './app_environments.service';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { OrganizationUpdateDto } from '@dto/organization.dto';
+import { SampleDBService } from './sample_db.service';
 
 const MAX_ROW_COUNT = 500;
 
@@ -80,7 +81,8 @@ export class OrganizationsService {
     private appEnvironmentService: AppEnvironmentService,
     private encryptionService: EncryptionService,
     private emailService: EmailService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private sampleDBService: SampleDBService
   ) {}
 
   async create(name: string, slug: string, user: User, manager?: EntityManager): Promise<Organization> {
@@ -109,6 +111,8 @@ export class OrganizationsService {
         organization,
         manager
       );
+
+      await this.sampleDBService.createSampleDB(organization.id, manager);
 
       if (user) {
         await this.organizationUserService.create(user, organization, false, manager);
