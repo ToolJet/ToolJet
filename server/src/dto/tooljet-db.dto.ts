@@ -170,7 +170,7 @@ export class PostgrestTableColumnDto {
   constraints_type: ConstraintTypeDto;
 }
 
-export class RenamePostgrestTableDto {
+export class EditTableDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(1, { message: 'Table name must be at least 1 character' })
@@ -180,6 +180,7 @@ export class RenamePostgrestTableDto {
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   table_name: string;
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
@@ -189,6 +190,13 @@ export class RenamePostgrestTableDto {
   })
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   new_table_name: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Table must have at least 1 column' })
+  @ValidateNested({ each: true })
+  @Type(() => Array<{ oldColumn: PostgrestTableColumnDto; newColumn: PostgrestTableColumnDto }>)
+  columns: Array<{ oldColumn: PostgrestTableColumnDto; newColumn: PostgrestTableColumnDto }>;
 }
 
 export class EditColumnTableDto {
