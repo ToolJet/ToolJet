@@ -78,7 +78,7 @@ export const Pagination = function Pagination({
               cursor: pageIndex === 1 ? 'not-allowed' : 'pointer',
             }}
             leftIcon="cheveronleftdouble"
-            fill={`var(--slate12)`}
+            fill={`var(--icons-default)`}
             iconWidth="14"
             size="md"
             disabled={pageIndex === 1}
@@ -103,7 +103,7 @@ export const Pagination = function Pagination({
             cursor: pageIndex === 1 || !enablePrevButton ? 'not-allowed' : 'pointer',
           }}
           leftIcon="cheveronleft"
-          fill={`var(--slate12)`}
+          fill={`var(--icons-default)`}
           iconWidth="14"
           size="md"
           disabled={pageIndex === 1 || !enablePrevButton}
@@ -155,7 +155,7 @@ export const Pagination = function Pagination({
             cursor: (!autoCanNextPage && !serverSide) || !enableNextButton ? 'not-allowed' : 'pointer',
           }}
           leftIcon="cheveronright"
-          fill={`var(--slate12)`}
+          fill={`var(--icons-default)`}
           iconWidth="14"
           size="md"
           disabled={(!autoCanNextPage && !serverSide) || !enableNextButton}
@@ -180,7 +180,7 @@ export const Pagination = function Pagination({
               cursor: !autoCanNextPage && !serverSide ? 'not-allowed' : 'pointer',
             }}
             leftIcon="cheveronrightdouble"
-            fill={`var(--slate12)`}
+            fill={`var(--icons-default)`}
             iconWidth="14"
             size="md"
             onClick={(event) => {

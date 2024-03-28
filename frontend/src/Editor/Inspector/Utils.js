@@ -43,7 +43,8 @@ export function renderCustomStyles(
     componentConfig.component == 'Listview' ||
     componentConfig.component == 'TextInput' ||
     componentConfig.component == 'NumberInput' ||
-    componentConfig.component == 'PasswordInput'
+    componentConfig.component == 'PasswordInput' ||
+    componentConfig.component == 'Table'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -135,7 +136,7 @@ export function renderElement(
       componentMeta={componentMeta}
       darkMode={darkMode}
       componentName={component.component.name || null}
-      type={meta.type}
+      type={meta?.type}
       fxActive={definition.fxActive ?? false}
       onFxPress={(active) => {
         paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);

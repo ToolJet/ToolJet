@@ -24,14 +24,14 @@ export const GlobalFilter = ({
 
   return (
     <div
-      className="d-flex border align-items-center table-global-search"
+      className="d-flex align-items-center table-global-search"
       style={{ padding: '0.4rem 0.6rem', borderRadius: '6px' }}
     >
       <div className="d-flex">
-        <SolidIcon name="search" width="16" height="16" />
+        <SolidIcon name="search" width="16" height="16" fill={'var(--icons-default)'} />
         <input
           type="text"
-          className={`align-self-center bg-transparent tj-text tj-text-xsm mx-lg-1`}
+          className={`align-self-center bg-transparent tj-text tj-text-sm mx-lg-1`}
           value={value || ''}
           onChange={(e) => {
             setValue(e.target.value);
@@ -45,14 +45,14 @@ export const GlobalFilter = ({
         />
         <div
           className={`d-flex table-clear-icon align-items-center ${globalFilter ? 'visible' : 'invisible'}`}
-          style={{ width: '20px', height: '20px', padding: '4px', cursor: 'pointer' }}
+          style={{ cursor: 'pointer' }}
           onClick={() => {
             setGlobalFilter(undefined);
             setValue('');
             onComponentOptionChanged(component, 'searchText', '');
           }}
         >
-          <SolidIcon name="remove" width="16" height="16px" fill={darkMode ? '#3E63DD' : '#3E63DD'} />
+          <SolidIcon name="removerectangle" width="16" height="16" fill={'var(--icons-default)'} />
         </div>
       </div>
     </div>

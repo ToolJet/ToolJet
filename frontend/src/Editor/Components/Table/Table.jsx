@@ -132,9 +132,14 @@ export function Table({
     showAddNewRowButton,
     allowSelection,
     enablePagination,
+    maxRowHeight,
+    autoHeight,
     selectRowOnCellEdit,
+    contentWrapProperty,
+    boxShadow,
+    maxRowHeightValue,
+    borderColor,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
-
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
   const { events: allAppEvents } = useAppInfo();
@@ -517,6 +522,7 @@ export function Table({
   );
 
   const textWrapActions = (id) => {
+    //should we remove this
     let wrapOption = tableDetails.columnProperties?.find((item) => {
       return item?.id == id;
     });
@@ -677,7 +683,7 @@ export function Table({
             },
             Cell: ({ row }) => {
               return (
-                <div className="d-flex flex-column align-items-center">
+                <div className="d-flex flex-column align-items-center justify-content-center h-100">
                   <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} fireEvent={fireEvent} />
                 </div>
               );
@@ -1062,8 +1068,9 @@ export function Table({
         display: parsedWidgetVisibility ? '' : 'none',
         overflow: 'hidden',
         borderRadius: Number.parseFloat(borderRadius),
-        boxShadow: styles.boxShadow,
+        boxShadow,
         padding: '8px',
+        borderColor: borderColor,
       }}
       onClick={(event) => {
         onComponentClick(id, component, event);
@@ -1091,7 +1098,7 @@ export function Table({
                   className={`tj-text-xsm ${tableDetails.filterDetails.filtersVisible && 'always-active-btn'}`}
                   customStyles={{ minWidth: '32px' }}
                   leftIcon="filter"
-                  fill={`var(--slate11)`}
+                  fill={`var(--icons-default)`}
                   iconWidth="16"
                   onClick={(e) => {
                     if (tableDetails?.filterDetails?.filtersVisible) {
@@ -1372,6 +1379,20 @@ export function Table({
             <tbody {...getTableBodyProps()} style={{ color: computeFontColor() }}>
               {page.map((row, index) => {
                 prepareRow(row);
+                let rowProps = { ...row.getRowProps() };
+                const contentWrap = resolveReferences(contentWrapProperty, currentState);
+                const isMaxRowHeightAuto = maxRowHeight === 'auto';
+                if (contentWrap) {
+                  rowProps.style.maxHeight = isMaxRowHeightAuto
+                    ? 'fit-content'
+                    : resolveReferences(maxRowHeightValue, currentState) + 'px';
+                  rowProps.style.height = isMaxRowHeightAuto
+                    ? 'fit-content'
+                    : resolveReferences(maxRowHeightValue, currentState) + 'px';
+                } else {
+                  rowProps.style.maxHeight = cellSize === 'condensed' ? '40px' : '46px';
+                  rowProps.style.height = cellSize === 'condensed' ? '40px' : '46px';
+                }
                 return (
                   <tr
                     key={index}
@@ -1385,7 +1406,7 @@ export function Table({
                         ? 'selected'
                         : ''
                     }`}
-                    {...row.getRowProps()}
+                    {...rowProps}
                     onClick={async (e) => {
                       e.stopPropagation();
                       // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
@@ -1438,19 +1459,26 @@ export function Table({
                       ) {
                         cellProps.style.flex = '1 1 auto';
                       }
+                      //should we remove this
                       const wrapAction = textWrapActions(cell.column.id);
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
                       const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
                       const rowData = tableData[cell.row.index];
-                      const cellBackgroundColor = resolveReferences(
-                        cell.column?.cellBackgroundColor,
-                        currentState,
-                        '',
-                        {
-                          cellValue,
-                          rowData,
-                        }
-                      );
+                      const cellBackgroundColor = ![
+                        'dropdown',
+                        'badge',
+                        'badges',
+                        'tags',
+                        'link',
+                        'radio',
+                        'multiselect',
+                        'toggle',
+                      ].includes(cell?.column?.columnType)
+                        ? resolveReferences(cell.column?.cellBackgroundColor, currentState, '', {
+                            cellValue,
+                            rowData,
+                          })
+                        : '';
                       const cellTextColor = resolveReferences(cell.column?.textColor, currentState, '', {
                         cellValue,
                         rowData,
@@ -1477,9 +1505,9 @@ export function Table({
                             cell.column.id === 'rightActions' || cell.column.id === 'leftActions' ? cell.column.id : ''
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
                           className={cx(
-                            `table-text-align-${cell.column.horizontalAlignment} ${
-                              wrapAction ? wrapAction : cell?.column?.Header === 'Actions' ? '' : 'wrap'
-                            }-wrapper td`,
+                            `table-text-align-${cell.column.horizontalAlignment}  
+                            ${cell?.column?.Header !== 'Actions' && (contentWrap ? 'wrap-wrapper' : '')}
+                            td`,
                             {
                               'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
                               'has-left-actions': cell.column.id === 'leftActions',
@@ -1489,10 +1517,19 @@ export function Table({
                               'has-multiselect': cell.column.columnType === 'multiselect',
                               'has-datepicker': cell.column.columnType === 'datepicker',
                               'align-items-center flex-column': cell.column.columnType === 'selector',
+                              'has-badge': ['badge', 'badges'].includes(cell.column.columnType),
                               [cellSize]: true,
+                              'overflow-hidden':
+                                ['text', 'string', undefined, 'number'].includes(cell.column.columnType) &&
+                                !contentWrap,
                               'selector-column':
                                 cell.column.columnType === 'selector' && cell.column.id === 'selection',
                               'resizing-column': cell.column.isResizing || cell.column.id === resizingColumnId,
+                              'has-select': ['select', 'newMultiSelect'].includes(cell.column.columnType),
+                              'has-tags': cell.column.columnType === 'tags',
+                              'has-link': cell.column.columnType === 'link',
+                              'has-radio': cell.column.columnType === 'radio',
+                              'has-toggle': cell.column.columnType === 'toggle',
                             }
                           )}
                           {...cellProps}
@@ -1526,6 +1563,9 @@ export function Table({
                                 actionButtonsArray,
                                 isEditable,
                                 horizontalAlignment,
+                                cellTextColor,
+                                contentWrap,
+                                autoHeight,
                               })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
@@ -1643,7 +1683,11 @@ export function Table({
                   </>
                 ) : (
                   !loadingState && (
-                    <span data-cy={`footer-number-of-records`} className="font-weight-500 color-slate11">
+                    <span
+                      data-cy={`footer-number-of-records`}
+                      className="font-weight-500"
+                      style={{ color: 'var(--text-placeholder)' }}
+                    >
                       {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
                       {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
                     </span>
@@ -1681,7 +1725,7 @@ export function Table({
                   <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
                   <ButtonSolid
                     variant="ghostBlack"
-                    fill={`var(--slate11)`}
+                    fill={`var(--icons-default)`}
                     className={`tj-text-xsm ${
                       tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed always-active-btn'
                     }`}
@@ -1715,7 +1759,7 @@ export function Table({
                         minWidth: '32px',
                       }}
                       leftIcon="filedownload"
-                      fill={`var(--slate11)`}
+                      fill={`var(--icons-default)`}
                       iconWidth="16"
                       size="md"
                       data-tooltip-id="tooltip-for-download"
@@ -1743,7 +1787,7 @@ export function Table({
                       className={`tj-text-xsm `}
                       customStyles={{ minWidth: '32px' }}
                       leftIcon="eye1"
-                      fill={`var(--slate11)`}
+                      fill={`var(--icons-default)`}
                       iconWidth="16"
                       size="md"
                       data-cy={`select-column-icon`}

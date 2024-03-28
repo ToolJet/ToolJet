@@ -290,6 +290,7 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
+    // const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'Table'];
 
     const shouldHideWidget = component.component === 'PDF' && !isPDFSupported();
 

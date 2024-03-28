@@ -4,6 +4,7 @@ import _ from 'lodash';
 import { Tooltip } from 'react-tooltip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import cx from 'classnames';
 
 export function AddNewRowComponent({
   hideAddNewRowPopup,
@@ -114,7 +115,24 @@ export function AddNewRowComponent({
                     let cellProps = cell.getCellProps();
                     const isEditable = true;
                     return (
-                      <td key={index} {...cellProps} style={{ ...cellProps.style }}>
+                      <td
+                        key={index}
+                        {...cellProps}
+                        style={{ ...cellProps.style }}
+                        className={cx(`table-text-align-${cell.column.horizontalAlignment}  td`, {
+                          'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+                          'has-left-actions': cell.column.id === 'leftActions',
+                          'has-right-actions': cell.column.id === 'rightActions',
+                          'has-text': cell.column.columnType === 'text' || isEditable,
+                          'has-dropdown': cell.column.columnType === 'dropdown',
+                          'has-multiselect': cell.column.columnType === 'multiselect',
+                          'has-datepicker': cell.column.columnType === 'datepicker',
+                          'align-items-center flex-column': cell.column.columnType === 'selector',
+                          // [cellSize]: true,
+                          'selector-column': cell.column.columnType === 'selector' && cell.column.id === 'selection',
+                          'has-select': ['select', 'newMultiSelect'].includes(cell.column.columnType),
+                        })}
+                      >
                         <div
                           className={`td-container ${cell.column.columnType === 'image' && 'jet-table-image-column'} ${
                             cell.column.columnType !== 'image' && 'w-100 h-100'

@@ -30,7 +30,7 @@ function Slider1({ value, onChange, component }) {
   };
 
   return (
-    <div className="d-flex flex-column " style={{ width: '142px', position: 'relative' }}>
+    <div className="d-flex flex-column " style={{ width: '142px', marginBottom: '16px', position: 'relative' }}>
       <CustomInput
         disabled={component.component.definition.styles.auto.value}
         value={sliderValue}

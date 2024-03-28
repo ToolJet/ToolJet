@@ -2,13 +2,15 @@ import React from 'react';
 import _ from 'lodash';
 import SelectSearch from 'react-select-search';
 import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
-import { CustomSelect } from '../CustomSelect';
+import { CustomDropdown } from '../CustomDropdown';
 import { Tags } from '../Tags';
 import { Radio } from '../Radio';
 import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
 import { Link } from '../Link';
 import moment from 'moment';
+import { Boolean } from '../Boolean';
+import { CustomSelect } from '../CustomSelect';
 
 export default function generateColumnsData({
   columnProperties,
@@ -30,7 +32,6 @@ export default function generateColumnsData({
 }) {
   return columnProperties.map((column) => {
     if (!column) return;
-
     const columnSize = columnSizes[column?.id] || columnSizes[column?.name];
     const columnType = column?.columnType;
     let sortType = 'alphanumeric';
@@ -52,6 +53,21 @@ export default function generateColumnsData({
         columnOptions.selectOptions = labels.map((label, index) => {
           return { name: label, value: values[index] };
         });
+      }
+    }
+    if (columnType === 'select' || columnType === 'newMultiSelect') {
+      columnOptions.selectOptions = [];
+      const useDynamicOptions = resolveReferences(column?.useDynamicOptions, currentState);
+      if (useDynamicOptions) {
+        const dynamicOptions = resolveReferences(column?.dynamicOptions || [], currentState);
+        columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
+      } else {
+        const options = column?.options ?? [];
+        columnOptions.selectOptions =
+          options?.map((option) => ({
+            label: option.label,
+            value: option.value,
+          })) ?? [];
       }
     }
     if (columnType === 'datepicker') {
@@ -98,7 +114,15 @@ export default function generateColumnsData({
       sortType,
       columnVisibility: column?.columnVisibility ?? true,
       horizontalAlignment: column?.horizontalAlignment ?? 'left',
-      Cell: function ({ cell, isEditable, newRowsChangeSet = null, horizontalAlignment }) {
+      Cell: function ({
+        cell,
+        isEditable,
+        newRowsChangeSet = null,
+        horizontalAlignment,
+        cellTextColor = '',
+        contentWrap = true,
+        autoHeight = true,
+      }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
@@ -123,6 +147,7 @@ export default function generateColumnsData({
 
             const cellStyles = {
               color: textColor ?? '',
+              overflow: 'hidden',
             };
 
             if (isEditable) {
@@ -155,7 +180,13 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="text"
-                    style={{ ...cellStyles }}
+                    style={{
+                      ...cellStyles,
+                      maxWidth: width,
+                      outline: 'none',
+                      border: 'none',
+                      background: 'inherit',
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
@@ -178,11 +209,11 @@ export default function generateColumnsData({
                         );
                       }
                     }}
-                    className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
+                    className={`table-column-type-input-element ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                     onFocus={(e) => e.stopPropagation()}
                   />
-                  <div className="invalid-feedback">{validationError}</div>
+                  <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );
             }
@@ -202,15 +233,22 @@ export default function generateColumnsData({
 
             const cellStyles = {
               color: textColor ?? '',
+              overflow: 'hidden',
             };
             if (isEditable) {
               const validationData = validateWidget({
                 validationObject: {
                   minValue: {
-                    value: column.minValue,
+                    value: column?.minValue,
                   },
                   maxValue: {
-                    value: column.maxValue,
+                    value: column?.maxValue,
+                  },
+                  regex: {
+                    value: column?.regex,
+                  },
+                  customRule: {
+                    value: column?.customRule,
                   },
                 },
                 widgetValue: cellValue,
@@ -227,7 +265,7 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="number"
-                    style={{ ...cellStyles }}
+                    style={{ ...cellStyles, maxWidth: width, outline: 'none', border: 'none', background: 'inherit' }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
@@ -251,10 +289,10 @@ export default function generateColumnsData({
                       }
                     }}
                     onFocus={(e) => e.stopPropagation()}
-                    className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
+                    className={`table-column-type-input-element ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
-                  <div className="invalid-feedback">{validationError}</div>
+                  <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );
             }
@@ -270,30 +308,80 @@ export default function generateColumnsData({
             );
           }
           case 'text': {
+            if (isEditable) {
+              const validationData = validateWidget({
+                validationObject: {
+                  minLength: {
+                    value: column.minLength,
+                  },
+                  maxLength: {
+                    value: column.maxLength,
+                  },
+                  customRule: {
+                    value: column.customRule,
+                  },
+                },
+                widgetValue: cellValue,
+                currentState,
+                customResolveObjects: { cellValue },
+              });
+              const { isValid, validationError } = validationData;
+              return (
+                <div className="h-100 d-flex flex-column justify-content-center position-relative">
+                  <textarea
+                    rows="1"
+                    className={`${!isValid ? 'is-invalid' : ''} form-control-plaintext text-container ${
+                      darkMode ? ' textarea-dark-theme' : ''
+                    }`}
+                    style={{
+                      color: cellTextColor ? cellTextColor : 'inherit',
+                    }}
+                    readOnly={!isEditable}
+                    onBlur={(e) => {
+                      if (isEditable && e.target.defaultValue !== e.target.value) {
+                        handleCellValueChange(
+                          cell.row.index,
+                          column.key || column.name,
+                          e.target.value,
+                          cell.row.original
+                        );
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      e.persist();
+                      if (e.key === 'Enter' && !e.shiftKey && isEditable) {
+                        handleCellValueChange(
+                          cell.row.index,
+                          column.key || column.name,
+                          e.target.value,
+                          cell.row.original
+                        );
+                      }
+                    }}
+                    defaultValue={cellValue}
+                    onFocus={(e) => e.stopPropagation()}
+                  ></textarea>
+                  <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
+                </div>
+              );
+            }
             return (
-              <textarea
-                rows="1"
-                className={`form-control-plaintext text-container ${
-                  darkMode ? 'text-light textarea-dark-theme' : 'text-muted'
-                }`}
-                readOnly={!isEditable}
-                onBlur={(e) => {
-                  if (isEditable && e.target.defaultValue !== e.target.value) {
-                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
-                  }
+              <div
+                className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+                  horizontalAlignment
+                )}`}
+                style={{
+                  color: cellTextColor ? cellTextColor : 'inherit',
+                  overflow: 'hidden',
                 }}
-                onKeyDown={(e) => {
-                  e.persist();
-                  if (e.key === 'Enter' && !e.shiftKey && isEditable) {
-                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
-                  }
-                }}
-                defaultValue={cellValue}
-                onFocus={(e) => e.stopPropagation()}
-              ></textarea>
+              >
+                {cellValue}
+              </div>
             );
           }
-          case 'dropdown': {
+          case 'dropdown':
+          case 'select':
+          case 'newMultiSelect': {
             const validationData = validateWidget({
               validationObject: {
                 regex: {
@@ -317,20 +405,50 @@ export default function generateColumnsData({
             const { isValid, validationError } = validationData;
 
             return (
-              <div className="h-100 d-flex align-items-center">
-                <SelectSearch
-                  options={columnOptions.selectOptions}
-                  value={cellValue}
-                  search={true}
-                  onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                  }}
-                  fuzzySearch
-                  placeholder={t('globals.select', 'Select') + '...'}
-                  disabled={!isEditable}
-                  className="select-search"
-                />
-                <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
+              <div
+                className="h-100 d-flex align-items-center flex-column justify-content-center"
+                styles={{ flex: '1 1 0' }}
+              >
+                {columnType === 'dropdown' && (
+                  <SelectSearch
+                    options={columnOptions.selectOptions}
+                    value={cellValue}
+                    search={true}
+                    onChange={(value) => {
+                      handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                    }}
+                    fuzzySearch
+                    placeholder={t('globals.select', 'Select') + '...'}
+                    disabled={!isEditable}
+                    className="select-search"
+                  />
+                )}
+                {['newMultiSelect', 'select'].includes(columnType) && (
+                  <CustomSelect
+                    options={columnOptions.selectOptions}
+                    value={cellValue}
+                    search={true}
+                    onChange={(value) => {
+                      handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                    }}
+                    fuzzySearch
+                    placeholder={t('globals.select', 'Select') + '...'}
+                    disabled={!isEditable}
+                    className="select-search table-select-search"
+                    darkMode={darkMode}
+                    defaultOptionsList={column?.defaultOptionsList || []}
+                    textColor={column?.textColor || 'var(--slate12)'}
+                    isMulti={columnType === 'newMultiSelect' ? true : false}
+                    containerWidth={width}
+                    optionsLoadingState={
+                      resolveReferences(column?.useDynamicOptions, currentState) &&
+                      resolveReferences(column?.optionsLoadingState, currentState)
+                        ? true
+                        : false
+                    }
+                  />
+                )}
+                <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>
               </div>
             );
           }
@@ -357,11 +475,11 @@ export default function generateColumnsData({
           case 'badges': {
             return (
               <div
-                className={`h-100 d-flex align-items-center justify-content-${determineJustifyContentValue(
+                className={`h-100 w-100 d-flex align-items-center justify-content-${determineJustifyContentValue(
                   horizontalAlignment
                 )}`}
               >
-                <CustomSelect
+                <CustomDropdown
                   options={columnOptions.selectOptions}
                   value={cellValue}
                   multiple={columnType === 'badges'}
@@ -371,21 +489,22 @@ export default function generateColumnsData({
                   darkMode={darkMode}
                   isEditable={isEditable}
                   width={width}
+                  contentWrap={contentWrap}
+                  autoHeight={autoHeight}
                 />
               </div>
             );
           }
           case 'tags': {
             return (
-              <div>
-                <Tags
-                  value={cellValue}
-                  onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                  }}
-                  readOnly={!isEditable}
-                />
-              </div>
+              <Tags
+                value={cellValue}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+                readOnly={!isEditable}
+                containerWidth={width}
+              />
             );
           }
           case 'image': {
@@ -417,6 +536,7 @@ export default function generateColumnsData({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
+                  containerWidth={width}
                 />
               </div>
             );
@@ -468,6 +588,21 @@ export default function generateColumnsData({
             return (
               <div className="h-100 d-flex align-items-center">
                 <Link cellValue={cellValue} linkTarget={linkTarget} />
+              </div>
+            );
+          }
+          case 'boolean': {
+            return (
+              <div className="h-100 d-flex align-items-center">
+                <Boolean
+                  value={!!cellValue}
+                  isEditable={isEditable}
+                  onChange={(value) =>
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original)
+                  }
+                  toggleOnBg={column?.toggleOnBg}
+                  toggleOffBg={column?.toggleOffBg}
+                />
               </div>
             );
           }

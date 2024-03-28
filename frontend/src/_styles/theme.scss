@@ -275,6 +275,12 @@ button {
   border: solid var(--slate5);
   border-width: 0px 0px 1px 0px;
 }
+.table-select-column-accordian{
+  .accordion-item{
+    border-width: 1px 0px 0px 0px !important;
+
+  }
+}
 
 .accordion-item,
 .accordion-button {
@@ -12456,7 +12462,9 @@ tbody {
 .custom-gap-2 {
   gap: 2px
 }
-
+.custom-gap-3{
+  gap: 3px;
+}
 .custom-gap-4 {
   gap: 4px;
 }
@@ -12467,6 +12475,12 @@ tbody {
 
 .custom-gap-12 {
   gap: 12px
+}
+.custom-gap-16{
+  gap: 16px;
+}
+.text-black-000{
+  color: var(--text-black-000) !important;
 }
 
 .overflow-tooltip {
@@ -12482,7 +12496,9 @@ tbody {
     }
   }
 }
-
+.custom-gap-7{
+  gap:7px
+}
 .card-table {
   overflow: visible;
 }
@@ -12642,34 +12658,36 @@ tbody {
   height: 700px !important; /* Set the desired width */
 }
 .tj-text-input-widget {
-  border: 1px solid var(--tj-text-input-widget-border-default);
-  background-color: var(--tj-text-input-widget-field-default);
+  border: 1px solid var(--borders-default);
+  background-color: var(--surfaces-surface-01);
   width: 100%;
   padding: 0px;
   z-index: 2;
 
+  &:disabled {
+    background-color: var(--surfaces-surface-03);
+  }
 
   &:hover:not(:focus) {
     border: 1px solid var(--tblr-input-border-color-darker) !important;
   }
 
   &.is-invalid {
-    border: 1px solid var(--tj-text-input-widget-error) !important; // For example, a red border for invalid input
+    border: 1px solid var(--status-error-strong) !important; // For example, a red border for invalid input
   }
 
   &:focus {
     outline: none !important;
-    border: 1px solid var(--tj-text-input-widget-border-clicked);
+    border: 1px solid var(--primary-accent-strong);
 
   }
 
   &:active {
-    // border: 1px solid var(--tj-text-input-widget-border-clicked) !important;
     outline: none !important;
   }
 
   &::placeholder {
-    color: #7E868C;
+    color: var(--text-placeholder) !important;
   }
 }
 

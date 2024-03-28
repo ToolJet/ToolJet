@@ -33,106 +33,6 @@ export const widgets = [
       columns: {
         type: 'array',
         displayName: 'Table Columns',
-        // validation: {
-        //   schema: {
-        //     type: 'array',
-        //     element: {
-        //       type: 'union',
-        //       schemas: [
-        //         {
-        //           type: 'object',
-        //           object: {
-        //             columnType: { type: 'string' },
-        //             name: { type: 'string' },
-        //             textWrap: { type: 'string' },
-        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //             textColor: { type: 'string' },
-        //             regex: { type: 'string' },
-        //             minLength: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //             maxLength: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //             customRule: { type: 'string' },
-        //           },
-        //         },
-        //         {
-        //           type: 'object',
-        //           object: {
-        //             columnType: { type: 'string' },
-        //             name: { type: 'string' },
-        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //           },
-        //           isEditable: { type: 'boolean' },
-        //         },
-        //         {
-        //           type: 'object',
-        //           object: {
-        //             columnType: { type: 'string' },
-        //             name: { type: 'string' },
-        //             activeColor: { type: 'string' },
-        //             isEditable: { type: 'boolean' },
-        //           },
-        //         },
-        //         {
-        //           type: 'object',
-        //           object: {
-        //             columnType: { type: 'string' },
-        //             name: { type: 'string' },
-        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //             values: {
-        //               type: 'union',
-        //               schemas: [
-        //                 { type: 'array', element: { type: 'string' } },
-        //                 { type: 'array', element: { type: 'number' } },
-        //               ],
-        //             },
-        //             labels: {
-        //               type: 'union',
-        //               schemas: [
-        //                 { type: 'array', element: { type: 'string' } },
-        //                 { type: 'array', element: { type: 'number' } },
-        //               ],
-        //             },
-        //           },
-        //           isEditable: { type: 'boolean' },
-        //         },
-        //         {
-        //           type: 'object',
-        //           object: {
-        //             columnType: { type: 'string' },
-        //             name: { type: 'string' },
-        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //             values: {
-        //               type: 'union',
-        //               schemas: [
-        //                 { type: 'array', element: { type: 'string' } },
-        //                 { type: 'array', element: { type: 'number' } },
-        //               ],
-        //             },
-        //             labels: {
-        //               type: 'union',
-        //               schemas: [
-        //                 { type: 'array', element: { type: 'string' } },
-        //                 { type: 'array', element: { type: 'number' } },
-        //               ],
-        //             },
-        //           },
-        //           isEditable: { type: 'boolean' },
-        //         },
-        //         {
-        //           type: 'object',
-        //           object: {
-        //             columnType: { type: 'string' },
-        //             name: { type: 'string' },
-        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //             dateFormat: { type: 'string' },
-        //             parseDateFormat: { type: 'string' },
-        //             isTimeChecked: { type: 'boolean' },
-        //             isEditable: { type: 'boolean' },
-        //           },
-        //         },
-        //       ],
-        //     },
-        //   },
-        // },
       },
       useDynamicColumn: {
         type: 'toggle',
@@ -221,7 +121,6 @@ export const widgets = [
           { displayName: 'Client side', value: 'clientSide' },
           { displayName: 'Server side', value: 'serverSide' },
         ],
-        // defaultValue: 'clientSide',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -236,7 +135,6 @@ export const widgets = [
           { displayName: 'Client side', value: 'clientSide' },
           { displayName: 'Server side', value: 'serverSide' },
         ],
-        // defaultValue: 'clientSide',
       },
       serverSideFilter: {
         type: 'clientServerSwitch',
@@ -337,6 +235,20 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
@@ -365,57 +277,106 @@ export const widgets = [
         validation: {
           schema: { type: 'string' },
         },
-      },
-      actionButtonRadius: {
-        type: 'code',
-        displayName: 'Action button radius',
-        validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
-        },
+        accordian: 'Data',
       },
       tableType: {
         type: 'select',
-        displayName: 'Table type',
+        displayName: 'Row style',
         options: [
-          { name: 'Bordered', value: 'table-bordered' },
           { name: 'Regular', value: 'table-classic' },
+          { name: 'Bordered', value: 'table-bordered' },
           { name: 'Striped', value: 'table-striped' },
         ],
         validation: {
           schema: { type: 'string' },
         },
+        accordian: 'Data',
       },
       cellSize: {
         type: 'select',
-        displayName: 'Cell size',
+        displayName: 'Cell height',
         options: [
-          { name: 'Condensed', value: 'condensed' },
           { name: 'Regular', value: 'regular' },
+          { name: 'Condensed', value: 'condensed' },
         ],
         validation: {
           schema: { type: 'string' },
         },
+        accordian: 'Data',
+      },
+      contentWrap: {
+        type: 'toggle',
+        showLabel: false,
+        toggleLabel: 'Content wrap',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
+        },
+        accordian: 'Data',
+      },
+      maxRowHeight: {
+        type: 'switch',
+        displayName: 'Max row height',
+        validation: { schema: { type: 'string' } },
+        accordian: 'Data',
+        options: [
+          { displayName: 'Auto', value: 'auto' },
+          { displayName: 'Custom', value: 'custom' },
+        ],
+        conditionallyRender: {
+          key: 'contentWrap',
+          value: true,
+        },
+      },
+      maxRowHeightValue: {
+        type: 'numberInput',
+        showLabel: false,
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
+        },
+        accordian: 'Data',
+        conditionallyRender: {
+          key: 'maxRowHeight',
+          value: 'custom',
+        },
+      },
+      actionButtonRadius: {
+        type: 'numberInput',
+        displayName: 'Button radius',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
+        },
+        accordian: 'Action button',
       },
       borderRadius: {
-        type: 'code',
+        type: 'numberInput',
         displayName: 'Border radius',
-        validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        },
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'Container',
       },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
+      borderColor: {
+        type: 'color',
+        displayName: 'Border',
         validation: {
-          schema: { type: 'boolean' },
+          schema: { type: 'string' },
+          defaultValue: false,
         },
+        accordian: 'Container',
       },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schema: { type: 'boolean' },
-        },
+      boxShadow: {
+        type: 'boxShadow',
+        displayName: 'Box Shadow',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'Container',
+      },
+      padding: {
+        type: 'switch',
+        displayName: 'Padding',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        options: [
+          { displayName: 'Default', value: 'default' },
+          { displayName: 'None', value: 'none' },
+        ],
+        accordian: 'Container',
       },
     },
     exposedVariables: {
@@ -556,16 +517,21 @@ export const widgets = [
         defaultSelectedRow: { value: '{{{"id":1}}}' },
         showAddNewRowButton: { value: '{{true}}' },
         allowSelection: { value: '{{true}}' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
       },
       events: [],
       styles: {
         textColor: { value: '#000' },
         actionButtonRadius: { value: '0' },
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
         cellSize: { value: 'regular' },
         borderRadius: { value: '4' },
         tableType: { value: 'table-classic' },
+        maxRowHeight: { value: 'auto' },
+        maxRowHeightValue: { value: '80px' },
+        contentWrap: { value: '{{true}}' },
+        boxShadow: { value: '0px 0px 0px 0px #00000090' },
+        padding: { value: 'default' },
       },
     },
   },
@@ -707,6 +673,7 @@ export const widgets = [
         borderRadius: { value: '{{4}}' },
         borderColor: { value: '#375FCF' },
         disabledState: { value: '{{false}}' },
+        padding: { value: 'default' },
       },
     },
   },
@@ -1556,7 +1523,6 @@ export const widgets = [
           value: 'side',
         },
       },
-
       backgroundColor: {
         type: 'color',
         displayName: 'Background',
@@ -1700,17 +1666,17 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '#11181C' },
-        borderColor: { value: '#6A727C47' },
+        textColor: { value: '#1B1F24' },
+        borderColor: { value: '#CCD1D5' },
         accentColor: { value: '#4368E3' },
-        errTextColor: { value: '#DB4324' },
+        errTextColor: { value: '#D72D39' },
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
-        iconColor: { value: '#C1C8CD' },
+        iconColor: { value: '#CCD1D5' },
         direction: { value: 'left' },
         width: { value: '{{33}}' },
         alignment: { value: 'side' },
-        color: { value: '#11181C' },
+        color: { value: '#1B1F24' },
         auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
@@ -1989,15 +1955,16 @@ export const widgets = [
       styles: {
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
-        borderColor: { value: '#6A727C47' },
+        borderColor: { value: '#CCD1D5' },
         accentColor: { value: '#4368E3' },
-        errTextColor: { value: '#DB4324' },
-        textColor: { value: '#232e3c' },
-        iconColor: { value: '#C1C8CD' },
+        errTextColor: { value: '#D72D39' },
+        textColor: { value: '#1B1F24' },
+        color: { value: '#1B1F24' },
+
+        iconColor: { value: '#CCD1D5' },
         direction: { value: 'left' },
         width: { value: '{{33}}' },
         alignment: { value: 'side' },
-        color: { value: '#11181C' },
         auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
@@ -2273,15 +2240,15 @@ export const widgets = [
       styles: {
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
-        borderColor: { value: '#6A727C47' },
+        borderColor: { value: '#CCD1D5' },
         accentColor: { value: '#4368E3' },
-        errTextColor: { value: '#DB4324' },
-        textColor: { value: '#11181C' },
-        iconColor: { value: '#C1C8CD' },
+        errTextColor: { value: '#D72D39' },
+        textColor: { value: '#1B1F24' },
+        iconColor: { value: '#CCD1D5' },
         direction: { value: 'left' },
         width: { value: '{{33}}' },
         alignment: { value: 'side' },
-        color: { value: '#11181C' },
+        color: { value: '#1B1F24' },
         auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },

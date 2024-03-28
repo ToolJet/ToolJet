@@ -26,6 +26,16 @@ export const ProgramaticallyHandleProperties = ({
         return props.columnVisibility;
       case 'linkTarget':
         return props.linkTarget;
+      case 'useDynamicOptions':
+        return props?.useDynamicOptions;
+      case 'makeDefaultOption':
+        return props?.[index]?.makeDefaultOption;
+      case 'textColor':
+        return props?.textColor;
+      case 'cellBackgroundColor':
+        return props?.cellBackgroundColor;
+      case 'optionsLoadingState':
+        return props?.optionsLoadingState;
       default:
         return;
     }
@@ -38,14 +48,27 @@ export const ProgramaticallyHandleProperties = ({
     if (property === 'linkTarget') {
       return definitionObj?.value ?? '_blank';
     }
+    if (property === 'cellBackgroundColor') {
+      return definitionObj?.value ?? '';
+    }
+    if (property === 'textColor') {
+      return definitionObj?.value ?? '#11181C';
+    }
     return definitionObj?.value ?? `{{false}}`;
   };
 
   const value = getValueBasedOnProperty(property, props);
-  const param = { name: property };
-  const definition = { value, fxActive: props.fxActive };
-  const initialValue = getInitialValue(property, definition);
-
+  const param = { name: property === 'makeDefaultOption' ? `options::${property}` : property };
+  let definition;
+  let initialValue;
+  let isFxActive = Array.isArray(props) ? props?.[index]?.fxActive ?? false : props.fxActive ?? false;
+  if (Array.isArray(props)) {
+    definition = { value, fxActive: props?.[index]?.fxActive };
+    initialValue = getInitialValue(property, definition);
+  } else {
+    definition = { value, fxActive: props.fxActive };
+    initialValue = getInitialValue(property, definition);
+  }
   const options = {};
 
   const calcFxActiveState = (props, property) => {
@@ -94,7 +117,7 @@ export const ProgramaticallyHandleProperties = ({
   };
 
   return (
-    <div className={`mb-2 field ${options.className}`} onClick={(e) => e.stopPropagation()}>
+    <div className={`field ${options.className}`} onClick={(e) => e.stopPropagation()}>
       <CodeHinter
         enablePreview={true}
         initialValue={initialValue}
