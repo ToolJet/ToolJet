@@ -7,7 +7,7 @@ import _, { omit } from 'lodash';
 import { Box } from '@/Editor/Box';
 import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
-import { removeFunctionObjects } from '@/_helpers/appUtils';
+import { onComponentClick, onComponentOptionChanged, removeFunctionObjects } from '@/_helpers/appUtils';
 import { useAppInfo } from '@/_stores/appDataStore';
 export const Form = function Form(props) {
   const {
@@ -15,7 +15,6 @@ export const Form = function Form(props) {
     component,
     width,
     height,
-    containerProps,
     removeComponent,
     styles,
     setExposedVariable,
@@ -29,7 +28,9 @@ export const Form = function Form(props) {
     onEvent,
     dataCy,
     paramUpdated,
-    adjustHeightBasedOnAlignment,
+    currentLayout,
+    mode,
+    getContainerProps,
   } = props;
 
   const { events: allAppEvents } = useAppInfo();
@@ -204,7 +205,7 @@ export const Form = function Form(props) {
       return Promise.resolve();
     }
     onOptionChange({ component, optionName, value, componentId });
-    return containerProps.onComponentOptionChanged(component, optionName, value);
+    return onComponentOptionChanged(component, optionName, value);
   }
 
   const onOptionChange = ({ component, optionName, value, componentId }) => {
@@ -227,7 +228,7 @@ export const Form = function Form(props) {
       style={computedStyles}
       onSubmit={handleSubmit}
       onClick={(e) => {
-        if (e.target.className === 'real-canvas') containerProps.onComponentClick(id, component);
+        if (e.target.className === 'real-canvas') onComponentClick(id, component);
       }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
     >
       {loadingState ? (
@@ -244,7 +245,6 @@ export const Form = function Form(props) {
                 parentComponent={component}
                 containerCanvasWidth={width}
                 parent={id}
-                {...containerProps}
                 parentRef={parentRef}
                 removeComponent={removeComponent}
                 onOptionChange={function ({ component, optionName, value, componentId }) {
@@ -257,7 +257,7 @@ export const Form = function Form(props) {
                 containerCanvasWidth={width}
                 parent={id}
                 parentRef={parentRef}
-                currentLayout={containerProps.currentLayout}
+                currentLayout={currentLayout}
               />
             </>
           )}
@@ -277,25 +277,22 @@ export const Form = function Form(props) {
                 >
                   <Box
                     component={item}
-                    id={index}
+                    id={id}
                     width={width}
-                    mode={containerProps.mode}
+                    height={item.defaultSize.height}
+                    mode={mode}
                     inCanvas={true}
                     paramUpdated={paramUpdated}
                     onEvent={onEvent}
-                    onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
-                    onComponentOptionsChanged={containerProps.onComponentOptionsChanged}
-                    onComponentClick={containerProps.onComponentClick}
-                    currentState={currentState}
-                    containerProps={containerProps}
+                    onComponentClick={onComponentClick}
                     darkMode={darkMode}
                     removeComponent={removeComponent}
+                    // canvasWidth={width}
+                    // readOnly={readOnly}
+                    // customResolvables={customResolvables}
                     parentId={id}
-                    allComponents={containerProps.allComponents}
-                    sideBarDebugger={containerProps.sideBarDebugger}
-                    childComponents={childComponents}
-                    adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
-                    height={item.defaultSize.height}
+                    getContainerProps={getContainerProps}
+                    {...props}
                   />
                 </div>
               );

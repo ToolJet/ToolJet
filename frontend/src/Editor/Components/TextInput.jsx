@@ -18,8 +18,6 @@ export const TextInput = function TextInput({
   darkMode,
   dataCy,
   isResizing,
-  adjustHeightBasedOnAlignment,
-  currentLayout,
 }) {
   const textInputRef = useRef();
   const labelRef = useRef();
@@ -181,15 +179,6 @@ export const TextInput = function TextInput({
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
   // eslint-disable-next-line import/namespace
-
-  useEffect(() => {
-    if (alignment == 'top' && ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)))
-      adjustHeightBasedOnAlignment(true);
-    else {
-      adjustHeightBasedOnAlignment(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length, currentLayout, width, auto]);
 
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);

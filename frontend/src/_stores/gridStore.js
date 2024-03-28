@@ -12,6 +12,7 @@ const initialState = {
   isGroupHandleHoverd: false,
   idGroupDragged: false,
   openModalWidgetId: null,
+  subContainerWidths: {},
 };
 
 export const useGridStore = create(
@@ -28,6 +29,8 @@ export const useGridStore = create(
         setIsGroupHandleHoverd: (isGroupHandleHoverd) => set({ isGroupHandleHoverd }),
         setIdGroupDragged: (idGroupDragged) => set({ idGroupDragged }),
         setOpenModalWidgetId: (openModalWidgetId) => set({ openModalWidgetId }),
+        setSubContainerWidths: (id, width) =>
+          set((state) => ({ subContainerWidths: { ...state.subContainerWidths, [id]: width } })),
       },
     }),
     { name: 'Grid Store' }

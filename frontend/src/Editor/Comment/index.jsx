@@ -2,7 +2,7 @@ import React from 'react';
 import cx from 'classnames';
 
 import { useDrag } from 'react-dnd';
-import { ItemTypes } from '@/Editor/ItemTypes';
+import { ItemTypes } from '@/Editor/editorConstants';
 import CommentHeader from '@/Editor/Comment/CommentHeader';
 import CommentBody from '@/Editor/Comment/CommentBody';
 import CommentFooter from '@/Editor/Comment/CommentFooter';

@@ -25,7 +25,6 @@ import {
   onQueryConfirmOrCancel,
   runQuery,
   computeComponentState,
-  debuggerActions,
   cloneComponents,
   removeSelectedComponent,
   buildAppDefinition,
@@ -60,7 +59,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
+import { useAppVersionStore, useAppVersionActions } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
 import {
@@ -72,7 +71,7 @@ import {
 } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { EMPTY_ARRAY, useEditorActions, useEditorStore } from '@/_stores/editorStore';
-import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useNoOfGrid } from '@/_stores/gridStore';
 import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
@@ -89,11 +88,10 @@ import AutoLayoutAlert from './AutoLayoutAlert';
 import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
+import { decimalToHex } from './editorConstants';
 
 setAutoFreeze(false);
 enablePatches();
-
-const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
@@ -595,22 +593,6 @@ const EditorComponent = (props) => {
     return onComponentOptionsChanged(component, options);
   };
 
-  const handleComponentClick = (id, component) => {
-    updateEditorState({
-      selectedComponent: { id, component },
-    });
-  };
-
-  const sideBarDebugger = {
-    error: (data) => {
-      debuggerActions.error(data);
-    },
-    flush: () => {
-      debuggerActions.flush();
-    },
-    generateErrorLogs: (errors) => debuggerActions.generateErrorLogs(errors),
-  };
-
   const changeDarkMode = (newMode) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       globals: {
@@ -621,9 +603,17 @@ const EditorComponent = (props) => {
     props.switchDarkMode(newMode);
   };
 
-  const handleEvent = (eventName, event, options) => {
+  // const handleEvent = memoizeFunction((eventName, event, options) => {
+  //   return onEvent(getEditorRef(), eventName, event, options, 'edit');
+  // });
+
+  // const handleEvent = (eventName, event, options) => {
+  //   return onEvent(getEditorRef(), eventName, event, options, 'edit');
+  // };
+
+  const handleEvent = React.useCallback((eventName, event, options) => {
     return onEvent(getEditorRef(), eventName, event, options, 'edit');
-  };
+  }, []);
 
   const handleRunQuery = (queryId, queryName) => runQuery(getEditorRef(), queryId, queryName);
 
@@ -631,13 +621,13 @@ const EditorComponent = (props) => {
     dataSourceModalRef.current.dataSourceModalToggleStateHandler();
   };
 
-  const setSelectedComponent = (id, component, multiSelect = false) => {
+  const setSelectedComponent = React.useCallback((id, component, multiSelect = false) => {
     const isAlreadySelected = useEditorStore.getState()?.selectedComponents.find((component) => component.id === id);
 
     if (!isAlreadySelected) {
       setSelectedComponents([{ id, component }], multiSelect);
     }
-  };
+  }, []);
 
   const onVersionRelease = (versionId) => {
     useAppVersionStore.getState().actions.updateReleasedVersionId(versionId);
@@ -930,7 +920,9 @@ const EditorComponent = (props) => {
       });
     }
     let updatedAppDefinition;
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
+    const appDefinition = useEditorStore.getState().appDefinition;
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+    const currentPageId = useEditorStore.getState().currentPageId;
 
     if (opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
       updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
@@ -959,7 +951,6 @@ const EditorComponent = (props) => {
 
         if (opts?.containerChanges || opts?.componentDefinitionChanged) {
           const currentPageComponents = newDefinition.pages[currentPageId]?.components;
-
           draft.pages[currentPageId].components = currentPageComponents;
         }
 
@@ -1309,9 +1300,11 @@ const EditorComponent = (props) => {
       }
     }
   };
-  const removeComponent = (componentId) => {
+  const removeComponent = React.useCallback((componentId) => {
     if (!isVersionReleased) {
+      const appDefinition = useEditorStore.getState().appDefinition;
       let newDefinition = JSON.parse(JSON.stringify(appDefinition));
+      const currentPageId = useEditorStore.getState().currentPageId;
 
       let childComponents = [];
 
@@ -1395,7 +1388,7 @@ const EditorComponent = (props) => {
     } else {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }
-  };
+  }, []);
 
   const moveComponents = (direction) => {
     const _appDefinition = JSON.parse(JSON.stringify(appDefinition));
@@ -1880,8 +1873,6 @@ const EditorComponent = (props) => {
     }
   };
 
-  const deviceWindowWidth = 450;
-
   if (isLoading) {
     return (
       <div className="apploader">
@@ -1937,7 +1928,6 @@ const EditorComponent = (props) => {
             canRedo={canRedo}
             handleUndo={handleUndo}
             handleRedo={handleRedo}
-            // saveError={saveError}
             onNameChanged={onNameChanged}
             setAppDefinitionFromVersion={setAppDefinitionFromVersion}
             onVersionRelease={onVersionRelease}
@@ -1960,7 +1950,6 @@ const EditorComponent = (props) => {
                 globalDataSourcesChanged={globalDataSourcesChanged}
                 onZoomChanged={onZoomChanged}
                 switchDarkMode={changeDarkMode}
-                debuggerActions={sideBarDebugger}
                 appDefinition={{
                   components: appDefinition?.pages[currentPageId]?.components ?? {},
                   pages: appDefinition?.pages ?? {},
@@ -2016,7 +2005,7 @@ const EditorComponent = (props) => {
                   onMouseUp={handleCanvasContainerMouseUp}
                   ref={canvasContainerRef}
                   onScroll={() => {
-                    selectionRef.current.checkScroll();
+                    selectionRef.current?.checkScroll();
                   }}
                 >
                   <div style={{ minWidth: `calc((100vw - 300px) - 48px)` }}>
@@ -2061,10 +2050,8 @@ const EditorComponent = (props) => {
                       {defaultComponentStateComputed && (
                         <>
                           <Container
-                            turnOffAutoLayout={turnOffAutoLayout}
                             canvasWidth={getCanvasWidth()}
                             socket={socket}
-                            appDefinition={appDefinition}
                             appDefinitionChanged={appDefinitionChanged}
                             snapToGrid={true}
                             darkMode={props.darkMode}
@@ -2074,17 +2061,13 @@ const EditorComponent = (props) => {
                                 : 'edit'
                             }
                             zoomLevel={zoomLevel}
-                            deviceWindowWidth={deviceWindowWidth}
                             appLoading={isLoading}
                             onEvent={handleEvent}
-                            onComponentOptionChanged={handleOnComponentOptionChanged}
-                            onComponentOptionsChanged={handleOnComponentOptionsChanged}
                             setSelectedComponent={setSelectedComponent}
                             handleUndo={handleUndo}
                             handleRedo={handleRedo}
                             removeComponent={removeComponent}
                             onComponentClick={noop} // Prop is used in Viewer hence using a dummy function to prevent error in editor
-                            sideBarDebugger={sideBarDebugger}
                             currentPageId={currentPageId}
                           />
                           <CustomDragLayer
