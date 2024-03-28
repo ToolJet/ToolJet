@@ -125,7 +125,7 @@ export const manageUsersElements = () => {
 
   cy.exec("cd ./cypress/downloads/ && rm -rf *");
   cy.get(usersSelector.buttonDownloadTemplate).click();
-  cy.wait(4000)
+  cy.wait(4000);
   cy.exec("ls ./cypress/downloads/").then((result) => {
     const downloadedAppExportFileName = result.stdout.split("\n")[0];
     expect(downloadedAppExportFileName).to.contain.string("sample_upload.csv");
@@ -281,7 +281,7 @@ export const selectUserGroup = (groupName) => {
     }
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
   });
 };
 
@@ -303,11 +303,11 @@ export const inviteUserWithUserGroups = (
     }
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName1);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
     cy.wait(1000);
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName2);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
   });
 
   cy.get(usersSelector.buttonInviteUsers).click();

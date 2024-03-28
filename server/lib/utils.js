@@ -41,7 +41,7 @@ export function resolveCode(codeContext) {
       const script = isolate.compileScriptSync(codeToExecute);
       console.log('code to be evaluated', codeToExecute);
 
-      result = script.runSync(context, { release: true, timeout: 100 });
+      result = script.runSync(context, { release: true, timeout: 100, copy: true });
     } catch (err) {
       error = err;
       console.log('eval_error', err);
