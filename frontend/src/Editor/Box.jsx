@@ -26,6 +26,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { isPDFSupported } from '@/_stores/utils';
 import ControlledComponentToRender from './ControlledComponentToRender';
+import useRenderCount from '@/_hooks/useRenderCount';
 
 /**
  * Conditionally importing PDF component since importing it breaks app in older versions of browsers.
@@ -35,7 +36,7 @@ import ControlledComponentToRender from './ControlledComponentToRender';
 //   AllComponents.PDF = await import('./Components/PDF').then((module) => module.PDF);
 // }
 
-export const Box = memo(
+const Box = memo(
   ({
     id,
     width,
@@ -57,6 +58,7 @@ export const Box = memo(
     currentLayout,
     getContainerProps,
   }) => {
+    useRenderCount(`Box.jsx ${id}`);
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
@@ -273,3 +275,10 @@ export const Box = memo(
     );
   }
 );
+
+// Box.whyDidYouRender = {
+//   logOnDifferentValues: true,
+//   customName: 'WDYRBoxComponent',
+// };
+
+export { Box };

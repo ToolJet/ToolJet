@@ -15,9 +15,7 @@ const areEqual = (prevProps, nextProps) => {
   );
 };
 
-// This is your wrapper component
 const ComponentWrapper = React.memo(({ componentName, ...props }) => {
-  // Dynamically determine which component to render based on the componentName prop
   const ComponentToRender = getComponentToRender(componentName);
 
   // Render the component with the passed props
