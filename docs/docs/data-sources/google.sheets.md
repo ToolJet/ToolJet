@@ -163,7 +163,7 @@ Here is a preview of the query that utilizes the "Get spreadsheet info" operatio
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/google-sheets/infoo.png" alt="google sheets get info" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/google-sheets/infoo-v2.png" alt="google sheets get info" />
 
 </div>
 

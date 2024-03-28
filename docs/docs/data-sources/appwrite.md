@@ -27,7 +27,7 @@ To establish a connection with the Appwrite data source, you can either click on
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/appwrite/connectv2.png" alt="Appwrite intro" width="600"/>
+<img style={{width: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/connectv2.png" alt="Appwrite intro" width="600"/>
 
 </div>
 
@@ -41,7 +41,7 @@ After setting up the Appwrite datasource, you can click on the `+` button of the
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/queryingv2.png" alt="Appwrite intro"/>
+<img style={{width: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/queryingv2.png" alt="Appwrite intro"/>
 
 </div>
 

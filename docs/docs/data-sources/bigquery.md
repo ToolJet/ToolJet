@@ -36,7 +36,7 @@ Now, copy and paste the data from the downloaded JSON file into the **Private ke
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/bigquery/bq-create.png" alt="BQ create" />
+<img style={{width: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/bigquery/bq-create.png" alt="BQ create" />
 
 </div>
 

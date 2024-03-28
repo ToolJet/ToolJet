@@ -7,6 +7,8 @@ title: InfluxDB
 
 ToolJet can connect to InfluxDB databases to read and write data. Use the Token authentication scheme to authenticate to the InfluxDB API. For more info visit [InfluxDB docs](https://docs.influxdata.com/).
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 ToolJet connects to InfluxDB using :
@@ -26,7 +28,11 @@ For generating API Token visit [InfluxDB docs](https://docs.influxdata.com/influ
 
 </div>
 
-## Supported queries:
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Supported Queries:
 
 - [Write data](#write-data)
 
@@ -53,77 +59,123 @@ For generating API Token visit [InfluxDB docs](https://docs.influxdata.com/influ
 
 <img className="screenshot-full" src="/img/datasource-reference/influxdb/operations-v2.png" alt="influx operations" />
 
+</div>
 
-### Write data 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Write Data 
 
 This operation writes data to a bucket.
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Bucket**
 - **Organization name or ID**
 
-#### Optional parameters: 
+#### Optional Parameters: 
 
 - **Precision**
 
-### Query data
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Query Data
 
 Retrieves data from InfluxDB buckets.
 
-#### Required parameters:
+#### Required Parameters:
 - **Organization name or ID**
 
-### Generate an Abstract Syntax Tree (AST) from a query
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Generate an Abstract Syntax Tree (AST) from a Query
 
 This operation analyzes flux query and generates a query specification.
 
-#### Required parameters: 
+#### Required Parameters: 
 
 - **Query**
 
-### Retrieve query suggestions 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Retrieve Query Suggestions 
 
 This query retrieve query suggestions.
 
-### Retrieve query suggestions for a branching suggestion 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Retrieve Query Suggestions for a Branching Suggestion 
 
 This operation retrieve query suggestions for a branching suggestion.
 
-#### Required parameters:
+#### Required Parameters:
 - **Name**
 
-### Analyze a Flux query 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Analyze a Flux Query 
 
 This Analyzes a Flux query.
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Query**
 
-### List buckets 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### List Buckets 
 
 This operation lists all the buckets in a database.
-### Create a bucket 
 
-#### Required parameters: 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Create a Bucket 
+
+#### Required Parameters: 
 
 - **Query**
 
-### Retrieve a bucket 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Retrieve a Bucket 
 
 This operation retrieve a bucket in a database.
 
-#### Required parameters:
+#### Required Parameters:
 - **Bucket ID**
 
-### Update a bucket
+</div>
 
-#### Required parameters:
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Update a Bucket
+
+#### Required Parameters:
 - **Bucket ID**
 - **Query**
 
-### Delete a bucket
+</div>
 
-#### Required parameters:
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Delete a Bucket
+
+#### Required Parameters:
 - **Bucket ID**
+
+</div>

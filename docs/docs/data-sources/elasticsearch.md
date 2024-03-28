@@ -21,7 +21,7 @@ ToolJet requires the following to connect to your Elasticsearch cluster:
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/elasticsearch/connect.png" alt="Elastic connect" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/elasticsearch/connect.png" alt="Elastic connect" />
 
 
 </div>
@@ -29,7 +29,7 @@ ToolJet requires the following to connect to your Elasticsearch cluster:
 Elastic search data source is also providing an option for connecting services with ssl certificates. 
 - You can either use CA / Client certificates option. 
   
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/elasticsearch/ssl.png" alt="Elastic ssl" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/elasticsearch/ssl.png" alt="Elastic ssl" />
 
 </div>
 
@@ -42,7 +42,7 @@ Select the operation that you want to perform on your Elasticsearch cluster and 
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/elasticsearch/query.png" alt="Elastic query" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/elasticsearch/query.png" alt="Elastic query" />
 
 
 </div>

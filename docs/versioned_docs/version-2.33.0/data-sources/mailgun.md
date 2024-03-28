@@ -7,11 +7,13 @@ title: Mailgun
 
 ToolJet can connect to your Mailgun account to send emails.
 
-<img class="screenshot-full" src="/img/datasource-reference/mailgun/mailgun-datasource-v2.png" alt="ToolJet - Data source - Mailgun" height="420" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} class="screenshot-full" src="/img/datasource-reference/mailgun/mailgun-datasource-v2.png" alt="ToolJet - Data source - Mailgun" height="420" />
 
 :::info
 The Mailgun API Datasource supports for interaction with the mail endpoint of the [Mailgun API](https://documentation.mailgun.com/en/latest/api-intro.html#authentication-1).
 :::
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Connection
 
@@ -25,11 +27,15 @@ Mailgun API key is required to create an Mailgun datasource on ToolJet. You can 
 
 Click on the 'Save' button to save the data source.
 
-## Supported operations
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Supported Operations
 
 1.  Email service
 
-### Email service
+### Email Service
 
 Required parameters:
 
@@ -43,7 +49,7 @@ Optional parameters:
 - Body as HTML
 
 :::info
-**Send mail to** - accepts a single email id.
+**Send mail to** - accepts a single email id. 
 For example:
 `{{"dev@tooljet.io"}}`.
 
@@ -56,3 +62,5 @@ For example: `admin@tooljet.io`
 
 **Send multiple individual emails to multiple recipients** - set <b>Multiple recipients</b> field to `{{true}}` and the `Send mail to` field will be split into multiple emails and send to each recipient.
 :::
+
+</div>
