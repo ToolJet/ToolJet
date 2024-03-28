@@ -8,10 +8,20 @@ import SelectIcon from '../Icons/Select-column.svg';
 import MenuIcon from '../Icons/Unique-menu.svg';
 // import DeleteIcon from '../Icons/DeleteIcon.svg';
 import Tick from '../Icons/Tick.svg';
+import ForeignKeyActive from '../Icons/ForeignKeyActiveRelation.svg';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, defaultdataType } from '../constants';
 import Select, { components } from 'react-select';
 
-function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumnSelection, handleDelete, isEditMode }) {
+function TableSchema({
+  columns,
+  setColumns,
+  darkMode,
+  columnSelection,
+  setColumnSelection,
+  handleDelete,
+  isEditMode,
+  isActiveForeignKey,
+}) {
   const { Option } = components;
 
   const darkDisabledBackground = '#1f2936';
@@ -101,7 +111,11 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
               />
             </div>
             <div className="foreign-key-relation">
-              <ForeignKeyRelation width="14" height="14" />
+              {isActiveForeignKey ? (
+                <ForeignKeyActive width="14" height="14" />
+              ) : (
+                <ForeignKeyRelation width="14" height="14" />
+              )}
             </div>
 
             <ToolTip

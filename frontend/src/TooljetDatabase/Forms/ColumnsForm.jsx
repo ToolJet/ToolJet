@@ -58,6 +58,7 @@ const ColumnsForm = ({ columns, setColumns, isEditMode }) => {
           setColumnSelection={setColumnSelection}
           handleDelete={handleDelete}
           isEditMode={isEditMode}
+          isActiveForeignKey={true}
         />
 
         <div
