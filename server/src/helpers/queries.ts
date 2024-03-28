@@ -1,11 +1,11 @@
-import { App } from 'src/entities/app.entity';
+import { AppBase } from 'src/entities/app_base.entity';
 import { Folder } from 'src/entities/folder.entity';
 import { User } from 'src/entities/user.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { Brackets, createQueryBuilder, SelectQueryBuilder } from 'typeorm';
 
-export function viewableAppsQuery(user: User, searchKey?: string, select?: Array<string>): SelectQueryBuilder<App> {
-  const viewableAppsQb = createQueryBuilder(App, 'viewable_apps');
+export function viewableAppsQuery(user: User, searchKey?: string, select?: Array<string>): SelectQueryBuilder<AppBase> {
+  const viewableAppsQb = createQueryBuilder(AppBase, 'viewable_apps');
 
   if (select) {
     viewableAppsQb.select(select.map((col) => `viewable_apps.${col}`));

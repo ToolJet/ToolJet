@@ -10,6 +10,7 @@ import { Folder } from '../entities/folder.entity';
 import { UsersService } from './users.service';
 import { catchDbException } from 'src/helpers/utils.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { AppBase } from 'src/entities/app_base.entity';
 
 @Injectable()
 export class FoldersService {
@@ -112,7 +113,7 @@ export class FoldersService {
       .getCount();
   }
 
-  async getAppsFor(user: User, folder: Folder, page: number, searchKey: string): Promise<App[]> {
+  async getAppsFor(user: User, folder: Folder, page: number, searchKey: string): Promise<AppBase[]> {
     const folderApps = await this.folderAppsRepository.find({
       where: {
         folderId: folder.id,
@@ -129,7 +130,7 @@ export class FoldersService {
 
     const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
 
-    const viewableAppsInFolder = await createQueryBuilder(App, 'apps')
+    const viewableAppsInFolder = await createQueryBuilder(AppBase, 'apps')
       .innerJoin(
         '(' + viewableAppsQb.getQuery() + ')',
         'viewable_apps_join',
