@@ -753,9 +753,16 @@
         height: 100%;
         .react-select__control{
           height: 100%;
+          display: flex;
+          align-items: baseline;
+          .react-select__value-container{
+            display: flex;
+            align-items: baseline;
+          }
         }
         .react-select__indicators{
-
+          display: flex;
+          align-items: baseline;
           height: 100%;
         }
         .react-select__dropdown-indicator{
