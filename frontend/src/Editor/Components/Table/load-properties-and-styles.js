@@ -1,6 +1,7 @@
 import { has } from 'lodash';
 
 export default function loadPropertiesAndStyles(properties, styles, darkMode, component) {
+  console.log('manish ::', { styles });
   const color = styles.textColor !== '#000' ? styles.textColor : darkMode && '#fff';
 
   const serverSideSearch = properties.serverSideSearch ?? false;
@@ -57,10 +58,10 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
 
   const borderRadius = styles.borderRadius ?? 0;
 
-  const widgetVisibility = styles?.visibility ?? true;
+  const widgetVisibility = properties?.visibility ?? true;
   const parsedWidgetVisibility = widgetVisibility;
 
-  const disabledState = styles?.disabledState ?? false;
+  const disabledState = properties?.disabledState ?? false;
   const parsedDisabledState = disabledState;
 
   const actionButtonRadius = styles.actionButtonRadius ? parseFloat(styles.actionButtonRadius) : 0;
@@ -76,10 +77,13 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const showAddNewRowButton = properties?.showAddNewRowButton ?? true;
   const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
   const defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
-  const maxRowHeight = styles?.maxRowHeight ?? 80;
-  const autoHeight = styles?.autoHeight ?? true;
+  const maxRowHeight = styles?.maxRowHeight ?? 'auto';
+  const maxRowHeightValue = styles?.maxRowHeightValue ?? 80;
+  const boxShadow = styles?.boxShadow;
   const selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? true;
   const contentWrapProperty = styles?.contentWrap ?? true;
+  const borderColor = styles?.borderColor ?? 'var(--borders-weak-disabled)';
+
   return {
     color,
     serverSidePagination,
@@ -112,8 +116,10 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     showAddNewRowButton,
     allowSelection,
     maxRowHeight,
-    autoHeight,
+    maxRowHeightValue,
     selectRowOnCellEdit,
     contentWrapProperty,
+    boxShadow,
+    borderColor,
   };
 }

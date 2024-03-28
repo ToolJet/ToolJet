@@ -136,8 +136,10 @@ export function Table({
     autoHeight,
     selectRowOnCellEdit,
     contentWrapProperty,
+    boxShadow,
+    maxRowHeightValue,
+    borderColor,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
-
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
   const { events: allAppEvents } = useAppInfo();
@@ -1042,8 +1044,9 @@ export function Table({
         display: parsedWidgetVisibility ? '' : 'none',
         overflow: 'hidden',
         borderRadius: Number.parseFloat(borderRadius),
-        boxShadow: styles.boxShadow,
+        boxShadow,
         padding: '8px',
+        borderColor: borderColor,
       }}
       onClick={(event) => {
         onComponentClick(id, component, event);
@@ -1354,24 +1357,14 @@ export function Table({
                 prepareRow(row);
                 let rowProps = { ...row.getRowProps() };
                 const contentWrap = resolveReferences(contentWrapProperty, currentState);
-                const autoHeightProp = resolveReferences(autoHeight, currentState);
-                // const isMaxRowHeightAuto = maxRowHeight === 'auto';
+                const isMaxRowHeightAuto = maxRowHeight === 'auto';
                 if (contentWrap) {
-                  rowProps.style.maxHeight = autoHeightProp
-                    ? 'fit-content'
-                    : resolveReferences(maxRowHeight, currentState);
-                  rowProps.style.height = autoHeightProp
-                    ? 'fit-content'
-                    : resolveReferences(maxRowHeight, currentState);
-
-                  /*
                   rowProps.style.maxHeight = isMaxRowHeightAuto
                     ? 'fit-content'
-                    : resolveReferences(maxRowHeightValue, currentState);
+                    : resolveReferences(maxRowHeightValue, currentState) + 'px';
                   rowProps.style.height = isMaxRowHeightAuto
                     ? 'fit-content'
-                    : resolveReferences(maxRowHeightValue, currentState);
-                    */
+                    : resolveReferences(maxRowHeightValue, currentState) + 'px';
                 } else {
                   rowProps.style.maxHeight = cellSize === 'condensed' ? '40px' : '46px';
                   rowProps.style.height = cellSize === 'condensed' ? '40px' : '46px';
