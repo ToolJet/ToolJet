@@ -1735,6 +1735,9 @@ function migrateProperties(
       (componentType === 'TextInput' || componentType === 'PasswordInput' || componentType === 'NumberInput')
     ) {
       properties.label = '';
+      if (!styles.borderRadius) {
+        styles.borderRadius = { value: '{{4}}' };
+      }
     }
 
     if (componentType === 'NumberInput') {
