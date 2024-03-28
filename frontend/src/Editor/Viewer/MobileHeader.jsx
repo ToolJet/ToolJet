@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import _, { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import LogoIcon from '@assets/images/rocket.svg';
@@ -11,6 +11,7 @@ import classNames from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import PreviewSettings from './PreviewSettings';
 import MobileNavigationMenu from './MobileNavigationMenu';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const MobileHeader = ({
   showHeader,
@@ -27,6 +28,12 @@ const MobileHeader = ({
     (state) => ({
       isVersionReleased: state.isVersionReleased,
       editingVersion: state?.editingVersion,
+    }),
+    shallow
+  );
+  const { showDarkModeToggle } = useEditorStore(
+    (state) => ({
+      showDarkModeToggle: state.appMode === 'auto',
     }),
     shallow
   );
@@ -67,6 +74,7 @@ const MobileHeader = ({
       darkMode={darkMode}
       changeDarkMode={changeDarkMode}
       showHeader={showHeader}
+      showDarkModeToggle={showDarkModeToggle}
     />
   );
 
@@ -80,6 +88,7 @@ const MobileHeader = ({
   );
 
   const _renderDarkModeBtn = (args) => {
+    if (!showDarkModeToggle) return null;
     const styles = args?.styles ?? {};
     return (
       <span

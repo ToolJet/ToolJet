@@ -116,6 +116,7 @@ export default function EditorHeader({
                   handleRedo={handleRedo}
                   showToggleLayoutBtn
                   showUndoRedoBtn
+                  darkMode={darkMode}
                 />
                 <div className="d-flex align-items-center">
                   <div style={{ width: '100px', marginRight: '20px' }}>
@@ -153,6 +154,7 @@ export default function EditorHeader({
                   setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                   onVersionDelete={onVersionDelete}
                   isPublic={isPublic ?? false}
+                  darkMode={darkMode}
                 />
               )}
             </div>

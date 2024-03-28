@@ -172,7 +172,7 @@ export function Filter(props) {
   }
 
   return (
-    <div className={`table-filters card ${darkMode && 'dark-theme'}`}>
+    <div className={`table-filters card ${darkMode && 'dark-theme theme-dark'}`}>
       <div className="card-header row">
         <div className="col">
           <h4 data-cy={`header-filters`} className="font-weight-normal">

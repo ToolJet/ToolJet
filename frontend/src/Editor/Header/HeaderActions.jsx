@@ -13,8 +13,8 @@ function HeaderActions({
   showToggleLayoutBtn,
   showUndoRedoBtn,
   showFullWidth,
+  darkMode,
 }) {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
   const { currentLayout, toggleCurrentLayout } = useEditorStore(
     (state) => ({
       currentLayout: state.currentLayout,

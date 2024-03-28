@@ -64,7 +64,7 @@ import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import { getQueryParams } from '@/_helpers/routes';
 import RightSidebarTabManager from './RightSidebarTabManager';
@@ -173,6 +173,7 @@ const EditorComponent = (props) => {
 
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
   const [isDeletingPage, setIsDeletingPage] = useState(false);
+  const { isAppDarkMode, onAppModeChange } = useAppDarkMode();
 
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -601,15 +602,6 @@ const EditorComponent = (props) => {
   };
 
   const changeDarkMode = (newMode) => {
-    useSuperStore
-      .getState()
-      .modules[moduleName].useCurrentStateStore.getState()
-      .actions.setCurrentState({
-        globals: {
-          ...currentState.globals,
-          theme: { name: newMode ? 'dark' : 'light' },
-        },
-      });
     props.switchDarkMode(newMode);
   };
 
@@ -651,9 +643,11 @@ const EditorComponent = (props) => {
   };
 
   const computeCanvasBackgroundColor = () => {
-    const { canvasBackgroundColor } = appDefinition?.globalSettings ?? '#edeff5';
+    const canvasBackgroundColor = appDefinition?.globalSettings?.canvasBackgroundColor
+      ? appDefinition?.globalSettings?.canvasBackgroundColor
+      : '#edeff5';
     if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
-      return props.darkMode ? '#2f3c4c' : '#edeff5';
+      return isAppDarkMode ? '#2f3c4c' : '#edeff5';
     }
     return canvasBackgroundColor;
   };
@@ -694,6 +688,8 @@ const EditorComponent = (props) => {
       .getState()
       .modules[moduleName].useAppVersionStore.getState()
       .actions.updateEditingVersion(data.editing_version);
+    onAppModeChange(data.editing_version?.global_settings?.app_mode);
+
     if (!releasedVersionId || !versionSwitched) {
       useSuperStore
         .getState()
@@ -1891,7 +1887,7 @@ const EditorComponent = (props) => {
                           appDefinition={appDefinition}
                           appDefinitionChanged={appDefinitionChanged}
                           snapToGrid={true}
-                          darkMode={props.darkMode}
+                          darkMode={isAppDarkMode}
                           mode={'edit'}
                           zoomLevel={zoomLevel}
                           deviceWindowWidth={deviceWindowWidth}

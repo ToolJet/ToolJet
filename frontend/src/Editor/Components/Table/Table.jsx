@@ -1055,7 +1055,7 @@ export function Table({
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       data-disabled={parsedDisabledState}
-      className={`card jet-table table-component ${darkMode && 'dark-theme'}`}
+      className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
       style={{
         width: `100%`,
         height: `${height}px`,

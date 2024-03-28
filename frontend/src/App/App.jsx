@@ -31,7 +31,6 @@ import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
-import { useAppDataStore } from '@/_stores/appDataStore';
 import { useSuperStore } from '../_stores/superStore';
 import { ModuleContext } from '../_contexts/ModuleContext';
 
@@ -97,12 +96,12 @@ class AppComponent extends React.Component {
 
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
+    useSuperStore.getState().modules[this.context].useAppDataStore.getState().actions.updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
   };
 
   render() {
     const { updateAvailable, darkMode } = this.state;
-
     let toastOptions = {
       style: {
         wordBreak: 'break-all',

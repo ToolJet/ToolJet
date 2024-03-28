@@ -61,7 +61,7 @@
 @import "@radix-ui/colors/goldDark.css";
 @import "@radix-ui/colors/bronzeDark.css";
 
-:root {
+:root, .light-theme {
     --base: #FCFCFD;
     --base-black: #18181A;
     --text-black-000: #000000;

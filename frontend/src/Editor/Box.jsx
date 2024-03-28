@@ -159,6 +159,7 @@ export const Box = memo(
     isResizing,
     adjustHeightBasedOnAlignment,
     currentLayout,
+    darkMode,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
@@ -206,7 +207,6 @@ export const Box = memo(
         ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
         : [resolvedGeneralStyles, []];
 
-    const darkMode = localStorage.getItem('darkMode') === 'true';
     const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
     let styles = {

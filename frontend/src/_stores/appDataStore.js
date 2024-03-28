@@ -35,6 +35,7 @@ export function createAppDataStore(moduleName) {
     eventsCreatedLoader: false,
     actionsUpdatedLoader: false,
     eventToDeleteLoaderIndex: null,
+    isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   };
   return create(
     zustandDevTools(
@@ -147,6 +148,7 @@ export function createAppDataStore(moduleName) {
           setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),
           setMetadata: (metadata) => set(() => ({ metadata })),
           setEventToDeleteLoaderIndex: (index) => set(() => ({ eventToDeleteLoaderIndex: index })),
+          updateIsTJDarkMode: (isTJDarkMode) => set({ isTJDarkMode }),
         },
       }),
       { name: 'App Data Store' }

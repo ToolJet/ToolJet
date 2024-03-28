@@ -19,6 +19,7 @@ export const AppVersionsManager = function ({
   onVersionDelete,
   isEditable = true,
   isViewer,
+  darkMode,
 }) {
   const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
   const [deleteVersion, setDeleteVersion] = useState({
@@ -52,8 +53,6 @@ export const AppVersionsManager = function ({
       setGetAppVersionStatus(appVersionLoadingStatus.loading);
     };
   }, [appVersions]);
-
-  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const selectVersion = (id) => {
     appVersionService
@@ -173,8 +172,8 @@ export const AppVersionsManager = function ({
             value={editingVersion?.id}
             onChange={(id) => selectVersion(id)}
             {...customSelectProps}
-            className={` ${darkMode && 'dark-theme'}`}
             isEditable={isEditable}
+            darkMode={darkMode}
           />
         </div>
       </div>

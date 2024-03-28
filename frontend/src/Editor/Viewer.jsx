@@ -48,6 +48,7 @@ import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
 import MobileHeader from './Viewer/MobileHeader';
 import DesktopHeader from './Viewer/DesktopHeader';
 import './Viewer/viewer.scss';
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
 class ViewerComponent extends React.Component {
   static contextType = ModuleContext;
@@ -92,6 +93,7 @@ class ViewerComponent extends React.Component {
       appDefData.homePageId = data.homePageId;
       appDefData.showViewerNavigation = data.showViewerNavigation;
     }
+    const appMode = data.globalSettings?.appMode || data?.editing_version?.globalSettings?.appMode;
     useSuperStore
       .getState()
       .modules[this.context].useAppVersionStore.getState()
@@ -100,6 +102,7 @@ class ViewerComponent extends React.Component {
       .getState()
       .modules[this.context].useAppVersionStore.getState()
       .actions.updateReleasedVersionId(data.currentVersionId);
+    useSuperStore.getState().modules[this.context].useEditorStore.getState().actions.setAppMode(appMode);
     this.setState({
       app: data,
       isLoading: false,
@@ -643,7 +646,12 @@ class ViewerComponent extends React.Component {
       );
     } else {
       return (
-        <div className={`viewer wrapper ${this.props.currentLayout === 'mobile' ? 'mobile-layout' : ''}`}>
+        <div
+          className={cx('viewer wrapper', {
+            'mobile-layout': this.props.currentLayout,
+            'theme-dark dark-theme': this.props.darkMode,
+          })}
+        >
           <Confirm
             show={queryConfirmationList.length > 0}
             message={'Do you want to run this query?'}
@@ -749,7 +757,6 @@ class ViewerComponent extends React.Component {
                                 appDefinitionChanged={() => false} // function not relevant in viewer
                                 snapToGrid={true}
                                 appLoading={isLoading}
-                                darkMode={this.props.darkMode}
                                 onEvent={this.handleEvent}
                                 mode="view"
                                 deviceWindowWidth={isMobilePreviewMode ? '450px' : deviceWindowWidth}
@@ -769,6 +776,7 @@ class ViewerComponent extends React.Component {
                                 canvasWidth={this.getCanvasWidth()}
                                 dataQueries={dataQueries}
                                 currentPageId={this.state.currentPageId}
+                                darkMode={this.props.darkMode}
                               />
                             )}
                           </>
@@ -814,6 +822,7 @@ const withStore = (Component) => (props) => {
     shallow
   );
   const { updateState } = useAppDataActions();
+  const { isAppDarkMode } = useAppDarkMode();
   return (
     <Component
       {...props}
@@ -822,6 +831,7 @@ const withStore = (Component) => (props) => {
       currentLayout={currentLayout}
       updateState={updateState}
       queryConfirmationList={queryConfirmationList}
+      darkMode={isAppDarkMode}
     />
   );
 };
