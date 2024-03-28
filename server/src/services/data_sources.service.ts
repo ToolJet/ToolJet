@@ -347,6 +347,7 @@ export class DataSourcesService {
       if (!service?.testConnection) {
         throw new NotImplementedException('testConnection method not implemented');
       }
+      console.log({ sourceOptionss: sourceOptions });
       result = await service.testConnection(sourceOptions);
     } catch (error) {
       result = {
@@ -537,7 +538,11 @@ export class DataSourcesService {
       );
 
       if (constant) {
-        result = constant.value;
+        result = await this.encryptionService.decryptColumnValue(
+          'org_environment_constant_values',
+          organization_id,
+          constant.value
+        );
       }
     }
 
