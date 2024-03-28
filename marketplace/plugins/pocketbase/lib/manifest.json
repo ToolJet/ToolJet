@@ -26,14 +26,14 @@
       "label": "Email",
       "key": "email",
       "type": "text",
-      "description": "Enter PocketBase Admin Email"
+      "description": "Enter PocketBase admin email"
     },
     "password": {
       "label": "Password",
       "key": "password",
-      "type": "text",
-      "description": "Enter PocketBase Admin Password"
+      "type": "password",
+      "description": "Enter PocketBase admin password"
     }
   },
-  "required": []
+  "required": ["host", "email", "password"]
 }

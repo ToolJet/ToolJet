@@ -10,10 +10,8 @@ export type QueryOptions = {
   recordId: string;
   limit: number;
   sort: string;
-  filterField: string;
-  filterOperation: string;
-  filterValue: string;
   operation: string;
+  list_filter: object;
 };
 export type PocketBaseObject = {
   code?: number;
