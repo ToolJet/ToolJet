@@ -235,6 +235,7 @@ const sidebars = {
             'data-sources/clickhouse',
             'data-sources/cosmosdb',
             'data-sources/couchdb',
+            'data-sources/databricks',
             'data-sources/dynamodb',
             'data-sources/elasticsearch',
             'data-sources/gcs',
