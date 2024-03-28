@@ -5,7 +5,7 @@ title: Databricks
 
 # Databricks
 
-Databricks is a cloud-based platform for data processing, analytics, and machine learning. ToolJet connects to Databricks, allowing your applications to query, access, and analyze Databricks data directly using SQL.
+Databricks is a cloud-based platform for data processing, analytics, and machine learning. ToolJet connects to Databricks, allowing your applications to access and update your data in your Databricks Warehouses and Clusters directly using SQL queries.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/install.gif" alt="Install Databricks" />
@@ -13,25 +13,37 @@ Databricks is a cloud-based platform for data processing, analytics, and machine
 
 ## Configuration
 
-To connect to Databricks, you need to provide the following details:
+ToolJet's Databricks integration relies on a configuration form that supports the following parameters:
+
+#### Required Parameters
+
+- **Server hostname**: The server hostname or the IP address of your Databricks Warehouse or Cluster. For example, `62596234423488486.6.gcp.databricks.com`.
+- **HTTP Path**: The API endpoint path for the Databricks resource you want to access. For example, `/sql/1.0/warehouses/44899g7346c19m95`.
+- **Personal access token**: Personal access tokens are used for secure authentication to the Databricks API instead of passwords. For example, `dapi783c7d155d138d8cf14`.
+
+#### Optional Parameters
+
+- **Port**: The port number of the Databricks Warehouse or Cluster. The default port number is `443`.
+
+### Setup
+
+- Navigate to your Databricks workspace, select the desired cluster or SQL Warehouse, and find **Server Hostname** and **HTTP Path** within the connection details tab.
+
+  <div style={{textAlign: 'center'}}>
+      <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/connection-details.png" alt="Databricks: Connection Details" />
+  </div>
+
+- To generate a personal access token, access your Databricks User Settings, select the Developer tab, click Manage under Access Tokens, and then click on the **Generate New Token** button.
+
+  <div style={{textAlign: 'center'}}>
+      <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/generate-token.png" alt="Databricks: Access Tokens" />
+  </div> 
+
+- Navigate to the Databricks datasource configuration form in ToolJet, fill in the required parameters, and click the **Save** button. You can test the connection by clicking the **Test Connection** button.
 
   <div style={{textAlign: 'center'}}>
       <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/setup-parameters.png" alt="Databricks: Setup Paramaters" />
   </div>
-
-#### Required Parameters
-
-- **Server hostname**: The server hostname or the IP address of your Databricks Warehouse. For example, `62596234423488486.6.gcp.databricks.com`.
-- **HTTP Path**: The API endpoint path for the Databricks resource you want to access. For example, `/sql/1.0/warehouses/44899g7346c19m95`.
-- **Personal access token**: Personal access tokens are used for secure authentication to the Databricks API instead of passwords. You can create a personal access token from the Databricks User Settings > Developer > Access Tokens.
-
-#### Optional Parameters
-
-- **Port**: The port number of the Databricks Warehouse. The default port number is `443`.
-
-
-
-## Setting Up Databricks(WIP)
 
 ## Querying Databricks
 
@@ -59,7 +71,7 @@ Databricks supports standard SQL commands (SELECT, INSERT, UPDATE, DELETE) for d
 
 ### Read Data 
 
-The following example demonstrates how to read data from a table in the connected Databricks warehouse. The query selects all the columns from the `customers` table.
+The following example demonstrates how to read data from a table. The query selects all the columns from the `customers` table.
 
 ```sql
 SELECT * FROM customers 
@@ -67,7 +79,7 @@ SELECT * FROM customers
 
 ### Write Data 
 
-The following example demonstrates how to write data to a table in the connected Databricks warehouse. The query inserts a new row into the `customers` table.
+The following example demonstrates how to write data to a table. The query inserts a new row into the `customers` table.
 
 ```sql
 INSERT INTO customers (
@@ -95,7 +107,7 @@ INSERT INTO customers (
 
 ### Update Data 
 
-The following example demonstrates how to update data in a table in the connected Databricks warehouse. The query updates the `first_name` and `email` column of the `customers` table.
+The following example demonstrates how to update data in a table. The query updates the `first_name` and `email` column of the `customers` table.
 
 ```sql
 UPDATE customer
@@ -106,7 +118,7 @@ WHERE customer_id = 1001;
 
 ### Delete Data
 
-The following example demonstrates how to delete data from a table in the connected Databricks warehouse. The query deletes a row from the `customers` table.
+The following example demonstrates how to delete data from a table. The query deletes a row from the `customers` table.
 
 ```sql
 DELETE FROM customer
