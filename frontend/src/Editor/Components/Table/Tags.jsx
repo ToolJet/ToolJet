@@ -73,7 +73,7 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
             '0px 8px 16px 0px var(--elevation-400-box-shadow), 0px 0px 1px 0px var(--elevation-400-box-shadow)',
           wordWrap: 'break-word', // Add word-wrap property for content wrapping
         }}
-        className={`overlay-multiselect-table ${darkMode && 'dark-theme'}`}
+        className={`overlay-cell-table overlay-tags-table ${darkMode && 'dark-theme'}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >

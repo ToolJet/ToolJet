@@ -86,7 +86,7 @@ export const CustomDropdown = ({ options, value, multiple, onChange, isEditable,
           zIndex: 1,
           wordWrap: 'break-word', // Add word-wrap property for content wrapping
         }}
-        className={`overlay-multiselect-table ${darkMode && 'dark-theme'}`}
+        className={`overlay-cell-table overlay-badges-table ${darkMode && 'dark-theme'}`}
       >
         {labels?.map((label) => {
           return (
