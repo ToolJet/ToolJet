@@ -24,6 +24,29 @@ export const CustomSelect = ({
   optionsLoadingState = false,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const containerRef = useRef(null);
+  const inputRef = useRef(null); // Ref for the input search box
+
+  useEffect(() => {
+    const handleDocumentClick = (event) => {
+      if (!containerRef.current?.contains(event.target)) {
+        setIsFocused(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleDocumentClick);
+
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentClick);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Focus the input search box when the menu list is open and the component is focused
+    if (isFocused && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isFocused]);
 
   const customStyles = {
     ...defaultStyles(darkMode, '100%'),
@@ -69,7 +92,7 @@ export const CustomSelect = ({
     }),
   };
   const customCustomComponents = {
-    MenuList: (props) => <CustomMenuList {...props} optionsLoadingState={optionsLoadingState} />,
+    MenuList: (props) => <CustomMenuList {...props} optionsLoadingState={optionsLoadingState} inputRef={inputRef} />,
     Option: CustomMultiSelectOption,
     DropdownIndicator,
     ...(isMulti && {
@@ -118,7 +141,7 @@ export const CustomSelect = ({
   );
 };
 
-const CustomMenuList = ({ optionsLoadingState, children, selectProps, ...props }) => {
+const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, ...props }) => {
   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
 
   return (
@@ -151,6 +174,7 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, ...props }
           onFocus={onMenuInputFocus}
           placeholder="Search..."
           className="table-select-column-type-search-box"
+          ref={inputRef} // Assign the ref to the input search box
         />
       </div>
       <MenuList {...props} selectProps={selectProps}>
