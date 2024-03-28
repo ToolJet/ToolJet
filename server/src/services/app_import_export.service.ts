@@ -50,7 +50,7 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput';
+type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput' | 'Table';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
