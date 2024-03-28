@@ -329,9 +329,20 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     ]
   );
 
+  const triggerTooljetDBStatus = (key) => {
+    if (window.public_config?.ENABLE_TOOLJET_DB == 'false') {
+      toast('Tooljet database is not connected.', {
+        icon: '⚠️',
+      });
+    } else if (key === 'addTJDBTable') {
+      navigate(getPrivateRoute('database'));
+    }
+  };
+
   const fetchTables = async () => {
     const { error, data } = await tooljetDatabaseService.findAll(organizationId);
 
+    triggerTooljetDBStatus();
     if (error) {
       toast.error(error?.message ?? 'Failed to fetch tables');
       return;
@@ -482,7 +493,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
               onChange={(value) => {
                 value?.value && handleTableNameSelect(value?.value);
               }}
-              onAdd={() => navigate(getPrivateRoute('database'))}
+              onAdd={() => triggerTooljetDBStatus('addTJDBTable')}
               addBtnLabel={'Add new table'}
               value={generateListForDropdown(tables).find((val) => val?.value === selectedTableId)}
             />
