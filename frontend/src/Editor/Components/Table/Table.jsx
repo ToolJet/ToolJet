@@ -449,16 +449,40 @@ export function Table({
     }));
 
   tableData = useMemo(() => {
-    return tableData.map((row) => ({
-      ...row,
-      ...Object.fromEntries(
-        transformations.map((t) => [
-          t.key,
-          resolveReferences(t.transformation, currentState, row[t.key], { cellValue: row[t.key], rowData: row }),
-        ])
-      ),
-    }));
-  }, [JSON.stringify([transformations, currentState, component.definition.properties.data.value])]);
+    return tableData.map((row) => {
+      const transformedObject = {};
+
+      transformations.forEach(({ key, transformation }) => {
+        const nestedKeys = key.includes('.') && key.split('.');
+        if (nestedKeys) {
+          // Single-level nested property
+          const [nestedKey, subKey] = nestedKeys;
+          const nestedObject = transformedObject?.[nestedKey] || { ...row[nestedKey] }; // Retain existing nested object
+          const newValue = resolveReferences(transformation, currentState, row[key], {
+            cellValue: row?.[nestedKey]?.[subKey],
+            rowData: row,
+          });
+
+          // Apply transformation to subKey
+          nestedObject[subKey] = newValue;
+
+          // Update transformedObject with the new nested object
+          transformedObject[nestedKey] = nestedObject;
+        } else {
+          // Non-nested property
+          transformedObject[key] = resolveReferences(transformation, currentState, row[key], {
+            cellValue: row[key],
+            rowData: row,
+          });
+        }
+      });
+
+      return {
+        ...row,
+        ...transformedObject,
+      };
+    });
+  }, [JSON.stringify([tableData, transformations, currentState])]);
 
   useEffect(() => {
     setExposedVariables({
