@@ -35,6 +35,7 @@ describe("LDAP flow", () => {
     it("Verify the LDAP UI and user onboarding", () => {
         setSSOStatus("My workspace", "ldap", false);
         navigateToManageSSO();
+        cy.wait(1000)
         cy.get('[data-cy="ldap-sso-card"]')
             .verifyVisibleElement("have.text", "LDAP")
             .click();
