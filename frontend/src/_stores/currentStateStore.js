@@ -1,9 +1,10 @@
 import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
 import _, { debounce, omit } from 'lodash';
-import { useResolveStore } from './resolverStore';
+import { getEntityIdFromResolverTable, useResolverStoreActions, useResolveStore } from './resolverStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { useEditorStore } from './editorStore';
 
 const initialState = {
   queries: {},
@@ -24,13 +25,22 @@ const initialState = {
   isEditorReady: false,
 };
 
-function removeUndefined(obj) {
-  Object.keys(obj).forEach((key) => {
-    if (obj[key] && typeof obj[key] === 'object') removeUndefined(obj[key]);
-    else if (obj[key] === undefined) delete obj[key];
-  });
+function generatePath(obj, targetKey, currentPath = '') {
+  for (const key in obj) {
+    const newPath = currentPath ? currentPath + '.' + key : key;
 
-  return obj;
+    if (key === targetKey) {
+      return newPath;
+    }
+
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      const result = generatePath(obj[key], targetKey, newPath);
+      if (result) {
+        return result;
+      }
+    }
+  }
+  return null;
 }
 
 export const useCurrentStateStore = create(
@@ -51,6 +61,33 @@ export const useCurrentStateStore = create(
           if (_.isEmpty(diffState)) return;
 
           set({ ...currentState }, false, { type: 'SET_CURRENT_STATE', currentState });
+
+          //need to track only queries, components, variables, page, constants, layout
+          // from the diff, if any of these entities are changed, we need to update the store
+
+          if (get().isEditorReady) {
+            const entitiesToTrack = ['queries', 'components', 'variables', 'page', 'constants', 'layout'];
+
+            const entitiesChanged = Object.keys(diffState).filter((entity) => entitiesToTrack.includes(entity));
+
+            const diffObj = entitiesChanged.reduce((acc, entity) => {
+              acc[entity] = diffState[entity];
+              return acc;
+            }, {});
+
+            const allPaths = entitiesChanged.reduce((acc, entity) => {
+              const paths = Object.keys(diffObj[entity]).map((key) => {
+                return generatePath(diffObj[entity], key);
+              });
+
+              acc[entity] = paths.map((path) => `${entity}.${path}`).join(',');
+              return acc;
+            }, {});
+
+            const x = Object.values(allPaths);
+
+            useEditorStore.getState().actions.updateCurrentStateDiff(x);
+          }
         },
         setErrors: (error) => {
           set({ errors: { ...get().errors, ...error } }, false, { type: 'SET_ERRORS', error });

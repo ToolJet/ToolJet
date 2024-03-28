@@ -5,6 +5,7 @@ import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
 import Label from '@/_ui/Label';
+import useRenderCount from '@/_hooks/useRenderCount';
 
 export const TextInput = function TextInput({
   height,

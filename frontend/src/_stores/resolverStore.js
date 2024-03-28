@@ -185,14 +185,21 @@ export const useResolveStore = create(
         return get().referenceMapper;
       },
 
-      getEntityId: (entityName) => {
-        const { referenceMapper } = get();
+      getEntityId: (entityNames = []) => {
+        function findEntityIdsFromRefNames(refs) {
+          const entityMap = {};
+          const manager = get().referenceMapper;
 
-        for (const [key, value] of referenceMapper._map) {
-          if (value === entityName) {
-            return referenceMapper.reverseGet(key);
-          }
+          refs.forEach((entityName) => {
+            if (!entityName) return;
+
+            entityMap[entityName] = findEntityId(entityName, manager._map, manager._reverseMap);
+          });
+
+          return entityMap;
         }
+
+        return findEntityIdsFromRefNames(entityNames);
       },
 
       findReferences: (obj) => {
@@ -277,3 +284,5 @@ export const useResolveStore = create(
 );
 
 export const useResolverStoreActions = () => useResolveStore.getState().actions;
+export const getEntityIdFromResolverTable = (entityNames) =>
+  useResolveStore.getState().actions.getEntityId(entityNames);
