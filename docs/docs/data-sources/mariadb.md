@@ -7,13 +7,15 @@ title: MariaDB
 
 ToolJet can connect to both self-hosted and cloud-based MariaDB servers to read and write data.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 To establish a connection with the MariaDB global datasource, you can either click on the `+Add new global datasource` button located on the query panel or navigate to the **[Global Datasources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/gdsmaria-v2.png" alt="MariaDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/mariadb/gdsmaria-v2.png" alt="MariaDB" />
 
 </div>
 
@@ -33,13 +35,17 @@ To establish a connection with the MariaDB global datasource, you can either cli
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/connections.png" alt="MariaDB" />
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/mariadb/connections.png" alt="MariaDB" />
 
 </div>
 
 :::info
 Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
 :::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying MariaDB
 
@@ -58,11 +64,15 @@ Query results can be transformed using Transformation. For more information on t
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/querycreate.png" alt="MariaDB query" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/mariadb/querycreate.png" alt="MariaDB query" />
 
 </div>
 
-## CRUD queries
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## CRUD Queries
 
 Suppose there exists a MariaDB database named "customers." We can create an example table called "users" with the following columns:
 
@@ -108,7 +118,7 @@ VALUES
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/insertusers.png" alt="MariaDB query" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/mariadb/insertusers.png" alt="MariaDB query" />
 
 </div>
 
@@ -144,7 +154,7 @@ WHERE age > 25;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/readfilter.png" alt="MariaDB query" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/mariadb/readfilter.png" alt="MariaDB query" />
 
 </div>
 
@@ -158,7 +168,7 @@ WHERE id = 1;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/updateuser.png" alt="MariaDB query" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/mariadb/updateuser.png" alt="MariaDB query" />
 
 </div>
 
@@ -176,10 +186,16 @@ DELETE FROM user WHERE id = 1;
 
 Remember to adjust the values and conditions based on your specific needs. These commands will allow you to create the table, insert data, retrieve data, update data, and delete data in the "users" table in MariaDB.
 
-## Troubleshooting tips
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Troubleshooting Tips
 If you are having trouble connecting a MariaDB data source to ToolJet, try the following:
 - Make sure that your MariaDB server is running and accessible from the ToolJet server.
 - Check the spelling and capitalization of your credentials.
 - Try restarting the ToolJet server.
 
 If you are still having trouble, please contact [ToolJet support](mailto:hello@tooljet.com) or ask on [slack](https://tooljet.com/slack) for assistance.
+
+</div>
