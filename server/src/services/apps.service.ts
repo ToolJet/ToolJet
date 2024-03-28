@@ -520,6 +520,8 @@ export class AppsService {
         await manager.save(newEvent);
       });
 
+      const oldToNewComponentIdMap = {};
+
       page.components.forEach(async (component) => {
         const newComponent = new Component();
         const componentEvents = allEvents.filter((event) => event.sourceId === component.id);
@@ -527,6 +529,7 @@ export class AppsService {
         newComponent.id = uuid.v4();
 
         oldComponentToNewComponentMapping[component.id] = newComponent.id;
+        oldToNewComponentIdMap[component.id] = newComponent.id;
 
         newComponent.name = component.name;
         newComponent.type = component.type;
@@ -573,6 +576,11 @@ export class AppsService {
       });
 
       newComponents.forEach((component) => {
+        const buttonValue = component?.properties?.buttonToSubmit?.value;
+        if (buttonValue) {
+          component.properties.buttonToSubmit.value = oldToNewComponentIdMap[buttonValue];
+        }
+
         let parentId = component.parent ? component.parent : null;
 
         if (!parentId) return;
