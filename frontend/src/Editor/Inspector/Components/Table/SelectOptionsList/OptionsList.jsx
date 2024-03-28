@@ -122,7 +122,7 @@ export const OptionsList = ({
         style={{ zIndex: 99999, minWidth: 200 }}
       >
         <Popover.Body>
-          <div className="field mb-2 tj-app-input">
+          <div className="field mb-2 tj-app-input" onClick={(e) => e.stopPropagation()}>
             <label data-cy={`label-action-button-text`} className="form-label">
               Option label
             </label>
@@ -140,7 +140,7 @@ export const OptionsList = ({
               }}
             />
           </div>
-          <div className="field mb-2 tj-app-input">
+          <div className="field mb-2 tj-app-input" onClick={(e) => e.stopPropagation()}>
             <label data-cy={`label-action-button-text`} className="form-label">
               Option value
             </label>
@@ -178,10 +178,7 @@ export const OptionsList = ({
     );
   };
 
-  const defaultOptionsValues = (hasOptions = false, options) => {
-    if (hasOptions && Array.isArray(options)) {
-      return options;
-    }
+  const defaultOptionsValues = () => {
     return {
       options: [
         { label: 'Jane Cooper', value: 'Jane Copoper' },
@@ -254,8 +251,11 @@ export const OptionsList = ({
             >
               <Droppable droppableId="droppable">
                 {({ innerRef, droppableProps, placeholder }) => {
-                  const defaultOptions = defaultOptionsValues(column.hasOwnProperty('options'), column?.options);
-                  Object.assign(column, defaultOptions);
+                  const columnHasOptions = column.hasOwnProperty('options');
+                  if (!columnHasOptions) {
+                    const defaultOptions = defaultOptionsValues(columnHasOptions);
+                    Object.assign(column, defaultOptions);
+                  }
                   return (
                     <div className="w-100" {...droppableProps} ref={innerRef}>
                       {column?.options?.map((option, optionIndex) => {
