@@ -42,6 +42,26 @@ export class EmailService {
             path: join(__dirname, '../mails/assets/rocket.png'),
             cid: 'rocket',
           },
+          {
+            filename: 'twitter.png',
+            path: join(__dirname, '../mails/assets/twitter.png'),
+            cid: 'twitter',
+          },
+          {
+            filename: 'linkedin.png',
+            path: join(__dirname, '../mails/assets/linkedin.png'),
+            cid: 'linkedin',
+          },
+          {
+            filename: 'youtube.png',
+            path: join(__dirname, '../mails/assets/youtube.png'),
+            cid: 'youtube',
+          },
+          {
+            filename: 'github.png',
+            path: join(__dirname, '../mails/assets/github.png'),
+            cid: 'github',
+          },
         ],
       };
 
@@ -57,7 +77,7 @@ export class EmailService {
     return templateCompile(templateData);
   }
 
-  stripTrailingSlash(hostname: string) {
+  private stripTrailingSlash(hostname: string) {
     return hostname?.endsWith('/') ? hostname.slice(0, -1) : hostname;
   }
 
