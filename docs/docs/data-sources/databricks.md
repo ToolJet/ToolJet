@@ -24,6 +24,8 @@ ToolJet's Databricks integration relies on a configuration form that supports th
 #### Optional Parameters
 
 - **Port**: The port number of the Databricks Warehouse or Cluster. The default port number is `443`.
+- **Default Catalog**: The default catalog to use for the connection.
+- **Default Schema**: The default schema to use for the connection.
 
 ### Setup
 
@@ -40,6 +42,10 @@ ToolJet's Databricks integration relies on a configuration form that supports th
   </div> 
 
 - Navigate to the Databricks datasource configuration form in ToolJet, fill in the required parameters, and click the **Save** button. You can test the connection by clicking the **Test Connection** button.
+
+  :::note
+    Ensure your Databricks Warehouse or Cluster is running and has been granted the necessary permissions prior to clicking **Test Connection** or running any queries.
+  :::
 
   <div style={{textAlign: 'center'}}>
       <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/setup-parameters.png" alt="Databricks: Setup Paramaters" />
@@ -67,7 +73,7 @@ You can apply transformations to the query results. Refer to our transformations
 
 ## Supported Queries
 
-Databricks supports standard SQL commands (SELECT, INSERT, UPDATE, DELETE) for data manipulation tasks.
+Databricks supports standard SQL commands for data manipulation tasks.
 
 ### Read Data 
 
