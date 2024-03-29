@@ -26,7 +26,7 @@ jobs:
 
       - name:  Build marketplace plugins
         run: |
-          cd marketplace
+          cd ./marketplace
           npm install && npm run build --workspaces
           AWS_BUCKET=tooljet-plugins-stage node scripts/upload-to-s3.js
 
