@@ -7,6 +7,8 @@ title: n8n
 
 ToolJet can trigger n8n workflows using webhook URLs. Please refer [this](https://docs.n8n.io/) to know more about n8n.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 To establish a connection with the n8n data source, click on the `+Add new data source` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
@@ -20,7 +22,7 @@ n8n webhooks can be called with or without an **Authentication**. You can keep t
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/n8n/basicauth.png" alt="n8n basicauth"  />
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/n8n/basicauth.png" alt="n8n basicauth"  />
 
 </div>
 
@@ -30,13 +32,17 @@ n8n webhooks can be called with or without an **Authentication**. You can keep t
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/n8n/headerauth.png" alt="n8n headerauth"  />
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/n8n/headerauth.png" alt="n8n headerauth"  />
 
 </div>
 
 :::tip
 Webhook credentials and instance credentials are different. Please use the credentials that you use with the webhook trigger. Know more: **[Webhook Authentication](https://docs.n8n.io/nodes/n8n-nodes-base.webhook/#:~:text=then%20gets%20deactivated.-,Authentication,-%3A%20The%20Webhook%20node)**.
 :::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Trigger Workflow
 
@@ -49,3 +55,4 @@ You can trigger a workflow with `GET/POST` URL. Choose the request type from the
 
 <img className="screenshot-full" src="/img/datasource-reference/n8n/query.png" alt="n8n query" />
 
+</div>

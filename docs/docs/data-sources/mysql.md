@@ -5,6 +5,8 @@ title: MySQL
 
 ToolJet can connect to MySQL databases to read and write data.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 To establish a connection with the MySQL data source, you can either click on the `+Add New` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
@@ -53,12 +55,20 @@ It is recommended to create a new MySQL database user so that you can control th
 
 Click on **Test connection** to verify the correctness of the provided credentials and the accessibility of the database to the ToolJet server. Finally, click the **Save** button to save the data source configuration.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Querying MySQL
 
 Once the MySQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](/docs/app-builder/query-panel#add)** located at the bottom panel of the app builder.
 
 1. **[SQL mode](/docs/data-sources/mysql#sql-mode)**
 2. **[GUI mode](/docs/data-sources/mysql#gui-mode)**
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### SQL mode
 
@@ -72,9 +82,13 @@ SELECT * FROM users
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/sqlmode.png" alt="mysql"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/mysql/sqlmode.png" alt="mysql"/>
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### GUI mode
 
@@ -88,10 +102,12 @@ GUI mode can be used to query MySQL database without writing queries. Select GUI
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/guinew.png" alt="mysql"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/mysql/guinew.png" alt="mysql"/>
 
 </div>
 
 :::tip
 Query results can be transformed using transformations. Learn more about transformations [here](/docs/tutorial/transformations).
 :::
+
+</div>

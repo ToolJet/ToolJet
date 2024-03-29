@@ -7,6 +7,8 @@ title: OpenAPI
 
 OpenAPI is a specification for designing and documenting RESTful APIs. Using OpenAPI datasource, ToolJet can generate REST API operations from OpenAPI Specs.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 To establish a connection with the OpenAPI global datasource, you can either click on the `+Add new global datasource` button located on the query panel or navigate to the **[Global Datasources](/docs/data-sources/overview)** page through the ToolJet dashboard.
@@ -21,13 +23,18 @@ OpenAPI datasource accepts specifications only in **JSON** and **YAML** formats.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/openapi/openapiconnect-v2.png" alt="OpenAPI" />
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/openapi/openapiconnect-v2.png" alt="OpenAPI" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying OpenAPI
 
 - Operations will be automatically generated from the specifications, and each operation will be distinct from others.
+
 
 ### Fields
 
@@ -37,6 +44,8 @@ OpenAPI datasource accepts specifications only in **JSON** and **YAML** formats.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/openapi/query.png" alt="OpenAPI" />
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/openapi/query.png" alt="OpenAPI" />
+
+</div>
 
 </div>
