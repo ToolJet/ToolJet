@@ -1,5 +1,5 @@
 ---
-id: engagespot
+id: marketplace-plugin-engagespot
 title: Engagespot
 ---
 
