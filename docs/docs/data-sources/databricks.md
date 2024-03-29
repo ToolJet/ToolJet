@@ -5,7 +5,7 @@ title: Databricks
 
 # Databricks
 
-Databricks is a cloud-based platform for data processing, analytics, and machine learning. ToolJet connects to Databricks, allowing your applications to access and update your data in your Databricks Warehouses and Clusters directly using SQL queries.
+Databricks is a cloud-based platform for data processing, analytics, and machine learning. ToolJet connects to Databricks, allowing your applications to access and update your data in your Databricks Warehouses directly using SQL queries.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/install.gif" alt="Install Databricks" />
@@ -17,19 +17,19 @@ ToolJet's Databricks integration relies on a configuration form that supports th
 
 #### Required Parameters
 
-- **Server hostname**: The server hostname or the IP address of your Databricks Warehouse or Cluster. For example, `62596234423488486.6.gcp.databricks.com`.
+- **Server hostname**: The server hostname or the IP address of your Databricks Warehouse. For example, `62596234423488486.6.gcp.databricks.com`.
 - **HTTP Path**: The API endpoint path for the Databricks resource you want to access. For example, `/sql/1.0/warehouses/44899g7346c19m95`.
 - **Personal access token**: Personal access tokens are used for secure authentication to the Databricks API instead of passwords. For example, `dapi783c7d155d138d8cf14`.
 
 #### Optional Parameters
 
-- **Port**: The port number of the Databricks Warehouse or Cluster. The default port number is `443`.
+- **Port**: The port number of your Databricks Warehouse. The default port number is `443`.
 - **Default Catalog**: The default catalog to use for the connection.
 - **Default Schema**: The default schema to use for the connection.
 
 ### Setup
 
-- Navigate to your Databricks workspace, select the desired cluster or SQL Warehouse, and find **Server Hostname** and **HTTP Path** within the connection details tab.
+- Navigate to your Databricks workspace, select the desired SQL Warehouse, and find **Server Hostname** and **HTTP Path** within the connection details tab.
 
   <div style={{textAlign: 'center'}}>
       <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/connection-details.png" alt="Databricks: Connection Details" />
@@ -44,7 +44,7 @@ ToolJet's Databricks integration relies on a configuration form that supports th
 - Navigate to the Databricks datasource configuration form in ToolJet, fill in the required parameters, and click the **Save** button. You can test the connection by clicking the **Test Connection** button.
 
   :::note
-    Ensure your Databricks Warehouse or Cluster is running and has been granted the necessary permissions prior to clicking **Test Connection** or running any queries.
+    Ensure your Databricks Warehouse is running and has been granted the necessary permissions prior to clicking **Test Connection** or running any queries.
   :::
 
   <div style={{textAlign: 'center'}}>
