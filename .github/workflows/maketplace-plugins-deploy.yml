@@ -27,7 +27,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ env.BRANCH_NAME }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
