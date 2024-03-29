@@ -188,7 +188,6 @@ export const Container = ({
             }
           : updatedBoxes[id].layouts.desktop;
       });
-      console.log(updatedBoxes);
       setBoxes({ ...updatedBoxes });
     } else {
       const diffState = diff(components, boxes);
