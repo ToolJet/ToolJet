@@ -11,10 +11,13 @@ describe("Manage SSO for multi workspace", () => {
   const envVar = Cypress.env("environment");
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
-    SSO.setSSOStatus("My workspace", "google", false);
-    SSO.setSSOStatus("My workspace", "git", false);
+    SSO.deleteOrganisationSSO("My workspace", ["google", "git"]);
   });
   it("Should verify General settings page elements", () => {
+    SSO.resetDomain();
+    SSO.setSignupStatus(false)
+    SSO.defaultSSO(true)
+
     common.navigateToManageSSO();
     cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
       expect($el.contents().first().text().trim()).to.eq(
@@ -83,7 +86,7 @@ describe("Manage SSO for multi workspace", () => {
       .verifyVisibleElement("have.text", ssoText.saveButton);
 
     SSO.googleSSOPageElements();
-    SSO.defaultSSO("My workspace", false);
+    SSO.defaultSSO(false);
     cy.logoutApi();
     cy.visit("/login/my-workspace");
     cy.get(ssoSelector.googleIcon).should("be.visible");
@@ -94,7 +97,7 @@ describe("Manage SSO for multi workspace", () => {
   });
 
   it("Should verify Git SSO page elements", () => {
-    SSO.defaultSSO("My workspace", true);
+    SSO.defaultSSO(true);
 
     common.navigateToManageSSO();
 
@@ -139,7 +142,7 @@ describe("Manage SSO for multi workspace", () => {
       .verifyVisibleElement("have.text", ssoText.saveButton);
 
     SSO.gitSSOPageElements();
-    SSO.defaultSSO("My workspace", false);
+    SSO.defaultSSO(false);
     cy.logoutApi();
     cy.visit("/login/my-workspace");
 
