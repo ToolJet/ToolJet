@@ -70,7 +70,7 @@ const debouncedChange = _.debounce(() => {
   useCurrentStateStore.getState().actions.setCurrentState({
     components: duplicateCurrentState,
   });
-}, 500);
+}, 100);
 
 export function onComponentOptionsChanged(component, options) {
   const componentName = component.name;
