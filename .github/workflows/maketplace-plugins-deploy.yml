@@ -26,8 +26,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ env.BRANCH_NAME }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
