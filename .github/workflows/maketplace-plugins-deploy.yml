@@ -17,11 +17,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -31,7 +26,7 @@ jobs:
 
       - name:  Build marketplace plugins
         run: |
-          cd markertplace
+          cd marketplace
           npm install && npm run build --workspaces
           AWS_BUCKET=tooljet-plugins-stage node scripts/upload-to-s3.js
 
