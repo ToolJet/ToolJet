@@ -168,18 +168,17 @@ const EditorInput = ({
     setCurrentValue(val);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   const handleOnBlur = React.useCallback(() => {
     setFirstTimeFocus(false);
     if (ignoreValidation) {
       return onBlurUpdate(currentValue);
     }
-
-    if (!error) {
-      const _value = fxActive ? `{{${currentValue}}}` : currentValue;
-
-      onBlurUpdate(_value);
-    }
+    setTimeout(() => {
+      if (!error) {
+        const _value = fxActive ? `{{${currentValue}}}` : currentValue;
+        onBlurUpdate(_value);
+      }
+    }, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentValue, error]);
 
