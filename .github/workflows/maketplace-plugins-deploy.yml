@@ -86,6 +86,9 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_MAR_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_MAR_ACCESS_KEY }}
           aws-region: us-east-2
+        
+      - name: sync repo
+        run: actions@checkout@v3
 
       - name: Fetch the remote branch
         run: |
