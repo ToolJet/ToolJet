@@ -66,50 +66,85 @@ export function setCurrentStateAsync(_ref, changes) {
   });
 }
 
-const debouncedChange = () => {
+const debouncedChange = _.debounce(() => {
   useCurrentStateStore.getState().actions.setCurrentState({
     components: duplicateCurrentState,
   });
-};
+}, 500);
 
 export function onComponentOptionsChanged(component, options) {
   const componentName = component.name;
-  const components = duplicateCurrentState === null ? getCurrentState().components : duplicateCurrentState;
-  let componentData = components[componentName];
-  componentData = componentData || {};
+  const { isEditorReady } = getCurrentState();
 
-  for (const option of options) {
-    componentData[option[0]] = option[1];
+  if (isEditorReady) {
+    if (duplicateCurrentState !== null) {
+      duplicateCurrentState = null;
+    }
+
+    const components = getCurrentState().components;
+    let componentData = components[componentName];
+    componentData = componentData || {};
+
+    for (const option of options) {
+      componentData[option[0]] = option[1];
+    }
+
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: { ...components, [componentName]: componentData },
+    });
+  } else {
+    const components = duplicateCurrentState === null ? getCurrentState().components : duplicateCurrentState;
+    let componentData = components[componentName];
+    componentData = componentData || {};
+
+    for (const option of options) {
+      componentData[option[0]] = option[1];
+    }
+
+    duplicateCurrentState = { ...components, [componentName]: componentData };
+
+    debouncedChange();
   }
-
-  duplicateCurrentState = { ...components, [componentName]: componentData };
-
-  debouncedChange();
-  // useCurrentStateStore.getState().actions.setCurrentState({
-  //   components: duplicateCurrentState,
-  // });
   return Promise.resolve();
 }
 
 export function onComponentOptionChanged(component, option_name, value) {
   const componentName = component.name;
-  const components = duplicateCurrentState === null ? getCurrentState().components : duplicateCurrentState;
-  let componentData = components[componentName];
-  componentData = componentData || {};
-  componentData[option_name] = value;
+  const { isEditorReady } = getCurrentState();
+  if (isEditorReady) {
+    if (duplicateCurrentState !== null) {
+      duplicateCurrentState = null;
+    }
+    const components = getCurrentState().components;
+    let componentData = components[componentName];
+    componentData = componentData || {};
+    componentData[option_name] = value;
 
-  duplicateCurrentState = { ...components, [componentName]: componentData };
+    if (option_name !== 'id') {
+      useCurrentStateStore.getState().actions.setCurrentState({
+        components: { ...components, [componentName]: componentData },
+      });
+    } else if (!componentData?.id) {
+      useCurrentStateStore.getState().actions.setCurrentState({
+        components: { ...components, [componentName]: componentData },
+      });
+    }
 
-  if (option_name !== 'id') {
-    debouncedChange();
-    // useCurrentStateStore.getState().actions.setCurrentState({
-    //   components: duplicateCurrentState,
-    // });
-  } else if (!componentData?.id) {
-    debouncedChange();
-    // useCurrentStateStore.getState().actions.setCurrentState({
-    //   components: duplicateCurrentState,
-    // });
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: { ...components, [componentName]: componentData },
+    });
+  } else {
+    const components = duplicateCurrentState === null ? getCurrentState().components : duplicateCurrentState;
+    let componentData = components[componentName];
+    componentData = componentData || {};
+    componentData[option_name] = value;
+
+    duplicateCurrentState = { ...components, [componentName]: componentData };
+    if (option_name !== 'id') {
+      debouncedChange();
+    } else if (!componentData?.id) {
+      debouncedChange();
+    }
   }
 
   return Promise.resolve();
