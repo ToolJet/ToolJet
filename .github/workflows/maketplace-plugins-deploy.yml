@@ -24,6 +24,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_MAR_ACCESS_KEY }}
           aws-region: us-east-2
 
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name:  Build marketplace plugins
         run: |
           cd marketplace && npm install --prefix marketplace && npm run build --workspaces
