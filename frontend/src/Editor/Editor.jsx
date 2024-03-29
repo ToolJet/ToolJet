@@ -895,13 +895,10 @@ const EditorComponent = (props) => {
           (event) => event.target === 'page' && event.sourceId === homePageId
         );
 
-        const queuedQueriesForRunOnAppLoad = useDataQueriesStore.getState().queuedQueriesForRunOnAppLoad;
         const editorRef = getEditorRef();
 
-        await runQueries(queuedQueriesForRunOnAppLoad, editorRef);
+        await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
         await handleEvent('onPageLoad', currentPageEvents, {}, true);
-
-        useDataQueriesStore.getState().actions.clearQueuedQueriesForRunOnAppLoad();
       });
   };
 

@@ -47,6 +47,8 @@ const ERROR_TYPES = Object.freeze({
   EvalError: 'EvalError',
 });
 
+export let duplicateCurrentState = null;
+
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
     _ref.setState(state, resolve);
@@ -64,9 +66,15 @@ export function setCurrentStateAsync(_ref, changes) {
   });
 }
 
+const debouncedChange = () => {
+  useCurrentStateStore.getState().actions.setCurrentState({
+    components: duplicateCurrentState,
+  });
+};
+
 export function onComponentOptionsChanged(component, options) {
   const componentName = component.name;
-  const components = getCurrentState().components;
+  const components = duplicateCurrentState === null ? getCurrentState().components : duplicateCurrentState;
   let componentData = components[componentName];
   componentData = componentData || {};
 
@@ -74,27 +82,34 @@ export function onComponentOptionsChanged(component, options) {
     componentData[option[0]] = option[1];
   }
 
-  useCurrentStateStore.getState().actions.setCurrentState({
-    components: { ...components, [componentName]: componentData },
-  });
+  duplicateCurrentState = { ...components, [componentName]: componentData };
+
+  debouncedChange();
+  // useCurrentStateStore.getState().actions.setCurrentState({
+  //   components: duplicateCurrentState,
+  // });
   return Promise.resolve();
 }
 
 export function onComponentOptionChanged(component, option_name, value) {
   const componentName = component.name;
-  const components = getCurrentState().components;
+  const components = duplicateCurrentState === null ? getCurrentState().components : duplicateCurrentState;
   let componentData = components[componentName];
   componentData = componentData || {};
   componentData[option_name] = value;
 
+  duplicateCurrentState = { ...components, [componentName]: componentData };
+
   if (option_name !== 'id') {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: { ...components, [componentName]: componentData },
-    });
+    debouncedChange();
+    // useCurrentStateStore.getState().actions.setCurrentState({
+    //   components: duplicateCurrentState,
+    // });
   } else if (!componentData?.id) {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: { ...components, [componentName]: componentData },
-    });
+    debouncedChange();
+    // useCurrentStateStore.getState().actions.setCurrentState({
+    //   components: duplicateCurrentState,
+    // });
   }
 
   return Promise.resolve();
@@ -983,7 +998,8 @@ export function runQuery(
   confirmed = undefined,
   mode = 'edit',
   userSuppliedParameters = {},
-  shouldSetPreviewData = false
+  shouldSetPreviewData = false,
+  isOnLoad = false
 ) {
   let parameters = userSuppliedParameters;
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
@@ -1046,18 +1062,20 @@ export function runQuery(
 
   // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      queries: {
-        ...getCurrentState().queries,
-        [queryName]: {
-          ...getCurrentState().queries[queryName],
-          isLoading: true,
-          data: [],
-          rawData: [],
+    if (!isOnLoad) {
+      useCurrentStateStore.getState().actions.setCurrentState({
+        queries: {
+          ...getCurrentState().queries,
+          [queryName]: {
+            ...getCurrentState().queries[queryName],
+            isLoading: true,
+            data: [],
+            rawData: [],
+          },
         },
-      },
-      errors: {},
-    });
+        errors: {},
+      });
+    }
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode, parameters);
@@ -1879,10 +1897,10 @@ function convertMapSet(obj) {
 export const checkExistingQueryName = (newName) =>
   useDataQueriesStore.getState().dataQueries.some((query) => query.name === newName);
 
-export const runQueries = (queries, _ref) => {
+export const runQueries = (queries, _ref, isOnLoad = false) => {
   queries.forEach((query) => {
     if (query.options.runOnPageLoad && isQueryRunnable(query)) {
-      runQuery(_ref, query.id, query.name);
+      runQuery(_ref, query.id, query.name, isOnLoad);
     }
   });
 };
