@@ -4,6 +4,8 @@ import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 import { renderDatatypeIcon, isSerialDataType } from '../constants';
+import { ToolTip } from '@/_components/ToolTip';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 import './styles.scss';
 
@@ -221,7 +223,8 @@ const RowForm = ({ onCreate, onClose }) => {
                       <span style={{ width: '24px' }}>
                         {renderDatatypeIcon(isSerialDataTypeColumn ? 'serial' : dataType)}
                       </span>
-                      <span>{headerText}</span>
+                      <span style={{ marginRight: '5px' }}>{headerText}</span>
+                      {constraints_type?.is_primary_key === true && <SolidIcon name="primarykey" />}
                     </div>
                   </div>
                   <div
@@ -297,7 +300,14 @@ const RowForm = ({ onCreate, onClose }) => {
                     )}
                   </div>
                 </div>
-                {renderElement(accessor, dataType, isPrimaryKey, column_default, index)}
+                <ToolTip
+                  message="Serial data type value is auto-generated and cannot be edited"
+                  placement="top"
+                  tooltipClassName="tootip-table"
+                  show={isSerialDataType(columns[index])}
+                >
+                  {renderElement(accessor, dataType, isPrimaryKey, column_default, index)}
+                </ToolTip>
               </div>
             );
           })}

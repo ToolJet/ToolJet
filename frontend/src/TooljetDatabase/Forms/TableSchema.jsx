@@ -8,7 +8,7 @@ import SelectIcon from '../Icons/Select-column.svg';
 import MenuIcon from '../Icons/Unique-menu.svg';
 // import DeleteIcon from '../Icons/DeleteIcon.svg';
 import Tick from '../Icons/Tick.svg';
-import tjdbDropdownStyles, { dataTypes, formatOptionLabel, defaultdataType } from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType } from '../constants';
 import Select, { components } from 'react-select';
 
 function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumnSelection, handleDelete, isEditMode }) {
@@ -116,8 +116,12 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
                   width="120px"
                   height="36px"
                   //useMenuPortal={false}
-                  value={columns[index]?.dataTypeDetails}
-                  defaultValue={columns[index]?.constraints_type?.is_primary_key === true ? defaultdataType : null}
+                  value={
+                    isEditMode && columns[index]?.column_default?.includes('nextval(')
+                      ? serialDataType
+                      : columns[index]?.dataTypeDetails
+                  }
+                  defaultValue={columns[index]?.constraints_type?.is_primary_key === true ? serialDataType : null}
                   options={dataTypes}
                   onChange={(value) => {
                     setColumnSelection((prevState) => ({
@@ -129,6 +133,15 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
                     prevColumns[index].data_type = value ? value.value : null;
                     // isEditMode ? (prevColumns[index].dataTypeDetails = value ? value : null) : null;
                     prevColumns[index].dataTypeDetails = value;
+                    const columnConstraints = prevColumns[index]?.constraints_type ?? {};
+                    columnConstraints.is_not_null =
+                      value.value === 'serial' ||
+                      (prevColumns[index].constraints_type.is_primary_key && prevColumns[index].data_type !== 'serial');
+
+                    columnConstraints.is_unique =
+                      value.value === 'serial' ||
+                      (prevColumns[index].constraints_type.is_primary_key && prevColumns[index].data_type !== 'serial');
+                    prevColumns[index].constraints_type = { ...columnConstraints };
                     setColumns(prevColumns);
                   }}
                   components={{
@@ -169,38 +182,48 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
               </div>
             </ToolTip>
 
-            <div className="m-0" data-cy="column-default-input-field">
-              <input
-                onChange={(e) => {
-                  e.persist();
-                  const prevColumns = { ...columns };
-                  prevColumns[index].column_default = e.target.value;
-                  setColumns(prevColumns);
-                }}
-                value={
-                  isEditMode && columns[index].data_type === 'serial'
-                    ? 'Auto-generated'
-                    : columns[index].column_default
-                    ? columns[index].column_default
-                    : ''
-                }
-                type="text"
-                className="form-control defaultValue"
-                data-cy="default-input-field"
-                placeholder={
-                  (columns[index].data_type === 'serial' &&
-                    columns[index]?.constraints_type?.is_primary_key === true) ||
-                  columns[index].data_type === 'serial'
-                    ? 'Auto-generated'
-                    : 'Null'
-                }
-                disabled={
-                  (columns[index].data_type === 'serial' &&
-                    columns[index]?.constraints_type?.is_primary_key === true) ||
-                  columns[index].data_type === 'serial'
-                }
-              />
-            </div>
+            <ToolTip
+              message={columns[index]?.data_type === 'serial' ? 'Serial data type values cannot be modified' : null}
+              placement="top"
+              tooltipClassName="tootip-table"
+              style={getToolTipPlacementStyle(index, isEditMode, columns)}
+              show={columns[index]?.data_type === 'serial'}
+            >
+              <div className="m-0" data-cy="column-default-input-field">
+                <input
+                  onChange={(e) => {
+                    e.persist();
+                    const prevColumns = { ...columns };
+                    prevColumns[index].column_default = e.target.value;
+                    setColumns(prevColumns);
+                  }}
+                  value={
+                    isEditMode && columns[index]?.column_default?.includes('nextval(')
+                      ? 'Auto-generated'
+                      : columns[index].data_type === 'serial'
+                      ? 'Auto-generated'
+                      : columns[index].column_default
+                  }
+                  type="text"
+                  className="form-control defaultValue"
+                  data-cy="default-input-field"
+                  placeholder={
+                    (columns[index].data_type === 'serial' &&
+                      columns[index]?.constraints_type?.is_primary_key === true) ||
+                    columns[index].data_type === 'serial' ||
+                    (isEditMode && columns[index]?.column_default?.includes('nextval('))
+                      ? 'Auto-generated'
+                      : 'Null'
+                  }
+                  disabled={
+                    (columns[index].data_type === 'serial' &&
+                      columns[index]?.constraints_type?.is_primary_key === true) ||
+                    columns[index].data_type === 'serial' ||
+                    (isEditMode && columns[index]?.column_default?.includes('nextval('))
+                  }
+                />
+              </div>
+            </ToolTip>
 
             <div className="primary-check">
               <IndeterminateCheckbox
@@ -210,8 +233,10 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
                   const columnConstraints = prevColumns[index]?.constraints_type ?? {};
                   // const data = e.target.checked === true ? true : false;
                   columnConstraints.is_primary_key = e.target.checked;
-                  columnConstraints.is_not_null = true;
-                  columnConstraints.is_unique = true;
+                  columnConstraints.is_not_null =
+                    e.target.checked === true || prevColumns[index].data_type === 'serial' ? true : false;
+                  columnConstraints.is_unique =
+                    e.target.checked === true || prevColumns[index].data_type === 'serial' ? true : false;
                   prevColumns[index].constraints_type = { ...columnConstraints };
                   // prevColumns[index].data_type = data === false && '';
                   setColumns(prevColumns);
@@ -220,11 +245,21 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
             </div>
 
             <ToolTip
-              message="Primary key values cannot be null"
+              // message="Primary key values cannot be null"
+              message={
+                columns[index]?.constraints_type?.is_primary_key === true
+                  ? 'Primary key values cannot be null'
+                  : columns[index]?.data_type === 'serial' && columns[index]?.constraints_type?.is_primary_key !== true
+                  ? 'Serial data type cannot have NULL value'
+                  : null
+              }
               placement="top"
               tooltipClassName="tootip-table"
               style={getToolTipPlacementStyle(index, isEditMode, columns)}
-              show={columns[index]?.constraints_type?.is_primary_key === true ? true : false}
+              show={
+                columns[index]?.constraints_type?.is_primary_key === true ||
+                (columns[index]?.data_type === 'serial' && columns[index]?.constraints_type?.is_primary_key !== true)
+              }
             >
               <div className="d-flex not-null-toggle">
                 <label className={`form-switch`}>
@@ -242,7 +277,10 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
                       prevColumns[index].constraints_type = { ...columnConstraints };
                       setColumns(prevColumns);
                     }}
-                    disabled={columns[index]?.constraints_type?.is_primary_key === true}
+                    disabled={
+                      columns[index]?.constraints_type?.is_primary_key === true ||
+                      columns[index]?.data_type === 'serial'
+                    }
                   />
                 </label>
                 <p

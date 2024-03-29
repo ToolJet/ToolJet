@@ -21,7 +21,7 @@ export const dataTypes = [
   { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
 ];
 
-export const defaultdataType = [
+export const serialDataType = [
   { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
 ];
 

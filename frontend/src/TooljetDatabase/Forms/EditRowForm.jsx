@@ -6,6 +6,8 @@ import { tooljetDatabaseService } from '@/_services';
 import _ from 'lodash';
 import { isSerialDataType, renderDatatypeIcon, listAllPrimaryKeyColumns } from '../constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
 
 const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
@@ -260,7 +262,8 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
                     >
                       <div className="d-flex align-items-center justify-content-start mb-2">
                         <span style={{ width: '24px' }}>{renderDatatypeIcon(dataType)}</span>
-                        <span>{headerText}</span>
+                        <span style={{ marginRight: '5px' }}>{headerText}</span>
+                        {constraints_type?.is_primary_key === true && <SolidIcon name="primarykey" />}
                       </div>
                     </div>
 
@@ -359,8 +362,14 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
                       )}
                     </div>
                   </div>
-
-                  {renderElement(accessor, dataType, index, shouldInputBeDisabled)}
+                  <ToolTip
+                    message="Serial data type values cannot be modified"
+                    placement="top"
+                    tooltipClassName="tootip-table"
+                    show={isSerialDataType(columns[index])}
+                  >
+                    {renderElement(accessor, dataType, index, shouldInputBeDisabled)}
+                  </ToolTip>
                 </div>
               );
             })}

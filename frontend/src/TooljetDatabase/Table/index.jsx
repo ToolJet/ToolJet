@@ -807,7 +807,11 @@ const Table = ({ collapseSidebar }) => {
             </span>
             {column.render('Header')}
           </div>
-          <SolidIcon name="primarykey" />
+          <ToolTip message="Primary key" placement="top" tooltipClassName="tootip-table" show={true}>
+            <div>
+              <SolidIcon name="primarykey" />
+            </div>
+          </ToolTip>
         </div>
       </ToolTip>
     ) : (
