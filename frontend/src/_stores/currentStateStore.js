@@ -84,9 +84,9 @@ export const useCurrentStateStore = create(
               return acc;
             }, {});
 
-            const x = Object.values(allPaths);
+            const currentStatePaths = Object.values(allPaths);
 
-            useEditorStore.getState().actions.updateCurrentStateDiff(x);
+            useEditorStore.getState().actions.updateCurrentStateDiff(currentStatePaths);
           }
         },
         setErrors: (error) => {
