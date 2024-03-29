@@ -5,24 +5,27 @@ title: Engagespot
 
 # Engagespot
 
-ToolJet can connect to your Engagespot account and send notifications.
+ToolJet connects to your Engagespot account, allowing you to send notifications, create or update users from within your ToolJet application.
+
+:::info
+**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+:::
 
 ## Connection
 
-To establish a connection with the Engagespot data source, you can either click on the `+Add new Data source` button located on the query panel or navigate to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
+- Establish a connection to Engagespot by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
 
-Enter your Engagespot API key and Engagespot API secret in their respective fields. Optionally, you can specify a signing key if you wish to generate user tokens from ToolJet.
+- Enter your Engagespot API key and API secret into their designated fields. To generate user tokens directly from ToolJet, you can optionally provide a signing key.
+
+- Click **Test Connection** to validate your credentials. Click **Save** to store the data source.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/marketplace/plugins/engagespot/engagespot_install.png" alt="engagespot api key" />
-
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/engagespot/engagespot_install.png" alt="Engagespot API Key" />
 </div>
 
-Click on **Test connection** button to verify if the credentials. Click on **Save** button to save the data source.
 
 :::info
-You can change your engagespot BaseURL by enable custom endpoint.
+You can change your Engagespot BaseURL by enable custom endpoint.
 :::
 
 ## Querying Engagespot
@@ -45,13 +48,13 @@ Query results can be transformed using transformations. Read our [transformation
 
 You can create query for Engagespot data source to perform several actions such as:
   1. **[Create or Update User](#create-or-update-user)**
-  2. **[Send Notification](#read-object)**
-  3. **[Generate User Token](#upload-object)** 
+  2. **[Send Notification](#send-notification)**
+  3. **[Generate User Token](#generate-user-token)** 
 
 ### Create OR Update User
 
   #### Required parameters:
-  - **User Identifier** - user unique identifier 
+  - **User Identifier** - Unique user identifier.
 
 <div style={{textAlign: 'center'}}>
 <img className="screenshot-full" src="/img/marketplace/plugins/engagespot/create_user.png" alt="engagespot create user" />
@@ -59,14 +62,14 @@ You can create query for Engagespot data source to perform several actions such 
 <br/>
 
 :::info
-The user profile column will accept any key value pair. please note that it must be always a valid JSON.
+The user profile column accepts any key-value pairs in valid JSON object format.
 :::
 
 ### Send Notification
 
   #### Required parameters:
-  - **Reciepient** - user unique identifier 
-  - **Notification Title** - The title for your notification
+  - **Reciepient** - Unique user identifier. 
+  - **Notification Title** - The title for your notification.
 
 <div style={{textAlign: 'center'}}>
 <img className="screenshot-full" src="/img/marketplace/plugins/engagespot/send_notification.png" alt="engagespot send notitication"/>
@@ -76,17 +79,17 @@ The user profile column will accept any key value pair. please note that it must
 ### Generate User Token
 
   #### Required parameters:
-  - **User Identifier** - user unique identifier 
+  - **User Identifier** - Unique user identifier.
 
 <div style={{textAlign: 'center'}}>
 <img className="screenshot-full" src="/img/marketplace/plugins/engagespot/generate_token.png" alt="engagespot generate token" />
 </div>
 <br/>
 
-:::warning
-For Generating user tokens must add SigningKey while establishing connection with Engagespot Data soucre.
+:::info
+To generate user tokens, ensure you provide a Signing Key when establishing a connection to your Engagespot data source.
 :::
 
 ### Adding the In-App Inbox element to your Tooljet app
-   If you want to setup an In-App Inbox element in your tooljet app you can  Read [Adding In app](https://docs.engagespot.co/docs/plugins/tooljet/adding-the-inbox-component) and follow the steps.
+   To set up an In-App Inbox element in your ToolJet application, refer to the [Adding In-App](https://docs.engagespot.co/docs/plugins/tooljet/adding-the-inbox-component) guide.
 
