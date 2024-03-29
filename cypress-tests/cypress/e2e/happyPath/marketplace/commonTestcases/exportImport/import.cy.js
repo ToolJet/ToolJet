@@ -73,13 +73,13 @@ describe("App Import Functionality", () => {
       .should("be.visible")
       .and("have.text", importText.appImportedToastMessage);
 
-    cy.get(".driver-close-btn").click();
-    cy.wait(500);
+    cy.wait(1000);
+    cy.skipEditorPopover();
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
       "contain.value",
       appData.name.toLowerCase()
     );
-    cy.skipEditorPopover();
+
     cy.modifyCanvasSize(900, 600);
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");

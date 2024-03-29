@@ -108,7 +108,7 @@ describe("Data source MongoDB", () => {
     );
     cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
       "have.text",
-      "connect ECONNREFUSED ::1:27017"
+      mongoDbText.errorConnectionRefused
     );
     cy.get('[data-cy="query-select-dropdown"]').type(
       mongoDbText.optionConnectUsingConnectionString
