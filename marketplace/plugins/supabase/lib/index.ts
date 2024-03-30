@@ -95,7 +95,6 @@ export default class Supabase implements QueryService {
 
   async updateRows(queryOptions: QueryOptions, supabaseClient: any) {
     const { update_table_name, update_filters, update_column_fields } = queryOptions;
-    if (!update_table_name) throw new Error('Table name field is required');
     if (!update_column_fields) throw new Error('No column(s) provided to update');
 
     const updateColumnValues: Column[] = Object.values(update_column_fields);
