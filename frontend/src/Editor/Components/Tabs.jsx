@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveReferences, resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
+import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 
 export const Tabs = function Tabs({
   id,
@@ -29,8 +30,8 @@ export const Tabs = function Tabs({
   parsedTabs = resolveWidgetFieldValue(parsedTabs, currentState);
   const hideTabs = component.definition.properties?.hideTabs?.value ?? false;
 
-  // renderOnlyActiveTab - TRUE (renders only the content of the active tab)
-  // renderOnlyActiveTab - FALSE (renders all the content irrespective of the active tab to persist value from other tabs)
+  //* renderOnlyActiveTab - TRUE (renders only the content of the active tab)
+  //* renderOnlyActiveTab - FALSE (renders all the content irrespective of the active tab to persist value from other tabs)
   const renderOnlyActiveTab = component.definition.properties?.renderOnlyActiveTab?.value ?? false;
 
   // set index as id if id is not provided
@@ -65,6 +66,8 @@ export const Tabs = function Tabs({
   const parentRef = useRef(null);
   const [currentTab, setCurrentTab] = useState(parsedDefaultTab);
   const [bgColor, setBgColor] = useState('#fff');
+
+  const [tabSwitchingOnProgress, setTabSwitchingOnProgress] = useState(false);
 
   useEffect(() => {
     setCurrentTab(parsedDefaultTab);
@@ -131,6 +134,13 @@ export const Tabs = function Tabs({
     </div>
   );
 
+  function shouldRenderTabContent(tab) {
+    if (tabSwitchingOnProgress || parsedRenderOnlyActiveTab) {
+      return tab.id === currentTab;
+    }
+    return true; // Render by default if no specific conditions are met
+  }
+
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -153,9 +163,15 @@ export const Tabs = function Tabs({
             className="nav-item"
             style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
             onClick={() => {
+              setTabSwitchingOnProgress(true);
+
               !tab?.disabled && setCurrentTab(tab.id);
               !tab?.disabled && setExposedVariable('currentTab', tab.id);
-              fireEvent('onTabSwitch');
+
+              handleLowPriorityWork(() => {
+                fireEvent('onTabSwitch');
+                setTabSwitchingOnProgress(false);
+              });
             }}
             key={tab.id}
           >
@@ -188,7 +204,8 @@ export const Tabs = function Tabs({
           id={`${id}-${tab.id}`}
           key={tab.id}
         >
-          {parsedRenderOnlyActiveTab ? tab.id === currentTab && renderTabContent(id, tab) : renderTabContent(id, tab)}
+          {shouldRenderTabContent(tab) && renderTabContent(id, tab)}
+
           {tab.id === currentTab && (
             <SubCustomDragLayer
               parent={`${id}-${tab.id}`}
