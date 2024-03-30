@@ -5,6 +5,8 @@ title: PostgreSQL
 
 ToolJet has the capability to connect to PostgreSQL databases for data retrieval and modification.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Establishing a Connection
 
 To establish a connection with the PostgreSQL global datasource, you can take either of the following steps: click on the "Add new global datasource" button in the query panel, or access the [Global Datasources](/docs/data-sources/overview) page through the ToolJet dashboard.
@@ -28,11 +30,15 @@ Ensure that the host/IP of the database is accessible from your VPC in case you 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection.png" alt="PG connection"/>
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection.png" alt="PG connection"/>
 
 </div>
 
 Click the **Test connection** button to verify the correctness of the credentials and the accessibility of the database to ToolJet server. Click the **Save** button to save the data source.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying PostgreSQL
 
@@ -42,7 +48,7 @@ PostgreSQL query editor has two modes, **SQL** & **GUI**. **[SQL mode](/docs/dat
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/newquery.png" alt="PG connection"/>
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/newquery.png" alt="PG connection"/>
 
 </div>
 
@@ -52,7 +58,7 @@ To execute SQL queries, select the SQL mode from the dropdown and enter your que
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/sql1.png" alt="PG connection"/>
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/sql1.png" alt="PG connection"/>
 
 </div>
 
@@ -81,7 +87,7 @@ Click the `Run` button to execute the query.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/gui1.png" alt="PG connection"/>
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/gui1.png" alt="PG connection"/>
 
 </div>
 
@@ -89,3 +95,5 @@ Click the `Run` button to execute the query.
 - You can apply transformations to the query results. Refer to our transformations documentation for more details: **[link](/docs/tutorial/transformations)**
 - Check out this how-to guide on **[bulk updating multiple rows](/docs/how-to/bulk-update-multiple-rows)** from a table component.
 :::
+
+</div>

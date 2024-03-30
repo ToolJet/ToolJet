@@ -5,6 +5,8 @@ title: Redis
 
 ToolJet enables you to execute Redis commands on your Redis instances.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connecting to Redis
 
 To establish a connection with the Redis global datasource, you have two options. You can either click on the **`+Add new global datasource`** button on the query panel or access the **[Global Datasources](/docs/data-sources/overview)** page from the ToolJet dashboard.
@@ -25,6 +27,10 @@ To establish a connection with the Redis global datasource, you have two options
 :::info
 Click on **Test connection** button to verify if the credentials are correct and that the Redis is accessible to ToolJet server. Click on **Save** button to save the data source.
 :::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Redis Queries
 
@@ -55,7 +61,7 @@ SET products {{encodeURI('John Doe')}}
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/redis/encode.png" alt="Redis" />
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/redis/encode.png" alt="Redis" />
 
 </div>
 
@@ -82,6 +88,8 @@ To retrieve a value that was previously encoded while setting, you can use trans
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/redis/decode.png" alt="Redis" />
+  <img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/redis/decode.png" alt="Redis" />
 
   </div>
+
+</div>
