@@ -10,7 +10,7 @@ module.exports = {
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/icon.svg',
+  favicon: 'img/tooljet-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
   themeConfig: {
@@ -121,8 +121,8 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
-          includeCurrentVersion: false,
-          lastVersion: '2.33.0',
+          includeCurrentVersion: true,
+          lastVersion: '2.34.0',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

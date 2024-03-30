@@ -29,7 +29,7 @@ ToolJet requires the following to connect to your ClickHouse Database:
 - **Debug**
 - **Raw**
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/connection.png" alt="ClickHouse connection" />
+<img className="screenshot-full" src="/img/datasource-reference/clickhouse/connection-v2.png" alt="ClickHouse connection" />
 
 ## Querying ClickHouse
 
@@ -39,8 +39,7 @@ After setting up the ClickHouse data source, you can click on the `+` button of 
 For more details on clickhouse visit [Clickhouse docs](https://clickhouse.com/docs/en/quick-start).
 :::
 
-
-## Supported Operations: 
+## Supported Operations:
 
 - [SQL Query](#sql-query)
 - [Insert array of objects](#supported-operations)
@@ -53,159 +52,166 @@ Use this to operation to enter **[ClickHouse SQL Statements](https://clickhouse.
 
 - **SELECT**:
 
-	```sql
-	SELECT * from test array;
-	```
+  ```sql
+  SELECT * from test array;
+  ```
 
-	<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/select.png" alt="ClickHouse SQL Statement operation" />
+  <img className="screenshot-full" src="/img/datasource-reference/clickhouse/select.png" alt="ClickHouse SQL Statement operation" />
 
-	</div>
+  </div>
 
-- **CREATE**: 
+- **CREATE**:
 
-	```sql
-	CREATE TABLE test array3 (
-		date Date,
-		str String,
-		arr Array(String),
-		arr2 Array (Date)
-		arr3 Array(UInt32) ,
-		id1 UUID
-	)ENGINE=MergeTree () ORDER BY(str)
-	```
+  ```sql
+  CREATE TABLE test array3 (
+  	date Date,
+  	str String,
+  	arr Array(String),
+  	arr2 Array (Date)
+  	arr3 Array(UInt32) ,
+  	id1 UUID
+  )ENGINE=MergeTree () ORDER BY(str)
+  ```
 
-	<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/create.png" alt="ClickHouse SQL Statement operation" />
+  <img className="screenshot-full" src="/img/datasource-reference/clickhouse/create.png" alt="ClickHouse SQL Statement operation" />
 
-	</div>
+  </div>
 
 - **ALTER TABLE**(add column)
 
-	```sql
-	ALTER TABLE test array1 ADD COLUMN Added2 UInt32;
-	```
+  ```sql
+  ALTER TABLE test array1 ADD COLUMN Added2 UInt32;
+  ```
 
-	<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/alter.png" alt="ClickHouse SQL Statement operation" />
+  <img className="screenshot-full" src="/img/datasource-reference/clickhouse/alter.png" alt="ClickHouse SQL Statement operation" />
 
-	</div>
+  </div>
 
 - **SELECT WITH WHERE CLAUSE**
-	```sql
-	SELECT * FROM test array1 WHERE str='Somethingl...'
-	```
 
-	<div style={{textAlign: 'center'}}>
+  ```sql
+  SELECT * FROM test array1 WHERE str='Somethingl...'
+  ```
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/selectwithwhere.png" alt="ClickHouse SQL Statement operation" />
+  <div style={{textAlign: 'center'}}>
 
-	</div>
+  <img className="screenshot-full" src="/img/datasource-reference/clickhouse/selectwithwhere.png" alt="ClickHouse SQL Statement operation" />
+
+  </div>
 
 - **UPDATE**
-	```sql
-	ALTER TABLE test_array1 UPDATE arr = (12] WHERE str='Somethingl...'
-	```
 
-	<div style={{textAlign: 'center'}}>
+  ```sql
+  ALTER TABLE test_array1 UPDATE arr = (12] WHERE str='Somethingl...'
+  ```
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/update.png" alt="ClickHouse SQL Statement operation" />
+  <div style={{textAlign: 'center'}}>
 
-	</div>
+  <img className="screenshot-full" src="/img/datasource-reference/clickhouse/update.png" alt="ClickHouse SQL Statement operation" />
+
+  </div>
 
 - **DELETE**
-	```sql
-	ALTER TABLE test_array1 DELETE WHERE str= 'Somethingl...'
-	```
 
-	<div style={{textAlign: 'center'}}>
+  ```sql
+  ALTER TABLE test_array1 DELETE WHERE str= 'Somethingl...'
+  ```
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/delete.png" alt="ClickHouse SQL Statement operation" />
+  <div style={{textAlign: 'center'}}>
 
-	</div>
+  <img className="screenshot-full" src="/img/datasource-reference/clickhouse/delete.png" alt="ClickHouse SQL Statement operation" />
+
+  </div>
 
 - **NORMAL INSERT**
 
-	1) Step 1 - Creating Table
+  1.  Step 1 - Creating Table
 
-	```sql
-	CREATE TABLE test array4 (
-	name String,
-	date Date
+  ```sql
+  CREATE TABLE test array4 (
+  name String,
+  date Date
    )ENGINE=MergeTree () ORDER BY (name)
-	```
+  ```
 
-	<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/step1.png" alt="ClickHouse SQL Statement operation" />
+  <img className="screenshot-full" src="/img/datasource-reference/clickhouse/step1.png" alt="ClickHouse SQL Statement operation" />
 
-	</div>
+  </div>
 
-	2) Step 2 - Insert
+  2.  Step 2 - Insert
 
-	```sql
-	INSERT INTO test_array4 (*) VALUES ('juvane', '1996-01-13')
-	```
+  ```sql
+  INSERT INTO test_array4 (*) VALUES ('juvane', '1996-01-13')
+  ```
 
-	<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/step1.png" alt="ClickHouse SQL Statement operation" />
+  <img className="screenshot-full" src="/img/datasource-reference/clickhouse/step1.png" alt="ClickHouse SQL Statement operation" />
 
-	</div>
+  </div>
 
-	:::info
-	**Giving Primary Key**
-	```
-	CREATE TABLE db.table_name
-	(
-		name1 type1, name2 type2, ...,
-		PRIMARY KEY(expr1[, expr2,...])]
-	)
-	ENGINE = engine;
+  :::info
+  **Giving Primary Key**
 
-	OR 
-	
-	CREATE TABLE db.table_name
-	(
-		name1 type1, name2 type2, ...
-	)
-	ENGINE = engine
-	PRIMARY KEY(expr1[, expr2,...]);
-	```
-	:::
+  ```
+  CREATE TABLE db.table_name
+  (
+  	name1 type1, name2 type2, ...,
+  	PRIMARY KEY(expr1[, expr2,...])]
+  )
+  ENGINE = engine;
+
+  OR
+
+  CREATE TABLE db.table_name
+  (
+  	name1 type1, name2 type2, ...
+  )
+  ENGINE = engine
+  PRIMARY KEY(expr1[, expr2,...]);
+  ```
+
+  :::
 
 ### Insert array of objects
 
 Use this operation for inserting array of objects.
 
 #### Required Parameters:
+
 - **Body**
 - **Fields**
 - **Table name**
 
 **Example Body value:**
+
 ```javascript
 [
-			{
-				date: '2018-01-01',
-				str: 'Something1...',
-				arr: [],
-				arr2: ['1985-01-02', '1985-01-03'],
-				arr3: [1,2,3,4,5],
-				id1: '102a05cb-8aaf-4f11-a442-20c3558e4384'
-			},		
-			{
-				date: '2018-02-01',
-				str: 'Something2...',
-				arr: ['5670000000', 'Something3...'],
-				arr2: ['1985-02-02'],
-				arr3: [],
-				id1: 'c2103985-9a1e-4f4a-b288-b292b5209de1'
-			}
-		];
+  {
+    date: "2018-01-01",
+    str: "Something1...",
+    arr: [],
+    arr2: ["1985-01-02", "1985-01-03"],
+    arr3: [1, 2, 3, 4, 5],
+    id1: "102a05cb-8aaf-4f11-a442-20c3558e4384",
+  },
+  {
+    date: "2018-02-01",
+    str: "Something2...",
+    arr: ["5670000000", "Something3..."],
+    arr2: ["1985-02-02"],
+    arr3: [],
+    id1: "c2103985-9a1e-4f4a-b288-b292b5209de1",
+  },
+];
 ```
 
 <img className="screenshot-full" src="/img/datasource-reference/clickhouse/insertarray.png" alt="ClickHouse Insert array of objects operation" />
