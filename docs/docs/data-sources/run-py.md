@@ -1,13 +1,15 @@
 ---
 id: run-py
-title: Run Python code
+title: Run Python Code
 ---
 
 You can write custom Python code to interact with components and queries. To do that, you need to create a new query and select **Run Python code** from the available data sources.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/custom-python/add-run-py.png" alt="Run Python code" />
+    <img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/custom-python/add-run-py.png" alt="Run Python code" />
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Using Python Code to Trigger Component Specific Actions
 
@@ -36,6 +38,10 @@ components.text1.setText(p1.myfunc())
 - Check **[RunPy Limitations](/docs/contributing-guide/troubleshooting/runpy-limitations)** to go through the limitations with using Python code
 :::
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Trigger Queries
 To trigger queries in Python, you can use the below functions:
 
@@ -48,6 +54,10 @@ actions.runQuery('getSalesData')
 queries.getSalesData.run()
 #replace getSalesData with your query name
 ```
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Get Query Data
 
@@ -86,6 +96,10 @@ value = queries.getTodos.getLoadingState()
 value
 ```
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Get Variables
 
 To immediately access a variable or page variable after setting it in the **Run Python code**, you can use the below functions.
@@ -107,6 +121,10 @@ actions.setPageVariable('number',1)
 actions.getPageVariable('number')
 #replace number with your desired variable name
 ```
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Using Transformations With Python
 **Run Python code** can be used to transform the data that is fetched in the queries. To test transformations using Python, create a new `REST API` query, leave the method as `GET` and enter the below url under the `URL` property.
@@ -134,6 +152,10 @@ To extract a list of product titles from the given data structure, we iterate th
 return [product["title"] for product in data["products"]]
 ```
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Filtering Products by Category
 
 To filter products by a specific category, such as "smartphones", and extract their titles. Enable `Transformations` in the Query Editor and use the below code:
@@ -142,6 +164,10 @@ To filter products by a specific category, such as "smartphones", and extract th
 return [product["title"] for product in data["products"] if product["category"] == "smartphones"]
 ```
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Calculating Average Price of a Category
 
 To calculate the average price of products within the "laptops" category. Enable `Transformations` in the Query Editor and use the below code:
@@ -149,6 +175,8 @@ To calculate the average price of products within the "laptops" category. Enable
 ```python
 return sum(product["price"] for product in data["products"] if product["category"] == "laptops") / len([product for product in data["products"] if product["category"] == "laptops"]) if len([product for product in data["products"] if product["category"] == "laptops"]) > 0 else 0
 ```
+
+</div>
 
 :::info
 Issues with writing custom Python code? Ask in our [Slack community](https://www.tooljet.com/slack).

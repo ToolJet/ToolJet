@@ -6,7 +6,9 @@ title: RethinkDB
 
 ToolJet can connect to RethinkDB databases to read and write data. For more info visit this [doc](https://rethinkdb.com/api/javascript).
 
-<img class="screenshot-full" src="/img/datasource-reference/rethink/rethink_auth.png" alt="ToolJet - Data source - RethinkDB" height="420" />
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} class="screenshot-full" src="/img/datasource-reference/rethink/rethink_auth.png" alt="ToolJet - Data source - RethinkDB" height="420" />
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Connection
 
@@ -18,8 +20,11 @@ ToolJet connects to InfluxDB using :
 - **Username** 
 - **Password** 
 
+</div>
 
-## Supported queries:
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Supported Queries:
 
 - Delete database
 
@@ -46,6 +51,8 @@ ToolJet connects to InfluxDB using :
 - Delete all table data
 
 - Get document from primary key
+
+</div>
 
 :::info
 NOTE: Name field in all operation is database name if not given will take the default database used for connection.

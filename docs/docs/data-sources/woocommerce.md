@@ -9,6 +9,8 @@ ToolJet can connect to WooCommerce databases to read and write data.
 - [Connection](#connection)
 - [Getting Started](#querying-woocommerce)
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 Auth
@@ -22,6 +24,10 @@ You may use [HTTP Basic Auth] by providing the REST API Consumer Key as the user
 :::info
 NOTE: For generating keys visit admin dashboard of woocommerce , more info: https://woocommerce.github.io/woocommerce-rest-api-docs/?javascript#authentication
 :::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying Woocommerce
 
@@ -62,3 +68,5 @@ NOTE: For generating keys visit admin dashboard of woocommerce , more info: http
 :::info
 NOTE: For more info visit https://woocommerce.github.io/woocommerce-rest-api-docs/?javascript.
 :::
+
+</div>

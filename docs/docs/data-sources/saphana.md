@@ -10,6 +10,8 @@ ToolJet can connect to SAP HANA databases to read and write data.
 - [Connection](#connection)
 - [Querying SAP HANA](#querying-sap-hana)
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 To add a new SAP HANA database, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select SAP HANA from the modal that pops up.
@@ -31,7 +33,11 @@ Please make sure the host/ip of the database is accessible from your VPC if you 
 
 </div>
 
+</div>
+
 Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying SAP HANA
 
@@ -42,6 +48,7 @@ Click on `+` button of the query manager at the bottom panel of the editor and s
 
 <img className="screenshot-full" src="/img/datasource-reference/saphana/query.png" alt="saphana query" />
 
+</div>
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**

@@ -10,12 +10,18 @@ ToolJet can connect to Zendesk APIs to read and write data using OAuth 2.0, whic
   - [Connection](#connection)
   - [Querying Zendesk](#querying-zendesk)
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection 
 
 ToolJet connects to your Zendesk app using :
 - **Zendesk Sub-domain**
 - **Client ID**
 - **Client Secret**
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Authorization Scopes 
 
@@ -38,6 +44,10 @@ To connect Zendesk datasource to your ToolJet application, go to the data source
 
 </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Operations
 1. **[List Tickets](/docs/data-sources/zendesk#list-tickets)**
 2. **[List requested Tickets](/docs/data-sources/zendesk#list-requested-tickets)**
@@ -47,16 +57,27 @@ To connect Zendesk datasource to your ToolJet application, go to the data source
 6. **[Get Profile](/docs/data-sources/zendesk#get-profile)**
 7. **[Search query](/docs/data-sources/zendesk#search-query)**
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### List Tickets
 Lists all the tickets in your Zendesk account.
 
-### List requested Tickets
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### List Requested Tickets
 Lists all the tickets requested by the user. 
 
 | Fields      | description |
 | ----------- | ----------- |
 | User ID    | The id of the user  |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Show Tickets
 Gets a ticket's properties with the given ID, though not the ticket comments.
@@ -64,6 +85,10 @@ Gets a ticket's properties with the given ID, though not the ticket comments.
 | Fields      | description |
 | ----------- | ----------- |
 | Ticket ID    | The id of the ticket  |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Update Tickets
 Updates a ticket's properties with the given ID.
@@ -73,8 +98,16 @@ Updates a ticket's properties with the given ID.
 | Ticket ID    | The id of the ticket  |
 | Body    | The properties and values to update. Example: `{{({ "ticket": {"status": "solved"} })}}` |
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### List Users
 Lists all the users in your Zendesk account.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Get Profile
 Gets a user's profile with the given ID.
@@ -82,6 +115,10 @@ Gets a user's profile with the given ID.
 | Fields      | description |
 | ----------- | ----------- |
 | User ID    | The id of the user  |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Search Query
 The Search Query uses Zendesk's Search API to return tickets, users, and organizations with defined filters.
@@ -94,3 +131,5 @@ Common filters include:
 | Fields      | description |
 | ----------- | ----------- |
 | Query    | The search query  |
+
+</div>

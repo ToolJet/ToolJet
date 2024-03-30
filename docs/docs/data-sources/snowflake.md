@@ -10,6 +10,8 @@ ToolJet can connect to Snowflake databases to read and write data.
 - [Connection](#connection)
 - [Getting Started](#querying-snowflake)
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP. You can find snowflake docs on network policies **[here](https://docs.snowflake.com/en/user-guide/network-policies.html)**.
@@ -33,6 +35,10 @@ You can also configure for **[additional optional parameters](https://docs.snowf
 
 </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Querying Snowflake
 
 Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the datasource. Query manager then can be used to write raw SQL queries.
@@ -50,3 +56,5 @@ Click on the `run` button to run the query.
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
 :::
+
+</div>

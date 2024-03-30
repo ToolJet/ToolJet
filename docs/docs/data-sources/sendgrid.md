@@ -7,11 +7,13 @@ title: SendGrid
 
 ToolJet can connect to your SendGrid account to send emails.
 
-<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-datasource.png" alt="ToolJet - Data source - SendGrid" height="420" />
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-datasource.png" alt="ToolJet - Data source - SendGrid" height="420" />
 
 :::info
 The SendGrid API Datasource supports for interaction with the mail endpoint of the [SendGrid v3 API](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/authentication).
 :::
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Connection
 To add a new SendGrid API datasource, click the **Datasource manager** icon on the left-sidebar of the app builder and click on the `Add datasource` button, then select SendGrid API from the modal that pops up.
@@ -24,11 +26,15 @@ SendGrid API key is required to create an SendGrid datasource on ToolJet. You ca
 
 Click on the 'Save' button to save the data source.
 
-## Supported operations
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Supported Operations
 1.  Email service
 
 
-### Email service
+### Email Service
 Required parameters: 
 - Send email to
 - Send email from 
@@ -39,7 +45,7 @@ Required parameters:
 Optional parameters:
 - Body as HTML
 
-<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-query.jpg" alt="ToolJet - Query SendGrid" height="420"/>
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-query.jpg" alt="ToolJet - Query SendGrid" height="420"/>
 
 :::info
 **Send mail to** - accepts an array/list of emails separated by comma.
@@ -60,3 +66,5 @@ For example: `admin@tooljet.io`
 :::note
 NOTE: Query should be saved before running.
 :::
+
+</div>

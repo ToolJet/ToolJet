@@ -13,6 +13,8 @@ ToolJet can connect to your Slack workspace to send messages.
 
 </div>
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 - To add the Slack datasource, click the **Datasource manager** icon on the left-sidebar of the app builder and click on the `Add datasource` button, then select Slack from the modal that pops up.
  
@@ -33,23 +35,35 @@ ToolJet can connect to your Slack workspace to send messages.
 The App (which credentials are provided) needs to be installed in the workspace to use the Slack data source, and it needs to be added to the channel where you want to post the message.
 :::
 
-## Supported operations
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Supported Operations
 
 1. **List members**
 2. **Send message**
 3. **List messages from a channel**
 
-### List members
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### List Members
 
 This operation will return the data of all the members in your slack workspace.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/slack/listmembers.png" alt="Slack datasource: ToolJet"/>
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/slack/listmembers.png" alt="Slack datasource: ToolJet"/>
 
 </div>
 
-### Send message
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Send Message
 
 This operation will send/post the message to a specified channel or posting to direct messages (also known as DMs or IMs) in your slack workspace.
 
@@ -60,11 +74,15 @@ This operation will send/post the message to a specified channel or posting to d
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/slack/sendmessage.png" alt="Slack datasource: ToolJet"/>
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/slack/sendmessage.png" alt="Slack datasource: ToolJet"/>
 
 </div>
 
-### List messages
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### List Messages
 
 This operation will get the messages from a specified channel.
 
@@ -76,6 +94,8 @@ This operation will get the messages from a specified channel.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/slack/listmessages.png" alt="Slack datasource: ToolJet"/>
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/slack/listmessages.png" alt="Slack datasource: ToolJet"/>
+
+</div>
 
 </div>

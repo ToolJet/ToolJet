@@ -7,6 +7,8 @@ title: SMTP
 
 The SMTP datasource facilitates the connection between ToolJet applications and email servers, enabling the apps to send emails.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 To connect to an SMTP server, the following credentials are typically required:
@@ -27,9 +29,13 @@ Before saving the configuration, it's possible to test the connection by clickin
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/smtp/connect.png" alt="smtp connect" />
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/smtp/connect.png" alt="smtp connect" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying SMTP
 
@@ -53,5 +59,7 @@ For instance, you can set the `Attachments` field value to `{{ components.filepi
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/datasource-reference/smtp/querysmtp.png" alt="smtp connect" />
+
+</div>
 
 </div>

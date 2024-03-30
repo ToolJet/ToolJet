@@ -13,6 +13,8 @@ ToolJet can connect to your Twilio account to send sms.
 
 </div>
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 - To add the Twilio datasource, click the **Datasource manager** icon on the left-sidebar of the app builder and click on the `Add datasource` button, then select **Twilio** from the modal that pops up.
  
@@ -22,7 +24,7 @@ ToolJet can connect to your Twilio account to send sms.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Twilio](/img/datasource-reference/twilio/auth.png)
+![ToolJet - Data source - Twilio](/img/datasource-reference/twilio/auth-v2.png)
 
 </div>
 
@@ -30,17 +32,25 @@ ToolJet can connect to your Twilio account to send sms.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Twilio](/img/datasource-reference/twilio/sid.png)
+![ToolJet - Data source - Twilio](/img/datasource-reference/twilio/sid-v2.png)
 
 </div>
 
 - After entering the three credentials, you can **Save** the datasource.
 
-## Supported operations
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Supported Operations
 
 1. **Send message**
 
-### Send message
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Send Message
 
 This operation will send the specified message to specified mobile number.
 
@@ -50,5 +60,5 @@ This operation will send the specified message to specified mobile number.
 
 </div>
 
-
+</div>
 
