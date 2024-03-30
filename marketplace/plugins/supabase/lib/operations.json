@@ -205,25 +205,15 @@
           }
         ]
       },
-      "update_column_name": {
-        "label": "Column Name",
-        "key": "update_column_name",
-        "type": "codehinter",
-        "height": "36px",
-        "className": "codehinter-plugins col-4",
-        "lineNumbers": false,
-        "description": "Enter table column name",
-        "placeholder": "Enter column name"
-      },
-      "update_column_value": {
-        "label": "Value",
-        "key": "update_column_value",
-        "type": "codehinter",
-        "height": "36px",
-        "className": "codehinter-plugins col-4",
-        "lineNumbers": false,
-        "description": "Enter column value",
-        "placeholder": "Enter column value"
+      "update_column_fields": {
+        "label": "Columns",
+        "key": "update_column_fields",
+        "type": "react-component-supabase-column",
+        "description": "Supabase column component",
+        "placeholders": {
+          "columnKey": "Enter column name",
+          "value": "Enter value to update"
+        }
       }
     },
     "delete_row": {

@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@supabase/supabase-js": "^2.40.0",
+    "@supabase/supabase-js": "^2.41.1",
     "@tooljet-marketplace/common": "^1.0.0"
   },
   "devDependencies": {

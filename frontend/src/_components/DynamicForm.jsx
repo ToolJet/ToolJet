@@ -17,7 +17,7 @@ import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '..
 
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
-import { SupabaseFilter, SupabaseSort } from './Supabase';
+import { SupabaseFilter, SupabaseSort, SupabaseColumn } from './Supabase';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
@@ -158,6 +158,8 @@ const DynamicForm = ({
         return SupabaseFilter;
       case 'react-component-supabase-sort':
         return SupabaseSort;
+      case 'react-component-supabase-column':
+        return SupabaseColumn;
       default:
         return <div>Type is invalid</div>;
     }
@@ -365,7 +367,6 @@ const DynamicForm = ({
           operators: list || [],
           value: options?.[key] ?? {},
           onChange: (value) => optionchanged(key, value),
-          width: width || '100%',
           placeholders,
         };
       case 'react-component-supabase-sort':
@@ -373,7 +374,12 @@ const DynamicForm = ({
           orders: list || [],
           value: options?.[key] ?? {},
           onChange: (value) => optionchanged(key, value),
-          width: width || '100%',
+          placeholders,
+        };
+      case 'react-component-supabase-column':
+        return {
+          value: options?.[key] ?? {},
+          onChange: (value) => optionchanged(key, value),
           placeholders,
         };
       default:

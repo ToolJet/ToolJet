@@ -11,7 +11,6 @@ export type QueryOptions = {
   delete_table_name: string;
   count_table_name: string;
   create_column_name: string;
-  update_column_name: string;
   delete_column_name: string;
   count_column_name: string;
   get_filters: object;
@@ -24,6 +23,22 @@ export type QueryOptions = {
   delete_sort: object;
   delete_limit: number;
   get_limit: number;
-  update_column_value: string;
   create_body: string;
+  update_column_fields: object;
+};
+
+export type Column = {
+  column: string;
+  value: string;
+};
+
+export type Filter = {
+  operator: string;
+  column: string;
+  value: string;
+};
+
+export type Sort = {
+  column: string;
+  order: string;
 };
