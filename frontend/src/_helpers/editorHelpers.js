@@ -173,3 +173,8 @@ export function findComponentsWithReferences(components, changedCurrentState) {
 
   return componentIdsWithReferences;
 }
+
+export function handleLowPriorityWork(callback, timeout = null) {
+  const options = timeout ? { timeout } : {};
+  window.requestIdleCallback(callback, options);
+}
