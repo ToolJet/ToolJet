@@ -89,7 +89,7 @@ import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex } from './editorConstants';
-import { findComponentsWithReferences } from '@/_helpers/editorHelpers';
+import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 
 setAutoFreeze(false);
 enablePatches();
@@ -288,7 +288,7 @@ const EditorComponent = (props) => {
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
       if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
-        autoSave();
+        handleLowPriorityWork(() => autoSave());
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
