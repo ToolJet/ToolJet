@@ -235,6 +235,7 @@ const sidebars = {
             'data-sources/clickhouse',
             'data-sources/cosmosdb',
             'data-sources/couchdb',
+            'data-sources/databricks',
             'data-sources/dynamodb',
             'data-sources/elasticsearch',
             'data-sources/gcs',
@@ -367,7 +368,8 @@ const sidebars = {
           'items': [
             'marketplace/plugins/marketplace-plugin-redshift',
             'marketplace/plugins/marketplace-plugin-textract',
-            'marketplace/plugins/aws-lambda-plugin',
+            'marketplace/plugins/marketplace-plugin-aws-lambda',
+            'marketplace/plugins/marketplace-plugin-engagespot',
             'marketplace/plugins/marketplace-plugin-github',
             'marketplace/plugins/marketplace-plugin-harperdb',
             'marketplace/plugins/marketplace-plugin-openai',
