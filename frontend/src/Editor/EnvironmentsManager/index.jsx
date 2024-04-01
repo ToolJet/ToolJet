@@ -29,9 +29,8 @@ const EnvironmentManager = (props) => {
     }),
     shallow
   );
-  const { onEditorFreeze, currentAppVersionEnvironment, editingVersion } = useAppVersionStore(
+  const { currentAppVersionEnvironment, editingVersion } = useAppVersionStore(
     (state) => ({
-      onEditorFreeze: state.actions.onEditorFreeze,
       currentAppVersionEnvironment: state.currentAppVersionEnvironment,
       editingVersion: state.editingVersion,
     }),
@@ -57,10 +56,8 @@ const EnvironmentManager = (props) => {
       currentAppVersionEnvironment.name === 'production' ||
       currentAppVersionEnvironment.name === 'staging'
     ) {
-      onEditorFreeze(true);
       setCurrentAppVersionPromoted(true);
     } else {
-      onEditorFreeze(false);
       setCurrentAppVersionPromoted(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

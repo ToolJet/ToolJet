@@ -598,6 +598,7 @@ describe("Multi env", () => {
 
     appPromote("staging", "production");
 
+    cy.wait(3000)
     deleteVersionAndVerify(
       (currentVersion = "v1"),
       deleteVersionText.deleteToastMessage((currentVersion = "v1"))

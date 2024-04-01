@@ -10,6 +10,7 @@ import {
     commonEeSelectors,
     instanceSettingsSelector,
     multiEnvSelector,
+    ssoEeSelector,
 } from "Selectors/eeCommon";
 import { licenseText } from "Texts/license";
 import { licenseSelectors } from "Selectors/license";
@@ -335,17 +336,17 @@ describe("", () => {
         );
         cy.get(commonSelectors.manageSSOOption).click();
         verifyTooltipDisabled(
-            '[data-cy="openid-connect-list-item"]',
+            ssoEeSelector.oidc,
             "OpenID Connect is available only\n        in paid plans"
         );
         cy.reload();
         verifyTooltipDisabled(
-            '[data-cy="ldap-list-item"]',
+            '[data-cy="ldap-sso-card"]',
             "LDAP is available only\n        in paid plans"
         );
         cy.reload();
         verifyTooltipDisabled(
-            '[data-cy="saml-list-item"]',
+            '[data-cy="saml-sso-card"]',
             "SAML is available only\n        in paid plans"
         );
 
@@ -455,17 +456,17 @@ describe("", () => {
         );
         cy.get(commonSelectors.manageSSOOption).click();
         verifyTooltipDisabled(
-            '[data-cy="openid-connect-list-item"]',
+            ssoEeSelector.oidc,
             "OpenID Connect is available only\n        in paid plans"
         );
         cy.reload();
         verifyTooltipDisabled(
-            '[data-cy="ldap-list-item"]',
+            '[data-cy="ldap-sso-card"]',
             "LDAP is available only\n        in paid plans"
         );
         cy.reload();
         verifyTooltipDisabled(
-            '[data-cy="saml-list-item"]',
+            '[data-cy="saml-sso-card"]',
             "SAML is available only\n        in paid plans"
         );
 

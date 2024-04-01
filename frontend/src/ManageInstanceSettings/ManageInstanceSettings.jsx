@@ -23,6 +23,7 @@ class ManageInstanceSettingsComponent extends React.Component {
       disabled: false,
       initialOptions: {},
       featureAccess: {},
+      isSignUpEnabled: window.public_config?.ENABLE_SIGNUP === 'true',
     };
   }
 
@@ -70,21 +71,19 @@ class ManageInstanceSettingsComponent extends React.Component {
     this.setState({ options: this.state.initialOptions }, () => this.checkForChanges());
   };
 
-  saveSettings = () => {
+  saveSettings = async () => {
     this.setState({ isSaving: true });
-    instanceSettingsService
-      .update(this.state.options)
-      .then(() => {
-        toast.success('Instance settings have been updated', {
-          position: 'top-center',
-        });
-        this.setState({ isSaving: false, hasChanges: false });
-        this.fetchSettings();
-      })
-      .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
-        this.setState({ isSaving: false });
+    try {
+      await instanceSettingsService.update(this.state.options);
+      toast.success('Instance settings have been updated', {
+        position: 'top-center',
       });
+      this.setState({ isSaving: false, hasChanges: false });
+    } catch (error) {
+      toast.error(error.error, { position: 'top-center' });
+      this.setState({ isSaving: false });
+    }
+    await this.fetchSettings();
   };
 
   returnBooleanValue = (value) => (value === 'true' ? true : false);
@@ -108,7 +107,7 @@ class ManageInstanceSettingsComponent extends React.Component {
   };
 
   render() {
-    const { options, isSaving, disabled, isLoading, hasChanges, featureAccess } = this.state;
+    const { options, isSaving, disabled, isLoading, hasChanges, featureAccess, isSignUpEnabled } = this.state;
     const isTrial = featureAccess?.licenseStatus?.licenseType === 'trial';
     return (
       <ErrorBoundary showFallback={true}>

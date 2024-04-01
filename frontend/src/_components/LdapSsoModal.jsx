@@ -316,11 +316,15 @@ export function LdapSSOModal({ settings, onClose, onUpdateSSOSettings, isInstanc
         }}
       >
         <div>
-          <label className="switch">
-            <input type="checkbox" checked={enabled} onChange={onToggleChange} data-cy="ldap-toggle-input" />
+          <label className="switch" data-cy="ldap-toggle-input">
+            <input type="checkbox" checked={enabled} onChange={onToggleChange} />
             <span className="slider round"></span>
           </label>
-          <span className="sso-type-header" data-cy="card-title" style={{ marginBottom: '0px', fontWeight: '500' }}>
+          <span
+            className="sso-type-header"
+            data-cy="ldap-toggle-label"
+            style={{ marginBottom: '0px', fontWeight: '500' }}
+          >
             {t('header.organization.menus.manageSSO.ldap.title', 'LDAP')}
           </span>
         </div>

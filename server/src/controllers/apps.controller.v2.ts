@@ -106,12 +106,23 @@ export class AppsControllerV2 {
       };
     }
 
-    if (
-      response['editing_version'] &&
-      !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, user.organizationId))
-    ) {
-      const developmentEnv = await this.appEnvironmentService.getByPriority(user.organizationId);
-      response['editing_version']['current_environment_id'] = developmentEnv.id;
+    if (response['editing_version']) {
+      const hasMultiEnvLicense = await this.licenseService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        user.organizationId
+      );
+      let shouldFreezeEditor = false;
+      if (hasMultiEnvLicense) {
+        const currentEnvironment = await this.appEnvironmentService.get(
+          user.organizationId,
+          response['editing_version']['current_environment_id']
+        );
+        shouldFreezeEditor = currentEnvironment.priority > 1;
+      } else {
+        const developmentEnv = await this.appEnvironmentService.getByPriority(user.organizationId);
+        response['editing_version']['current_environment_id'] = developmentEnv.id;
+      }
+      response['should_freeze_editor'] = app.creationMode === 'GIT' || shouldFreezeEditor;
     }
 
     return response;
@@ -182,9 +193,22 @@ export class AppsControllerV2 {
 
     const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
 
-    if (appCurrentEditingVersion && !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
-      const developmentEnv = await this.appEnvironmentService.getByPriority(user.organizationId);
-      appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
+    let shouldFreezeEditor = false;
+    if (appCurrentEditingVersion) {
+      const hasMultiEnvLicense = await this.licenseService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        user.organizationId
+      );
+      if (hasMultiEnvLicense) {
+        const currentEnvironment = await this.appEnvironmentService.get(
+          user.organizationId,
+          appCurrentEditingVersion['currentEnvironmentId']
+        );
+        shouldFreezeEditor = currentEnvironment.priority > 1;
+      } else {
+        const developmentEnv = await this.appEnvironmentService.getByPriority(user.organizationId);
+        appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
+      }
     }
 
     delete appCurrentEditingVersion['app'];
@@ -200,6 +224,7 @@ export class AppsControllerV2 {
       editing_version: camelizeKeys(appCurrentEditingVersion),
       pages: pagesForVersion,
       events: eventsForVersion,
+      should_freeze_editor: app.creationMode === 'GIT' || shouldFreezeEditor,
     };
   }
 
