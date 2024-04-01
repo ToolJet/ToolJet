@@ -33,12 +33,15 @@ import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
 import { useSuperStore } from '../_stores/superStore';
 import { ModuleContext } from '../_contexts/ModuleContext';
+import cx from 'classnames';
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
 const AppWrapper = (props) => {
+  const { isAppDarkMode } = useAppDarkMode();
   return (
     <Suspense fallback={null}>
       <BrowserRouter basename={window.public_config?.SUB_PATH || '/'}>
-        <AppWithRouter props={props} />
+        <AppWithRouter props={props} isAppDarkMode={isAppDarkMode} />
       </BrowserRouter>
     </Suspense>
   );
@@ -53,6 +56,7 @@ class AppComponent extends React.Component {
       currentUser: null,
       fetchedMetadata: false,
       darkMode: localStorage.getItem('darkMode') === 'true',
+      isEditorOrViewer: '',
     };
   }
   updateSidebarNAV = (val) => {
@@ -101,14 +105,14 @@ class AppComponent extends React.Component {
   };
 
   render() {
-    const { updateAvailable, darkMode } = this.state;
+    const { updateAvailable, darkMode, isEditorOrViewer } = this.state;
     let toastOptions = {
       style: {
         wordBreak: 'break-all',
       },
     };
 
-    if (darkMode) {
+    if (isEditorOrViewer === 'viewer' ? this.props.isAppDarkMode : darkMode) {
       toastOptions = {
         className: 'toast-dark-mode',
         style: {
@@ -123,7 +127,12 @@ class AppComponent extends React.Component {
     const { updateSidebarNAV } = this;
     return (
       <>
-        <div className={`main-wrapper ${darkMode ? 'theme-dark dark-theme' : ''}`} data-cy="main-wrapper">
+        <div
+          className={cx('main-wrapper', {
+            'theme-dark dark-theme': !isEditorOrViewer && darkMode,
+          })}
+          data-cy="main-wrapper"
+        >
           {updateAvailable && (
             <div className="alert alert-info alert-dismissible" role="alert">
               <h3 className="mb-1">Update available</h3>
@@ -179,7 +188,11 @@ class AppComponent extends React.Component {
                 path="/:workspaceId/apps/:slug/:pageHandle?/*"
                 element={
                   <PrivateRoute>
-                    <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <AppLoader
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -197,7 +210,11 @@ class AppComponent extends React.Component {
                 path="/applications/:slug/:pageHandle?"
                 element={
                   <PrivateRoute>
-                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <Viewer
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={this.props.isAppDarkMode}
+                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -206,7 +223,11 @@ class AppComponent extends React.Component {
                 path="/applications/:slug/versions/:versionId/:pageHandle?"
                 element={
                   <PrivateRoute>
-                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <Viewer
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={this.props.isAppDarkMode}
+                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
+                    />
                   </PrivateRoute>
                 }
               />

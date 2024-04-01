@@ -82,7 +82,7 @@ export default function EditorHeader({
   }, [slug, currentVersionId, editingVersion]);
 
   return (
-    <div className="header" style={{ width: '100%' }}>
+    <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
       <header className="navbar navbar-expand-md d-print-none">
         <div className="container-xl header-container">
           <div className="d-flex w-100">

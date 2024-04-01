@@ -12,7 +12,7 @@ export const SelectComponent = ({
   darkMode,
   ...restProps
 }) => {
-  const isDarkMode = darkMode ? darkMode : localStorage.getItem('darkMode') === 'true';
+  const isDarkMode = darkMode ?? localStorage.getItem('darkMode') === 'true';
   const {
     isMulti = false,
     styles = {},

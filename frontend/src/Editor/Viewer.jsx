@@ -60,7 +60,7 @@ class ViewerComponent extends React.Component {
 
     const slug = this.props.params.slug;
     this.subscription = null;
-
+    this.props.setEditorOrViewer('viewer');
     this.state = {
       slug,
       deviceWindowWidth,
@@ -362,8 +362,6 @@ class ViewerComponent extends React.Component {
       const appId = this.props.id;
       const versionId = this.props.versionId;
 
-      console.log({ slug, appId, versionId });
-
       if (currentSession?.load_app && slug) {
         if (currentSession?.group_permissions) {
           useSuperStore.getState().modules[this.context].useAppDataStore.getState().actions.setAppId(appId);
@@ -611,7 +609,6 @@ class ViewerComponent extends React.Component {
     } = this.state;
 
     const moduleName = this.context;
-
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
     const canvasMaxWidth = this.computeCanvasMaxWidth();
@@ -661,6 +658,7 @@ class ViewerComponent extends React.Component {
             onCancel={() => onQueryConfirmOrCancel(this.getViewerRef(), queryConfirmationList[0], false, 'view')}
             queryConfirmationData={queryConfirmationList[0]}
             key={queryConfirmationList[0]?.queryName}
+            darkMode={this.props.darkMode}
           />
           <DndProvider backend={HTML5Backend}>
             {this.props.currentLayout !== 'mobile' && (
@@ -703,7 +701,6 @@ class ViewerComponent extends React.Component {
                       <ViewerSidebarNavigation
                         showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
                         isMobileDevice={this.props.currentLayout === 'mobile'}
-                        canvasBackgroundColor={this.computeCanvasBackgroundColor()}
                         pages={pages}
                         currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                         switchPage={this.switchPage}

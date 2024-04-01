@@ -21,7 +21,7 @@ import useDebugger from './SidebarDebugger/useDebugger';
 import { GlobalSettings } from '../Header/GlobalSettings';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import { TOOLTIP_DARK_MODE_TOOGLE_MSG } from '../Header/AppModeToggle';
+import cx from 'classnames';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -233,7 +233,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
   }, [JSON.stringify(resolveReferences(backgroundFxQuery, currentState))]);
 
   return (
-    <div className="left-sidebar" data-cy="left-sidebar-inspector">
+    <div className={cx('left-sidebar', { 'dark-theme theme-dark': darkMode })} data-cy="left-sidebar-inspector">
       <LeftSidebarItem
         selectedSidebarItem={selectedSidebarItem}
         onClick={() => handleSelectedSidebarItem('page')}
@@ -316,13 +316,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
             </div>
           )}
 
-          <DarkModeToggle
-            switchDarkMode={switchDarkMode}
-            darkMode={darkMode}
-            tooltipPlacement="right"
-            disabled={appMode !== 'auto'}
-            tooltipMessage={TOOLTIP_DARK_MODE_TOOGLE_MSG}
-          />
+          <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
       </div>
     </div>

@@ -10,8 +10,6 @@ export const DarkModeToggle = function DarkModeToggle({
   switchDarkMode,
   tooltipPlacement = 'bottom',
   showText = false,
-  disabled = false,
-  tooltipMessage = '',
 }) {
   const toggleDarkMode = () => {
     switchDarkMode(!darkMode);
@@ -58,9 +56,7 @@ export const DarkModeToggle = function DarkModeToggle({
       trigger={'hover'}
       overlay={
         <Tooltip id="button-tooltip">
-          {disabled
-            ? tooltipMessage ?? ''
-            : darkMode
+          {darkMode
             ? t('header.darkModeToggle.activateLightMode', 'Activate light mode')
             : t('header.darkModeToggle.activateDarkMode', 'Activate dark mode')}
         </Tooltip>
@@ -68,7 +64,7 @@ export const DarkModeToggle = function DarkModeToggle({
     >
       <div
         className={classnames('unstyled-button dark-theme-toggle-btn  sidebar-svg-icon  left-sidebar-item')}
-        onClick={!disabled && toggleDarkMode}
+        onClick={toggleDarkMode}
       >
         <animated.svg
           xmlns="http://www.w3.org/2000/svg"

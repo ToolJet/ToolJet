@@ -72,6 +72,7 @@ import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
 import { ModuleContext } from '../_contexts/ModuleContext';
 import { useSuperStore } from '../_stores/superStore';
+import cx from 'classnames';
 
 setAutoFreeze(false);
 enablePatches();
@@ -248,6 +249,7 @@ const EditorComponent = (props) => {
       if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
       useSuperStore.getState().modules[moduleName].useEditorStore.getState().actions.setIsEditorActive(false);
       prevAppDefinition.current = null;
+      props.setEditorOrViewer('');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -460,7 +462,7 @@ const EditorComponent = (props) => {
 
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
-
+    props.setEditorOrViewer('editor');
     await fetchApp(props.params.pageHandle, true);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
@@ -1710,7 +1712,7 @@ const EditorComponent = (props) => {
 
   if (isLoading) {
     return (
-      <div className="apploader">
+      <div className={cx('apploader', { 'dark-theme theme-dark': props.darkMode })}>
         <div className="col col-* editor-center-wrapper">
           <div className="editor-center">
             <div className="canvas">
@@ -1734,7 +1736,7 @@ const EditorComponent = (props) => {
     );
   }
   return (
-    <div className="editor wrapper">
+    <div className={`editor wrapper`}>
       <Confirm
         show={queryConfirmationList?.length > 0}
         message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
@@ -1883,7 +1885,7 @@ const EditorComponent = (props) => {
                       </div>
                     )}
                     {defaultComponentStateComputed && (
-                      <>
+                      <div className={cx({ 'dark-theme theme-dark': isAppDarkMode })}>
                         <Container
                           canvasWidth={getCanvasWidth()}
                           socket={socket}
@@ -1911,7 +1913,7 @@ const EditorComponent = (props) => {
                           canvasWidth={getCanvasWidth()}
                           onDragging={(isDragging) => setIsDragging(isDragging)}
                         />
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1930,7 +1932,7 @@ const EditorComponent = (props) => {
               />
               <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
             </div>
-            <div className="editor-sidebar">
+            <div className={cx('editor-sidebar', { 'dark-theme theme-dark': props.darkMode })}>
               <EditorKeyHooks
                 moveComponents={moveComponents}
                 cloneComponents={cloningComponents}
@@ -1960,7 +1962,9 @@ const EditorComponent = (props) => {
               />
             </div>
             {config.COMMENT_FEATURE_ENABLE && showComments && (
-              <CommentNotifications socket={socket} pageId={currentPageId} />
+              <div className={cx({ 'dark-theme theme-dark': props.darkMode })}>
+                <CommentNotifications socket={socket} pageId={currentPageId} />
+              </div>
             )}
           </div>
         </DndProvider>
