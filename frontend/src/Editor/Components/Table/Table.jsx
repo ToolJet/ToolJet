@@ -1513,6 +1513,7 @@ export function Table({
                               'has-left-actions': cell.column.id === 'leftActions',
                               'has-right-actions': cell.column.id === 'rightActions',
                               'has-text': cell.column.columnType === 'text' || isEditable,
+                              'has-number': cell.column.columnType === 'number',
                               'has-dropdown': cell.column.columnType === 'dropdown',
                               'has-multiselect': cell.column.columnType === 'multiselect',
                               'has-datepicker': cell.column.columnType === 'datepicker',

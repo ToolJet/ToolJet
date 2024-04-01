@@ -11,6 +11,7 @@ import { Link } from '../Link';
 import moment from 'moment';
 import { Boolean } from '../Boolean';
 import { CustomSelect } from '../CustomSelect';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export default function generateColumnsData({
   columnProperties,
@@ -265,9 +266,24 @@ export default function generateColumnsData({
               const cellStyles = {
                 color: textColor ?? '',
               };
+              const handleIncrement = (e) => {
+                e.preventDefault(); // Prevent the default button behavior (form submission, page reload)
+
+                const newValue = (cellValue || 0) + 1;
+                if (!isNaN(newValue)) {
+                  handleCellValueChange(cell.row.index, column.key || column.name, Number(newValue), cell.row.original);
+                }
+              };
+              const handleDecrement = (e) => {
+                e.preventDefault();
+                const newValue = (cellValue || 0) - 1;
+                if (!isNaN(newValue)) {
+                  handleCellValueChange(cell.row.index, column.key || column.name, Number(newValue), cell.row.original);
+                }
+              };
 
               return (
-                <div className="h-100 d-flex flex-column justify-content-center">
+                <div className="h-100 d-flex flex-column justify-content-center position-relative">
                   <input
                     type="number"
                     style={{ ...cellStyles, maxWidth: width, outline: 'none', border: 'none', background: 'inherit' }}
@@ -294,9 +310,38 @@ export default function generateColumnsData({
                       }
                     }}
                     onFocus={(e) => e.stopPropagation()}
-                    className={`table-column-type-input-element ${!isValid ? 'is-invalid' : ''}`}
+                    className={`table-column-type-input-element input-number ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
+                  <div className="arror-container">
+                    <div onClick={(e) => handleIncrement(e)}>
+                      <SolidIcon
+                        width={'16px'}
+                        style={{
+                          top: '1px',
+                          right: '1px',
+                          zIndex: 3,
+                        }}
+                        className="numberinput-up-arrow-table "
+                        name="uparrow"
+                        fill={'var(--icons-default)'}
+                      ></SolidIcon>
+                    </div>
+
+                    <div onClick={(e) => handleDecrement(e)}>
+                      <SolidIcon
+                        style={{
+                          right: '1px',
+                          bottom: '1px',
+                          zIndex: 3,
+                        }}
+                        width={'16px'}
+                        className="numberinput-down-arrow-table"
+                        name="downarrow"
+                        fill={'var(--icons-default)'}
+                      ></SolidIcon>
+                    </div>
+                  </div>
                   <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );

@@ -96,7 +96,8 @@
 
   .table-row:hover,
   .table-row:focus {
-    background: var(--slate4, #ECEEF0) !important;   
+    background: var(--interactive-overlays-fill-hover) ;
+
   }
 
   .table-row.selected {
@@ -107,6 +108,9 @@
   td {
     overflow-x: initial;
     padding: 0.5rem !important;
+    &.has-number{
+      padding: 0 !important;
+    }
     .text-container {
       padding: 0;
       margin: 0;
@@ -752,7 +756,7 @@
       }
     }
     .td.has-badge,.td.has-tags,.td.has-badge,.td.has-link,.td.has-radio,.td.has-dropdown,.td.has-multiselect,td.has-toggle{
-      background-color: transparent;
+      background-color: inherit;
     }
     .td.has-select {
       .react-select__control{
@@ -1059,4 +1063,27 @@
   border-radius:6px !important;
   word-wrap:break-word !important ;
   height: fit-content !important; 
+}
+.has-number{
+  .arror-container{
+    display: none;
+  }
+  &:hover,&:focus-within{
+    .arror-container{
+      display: block !important;
+      border-left: 0.5px solid var(--borders-default) !important;
+      position: absolute;
+      right: 0px;
+      top: 0px;
+      bottom: 0px;
+      .numberinput-up-arrow-table {
+        right: 1px !important;
+        top: 1px !important;
+      }
+      .numberinput-down-arrow-table {
+        right: 1px !important;
+        bottom: 1px !important;
+      }
+    }
+  }
 }
