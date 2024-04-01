@@ -31,7 +31,7 @@ export class EmailService {
     try {
       if (this.NODE_ENV === 'test' || (this.NODE_ENV !== 'development' && !process.env.SMTP_DOMAIN)) return;
       const message = {
-        to: 'vjy239@gmail.com',
+        to: to,
         subject: subject,
         template: './base/base_template',
         context: templateData,
@@ -99,7 +99,7 @@ export class EmailService {
 
     const templateData = {
       name: name || '',
-      url: inviteUrl,
+      inviteUrl,
       sender,
       organizationName,
     };
@@ -110,6 +110,7 @@ export class EmailService {
       bodyHeader: subject,
       bodyContent: htmlEmailContent,
       footerText: footerText,
+      inviteUrl,
     });
   }
 
@@ -135,6 +136,7 @@ export class EmailService {
       bodyHeader: subject,
       bodyContent: htmlEmailContent,
       footerText: 'You have received this email as an invitation to join ToolJet’s workspace',
+      inviteUrl,
     });
   }
 
