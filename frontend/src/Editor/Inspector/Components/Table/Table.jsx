@@ -724,7 +724,7 @@ class TableComponent extends React.Component {
                 component={this.props.component}
                 paramMeta={{
                   type: 'select',
-                  displayName: 'Link Target',
+                  displayName: 'Link target',
                   options: [
                     { name: 'Same window', value: '_self' },
                     { name: 'New window', value: '_blank' },
