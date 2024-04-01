@@ -166,7 +166,7 @@
       outline: none;
       height: 100%;
     }
-    &:hover{
+    &:not(:focus-within):hover{
       background: linear-gradient(0deg, var(--interactive-overlays-fill-hover),var(--interactive-overlays-fill-hover)),
         linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover));
     }
@@ -191,7 +191,7 @@
       top: 0;
       left: 0;
       right: 0;
-      background: var(--surfaces-surface-01);
+      background: var(--surfaces-surface-01) !important;
       box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px,
         rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
     }
@@ -720,8 +720,8 @@
 
       }
       &:focus-within{
-        border: 1px solid var(--indigo9);
-        background-color: var(--indigo1) !important; 
+        border: 1px solid var(--interactive-overlays-focus-outline);
+        background-color: var(--surfaces-surface-01) !important; 
       }
       .table-column-type-div-element,.table-column-type-input-element{
         &:focus-visible{
