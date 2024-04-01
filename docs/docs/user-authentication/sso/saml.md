@@ -13,7 +13,7 @@ To enable SAML authentication, you need to configure the following workspace set
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/saml/workspaceset.png" alt="SSO :SAMP" />
+  <img className="screenshot-full" src="/img/sso/saml/workspaceset-new.png" alt="SSO :SAMP" />
 
   </div>
 
@@ -42,7 +42,7 @@ To enable SAML authentication, you need to configure the following workspace set
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/saml/config.png" alt="SSO :SAMP" />
+  <img className="screenshot-full" src="/img/sso/saml/config-new.png" alt="SSO :SAMP" />
 
   </div>
 
@@ -54,7 +54,7 @@ To enable SAML authentication, you need to configure the following workspace set
   
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/saml/url.png" alt="SSO :SAML"/>
+  <img className="screenshot-full" src="/img/sso/saml/url-new.png" alt="SSO :SAML"/>
 
   </div>
 
