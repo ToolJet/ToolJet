@@ -737,6 +737,11 @@
       .table-column-type-input-element{
         color: var(--slate12);
       }
+      .table-column-type-div-element{
+        display: flex;
+        align-items: center;
+      }
+
     }
     //for select column type
     .td.has-dropdown,td.has-multiselect{
@@ -756,18 +761,22 @@
       }
       .table-select-search{
         height: 100%;
+        display: flex;
+        align-items: center;
+        width: 100%;
         .react-select__control{
           height: 100%;
           display: flex;
-          align-items: baseline;
+          align-items: center;
+          width: 100%;
           .react-select__value-container{
             display: flex;
-            align-items: baseline;
+            align-items: center;
           }
         }
         .react-select__indicators{
           display: flex;
-          align-items: baseline;
+          align-items: center;
           height: 100%;
         }
         .react-select__dropdown-indicator{

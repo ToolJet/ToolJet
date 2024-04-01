@@ -179,7 +179,7 @@ export default function generateColumnsData({
               return (
                 <div className="h-100 d-flex flex-column justify-content-center position-relative">
                   <div
-                    rows="1"
+                    // rows="1"
                     contentEditable={true}
                     className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input ${
                       darkMode ? ' textarea-dark-theme' : ''
@@ -334,7 +334,7 @@ export default function generateColumnsData({
               return (
                 <div className="h-100 d-flex flex-column justify-content-center position-relative">
                   <div
-                    rows="1"
+                    // rows="1"
                     contentEditable={true}
                     className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
                       darkMode ? ' textarea-dark-theme' : ''
