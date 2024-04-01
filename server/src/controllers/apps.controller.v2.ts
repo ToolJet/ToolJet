@@ -193,14 +193,12 @@ export class AppsControllerV2 {
 
     const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
 
-    if (appCurrentEditingVersion && !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
-      const developmentEnv = await this.appEnvironmentService.getByPriority(user.organizationId);
-      appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
-    }
-
     let shouldFreezeEditor = false;
     if (appCurrentEditingVersion) {
-      const hasMultiEnvLicense = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const hasMultiEnvLicense = await this.licenseService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        user.organizationId
+      );
       if (hasMultiEnvLicense) {
         const currentEnvironment = await this.appEnvironmentService.get(
           user.organizationId,
