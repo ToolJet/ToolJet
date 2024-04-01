@@ -43,7 +43,10 @@ const DeprecatedColumnTypeMsg = ({ columnType }) => {
   const deprecatedColumnType = DEPRECATED_COLUMN_TYPES.find((ct) => ct.value === columnType);
   if (!deprecatedColumnType) return null;
   return (
-    <div className="d-flex" style={{ padding: '12px 16px', gap: '4px', backgroundColor: '#FCEEEF' }}>
+    <div
+      className="d-flex"
+      style={{ padding: '12px 16px', gap: '6px', backgroundColor: '#FCEEEF', borderRadius: '6px' }}
+    >
       <span>
         <Icon name={'warning'} height={16} width={16} fill="#DB4324" />
       </span>
