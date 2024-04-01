@@ -38,7 +38,6 @@ export default function CreateTableDrawer() {
                 toast.error(error?.message ?? 'Failed to fetch tables');
                 return;
               }
-              console.log('first', data);
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setSelectedTable({ table_name: tableInfo.table_name, id: tableInfo.id });
                 updateSidebarNAV(tableInfo.table_name);

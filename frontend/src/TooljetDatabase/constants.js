@@ -49,14 +49,14 @@ export const formatOptionLabel = ({ label, icon }) => {
   );
 };
 
-export const isSerialDataType = (columnDetails) => {
-  const { dataType = '', column_default = '' } = columnDetails;
+export const getColumnDataType = (columnDetails) => {
+  const { data_type = '', column_default = '' } = columnDetails;
   const serialDatatypeDefaultValuePattern = 'nextval(';
 
-  if (dataType === 'integer' && column_default) {
-    if (column_default.includes(serialDatatypeDefaultValuePattern)) return true;
+  if (data_type === 'integer' && column_default) {
+    if (column_default.includes(serialDatatypeDefaultValuePattern)) return 'serial';
   }
-  return false;
+  return data_type;
 };
 
 export const ChangesComponent = ({ currentPrimaryKeyIcons, newPrimaryKeyIcons }) => {

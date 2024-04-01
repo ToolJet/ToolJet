@@ -92,17 +92,8 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     return filteredDataTypes;
   };
 
-  // const primarKeyObjectsByDataType = (dataTypes, col) => {
-  //   const filteredDataTypes = col.filter((item) => {
-  //     return dataTypes.some((obj) => obj.value === item.dataType && item?.constraints_type?.is_primary_key);
-  //   });
-
-  //   return filteredDataTypes;
-  // };
-
   const selectedColumnDetails = columns.map((item, index) => {
     const matchedDataTypes = filterObjectsByDataType(dataTypes, [item]); // Get all matched data type objects
-    // const primary = primarKeyObjectsByDataType(dataTypes, [item]);
     return {
       [index]: {
         column_name: item.Header,
@@ -110,7 +101,6 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         constraints_type: item.constraints_type,
         dataTypeDetails: matchedDataTypes.length > 0 ? matchedDataTypes : null, // Add matched data types or null if no match found
         column_default: item.column_default,
-        // primary: primary.length > 0 ? primary : null,
       },
     };
   });

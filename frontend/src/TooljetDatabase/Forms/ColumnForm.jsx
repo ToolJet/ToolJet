@@ -6,7 +6,7 @@ import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import tjdbDropdownStyles, { dataTypes, formatOptionLabel, isSerialDataType } from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import Tick from '../Icons/Tick.svg';
 import './styles.scss';
 

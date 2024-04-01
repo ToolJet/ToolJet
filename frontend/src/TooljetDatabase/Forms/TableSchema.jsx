@@ -32,24 +32,31 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
   const darkBorder = '#dadcde';
   const dropdownContainerWidth = '360px';
 
-  const CustomSelectOption = (props) => (
-    <Option {...props}>
-      <div className="selected-dropdownStyle d-flex align-items-center justify-content-between">
-        <div className="d-flex align-items-center justify-content-start">
-          <div>{props.data.icon}</div>
-          <span className="dataType-dropdown-label">{props.data.label}</span>
-          <span className="dataType-dropdown-value">{props.data.name}</span>
+  const CustomSelectOption = (props) => {
+    const isCheckDataType =
+      columns[columnSelection.index]?.column_default?.includes('nextval(') &&
+      columns[columnSelection.index]?.data_type === 'integer'
+        ? 'serial'
+        : columns[columnSelection.index]?.data_type;
+    return (
+      <Option {...props}>
+        <div className="selected-dropdownStyle d-flex align-items-center justify-content-between">
+          <div className="d-flex align-items-center justify-content-start">
+            <div>{props.data.icon}</div>
+            <span className="dataType-dropdown-label">{props.data.label}</span>
+            <span className="dataType-dropdown-value">{props.data.name}</span>
+          </div>
+          <div>
+            {isCheckDataType === props.data.value ? (
+              <div>
+                <Tick width="16" height="16" />
+              </div>
+            ) : null}
+          </div>
         </div>
-        <div>
-          {columns[columnSelection.index].data_type === props.data.value ? (
-            <div>
-              <Tick width="16" height="16" />
-            </div>
-          ) : null}
-        </div>
-      </div>
-    </Option>
-  );
+      </Option>
+    );
+  };
 
   const customStyles = tjdbDropdownStyles(
     darkMode,
@@ -116,11 +123,7 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
                   width="120px"
                   height="36px"
                   //useMenuPortal={false}
-                  value={
-                    isEditMode && columns[index]?.column_default?.includes('nextval(')
-                      ? serialDataType
-                      : columns[index]?.dataTypeDetails
-                  }
+                  value={columns[index]?.dataTypeDetails}
                   defaultValue={columns[index]?.constraints_type?.is_primary_key === true ? serialDataType : null}
                   options={dataTypes}
                   onChange={(value) => {
@@ -131,16 +134,17 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
                     }));
                     const prevColumns = { ...columns };
                     prevColumns[index].data_type = value ? value.value : null;
-                    // isEditMode ? (prevColumns[index].dataTypeDetails = value ? value : null) : null;
                     prevColumns[index].dataTypeDetails = value;
                     const columnConstraints = prevColumns[index]?.constraints_type ?? {};
                     columnConstraints.is_not_null =
                       value.value === 'serial' ||
-                      (prevColumns[index].constraints_type.is_primary_key && prevColumns[index].data_type !== 'serial');
+                      (prevColumns[index].constraints_type?.is_primary_key &&
+                        prevColumns[index]?.data_type !== 'serial');
 
                     columnConstraints.is_unique =
                       value.value === 'serial' ||
-                      (prevColumns[index].constraints_type.is_primary_key && prevColumns[index].data_type !== 'serial');
+                      (prevColumns[index].constraints_type?.is_primary_key &&
+                        prevColumns[index]?.data_type !== 'serial');
                     prevColumns[index].constraints_type = { ...columnConstraints };
                     setColumns(prevColumns);
                   }}
@@ -197,29 +201,21 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
                     prevColumns[index].column_default = e.target.value;
                     setColumns(prevColumns);
                   }}
-                  value={
-                    isEditMode && columns[index]?.column_default?.includes('nextval(')
-                      ? 'Auto-generated'
-                      : columns[index].data_type === 'serial'
-                      ? 'Auto-generated'
-                      : columns[index].column_default
-                  }
+                  value={columns[index].data_type === 'serial' ? 'Auto-generated' : columns[index].column_default}
                   type="text"
                   className="form-control defaultValue"
                   data-cy="default-input-field"
                   placeholder={
                     (columns[index].data_type === 'serial' &&
                       columns[index]?.constraints_type?.is_primary_key === true) ||
-                    columns[index].data_type === 'serial' ||
-                    (isEditMode && columns[index]?.column_default?.includes('nextval('))
+                    columns[index].data_type === 'serial'
                       ? 'Auto-generated'
                       : 'Null'
                   }
                   disabled={
                     (columns[index].data_type === 'serial' &&
                       columns[index]?.constraints_type?.is_primary_key === true) ||
-                    columns[index].data_type === 'serial' ||
-                    (isEditMode && columns[index]?.column_default?.includes('nextval('))
+                    columns[index].data_type === 'serial'
                   }
                 />
               </div>
@@ -312,6 +308,7 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
                 columns={columns}
                 setColumns={setColumns}
                 index={index}
+                isEditMode={isEditMode}
               >
                 <div className="cursor-pointer">
                   <MenuIcon />

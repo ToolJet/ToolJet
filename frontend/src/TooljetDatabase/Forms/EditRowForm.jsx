@@ -4,7 +4,7 @@ import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 import _ from 'lodash';
-import { isSerialDataType, renderDatatypeIcon, listAllPrimaryKeyColumns } from '../constants';
+import { renderDatatypeIcon, listAllPrimaryKeyColumns } from '../constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
@@ -250,7 +250,7 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
               const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);
               const isPrimaryKey = constraints_type?.is_primary_key ?? false;
               const isNullable = !constraints_type?.is_not_null;
-              const isSerialDataTypeColumn = isSerialDataType({ dataType, column_default });
+              const isSerialDataTypeColumn = dataType === 'serial';
               const shouldInputBeDisabled = isPrimaryKey || isSerialDataTypeColumn;
 
               return (
@@ -363,10 +363,16 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
                     </div>
                   </div>
                   <ToolTip
-                    message="Serial data type values cannot be modified"
+                    message={
+                      isSerialDataTypeColumn
+                        ? 'Serial data type values cannot be modified'
+                        : constraints_type?.is_primary_key
+                        ? 'Cannot edit primary key values'
+                        : null
+                    }
                     placement="top"
                     tooltipClassName="tootip-table"
-                    show={isSerialDataType(columns[index])}
+                    show={isSerialDataTypeColumn || constraints_type?.is_primary_key}
                   >
                     {renderElement(accessor, dataType, index, shouldInputBeDisabled)}
                   </ToolTip>

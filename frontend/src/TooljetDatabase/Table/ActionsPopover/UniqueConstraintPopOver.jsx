@@ -6,7 +6,16 @@ import DeleteIcon from '../../Icons/DeleteIcon.svg';
 import { ToolTip } from '@/_components/ToolTip';
 
 // eslint-disable-next-line no-unused-vars
-export const UniqueConstraintPopOver = ({ disabled, children, onDelete, darkMode, columns, setColumns, index }) => {
+export const UniqueConstraintPopOver = ({
+  disabled,
+  children,
+  onDelete,
+  darkMode,
+  columns,
+  setColumns,
+  index,
+  isEditMode,
+}) => {
   if (disabled) return children;
   const toolTipPlacementStyle = {
     width: '126px',

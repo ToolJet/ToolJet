@@ -3,7 +3,7 @@ import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
-import { renderDatatypeIcon, isSerialDataType } from '../constants';
+import { renderDatatypeIcon } from '../constants';
 import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
@@ -101,7 +101,7 @@ const RowForm = ({ onCreate, onClose }) => {
     setData(
       columns.reduce((result, column) => {
         const { dataType, column_default } = column;
-        if (!isSerialDataType({ dataType, column_default })) {
+        if (dataType !== 'serial') {
           if (column.dataType === 'boolean') {
             result[column.accessor] = false;
           } else {
@@ -127,7 +127,7 @@ const RowForm = ({ onCreate, onClose }) => {
   };
 
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index) => {
-    const isSerialDataTypeColumn = isSerialDataType({ dataType, column_default: defaultValue });
+    const isSerialDataTypeColumn = dataType === 'serial';
     switch (dataType) {
       case 'character varying':
       case 'integer':
@@ -189,11 +189,7 @@ const RowForm = ({ onCreate, onClose }) => {
     const { dataType = '', accessor, column_default } = obj;
     const keyName = accessor;
 
-    if (
-      data[keyName] !== undefined &&
-      dataType !== 'character varying' &&
-      !isSerialDataType({ dataType, column_default })
-    ) {
+    if (data[keyName] !== undefined && dataType !== 'character varying' && dataType !== 'serial') {
       matchingObject[keyName] = data[keyName];
     }
   });
@@ -211,7 +207,7 @@ const RowForm = ({ onCreate, onClose }) => {
             const isPrimaryKey = constraints_type.is_primary_key;
             const isNullable = !constraints_type.is_not_null;
             const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);
-            const isSerialDataTypeColumn = isSerialDataType({ dataType, column_default });
+            const isSerialDataTypeColumn = dataType === 'serial';
             return (
               <div className="mb-3 " key={index}>
                 <div className="d-flex align-items-center justify-content-between">
@@ -304,7 +300,7 @@ const RowForm = ({ onCreate, onClose }) => {
                   message="Serial data type value is auto-generated and cannot be edited"
                   placement="top"
                   tooltipClassName="tootip-table"
-                  show={isSerialDataType(columns[index])}
+                  show={dataType === 'serial'}
                 >
                   {renderElement(accessor, dataType, isPrimaryKey, column_default, index)}
                 </ToolTip>

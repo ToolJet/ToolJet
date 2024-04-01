@@ -14,7 +14,7 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
-import { isSerialDataType, renderDatatypeIcon, listAllPrimaryKeyColumns } from '../constants';
+import { renderDatatypeIcon, listAllPrimaryKeyColumns, getColumnDataType } from '../constants';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
@@ -275,7 +275,8 @@ const Table = ({ collapseSidebar }) => {
             data?.result.map(({ column_name, data_type, ...rest }) => ({
               Header: column_name,
               accessor: column_name,
-              dataType: data_type,
+              dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
+              // dataType: data_type,
               ...rest,
             }))
           );
@@ -773,9 +774,9 @@ const Table = ({ collapseSidebar }) => {
     // Should not be Primary Key & Serial Data-type
     if (headerGroups.length && headerGroups[0].headers.length) {
       const tableHeaderList = headerGroups[0].headers;
-      const { constraints_type = {} } = tableHeaderList[cellColumnIndex];
+      const { constraints_type = {}, dataType = '' } = tableHeaderList[cellColumnIndex];
       if (constraints_type.is_primary_key) return false;
-      if (isSerialDataType(tableHeaderList[cellColumnIndex])) return false;
+      if (dataType === 'serial') return false;
       return true;
     } else {
       return false;
@@ -785,9 +786,9 @@ const Table = ({ collapseSidebar }) => {
   const getTooltipTextForCell = (cellValue, cellColumnIndex) => {
     if (headerGroups.length && headerGroups[0].headers.length) {
       const tableHeaderList = headerGroups[0].headers;
-      const { constraints_type = {} } = tableHeaderList[cellColumnIndex];
+      const { constraints_type = {}, dataType = '' } = tableHeaderList[cellColumnIndex];
       if (constraints_type.is_primary_key) return 'Cannot edit primary key values';
-      if (isSerialDataType(tableHeaderList[cellColumnIndex])) return 'Serial type values cannot be modified';
+      if (dataType === 'serial') return 'Serial type values cannot be modified';
       return cellValue || '';
     } else {
       return cellValue || '';
@@ -795,15 +796,15 @@ const Table = ({ collapseSidebar }) => {
   };
 
   function tableHeaderContent(column) {
-    const { constraints_type = {} } = column;
+    const { constraints_type = {}, dataType = '' } = column;
     const { is_primary_key } = constraints_type;
 
     return is_primary_key ? (
       <ToolTip show message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
-        <div className="primaryKeyTooltip w-100">
+        <div className="primaryKeyTooltip">
           <div>
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
-              {renderDatatypeIcon(isSerialDataType(column) ? 'serial' : column?.dataType)}
+              {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
             </span>
             {column.render('Header')}
           </div>
@@ -817,7 +818,7 @@ const Table = ({ collapseSidebar }) => {
     ) : (
       <div className="tj-db-headerText">
         <span className="tj-text-xsm tj-db-dataype text-lowercase">
-          {renderDatatypeIcon(isSerialDataType(column) ? 'serial' : column?.dataType)}
+          {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
         </span>
         {column.render('Header')}
       </div>
@@ -950,7 +951,7 @@ const Table = ({ collapseSidebar }) => {
                   {headerGroup.headers.map((column, index) => (
                     <th
                       key={column.Header}
-                      width={isSerialDataType(column) ? 150 : 230}
+                      width={column?.dataType === 'serial' ? 150 : 230}
                       style={{ height: index === 0 ? '32px' : '' }}
                       title={column?.constraints_type?.is_primary_key ?? false ? '' : column?.Header}
                       className={
@@ -969,29 +970,28 @@ const Table = ({ collapseSidebar }) => {
                     >
                       <div className="d-flex align-items-center justify-content-between">
                         {tableHeaderContent(column)}
-                        {!column?.constraints_type?.is_primary_key && (
-                          <TablePopover
-                            onEdit={() => {
-                              setSelectedColumn(column);
-                              setIsEditColumnDrawerOpen(true);
-                              closeMenu();
-                            }}
-                            onDelete={() => handleDelete(column.Header)}
-                            disabled={index === 0 || column.isPrimaryKey}
-                            show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
-                            className="column-popover-parent"
-                            darkMode={darkMode}
-                          >
-                            <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
-                              <Menu
-                                width="20"
-                                height="20"
-                                className="tjdb-menu-icon"
-                                onClick={(e) => onMenuClick(index, e)}
-                              />
-                            </div>
-                          </TablePopover>
-                        )}
+
+                        <TablePopover
+                          onEdit={() => {
+                            setSelectedColumn(column);
+                            setIsEditColumnDrawerOpen(true);
+                            closeMenu();
+                          }}
+                          onDelete={() => handleDelete(column.Header)}
+                          // disabled={column.isPrimaryKey}
+                          show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
+                          className="column-popover-parent"
+                          darkMode={darkMode}
+                        >
+                          <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
+                            <Menu
+                              width="20"
+                              height="20"
+                              className="tjdb-menu-icon"
+                              onClick={(e) => onMenuClick(index, e)}
+                            />
+                          </div>
+                        </TablePopover>
                       </div>
                     </th>
                   ))}

@@ -4,7 +4,7 @@ import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, getColumnDataType } from '../constants';
 import WarningInfo from '../Icons/Edit-information.svg';
 import { isEmpty } from 'lodash';
 
@@ -107,7 +107,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
           data?.result.map(({ column_name, data_type, ...rest }) => ({
             Header: column_name,
             accessor: column_name,
-            dataType: data_type,
+            dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
             ...rest,
           }))
         );
@@ -155,7 +155,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
           </div>
           <Select
             isDisabled={true}
-            defaultValue={disabledDataType}
+            defaultValue={selectedColumn?.dataType === 'serial' ? serialDataType : disabledDataType}
             formatOptionLabel={formatOptionLabel}
             options={dataTypes}
             onChange={handleTypeChange}
@@ -169,14 +169,14 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
             Default value
           </div>
           <input
-            value={defaultValue}
+            value={selectedColumn?.dataType === 'serial' ? 'Auto-generated' : defaultValue}
             type="text"
             placeholder="Enter default value"
             className={'form-control'}
             data-cy="default-value-input-field"
             autoComplete="off"
             onChange={(e) => setDefaultValue(e.target.value)}
-            disabled={dataType === 'serial'}
+            disabled={selectedColumn?.dataType === 'serial'}
           />
           {isNotNull === true && rows.length > 0 && !isEmpty(defaultValue) && defaultValueLength > 0 ? (
             <span className="form-warning-message">
@@ -194,6 +194,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
                 onChange={(e) => {
                   setIsNotNull(e.target.checked);
                 }}
+                disabled={selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key}
               />
             </label>
           </div>
@@ -214,6 +215,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
                 onChange={(e) => {
                   setIsUniqueConstraint(e.target.checked);
                 }}
+                disabled={selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key}
               />
             </label>
           </div>
