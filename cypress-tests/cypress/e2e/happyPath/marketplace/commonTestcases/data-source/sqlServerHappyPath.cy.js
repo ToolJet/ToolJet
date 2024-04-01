@@ -120,11 +120,11 @@ describe("Data sources", () => {
       postgreSqlText.placeholderEnterHost,
       Cypress.env("sqlserver_host")
     );
-    fillDataSourceTextField(
-      "Instance",
-      "Enter the name of the database instance",
-      Cypress.env("sqlserver_instance")
-    );
+    // fillDataSourceTextField(
+    //   "Instance",
+    //   "Enter the name of the database instance",
+    //   Cypress.env("sqlserver_instance")
+    // );
     fillDataSourceTextField(
       postgreSqlText.labelPort,
       postgreSqlText.placeholderEnterPort,
