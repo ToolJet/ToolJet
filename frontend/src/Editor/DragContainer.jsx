@@ -465,7 +465,18 @@ export default function DragContainer({
         onDragStart={(e) => {
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
           const box = boxes.find((box) => box.id === e.target.id);
-          if (['RangeSlider', 'Container', 'BoundedBox', 'Kanban'].includes(box?.component?.component)) {
+          let isDragOnTable = false;
+
+          /* Checking if the dragged elemenent is a table. If its a table drag is disabled since it will affect column resizing and reordering */
+          if (box?.component?.component === 'Table') {
+            const tableElem = e.target.querySelector('.jet-data-table');
+            isDragOnTable = tableElem.contains(e.inputEvent.target);
+          }
+
+          if (
+            ['RangeSlider', 'Container', 'BoundedBox', 'Kanban'].includes(box?.component?.component) ||
+            isDragOnTable
+          ) {
             const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
             const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
             if (!isHandle) {
