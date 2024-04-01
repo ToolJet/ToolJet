@@ -5,6 +5,7 @@ import { useResolveStore } from './resolverStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { useEditorStore } from './editorStore';
+import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 
 const initialState = {
   queries: {},
@@ -125,19 +126,20 @@ useCurrentStateStore.subscribe((state) => {
   const isStoreIntialized = useResolveStore.getState().storeReady;
 
   if (!isStoreIntialized) {
-    useResolveStore.getState().actions.updateAppSuggestions({
-      queries: state.queries,
-      components: state.components,
-      globals: state.globals,
-      page: state.page,
-      variables: state.variables,
-      client: state.client,
-      server: state.server,
-      constants: state.constants,
+    handleLowPriorityWork(() => {
+      useResolveStore.getState().actions.updateAppSuggestions({
+        queries: state.queries,
+        components: state.components,
+        globals: state.globals,
+        page: state.page,
+        variables: state.variables,
+        client: state.client,
+        server: state.server,
+        constants: state.constants,
+      });
     });
-    useResolveStore.getState().actions.updateStoreState({ storeReady: true });
     console.log('Resolver store initialized with current state.');
-    return;
+    return useResolveStore.getState().actions.updateStoreState({ storeReady: true });
   }
 }, shallow);
 
