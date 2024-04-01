@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   appService,
   authenticationService,
@@ -897,8 +897,10 @@ const EditorComponent = (props) => {
 
         const editorRef = getEditorRef();
 
-        await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
-        await handleEvent('onPageLoad', currentPageEvents, {}, true);
+        handleLowPriorityWork(async () => {
+          await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
+          await handleEvent('onPageLoad', currentPageEvents, {}, true);
+        });
       });
   };
 
@@ -938,7 +940,7 @@ const EditorComponent = (props) => {
     }, []);
   };
 
-  const appDefinitionChanged = async (newDefinition, opts = {}) => {
+  const appDefinitionChanged = useCallback(async (newDefinition, opts = {}) => {
     if (opts?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
       return new Promise((resolve) => {
@@ -1045,7 +1047,7 @@ const EditorComponent = (props) => {
         appDefinition: updatedAppDefinition,
       });
     }
-  };
+  }, []);
 
   const cloneEventsForClonedComponents = (componentUpdateDiff, operation, componentMap) => {
     function getKeyFromComponentMap(componentMap, newItem) {
@@ -1878,10 +1880,6 @@ const EditorComponent = (props) => {
   };
 
   const isEditorReady = useCurrentStateStore((state) => state.isEditorReady);
-
-  useEffect(() => {
-    console.log('----arpit:: piku editor', { isEditorReady, defaultComponentStateComputed });
-  }, [isEditorReady]);
 
   if (isLoading && !isEditorReady) {
     return (
