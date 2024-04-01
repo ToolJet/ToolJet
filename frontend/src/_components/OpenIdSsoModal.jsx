@@ -182,11 +182,15 @@ export function OpenIdSSOModal({
         }}
       >
         <div>
-          <label className="switch">
-            <input type="checkbox" checked={enabled} onChange={onToggleChange} data-cy="openid-toggle-input" />
+          <label className="switch" data-cy="openid-toggle-input">
+            <input type="checkbox" checked={enabled} onChange={onToggleChange} />
             <span className="slider round"></span>
           </label>
-          <span className="sso-type-header" data-cy="card-title" style={{ marginBottom: '0px', fontWeight: '500' }}>
+          <span
+            className="sso-type-header"
+            data-cy="openid-toggle-label"
+            style={{ marginBottom: '0px', fontWeight: '500' }}
+          >
             {t('header.organization.menus.manageSSO.openid.title', 'OpenID Connect')}
           </span>
         </div>

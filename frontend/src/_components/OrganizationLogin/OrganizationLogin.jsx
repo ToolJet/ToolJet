@@ -271,7 +271,7 @@ class OrganizationLogin extends React.Component {
                       ? 'enabled-tag'
                       : 'inherited-tag'
                   }`}
-                  data-cy="status-label"
+                  data-cy="workspace-login-status-label"
                 >
                   {window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true'
                     ? t('header.organization.menus.manageSSO.github.enabled', 'Enabled')

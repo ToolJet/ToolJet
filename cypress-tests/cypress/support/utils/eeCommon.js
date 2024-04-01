@@ -25,88 +25,92 @@ import { ssoText } from "Texts/manageSSO";
 import { appPromote } from "Support/utils/multiEnv";
 
 export const oidcSSOPageElements = () => {
-  cy.get(ssoEeSelector.oidcToggle).then(($el) => {
-    if ($el.is(":checked")) {
-      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoEeText.enabledLabel
-      );
-      cy.get(ssoEeSelector.oidcToggle).uncheck();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("OpenID")
-      );
-      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoEeText.disabledLabel
-      );
-      cy.get(ssoEeSelector.oidcToggle).check();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("OpenID")
-      );
-      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoEeText.enabledLabel
-      );
-    } else {
-      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoEeText.disabledLabel
-      );
-      cy.get(ssoEeSelector.oidcToggle).check();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("OpenID")
-      );
-      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoEeText.enabledLabel
-      );
-      cy.get(ssoEeSelector.oidcToggle).uncheck();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        ssoText.toggleUpdateToast("OpenID")
-      );
-      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoEeText.disabledLabel
-      );
-      cy.get(ssoEeSelector.oidcToggle).check();
-      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoEeText.enabledLabel
-      );
-    }
-    cy.clearAndType(ssoEeSelector.nameInput, ssoEeText.testName);
-    cy.clearAndType(ssoEeSelector.clientIdInput, ssoEeText.testclientId);
-    cy.clearAndType(
-      ssoEeSelector.clientSecretInput,
-      ssoEeText.testclientSecret
-    );
-    cy.clearAndType(
-      ssoEeSelector.WellKnownUrlInput,
-      ssoEeText.testWellknownUrl
-    );
-    cy.get(commonEeSelectors.saveButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      ssoText.toggleUpdateToast("OpenID")
-    );
-    cy.get(ssoEeSelector.nameInput).should("have.value", ssoEeText.testName);
-    cy.get(ssoEeSelector.clientIdInput).should(
-      "have.value",
-      ssoEeText.testclientId
-    );
-    cy.get(ssoEeSelector.clientSecretInput).should(
-      "have.value",
-      ssoEeText.testclientSecret
-    );
-    cy.get(ssoEeSelector.WellKnownUrlInput).should(
-      "have.value",
-      ssoEeText.testWellknownUrl
-    );
-  });
+  cy.get(ssoEeSelector.oidcToggle).click();
+  cy.get(ssoSelector.saveButton).eq(1).click();
+  cy.get('[data-cy="modal-title"]').verifyVisibleElement(
+    "have.text",
+    "Enable OpenID Connect"
+  );
+  cy.get('[data-cy="modal-close-button"]').should("be.visible");
+  cy.get('[data-cy="modal-message"]').verifyVisibleElement(
+    "have.text",
+    "Enabling OpenID Connect at the workspace level will override any OpenID Connect configurations set at the instance level."
+  );
+  cy.get('[data-cy="confirmation-text"]').verifyVisibleElement(
+    "have.text",
+    "Are you sure you want to continue?"
+  );
+  cy.get('[data-cy="cancel-button"]')
+    .eq(2)
+    .verifyVisibleElement("have.text", "Cancel");
+  cy.get('[data-cy="enable-button"]').verifyVisibleElement(
+    "have.text",
+    "Enable"
+  );
+
+  cy.get('[data-cy="cancel-button"]').eq(2).click();
+  cy.get('[data-cy="status-label"]').verifyVisibleElement(
+    "have.text",
+    ssoText.disabledLabel
+  );
+
+  cy.get(ssoEeSelector.oidcToggle).click();
+  cy.get(ssoSelector.saveButton).eq(1).click();
+  cy.get('[data-cy="enable-button"]').click();
+
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    ssoText.toggleUpdateToast("OpenID")
+  );
+
+  cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
+    "have.text",
+    ssoEeText.enabledLabel
+  );
+
+  cy.get('[data-cy="redirect-url-label"]').verifyVisibleElement(
+    "have.text",
+    ssoText.redirectUrlLabel
+  );
+  cy.get('[data-cy="redirect-url"]').should("be.visible");
+  cy.get('[data-cy="copy-icon"]').should("be.visible");
+
+  cy.get(ssoEeSelector.oidcToggle).click();
+  cy.get(ssoSelector.saveButton).eq(1).click();
+  // cy.get('[data-cy="enable-button"]').click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    ssoText.toggleUpdateToast("OpenID")
+  );
+  cy.get(ssoSelector.statusLabel).verifyVisibleElement(
+    "have.text",
+    ssoText.disabledLabel
+  );
+
+  cy.get(ssoEeSelector.oidcToggle).click();
+  cy.clearAndType(ssoEeSelector.nameInput, ssoEeText.testName);
+  cy.clearAndType(ssoEeSelector.clientIdInput, ssoEeText.testclientId);
+  cy.clearAndType(ssoEeSelector.clientSecretInput, ssoEeText.testclientSecret);
+  cy.clearAndType(ssoEeSelector.WellKnownUrlInput, ssoEeText.testWellknownUrl);
+  cy.get(ssoSelector.saveButton).eq(1).click();
+  cy.get('[data-cy="enable-button"]').click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    ssoText.toggleUpdateToast("OpenID")
+  );
+  cy.get(ssoEeSelector.nameInput).should("have.value", ssoEeText.testName);
+  cy.get(ssoEeSelector.clientIdInput).should(
+    "have.value",
+    ssoEeText.testclientId
+  );
+  cy.get(ssoEeSelector.clientSecretInput).should(
+    "have.value",
+    ssoEeText.testclientSecret
+  );
+  cy.get(ssoEeSelector.WellKnownUrlInput).should(
+    "have.value",
+    ssoEeText.testWellknownUrl
+  );
 };
 
 export const resetDsPermissions = () => {
@@ -484,7 +488,7 @@ export const createAnAppWithSlug = (appName, slug) => {
   cy.apiCreateApp(appName);
   cy.openApp();
   cy.dragAndDropWidget("Table", 250, 250);
-  appPromote('development', 'release')
+  appPromote("development", "release");
   cy.get(commonWidgetSelector.shareAppButton).click();
   cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
   cy.wait(2000);
@@ -560,3 +564,40 @@ export const archiveWorkspace = (workspaceName) => {
   cy.get(workspaceSelector.workspaceStatusChange).eq(0).click();
   cy.get(commonEeSelectors.confirmButton).click();
 };
+
+export const setSignupStatus = (enable) => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request(
+      {
+        method: "PATCH",
+        url: "http://localhost:3000/api/organizations",
+        headers: {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        },
+        body: { enableSignUp: enable, domain: "" },
+      },
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(200);
+    });
+  });
+};
+
+export const deleteOrganisationSSO = (workspaceName, services) => {
+  let workspaceId;
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select id from organizations where name='${workspaceName}';`,
+  }).then((resp) => {
+    workspaceId = resp.rows[0].id;
+
+    cy.task("updateId", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `DELETE FROM sso_configs WHERE organization_id = '${workspaceId}' AND sso IN (${services
+        .map((service) => `'${service}'`)
+        .join(",")});`,
+    });
+  });
+};
+

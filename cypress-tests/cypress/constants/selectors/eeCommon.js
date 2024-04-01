@@ -24,9 +24,9 @@ export const commonEeSelectors = {
 };
 
 export const ssoEeSelector = {
-  oidc: '[data-cy="openid-connect-list-item"]',
+  oidc: '[data-cy="openid-connect-sso-card"]',
   statusLabel: '[data-cy="status-label"]',
-  oidcToggle: '[data-cy="openid-toggle-input"]',
+  oidcToggle: '[data-cy="openid-toggle-input"] > .slider',
   oidcPageElements: {
     oidcToggleLabel: '[data-cy="openid-toggle-label"]',
     nameLabel: '[data-cy="name-label"]',
@@ -34,7 +34,7 @@ export const ssoEeSelector = {
     clientSecretLabel: '[data-cy="client-secret-label"]',
     encryptedLabel: '[data-cy="encripted-label"]',
     WellKnownUrlLabel: '[data-cy="well-known-url-label"]',
-    redirectUrlLabel: '[data-cy="redirect-url-label"]',
+    // redirectUrlLabel: '[data-cy="redirect-url-label"]',
   },
   nameInput: '[data-cy="name-input"]',
   clientIdInput: '[data-cy="client-id-input"]',
@@ -53,13 +53,22 @@ export const ssoEeSelector = {
     baseDnHelperText: '[data-cy="base-dn-helper-text"]',
     sslLabel: '[data-cy="ssl-label"]',
   },
-  ldapToggle: '[data-cy="ldap-toggle-input"]',
+  ldapToggle: '[data-cy="ldap-toggle-input"] > .slider',
   hostInput: '[data-cy="host-input"]',
   portInput: '[data-cy="port-input"]',
   baseDnInput: '[data-cy="base-dn-input"]',
   sslToggleInput: '[data-cy="ssl-toggle-input"]',
   ldapSSOText: '[data-cy="ldap-sso-text"]',
   userNameInputLabel: '[data-cy="user-name-input-label"]',
+
+  samlModalElements: {
+    toggleLabel: '[data-cy="saml-toggle-label"]',
+    NameLabel: '[data-cy="name-label"]',
+    metaDataLabel: '[data-cy="idp-metadata-label"]',
+    baseDNHelperText: '[data-cy="base-dn-helper-text"]',
+    groupAttributeLabel: '[data-cy="group-attribute-label"]',
+    groupAttributeHelperText: '[data-cy="group-attribute-helper-text"]',
+  }
 };
 
 export const eeGroupsSelector = {
