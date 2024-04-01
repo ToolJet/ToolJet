@@ -257,6 +257,10 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
+    const queryRunner = this.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
@@ -266,8 +270,6 @@ export class TooljetDbService {
       const columnstoBeUpdated = [];
       const columnsToBeInserted = [];
       const columnsToBeDeleted = [];
-
-      if (!updatedPrimaryKeys.length) throw new BadRequestException('Primary key is mandatory');
 
       columns.forEach((column) => {
         const { oldColumn, newColumn } = column;
@@ -281,6 +283,8 @@ export class TooljetDbService {
             })
           );
         }
+
+        if (!updatedPrimaryKeys.length) throw new BadRequestException('Primary key is mandatory');
 
         // Columns to be deleted
         if (Object.keys(oldColumn).length && !Object.keys(newColumn).length) {
@@ -345,23 +349,27 @@ export class TooljetDbService {
       if (columnstoBeUpdated.length) await tjdbQueryRunner.changeColumns(internalTable.id, columnstoBeUpdated);
       if (updatedPrimaryKeys.length) await tjdbQueryRunner.updatePrimaryKeys(internalTable.id, updatedPrimaryKeys);
 
+      if (params?.new_table_name) {
+        const { new_table_name } = params;
+        const newInternalTable = await queryRunner.manager.findOne(InternalTable, {
+          where: { organizationId, tableName: new_table_name },
+        });
+
+        if (newInternalTable) throw new BadRequestException('Table name already exists: ' + new_table_name);
+        await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { tableName: new_table_name });
+      }
+
       await tjdbQueryRunner.commitTransaction();
+      await queryRunner.commitTransaction();
       await tjdbQueryRunner.query("NOTIFY pgrst, 'reload schema'");
       await tjdbQueryRunner.release();
+      await queryRunner.release();
     } catch (error) {
       await tjdbQueryRunner.rollbackTransaction();
+      await queryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
+      await queryRunner.release();
       throw error;
-    }
-
-    if (params?.new_table_name) {
-      const { new_table_name } = params;
-      const newInternalTable = await this.manager.findOne(InternalTable, {
-        where: { organizationId, tableName: new_table_name },
-      });
-
-      if (newInternalTable) throw new BadRequestException('Table name already exists: ' + new_table_name);
-      await this.manager.update(InternalTable, { id: internalTable.id }, { tableName: new_table_name });
     }
   }
 
