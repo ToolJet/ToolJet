@@ -267,6 +267,8 @@ export class TooljetDbService {
       const columnsToBeInserted = [];
       const columnsToBeDeleted = [];
 
+      if (!updatedPrimaryKeys.length) throw new BadRequestException('Primary key is mandatory');
+
       columns.forEach((column) => {
         const { oldColumn, newColumn } = column;
 
