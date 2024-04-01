@@ -106,7 +106,7 @@
 
   td {
     overflow-x: initial;
-
+    padding: 0.5rem !important;
     .text-container {
       padding: 0;
       margin: 0;
@@ -722,6 +722,11 @@
       &:focus-within{
         border: 1px solid var(--interactive-overlays-focus-outline);
         background-color: var(--surfaces-surface-01) !important; 
+        &:has(.long-text-input){
+          border: 0;
+          padding: 0 !important;
+          overflow: visible !important;
+        }
       }
       .table-column-type-div-element,.table-column-type-input-element{
         &:focus-visible{
@@ -1012,4 +1017,26 @@
   &.list-group-item:hover{
     background-color: var(--interactive-overlays-fill-hover) !important;
   }
+}
+.long-text-input{
+  height: 100%;
+  display: flex;
+  align-items: center;
+  &:focus{
+    width: 100%;
+    min-height: 100px; /* Set a minimum height */
+    max-height: 200px;
+    resize: vertical; /* Allow vertical resizing */
+    overflow-y: auto; /* Enable vertical scrolling */
+    position: absolute;
+    padding: 0 !important;
+    outline: none !important;
+    border: 1px solid var(--interactive-overlays-focus-outline) !important;
+    background-color: var(--surfaces-surface-01) !important; 
+    z-index: 99999 !important;
+    align-items: flex-start !important;
+  }
+}
+.table > :not(caption) > * > * {
+    padding: 0;
 }

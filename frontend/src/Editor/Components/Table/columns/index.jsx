@@ -173,13 +173,17 @@ export default function generateColumnsData({
 
               const { isValid, validationError } = validationData;
               const cellStyles = {
-                color: textColor ?? '',
+                color: textColor ?? 'inherit',
               };
 
               return (
-                <div className="h-100 d-flex flex-column justify-content-center">
-                  <input
-                    type="text"
+                <div className="h-100 d-flex flex-column justify-content-center position-relative">
+                  <div
+                    rows="1"
+                    contentEditable={true}
+                    className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input ${
+                      darkMode ? ' textarea-dark-theme' : ''
+                    }`}
                     style={{
                       ...cellStyles,
                       maxWidth: width,
@@ -187,32 +191,33 @@ export default function generateColumnsData({
                       border: 'none',
                       background: 'inherit',
                     }}
+                    readOnly={!isEditable}
+                    onBlur={(e) => {
+                      if (e.target.defaultValue !== e.target.textContent) {
+                        handleCellValueChange(
+                          cell.row.index,
+                          column.key || column.name,
+                          e.target.textContent,
+                          cell.row.original
+                        );
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        if (e.target.defaultValue !== e.target.value) {
+                        if (e.target.defaultValue !== e.target.textContent) {
                           handleCellValueChange(
                             cell.row.index,
                             column.key || column.name,
-                            e.target.value,
+                            e.target.textContent,
                             cell.row.original
                           );
                         }
                       }
                     }}
-                    onBlur={(e) => {
-                      if (e.target.defaultValue !== e.target.value) {
-                        handleCellValueChange(
-                          cell.row.index,
-                          column.key || column.name,
-                          e.target.value,
-                          cell.row.original
-                        );
-                      }
-                    }}
-                    className={`table-column-type-input-element ${!isValid ? 'is-invalid' : ''}`}
-                    defaultValue={cellValue}
                     onFocus={(e) => e.stopPropagation()}
-                  />
+                  >
+                    {cellValue}
+                  </div>
                   <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );
@@ -328,21 +333,26 @@ export default function generateColumnsData({
               const { isValid, validationError } = validationData;
               return (
                 <div className="h-100 d-flex flex-column justify-content-center position-relative">
-                  <textarea
+                  <div
                     rows="1"
-                    className={`${!isValid ? 'is-invalid' : ''} form-control-plaintext text-container ${
+                    contentEditable={true}
+                    className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
                       darkMode ? ' textarea-dark-theme' : ''
                     }`}
                     style={{
                       color: cellTextColor ? cellTextColor : 'inherit',
+                      maxWidth: width,
+                      outline: 'none',
+                      border: 'none',
+                      background: 'inherit',
                     }}
                     readOnly={!isEditable}
                     onBlur={(e) => {
-                      if (isEditable && e.target.defaultValue !== e.target.value) {
+                      if (isEditable && e.target.defaultValue !== e.target.textContent) {
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
-                          e.target.value,
+                          e.target.textContent,
                           cell.row.original
                         );
                       }
@@ -353,14 +363,15 @@ export default function generateColumnsData({
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
-                          e.target.value,
+                          e.target.textContent,
                           cell.row.original
                         );
                       }
                     }}
-                    defaultValue={cellValue}
                     onFocus={(e) => e.stopPropagation()}
-                  ></textarea>
+                  >
+                    {cellValue}
+                  </div>
                   <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );
