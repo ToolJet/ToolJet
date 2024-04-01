@@ -60,18 +60,8 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
     return Array.isArray(value) ? (
       <div
         style={{
-          height: 'fit-content',
           maxWidth: containerWidth,
           width: containerWidth,
-          background: 'var(--surfaces-surface-01)',
-          display: 'inline-flex',
-          flexWrap: 'wrap',
-          gap: '10px',
-          padding: '16px',
-          borderRadius: '6px',
-          boxShadow:
-            '0px 8px 16px 0px var(--elevation-400-box-shadow), 0px 0px 1px 0px var(--elevation-400-box-shadow)',
-          wordWrap: 'break-word', // Add word-wrap property for content wrapping
         }}
         className={`overlay-cell-table overlay-tags-table ${darkMode && 'dark-theme'}`}
         onMouseEnter={() => setHovered(true)}

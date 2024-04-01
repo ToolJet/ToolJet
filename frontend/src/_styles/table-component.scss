@@ -1049,3 +1049,14 @@
 .table > :not(caption) > * > * {
     padding: 0;
 }
+.overlay-cell-table{
+  box-shadow: var(--elevation-400-box-shadow) !important;
+  background: var(--surfaces-surface-01) !important;
+  display:inline-flex !important;
+  flex-wrap:wrap !important;
+  gap: 10px !important;
+  padding: 16px !important;
+  border-radius:6px !important;
+  word-wrap:break-word !important ;
+  height: fit-content !important; 
+}
