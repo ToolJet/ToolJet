@@ -67,8 +67,9 @@ export class EmailService {
 
       const info = await this.mailerService.sendMail(message);
       console.log('Message sent: %s', info);
-      // eslint-disable-next-line no-empty
-    } catch (error) {}
+    } catch (error) {
+      console.error('Email sent error', error);
+    }
   }
 
   private compileTemplate(templatePath: string, templateData: object) {
