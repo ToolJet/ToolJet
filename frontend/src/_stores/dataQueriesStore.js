@@ -37,7 +37,7 @@ export const useDataQueriesStore = create(
       actions: {
         // TODO: Remove editor state while changing currentState
         fetchDataQueries: async (appVersionId, selectFirstQuery = false, runQueriesOnAppLoad = false, ref) => {
-          set({ loadingDataQueries: true });
+          get().loadingDataQueries && set({ loadingDataQueries: true });
           const data = await dataqueryService.getAll(appVersionId);
 
           const diff = _.differenceWith(data.data_queries, get().dataQueries, _.isEqual);

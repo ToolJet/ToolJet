@@ -15,6 +15,7 @@ import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import CodeHinter from '../CodeEditor';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -23,8 +24,8 @@ export const GlobalSettings = ({
   toggleAppMaintenance,
   isMaintenanceOn,
   backgroundFxQuery,
-  realState,
 }) => {
+  const realState = useCurrentState();
   const { t } = useTranslation();
   const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor } = globalSettings;
   const [showPicker, setShowPicker] = useState(false);
