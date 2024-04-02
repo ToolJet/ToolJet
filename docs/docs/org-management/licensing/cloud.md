@@ -28,11 +28,11 @@ If you are an existing user and wish to update to trial subscriptions, follow th
 1. Navigate to the desired Workspace.
 2. If you are not currently on a paid plan and have not yet used your free trial, you will see a **Start Trial** banner within the ToolJet dashboard. Click on the **Start free trial** button inside this banner to initiate your 14-day trial.
 
-   <div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'center'}}>
 
-   <img className="screenshot-full" src="/img/licensing/dashboard-free-trial.png" alt="TJ Dashboard: Start free trial" />
+<img className="screenshot-full" src="/img/licensing/dashboard-free-trial.png" alt="TJ Dashboard: Start free trial" />
 
-   </div>
+</div>
 
 :::caution Note
 The trial subscription will be valid for 14 days. To fully enjoy ToolJet, we recommend upgrading to premium plans within this period. If you wish to upgrade from the trial to the business or enterprise edition, you can click the **Upgrade or Renew** button or contact our team via **[Slack](https://tooljet.com/slack)**. Upon expiration, access to premium features like OpenID SSO login and Audit logs will be restricted, ensuring no data loss occurs. However, don't worry! You can still upgrade to any of our premium plans and enjoy the benefits of ToolJet.
@@ -53,11 +53,11 @@ If you want to upgrade from the basic or trial subscription and you decide to pr
 - You'll be directed to a payment gateway. Provide your payment details and finalize the purchase.
 - Upon successful payment, you'll return to the ToolJet subscription tab. A success message will display, and your subscription overview card will update shortly to reflect your new plan.
 
-   <div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'center'}}>
 
-   <img className="screenshot-full" src="/img/licensing/upgrade-business-plan.gif" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/licensing/upgrade-business-plan.gif" alt="Dashboard"/>
 
-   </div>
+</div>
 
 ### B) Chosen Plan: Enterprise Plan
 
