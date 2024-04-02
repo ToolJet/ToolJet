@@ -4,7 +4,6 @@ import { GoogleMap, LoadScript, Marker, Autocomplete, Polygon } from '@react-goo
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { darkModeStyles } from './styles';
 import { useTranslation } from 'react-i18next';
-import { useAppInfo } from '@/_stores/appDataStore';
 
 export const Map = function Map({
   id,
@@ -16,11 +15,11 @@ export const Map = function Map({
   currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
-  onEvent,
   styles,
   setExposedVariable,
   dataCy,
   properties,
+  fireEvent,
 }) {
   const center = component.definition.properties.initialLocation.value;
   const { polygonPoints = [], defaultMarkers = [] } = properties;
@@ -34,8 +33,6 @@ export const Map = function Map({
   const canSearch = canSearchProp ? resolveReferences(canSearchProp.value, currentState) : false;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
-  const { events: allAppEvents } = useAppInfo();
-  const mapEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
 
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
@@ -74,7 +71,7 @@ export const Map = function Map({
     newMarkers.push({ lat, lng });
     setMarkers(newMarkers);
 
-    onComponentOptionChanged(component, 'markers', newMarkers).then(() => onEvent('onCreateMarker', mapEvents));
+    onComponentOptionChanged(component, 'markers', newMarkers).then(() => fireEvent('onCreateMarker'));
   }
 
   function addMapUrlToJson(centerJson) {
@@ -96,7 +93,7 @@ export const Map = function Map({
     onComponentOptionsChanged(component, [
       ['bounds', bounds],
       ['center', addMapUrlToJson(newCenter)],
-    ]).then(() => onEvent('onBoundsChange', mapEvents));
+    ]).then(() => fireEvent('onBoundsChange'));
   }
 
   useEffect(() => {
@@ -114,9 +111,7 @@ export const Map = function Map({
   });
 
   function handleMarkerClick(index) {
-    onComponentOptionChanged(component, 'selectedMarker', markers[index]).then(() =>
-      onEvent('onMarkerClick', mapEvents)
-    );
+    onComponentOptionChanged(component, 'selectedMarker', markers[index]).then(() => fireEvent('onMarkerClick'));
   }
 
   function onPlaceChanged() {
@@ -190,7 +185,7 @@ export const Map = function Map({
             <Polygon
               path={polygonPoints}
               onClick={() => {
-                onEvent('onPolygonClick', mapEvents);
+                fireEvent('onPolygonClick');
               }}
               options={{
                 strokeColor: '#4d72fa',
