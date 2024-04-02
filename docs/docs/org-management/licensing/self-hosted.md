@@ -1,6 +1,6 @@
 ---
-id: licensing
-title: Licensing
+id: self-hosted
+title: Self-Hosted
 ---
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>

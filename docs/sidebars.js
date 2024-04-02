@@ -333,7 +333,14 @@ const sidebars = {
         'Enterprise/audit_logs',
         'Enterprise/white-label',
         'Enterprise/superadmin',
-        'org-management/licensing',
+        {
+          "type": "category",
+          "label": "Licensing",
+          "items": [
+            "org-management/licensing/tooljet-cloud",
+            "org-management/licensing/self-hosted"
+          ]
+        }
       ],
     },
     {
