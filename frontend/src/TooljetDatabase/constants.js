@@ -69,17 +69,17 @@ export const ChangesComponent = ({ currentPrimaryKeyIcons, newPrimaryKeyIcons })
       </div>
       <div className="key-changes-container">
         <div className="primarykeyDetails-container">
-          {currentPrimaryKeyIcons.map((item, index) => (
+          {Object.entries(currentPrimaryKeyIcons)?.map(([index, item]) => (
             <div className="currentKey-details" key={index}>
-              {item.icon}
+              {renderDatatypeIcon(item.icon)}
               <span className="currentPrimaryKey-columnName">{item.columnName}</span>
             </div>
           ))}
         </div>
         <div className="newkeyDetails-container">
-          {newPrimaryKeyIcons.map((item, index) => (
+          {Object.entries(newPrimaryKeyIcons)?.map(([index, item]) => (
             <div className="newKey-details" key={index}>
-              {item.icon}
+              {renderDatatypeIcon(item.icon)}
               <span className="newPrimaryKey-columnName">{item.columnName}</span>
             </div>
           ))}

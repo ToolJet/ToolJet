@@ -159,7 +159,6 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
           selectedColumns={formColumns}
           selectedTable={selectedTable}
           selectedTableData={selectedTableDetails}
-          selectedTableDetails={selectedTableDetails}
           updateSelectedTable={updateSelectedTable}
           onEdit={() => setIsEditTableDrawerOpen(false)}
           onClose={() => setIsEditTableDrawerOpen(false)}

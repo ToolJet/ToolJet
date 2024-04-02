@@ -61,11 +61,13 @@ function updateTable(organizationId, tableName, columns) {
   });
 }
 
-function renameTable(organizationId, tableName, newTableName) {
+function renameTable(organizationId, tableName, newTableName, comparisonArray = []) {
+  console.log('rename', comparisonArray);
   return tooljetAdapter.patch(`/tooljet-db/organizations/${organizationId}/table/${tableName}`, {
     action: 'rename_table',
     table_name: tableName,
     new_table_name: newTableName,
+    columns: comparisonArray,
   });
 }
 

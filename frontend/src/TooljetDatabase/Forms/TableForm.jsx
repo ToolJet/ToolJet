@@ -4,10 +4,10 @@ import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import CreateColumnsForm from './ColumnsForm';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import { isEmpty } from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { BreadCrumbContext } from '@/App/App';
 import WarningInfo from '../Icons/Edit-information.svg';
-import ArrowRight from '../Icons/ArrowRight.svg';
+// import ArrowRight from '../Icons/ArrowRight.svg';
 import { ConfirmDialog } from '@/_components';
 
 const TableForm = ({
@@ -20,7 +20,6 @@ const TableForm = ({
     },
   },
   selectedTableData = {},
-  selectedTableDetails = {},
   onCreate,
   onEdit,
   onClose,
@@ -28,18 +27,34 @@ const TableForm = ({
 }) => {
   const isEditMode = !isEmpty(selectedTable);
   const selectedTableColumns = isEditMode ? selectedTableData : selectedColumns;
+  const arrayOfTableColumns = Object.values(selectedTableColumns);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const [fetching, setFetching] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
-  const [columns, setColumns] = useState(selectedTableColumns);
+  const [columns, setColumns] = useState(_.cloneDeep(selectedTableColumns));
   const { organizationId } = useContext(TooljetDatabaseContext);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
     toast.dismiss();
   }, []);
+
+  function createComparisonArray(a, b) {
+    const maxLength = Object.keys(a).length;
+    const comparisonArray = [];
+
+    for (let i = 0; i < maxLength; i++) {
+      comparisonArray.push({
+        newColumn: a[i] !== undefined ? a[i] : null,
+        oldColumn: b[i] !== undefined ? b[i] : null,
+      });
+    }
+
+    return comparisonArray;
+  }
+  const comparisonArray = createComparisonArray(columns, arrayOfTableColumns);
 
   const validateTableName = () => {
     if (isEmpty(tableName)) {
@@ -94,7 +109,12 @@ const TableForm = ({
     if (!validateTableName()) return;
 
     setFetching(true);
-    const { error } = await tooljetDatabaseService.renameTable(organizationId, selectedTable.table_name, tableName);
+    const { error } = await tooljetDatabaseService.renameTable(
+      organizationId,
+      selectedTable.table_name,
+      tableName,
+      comparisonArray
+    );
     setFetching(false);
 
     if (error) {
@@ -126,16 +146,58 @@ const TableForm = ({
     marginTop: '0px',
   };
 
-  const currentPrimaryKeyIcons = [
-    { icon: <WarningInfo />, columnName: 'WarningInfo' },
-    { icon: <ArrowRight />, columnName: 'ArrowRight' },
-  ];
-  const newPrimaryKeyIcons = [
-    { icon: <WarningInfo />, columnName: 'WarningInfo' },
-    { icon: <ArrowRight />, columnName: 'ArrowRight' },
-  ];
-
   const hasPrimaryKey = Object.values(columns).some((e) => e?.constraints_type?.is_primary_key === true);
+
+  function categorizeObjects(col, selectedTableDetails) {
+    const changesInObject = [];
+
+    for (let key in col) {
+      if (
+        !selectedTableDetails.hasOwnProperty(key) ||
+        JSON.stringify(col[key].constraints_type) !== JSON.stringify(selectedTableDetails[key].constraints_type)
+      ) {
+        changesInObject.push(col[key]);
+      }
+    }
+
+    return changesInObject;
+  }
+
+  function findIsNonChanges(tableColumns, changesInPrimaryKey, property) {
+    const duplicates = [];
+    const map = new Map();
+
+    // Create a map of unique values from the second array
+    changesInPrimaryKey.forEach((item) => {
+      map.set(item[property], true);
+    });
+
+    // Iterate over the first array and check for duplicates
+    tableColumns.forEach((item) => {
+      if (map.has(item[property])) {
+        duplicates.push(item);
+      }
+    });
+
+    return duplicates;
+  }
+
+  const changesInObject = categorizeObjects(columns, selectedTableColumns);
+  const isNonChangesInObject = findIsNonChanges(arrayOfTableColumns, changesInObject, 'column_name');
+
+  const currentPrimaryKeyIcons = isNonChangesInObject?.map((item, index) => {
+    return {
+      columnName: item.column_name,
+      icon: item.data_type,
+    };
+  });
+
+  const newPrimaryKeyIcons = changesInObject?.map((item, index) => {
+    return {
+      columnName: item.column_name,
+      icon: item.data_type,
+    };
+  });
 
   return (
     <div className="drawer-card-wrapper">
@@ -191,7 +253,13 @@ const TableForm = ({
         fetching={fetching}
         isEditMode={isEditMode}
         onClose={onClose}
-        onEdit={() => setShowModal(true)}
+        onEdit={() => {
+          if (changesInObject.length > 0) {
+            setShowModal(true);
+          } else {
+            handleEdit();
+          }
+        }}
         onCreate={handleCreate}
         shouldDisableCreateBtn={
           isEmpty(tableName) ||
