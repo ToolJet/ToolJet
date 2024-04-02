@@ -793,29 +793,17 @@ const EditorComponent = (props) => {
         let dataQueries = JSON.parse(JSON.stringify(useDataQueriesStore.getState().dataQueries));
         let allEvents = JSON.parse(JSON.stringify(useAppDataStore.getState().events));
 
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
 
-        const entityReferencesInQueryoOptions = findAllEntityReferences(dataQueries, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
+        const entityReferencesInQueryoOptions = findAllEntityReferences(dataQueries, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
 
-        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
+        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
 
         const manager = useResolveStore.getState().referenceMapper;
 
@@ -1355,6 +1343,7 @@ const EditorComponent = (props) => {
       });
 
       delete newDefinition.pages[currentPageId].components[componentId];
+
       const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
       if (platform.toLowerCase().indexOf('mac') > -1) {
         toast('Component deleted! (⌘ + Z to undo)', {
@@ -1388,6 +1377,31 @@ const EditorComponent = (props) => {
           });
         });
       }
+
+      const newAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
+      const currentComponents = newAppDefinition.pages[currentPageId].components;
+      const currentDataQueries = useDataQueriesStore.getState().dataQueries;
+
+      const newComponentDefinition = useResolveStore
+        .getState()
+        .actions.findAndReplaceReferences(currentComponents, deletedComponentNames);
+
+      const entityReferencesInQuerries = findAllEntityReferences(currentDataQueries, []);
+
+      if (entityReferencesInQuerries.length > 0) {
+        const newDataQueries = useResolveStore
+          .getState()
+          .actions.findAndReplaceReferences(currentDataQueries, deletedComponentNames);
+
+        useDataQueriesStore.getState().actions.setDataQueries(newDataQueries, 'mappingUpdate');
+      }
+
+      newAppDefinition.pages[currentPageId].components = newComponentDefinition;
+
+      useEditorStore.getState().actions.updateEditorState({
+        appDefinition: newAppDefinition,
+        isUpdatingEditorStateInProcess: true,
+      });
 
       useResolveStore.getState().actions.removeEntitiesFromMap(deleteFromMap);
       useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);

@@ -1256,12 +1256,15 @@ export function runQuery(
                 duration: notificationDuration,
               });
             }
+
+            const currentQueries = getCurrentState().queries;
+
             useCurrentStateStore.getState().actions.setCurrentState({
               queries: {
-                ...getCurrentState().queries,
+                ...currentQueries,
                 [queryName]: _.assign(
                   {
-                    ...getCurrentState().queries[queryName],
+                    ...currentQueries[queryName],
                     isLoading: false,
                     data: finalData,
                     rawData,
@@ -1284,13 +1287,15 @@ export function runQuery(
               },
             });
 
-            useResolveStore.getState().actions.addAppSuggestions({
-              queries: {
-                [queryName]: {
-                  data: finalData,
+            if (mode === 'edit') {
+              useResolveStore.getState().actions.addAppSuggestions({
+                queries: {
+                  [queryName]: {
+                    data: finalData,
+                  },
                 },
-              },
-            });
+              });
+            }
             resolve({ status: 'ok', data: finalData });
             onEvent(_self, 'onDataQuerySuccess', queryEvents, mode);
           }
@@ -1935,10 +1940,10 @@ function convertMapSet(obj) {
 export const checkExistingQueryName = (newName) =>
   useDataQueriesStore.getState().dataQueries.some((query) => query.name === newName);
 
-export const runQueries = (queries, _ref, isOnLoad = false) => {
+export const runQueries = (queries, _ref, mode = 'edit', isOnLoad = false) => {
   queries.forEach((query) => {
     if (query.options.runOnPageLoad && isQueryRunnable(query)) {
-      runQuery(_ref, query.id, query.name, isOnLoad);
+      runQuery(_ref, query.id, query.name, undefined, mode, isOnLoad);
     }
   });
 };
