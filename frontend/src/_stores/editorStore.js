@@ -23,11 +23,6 @@ const initialState = {
   selectedComponents: EMPTY_ARRAY,
   isEditorActive: false,
   selectedComponent: null,
-  scrollOptions: {
-    container: null,
-    throttleTime: 0,
-    threshold: 0,
-  },
   canUndo: false,
   canRedo: false,
   currentVersion: {},

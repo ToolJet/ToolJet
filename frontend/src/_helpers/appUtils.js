@@ -862,6 +862,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
   }
 
   if (['onDataQuerySuccess', 'onDataQueryFailure'].includes(eventName)) {
+    if (!events || !isArray(events) || events.length === 0) return;
     await executeActionsForEventId(_self, eventName, events, mode, customVariables);
   }
 }
@@ -1097,215 +1098,217 @@ export function runQuery(
 
   // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
-    if (!isOnLoad) {
-      useCurrentStateStore.getState().actions.setCurrentState({
-        queries: {
-          ...getCurrentState().queries,
-          [queryName]: {
-            ...getCurrentState().queries[queryName],
-            isLoading: true,
-            data: [],
-            rawData: [],
-          },
-        },
-        errors: {},
-      });
-    }
-    let queryExecutionPromise = null;
-    if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode, parameters);
-    } else if (query.kind === 'runpy') {
-      queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode, queryState);
-    } else if (query.kind === 'tooljetdb') {
-      queryExecutionPromise = tooljetDbOperations.perform(query, queryState);
-    } else {
-      queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
-    }
-
-    queryExecutionPromise
-      .then(async (data) => {
-        if (data.status === 'needs_oauth') {
-          const url = data.data.auth_url; // Backend generates and return sthe auth url
-          fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
-        }
-
-        let queryStatusCode = data?.status ?? null;
-        const promiseStatus =
-          query.kind === 'tooljetdb'
-            ? data.statusText
-            : query.kind === 'runpy'
-            ? data?.data?.status ?? 'ok'
-            : data.status;
-        // Note: Need to move away from statusText -> statusCode
-        if (
-          promiseStatus === 'failed' ||
-          promiseStatus === 'Bad Request' ||
-          promiseStatus === 'Not Found' ||
-          promiseStatus === 'Unprocessable Entity' ||
-          queryStatusCode === 400 ||
-          queryStatusCode === 404 ||
-          queryStatusCode === 422
-        ) {
-          let errorData = {};
-          switch (query.kind) {
-            case 'runpy':
-              errorData = data.data;
-              break;
-            case 'tooljetdb':
-              if (data?.error) {
-                errorData = {
-                  message: data?.error?.message || 'Something went wrong',
-                  description: data?.error?.message || 'Something went wrong',
-                  status: data?.statusText || 'Failed',
-                  data: data?.error || {},
-                };
-              } else {
-                errorData = data;
-              }
-              break;
-            default:
-              errorData = data;
-              break;
-          }
-          if (shouldSetPreviewData) {
-            setPreviewLoading(false);
-            setPreviewData(errorData);
-          }
-          // errorData = query.kind === 'runpy' ? data.data : data;
-          useCurrentStateStore.getState().actions.setErrors({
-            [queryName]: {
-              type: 'query',
-              kind: query.kind,
-              data: errorData,
-              options: options,
-            },
-          });
-
-          useCurrentStateStore.getState().actions.setCurrentState({
-            queries: {
-              ...getCurrentState().queries,
-              [queryName]: _.assign(
-                {
-                  ...getCurrentState().queries[queryName],
-                  isLoading: false,
-                },
-                query.kind === 'restapi'
-                  ? {
-                      request: data.data.requestObject,
-                      response: data.data.responseObject,
-                      responseHeaders: data.data.responseHeaders,
-                    }
-                  : {}
-              ),
-            },
-          });
-          resolve(data);
-          onEvent(_self, 'onDataQueryFailure', queryEvents);
-          if (mode !== 'view') {
-            const err = query.kind == 'tooljetdb' ? data?.error || data : data;
-            toast.error(err?.message ? err?.message : 'Something went wrong');
-          }
-          return;
-        } else {
-          let rawData = data.data;
-          let finalData = data.data;
-
-          if (dataQuery.options.enableTransformation) {
-            finalData = await runTransformation(
-              _ref,
-              finalData,
-              query.options.transformation,
-              query.options.transformationLanguage,
-              query,
-              'edit'
-            );
-            if (finalData.status === 'failed') {
-              useCurrentStateStore.getState().actions.setCurrentState({
-                queries: {
-                  ...getCurrentState().queries,
-                  [queryName]: {
-                    ...getCurrentState().queries[queryName],
-                    isLoading: false,
-                  },
-                },
-              });
-
-              useCurrentStateStore.getState().actions.setErrors({
-                [queryName]: {
-                  type: 'transformations',
-                  data: finalData,
-                  options: options,
-                },
-              });
-              resolve(finalData);
-              onEvent(_self, 'onDataQueryFailure', queryEvents);
-              return;
-            }
-          }
-
-          if (shouldSetPreviewData) {
-            setPreviewLoading(false);
-            setPreviewData(finalData);
-          }
-
-          if (dataQuery.options.showSuccessNotification) {
-            const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
-            toast.success(dataQuery.options.successMessage, {
-              duration: notificationDuration,
-            });
-          }
-          useCurrentStateStore.getState().actions.setCurrentState({
-            queries: {
-              ...getCurrentState().queries,
-              [queryName]: _.assign(
-                {
-                  ...getCurrentState().queries[queryName],
-                  isLoading: false,
-                  data: finalData,
-                  rawData,
-                },
-                query.kind === 'restapi'
-                  ? {
-                      request: data.request,
-                      response: data.response,
-                      responseHeaders: data.responseHeaders,
-                    }
-                  : {}
-              ),
-            },
-            // Used to generate logs
-            succededQuery: {
-              [queryName]: {
-                type: 'query',
-                kind: query.kind,
-              },
-            },
-          });
-
-          useResolveStore.getState().actions.addAppSuggestions({
-            queries: {
-              [queryName]: {
-                data: finalData,
-              },
-            },
-          });
-          resolve({ status: 'ok', data: finalData });
-          onEvent(_self, 'onDataQuerySuccess', queryEvents, mode);
-        }
-      })
-      .catch(({ error }) => {
-        if (mode !== 'view') toast.error(error ?? 'Unknown error');
+    setTimeout(() => {
+      if (!isOnLoad) {
         useCurrentStateStore.getState().actions.setCurrentState({
           queries: {
             ...getCurrentState().queries,
             [queryName]: {
-              isLoading: false,
+              ...getCurrentState().queries[queryName],
+              isLoading: true,
+              data: [],
+              rawData: [],
             },
           },
+          errors: {},
         });
+      }
+      let queryExecutionPromise = null;
+      if (query.kind === 'runjs') {
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode, parameters);
+      } else if (query.kind === 'runpy') {
+        queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode, queryState);
+      } else if (query.kind === 'tooljetdb') {
+        queryExecutionPromise = tooljetDbOperations.perform(query, queryState);
+      } else {
+        queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
+      }
 
-        resolve({ status: 'failed', message: error });
-      });
+      queryExecutionPromise
+        .then(async (data) => {
+          if (data.status === 'needs_oauth') {
+            const url = data.data.auth_url; // Backend generates and return sthe auth url
+            fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
+          }
+
+          let queryStatusCode = data?.status ?? null;
+          const promiseStatus =
+            query.kind === 'tooljetdb'
+              ? data.statusText
+              : query.kind === 'runpy'
+              ? data?.data?.status ?? 'ok'
+              : data.status;
+          // Note: Need to move away from statusText -> statusCode
+          if (
+            promiseStatus === 'failed' ||
+            promiseStatus === 'Bad Request' ||
+            promiseStatus === 'Not Found' ||
+            promiseStatus === 'Unprocessable Entity' ||
+            queryStatusCode === 400 ||
+            queryStatusCode === 404 ||
+            queryStatusCode === 422
+          ) {
+            let errorData = {};
+            switch (query.kind) {
+              case 'runpy':
+                errorData = data.data;
+                break;
+              case 'tooljetdb':
+                if (data?.error) {
+                  errorData = {
+                    message: data?.error?.message || 'Something went wrong',
+                    description: data?.error?.message || 'Something went wrong',
+                    status: data?.statusText || 'Failed',
+                    data: data?.error || {},
+                  };
+                } else {
+                  errorData = data;
+                }
+                break;
+              default:
+                errorData = data;
+                break;
+            }
+            if (shouldSetPreviewData) {
+              setPreviewLoading(false);
+              setPreviewData(errorData);
+            }
+            // errorData = query.kind === 'runpy' ? data.data : data;
+            useCurrentStateStore.getState().actions.setErrors({
+              [queryName]: {
+                type: 'query',
+                kind: query.kind,
+                data: errorData,
+                options: options,
+              },
+            });
+
+            useCurrentStateStore.getState().actions.setCurrentState({
+              queries: {
+                ...getCurrentState().queries,
+                [queryName]: _.assign(
+                  {
+                    ...getCurrentState().queries[queryName],
+                    isLoading: false,
+                  },
+                  query.kind === 'restapi'
+                    ? {
+                        request: data.data.requestObject,
+                        response: data.data.responseObject,
+                        responseHeaders: data.data.responseHeaders,
+                      }
+                    : {}
+                ),
+              },
+            });
+            resolve(data);
+            onEvent(_self, 'onDataQueryFailure', queryEvents);
+            if (mode !== 'view') {
+              const err = query.kind == 'tooljetdb' ? data?.error || data : data;
+              toast.error(err?.message ? err?.message : 'Something went wrong');
+            }
+            return;
+          } else {
+            let rawData = data.data;
+            let finalData = data.data;
+
+            if (dataQuery.options.enableTransformation) {
+              finalData = await runTransformation(
+                _ref,
+                finalData,
+                query.options.transformation,
+                query.options.transformationLanguage,
+                query,
+                'edit'
+              );
+              if (finalData.status === 'failed') {
+                useCurrentStateStore.getState().actions.setCurrentState({
+                  queries: {
+                    ...getCurrentState().queries,
+                    [queryName]: {
+                      ...getCurrentState().queries[queryName],
+                      isLoading: false,
+                    },
+                  },
+                });
+
+                useCurrentStateStore.getState().actions.setErrors({
+                  [queryName]: {
+                    type: 'transformations',
+                    data: finalData,
+                    options: options,
+                  },
+                });
+                resolve(finalData);
+                onEvent(_self, 'onDataQueryFailure', queryEvents);
+                return;
+              }
+            }
+
+            if (shouldSetPreviewData) {
+              setPreviewLoading(false);
+              setPreviewData(finalData);
+            }
+
+            if (dataQuery.options.showSuccessNotification) {
+              const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
+              toast.success(dataQuery.options.successMessage, {
+                duration: notificationDuration,
+              });
+            }
+            useCurrentStateStore.getState().actions.setCurrentState({
+              queries: {
+                ...getCurrentState().queries,
+                [queryName]: _.assign(
+                  {
+                    ...getCurrentState().queries[queryName],
+                    isLoading: false,
+                    data: finalData,
+                    rawData,
+                  },
+                  query.kind === 'restapi'
+                    ? {
+                        request: data.request,
+                        response: data.response,
+                        responseHeaders: data.responseHeaders,
+                      }
+                    : {}
+                ),
+              },
+              // Used to generate logs
+              succededQuery: {
+                [queryName]: {
+                  type: 'query',
+                  kind: query.kind,
+                },
+              },
+            });
+
+            useResolveStore.getState().actions.addAppSuggestions({
+              queries: {
+                [queryName]: {
+                  data: finalData,
+                },
+              },
+            });
+            resolve({ status: 'ok', data: finalData });
+            onEvent(_self, 'onDataQuerySuccess', queryEvents, mode);
+          }
+        })
+        .catch(({ error }) => {
+          if (mode !== 'view') toast.error(error ?? 'Unknown error');
+          useCurrentStateStore.getState().actions.setCurrentState({
+            queries: {
+              ...getCurrentState().queries,
+              [queryName]: {
+                isLoading: false,
+              },
+            },
+          });
+
+          resolve({ status: 'failed', message: error });
+        });
+    }, 100);
   });
 }
 

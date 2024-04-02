@@ -42,13 +42,16 @@ export default function DragContainer({
           if (lastDraggedEventsRef.current) {
             const preant = boxes.find((box) => box.id == lastDraggedEventsRef.current.events[0].target.id)?.component
               ?.parent;
-            onDrag(
-              lastDraggedEventsRef.current.events.map((ev) => ({
-                id: ev.target.id,
-                x: ev.translate[0],
-                y: ev.translate[1],
-                parent: preant,
-              }))
+            // Adding the new updates to the macro task queue to unblock UI
+            setTimeout(() =>
+              onDrag(
+                lastDraggedEventsRef.current.events.map((ev) => ({
+                  id: ev.target.id,
+                  x: ev.translate[0],
+                  y: ev.translate[1],
+                  parent: preant,
+                }))
+              )
             );
           }
           if (useGridStore.getState().isGroupHandleHoverd) {
@@ -371,7 +374,10 @@ export default function DragContainer({
             if (currentWidget.component?.parent) {
               resizeData.gw = _gridWidth;
             }
-            onResizeStop([resizeData]);
+            // Adding the new updates to the macro task queue to unblock UI
+            setTimeout(() => {
+              onResizeStop([resizeData]);
+            });
           } catch (error) {
             console.error('ResizeEnd error ->', error);
           }
@@ -442,7 +448,10 @@ export default function DragContainer({
             });
 
             if (groupResizeDataRef.current.length) {
-              onResizeStop(newBoxs);
+              // Adding the new updates to the macro task queue to unblock UI
+              setTimeout(() => {
+                onResizeStop([newBoxs]);
+              });
             } else {
               events.forEach((ev) => {
                 const currentWidget = boxes.find(({ id }) => {
@@ -580,6 +589,7 @@ export default function DragContainer({
             }
 
             if (draggedOverElemId === currentParentId || isParentChangeAllowed) {
+              // Adding the new updates to the macro task queue to unblock UI
               setTimeout(() =>
                 onDrag([
                   {
@@ -709,29 +719,32 @@ export default function DragContainer({
 
             const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
 
-            onDrag(
-              events.map((ev) => {
-                let posX = ev.lastEvent.translate[0];
-                let posY = ev.lastEvent.translate[1];
-                if (posLeft < 0) {
-                  posX = ev.lastEvent.translate[0] - posLeft;
-                }
-                if (posTop < 0) {
-                  posY = ev.lastEvent.translate[1] - posTop;
-                }
-                if (posRight < 0) {
-                  posX = ev.lastEvent.translate[0] + posRight;
-                }
-                if (posBottom < 0) {
-                  posY = ev.lastEvent.translate[1] + posBottom;
-                }
-                return {
-                  id: ev.target.id,
-                  x: posX,
-                  y: posY,
-                  parent: parentId,
-                };
-              })
+            // Adding the new updates to the macro task queue to unblock UI
+            setTimeout(() =>
+              onDrag(
+                events.map((ev) => {
+                  let posX = ev.lastEvent.translate[0];
+                  let posY = ev.lastEvent.translate[1];
+                  if (posLeft < 0) {
+                    posX = ev.lastEvent.translate[0] - posLeft;
+                  }
+                  if (posTop < 0) {
+                    posY = ev.lastEvent.translate[1] - posTop;
+                  }
+                  if (posRight < 0) {
+                    posX = ev.lastEvent.translate[0] + posRight;
+                  }
+                  if (posBottom < 0) {
+                    posY = ev.lastEvent.translate[1] + posBottom;
+                  }
+                  return {
+                    id: ev.target.id,
+                    x: posX,
+                    y: posY,
+                    parent: parentId,
+                  };
+                })
+              )
             );
           } catch (error) {
             console.error('Error dragging group', error);
