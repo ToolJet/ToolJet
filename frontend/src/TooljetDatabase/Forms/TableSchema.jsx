@@ -201,7 +201,14 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
                     prevColumns[index].column_default = e.target.value;
                     setColumns(prevColumns);
                   }}
-                  value={columns[index].data_type === 'serial' ? 'Auto-generated' : columns[index].column_default}
+                  value={
+                    columns[index].data_type === 'serial' ||
+                    (columns[index].data_type === 'serial' && columns[index]?.column_default?.includes('nextval('))
+                      ? 'Auto-generated'
+                      : columns[index].data_type !== 'serial' && columns[index]?.column_default?.includes('nextval(')
+                      ? null
+                      : columns[index].column_default
+                  }
                   type="text"
                   className="form-control defaultValue"
                   data-cy="default-input-field"

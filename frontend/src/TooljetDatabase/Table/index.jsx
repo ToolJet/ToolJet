@@ -168,9 +168,9 @@ const Table = ({ collapseSidebar }) => {
       }
 
       // Scroll when we reach left end of the table and if content gets overflow. Added 296 for width of two sticky columns
-      if (cellBoundingRect.left < tableBoundingRect.left + 216) {
+      if (cellBoundingRect.left < tableBoundingRect.left + 296) {
         tooljetDbTableRef.current.scrollTo({
-          left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.left - (tableBoundingRect.left + 216)),
+          left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.left - (tableBoundingRect.left + 296)),
           behavior: 'instant',
         });
       }
@@ -309,16 +309,25 @@ const Table = ({ collapseSidebar }) => {
     [loading, selectedTableData]
   );
 
-  const tableColumns = React.useMemo(
-    () =>
-      loading
-        ? columns.map((column) => ({
-            ...column,
-            Cell: <Skeleton />,
-          }))
-        : columns,
-    [loading, columns]
-  );
+  const tableColumns = React.useMemo(() => {
+    if (loading) {
+      return columns.map((column) => ({
+        ...column,
+        Cell: <Skeleton />,
+      }));
+    } else {
+      const primaryKeyArray = [];
+      const nonPrimaryKeyArray = [];
+      columns.forEach((column) => {
+        if (column.constraints_type.is_primary_key) {
+          primaryKeyArray.push({ ...column });
+        } else {
+          nonPrimaryKeyArray.push({ ...column });
+        }
+      });
+      return [...primaryKeyArray, ...nonPrimaryKeyArray];
+    }
+  }, [loading, columns]);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
     {
@@ -683,12 +692,6 @@ const Table = ({ collapseSidebar }) => {
     };
   }, [editColumnHeader.columnEditPopover]);
 
-  // useEffect(() => {
-  //   const isCellValueDefault =
-  //     headerGroups[0]?.headers[cellClick.cellIndex]?.column_default === cellVal.toString() ? true : false;
-  //   setDefaultValue(isCellValueDefault);
-  // }, [cellClick.cellIndex]);
-
   const handleDelete = (column) => {
     setEditColumnHeader((prevState) => ({
       ...prevState,
@@ -806,7 +809,7 @@ const Table = ({ collapseSidebar }) => {
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
               {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
             </span>
-            {column.render('Header')}
+            <span>{column.render('Header')}</span>
           </div>
           <ToolTip message="Primary key" placement="top" tooltipClassName="tootip-table" show={true}>
             <div>
@@ -850,6 +853,15 @@ const Table = ({ collapseSidebar }) => {
     paddingTop: '12px',
     marginTop: '0px',
   };
+
+  // primary key column should come in front row of table
+  // headerGroups.forEach((item) => {
+  //   item.headers.sort((a, b) => {
+  //     if (a.constraints_type && a.constraints_type.is_primary_key) return -1;
+  //     if (b.constraints_type && b.constraints_type.is_primary_key) return 1;
+  //     return 0;
+  //   });
+  // });
 
   return (
     <div>
@@ -951,7 +963,7 @@ const Table = ({ collapseSidebar }) => {
                   {headerGroup.headers.map((column, index) => (
                     <th
                       key={column.Header}
-                      width={column?.dataType === 'serial' ? 150 : 230}
+                      width={230}
                       style={{ height: index === 0 ? '32px' : '' }}
                       title={column?.constraints_type?.is_primary_key ?? false ? '' : column?.Header}
                       className={
@@ -982,6 +994,7 @@ const Table = ({ collapseSidebar }) => {
                           show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
                           className="column-popover-parent"
                           darkMode={darkMode}
+                          showDeleteColumnOption={!column?.constraints_type?.is_primary_key}
                         >
                           <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
                             <Menu
