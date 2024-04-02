@@ -554,6 +554,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
         customAppVariables[key] = value;
+        useResolveStore.getState().actions.addAppSuggestions({
+          variables: customAppVariables,
+        });
         return useCurrentStateStore.getState().actions.setCurrentState({
           variables: customAppVariables,
         });
@@ -569,6 +572,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
         delete customAppVariables[key];
+        // useResolveStore.getState().actions.removeAppSuggestions(key);
         return useCurrentStateStore.getState().actions.setCurrentState({
           variables: customAppVariables,
         });
@@ -581,6 +585,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           ...getCurrentState().page.variables,
           [key]: value,
         };
+        useResolveStore.getState().actions.addAppSuggestions({
+          variables: customPageVariables,
+        });
         return useCurrentStateStore.getState().actions.setCurrentState({
           page: {
             ...getCurrentState().page,
@@ -600,6 +607,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       case 'unset-page-variable': {
         const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customPageVariables = _.omit(getCurrentState().page.variables, key);
+        // useResolveStore.getState().actions.removeAppSuggestions(key);
         return useCurrentStateStore.getState().actions.setCurrentState({
           page: {
             ...getCurrentState().page,
