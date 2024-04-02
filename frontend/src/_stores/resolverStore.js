@@ -185,8 +185,19 @@ export const useResolveStore = create(
         return get().referenceMapper;
       },
 
-      findReferences: (obj) => {
-        const entityNameReferences = findAllEntityReferences(obj, []);
+      getEntityId: (entityName) => {
+        const { referenceMapper } = get();
+
+        for (const [key, value] of referenceMapper._map) {
+          if (value === entityName) {
+            return referenceMapper.reverseGet(key);
+          }
+        }
+      },
+
+      findAndReplaceReferences: (obj, targetEntityNames = []) => {
+        const entityNameReferences =
+          targetEntityNames.length === 0 ? findAllEntityReferences(obj, []) : targetEntityNames;
 
         if (entityNameReferences.length === 0) return obj;
 
