@@ -189,4 +189,8 @@
       color: white !important
     }
   }
+  .dropdown-item {
+    background: unset;
+    color: var(--slate12);
+  }
 }
