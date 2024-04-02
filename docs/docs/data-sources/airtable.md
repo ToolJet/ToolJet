@@ -5,8 +5,6 @@ title: Airtable
 
 # Airtable
 
-<div style={{paddingBottom:'24px'}}>
-
 ToolJet can connect to your Airtable account to read and write data. **Personal Access Token** is required to connect to the Airtable data source on ToolJet. You can generate the Personal Access Token by visiting [Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions).
 
 <div style={{textAlign: 'center'}}>
@@ -18,8 +16,6 @@ ToolJet can connect to your Airtable account to read and write data. **Personal 
 :::info
 Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here **[Airtable API](https://airtable.com/api)**.
 :::
-
-</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -126,24 +122,24 @@ Example response from Airtable:
 
 - **Records**: The records you want to create. The records should be in the form of an array of objects. Each object should have a `fields` key, which contains the fields of the record. The field names should be the same as the field names in the Airtable table.
 
-  **Example creating two records:**
-  
-  ```json title="Records"
-  [
-    {
-      "fields": {
-        "Notes": "sdfdsf",
-        "Name": "dsfdsf"
-      }
-    },
-    {
-      "fields": {
-        "Notes": "note1",
-        "Name": "dsfdsf"
-      }
+**Example creating two records:**
+
+```json title="Records"
+[
+  {
+    "fields": {
+      "Notes": "sdfdsf",
+      "Name": "dsfdsf"
     }
-  ]
-  ```
+  },
+  {
+    "fields": {
+      "Notes": "note1",
+      "Name": "dsfdsf"
+    }
+  }
+]
+```
 
 Query returns the following response when the records are created successfully:
 
@@ -186,14 +182,14 @@ Query returns the following response when the records are created successfully:
 
 - **Body**: The fields you want to update. The fields should be in the form of an object. The field names should be the same as the field names in the Airtable table.
 
-  **Example updating a record:**
-  
-  ```json title="Body"
-  {
-    "Notes": "Example Notes",
-    "Name": "change"
-  }
-  ```
+**Example updating a record:**
+
+```json title="Body"
+{
+  "Notes": "Example Notes",
+  "Name": "change"
+}
+```
 
 Query returns the following response when the record is updated successfully:
 

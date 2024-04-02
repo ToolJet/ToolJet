@@ -252,7 +252,7 @@ Let's follow the steps to authorize ToolJet to access your Google profile data:
     
 - Keep the default selection for **Client Authentication** and **Save** the data source.
 
-<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} class="screenshot-full" src="/img/how-to/oauth2-authorization/restapi-v2.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0"/>
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} class="screenshot-full" src="/img/how-to/oauth2-authorization/restapi-v3.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0"/>
 
 </div>
 
