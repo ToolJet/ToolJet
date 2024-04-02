@@ -13,10 +13,10 @@ Let's look into three types of subscriptions:
 
 1. **Free Trial**: This is a free subscription that grants access to premium features for a 14-day trial period.
 
-- **New Users**: Select the 14-day trial option during the onboarding process.
-- **Existing Users**: If eligible, a start trial banner will be visible on your ToolJet dashboard.
+   - **New Users**: Select the 14-day trial option during the onboarding process.
+   - **Existing Users**: If eligible, a start trial banner will be visible on your ToolJet dashboard.
 
-2. **Business Subscription**: This is a paid monthly subscription that you can purchase **[directly](https://www.tooljet.com/pricing)**.
+2. **Business Subscription**: This is a paid monthly subscription that you can [upgrade](#a-chosen-plan-business-plan) to from within the ToolJet app.
 3. **Enterprise Subscription**: This is a paid subscription with customizable options. To obtain this subscription, you have to contact our **[sales](https://tooljet.com/slack)** team.
 
 ---
@@ -91,7 +91,7 @@ Example: If you add a builder seat halfway through your monthly billing cycle, y
 
 ### 1) How can I upgrade or renew my subscription?
 
-If your enterprise edition subscription is nearing expiration, please click the **Upgrade** button or contact us via email at hello@tooljet.com to extend your subscription. If you intend to increase the number of users, please reach out to us via **[Slack](https://tooljet.com/slack)** or review our pricing page at https://www.tooljet.com/pricing before making a request.
+If your enterprise edition subscription is nearing expiration, please click the **Upgrade** button or contact us via email at hello@tooljet.com to extend your subscription.
 
 <div style={{textAlign: 'center'}}>
 
