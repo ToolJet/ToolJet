@@ -74,9 +74,7 @@ export const Map = function Map({
     newMarkers.push({ lat, lng });
     setMarkers(newMarkers);
 
-    onComponentOptionChanged(component, 'markers', newMarkers).then(() =>
-      onEvent('onCreateMarker', mapEvents, { component })
-    );
+    onComponentOptionChanged(component, 'markers', newMarkers).then(() => onEvent('onCreateMarker', mapEvents));
   }
 
   function addMapUrlToJson(centerJson) {
@@ -98,7 +96,7 @@ export const Map = function Map({
     onComponentOptionsChanged(component, [
       ['bounds', bounds],
       ['center', addMapUrlToJson(newCenter)],
-    ]).then(() => onEvent('onBoundsChange', mapEvents, { component }));
+    ]).then(() => onEvent('onBoundsChange', mapEvents));
   }
 
   useEffect(() => {
@@ -117,7 +115,7 @@ export const Map = function Map({
 
   function handleMarkerClick(index) {
     onComponentOptionChanged(component, 'selectedMarker', markers[index]).then(() =>
-      onEvent('onMarkerClick', mapEvents, { component })
+      onEvent('onMarkerClick', mapEvents)
     );
   }
 
@@ -192,7 +190,7 @@ export const Map = function Map({
             <Polygon
               path={polygonPoints}
               onClick={() => {
-                onEvent('onPolygonClick', mapEvents, { component });
+                onEvent('onPolygonClick', mapEvents);
               }}
               options={{
                 strokeColor: '#4d72fa',
