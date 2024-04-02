@@ -232,10 +232,10 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
     return [valid, errors, newValue, resolvedValue];
   }
 
-  const hasMultiDynamicVariables = getDynamicVariables(query);
+  const hasMultiDynamicVariables = getDynamicVariables(query)?.length > 1;
 
   const { lookupTable } = useResolveStore.getState();
-  if (isEmpty(validationSchema) && hasMultiDynamicVariables) {
+  if (hasMultiDynamicVariables) {
     resolvedValue = resolveMultiDynamicReferences(query, lookupTable);
   } else {
     let value = !fxActive ? query?.replace(/{{|}}/g, '').trim() : query;
