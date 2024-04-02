@@ -5,23 +5,32 @@ import CustomDatePickerHeader from './CustomDatePickerHeader';
 import 'react-datepicker/dist/react-datepicker.css';
 import './datepicker.scss';
 import cx from 'classnames';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 
 const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnly }, ref) => {
   return (
-    <input
-      onBlur={(e) => {
-        e.stopPropagation();
-      }}
-      className={cx('table-column-datepicker-input', {
-        'pointer-events-none': readOnly,
-      })}
-      value={value}
-      onClick={onClick}
-      ref={dateInputRef}
-      style={styles}
-    ></input>
+    <div className="table-column-datepicker-input-container">
+      <input
+        onBlur={(e) => {
+          e.stopPropagation();
+        }}
+        className={cx('table-column-datepicker-input', {
+          'pointer-events-none': readOnly,
+        })}
+        value={value}
+        onClick={onClick}
+        ref={dateInputRef}
+        style={styles}
+      />
+      <SolidIcon
+        width="16"
+        fill={'var(--borders-strong)'}
+        name="calender"
+        className="table-column-datepicker-input-icon"
+      />
+    </div>
   );
 });
 
@@ -177,6 +186,7 @@ export const Datepicker = function Datepicker({
         readOnly={readOnly}
         popperProps={{ strategy: 'fixed' }}
         timeIntervals={15}
+        showicon
       />
     </div>
   );

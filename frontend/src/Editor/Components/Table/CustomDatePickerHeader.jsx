@@ -54,6 +54,7 @@ const CustomDatePickerHeader = ({
             value={months[getMonth(date)]}
             onChange={({ target: { value } }) => changeMonth(months.indexOf(value))}
             style={{ width: '45px' }}
+            className="tj-datepicker-widget-month-selector"
           >
             {months.map((option) => (
               <option key={option} value={option}>
@@ -61,7 +62,12 @@ const CustomDatePickerHeader = ({
               </option>
             ))}
           </select>
-          <select value={getYear(date)} onChange={({ target: { value } }) => changeYear(value)}>
+          <select
+            value={getYear(date)}
+            onChange={({ target: { value } }) => changeYear(value)}
+            className="tj-datepicker-widget-year-selector"
+            style={{ padding: '4px 6px' }}
+          >
             {years.map((option) => (
               <option key={option} value={option}>
                 {option}

@@ -78,10 +78,8 @@
 
 .react-datepicker__day-names {
     .react-datepicker__day-name {
-        color: #687076;
+        color: var(--text-placeholder)
     }
-
-
 }
 
 .react-datepicker__day--selected {
@@ -203,6 +201,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 .react-datepicker-popper[data-placement^=bottom] {
     padding-top: 0px !important;
+    margin-top: 12px;
 }
 
 .react-datepicker__day {
@@ -352,3 +351,28 @@ select:focus {
         top: -16px;
     }
 }
+
+.table-column-datepicker-input-container {
+    position: relative;
+  }
+  
+  .table-column-datepicker-input-icon {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%)
+  }
+
+  .tj-datepicker-widget-month-selector,
+  .tj-datepicker-widget-year-selector {
+     &:hover {
+        background-color: var(--interactive-overlays-fill-hover);
+        border-radius: 6px;
+     }
+  }
+
+  .react-datepicker__day--outside-month {
+    color: var(--text-disabled);
+  }
+
+  
