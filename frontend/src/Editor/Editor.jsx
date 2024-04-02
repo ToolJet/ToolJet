@@ -1831,14 +1831,18 @@ const EditorComponent = (props) => {
               id="main-editor-canvas"
             >
               <div
-                className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
+                className={cx(
+                  'canvas-container align-items-center',
+                  { 'dark-theme theme-dark': isAppDarkMode },
+                  { 'hide-sidebar': !showLeftSidebar }
+                )}
                 style={{
                   transform: `scale(${zoomLevel})`,
                   borderLeft:
                     (editorMarginLeft ? editorMarginLeft - 1 : editorMarginLeft) +
                     `px solid ${computeCanvasBackgroundColor()}`,
                   height: computeCanvasContainerHeight(),
-                  background: !props.darkMode ? '#EBEBEF' : '#2E3035',
+                  background: !isAppDarkMode ? '#EBEBEF' : '#2E3035',
                 }}
                 onMouseUp={handleCanvasContainerMouseUp}
                 ref={canvasContainerRef}
@@ -1885,7 +1889,7 @@ const EditorComponent = (props) => {
                       </div>
                     )}
                     {defaultComponentStateComputed && (
-                      <div className={cx({ 'dark-theme theme-dark': isAppDarkMode })}>
+                      <div>
                         <Container
                           canvasWidth={getCanvasWidth()}
                           socket={socket}
