@@ -80,7 +80,7 @@ Whenever a request is made to the REST API, a **tj-x-forwarded-for** header is a
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/rest-api/header-v2.png" alt="ToolJet - Data source - REST API" width='500'/>
+<img style={{width: '100%', height: '100%', border: '0', marginBottom: '15px'}} className="screenshot-full" src="/img/datasource-reference/rest-api/header-v3.png" alt="ToolJet - Data source - REST API" width='500'/>
 
 </div>
 
