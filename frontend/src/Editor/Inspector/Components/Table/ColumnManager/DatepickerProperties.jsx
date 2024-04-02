@@ -114,7 +114,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                 <div style={{ padding: '0px 12px' }}>
                   <div className="d-flex justify-content-between">
                     <label data-cy={`label-date-display-format`} className="form-label">
-                      {t('widget.Table.dateDisplayformat', 'Date Display Format')}
+                      {t('widget.Table.dateDisplayformat', 'Date format')}
                     </label>
                     <span>
                       <FxButton
@@ -127,7 +127,6 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                             resultFxActiveFields = resultFxActiveFields.filter((field) => field !== 'dateFormat');
                           }
                           setIsDateDisplayFormatFxOn(!isDateDisplayFormatFxOn);
-                          console.log(resultFxActiveFields);
                           onColumnItemChange(index, 'notActiveFxActiveFields', resultFxActiveFields);
                         }}
                       />
@@ -223,7 +222,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                   style={{ padding: '0px 12px' }}
                 >
                   <label data-cy={`label-display-time-zone`} className="form-label">
-                    Display in timezone
+                    Time zone
                   </label>
                   <Select
                     options={TIMEZONE_OPTIONS}
@@ -288,7 +287,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                 <div data-cy={`input-parse-timezone`} className="field mb-2">
                   <div className="d-flex justify-content-between">
                     <label data-cy={`label-parse-timezone`} className="form-label">
-                      Date parse format
+                      Date
                     </label>
                     <span>
                       <FxButton
@@ -336,7 +335,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                 <>
                   {!isParseDateFormatFxOn && (
                     <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
-                      <label className="form-label">{t('widget.Table.timeFormat', 'Time Format')}</label>
+                      <label className="form-label">{t('widget.Table.timeFormat', 'Time')}</label>
                       <Select
                         options={[
                           {
@@ -359,7 +358,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                   )}
                   <div data-cy={`input-parse-timezone`} className="field mb-2">
                     <label data-cy={`label-parse-timezone`} className="form-label">
-                      Parse in timezone
+                      Time zone
                     </label>
                     <Select
                       options={TIMEZONE_OPTIONS}
