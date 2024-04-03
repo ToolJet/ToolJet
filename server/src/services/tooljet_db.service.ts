@@ -284,8 +284,6 @@ export class TooljetDbService {
           );
         }
 
-        if (!updatedPrimaryKeys.length) throw new BadRequestException('Primary key is mandatory');
-
         // Columns to be deleted
         if (Object.keys(oldColumn).length && !Object.keys(newColumn).length) {
           if (oldColumn.column_name) columnsToBeDeleted.push(oldColumn.column_name);
@@ -342,6 +340,8 @@ export class TooljetDbService {
           });
         }
       });
+
+      if (!updatedPrimaryKeys.length) throw new BadRequestException('Primary key is mandatory');
 
       if (updatedPrimaryKeys.length) await tjdbQueryRunner.dropPrimaryKey(internalTable.id);
       if (columnsToBeDeleted.length) await tjdbQueryRunner.dropColumns(internalTable.id, columnsToBeDeleted);
