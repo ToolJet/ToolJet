@@ -129,8 +129,8 @@ const BoxUI = (props) => {
       >
         <ControlledComponentToRender
           componentName={component.component}
-          // onComponentClick={onComponentClick}
-          // onComponentOptionChanged={onComponentOptionChanged}
+          onComponentClick={onComponentClick}
+          onComponentOptionChanged={onComponentOptionChanged}
           onEvent={onEvent}
           id={id}
           paramUpdated={paramUpdated}
