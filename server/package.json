@@ -104,7 +104,7 @@
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
     "typeorm": "^0.2.38",
-    "winston": "^3.11.0",
+    "winston": "^3.13.0",
     "winston-daily-rotate-file": "^4.7.1",
     "ws": "^7.5.5",
     "y-websocket": "^1.4.0"
