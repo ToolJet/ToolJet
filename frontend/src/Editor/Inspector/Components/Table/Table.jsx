@@ -460,7 +460,7 @@ class TableComponent extends React.Component {
     const allowSelection = component.component.definition.properties?.allowSelection?.value
       ? resolveReferences(component.component.definition.properties.allowSelection?.value, currentState)
       : resolveReferences(component.component.definition.properties.highlightSelectedRow.value, currentState) ||
-      resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
+        resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
     };
@@ -590,11 +590,11 @@ class TableComponent extends React.Component {
                                       showCopyColumnOption={true}
                                       showVisibilityIcon={true}
                                       isColumnVisible={resolveReferences(columnVisibility, this.state.currentState)}
-                                      className={`table-column-lists ${this.state.activeColumnPopoverIndex === index && 'active-column-list'
-                                        }`}
+                                      className={`table-column-lists ${
+                                        this.state.activeColumnPopoverIndex === index && 'active-column-list'
+                                      }`}
                                       columnType={item?.columnType}
                                       isDeprecated={checkIfTableColumnDeprecated(item?.columnType)}
-
                                     />
                                   </div>
                                 </OverlayTrigger>

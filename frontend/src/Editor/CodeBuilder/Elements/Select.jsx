@@ -75,8 +75,9 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
   return (
     <div
       className="row fx-container"
-      data-cy={`dropdown-${meta?.displayName ? String(meta?.displayName).toLowerCase().replace(/\s+/g, '-') : 'common'
-        }`}
+      data-cy={`dropdown-${
+        meta?.displayName ? String(meta?.displayName).toLowerCase().replace(/\s+/g, '-') : 'common'
+      }`}
     >
       <div className="field" onClick={(e) => e.stopPropagation()}>
         <SelectComponent

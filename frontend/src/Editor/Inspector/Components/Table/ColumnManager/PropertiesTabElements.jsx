@@ -6,12 +6,11 @@ import { EventManager } from '../../../EventManager';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import { OptionsList } from '../SelectOptionsList/OptionsList';
 import { ValidationProperties } from './ValidationProperties';
-import { Select } from '@/Editor/CodeBuilder/Elements/Select';
+import { Select, Option } from '@/Editor/CodeBuilder/Elements/Select';
 import DeprecatedColumnTypeMsg from './DeprecatedColumnTypeMsg';
 import CustomSelect from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { Option } from '../../../../CodeBuilder/Elements/Select';
 
 export const PropertiesTabElements = ({
   column,
@@ -147,41 +146,41 @@ export const PropertiesTabElements = ({
         column.columnType === 'badge' ||
         column.columnType === 'badges' ||
         column.columnType === 'radio') && (
-          <div>
-            <div data-cy={`input-and-label-values`} className="field mb-2">
-              <label className="form-label">{t('widget.Table.values', 'Values')}</label>
-              <CodeHinter
-                currentState={currentState}
-                initialValue={column.values}
-                theme={darkMode ? 'monokai' : 'default'}
-                mode="javascript"
-                lineNumbers={false}
-                placeholder={'{{[1, 2, 3]}}'}
-                onChange={(value) => onColumnItemChange(index, 'values', value)}
-                componentName={getPopoverFieldSource(column.columnType, 'values')}
-                popOverCallback={(showing) => {
-                  setColumnPopoverRootCloseBlocker('values', showing);
-                }}
-              />
-            </div>
-            <div data-cy={`input-and-label-labels`} className="field mb-2">
-              <label className="form-label">{t('widget.Table.labels', 'Labels')}</label>
-              <CodeHinter
-                currentState={currentState}
-                initialValue={column.labels}
-                theme={darkMode ? 'monokai' : 'default'}
-                mode="javascript"
-                lineNumbers={false}
-                placeholder={'{{["one", "two", "three"]}}'}
-                onChange={(value) => onColumnItemChange(index, 'labels', value)}
-                componentName={getPopoverFieldSource(column.columnType, 'labels')}
-                popOverCallback={(showing) => {
-                  setColumnPopoverRootCloseBlocker('labels', showing);
-                }}
-              />
-            </div>
+        <div>
+          <div data-cy={`input-and-label-values`} className="field mb-2">
+            <label className="form-label">{t('widget.Table.values', 'Values')}</label>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column.values}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={'{{[1, 2, 3]}}'}
+              onChange={(value) => onColumnItemChange(index, 'values', value)}
+              componentName={getPopoverFieldSource(column.columnType, 'values')}
+              popOverCallback={(showing) => {
+                setColumnPopoverRootCloseBlocker('values', showing);
+              }}
+            />
           </div>
-        )}
+          <div data-cy={`input-and-label-labels`} className="field mb-2">
+            <label className="form-label">{t('widget.Table.labels', 'Labels')}</label>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column.labels}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={'{{["one", "two", "three"]}}'}
+              onChange={(value) => onColumnItemChange(index, 'labels', value)}
+              componentName={getPopoverFieldSource(column.columnType, 'labels')}
+              popOverCallback={(showing) => {
+                setColumnPopoverRootCloseBlocker('labels', showing);
+              }}
+            />
+          </div>
+        </div>
+      )}
       {column.columnType === 'datepicker' && (
         <div>
           <label data-cy={`label-date-display-format`} className="form-label">
