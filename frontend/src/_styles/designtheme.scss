@@ -1,4 +1,3 @@
-
 @import "@radix-ui/colors/slate.css";
 @import "@radix-ui/colors/indigo.css";
 @import "@radix-ui/colors/tomato.css";
@@ -98,7 +97,7 @@
 
     //icon 
     --icons-strong: #6A727C;
-    --icons-default: #6A727C;
+    --icons-default: #ACB2B9;
     --icons-weak-disabled: #6A727C;
     --icons-disabled-on-white: #6A727C;
     --icons-on-solid: #6A727C;
@@ -106,9 +105,8 @@
     // borders
     --borders-strong: #ACB2B9;
     --borders-default: #CCD1D5;
-    --borders-weak-disabled: #CCD1D5;
-    --borders-disabled-on-white: #f6f8fa;
-    --borders-disabled-on-white-dimmed: rgba(246, 248, 250, 80%);
+    --borders-weak-disabled: #E4E7EB;
+    --borders-disabled-on-white: #F6F8FA;
 
     // interactive overlays
     --interactive-overlays-fill-hover: #1B1F2414;
@@ -128,6 +126,16 @@
 
     // utilities
     --utilities-scrollbar: #6A727C1F;
+
+    //box shadows
+    --elevation-000-box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
+    --elevation-200-box-shadow: 0px 2px 4px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-300-box-shadow: 0px 4px 8px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-400-box-shadow: 0px 8px 16px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-500-box-shadow: 0px 16px 24px 0px rgba(48, 50, 51, 0.09), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-600-box-shadow: 0px 24px 40px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-700-box-shadow: 0px 32px 50px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-100-box-shadow: 0px 1px 1px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
 
 
 }
@@ -180,8 +188,6 @@
     --borders-default: #3C434B;
     --borders-weak-disabled: #2B3036;
     --borders-disabled-on-white: #2B303633;
-    --borders-disabled-on-white-dimmed: rgba(43, 48, 54, 20%);
-
 
     // interactive overlays
 
@@ -202,4 +208,14 @@
 
     // utilities
     --utilities-scrollbar: #6D757D29;
+
+    //box-shadow
+    --elevation-000-box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.40);
+    --elevation-100-box-shadow: 0px 1px 1px 0px #000, 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-200-box-shadow: 0px 2px 4px 0px #000, 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-300-box-shadow: 0px 4px 8px 0px #000, 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-400-box-shadow: 0px 8px 16px 0px #000, 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-500-box-shadow: 0px 16px 24px 0px rgba(0, 0, 0, 0.99), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-600-box-shadow: 0px 24px 40px 0px rgba(0, 0, 0, 0.98), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-700-box-shadow: 0px 32px 50px 0px rgba(0, 0, 0, 0.98), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
 }
