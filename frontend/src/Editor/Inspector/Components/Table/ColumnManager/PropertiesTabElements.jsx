@@ -7,6 +7,10 @@ import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandlePropert
 import { OptionsList } from '../SelectOptionsList/OptionsList';
 import { ValidationProperties } from './ValidationProperties';
 import { Select } from '@/Editor/CodeBuilder/Elements/Select';
+import CustomSelect from '@/_ui/Select';
+import defaultStyles from '@/_ui/Select/styles';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+
 export const PropertiesTabElements = ({
   column,
   index,
@@ -23,39 +27,45 @@ export const PropertiesTabElements = ({
 }) => {
   const { t } = useTranslation();
 
+  const customStylesForSelect = {
+    ...defaultStyles(darkMode, '100%'),
+  };
+
   return (
     <>
       <div className="field" data-cy={`dropdown-column-type`}>
         <label data-cy={`label-column-type`} className="form-label">
           {t('widget.Table.columnType', 'Column type')}
         </label>
-        <Select
-          meta={{
-            options: [
-              { name: 'Default', value: 'default' },
-              { name: 'String', value: 'string' },
-              { name: 'Number', value: 'number' },
-              { name: 'Text', value: 'text' },
-              { name: 'Badge', value: 'badge' },
-              { name: 'Multiple badges', value: 'badges' },
-              { name: 'Tags', value: 'tags' },
-              { name: 'Dropdown', value: 'dropdown' },
-              { name: 'Link', value: 'link' },
-              { name: 'Radio', value: 'radio' },
-              { name: 'Multiselect D', value: 'multiselect' },
-              { name: 'Toggle switch', value: 'toggle' },
-              { name: 'Date Picker', value: 'datepicker' },
-              { name: 'Image', value: 'image' },
-              { name: 'Boolean', value: 'boolean' },
-              { name: 'Select', value: 'select' },
-              { name: 'MultiSelect', value: 'newMultiSelect' },
-            ],
-          }}
+
+        <CustomSelect
+          options={[
+            { name: 'Default', value: 'default' },
+            { name: 'String', value: 'string' },
+            { name: 'Number', value: 'number' },
+            { name: 'Text', value: 'text' },
+            { name: 'Badge', value: 'badge' },
+            { name: 'Multiple badges', value: 'badges' },
+            { name: 'Tags', value: 'tags' },
+            { name: 'Dropdown', value: 'dropdown' },
+            { name: 'Link', value: 'link' },
+            { name: 'Radio', value: 'radio' },
+            { name: 'Multiselect', value: 'multiselect' },
+            { name: 'Toggle switch', value: 'toggle' },
+            { name: 'Date Picker', value: 'datepicker' },
+            { name: 'Image', value: 'image' },
+            { name: 'Boolean', value: 'boolean' },
+            { name: 'Select', value: 'select' },
+            { name: 'MultiSelect', value: 'newMultiSelect' },
+          ]}
+          components={{ DropdownIndicator }}
           onChange={(value) => {
             onColumnItemChange(index, 'columnType', value);
           }}
           value={column.columnType}
-          width={'100%'}
+          useCustomStyles={true}
+          styles={customStylesForSelect}
+          className={`column-type-table-inspector`}
         />
       </div>
       <div className="field" data-cy={`input-and-label-column-name`}>
@@ -352,5 +362,17 @@ export const PropertiesTabElements = ({
         />
       )}
     </>
+  );
+};
+const DropdownIndicator = (props) => {
+  return (
+    <div {...props}>
+      {/* Your custom SVG */}
+      {props.selectProps.menuIsOpen ? (
+        <SolidIcon name="arrowUpTriangle" width="16" height="16" fill={'#6A727C'} />
+      ) : (
+        <SolidIcon name="arrowDownTriangle" width="16" height="16" fill={'#6A727C'} />
+      )}
+    </div>
   );
 };

@@ -931,9 +931,10 @@
       }
     }
     background-color: var(--surfaces-surface-01) !important;
-    box-shadow: 0px 8px 16px 0px var(----elevation-400-box-shadow), 0px 0px 1px 0px var(--elevation-400-box-shadow);
-
   }
+ 
+    box-shadow: var(--elevation-400-box-shadow) !important;
+  
 }
 .table-custom-select-badge-badges{
   .select-search-value{
@@ -1086,4 +1087,10 @@
       }
     }
   }
+}
+.column-type-table-inspector{
+  .react-select__indicators{
+    padding: 0 8px;
+  }
+  
 }

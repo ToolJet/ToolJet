@@ -502,6 +502,46 @@ class TableComponent extends React.Component {
                       {columns.value.map((item, index) => {
                         const resolvedItemName = resolveReferences(item.name, this.state.currentState);
                         const columnVisibility = item?.columnVisibility ?? true;
+                        const getSecondaryText = (text) => {
+                          switch (text) {
+                            case 'string':
+                            case 'default':
+                            case undefined:
+                              return 'String';
+                            case 'number':
+                              return 'Number';
+                            case 'text':
+                              return 'Text';
+                            case 'badge':
+                              return 'Badge';
+                            case 'badges':
+                              return 'Badges';
+                            case 'tags':
+                              return 'Tags';
+                            case 'dropdown':
+                              return 'Dropdown';
+                            case 'link':
+                              return 'Link';
+                            case 'radio':
+                              return 'Radio';
+                            case 'multiSelect':
+                              return 'Multiselect deprecated';
+                            case 'toggle':
+                              return 'Toggle';
+                            case 'datepicker':
+                              return 'Datepicker';
+                            case 'image':
+                              return 'Image';
+                            case 'boolean':
+                              return 'Boolean';
+                            case 'select':
+                              return 'Select';
+                            case 'newMultiSelect':
+                              return 'Multiselect';
+                            default:
+                              capitalize(text ?? '');
+                          }
+                        };
                         return (
                           <Draggable key={item.id} draggableId={item.id} index={index}>
                             {(provided, snapshot) => (
@@ -529,7 +569,7 @@ class TableComponent extends React.Component {
                                     <List.Item
                                       isDraggable={true}
                                       primaryText={resolvedItemName}
-                                      secondaryText={capitalize(item?.columnType)}
+                                      secondaryText={getSecondaryText(item?.columnType)}
                                       data-cy={`column-${resolvedItemName}`}
                                       enableActionsMenu={false}
                                       isEditable={item.isEditable === '{{true}}'}
