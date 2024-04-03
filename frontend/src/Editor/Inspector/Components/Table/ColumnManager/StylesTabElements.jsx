@@ -24,14 +24,14 @@ export const StylesTabElements = ({
   const { t } = useTranslation();
   return (
     <>
-      <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch">
+      <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between">
         <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-          {t('widget.Table.horizontalAlignment', 'Horizontal Alignment')}
+          {t('widget.Table.textAlignment', 'Text Alignment')}
         </label>
         <ToggleGroup
           onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
           defaultValue={column?.horizontalAlignment || 'left'}
-          style={{ flex: '1 1 0' }}
+          style={{ width: '58%' }}
         >
           <ToggleGroupItem value="left">
             <AlignLeft width={14} />
@@ -188,7 +188,7 @@ export const StylesTabElements = ({
           )}
           <div className="field" data-cy={`input-and-label-cell-background-color`}>
             <ProgramaticallyHandleProperties
-              label="Cell Background Color"
+              label="Cell color"
               currentState={currentState}
               index={index}
               darkMode={darkMode}
@@ -196,7 +196,7 @@ export const StylesTabElements = ({
               property="cellBackgroundColor"
               props={column}
               component={component}
-              paramMeta={{ type: 'color', displayName: 'Cell Background Color' }}
+              paramMeta={{ type: 'color', displayName: 'Cell color' }}
               paramType="properties"
             />
           </div>

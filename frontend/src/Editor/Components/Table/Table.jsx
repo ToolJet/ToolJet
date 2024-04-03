@@ -135,8 +135,11 @@ export function Table({
     maxRowHeight,
     autoHeight,
     selectRowOnCellEdit,
+    contentWrapProperty,
+    boxShadow,
+    maxRowHeightValue,
+    borderColor,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
-
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
   const { events: allAppEvents } = useAppInfo();
@@ -446,16 +449,40 @@ export function Table({
     }));
 
   tableData = useMemo(() => {
-    return tableData.map((row) => ({
-      ...row,
-      ...Object.fromEntries(
-        transformations.map((t) => [
-          t.key,
-          resolveReferences(t.transformation, currentState, row[t.key], { cellValue: row[t.key], rowData: row }),
-        ])
-      ),
-    }));
-  }, [JSON.stringify([transformations, currentState, component.definition.properties.data.value])]);
+    return tableData.map((row) => {
+      const transformedObject = {};
+
+      transformations.forEach(({ key, transformation }) => {
+        const nestedKeys = key.includes('.') && key.split('.');
+        if (nestedKeys) {
+          // Single-level nested property
+          const [nestedKey, subKey] = nestedKeys;
+          const nestedObject = transformedObject?.[nestedKey] || { ...row[nestedKey] }; // Retain existing nested object
+          const newValue = resolveReferences(transformation, currentState, row[key], {
+            cellValue: row?.[nestedKey]?.[subKey],
+            rowData: row,
+          });
+
+          // Apply transformation to subKey
+          nestedObject[subKey] = newValue;
+
+          // Update transformedObject with the new nested object
+          transformedObject[nestedKey] = nestedObject;
+        } else {
+          // Non-nested property
+          transformedObject[key] = resolveReferences(transformation, currentState, row[key], {
+            cellValue: row[key],
+            rowData: row,
+          });
+        }
+      });
+
+      return {
+        ...row,
+        ...transformedObject,
+      };
+    });
+  }, [JSON.stringify([tableData, transformations, currentState])]);
 
   useEffect(() => {
     setExposedVariables({
@@ -656,7 +683,7 @@ export function Table({
             },
             Cell: ({ row }) => {
               return (
-                <div className="d-flex flex-column align-items-center">
+                <div className="d-flex flex-column align-items-center justify-content-center h-100">
                   <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} fireEvent={fireEvent} />
                 </div>
               );
@@ -1041,8 +1068,9 @@ export function Table({
         display: parsedWidgetVisibility ? '' : 'none',
         overflow: 'hidden',
         borderRadius: Number.parseFloat(borderRadius),
-        boxShadow: styles.boxShadow,
+        boxShadow,
         padding: '8px',
+        borderColor: borderColor,
       }}
       onClick={(event) => {
         onComponentClick(id, component, event);
@@ -1351,6 +1379,20 @@ export function Table({
             <tbody {...getTableBodyProps()} style={{ color: computeFontColor() }}>
               {page.map((row, index) => {
                 prepareRow(row);
+                let rowProps = { ...row.getRowProps() };
+                const contentWrap = resolveReferences(contentWrapProperty, currentState);
+                const isMaxRowHeightAuto = maxRowHeight === 'auto';
+                if (contentWrap) {
+                  rowProps.style.maxHeight = isMaxRowHeightAuto
+                    ? 'fit-content'
+                    : resolveReferences(maxRowHeightValue, currentState) + 'px';
+                  rowProps.style.height = isMaxRowHeightAuto
+                    ? 'fit-content'
+                    : resolveReferences(maxRowHeightValue, currentState) + 'px';
+                } else {
+                  rowProps.style.maxHeight = cellSize === 'condensed' ? '40px' : '46px';
+                  rowProps.style.height = cellSize === 'condensed' ? '40px' : '46px';
+                }
                 return (
                   <tr
                     key={index}
@@ -1364,7 +1406,7 @@ export function Table({
                         ? 'selected'
                         : ''
                     }`}
-                    {...row.getRowProps()}
+                    {...rowProps}
                     onClick={async (e) => {
                       e.stopPropagation();
                       // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
@@ -1417,10 +1459,6 @@ export function Table({
                       ) {
                         cellProps.style.flex = '1 1 auto';
                       }
-                      if (cellSize === 'hugContent') {
-                        cellProps.style.maxHeight = autoHeight ? 80 : resolveReferences(maxRowHeight, currentState);
-                        cellProps.style.height = autoHeight ? 80 : resolveReferences(maxRowHeight, currentState);
-                      }
                       //should we remove this
                       const wrapAction = textWrapActions(cell.column.id);
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
@@ -1468,25 +1506,31 @@ export function Table({
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
                           className={cx(
                             `table-text-align-${cell.column.horizontalAlignment}  
-                            ${
-                              cell?.column?.Header !== 'Actions' &&
-                              (['regular', 'condensed'].includes(cellSize) ? '' : 'wrap-wrapper')
-                            }
+                            ${cell?.column?.Header !== 'Actions' && (contentWrap ? 'wrap-wrapper' : '')}
                             td`,
                             {
                               'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
                               'has-left-actions': cell.column.id === 'leftActions',
                               'has-right-actions': cell.column.id === 'rightActions',
                               'has-text': cell.column.columnType === 'text' || isEditable,
+                              'has-number': cell.column.columnType === 'number',
                               'has-dropdown': cell.column.columnType === 'dropdown',
                               'has-multiselect': cell.column.columnType === 'multiselect',
                               'has-datepicker': cell.column.columnType === 'datepicker',
                               'align-items-center flex-column': cell.column.columnType === 'selector',
+                              'has-badge': ['badge', 'badges'].includes(cell.column.columnType),
                               [cellSize]: true,
+                              'overflow-hidden':
+                                ['text', 'string', undefined, 'number'].includes(cell.column.columnType) &&
+                                !contentWrap,
                               'selector-column':
                                 cell.column.columnType === 'selector' && cell.column.id === 'selection',
                               'resizing-column': cell.column.isResizing || cell.column.id === resizingColumnId,
                               'has-select': ['select', 'newMultiSelect'].includes(cell.column.columnType),
+                              'has-tags': cell.column.columnType === 'tags',
+                              'has-link': cell.column.columnType === 'link',
+                              'has-radio': cell.column.columnType === 'radio',
+                              'has-toggle': cell.column.columnType === 'toggle',
                             }
                           )}
                           {...cellProps}
@@ -1521,6 +1565,8 @@ export function Table({
                                 isEditable,
                                 horizontalAlignment,
                                 cellTextColor,
+                                contentWrap,
+                                autoHeight,
                               })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}

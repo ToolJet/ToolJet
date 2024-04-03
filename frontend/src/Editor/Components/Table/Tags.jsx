@@ -5,6 +5,8 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
 
+  const elem = document.querySelector('.table-tags-col-container');
+
   useEffect(() => {
     if (hovered) {
       setShowOverlay(true);
@@ -58,24 +60,27 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
     return Array.isArray(value) ? (
       <div
         style={{
-          height: 'fit-content',
           maxWidth: containerWidth,
           width: containerWidth,
-          background: 'var(--surfaces-surface-01)',
-          display: 'inline-flex',
-          flexWrap: 'wrap',
-          gap: '10px',
-          padding: '16px',
-          borderRadius: '6px',
-          boxShadow:
-            '0px 8px 16px 0px var(--elevation-400-box-shadow), 0px 0px 1px 0px var(--elevation-400-box-shadow)',
         }}
-        className={`overlay-multiselect-table ${darkMode && 'dark-theme'}`}
+        className={`overlay-cell-table overlay-tags-table ${darkMode && 'dark-theme'}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         {value?.map((tag, index) => {
-          return <span key={index}>{renderTag(tag)}</span>;
+          return (
+            <span
+              key={index}
+              style={{
+                wordWrap: 'break-word', // Add word-wrap property for content wrapping
+                display: 'flex',
+                flexWrap: 'wrap',
+                overflow: 'auto',
+              }}
+            >
+              {renderTag(tag)}
+            </span>
+          );
         })}
       </div>
     ) : (
@@ -87,9 +92,19 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
     <OverlayTrigger
       placement="bottom"
       overlay={getOverlay(value, containerWidth)}
-      trigger={!showForm && value?.length >= 1 && ['click']}
+      trigger={
+        elem &&
+        (elem?.clientHeight < elem?.scrollHeight || elem?.clientWidth < elem?.scrollWidth) &&
+        !showForm &&
+        value?.length >= 1 && ['click']
+      }
       rootClose={true}
-      show={value?.length >= 1 && showOverlay}
+      show={
+        elem &&
+        (elem?.clientHeight < elem?.scrollHeight || elem?.clientWidth < elem?.scrollWidth) &&
+        value?.length >= 1 &&
+        showOverlay
+      }
     >
       <div
         className="tags row h-100"
@@ -111,7 +126,10 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
         )}
         {/* Container for renderTags */}
         {!showForm && (
-          <div className="render-tags-container" style={{ width: '80%', overflow: 'hidden' }}>
+          <div
+            className="render-tags-container table-tags-col-container h-100 d-flex flex-wrap custom-gap-3"
+            style={{ width: '80%', overflow: 'hidden' }}
+          >
             {value.map((item, index) => (
               <span key={index} className="col-auto tag-wrapper">
                 {renderTag(item)}

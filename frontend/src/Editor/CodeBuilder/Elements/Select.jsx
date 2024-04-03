@@ -8,7 +8,7 @@ import {
   checkIfTableColumnDeprecated,
 } from '../../Inspector/Components/Table/ColumnManager/DeprecatedColumnTypeMsg';
 
-const Option = (props) => {
+export const Option = (props) => {
   const isDeprecated = checkIfTableColumnDeprecated(props.value);
   return (
     <components.Option {...props}>
@@ -75,9 +75,8 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
   return (
     <div
       className="row fx-container"
-      data-cy={`dropdown-${
-        meta?.displayName ? String(meta?.displayName).toLowerCase().replace(/\s+/g, '-') : 'common'
-      }`}
+      data-cy={`dropdown-${meta?.displayName ? String(meta?.displayName).toLowerCase().replace(/\s+/g, '-') : 'common'
+        }`}
     >
       <div className="field" onClick={(e) => e.stopPropagation()}>
         <SelectComponent

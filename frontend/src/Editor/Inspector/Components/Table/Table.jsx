@@ -49,6 +49,7 @@ class TableComponent extends React.Component {
       actionPopOverRootClose: true,
       showPopOver: false,
       popOverRootCloseBlockers: [],
+      activeColumnPopoverIndex: null,
     };
   }
   componentDidMount() {
@@ -97,6 +98,12 @@ class TableComponent extends React.Component {
     };
 
     this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties', true);
+  };
+
+  handleToggleColumnPopover = (index) => {
+    this.setState({
+      activeColumnPopoverIndex: index,
+    });
   };
 
   actionButtonEventOptionUpdated = (event, option, value, extraData) => {
@@ -201,7 +208,7 @@ class TableComponent extends React.Component {
     return (
       <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'}`}>
         <Popover.Body className="table-action-popover d-flex flex-column custom-gap-16">
-          <div className="field">
+          <div className="field tj-app-input">
             <label data-cy={`label-action-button-text`} className="form-label">
               {this.props.t('widget.Table.buttonText', 'Button Text')}
             </label>
@@ -335,7 +342,12 @@ class TableComponent extends React.Component {
   addNewColumn = () => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4(), fxActiveFields: [] });
+    newValue.push({
+      name: this.generateNewColumnName(columns.value),
+      id: uuidv4(),
+      fxActiveFields: [],
+      columnType: 'string',
+    });
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
   };
 
@@ -407,7 +419,6 @@ class TableComponent extends React.Component {
     const columns = this.props.component.component.definition.properties?.columns ?? [];
     const newColumns = columns.value;
     let columnToBeDuplicated = newColumns?.[index];
-    console.log('manish ::', { columnToBeDuplicated });
     columnToBeDuplicated = { ...columnToBeDuplicated, id: uuidv4() };
     newColumns.push(columnToBeDuplicated);
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
@@ -449,7 +460,7 @@ class TableComponent extends React.Component {
     const allowSelection = component.component.definition.properties?.allowSelection?.value
       ? resolveReferences(component.component.definition.properties.allowSelection?.value, currentState)
       : resolveReferences(component.component.definition.properties.highlightSelectedRow.value, currentState) ||
-        resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
+      resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
     };
@@ -490,6 +501,46 @@ class TableComponent extends React.Component {
                       {columns.value.map((item, index) => {
                         const resolvedItemName = resolveReferences(item.name, this.state.currentState);
                         const columnVisibility = item?.columnVisibility ?? true;
+                        const getSecondaryText = (text) => {
+                          switch (text) {
+                            case 'string':
+                            case 'default':
+                            case undefined:
+                              return 'String';
+                            case 'number':
+                              return 'Number';
+                            case 'text':
+                              return 'Text';
+                            case 'badge':
+                              return 'Badge';
+                            case 'badges':
+                              return 'Badges';
+                            case 'tags':
+                              return 'Tags';
+                            case 'dropdown':
+                              return 'Dropdown';
+                            case 'link':
+                              return 'Link';
+                            case 'radio':
+                              return 'Radio';
+                            case 'multiSelect':
+                              return 'Multiselect deprecated';
+                            case 'toggle':
+                              return 'Toggle';
+                            case 'datepicker':
+                              return 'Datepicker';
+                            case 'image':
+                              return 'Image';
+                            case 'boolean':
+                              return 'Boolean';
+                            case 'select':
+                              return 'Select';
+                            case 'newMultiSelect':
+                              return 'Multiselect';
+                            default:
+                              capitalize(text ?? '');
+                          }
+                        };
                         return (
                           <Draggable key={item.id} draggableId={item.id} index={index}>
                             {(provided, snapshot) => (
@@ -505,12 +556,19 @@ class TableComponent extends React.Component {
                                   placement="left"
                                   rootClose={this.state.popOverRootCloseBlockers.length === 0}
                                   overlay={this.columnPopover(item, index)}
+                                  onToggle={(show) => {
+                                    if (show) {
+                                      this.handleToggleColumnPopover(index);
+                                    } else {
+                                      this.handleToggleColumnPopover(null);
+                                    }
+                                  }}
                                 >
                                   <div key={resolvedItemName}>
                                     <List.Item
                                       isDraggable={true}
                                       primaryText={resolvedItemName}
-                                      secondaryText={capitalize(item?.columnType)}
+                                      secondaryText={getSecondaryText(item?.columnType)}
                                       data-cy={`column-${resolvedItemName}`}
                                       enableActionsMenu={false}
                                       isEditable={item.isEditable === '{{true}}'}
@@ -532,9 +590,11 @@ class TableComponent extends React.Component {
                                       showCopyColumnOption={true}
                                       showVisibilityIcon={true}
                                       isColumnVisible={resolveReferences(columnVisibility, this.state.currentState)}
-                                      className={'table-column-lists'}
+                                      className={`table-column-lists ${this.state.activeColumnPopoverIndex === index && 'active-column-list'
+                                        }`}
                                       columnType={item?.columnType}
                                       isDeprecated={checkIfTableColumnDeprecated(item?.columnType)}
+
                                     />
                                   </div>
                                 </OverlayTrigger>
@@ -607,6 +667,8 @@ class TableComponent extends React.Component {
       'hideColumnSelectorButton',
       'loadingState',
       'showBulkUpdateActions',
+      'visibility',
+      'disabledState',
     ];
 
     items.push({

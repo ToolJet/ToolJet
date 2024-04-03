@@ -57,7 +57,6 @@ function ListItem({
             style={Icon ? { paddingLeft: '0px' } : { paddingLeft: '8px' }}
           >
             {primaryText}
-            <span className="list-item-secondary-text">{secondaryText}</span>
             {isDeprecated && (
               <DeprecatedColumnTooltip columnType={columnType}>
                 <span className={'list-item-deprecated-column-type'}>
@@ -75,6 +74,7 @@ function ListItem({
                 <SolidIcon name="eyedisable" width={16} />
               </span>
             )}
+            <span className="list-item-secondary-text">{secondaryText}</span>
           </div>
           <div className="col-auto d-flex align-items-center custom-gap-4">
             <OverlayTrigger
@@ -122,7 +122,7 @@ function ListItem({
                     variant="tertiary"
                     size="xs"
                     className={'list-menu-option-btn'}
-                    // data-cy={'page-menu'}
+                  // data-cy={'page-menu'}
                   >
                     <span>
                       <MoreVertical fill={'var(--slate12)'} width={'20'} />
@@ -131,7 +131,7 @@ function ListItem({
                 )}
               </span>
             </OverlayTrigger>
-            {showCopyColumnOption && (
+            {showCopyColumnOption && isHovered && (
               <ButtonSolid
                 variant="ghostBlack"
                 size="xs"
@@ -147,7 +147,7 @@ function ListItem({
                 </span>
               </ButtonSolid>
             )}
-            {deleteIconOutsideMenu && (
+            {deleteIconOutsideMenu && isHovered && (
               <ButtonSolid
                 variant="danger"
                 size="xs"
