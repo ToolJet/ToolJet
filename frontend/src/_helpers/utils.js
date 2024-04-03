@@ -485,7 +485,7 @@ export function validateDates({ validationObject, widgetValue, currentState, cus
     if (!moment(resolvedMaxTime, validationTimeFormat).isAfter(moment(_widgetTimeValue, validationTimeFormat))) {
       return {
         isValid: false,
-        validationError: `Minimum time is ${resolvedMaxTime}`,
+        validationError: `Maximum time is ${resolvedMaxTime}`,
       };
     }
   }
