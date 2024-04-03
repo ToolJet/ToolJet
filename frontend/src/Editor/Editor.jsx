@@ -292,58 +292,19 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
 
-  const prevCurrentStateRef = useRef(currentState);
+  // const prevCurrentStateRef = useRef(currentState);
 
-  function generatePath(obj, targetKey, currentPath = '') {
-    for (const key in obj) {
-      const newPath = currentPath ? currentPath + '.' + key : key;
-
-      if (key === targetKey) {
-        return newPath;
-      }
-
-      if (typeof obj[key] === 'object' && obj[key] !== null) {
-        const result = generatePath(obj[key], targetKey, newPath);
-        if (result) {
-          return result;
-        }
-      }
-    }
-    return null;
-  }
+  const currentStateDiff = useEditorStore.getState().currentStateDiff;
 
   useEffect(() => {
-    const diffState = diff(prevCurrentStateRef.current, currentState);
-
-    if (Object.keys(diffState).length > 0) {
-      const entitiesToTrack = ['queries', 'components', 'variables', 'page', 'constants', 'layout'];
-
-      const entitiesChanged = Object.keys(diffState).filter((entity) => entitiesToTrack.includes(entity));
-
-      const diffObj = entitiesChanged.reduce((acc, entity) => {
-        acc[entity] = diffState[entity];
-        return acc;
-      }, {});
-
-      const allPaths = entitiesChanged.reduce((acc, entity) => {
-        const paths = Object.keys(diffObj[entity]).map((key) => {
-          return generatePath(diffObj[entity], key);
-        });
-
-        acc[entity] = paths.map((path) => `${entity}.${path}`);
-        return acc;
-      }, {});
-
-      const currentStatePaths = Object.values(allPaths).flat();
-
+    const isEditorReady = useCurrentStateStore.getState().isEditorReady;
+    if (isEditorReady && currentStateDiff?.length > 0) {
       const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
-      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStatePaths);
+      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStateDiff);
 
       if (componentIdsWithReferences.length > 0) {
         updateComponentsNeedsUpdateOnNextRender(componentIdsWithReferences);
       }
-
-      prevCurrentStateRef.current = currentState;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentState)]);
