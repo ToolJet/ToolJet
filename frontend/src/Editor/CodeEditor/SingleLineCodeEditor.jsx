@@ -34,15 +34,9 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
 
   useEffect(() => {
     if (typeof initialValue !== 'string') return;
-
-    if (fxActive && initialValue?.startsWith('{{')) {
-      const _value = initialValue?.replace(/{{/g, '').replace(/}}/g, '');
-      return setCurrentValue(_value);
-    }
-
     setCurrentValue(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [componentName, initialValue, fxActive]);
+  }, [componentName, initialValue]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -174,8 +168,8 @@ const EditorInput = ({
       return onBlurUpdate(currentValue);
     }
     setTimeout(() => {
-      if (!error) {
-        const _value = fxActive ? `{{${currentValue}}}` : currentValue;
+      if (!error || currentValue == '') {
+        const _value = currentValue;
         onBlurUpdate(_value);
       }
     }, 0);
