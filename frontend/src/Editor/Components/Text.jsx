@@ -131,6 +131,10 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     overflowX: isScrollRequired === 'disabled' && 'hidden',
   };
 
+  const commonScrollStyle = {
+    overflowY: isScrollRequired == 'enabled' ? 'scroll' : 'hidden',
+  };
+
   return (
     <div
       data-disabled={isDisabled}
@@ -144,11 +148,15 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     >
       {!isLoading && (
         <div style={commonStyles} className="text-widget-section">
-          {textFormat === 'plainText' && <div>{text}</div>}
-          {textFormat === 'markdown' && <Markdown className={'reactMarkdown'}>{text}</Markdown>}
+          {textFormat === 'plainText' && <div style={commonScrollStyle}>{text}</div>}
+          {textFormat === 'markdown' && (
+            <Markdown style={commonScrollStyle} className={'reactMarkdown'}>
+              {text}
+            </Markdown>
+          )}
           {(textFormat === 'html' || !textFormat) && (
             <div
-              style={{ overflowY: isScrollRequired == 'enabled' ? 'scroll' : 'hidden' }}
+              style={commonScrollStyle}
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(text || ''),
               }}
