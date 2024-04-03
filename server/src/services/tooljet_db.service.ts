@@ -272,7 +272,7 @@ export class TooljetDbService {
       const columnsToBeDeleted = [];
 
       columns.forEach((column) => {
-        const { oldColumn, newColumn } = column;
+        const { oldColumn = {}, newColumn = {} } = column;
 
         // Filter Primary Key column
         if (newColumn?.constraints_type?.is_primary_key ?? false) {
