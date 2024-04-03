@@ -16,6 +16,10 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
       case 'database':
         return 'Database';
       case 'workspace-settings':
+      case 'users':
+      case 'workspace-variables':
+      case 'groups':
+      case 'workspace-login':
         return 'Workspace settings';
       case 'data-sources':
         return 'Data sources';
