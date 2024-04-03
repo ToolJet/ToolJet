@@ -1,8 +1,7 @@
 export const getAutocompletion = (input, fieldType, hints, fxActive = false, totalReferences = 1) => {
   if (!fxActive && (!input.startsWith('{{') || !input.endsWith('}}'))) return [];
 
-  const actualInput = !fxActive ? input.replace(/{{|}}/g, '') : input;
-
+  const actualInput = input.replace(/{{|}}/g, '');
   let JSLangHints = [];
 
   if (fieldType) {
