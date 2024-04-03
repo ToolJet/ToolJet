@@ -238,7 +238,7 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
     <div className="drawer-card-wrapper ">
       <div className="drawer-card-title">
         <h3 className="card-title" data-cy="edit-row-header">
-          Edit a row
+          Edit row
         </h3>
       </div>
       <div className="card-body">

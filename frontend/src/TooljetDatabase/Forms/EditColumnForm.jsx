@@ -7,6 +7,8 @@ import { TooljetDatabaseContext } from '../index';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, getColumnDataType } from '../constants';
 import WarningInfo from '../Icons/Edit-information.svg';
 import { isEmpty } from 'lodash';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components/ToolTip';
 
 const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
   const nullValue = selectedColumn?.constraints_type?.is_not_null ?? false;
@@ -137,7 +139,8 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
         </div>
         <div className="mb-3 tj-app-input">
           <div className="form-label" data-cy="column-name-input-field-label">
-            Column name
+            <span style={{ marginRight: '6px' }}>Column name</span>
+            {selectedColumn?.constraints_type?.is_primary_key === true && <SolidIcon name="primarykey" />}
           </div>
           <input
             value={columnName}
@@ -169,23 +172,32 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
           <div className="form-label" data-cy="default-value-input-field-label">
             Default value
           </div>
-          <input
-            value={selectedColumn?.dataType === 'serial' ? 'Auto-generated' : defaultValue}
-            type="text"
-            placeholder="Enter default value"
-            className={'form-control'}
-            data-cy="default-value-input-field"
-            autoComplete="off"
-            onChange={(e) => setDefaultValue(e.target.value)}
-            disabled={selectedColumn?.dataType === 'serial'}
-          />
+          <ToolTip
+            message={selectedColumn?.dataType === 'serial' ? 'Serial data type values cannot be modified' : null}
+            placement="top"
+            tooltipClassName="tootip-table"
+            show={selectedColumn?.dataType === 'serial'}
+          >
+            <div>
+              <input
+                value={selectedColumn?.dataType === 'serial' ? 'Auto-generated' : defaultValue}
+                type="text"
+                placeholder="Enter default value"
+                className={'form-control'}
+                data-cy="default-value-input-field"
+                autoComplete="off"
+                onChange={(e) => setDefaultValue(e.target.value)}
+                disabled={selectedColumn?.dataType === 'serial'}
+              />
+            </div>
+          </ToolTip>
           {isNotNull === true && rows.length > 0 && !isEmpty(defaultValue) && defaultValueLength > 0 ? (
             <span className="form-warning-message">
               Changing the default value will NOT update the fields having existing default value
             </span>
           ) : null}
         </div>
-        <div className="row mb-3">
+        <div className="row mb-1">
           <div className="col-1">
             <label className={`form-switch`}>
               <input
@@ -206,7 +218,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
             </p>
           </div>
         </div>
-        <div className="row mb-3">
+        <div className="row mb-1">
           <div className="col-1">
             <label className={`form-switch`}>
               <input

@@ -5,6 +5,8 @@ import AddColumnIcon from '../Icons/AddColumnIcon.svg';
 import ColumnName from '../Icons/ColumnName.svg';
 import TableSchema from './TableSchema';
 import { dataTypes } from '../constants';
+import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const ColumnsForm = ({ columns, setColumns, isEditMode }) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
@@ -59,16 +61,20 @@ const ColumnsForm = ({ columns, setColumns, isEditMode }) => {
           isEditMode={isEditMode}
         />
 
-        <div
-          onClick={() => {
-            setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} })),
-              setColumnSelection({ index: 0, value: '' });
-          }}
-          className="mt-2 btn border-0 card-footer add-more-columns-btn"
-          data-cy="add-more-columns-button"
-        >
-          <AddColumnIcon />
-          &nbsp;&nbsp; Add more columns
+        <div className="d-flex mb-2 mt-2 border-none" style={{ maxHeight: '32px' }}>
+          <ButtonSolid
+            variant="ghostBlue"
+            size="sm"
+            style={{ fontSize: '14px' }}
+            onClick={() => {
+              setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} })),
+                setColumnSelection({ index: 0, value: '' });
+            }}
+            data-cy="add-more-columns-button"
+          >
+            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+            &nbsp;&nbsp; Add more columns
+          </ButtonSolid>
         </div>
       </div>
     </div>

@@ -198,7 +198,7 @@ const RowForm = ({ onCreate, onClose }) => {
     <div className="drawer-card-wrapper ">
       <div className="card-header">
         <h3 className="card-title" data-cy="create-new-row-header">
-          Create a new row
+          Create row
         </h3>
       </div>
       <div className="card-body tj-app-input">
