@@ -1,5 +1,5 @@
-export const getAutocompletion = (input, fieldType, hints, fxActive = false, totalReferences = 1) => {
-  if (!fxActive && (!input.startsWith('{{') || !input.endsWith('}}'))) return [];
+export const getAutocompletion = (input, fieldType, hints, totalReferences = 1) => {
+  if (!input.startsWith('{{') || !input.endsWith('}}')) return [];
 
   const actualInput = input.replace(/{{|}}/g, '');
   let JSLangHints = [];
@@ -49,7 +49,7 @@ export const getAutocompletion = (input, fieldType, hints, fxActive = false, tot
     if (autoSuggestionList.length === 0 && !cm.hint.includes(actualInput)) return true;
   });
 
-  const suggestions = generateHints([...jsHints, ...autoSuggestionList], fxActive, totalReferences);
+  const suggestions = generateHints([...jsHints, ...autoSuggestionList], totalReferences);
   return orderSuggestions(suggestions, fieldType).map((cm, index) => ({ ...cm, boost: 100 - index }));
 };
 

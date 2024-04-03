@@ -74,7 +74,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
         componentId={restProps?.componentId ?? null}
-        fxActive={fxActive}
+        // fxActive={fxActive}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
@@ -93,7 +93,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
               cyLabel={restProps.cyLabel}
               portalProps={portalProps}
               componentName={componentName}
-              fxActive={fxActive}
               {...restProps}
             />
           </div>
@@ -118,7 +117,6 @@ const EditorInput = ({
   renderPreview,
   portalProps,
   ignoreValidation,
-  fxActive,
   lang,
   isFocused,
   componentId,
@@ -132,15 +130,15 @@ const EditorInput = ({
 
     if (totalReferences > 1) {
       const currentWord = queryInput.split('{{').pop().split('}}')[0];
-      queryInput = fxActive ? currentWord : `{{${currentWord}}}`;
+      queryInput = currentWord;
     }
 
-    let completions = getAutocompletion(queryInput, validationType, hints, fxActive, totalReferences);
+    let completions = getAutocompletion(queryInput, validationType, hints, totalReferences);
 
     return {
       from: word.from,
       options: completions,
-      validFor: !fxActive ? /^\{\{.*\}\}$/ : '',
+      validFor: /^\{\{.*\}\}$/,
     };
   }
 

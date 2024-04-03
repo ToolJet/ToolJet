@@ -210,7 +210,7 @@ const resolveMultiDynamicReferences = (code, lookupTable) => {
   return resolvedValue;
 };
 
-export const resolveReferences = (query, validationSchema, customResolvers = {}, fxActive = false) => {
+export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
   if (!query || typeof query !== 'string') return [false, null, null];
   let resolvedValue = query;
   let error = null;
@@ -239,7 +239,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
   } else {
     let value = query?.replace(/{{|}}/g, '').trim();
 
-    if (fxActive && (value.startsWith('#') || value.includes('table-'))) {
+    if (value.startsWith('#') || value.includes('table-')) {
       value = JSON.stringify(value);
     }
 

@@ -12,14 +12,7 @@ import Card from 'react-bootstrap/Card';
 // eslint-disable-next-line import/no-unresolved
 import { JsonViewer } from '@textea/json-viewer';
 
-export const PreviewBox = ({
-  currentValue,
-  validationSchema,
-  setErrorStateActive,
-  componentId,
-  fxActive,
-  setErrorMessage,
-}) => {
+export const PreviewBox = ({ currentValue, validationSchema, setErrorStateActive, componentId, setErrorMessage }) => {
   const { variablesExposedForPreview } = useContext(EditorContext);
 
   const customVariables = variablesExposedForPreview?.[componentId] ?? {};
@@ -73,12 +66,7 @@ export const PreviewBox = ({
   }, [error]);
 
   useEffect(() => {
-    const [valid, _error, newValue, resolvedValue] = resolveReferences(
-      currentValue,
-      validationSchema,
-      customVariables,
-      fxActive
-    );
+    const [valid, _error, newValue, resolvedValue] = resolveReferences(currentValue, validationSchema, customVariables);
 
     if (!validationSchema || isEmpty(validationSchema)) {
       return setResolvedValue(newValue);

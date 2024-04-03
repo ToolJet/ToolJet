@@ -157,6 +157,21 @@
     }
 }
 
+.query-manager-sort-filter-popup {
+    .cm-base-autocomplete {
+        position: fixed !important;
+        top: 130px !important;
+    }
+}
+
+.canvas-codehinter-container {
+    .cm-base-autocomplete {
+        position: fixed !important;
+        top: 500px !important;
+        left: 38px !important;
+    }
+}
+
 
 
 .widget-code-editor {
