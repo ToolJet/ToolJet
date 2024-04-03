@@ -372,6 +372,86 @@ export const Container = ({
           zoomLevel
         );
 
+        // Logic to add default child components
+        const childrenBoxes = {};
+        if (componentMeta.defaultChildren) {
+          const parentMeta = componentMeta;
+          const widgetResolvables = Object.freeze({
+            Listview: 'listItem',
+          });
+          const customResolverVariable = widgetResolvables[parentMeta?.component];
+          const defaultChildren = _.cloneDeep(parentMeta)['defaultChildren'];
+          const parentId = newComponent.id;
+
+          defaultChildren.forEach((child) => {
+            const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } = child;
+
+            const componentMeta = _.cloneDeep(
+              componentTypes.find((component) => component.component === componentName)
+            );
+            const componentData = JSON.parse(JSON.stringify(componentMeta));
+
+            const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / noOfGrids;
+            const height = layout.height ? layout.height : componentMeta.defaultSize.height;
+            const newComponentDefinition = {
+              ...componentData.definition.properties,
+            };
+
+            if (_.isArray(properties) && properties.length > 0) {
+              properties.forEach((prop) => {
+                const accessor = customResolverVariable
+                  ? `{{${customResolverVariable}.${accessorKey}}}`
+                  : defaultValue[prop] || '';
+
+                _.set(newComponentDefinition, prop, {
+                  value: accessor,
+                });
+              });
+              _.set(componentData, 'definition.properties', newComponentDefinition);
+            }
+
+            if (_.isArray(styles) && styles.length > 0) {
+              styles.forEach((prop) => {
+                const accessor = customResolverVariable
+                  ? `{{${customResolverVariable}.${accessorKey}}}`
+                  : defaultValue[prop] || '';
+
+                _.set(newComponentDefinition, prop, {
+                  value: accessor,
+                });
+              });
+              _.set(componentData, 'definition.styles', newComponentDefinition);
+            }
+
+            const newChildComponent = addNewWidgetToTheEditor(
+              componentData,
+              {},
+              boxes,
+              {},
+              item.currentLayout,
+              snapToGrid,
+              zoomLevel,
+              true,
+              true
+            );
+
+            _.set(childrenBoxes, newChildComponent.id, {
+              component: {
+                ...newChildComponent.component,
+                parent: parentMeta.component === 'Tabs' ? parentId + '-' + tab : parentId,
+              },
+
+              layouts: {
+                [currentLayout]: {
+                  ...layout,
+                  width: incrementWidth ? width * incrementWidth : width,
+                  height: height,
+                },
+              },
+            });
+          });
+        }
+
         const newBoxes = {
           ...boxes,
           [newComponent.id]: {
@@ -379,8 +459,8 @@ export const Container = ({
             layouts: {
               ...newComponent.layout,
             },
-            withDefaultChildren: newComponent.withDefaultChildren,
           },
+          ...childrenBoxes,
         };
 
         setBoxes(newBoxes);
@@ -679,8 +759,6 @@ export const Container = ({
   }, [components]);
 
   const getContainerProps = React.useCallback((componentId) => {
-    const withDefaultChildren = boxes[componentId]?.withDefaultChildren;
-
     return {
       mode,
       snapToGrid,
@@ -696,7 +774,6 @@ export const Container = ({
       currentLayout,
       selectedComponents,
       darkMode,
-      addDefaultChildren: withDefaultChildren,
       currentPageId,
       childComponents: childComponents[componentId],
       parentGridWidth: gridWidth,
@@ -785,6 +862,7 @@ export const Container = ({
                     isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
                     getContainerProps={getContainerProps}
                     isVersionReleased={isVersionReleased}
+                    currentPageId={currentPageId}
                   />
                 </WidgetWrapper>
               );

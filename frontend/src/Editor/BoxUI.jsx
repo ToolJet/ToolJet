@@ -38,6 +38,7 @@ const BoxUI = (props) => {
     customResolvables,
     currentLayout,
     readOnly,
+    currentPageId,
   } = props;
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -166,6 +167,7 @@ const BoxUI = (props) => {
           dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
           currentLayout={currentLayout}
           currentState={currentState}
+          currentPageId={currentPageId}
         />
       </div>
     </OverlayTrigger>

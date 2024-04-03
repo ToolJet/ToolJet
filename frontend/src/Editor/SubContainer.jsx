@@ -51,7 +51,6 @@ export const SubContainer = ({
   sideBarDebugger,
   onOptionChange,
   exposedVariables,
-  addDefaultChildren = false,
   height = '100%',
   currentPageId,
   childComponents = null,
@@ -137,24 +136,6 @@ export const SubContainer = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(allChildComponents), parent]);
 
-  // useEffect(() => {
-  //   try {
-  //     const isParentScrollable = SUBCONTAINER_WITH_SCROLL.has(allComponents[parent]?.component?.component);
-  //     const canvasBounds = parentRef.current.getBoundingClientRect();
-  //     const subContainerHeight = canvasBounds.height - 30;
-  //     const componentBottom = Object.values(childWidgets).reduce(function (max, currentElement) {
-  //       let currentSum = currentElement.layouts[currentLayout].top + currentElement.layouts[currentLayout].height;
-  //       return Math.max(max, currentSum);
-  //     }, 0);
-
-  //     if (isParentScrollable && subContainerHeight <= componentBottom) {
-  //       subContainerHeightRef.current = componentBottom + 100;
-  //     }
-  //   } catch (error) {
-  //     console.error('console.error', error);
-  //   }
-  // }, [childWidgets]);
-
   const containerWidth = getContainerCanvasWidth();
 
   const placeComponentInsideParent = (newComponent, canvasBoundingRect) => {
@@ -219,119 +200,6 @@ export const SubContainer = ({
     useGridStore.getState().actions.setSubContainerWidths(parent, containerWidth / noOfGrids);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerWidth]);
-
-  // useEffect(() => {
-  //   if (mounted) {
-  //     //find children with parent prop
-  //     const children = Object.keys(allComponents).filter((key) => {
-  //       if (key === parent) return false;
-  //       return allComponents[key].parent === parent;
-  //     });
-
-  //     if (children.length === 0 && addDefaultChildren === true) {
-  //       const defaultChildren = _.cloneDeep(parentComponent)['defaultChildren'];
-  //       const childrenBoxes = {};
-  //       const parentId =
-  //         parentComponent.component !== 'Tabs'
-  //           ? parentRef.current.id
-  //           : parentRef.current.id?.substring(0, parentRef.current.id.lastIndexOf('-'));
-
-  //       const _allComponents = JSON.parse(JSON.stringify(allComponents));
-
-  //       defaultChildren.forEach((child) => {
-  //         const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } = child;
-
-  //         const componentMeta = _.cloneDeep(componentTypes.find((component) => component.component === componentName));
-  //         const componentData = JSON.parse(JSON.stringify(componentMeta));
-
-  //         const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / noOfGrids;
-  //         const height = layout.height ? layout.height : componentMeta.defaultSize.height;
-  //         const newComponentDefinition = {
-  //           ...componentData.definition.properties,
-  //         };
-
-  //         if (_.isArray(properties) && properties.length > 0) {
-  //           properties.forEach((prop) => {
-  //             const accessor = customResolverVariable
-  //               ? `{{${customResolverVariable}.${accessorKey}}}`
-  //               : defaultValue[prop] || '';
-
-  //             _.set(newComponentDefinition, prop, {
-  //               value: accessor,
-  //             });
-  //           });
-  //           _.set(componentData, 'definition.properties', newComponentDefinition);
-  //         }
-
-  //         if (_.isArray(styles) && styles.length > 0) {
-  //           styles.forEach((prop) => {
-  //             const accessor = customResolverVariable
-  //               ? `{{${customResolverVariable}.${accessorKey}}}`
-  //               : defaultValue[prop] || '';
-
-  //             _.set(newComponentDefinition, prop, {
-  //               value: accessor,
-  //             });
-  //           });
-  //           _.set(componentData, 'definition.styles', newComponentDefinition);
-  //         }
-
-  //         const newComponent = addNewWidgetToTheEditor(
-  //           componentData,
-  //           {},
-  //           { ..._allComponents, ...childrenBoxes },
-  //           {},
-  //           currentLayout,
-  //           snapToGrid,
-  //           zoomLevel,
-  //           true,
-  //           true
-  //         );
-
-  //         _.set(childrenBoxes, newComponent.id, {
-  //           component: {
-  //             ...newComponent.component,
-  //             parent: parentComponent.component === 'Tabs' ? parentId + '-' + tab : parentId,
-  //           },
-
-  //           layouts: {
-  //             [currentLayout]: {
-  //               ...layout,
-  //               width: incrementWidth ? width * incrementWidth : width,
-  //               height: height,
-  //             },
-  //           },
-  //         });
-  //       });
-
-  //       // _allComponents[parentId] = {
-  //       //   ...allComponents[parentId],
-  //       //   withDefaultChildren: false,
-  //       // };
-  //       const allChildren = getChildWidgets(allComponents);
-
-  //       setChildWidgets(allChildren);
-  //       // setBoxes({
-  //       //   ..._allComponents,
-  //       //   ...childrenBoxes,
-  //       // });
-  //     }
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [mounted]);
-
-  const moveBox = useCallback(
-    (id, left, top) => {
-      setChildWidgets(
-        update(childWidgets, {
-          [id]: {
-            $merge: { left, top },
-          },
-        })
-      );
-    },
-    [childWidgets]
-  );
 
   useEffect(() => {
     if (appDefinitionChanged) {
@@ -604,7 +472,6 @@ export const SubContainer = ({
       onComponentHover,
       hoveredComponent,
       sideBarDebugger,
-      addDefaultChildren,
       currentPageId,
       childComponents,
     };
@@ -728,7 +595,6 @@ export const SubContainer = ({
                       //   onComponentHover,
                       //   hoveredComponent,
                       //   sideBarDebugger,
-                      //   addDefaultChildren,
                       //   currentPageId,
                       //   childComponents,
                       //   setSubContainerWidths,
