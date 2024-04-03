@@ -57,8 +57,16 @@
 		"timestamp": "Tue, 05 Dec 2023 00:27:16 GMT"
 	},
 	{
-		"name": "supabase",
-		"description": "Plugin for supabase",
+		"name": "PocketBase",
+		"description": "API plugin from pocketbase",
+		"version": "1.0.0",
+		"id": "pocketbase",
+		"author": "Tooljet",
+		"timestamp": "Mon, 18 Mar 2024 14:39:34 GMT"
+	},
+	{
+		"name": "Supabase",
+		"description": "Plugin for Supabase",
 		"version": "1.0.0",
 		"id": "supabase",
 		"author": "Tooljet",

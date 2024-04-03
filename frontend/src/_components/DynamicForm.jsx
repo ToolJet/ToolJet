@@ -12,6 +12,7 @@ import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
+import { ConditionFilter, CondtionSort } from '@/_components/MultiConditions';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 
@@ -160,6 +161,10 @@ const DynamicForm = ({
         return SupabaseSort;
       case 'react-component-supabase-column':
         return SupabaseColumn;
+      case 'filters':
+        return ConditionFilter;
+      case 'sorts':
+        return CondtionSort;
       default:
         return <div>Type is invalid</div>;
     }
@@ -363,6 +368,7 @@ const DynamicForm = ({
           workspaceConstants: currentOrgEnvironmentConstants,
         };
       case 'react-component-supabase-filter':
+      case 'filters':
         return {
           operators: list || [],
           value: options?.[key] ?? {},
@@ -370,6 +376,7 @@ const DynamicForm = ({
           placeholders,
         };
       case 'react-component-supabase-sort':
+      case 'sorts':
         return {
           orders: list || [],
           value: options?.[key] ?? {},
