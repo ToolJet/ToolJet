@@ -148,6 +148,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
           {textFormat === 'markdown' && <Markdown className={'reactMarkdown'}>{text}</Markdown>}
           {(textFormat === 'html' || !textFormat) && (
             <div
+              style={{ overflowY: 'scroll' }}
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(text || ''),
               }}
