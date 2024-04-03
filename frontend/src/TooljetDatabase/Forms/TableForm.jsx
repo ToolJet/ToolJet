@@ -159,7 +159,7 @@ const TableForm = ({
       return;
     }
 
-    toast.success(`${tableName} edited successfully`);
+    toast.success(`${tableName} updated successfully`);
     updateSidebarNAV(tableName);
     updateSelectedTable({ ...selectedTable, table_name: tableName });
 
