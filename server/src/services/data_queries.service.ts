@@ -500,7 +500,11 @@ export class DataQueriesService {
       );
 
       if (constant) {
-        result = constant.value;
+        result = await this.encryptionService.decryptColumnValue(
+          'org_environment_constant_values',
+          organization_id,
+          constant.value
+        );
       }
     }
 
