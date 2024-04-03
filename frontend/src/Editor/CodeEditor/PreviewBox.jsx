@@ -27,10 +27,8 @@ export const PreviewBox = ({
   const [resolvedValue, setResolvedValue] = useState('');
   const [error, setError] = useState(null);
   const [coersionData, setCoersionData] = useState(null);
-
   const getPreviewContent = (content, type) => {
     if (!content) return currentValue;
-
     try {
       switch (type) {
         case 'Object':
@@ -345,7 +343,6 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
       </div>
     );
   }
-
   return (
     <div class="p-2 pt-0">
       <pre
@@ -366,7 +363,9 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
           padding: '0',
         }}
       >
-        {prettyPrintedJson}
+        {prettyPrintedJson?.startsWith('{{')
+          ? prettyPrintedJson?.replace(/{{/g, '').replace(/}}/g, '')
+          : prettyPrintedJson}
       </pre>
     </div>
   );
