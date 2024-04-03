@@ -37,6 +37,7 @@
     "@dagrejs/graphlib": "^2.1.12",
     "@figma/nodegit": "^0.28.0-figma.4",
     "@nestjs/bull": "^0.6.3",
+    "@nestjs-modules/mailer": "^1.11.2",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.0.0",
     "@nestjs/core": "^8.0.0",
