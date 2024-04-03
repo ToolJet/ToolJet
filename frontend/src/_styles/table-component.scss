@@ -1071,12 +1071,14 @@
   }
   &:hover,&:focus-within{
     .arror-container{
-      display: block !important;
+      display: flex !important;
       border-left: 0.5px solid var(--borders-default) !important;
       position: absolute;
       right: 0px;
       top: 0px;
       bottom: 0px;
+      flex-direction: column;
+      justify-content: space-around;
       .numberinput-up-arrow-table {
         right: 1px !important;
         top: 1px !important;

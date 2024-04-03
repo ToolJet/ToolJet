@@ -266,6 +266,7 @@ export default function generateColumnsData({
               const cellStyles = {
                 color: textColor ?? '',
               };
+
               const handleIncrement = (e) => {
                 e.preventDefault(); // Prevent the default button behavior (form submission, page reload)
 
@@ -274,6 +275,7 @@ export default function generateColumnsData({
                   handleCellValueChange(cell.row.index, column.key || column.name, Number(newValue), cell.row.original);
                 }
               };
+
               const handleDecrement = (e) => {
                 e.preventDefault();
                 const newValue = (cellValue || 0) - 1;
@@ -281,6 +283,23 @@ export default function generateColumnsData({
                   handleCellValueChange(cell.row.index, column.key || column.name, Number(newValue), cell.row.original);
                 }
               };
+
+              const allowedDecimalPlaces = column?.decimalPlaces ?? null;
+              const removingExcessDecimalPlaces = (cellValue, allowedDecimalPlaces) => {
+                allowedDecimalPlaces = resolveReferences(allowedDecimalPlaces, currentState);
+                if (cellValue?.toString()?.includes('.')) {
+                  const splittedCellValue = cellValue?.toString()?.split('.');
+                  const decimalPlacesUnderLimit = splittedCellValue[1]
+                    .split('')
+                    .splice(0, allowedDecimalPlaces)
+                    .join('');
+                  cellValue = Number(`${splittedCellValue[0]}.${decimalPlacesUnderLimit}`);
+                }
+                return cellValue;
+              };
+              cellValue = allowedDecimalPlaces
+                ? removingExcessDecimalPlaces(cellValue, allowedDecimalPlaces)
+                : cellValue;
 
               return (
                 <div className="h-100 d-flex flex-column justify-content-center position-relative">
@@ -290,10 +309,13 @@ export default function generateColumnsData({
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
+                          const value = allowedDecimalPlaces
+                            ? removingExcessDecimalPlaces(e.target.value, allowedDecimalPlaces)
+                            : e.target.value;
                           handleCellValueChange(
                             cell.row.index,
                             column.key || column.name,
-                            Number(e.target.value),
+                            Number(value),
                             cell.row.original
                           );
                         }
@@ -301,10 +323,13 @@ export default function generateColumnsData({
                     }}
                     onBlur={(e) => {
                       if (e.target.defaultValue !== e.target.value) {
+                        const value = allowedDecimalPlaces
+                          ? removingExcessDecimalPlaces(e.target.value, allowedDecimalPlaces)
+                          : e.target.value;
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
-                          Number(e.target.value),
+                          Number(value),
                           cell.row.original
                         );
                       }
