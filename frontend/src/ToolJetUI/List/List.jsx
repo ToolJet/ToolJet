@@ -57,13 +57,8 @@ function ListItem({
             style={Icon ? { paddingLeft: '0px' } : { paddingLeft: '8px' }}
           >
             {primaryText}
-            {isDeprecated && (
-              <DeprecatedColumnTooltip columnType={columnType}>
-                <span className={'list-item-deprecated-column-type'}>
-                  <Icons name={'warning'} height={14} width={14} fill="#DB4324" />
-                </span>
-              </DeprecatedColumnTooltip>
-            )}
+            <span className="list-item-secondary-text">{secondaryText}</span>
+
             {isEditable && (
               <span style={{ marginLeft: '8px' }}>
                 <Edit width={16} />
@@ -74,7 +69,14 @@ function ListItem({
                 <SolidIcon name="eyedisable" width={16} />
               </span>
             )}
-            <span className="list-item-secondary-text">{secondaryText}</span>
+
+            {isDeprecated && (
+              <DeprecatedColumnTooltip columnType={columnType}>
+                <span className={'list-item-deprecated-column-type'}>
+                  <Icons name={'warning'} height={14} width={14} fill="#DB4324" />
+                </span>
+              </DeprecatedColumnTooltip>
+            )}
           </div>
           <div className="col-auto d-flex align-items-center custom-gap-4">
             <OverlayTrigger
@@ -118,12 +120,7 @@ function ListItem({
                 }}
               >
                 {enableActionsMenu && isHovered && (
-                  <ButtonSolid
-                    variant="tertiary"
-                    size="xs"
-                    className={'list-menu-option-btn'}
-                    // data-cy={'page-menu'}
-                  >
+                  <ButtonSolid variant="tertiary" size="xs" className={'list-menu-option-btn'}>
                     <span>
                       <MoreVertical fill={'var(--slate12)'} width={'20'} />
                     </span>

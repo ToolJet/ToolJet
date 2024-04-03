@@ -24,12 +24,14 @@ const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnl
         ref={dateInputRef}
         style={styles}
       />
-      <SolidIcon
-        width="16"
-        fill={'var(--borders-strong)'}
-        name="calender"
-        className="table-column-datepicker-input-icon"
-      />
+      <span>
+        <SolidIcon
+          width="16"
+          fill={'var(--borders-strong)'}
+          name="calender"
+          className="table-column-datepicker-input-icon"
+        />
+      </span>
     </div>
   );
 });

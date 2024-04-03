@@ -276,9 +276,10 @@ button {
   border-width: 0px 0px 1px 0px;
 }
 .table-select-column-accordian{
+  padding: 0px 16px 0px;
+  margin-top: -24px;
   .accordion-item{
-    border-width: 1px 0px 0px 0px !important;
-
+    border-width: 0px 0px 0px 0px !important;
   }
 }
 

@@ -36,7 +36,7 @@ export const PropertiesTabElements = ({
   return (
     <>
       {column.columnType && <DeprecatedColumnTypeMsg columnType={column.columnType} darkMode={darkMode} />}
-      <div className="field" data-cy={`dropdown-column-type`} onClick={(e) => e.stopPropagation()}>
+      <div className="field px-3" data-cy={`dropdown-column-type`} onClick={(e) => e.stopPropagation()}>
         <label data-cy={`label-column-type`} className="form-label">
           {t('widget.Table.columnType', 'Column type')}
         </label>
@@ -90,7 +90,7 @@ export const PropertiesTabElements = ({
           }}
         />
       </div>
-      <div data-cy={`input-and-label-key`} className="field">
+      <div data-cy={`input-and-label-key`} className="field px-3">
         <label className="form-label">{t('widget.Table.key', 'Key')}</label>
         <CodeHinter
           currentState={currentState}
@@ -268,7 +268,8 @@ export const PropertiesTabElements = ({
           />
         </div>
       </div>
-      <hr className="mx-0 my-2" />
+
+      {['select', 'newMultiSelect', 'datepicker'].includes(column.columnType) && <hr className="mx-0 my-2" />}
       {column.columnType === 'datepicker' && (
         <div className="field" style={{ marginTop: '-24px' }}>
           <DatepickerProperties

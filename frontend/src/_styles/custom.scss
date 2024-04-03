@@ -110,15 +110,6 @@ body {
   .tags.row,.radio-row{
     justify-content: left;
   }
-  // &.has-datepicker{
-  //   .td-container{
-  //     .w-100.h-100{
-  //       div{
-  //         justify-content: left !important;
-  //       }
-  //     }
-  //   }
-  // }
 }
 .table-text-align-right{
   input{
@@ -129,15 +120,6 @@ body {
   }
   .tags.row,.radio.row{
     justify-content: right;
-  }
-  &.has-datepicker{
-    .td-container{
-      .w-100.h-100{
-        div{
-          justify-content: right !important;
-        }
-      }
-    }
   }
 }
 .table-text-align-center{
