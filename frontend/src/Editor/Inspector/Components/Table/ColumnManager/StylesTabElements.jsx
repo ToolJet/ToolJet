@@ -221,7 +221,7 @@ export const StylesTabElements = ({
           </div>
           <div className="field" data-cy={`input-and-label-cell-background-color`}>
             <ProgramaticallyHandleProperties
-              label="Underline Color"
+              label="Underline color"
               currentState={currentState}
               index={index}
               darkMode={darkMode}
@@ -229,7 +229,7 @@ export const StylesTabElements = ({
               property="underlineColor"
               props={column}
               component={component}
-              paramMeta={{ type: 'color', displayName: 'Underline' }}
+              paramMeta={{ type: 'color', displayName: 'Underline color' }}
               paramType="properties"
             />
           </div>
@@ -239,7 +239,7 @@ export const StylesTabElements = ({
               className="field  d-flex custom-gap-12 align-items-center align-self-stretch"
             >
               <label data-cy={`label-overflow`} className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-                Underline
+                Show underline
               </label>
               <ToggleGroup
                 onValueChange={(_value) => onColumnItemChange(index, 'underline', _value)}
