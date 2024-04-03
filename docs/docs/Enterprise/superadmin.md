@@ -9,9 +9,11 @@ A Super Admin is the user who has full access to all the Workspaces, Users, and 
 
 The user details entered while setting up ToolJet will have Super Admin privileges.
 
-## How Super Admin is different from Admin
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-| Privilege | Admin | Super Admin | 
+## How Super Admin is Different from Admin
+
+| <div style={{ width:"100px"}}>Privilege </div>| Admin | Super Admin | 
 | --------- | ----- | ----------- |
 | Manage Users in their workspace (Invite/Archive/Unarchive) | ✅ | ✅ |
 | Manage Groups in their workspace (Create Group/Add or Delete Users from groups/ Modify Group Permissions) | ✅ | ✅ |
@@ -34,6 +36,10 @@ The user details entered while setting up ToolJet will have Super Admin privileg
 | [Enable Multiplayer editing](#enable-multiplayer-editing) | ❌ | ✅ |
 | [Implement White Labelling](#white-labelling) | ❌ | ✅ |
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Super Admin features
 
 ### Access any workspace
@@ -43,7 +49,7 @@ If a user is a Super Admin, they can switch to any workspace created by any user
 The dropdown will display all workspaces, including those created by both Super Admins and any other users.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/workspaceswitcher.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/workspaceswitcher.png" alt="Superadmin: settings" />
 </div>
 
 ### Create, Edit or Delete apps from any user's personal workspace
@@ -59,7 +65,7 @@ Super Admin can not only archive/unarchive users/admins on their workspace but a
 If a user is Super Admin, they just need to open the workspace in which they want to archive or unarchive a user. Then go to the **Workspace Settings** from the sidebar -> **Manage Users** -> **Archive/Unarchive** any user/admin
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/archiveusersa.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/archiveusersa.png" alt="Superadmin: settings" />
 </div>
 
 ###  Access ToolJet DB in any workspace
@@ -76,6 +82,10 @@ Super Admins have all the privileges that an Admin of a workspace have, Super Ad
 - **✅ Copilot**: Enabling or disabling Copilot
 - **✅ Custom Styles**: Adding or modifying custom styles
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Settings
 
 Only Super Admins can access the Settings. To access the Settings page, click on the **⚙️** button and select **Settings** from the dropdown.
@@ -90,17 +100,21 @@ Only Super Admins can access the Settings. To access the Settings page, click on
  <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/settings.png" alt="Superadmin: settings" />
 </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## All Users
 
-### Manage all users in the instance
+### Manage all Users in the Instance
 
 **All Users** settings can be used to check the list of all the users available on all the workspaces in the instance. Super Admins can also promote/demote any user to/from Super Admin from this page. They can also archive/unarchive any user at an instance level from this setting.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/allusers1.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/allusers1.png" alt="Superadmin: settings" />
 </div>
 
-### Archiving a user from all the workspaces (Instance level)
+### Archiving a User from all the Workspaces (Instance Level)
 
 Super Admins have the authority to deactivate any user at instance level. This will remove the user from all the workspaces in the instance.
 
@@ -117,14 +131,14 @@ To archive a user, go to the **All Users** settings, click on the kebab menu nex
 **Info**: The user will be unarchived from instance level automatically if a workspace admin unarchives the user from their workspace.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/unarchiveinstance.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/unarchiveinstance.png" alt="Superadmin: settings" />
 </div>
 
-### Reset password of any user
+### Reset Password of any User
 
 Super Admins can reset the password of any user from the **All Users** settings. To reset the password, click on the kebab menu next to the user and select **Reset Password** option. A pop-up will appear asking either to auto-generate a password or to enter a new password. 
 
-### Edit user details
+### Edit User Details
 
 Super Admins can edit the details of any user from the **All Users** settings. To edit the details, click on the kebab menu next to the user and select **Edit user details** option. 
 
@@ -137,10 +151,14 @@ On selecting the **Edit user details** option, a drawer will open from the right
 From the **Edit user details** drawer, Super Admins can make any user as Super Admin or remove any Super Admin from the **All Users** settings. To make a user Super Admin, toggle on the **Super Admin** radio button. The user will become Super Admin and the Type column will update from **`Workspace`** to **`Instance`**.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/edituserdetailsinstance.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/edituserdetailsinstance.png" alt="Superadmin: settings" />
 </div>
 
-## All workspaces
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## All Workspaces
 
 The All Workspaces tab provides a comprehensive view of all workspaces within the ToolJet instance. Super Admins can use this functionality to monitor and manage workspaces collectively, ensuring efficient administration and organization-wide oversight. 
 
@@ -150,13 +168,25 @@ Super Admins have the authority to **archive** or **unarchive** workspaces of an
  <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/workspaces1.png" alt="Superadmin: settings" />
 </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Current Workspace
 
 The **Current Workspace** label will be displayed next to the workspace that the Super Admin has currently opened. If the Super Admin archives the current workspace, they will be prompted to switch to another active workspace to ensure continuous accessibility.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Open Active Workspaces
 
 In the list of active workspaces, there is an option to open the workspace directly. This feature helps superadmins to quickly navigate to the workspace on the new tab of the browser and manage the workspace.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Archive Workspaces
 
@@ -166,6 +196,10 @@ The **Archive** button on the right of the workspace name allows Super Admins to
 - The apps on the archived workspace won't be accessable through the URL
 - Users will be logged out if they don't have access to any active workspace
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Archived Workspaces
 
 The **Archived** section displays a list of all archived workspaces. Super Admins can unarchive any workspace from this section by clicking the **Unarchive** button.
@@ -174,38 +208,70 @@ The **Archived** section displays a list of all archived workspaces. Super Admin
  <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/workspaces2.png" alt="Superadmin: settings" />
 </div>
 
-## Manage instance settings
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Manage Instance Settings
 
 <div style={{textAlign: 'center'}}>
  <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/instanceoptions.png" alt="Superadmin: settings" />
 </div>
 
-### Restrict creation of personal workspace of users
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Restrict Creation of Personal Workspace of Users
 
 When a user joins a workspace, they are provided with their own personal workspace and option to create new workspaces.
 
 Super Admins can **control** this behavior from the Manage Settings page, they can **toggle off** the option to **Allow personal workspace**. Now whenever a user joins a workspace they won't be provided a personal workspace nor they will be able to create a new workspace in the instance.
 
-### Enable multiplayer editing
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Enable Multiplayer Editing
 
 Super Admins can enable multiplayer editing from the Manage Settings page. Once enabled, users will be able to edit the same app simultaneously resulting in real-time collaboration.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Comments
 
 Super Admins can enable comments from the Manage Settings page. Once enabled, users will be able to collaborate by adding comments anywhere on the canvas.
 
-## White labelling
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## White Labelling
 This feature allows you to customize the ToolJet instance with your own branding. You can change the logo, favicon, and the name of the instance.
 
 Check out the [White labelling](/docs/enterprise/white-label/) page for more details.
 
-## Instance login
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Instance Login
 
 Instance login configuration at the Settings level allows super admins to set up and manage the default login method for all workspaces within the instance. This ensures a standardized login experience unless individual workspace admins choose to configure a different method for their specific workspace.
 
-### Access and permissions
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Access and Permissions
 
 Only super admins have the authority to configure **Instance login** settings. This ensures centralized control over the default login method across the entire instance.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Super Admin URL
 
@@ -213,15 +279,27 @@ This URL serves as a fail-safe in scenarios where password login is disabled, SS
 
 The default URL for super admin login is `https://<domain>/login/super-admin`. This URL can be accessed by the super admin to log in to the instance and manage the settings.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Enable sign-up
 
 The "Enable Sign Up" option allows users to sign up without being invited. It is important to note that this feature includes both password login and SSO, providing a seamless onboarding experience for users.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Password login
 
 Super admins can enable or disable password login for the entire instance. This setting ensures that all workspaces within the instance adhere to the same login method, unless individual workspace admins choose to configure a different method for their specific workspace.
 
-### Enable workspace configuration
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Enable Workspace Configuration
 
 Turning off this option restricts workspace admins from configuring the login method for their workspace. This configuration hides the Workspace Login option from the workspace settings tab.
 
@@ -229,8 +307,14 @@ Turning off this option restricts workspace admins from configuring the login me
  <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/instancelogin.png" alt="Superadmin: settings" />
 </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## License
 
 Manage the instance license via the **Settings** page. Super Admins have the capability to update the instance's license key from this page.
 
 Check out the [License](/docs/licensing) page for more details.
+
+</div>
