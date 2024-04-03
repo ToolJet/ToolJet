@@ -17,22 +17,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0 # Fetch all history to check if branch exists locally
+
+      - name: Check if branch exists locally
+        run: |
+          if [ ! -d "$(git rev-parse --show-toplevel)/.git/refs/heads/${{ env.BRANCH_NAME }}" ]; then
+            echo "Branch does not exist locally. Fetching from remote..."
+            git fetch origin pull/${{ github.event.number }}/head:${{ env.BRANCH_NAME }}
+          else
+            echo "Fetched remote branch."
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.18.2
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_MAR_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_MAR_ACCESS_KEY }}
           aws-region: us-east-2
-
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18.18.2
 
       - name: Install and build dependencies
         run: |
