@@ -12,7 +12,7 @@ function useRenderCount(componentName) {
   renderCountRef.current++;
 
   console.log(`CountingRender- Component ${componentName} rendered ${renderCountRef.current} times.`);
-  //   return renderCountRef.current;
+  return renderCountRef.current;
 }
 
 export default useRenderCount;
