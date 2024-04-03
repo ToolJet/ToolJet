@@ -528,6 +528,7 @@ export default function generateColumnsData({
                         ? true
                         : false
                     }
+                    horizontalAlignment={determineJustifyContentValue(horizontalAlignment)}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>

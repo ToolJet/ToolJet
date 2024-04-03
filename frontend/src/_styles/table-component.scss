@@ -1120,3 +1120,14 @@
   }
   
 }
+.has-select,.has-datepicker{
+  .cell-icon-display{
+    visibility: hidden !important;
+  }
+  
+  &:hover,&:focus-within{
+    .cell-icon-display{
+      visibility: visible !important;
+    }
+  }
+}

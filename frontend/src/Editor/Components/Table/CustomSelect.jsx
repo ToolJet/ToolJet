@@ -22,6 +22,7 @@ export const CustomSelect = ({
   isMulti,
   containerWidth,
   optionsLoadingState = false,
+  horizontalAlignment = 'left',
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef(null);
@@ -56,14 +57,17 @@ export const CustomSelect = ({
         display: 'inline-block', // Display selected options inline
         marginRight: '4px', // Add some space between options
       }),
-      valueContainer: (provided, _state) => ({
-        ...provided,
+    }),
+    valueContainer: (provided) => ({
+      ...provided,
+      ...(isMulti && {
         marginBottom: '0',
         display: 'flex',
         flexWrap: 'no-wrap',
         overflow: 'hidden',
         flexDirection: 'row',
       }),
+      justifyContent: horizontalAlignment,
     }),
     menuList: (base) => ({
       ...base,
@@ -261,7 +265,7 @@ const getOverlay = (value, containerWidth) => {
 
 const DropdownIndicator = (props) => {
   return (
-    <div {...props}>
+    <div {...props} className="cell-icon-display">
       {/* Your custom SVG */}
       {props.selectProps.menuIsOpen ? (
         <SolidIcon name="arrowUpTriangle" width="16" height="16" fill={'#6A727C'} />

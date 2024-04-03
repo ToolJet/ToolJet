@@ -24,7 +24,7 @@ const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnl
         ref={dateInputRef}
         style={styles}
       />
-      <span>
+      <span className="cell-icon-display">
         <SolidIcon
           width="16"
           fill={'var(--borders-strong)'}
