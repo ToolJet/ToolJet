@@ -97,14 +97,14 @@ export const ValidationProperties = ({
           {
             property: 'minDate',
             dateCy: 'input-and-label-min-date',
-            label: 'Min date',
+            label: 'Minimum date',
             placeholder: 'MM/DD/YYYY',
             fieldType: 'datepicker',
           },
           {
             property: 'maxDate',
             dateCy: 'input-and-label-max-date',
-            label: 'Max date',
+            label: 'Maximum date',
             placeholder: 'MM/DD/YYYY',
             fieldType: 'datepicker',
           },
@@ -115,14 +115,14 @@ export const ValidationProperties = ({
             {
               property: 'minTime',
               dateCy: 'input-and-label-min-time',
-              label: 'Min time',
+              label: 'Minimum time',
               placeholder: 'HH:mm',
               fieldType: 'timepicker',
             },
             {
               property: 'maxTime',
               dateCy: 'input-and-label-max-time',
-              label: 'Max time',
+              label: 'Maximum time',
               placeholder: 'HH:mm',
               fieldType: 'timepicker',
             },
@@ -219,7 +219,7 @@ export const ValidationProperties = ({
         {validationsList.map((validation) => {
           if (Array.isArray(validation)) {
             return (
-              <div className="d-flex align-item-start align-self-stretch custom-gap-3" key={validation.property}>
+              <div className="d-flex align-item-start align-self-stretch custom-gap-8" key={validation.property}>
                 {validation.map((validation) => {
                   {
                     return renderAsPerFieldType(validation);

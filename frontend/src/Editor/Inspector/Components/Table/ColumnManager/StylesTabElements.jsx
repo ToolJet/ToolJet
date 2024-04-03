@@ -24,7 +24,7 @@ export const StylesTabElements = ({
   const { t } = useTranslation();
   return (
     <>
-      <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch">
+      <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch px-3">
         <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
           {t('widget.Table.horizontalAlignment', 'Horizontal Alignment')}
         </label>
@@ -64,7 +64,7 @@ export const StylesTabElements = ({
       )} */}
       {column.columnType === 'toggle' && (
         <div>
-          <div className="field">
+          <div className="field px-3">
             <Color
               param={{ name: 'Active color' }}
               paramType="properties"
@@ -78,7 +78,7 @@ export const StylesTabElements = ({
       )}
       {column.columnType === 'image' && (
         <>
-          <div data-cy={`input-and-label-border-radius`} className="field">
+          <div data-cy={`input-and-label-border-radius`} className="field px-3">
             <label className="form-label">{t('widget.Table.borderRadius', 'Border radius')}</label>
             <CodeHinter
               currentState={currentState}
@@ -91,7 +91,7 @@ export const StylesTabElements = ({
               componentName={getPopoverFieldSource(column.columnType, 'borderRadius')}
             />
           </div>
-          <div data-cy={`input-and-label-width`} className="field ">
+          <div data-cy={`input-and-label-width`} className="field px-3">
             <label className="form-label">{t('widget.Table.width', 'Width')}</label>
             <CodeHinter
               currentState={currentState}
@@ -117,7 +117,7 @@ export const StylesTabElements = ({
               componentName={getPopoverFieldSource(column.columnType, 'height')}
             />
           </div>
-          <div data-cy={`input-and-label-object-fit`} className="field">
+          <div data-cy={`input-and-label-object-fit`} className="field px-3">
             <label className="form-label">{t('widget.Table.imageFit', 'Image fit')}</label>
             <Select
               className={'select-search'}
@@ -143,7 +143,7 @@ export const StylesTabElements = ({
       )}
       {column.columnType === 'boolean' && (
         <div className="d-flex flex-column custom-gap-16">
-          <div className="field">
+          <div className="field ">
             <Color
               param={{ name: 'Toggle on bg' }}
               paramType="properties"
@@ -171,7 +171,7 @@ export const StylesTabElements = ({
       ) && (
         <>
           {column.columnType !== 'boolean' && (
-            <div data-cy={`input-and-label-text-color`} className="field">
+            <div data-cy={`input-and-label-text-color`} className="field px-3">
               <ProgramaticallyHandleProperties
                 label="Text color"
                 currentState={currentState}
@@ -186,7 +186,7 @@ export const StylesTabElements = ({
               />
             </div>
           )}
-          <div className="field" data-cy={`input-and-label-cell-background-color`}>
+          <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
             <ProgramaticallyHandleProperties
               label="Cell Background Color"
               currentState={currentState}

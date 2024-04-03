@@ -83,13 +83,18 @@ export const Datepicker = function Datepicker({
   const pickerRef = React.useRef();
 
   const handleDateChange = (date) => {
-    setDate(
-      getDate({
-        value: date,
-        parseDateFormat: getDateTimeFormat(parseDateFormat, isTimeChecked, isTwentyFourHrFormatEnabled),
-      })
-    );
-    onChange(computeDateString(date));
+    const _date = getDate({
+      value: date,
+      parseDateFormat: getDateTimeFormat(parseDateFormat, isTimeChecked, isTwentyFourHrFormatEnabled),
+      dateDisplayFormat,
+      timeZoneValue,
+      timeZoneDisplay,
+      unixTimestamp,
+      parseInUnixTimestamp,
+      isTimeChecked,
+    });
+    setDate(_date);
+    onChange(computeDateString(_date));
   };
 
   useEffect(() => {
@@ -119,7 +124,7 @@ export const Datepicker = function Datepicker({
 
   const dateInputRef = useRef(null); // Create a ref
 
-  const computeDateString = () => {
+  const computeDateString = (value) => {
     const _date = getDate({
       value,
       parseDateFormat,
@@ -164,12 +169,12 @@ export const Datepicker = function Datepicker({
         className={`input-field form-control validation-without-icon px-2`}
         popperClassName={cx({
           'tj-timepicker-widget': !isDateSelectionEnabled && isTimeChecked,
-          'tj-datepicker-widget': isDateSelectionEnabled && !isTimeChecked,
+          'tj-datepicker-widget': isDateSelectionEnabled,
           'theme-dark dark-theme': darkMode,
         })}
         selected={date}
         onChange={(date) => handleDateChange(date)}
-        value={date !== null ? computeDateString() : 'Invalid date'}
+        value={date !== null ? computeDateString(date) : 'Invalid date'}
         dateFormat={dateDisplayFormat}
         customInput={
           <TjDatepicker dateInputRef={dateInputRef} readOnly={readOnly} styles={{ color: cellStyles.color }} />
@@ -186,7 +191,6 @@ export const Datepicker = function Datepicker({
         readOnly={readOnly}
         popperProps={{ strategy: 'fixed' }}
         timeIntervals={15}
-        showicon
       />
     </div>
   );

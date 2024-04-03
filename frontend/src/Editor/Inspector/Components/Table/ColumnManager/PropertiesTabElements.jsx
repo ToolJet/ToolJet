@@ -27,7 +27,7 @@ export const PropertiesTabElements = ({
 
   return (
     <>
-      <div className="field" data-cy={`dropdown-column-type`}>
+      <div className="field px-3" data-cy={`dropdown-column-type`}>
         <label data-cy={`label-column-type`} className="form-label">
           {t('widget.Table.columnType', 'Column type')}
         </label>
@@ -60,7 +60,7 @@ export const PropertiesTabElements = ({
           width={'100%'}
         />
       </div>
-      <div className="field" data-cy={`input-and-label-column-name`}>
+      <div className="field px-3" data-cy={`input-and-label-column-name`}>
         <label data-cy={`label-column-name`} className="form-label">
           {t('widget.Table.columnName', 'Column name')}
         </label>
@@ -78,8 +78,8 @@ export const PropertiesTabElements = ({
           }}
         />
       </div>
-      <div data-cy={`input-and-label-key`} className="field">
-        <label className="form-label">{t('widget.Table.key', 'key')}</label>
+      <div data-cy={`input-and-label-key`} className="field px-3">
+        <label className="form-label">{'Key'}</label>
         <CodeHinter
           currentState={currentState}
           initialValue={column.key}
@@ -94,7 +94,7 @@ export const PropertiesTabElements = ({
           }}
         />
       </div>
-      <div data-cy={`transformation-field`} className="field">
+      <div data-cy={`transformation-field`} className="field px-3">
         <label className="form-label">{t('widget.Table.transformationField', 'Transformation')}</label>
         <CodeHinter
           currentState={currentState}
@@ -112,7 +112,7 @@ export const PropertiesTabElements = ({
         />
       </div>
       {column.columnType === 'toggle' && (
-        <div>
+        <div className="px-3">
           <EventManager
             sourceId={props?.component?.id}
             eventSourceType="table_column"
@@ -136,7 +136,7 @@ export const PropertiesTabElements = ({
         column.columnType === 'badges' ||
         column.columnType === 'radio') && (
         <div>
-          <div data-cy={`input-and-label-values`} className="field mb-2">
+          <div data-cy={`input-and-label-values`} className="field mb-2 px-3">
             <label className="form-label">{t('widget.Table.values', 'Values')}</label>
             <CodeHinter
               currentState={currentState}
@@ -152,7 +152,7 @@ export const PropertiesTabElements = ({
               }}
             />
           </div>
-          <div data-cy={`input-and-label-labels`} className="field mb-2">
+          <div data-cy={`input-and-label-labels`} className="field mb-2 px-3">
             <label className="form-label">{t('widget.Table.labels', 'Labels')}</label>
             <CodeHinter
               currentState={currentState}
@@ -171,7 +171,7 @@ export const PropertiesTabElements = ({
         </div>
       )}
       {column.columnType === 'link' && (
-        <div className="field">
+        <div className="field px-3">
           <ProgramaticallyHandleProperties
             label="Link target"
             currentState={currentState}
@@ -194,7 +194,7 @@ export const PropertiesTabElements = ({
         </div>
       )}
       {column.columnType === 'number' && (
-        <div className="field mb-2">
+        <div className="field mb-2 px-3">
           <label className="form-label">{t('widget.Table.decimalPlaces', 'Decimal Places')}</label>
           <CodeHinter
             currentState={currentState}
@@ -212,8 +212,8 @@ export const PropertiesTabElements = ({
         </div>
       )}
       {!['image', 'link'].includes(column.columnType) && (
-        <div className="border" style={{ borderRadius: '6px', overflow: 'hidden' }}>
-          <div style={{ background: 'var(--slate3)', padding: '6px' }}>
+        <div className="border mx-3" style={{ borderRadius: '6px', overflow: 'hidden' }}>
+          <div style={{ background: 'var(--surfaces-surface-02)', padding: '6px' }}>
             <ProgramaticallyHandleProperties
               label="make editable"
               currentState={currentState}
@@ -240,10 +240,10 @@ export const PropertiesTabElements = ({
           )}
         </div>
       )}
-      <div className="border" style={{ borderRadius: '6px', overflow: 'hidden' }}>
-        <div style={{ background: 'var(--slate3)', padding: '6px' }}>
+      <div className="border mx-3" style={{ borderRadius: '6px', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--surfaces-surface-02)', padding: '6px' }}>
           <ProgramaticallyHandleProperties
-            label="Column visibility"
+            label="Visibility"
             currentState={currentState}
             index={index}
             darkMode={darkMode}
@@ -251,13 +251,14 @@ export const PropertiesTabElements = ({
             property="columnVisibility"
             props={column}
             component={component}
-            paramMeta={{ type: 'toggle', displayName: 'Column visibility' }}
+            paramMeta={{ type: 'toggle', displayName: 'Visibility' }}
             paramType="properties"
           />
         </div>
       </div>
+      <hr className="mx-0 my-2" />
       {column.columnType === 'datepicker' && (
-        <div className="field">
+        <div className="field" style={{ marginTop: '-24px' }}>
           <DatepickerProperties
             column={column}
             index={index}
