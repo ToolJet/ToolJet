@@ -65,7 +65,13 @@ export const useEditorStore = create(
 
       updateComponentsNeedsUpdateOnNextRender: (componentsNeedsUpdateOnNextRender) =>
         set(() => ({ componentsNeedsUpdateOnNextRender })),
-      flushComponentsNeedsUpdateOnNextRender: () => set(() => ({ componentsNeedsUpdateOnNextRender: [] })),
+      flushComponentsNeedsUpdateOnNextRender: () => {
+        const currentComponents = get().componentsNeedsUpdateOnNextRender;
+
+        if (currentComponents.length === 0) return;
+
+        set(() => ({ componentsNeedsUpdateOnNextRender: [] }));
+      },
 
       updateQueryConfirmationList: (queryConfirmationList) => set({ queryConfirmationList }),
       setHoveredComponent: (hoveredComponent) =>
@@ -104,6 +110,7 @@ export const getComponentsToRenders = () => {
   return useEditorStore.getState().componentsNeedsUpdateOnNextRender;
 };
 
-export const flushComponentsToRender = () => {
+export const flushComponentsToRender = (componentId) => {
+  console.log('--arpit:: flush', componentId);
   useEditorStore.getState().actions.flushComponentsNeedsUpdateOnNextRender();
 };
