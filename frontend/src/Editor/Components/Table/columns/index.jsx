@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import SelectSearch from 'react-select-search';
-import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
+import { resolveReferences, validateWidget, determineJustifyContentValue, validateDates } from '@/_helpers/utils';
 import { CustomDropdown } from '../CustomDropdown';
 import { Tags } from '../Tags';
 import { Radio } from '../Radio';
@@ -11,6 +11,7 @@ import { Link } from '../Link';
 import moment from 'moment';
 import { Boolean } from '../Boolean';
 import { CustomSelect } from '../CustomSelect';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export default function generateColumnsData({
   columnProperties,
@@ -74,6 +75,7 @@ export default function generateColumnsData({
       column.isTimeChecked = column.isTimeChecked ? column.isTimeChecked : false;
       column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
       column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
+      column.isDateSelectionEnabled = column.isDateSelectionEnabled ?? true;
       sortType = (firstDate, secondDate) => {
         const columnKey = column.key || column.name;
         // Return -1 if second date is higher, 1 if first date is higher
@@ -114,7 +116,15 @@ export default function generateColumnsData({
       sortType,
       columnVisibility: column?.columnVisibility ?? true,
       horizontalAlignment: column?.horizontalAlignment ?? 'left',
-      Cell: function ({ cell, isEditable, newRowsChangeSet = null, horizontalAlignment, cellTextColor = '' }) {
+      Cell: function ({
+        cell,
+        isEditable,
+        newRowsChangeSet = null,
+        horizontalAlignment,
+        cellTextColor = '',
+        contentWrap = true,
+        autoHeight = true,
+      }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
@@ -164,13 +174,17 @@ export default function generateColumnsData({
 
               const { isValid, validationError } = validationData;
               const cellStyles = {
-                color: textColor ?? '',
+                color: textColor ?? 'inherit',
               };
 
               return (
-                <div className="h-100 d-flex flex-column justify-content-center">
-                  <input
-                    type="text"
+                <div className="h-100 d-flex flex-column justify-content-center position-relative">
+                  <div
+                    // rows="1"
+                    contentEditable={true}
+                    className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input ${
+                      darkMode ? ' textarea-dark-theme' : ''
+                    }`}
                     style={{
                       ...cellStyles,
                       maxWidth: width,
@@ -178,32 +192,33 @@ export default function generateColumnsData({
                       border: 'none',
                       background: 'inherit',
                     }}
+                    readOnly={!isEditable}
+                    onBlur={(e) => {
+                      if (e.target.defaultValue !== e.target.textContent) {
+                        handleCellValueChange(
+                          cell.row.index,
+                          column.key || column.name,
+                          e.target.textContent,
+                          cell.row.original
+                        );
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        if (e.target.defaultValue !== e.target.value) {
+                        if (e.target.defaultValue !== e.target.textContent) {
                           handleCellValueChange(
                             cell.row.index,
                             column.key || column.name,
-                            e.target.value,
+                            e.target.textContent,
                             cell.row.original
                           );
                         }
                       }
                     }}
-                    onBlur={(e) => {
-                      if (e.target.defaultValue !== e.target.value) {
-                        handleCellValueChange(
-                          cell.row.index,
-                          column.key || column.name,
-                          e.target.value,
-                          cell.row.original
-                        );
-                      }
-                    }}
-                    className={`table-column-type-input-element ${!isValid ? 'is-invalid' : ''}`}
-                    defaultValue={cellValue}
                     onFocus={(e) => e.stopPropagation()}
-                  />
+                  >
+                    {cellValue}
+                  </div>
                   <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );
@@ -252,18 +267,55 @@ export default function generateColumnsData({
                 color: textColor ?? '',
               };
 
+              const handleIncrement = (e) => {
+                e.preventDefault(); // Prevent the default button behavior (form submission, page reload)
+
+                const newValue = (cellValue || 0) + 1;
+                if (!isNaN(newValue)) {
+                  handleCellValueChange(cell.row.index, column.key || column.name, Number(newValue), cell.row.original);
+                }
+              };
+
+              const handleDecrement = (e) => {
+                e.preventDefault();
+                const newValue = (cellValue || 0) - 1;
+                if (!isNaN(newValue)) {
+                  handleCellValueChange(cell.row.index, column.key || column.name, Number(newValue), cell.row.original);
+                }
+              };
+
+              const allowedDecimalPlaces = column?.decimalPlaces ?? null;
+              const removingExcessDecimalPlaces = (cellValue, allowedDecimalPlaces) => {
+                allowedDecimalPlaces = resolveReferences(allowedDecimalPlaces, currentState);
+                if (cellValue?.toString()?.includes('.')) {
+                  const splittedCellValue = cellValue?.toString()?.split('.');
+                  const decimalPlacesUnderLimit = splittedCellValue[1]
+                    .split('')
+                    .splice(0, allowedDecimalPlaces)
+                    .join('');
+                  cellValue = Number(`${splittedCellValue[0]}.${decimalPlacesUnderLimit}`);
+                }
+                return cellValue;
+              };
+              cellValue = allowedDecimalPlaces
+                ? removingExcessDecimalPlaces(cellValue, allowedDecimalPlaces)
+                : cellValue;
+
               return (
-                <div className="h-100 d-flex flex-column justify-content-center">
+                <div className="h-100 d-flex flex-column justify-content-center position-relative">
                   <input
                     type="number"
                     style={{ ...cellStyles, maxWidth: width, outline: 'none', border: 'none', background: 'inherit' }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
+                          const value = allowedDecimalPlaces
+                            ? removingExcessDecimalPlaces(e.target.value, allowedDecimalPlaces)
+                            : e.target.value;
                           handleCellValueChange(
                             cell.row.index,
                             column.key || column.name,
-                            Number(e.target.value),
+                            Number(value),
                             cell.row.original
                           );
                         }
@@ -271,18 +323,50 @@ export default function generateColumnsData({
                     }}
                     onBlur={(e) => {
                       if (e.target.defaultValue !== e.target.value) {
+                        const value = allowedDecimalPlaces
+                          ? removingExcessDecimalPlaces(e.target.value, allowedDecimalPlaces)
+                          : e.target.value;
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
-                          Number(e.target.value),
+                          Number(value),
                           cell.row.original
                         );
                       }
                     }}
                     onFocus={(e) => e.stopPropagation()}
-                    className={`table-column-type-input-element ${!isValid ? 'is-invalid' : ''}`}
+                    className={`table-column-type-input-element input-number ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
+                  <div className="arror-container">
+                    <div onClick={(e) => handleIncrement(e)}>
+                      <SolidIcon
+                        width={'16px'}
+                        style={{
+                          top: '1px',
+                          right: '1px',
+                          zIndex: 3,
+                        }}
+                        className="numberinput-up-arrow-table "
+                        name="uparrow"
+                        fill={'var(--icons-default)'}
+                      ></SolidIcon>
+                    </div>
+
+                    <div onClick={(e) => handleDecrement(e)}>
+                      <SolidIcon
+                        style={{
+                          right: '1px',
+                          bottom: '1px',
+                          zIndex: 3,
+                        }}
+                        width={'16px'}
+                        className="numberinput-down-arrow-table"
+                        name="downarrow"
+                        fill={'var(--icons-default)'}
+                      ></SolidIcon>
+                    </div>
+                  </div>
                   <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );
@@ -318,22 +402,27 @@ export default function generateColumnsData({
               });
               const { isValid, validationError } = validationData;
               return (
-                <div className="h-100 d-flex flex-column justify-content-center">
-                  <textarea
-                    rows="1"
-                    className={`${!isValid ? 'is-invalid' : ''} form-control-plaintext text-container ${
+                <div className="h-100 d-flex flex-column justify-content-center position-relative">
+                  <div
+                    // rows="1"
+                    contentEditable={true}
+                    className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
                       darkMode ? ' textarea-dark-theme' : ''
                     }`}
                     style={{
                       color: cellTextColor ? cellTextColor : 'inherit',
+                      maxWidth: width,
+                      outline: 'none',
+                      border: 'none',
+                      background: 'inherit',
                     }}
                     readOnly={!isEditable}
                     onBlur={(e) => {
-                      if (isEditable && e.target.defaultValue !== e.target.value) {
+                      if (isEditable && e.target.defaultValue !== e.target.textContent) {
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
-                          e.target.value,
+                          e.target.textContent,
                           cell.row.original
                         );
                       }
@@ -344,14 +433,15 @@ export default function generateColumnsData({
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
-                          e.target.value,
+                          e.target.textContent,
                           cell.row.original
                         );
                       }
                     }}
-                    defaultValue={cellValue}
                     onFocus={(e) => e.stopPropagation()}
-                  ></textarea>
+                  >
+                    {cellValue}
+                  </div>
                   <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );
@@ -437,6 +527,7 @@ export default function generateColumnsData({
                         ? true
                         : false
                     }
+                    horizontalAlignment={determineJustifyContentValue(horizontalAlignment)}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>
@@ -466,7 +557,7 @@ export default function generateColumnsData({
           case 'badges': {
             return (
               <div
-                className={`h-100 d-flex align-items-center justify-content-${determineJustifyContentValue(
+                className={`h-100 w-100 d-flex align-items-center justify-content-${determineJustifyContentValue(
                   horizontalAlignment
                 )}`}
               >
@@ -480,6 +571,8 @@ export default function generateColumnsData({
                   darkMode={darkMode}
                   isEditable={isEditable}
                   width={width}
+                  contentWrap={contentWrap}
+                  autoHeight={autoHeight}
                 />
               </div>
             );
@@ -525,6 +618,7 @@ export default function generateColumnsData({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
+                  containerWidth={width}
                 />
               </div>
             );
@@ -553,21 +647,65 @@ export default function generateColumnsData({
             );
           }
           case 'datepicker': {
+            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
+            const isTimeChecked = resolveReferences(column?.isTimeChecked, currentState);
+            const isTwentyFourHrFormatEnabled = resolveReferences(column?.isTwentyFourHrFormatEnabled, currentState);
+            const disabledDates = resolveReferences(column?.disabledDates, currentState);
+            const parseInUnixTimestamp = resolveReferences(column?.parseInUnixTimestamp, currentState);
+            const isDateSelectionEnabled = resolveReferences(column?.isDateSelectionEnabled, currentState);
+            const cellStyles = {
+              color: textColor ?? '',
+            };
+            const validationData = validateDates({
+              validationObject: {
+                minDate: {
+                  value: column.minDate,
+                },
+                maxDate: {
+                  value: column.maxDate,
+                },
+                minTime: {
+                  value: column.minTime,
+                },
+                maxTime: {
+                  value: column.maxTime,
+                },
+                parseDateFormat: {
+                  value: column.parseDateFormat,
+                },
+              },
+              widgetValue: cellValue,
+              currentState,
+              customResolveObjects: { cellValue },
+            });
+
+            const { isValid, validationError } = validationData;
             return (
-              <div className="h-100 d-flex align-items-center">
+              <div className="h-100 d-flex flex-column justify-content-center">
                 <Datepicker
                   timeZoneValue={column.timeZoneValue}
                   timeZoneDisplay={column.timeZoneDisplay}
                   dateDisplayFormat={column.dateFormat}
-                  isTimeChecked={column.isTimeChecked}
+                  isTimeChecked={isTimeChecked}
                   value={cellValue}
-                  readOnly={isEditable}
+                  readOnly={!isEditable}
                   parseDateFormat={column.parseDateFormat}
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   tableRef={tableRef}
+                  isDateSelectionEnabled={isDateSelectionEnabled}
+                  isTwentyFourHrFormatEnabled={isTwentyFourHrFormatEnabled}
+                  timeFormat={column.timeFormat}
+                  parseTimeFormat={column.parseTimeFormat}
+                  parseInUnixTimestamp={parseInUnixTimestamp}
+                  unixTimeStamp={column.unixTimestamp}
+                  disabledDates={disabledDates}
+                  unixTimestamp={column.unixTimestamp}
+                  cellStyles={cellStyles}
+                  darkMode={darkMode}
                 />
+                {isEditable && <div className={isValid ? '' : 'invalid-feedback d-block'}>{validationError}</div>}
               </div>
             );
           }

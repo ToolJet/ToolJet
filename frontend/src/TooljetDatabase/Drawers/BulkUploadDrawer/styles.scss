@@ -1,0 +1,57 @@
+.bulkUpload-file {
+
+  .fileName {
+    background: var(--slate3) !important;
+    border-radius: 25px !important;
+    padding: 8px 16px !important;
+    width: fit-content !important;
+
+    ul {
+      font-weight: 500 !important;
+    }
+  }
+
+  progress {
+    appearance: none;
+  }
+
+  progress::-webkit-progress-value {
+    background-color: var(--slate9) !important;
+  }
+
+  ::-webkit-progress-bar {
+    background-color: var(--slate6);
+  }
+
+  .readyForUpload-container {
+    margin-top: 10px;
+    padding-left: 10px;
+    width: 140px;
+
+    .readyForUpload {
+      color: var(--indigo9);
+    }
+  }
+
+  .error-1 {
+    padding: 12px 0px 0px 10px !important;
+
+    .file-upload-error {
+      color: var(--tomato10) !important;
+      margin: 12px 0px 0px 10px !important;
+    }
+  }
+
+  .error-2 {
+    .file-upload-error {
+      color: var(--tomato10) !important;
+      margin: 12px 0px 0px 35px !important;
+    }
+  }
+}
+
+.bulk-upload-btn {
+  .text-muted {
+    color: white !important;
+  }
+}

@@ -276,9 +276,10 @@ button {
   border-width: 0px 0px 1px 0px;
 }
 .table-select-column-accordian{
+  padding: 0px 16px 0px;
+  margin-top: -24px;
   .accordion-item{
-    border-width: 1px 0px 0px 0px !important;
-
+    border-width: 0px 0px 0px 0px !important;
   }
 }
 
@@ -7002,6 +7003,7 @@ tbody {
   }
 
   .table-editable-parent-cell {
+    max-width: 230px;
     background-color: var(--indigo2);
     cursor: pointer;
     padding: 0rem;
@@ -7590,9 +7592,9 @@ tbody {
   }
 }
 
-.jet-data-table td .textarea-dark-theme.text-container:focus {
-  background-color: transparent !important;
-}
+// .jet-data-table td .textarea-dark-theme.text-container:focus {
+//   background-color: transparent !important;
+// }
 
 .tooljet-logo-loader {
   height: 100vh;
@@ -9088,7 +9090,7 @@ tbody {
 .tj-database-column-header {
   color: var(--slate12);
   padding: 4px 4px 4px 8px !important;
-  text-transform: capitalize !important;
+  text-transform: none !important;
   line-height: 0px !important;
   font-weight: 500 !important;
   font-size: 12px !important;
@@ -12487,6 +12489,9 @@ tbody {
     max-width: 100%;
   }
 }
+.tooltip-inner {
+  border-radius: 8px;
+}
 
 #inspector-tabpane-properties {
   .accordion {
@@ -12741,5 +12746,22 @@ tbody {
 .tj-number-input-widget {
   input[type="number"] {
     -moz-appearance: textfield !important;
+  }
+}
+
+.inspector-validation-date-picker {
+  .react-datepicker-wrapper { 
+    input {
+      width: 100%;
+      border: 1px solid var(--slate7);
+      padding: 5px 5px;
+      background-color: var(--base);
+    }
+}
+
+  .dark-theme {
+    .react-datepicker__day {
+      color: white;
+    }
   }
 }

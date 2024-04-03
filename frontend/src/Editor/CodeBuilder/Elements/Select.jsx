@@ -2,18 +2,31 @@ import React from 'react';
 import SelectComponent from '@/_ui/Select';
 import { components } from 'react-select';
 import Check from '@/_ui/Icon/solidIcons/Check';
+import Icon from '@/_ui/Icon/solidIcons/index';
+import {
+  DeprecatedColumnTooltip,
+  checkIfTableColumnDeprecated,
+} from '../../Inspector/Components/Table/ColumnManager/DeprecatedColumnTypeMsg';
 
-const Option = (props) => {
+export const Option = (props) => {
+  const isDeprecated = checkIfTableColumnDeprecated(props.value);
   return (
     <components.Option {...props}>
-      <div className="d-flex justify-content-between">
-        <span>{props.label}</span>
-        {props.isSelected && (
-          <span>
-            <Check width={'20'} fill={'#3E63DD'} />
-          </span>
-        )}
-      </div>
+      <DeprecatedColumnTooltip columnType={props.value}>
+        <div className="d-flex justify-content-between">
+          <span>{props.label}</span>
+          {props.isSelected && (
+            <span>
+              <Check width={'20'} fill={'#3E63DD'} />
+            </span>
+          )}
+          {isDeprecated && (
+            <span>
+              <Icon name={'warning'} height={16} width={16} fill="#DB4324" />
+            </span>
+          )}
+        </div>
+      </DeprecatedColumnTooltip>
     </components.Option>
   );
 };

@@ -1,5 +1,4 @@
 import React from 'react';
-import SelectSearch from 'react-select-search';
 import { useTranslation } from 'react-i18next';
 import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
 import { Color } from '../../../Elements/Color';
@@ -24,14 +23,14 @@ export const StylesTabElements = ({
   const { t } = useTranslation();
   return (
     <>
-      <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch">
+      <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
         <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-          {t('widget.Table.horizontalAlignment', 'Horizontal Alignment')}
+          {t('widget.Table.textAlignment', 'Text Alignment')}
         </label>
         <ToggleGroup
           onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
           defaultValue={column?.horizontalAlignment || 'left'}
-          style={{ flex: '1 1 0' }}
+          style={{ width: '58%' }}
         >
           <ToggleGroupItem value="left">
             <AlignLeft width={14} />
@@ -44,27 +43,9 @@ export const StylesTabElements = ({
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
-      {/* {['string', 'default', 'number', undefined].includes(column.columnType) && (
-        <div className="d-flex flex-column custom-gap-16">
-          <div data-cy={`input-overflow`} className="field  d-flex custom-gap-12 align-items-center align-self-stretch">
-            <label data-cy={`label-overflow`} className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-              {t('widget.Table.overflow', 'Overflow')}
-            </label>
-            <ToggleGroup
-              onValueChange={(_value) => onColumnItemChange(index, 'textWrap', _value)}
-              defaultValue={column.textWrap || 'wrap'}
-              style={{ flex: '1 1 0' }}
-            >
-              <ToggleGroupItem value="wrap">Wrap</ToggleGroupItem>
-              <ToggleGroupItem value="scroll">Scroll</ToggleGroupItem>
-              <ToggleGroupItem value="hide">Hide</ToggleGroupItem>
-            </ToggleGroup>
-          </div>
-        </div>
-      )} */}
       {column.columnType === 'toggle' && (
         <div>
-          <div className="field">
+          <div className="field px-3">
             <Color
               param={{ name: 'Active color' }}
               paramType="properties"
@@ -78,7 +59,7 @@ export const StylesTabElements = ({
       )}
       {column.columnType === 'image' && (
         <>
-          <div data-cy={`input-and-label-border-radius`} className="field">
+          <div data-cy={`input-and-label-border-radius`} className="field px-3">
             <label className="form-label">{t('widget.Table.borderRadius', 'Border radius')}</label>
             <CodeHinter
               currentState={currentState}
@@ -91,7 +72,7 @@ export const StylesTabElements = ({
               componentName={getPopoverFieldSource(column.columnType, 'borderRadius')}
             />
           </div>
-          <div data-cy={`input-and-label-width`} className="field ">
+          <div data-cy={`input-and-label-width`} className="field px-3">
             <label className="form-label">{t('widget.Table.width', 'Width')}</label>
             <CodeHinter
               currentState={currentState}
@@ -104,7 +85,7 @@ export const StylesTabElements = ({
               componentName={getPopoverFieldSource(column.columnType, 'width')}
             />
           </div>
-          <div data-cy={`input-and-label-height`} className="field">
+          <div data-cy={`input-and-label-height`} className="field px-3">
             <label className="form-label">{t('widget.Table.height', 'Height')}</label>
             <CodeHinter
               currentState={currentState}
@@ -117,7 +98,7 @@ export const StylesTabElements = ({
               componentName={getPopoverFieldSource(column.columnType, 'height')}
             />
           </div>
-          <div data-cy={`input-and-label-object-fit`} className="field">
+          <div data-cy={`input-and-label-object-fit`} className="field px-3">
             <label className="form-label">{t('widget.Table.imageFit', 'Image fit')}</label>
             <Select
               className={'select-search'}
@@ -143,7 +124,7 @@ export const StylesTabElements = ({
       )}
       {column.columnType === 'boolean' && (
         <div className="d-flex flex-column custom-gap-16">
-          <div className="field">
+          <div className="field px-3">
             <Color
               param={{ name: 'Toggle on bg' }}
               paramType="properties"
@@ -153,7 +134,7 @@ export const StylesTabElements = ({
               shouldFlexDirectionBeRow={true}
             />
           </div>
-          <div className="field">
+          <div className="field px-3">
             <Color
               param={{ name: 'Toggle off bg' }}
               paramType="properties"
@@ -166,12 +147,12 @@ export const StylesTabElements = ({
         </div>
       )}
 
-      {['string', 'default', undefined, 'number', 'boolean', 'select', 'text', 'newMultiSelect'].includes(
+      {['string', 'default', undefined, 'number', 'boolean', 'select', 'text', 'newMultiSelect', 'datepicker'].includes(
         column.columnType
       ) && (
         <>
           {column.columnType !== 'boolean' && (
-            <div data-cy={`input-and-label-text-color`} className="field">
+            <div data-cy={`input-and-label-text-color`} className="field px-3">
               <ProgramaticallyHandleProperties
                 label="Text color"
                 currentState={currentState}
@@ -186,9 +167,9 @@ export const StylesTabElements = ({
               />
             </div>
           )}
-          <div className="field" data-cy={`input-and-label-cell-background-color`}>
+          <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
             <ProgramaticallyHandleProperties
-              label="Cell Background Color"
+              label="Cell color"
               currentState={currentState}
               index={index}
               darkMode={darkMode}
@@ -196,7 +177,7 @@ export const StylesTabElements = ({
               property="cellBackgroundColor"
               props={column}
               component={component}
-              paramMeta={{ type: 'color', displayName: 'Cell Background Color' }}
+              paramMeta={{ type: 'color', displayName: 'Cell color' }}
               paramType="properties"
             />
           </div>
@@ -205,7 +186,7 @@ export const StylesTabElements = ({
 
       {column.columnType === 'link' && (
         <>
-          <div data-cy={`input-and-label-text-color`} className="field">
+          <div data-cy={`input-and-label-text-color`} className="field px-3">
             <ProgramaticallyHandleProperties
               label="Link color"
               currentState={currentState}
@@ -219,7 +200,7 @@ export const StylesTabElements = ({
               paramType="properties"
             />
           </div>
-          <div className="field" data-cy={`input-and-label-cell-background-color`}>
+          <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
             <ProgramaticallyHandleProperties
               label="Underline color"
               currentState={currentState}
@@ -233,7 +214,7 @@ export const StylesTabElements = ({
               paramType="properties"
             />
           </div>
-          <div className="d-flex flex-column custom-gap-16">
+          <div className="d-flex px-3 flex-column custom-gap-16">
             <div
               data-cy={`input-overflow`}
               className="field  d-flex custom-gap-12 align-items-center align-self-stretch"

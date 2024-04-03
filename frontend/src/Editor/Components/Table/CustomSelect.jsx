@@ -22,24 +22,32 @@ export const CustomSelect = ({
   isMulti,
   containerWidth,
   optionsLoadingState = false,
+  horizontalAlignment = 'left',
 }) => {
-  const containerRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
-  const [inputValue, setInputValue] = useState(value);
-  const onDomClick = (e) => {
-    let menu = containerRef?.current?.querySelector('.select__menu');
-    if (!containerRef?.current?.contains(e.target) || !menu || !menu?.contains(e.target)) {
-      setIsFocused(false);
-      setInputValue('');
-    }
-  };
+  const containerRef = useRef(null);
+  const inputRef = useRef(null); // Ref for the input search box
+
   useEffect(() => {
-    document.addEventListener('mousedown', onDomClick);
+    const handleDocumentClick = (event) => {
+      if (!containerRef.current?.contains(event.target)) {
+        setIsFocused(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleDocumentClick);
 
     return () => {
-      document.removeEventListener('mousedown', onDomClick);
+      document.removeEventListener('mousedown', handleDocumentClick);
     };
   }, []);
+
+  useEffect(() => {
+    // Focus the input search box when the menu list is open and the component is focused
+    if (isFocused && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isFocused]);
 
   const customStyles = {
     ...defaultStyles(darkMode, '100%'),
@@ -49,14 +57,17 @@ export const CustomSelect = ({
         display: 'inline-block', // Display selected options inline
         marginRight: '4px', // Add some space between options
       }),
-      valueContainer: (provided, _state) => ({
-        ...provided,
+    }),
+    valueContainer: (provided) => ({
+      ...provided,
+      ...(isMulti && {
         marginBottom: '0',
         display: 'flex',
         flexWrap: 'no-wrap',
         overflow: 'hidden',
         flexDirection: 'row',
       }),
+      justifyContent: horizontalAlignment,
     }),
     menuList: (base) => ({
       ...base,
@@ -85,12 +96,12 @@ export const CustomSelect = ({
     }),
   };
   const customCustomComponents = {
-    MenuList: (props) => <CustomMenuList {...props} optionsLoadingState={optionsLoadingState} />,
+    MenuList: (props) => <CustomMenuList {...props} optionsLoadingState={optionsLoadingState} inputRef={inputRef} />,
     Option: CustomMultiSelectOption,
     DropdownIndicator,
     ...(isMulti && {
       MultiValueRemove,
-      MultiValueContainer: customMultiValueContainer,
+      MultiValueContainer: CustomMultiValueContainer,
     }),
   };
 
@@ -116,9 +127,6 @@ export const CustomSelect = ({
             onChange(value);
             setIsFocused(false);
           }}
-          onInputChange={(val) => {
-            setInputValue(val);
-          }}
           {...{
             menuIsOpen: isFocused || undefined,
             isFocused: isFocused || undefined,
@@ -137,7 +145,7 @@ export const CustomSelect = ({
   );
 };
 
-const CustomMenuList = ({ optionsLoadingState, children, selectProps, ...props }) => {
+const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, ...props }) => {
   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
 
   return (
@@ -170,6 +178,7 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, ...props }
           onFocus={onMenuInputFocus}
           placeholder="Search..."
           className="table-select-column-type-search-box"
+          ref={inputRef} // Assign the ref to the input search box
         />
       </div>
       <MenuList {...props} selectProps={selectProps}>
@@ -207,7 +216,7 @@ const MultiValueRemove = (props) => {
   return <div {...innerProps} />;
 };
 
-const customMultiValueContainer = (props) => {
+const CustomMultiValueContainer = (props) => {
   return (
     <div
       style={{
@@ -227,18 +236,10 @@ const getOverlay = (value, containerWidth) => {
   return Array.isArray(value) ? (
     <div
       style={{
-        height: 'fit-content',
         maxWidth: containerWidth,
         width: containerWidth,
-        background: 'var(--surfaces-surface-01)',
-        display: 'inline-flex',
-        flexWrap: 'wrap',
-        gap: '10px',
-        padding: '16px',
-        borderRadius: '6px',
-        boxShadow: '0px 8px 16px 0px var(--elevation-400-box-shadow), 0px 0px 1px 0px var(--elevation-400-box-shadow)',
       }}
-      className={`overlay-multiselect-table ${darkMode && 'dark-theme'}`}
+      className={`overlay-cell-table overlay-multiselect-table ${darkMode && 'dark-theme'}`}
     >
       {value?.map((option) => {
         return (
@@ -264,7 +265,7 @@ const getOverlay = (value, containerWidth) => {
 
 const DropdownIndicator = (props) => {
   return (
-    <div {...props}>
+    <div {...props} className="cell-icon-display">
       {/* Your custom SVG */}
       {props.selectProps.menuIsOpen ? (
         <SolidIcon name="arrowUpTriangle" width="16" height="16" fill={'#6A727C'} />

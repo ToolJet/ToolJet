@@ -76,7 +76,7 @@ export const ColumnPopoverContent = ({
           </div>
         </div>
       </Popover.Header>
-      <Popover.Body className="table-column-popover">
+      <Popover.Body className={`table-column-popover ${darkMode && 'theme-dark'}`}>
         {activeTab === 'propertiesTab' ? (
           <PropertiesTabElements
             column={column}

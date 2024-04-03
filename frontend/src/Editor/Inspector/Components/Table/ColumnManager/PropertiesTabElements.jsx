@@ -6,7 +6,13 @@ import { EventManager } from '../../../EventManager';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import { OptionsList } from '../SelectOptionsList/OptionsList';
 import { ValidationProperties } from './ValidationProperties';
-import { Select } from '@/Editor/CodeBuilder/Elements/Select';
+import DatepickerProperties from './DatepickerProperties';
+import { Option } from '@/Editor/CodeBuilder/Elements/Select';
+import DeprecatedColumnTypeMsg from './DeprecatedColumnTypeMsg';
+import CustomSelect from '@/_ui/Select';
+import defaultStyles from '@/_ui/Select/styles';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+
 export const PropertiesTabElements = ({
   column,
   index,
@@ -23,42 +29,50 @@ export const PropertiesTabElements = ({
 }) => {
   const { t } = useTranslation();
 
+  const customStylesForSelect = {
+    ...defaultStyles(darkMode, '100%'),
+  };
+
   return (
     <>
-      <div className="field" data-cy={`dropdown-column-type`}>
+      {column.columnType && <DeprecatedColumnTypeMsg columnType={column.columnType} darkMode={darkMode} />}
+      <div className="field px-3" data-cy={`dropdown-column-type`} onClick={(e) => e.stopPropagation()}>
         <label data-cy={`label-column-type`} className="form-label">
           {t('widget.Table.columnType', 'Column type')}
         </label>
-        <Select
-          meta={{
-            options: [
-              { name: 'Default', value: 'default' },
-              { name: 'String', value: 'string' },
-              { name: 'Number', value: 'number' },
-              { name: 'Text', value: 'text' },
-              { name: 'Badge', value: 'badge' },
-              { name: 'Multiple badges', value: 'badges' },
-              { name: 'Tags', value: 'tags' },
-              { name: 'Dropdown', value: 'dropdown' },
-              { name: 'Link', value: 'link' },
-              { name: 'Radio', value: 'radio' },
-              { name: 'Multiselect D', value: 'multiselect' },
-              { name: 'Toggle switch', value: 'toggle' },
-              { name: 'Date Picker', value: 'datepicker' },
-              { name: 'Image', value: 'image' },
-              { name: 'Boolean', value: 'boolean' },
-              { name: 'Select', value: 'select' },
-              { name: 'MultiSelect', value: 'newMultiSelect' },
-            ],
-          }}
+
+        <CustomSelect
+          options={[
+            { label: 'String', value: 'string' },
+            { label: 'Number', value: 'number' },
+            { label: 'Text', value: 'text' },
+            { label: 'Date Picker', value: 'datepicker' },
+            { label: 'Select', value: 'select' },
+            { label: 'MultiSelect', value: 'newMultiSelect' },
+            { label: 'Boolean', value: 'boolean' },
+            { label: 'Image', value: 'image' },
+            { label: 'Link', value: 'link' },
+            // Following column types are deprecated
+            { label: 'Default', value: 'default' },
+            { label: 'Dropdown', value: 'dropdown' },
+            { label: 'Multiselect', value: 'multiselect' },
+            { label: 'Toggle switch', value: 'toggle' },
+            { label: 'Radio', value: 'radio' },
+            { label: 'Badge', value: 'badge' },
+            { label: 'Multiple badges', value: 'badges' },
+            { label: 'Tags', value: 'tags' },
+          ]}
+          components={{ DropdownIndicator, Option }}
           onChange={(value) => {
             onColumnItemChange(index, 'columnType', value);
           }}
           value={column.columnType}
-          width={'100%'}
+          useCustomStyles={true}
+          styles={customStylesForSelect}
+          className={`column-type-table-inspector`}
         />
       </div>
-      <div className="field" data-cy={`input-and-label-column-name`}>
+      <div className="field px-3" data-cy={`input-and-label-column-name`}>
         <label data-cy={`label-column-name`} className="form-label">
           {t('widget.Table.columnName', 'Column name')}
         </label>
@@ -76,8 +90,8 @@ export const PropertiesTabElements = ({
           }}
         />
       </div>
-      <div data-cy={`input-and-label-key`} className="field">
-        <label className="form-label">{t('widget.Table.key', 'key')}</label>
+      <div data-cy={`input-and-label-key`} className="field px-3">
+        <label className="form-label">{t('widget.Table.key', 'Key')}</label>
         <CodeHinter
           currentState={currentState}
           initialValue={column.key}
@@ -92,7 +106,7 @@ export const PropertiesTabElements = ({
           }}
         />
       </div>
-      <div data-cy={`transformation-field`} className="field">
+      <div data-cy={`transformation-field`} className="field px-3">
         <label className="form-label">{t('widget.Table.transformationField', 'Transformation')}</label>
         <CodeHinter
           currentState={currentState}
@@ -110,7 +124,7 @@ export const PropertiesTabElements = ({
         />
       </div>
       {column.columnType === 'toggle' && (
-        <div>
+        <div className="px-3">
           <EventManager
             sourceId={props?.component?.id}
             eventSourceType="table_column"
@@ -134,7 +148,7 @@ export const PropertiesTabElements = ({
         column.columnType === 'badges' ||
         column.columnType === 'radio') && (
         <div>
-          <div data-cy={`input-and-label-values`} className="field mb-2">
+          <div data-cy={`input-and-label-values`} className="field mb-2 px-3">
             <label className="form-label">{t('widget.Table.values', 'Values')}</label>
             <CodeHinter
               currentState={currentState}
@@ -150,7 +164,7 @@ export const PropertiesTabElements = ({
               }}
             />
           </div>
-          <div data-cy={`input-and-label-labels`} className="field mb-2">
+          <div data-cy={`input-and-label-labels`} className="field mb-2 px-3">
             <label className="form-label">{t('widget.Table.labels', 'Labels')}</label>
             <CodeHinter
               currentState={currentState}
@@ -168,93 +182,9 @@ export const PropertiesTabElements = ({
           </div>
         </div>
       )}
-      {column.columnType === 'datepicker' && (
-        <div>
-          <label data-cy={`label-date-display-format`} className="form-label">
-            {t('widget.Table.dateDisplayformat', 'Date Display Format')}
-          </label>
-          <div data-cy={`input-date-display-format`} className="field mb-2">
-            <CodeHinter
-              currentState={currentState}
-              initialValue={column.dateFormat}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={'DD-MM-YYYY'}
-              onChange={(value) => onColumnItemChange(index, 'dateFormat', value)}
-              componentName={getPopoverFieldSource(column.columnType, 'dateFormat')}
-              popOverCallback={(showing) => {
-                setColumnPopoverRootCloseBlocker('dateFormat', showing);
-              }}
-            />
-          </div>
-          <label data-cy={`label-date-parse-format`} className="form-label">
-            {t('widget.Table.dateParseformat', 'Date Parse Format')}
-          </label>
-          <div className="field mb-2 tj-app-input">
-            <input
-              data-cy={`input-date-parse-format`}
-              type="text"
-              className="form-control text-field"
-              onChange={(e) => {
-                e.stopPropagation();
-                onColumnItemChange(index, 'parseDateFormat', e.target.value);
-              }}
-              defaultValue={column.parseDateFormat}
-              placeholder={'DD-MM-YYYY'}
-            />
-          </div>
-          <label data-cy={`label-parse-timezone`} className="form-label">
-            Parse in timezone
-          </label>
-          <div data-cy={`input-parse-timezone`} className="field mb-2">
-            <Select
-              meta={{
-                options: timeZoneOptions,
-              }}
-              onChange={(value) => {
-                onColumnItemChange(index, 'timeZoneValue', value);
-              }}
-              value={column.timeZoneValue}
-              width={'100%'}
-            />
-          </div>
-          <label data-cy={`label-display-time-zone`} className="form-label">
-            Display in timezone
-          </label>
-          <div ata-cy={`input-display-time-zone`} className="field mb-2">
-            <Select
-              meta={{
-                options: timeZoneOptions,
-              }}
-              onChange={(value) => {
-                onColumnItemChange(index, 'timeZoneDisplay', value);
-              }}
-              value={column.timeZoneDisplay}
-              width={'100%'}
-            />
-          </div>
-          <div className="field mb-2">
-            <div className="form-check form-switch my-2">
-              <input
-                data-cy={`toggle-show-time`}
-                className="form-check-input"
-                type="checkbox"
-                onClick={() => {
-                  onColumnItemChange(index, 'isTimeChecked', !column.isTimeChecked);
-                }}
-                checked={column.isTimeChecked}
-              />
-              <span data-cy={`label-show-time`} className="form-check-label">
-                {t('widget.Table.showTime', 'show time')}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
       {column.columnType === 'link' && (
         <>
-          <div className="field mb-2">
+          <div className="field mb-2 px-3">
             <label className="form-label">Display text</label>
             <CodeHinter
               currentState={currentState}
@@ -268,7 +198,7 @@ export const PropertiesTabElements = ({
             />
           </div>
 
-          <div className="border" style={{ borderRadius: '6px', overflow: 'hidden' }}>
+          <div className="border  mx-3" style={{ borderRadius: '6px', overflow: 'hidden' }}>
             <div style={{ background: 'var(--slate3)', padding: '6px' }}>
               <ProgramaticallyHandleProperties
                 label="Link target"
@@ -290,7 +220,7 @@ export const PropertiesTabElements = ({
         </>
       )}
       {column.columnType === 'number' && (
-        <div className="field mb-2">
+        <div className="field mb-2 px-3">
           <label className="form-label">{t('widget.Table.decimalPlaces', 'Decimal Places')}</label>
           <CodeHinter
             currentState={currentState}
@@ -308,8 +238,8 @@ export const PropertiesTabElements = ({
         </div>
       )}
       {!['image', 'link'].includes(column.columnType) && (
-        <div className="border" style={{ borderRadius: '6px', overflow: 'hidden' }}>
-          <div style={{ background: 'var(--slate3)', padding: '6px' }}>
+        <div className="border mx-3" style={{ borderRadius: '6px', overflow: 'hidden' }}>
+          <div style={{ background: 'var(--surfaces-surface-02)', padding: '6px' }}>
             <ProgramaticallyHandleProperties
               label="make editable"
               currentState={currentState}
@@ -336,10 +266,10 @@ export const PropertiesTabElements = ({
           )}
         </div>
       )}
-      <div className="border" style={{ borderRadius: '6px', overflow: 'hidden' }}>
-        <div style={{ background: 'var(--slate3)', padding: '6px' }}>
+      <div className="border mx-3" style={{ borderRadius: '6px', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--surfaces-surface-02)', padding: '6px' }}>
           <ProgramaticallyHandleProperties
-            label="Column visibility"
+            label="Visibility"
             currentState={currentState}
             index={index}
             darkMode={darkMode}
@@ -347,11 +277,25 @@ export const PropertiesTabElements = ({
             property="columnVisibility"
             props={column}
             component={component}
-            paramMeta={{ type: 'toggle', displayName: 'Column visibility' }}
+            paramMeta={{ type: 'toggle', displayName: 'Visibility' }}
             paramType="properties"
           />
         </div>
       </div>
+
+      {['select', 'newMultiSelect', 'datepicker'].includes(column.columnType) && <hr className="mx-0 my-2" />}
+      {column.columnType === 'datepicker' && (
+        <div className="field" style={{ marginTop: '-24px' }}>
+          <DatepickerProperties
+            column={column}
+            index={index}
+            darkMode={darkMode}
+            currentState={currentState}
+            onColumnItemChange={onColumnItemChange}
+            component={component}
+          />
+        </div>
+      )}
       {['select', 'newMultiSelect'].includes(column.columnType) && (
         <OptionsList
           column={column}
@@ -366,5 +310,17 @@ export const PropertiesTabElements = ({
         />
       )}
     </>
+  );
+};
+const DropdownIndicator = (props) => {
+  return (
+    <div {...props}>
+      {/* Your custom SVG */}
+      {props.selectProps.menuIsOpen ? (
+        <SolidIcon name="arrowUpTriangle" width="16" height="16" fill={'#6A727C'} />
+      ) : (
+        <SolidIcon name="arrowDownTriangle" width="16" height="16" fill={'#6A727C'} />
+      )}
+    </div>
   );
 };
