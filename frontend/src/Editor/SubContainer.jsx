@@ -415,7 +415,6 @@ export const SubContainer = ({
         if (didDrop && !parent) {
           return;
         }
-        console.log('---arpit::: drop --- on subcontainer', { item, isOver, isOverCurrent, didDrop });
 
         if (item.component.component === 'PDF' && !isPDFSupported()) {
           toast.error(

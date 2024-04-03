@@ -139,9 +139,13 @@ function findReferenceInComponent(node, changedCurrentState) {
         const value = node[key];
         if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
           // Check if the referenced entity is in the state
-          if (changedCurrentState.some((state) => value.includes(state))) {
-            return true;
-          }
+
+          // check if the current node's value has the reference
+          const hasFound = changedCurrentState.some((state) => {
+            return value.includes(state);
+          });
+
+          return hasFound;
         } else if (typeof value === 'object') {
           const found = findReferenceInComponent(value, changedCurrentState);
 

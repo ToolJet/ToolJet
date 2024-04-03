@@ -36,7 +36,6 @@ const initialState = {
   queryConfirmationList: [],
   currentPageId: null,
   currentSessionId: uuid(),
-  currentStateDiff: [],
   componentsNeedsUpdateOnNextRender: [],
 };
 
@@ -63,7 +62,7 @@ export const useEditorStore = create(
       },
       setIsEditorActive: (isEditorActive) => set(() => ({ isEditorActive })),
       updateEditorState: (state) => set((prev) => ({ ...prev, ...state })),
-      updateCurrentStateDiff: (currentStateDiff) => set(() => ({ currentStateDiff })),
+
       updateComponentsNeedsUpdateOnNextRender: (componentsNeedsUpdateOnNextRender) =>
         set(() => ({ componentsNeedsUpdateOnNextRender })),
       flushComponentsNeedsUpdateOnNextRender: () => set(() => ({ componentsNeedsUpdateOnNextRender: [] })),
