@@ -212,7 +212,6 @@ const resolveMultiDynamicReferences = (code, lookupTable) => {
 
 export const resolveReferences = (query, validationSchema, customResolvers = {}, fxActive = false) => {
   if (!query || typeof query !== 'string') return [false, null, null];
-
   let resolvedValue = query;
   let error = null;
 
@@ -227,7 +226,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
     return [true, error, resolvedValue];
   }
 
-  if (validationSchema && !fxActive && !query?.includes('{{') && !query?.includes('}}')) {
+  if (validationSchema && !query?.includes('{{') && !query?.includes('}}')) {
     const [valid, errors, newValue] = validateComponentProperty(query, validationSchema);
     return [valid, errors, newValue, resolvedValue];
   }
@@ -238,7 +237,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
   if (hasMultiDynamicVariables) {
     resolvedValue = resolveMultiDynamicReferences(query, lookupTable);
   } else {
-    let value = !fxActive ? query?.replace(/{{|}}/g, '').trim() : query;
+    let value = query?.replace(/{{|}}/g, '').trim();
 
     if (fxActive && (value.startsWith('#') || value.includes('table-'))) {
       value = JSON.stringify(value);
