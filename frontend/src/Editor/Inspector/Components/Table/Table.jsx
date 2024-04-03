@@ -10,7 +10,6 @@ import { Color } from '../../Elements/Color';
 import SelectSearch from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../../EventManager';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import List from '@/ToolJetUI/List/List';
@@ -18,9 +17,9 @@ import { capitalize, has } from 'lodash';
 import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
-import { useAppDataStore } from '@/_stores/appDataStore';
 import { ModuleContext } from '../../../../_contexts/ModuleContext';
 import { useSuperStore } from '@/_stores/superStore';
+import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
 class TableComponent extends React.Component {
   static contextType = ModuleContext;
 
@@ -594,6 +593,8 @@ class TableComponent extends React.Component {
                                       className={`table-column-lists ${
                                         this.state.activeColumnPopoverIndex === index && 'active-column-list'
                                       }`}
+                                      columnType={item?.columnType}
+                                      isDeprecated={checkIfTableColumnDeprecated(item?.columnType)}
                                     />
                                   </div>
                                 </OverlayTrigger>

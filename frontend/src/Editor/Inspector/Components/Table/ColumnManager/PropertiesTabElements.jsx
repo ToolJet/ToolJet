@@ -6,7 +6,8 @@ import { EventManager } from '../../../EventManager';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import { OptionsList } from '../SelectOptionsList/OptionsList';
 import { ValidationProperties } from './ValidationProperties';
-import { Select } from '@/Editor/CodeBuilder/Elements/Select';
+import { Select, Option } from '@/Editor/CodeBuilder/Elements/Select';
+import DeprecatedColumnTypeMsg from './DeprecatedColumnTypeMsg';
 import CustomSelect from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -33,32 +34,34 @@ export const PropertiesTabElements = ({
 
   return (
     <>
-      <div className="field" data-cy={`dropdown-column-type`}>
+      {column.columnType && <DeprecatedColumnTypeMsg columnType={column.columnType} darkMode={darkMode} />}
+      <div className="field" data-cy={`dropdown-column-type`} onClick={(e) => e.stopPropagation()}>
         <label data-cy={`label-column-type`} className="form-label">
           {t('widget.Table.columnType', 'Column type')}
         </label>
 
         <CustomSelect
           options={[
-            { name: 'Default', value: 'default' },
-            { name: 'String', value: 'string' },
-            { name: 'Number', value: 'number' },
-            { name: 'Text', value: 'text' },
-            { name: 'Badge', value: 'badge' },
-            { name: 'Multiple badges', value: 'badges' },
-            { name: 'Tags', value: 'tags' },
-            { name: 'Dropdown', value: 'dropdown' },
-            { name: 'Link', value: 'link' },
-            { name: 'Radio', value: 'radio' },
-            { name: 'Multiselect', value: 'multiselect' },
-            { name: 'Toggle switch', value: 'toggle' },
-            { name: 'Date Picker', value: 'datepicker' },
-            { name: 'Image', value: 'image' },
-            { name: 'Boolean', value: 'boolean' },
-            { name: 'Select', value: 'select' },
-            { name: 'MultiSelect', value: 'newMultiSelect' },
+            { label: 'String', value: 'string' },
+            { label: 'Number', value: 'number' },
+            { label: 'Text', value: 'text' },
+            { label: 'Date Picker', value: 'datepicker' },
+            { label: 'Select', value: 'select' },
+            { label: 'MultiSelect', value: 'newMultiSelect' },
+            { label: 'Boolean', value: 'boolean' },
+            { label: 'Image', value: 'image' },
+            { label: 'Link', value: 'link' },
+            // Following column types are deprecated
+            { label: 'Default', value: 'default' },
+            { label: 'Dropdown', value: 'dropdown' },
+            { label: 'Multiselect', value: 'multiselect' },
+            { label: 'Toggle switch', value: 'toggle' },
+            { label: 'Radio', value: 'radio' },
+            { label: 'Badge', value: 'badge' },
+            { label: 'Multiple badges', value: 'badges' },
+            { label: 'Tags', value: 'tags' },
           ]}
-          components={{ DropdownIndicator }}
+          components={{ DropdownIndicator, Option }}
           onChange={(value) => {
             onColumnItemChange(index, 'columnType', value);
           }}

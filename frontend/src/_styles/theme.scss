@@ -12488,6 +12488,9 @@ tbody {
     max-width: 100%;
   }
 }
+.tooltip-inner {
+  border-radius: 8px;
+}
 
 #inspector-tabpane-properties {
   .accordion {
