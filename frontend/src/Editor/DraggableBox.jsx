@@ -54,6 +54,7 @@ const DraggableBox = React.memo(
     customResolvables,
     parentId,
     getContainerProps,
+    currentPageId,
   }) => {
     const isResizing = useGridStore((state) => state.resizingComponentId === id);
     const [canDrag, setCanDrag] = useState(true);
@@ -222,6 +223,7 @@ const DraggableBox = React.memo(
                   customResolvables={customResolvables}
                   parentId={parentId}
                   getContainerProps={getContainerProps}
+                  currentPageId={currentPageId}
                 />
               </Sentry.ErrorBoundary>
             </div>

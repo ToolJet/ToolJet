@@ -24,16 +24,18 @@ export const Form = function Form(props) {
     fireEvent,
     properties,
     resetComponent,
-    childComponents,
     onEvent,
     dataCy,
     paramUpdated,
     currentLayout,
     mode,
     getContainerProps,
+    containerProps,
   } = props;
 
   const { events: allAppEvents } = useAppInfo();
+
+  const { childComponents } = containerProps;
 
   const formEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
   const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
@@ -135,7 +137,7 @@ export const Form = function Form(props) {
       formattedChildData = extractData(childrenData);
       childValidation = checkJsonChildrenValidtion();
     } else {
-      Object.keys(childComponents).forEach((childId) => {
+      Object.keys(childComponents ?? {}).forEach((childId) => {
         if (childrenData[childId]?.name) {
           formattedChildData[childrenData[childId].name] = { ...omit(childrenData[childId], 'name'), id: childId };
           childValidation = childValidation && (childrenData[childId]?.isValid ?? true);
@@ -252,6 +254,8 @@ export const Form = function Form(props) {
                     onOptionChange({ component, optionName, value, componentId });
                   }
                 }}
+                currentPageId={props.currentPageId}
+                {...props}
               />
               <SubCustomDragLayer
                 containerCanvasWidth={width}
