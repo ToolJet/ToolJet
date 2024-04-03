@@ -696,7 +696,8 @@ export class GitSyncService {
         {
           tooljet_database: tableNameMapping,
         },
-        isNormalizedAppDefinitionSchema
+        isNormalizedAppDefinitionSchema,
+        importedAppTooljetVersion
       );
       await app.reload();
 

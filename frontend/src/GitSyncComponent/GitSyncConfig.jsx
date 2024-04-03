@@ -12,6 +12,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { ConfirmDialog } from '@/_components';
 import { LicenseBanner } from '@/LicenseBanner';
 import { Spinner } from 'react-bootstrap';
+import './configPage.scss';
 
 const KEY_TYPE = {
   ED25519: 'ed25519',
@@ -132,7 +133,7 @@ class GitSyncConfigComponent extends Component {
   };
 
   generateSshKey = () => {
-    const { workspaceId, gitUrl } = this.state;
+    const { workspaceId, gitUrl, keyType } = this.state;
     this.lockUrl();
     this.setState({
       generateKeyLoader: true,
@@ -150,7 +151,7 @@ class GitSyncConfigComponent extends Component {
         });
     } else {
       gitSyncService
-        .updateConfig(this.state.orgGit?.id, { gitUrl: this.state.gitUrl, autoCommit: null })
+        .updateConfig(this.state.orgGit?.id, { gitUrl: this.state.gitUrl, autoCommit: null, keyType: keyType })
         .then(() => {
           this.getOrgGit(workspaceId);
           this.unlockUrl();
@@ -280,6 +281,7 @@ class GitSyncConfigComponent extends Component {
     this.setState(
       {
         inputUrl: url,
+        connectFail: false,
       },
       () => {
         if (this.state.sshKeyGenerated && this.state.orgGit?.git_url === this.state.inputUrl) {
@@ -299,6 +301,7 @@ class GitSyncConfigComponent extends Component {
             finalizeBtnDisable: true,
             urlInputMessage: 'Creating an empty git repository is recommended',
             validUrl: true,
+            keyType: KEY_TYPE.ED25519,
           });
         }
       }
@@ -525,8 +528,12 @@ class GitSyncConfigComponent extends Component {
                           }
                           disabled={isSwitchKeyDisable}
                         />
-                        <label for="switchMonthly">ED25519</label>
-                        <label for="switchYearly">RSA</label>
+                        <label className="label" for="switchMonthly">
+                          ED25519
+                        </label>
+                        <label className="label" for="switchYearly">
+                          RSA
+                        </label>
                         <div className={`switch-wrapper `}>
                           <div className={`switch`}>
                             <div className={`div-switch ${isSwitchKeyDisable ? 'disable' : ''}`}>ED25519</div>

@@ -1,7 +1,15 @@
 import React from 'react';
 
 const EnterpriseSmall = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+  <svg
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+    width="12"
+    height="12"
+    viewBox="0 0 12 12"
+    fill="none"
+    data-cy="enterprise-gradient-sm-icon"
+  >
     <path
       d="M8.46553 6.89224C5.77538 7.82721 4.88854 8.86825 4.23276 11.4612C3.57699 8.86825 2.69016 7.82721 0 6.89224C2.69016 5.95734 3.57699 4.91629 4.23276 2.32336C4.88854 4.91629 5.77538 5.95734 8.46553 6.89224Z"
       fill="url(#paint0_linear_7748_117958)"

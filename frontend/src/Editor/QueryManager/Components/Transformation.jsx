@@ -35,7 +35,7 @@ return data.filter(row => row.amount > 1000);
     `,
     python: `# write your code here
 # return value will be set as data and the original data will be available as rawData
-return [row for row in data if row['amount'] > 1000]
+[row for row in data if row['amount'] > 1000]
     `,
   };
 

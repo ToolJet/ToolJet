@@ -1,7 +1,7 @@
 FROM tooljet/tooljet:latest
 
 # copy postgrest executable
-COPY --from=postgrest/postgrest /bin/postgrest /bin
+COPY --from=postgrest/postgrest:v12.0.2 /bin/postgrest /bin
 
 
 # Install Postgres
@@ -61,6 +61,7 @@ ENV TOOLJET_HOST=http://localhost \
     REDIS_PORT=6379 \
     REDIS_USER=default \
     REDIS_PASS= \
+    ENABLE_MARKETPLACE_FEATURE=true \
     TERM=xterm
 
 # Set the entrypoint

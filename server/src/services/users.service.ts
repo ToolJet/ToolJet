@@ -168,6 +168,13 @@ export class UsersService {
     }, manager);
   }
 
+  async getAppOrganizationDetails(app: App): Promise<Organization> {
+    return this.organizationRepository.findOneOrFail({
+      select: ['id', 'slug'],
+      where: { id: app.organizationId },
+    });
+  }
+
   async findOne(id: string): Promise<User> {
     return this.usersRepository.findOne({ where: { id } });
   }

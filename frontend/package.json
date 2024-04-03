@@ -51,7 +51,7 @@
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.40",
     "papaparse": "^5.3.2",
-    "plotly.js-basic-dist-min": "^2.18.1",
+    "plotly.js-dist-min": "^2.29.1",
     "psl": "^1.9.0",
     "query-string": "^8.1.0",
     "rc-slider": "^10.1.1",
@@ -160,7 +160,7 @@
     "terser-webpack-plugin": "^5.3.6",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^4.11.1"
+    "webpack-dev-server": "4.11.1"
   },
   "overrides": {
     "react-dates": {

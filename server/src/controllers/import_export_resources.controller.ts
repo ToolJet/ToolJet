@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Body, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { User } from 'src/decorators/user.decorator';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
@@ -10,6 +10,8 @@ import { CloneResourcesDto } from '@dto/clone-resources.dto';
 import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/global-datasource-ability.factory';
 import { DataSource } from 'src/entities/data_source.entity';
 import { AppCountGuard } from '@ee/licensing/guards/app.guard';
+import { checkVersionCompatibility } from 'src/helpers/utils.helper';
+import { APP_ERROR_TYPE } from 'src/helpers/error_type.constant';
 
 @Controller({
   path: 'resources',
@@ -54,7 +56,10 @@ export class ImportExportResourcesController {
     if (importHasGlobalDatasource && !gdsAbility.can('createGlobalDataSource', DataSource)) {
       throw new ForbiddenException('You do not have create datasource permissions to perform this action');
     }
-
+    const isNotCompatibleVersion = !checkVersionCompatibility(importResourcesDto.tooljet_version);
+    if (isNotCompatibleVersion) {
+      throw new BadRequestException(APP_ERROR_TYPE.IMPORT_EXPORT_SERVICE.UNSUPPORTED_VERSION_ERROR);
+    }
     const imports = await this.importExportResourcesService.import(user, importResourcesDto);
     return { imports, success: true };
   }

@@ -40,7 +40,7 @@ RUN apt-get update -yq \
     && apt-get clean -y
 
 # copy postgrest executable
-COPY --from=postgrest/postgrest /bin/postgrest /bin
+COPY --from=postgrest/postgrest:v12.0.2 /bin/postgrest /bin
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"

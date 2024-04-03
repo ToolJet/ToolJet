@@ -212,7 +212,7 @@ export class WorkflowExecutionsService {
             addLog('If condition evaluated to ' + result);
             const sourceHandleToBeSkipped = result ? 'false' : 'true';
 
-            await this.completeNodeExecution(currentNode, JSON.stringify(result), {});
+            await this.completeNodeExecution(currentNode, JSON.stringify(result), { ...state });
 
             const edgeToBeSkipped = workflowExecution.edges.filter(
               (edge) =>

@@ -27,6 +27,7 @@ export default function EnvironmontConfirmationModal(props) {
   }, [data]);
 
   const handleClose = () => {
+    if (promtingEnvirontment) return;
     onClose();
     setShow(false);
   };

@@ -12,7 +12,7 @@ source "amazon-ebs" "ubuntu" {
   instance_type = "${var.instance_type}"
   region        = "${var.ami_region}"
   ami_regions   = "${var.ami_regions}"
-  ami_groups    = "${var.ami_groups}"  
+  ami_groups    = "${var.ami_groups}"
   
   source_ami_filter {
     filters = {
@@ -25,6 +25,15 @@ source "amazon-ebs" "ubuntu" {
   }
   ssh_username = "ubuntu"
   ssh_clear_authorized_keys = "true"
+  shutdown_behavior = "terminate"
+  force_delete_snapshot = "true"
+
+  launch_block_device_mappings {
+    device_name = "/dev/sda1"
+    volume_size = 10
+    delete_on_termination = true
+  }
+
 }
 
 build {
@@ -64,6 +73,5 @@ build {
 
   provisioner "shell" {
     script = "setup_machine.sh"
-    environment_vars = ["SSH_PRIVATE_KEY=${var.ssh_private_key}"]
   }
 }

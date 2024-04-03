@@ -56,6 +56,7 @@ describe('oauth controller', () => {
             sso: 'git',
             enabled: true,
             configs: { clientId: 'client-id' },
+            configScope: 'organization',
           },
         ],
         enableSignUp: true,

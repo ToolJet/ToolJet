@@ -35,7 +35,6 @@ import { ManageInstanceSettings, ManageWhiteLabelling } from '@/ManageInstanceSe
 import { ManageLicenseKey } from '@/ManageLicenseKey';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
-import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { CopilotSetting } from '@/CopilotSettings';
 import { CustomStylesEditor } from '@/CustomStylesEditor';
@@ -45,8 +44,10 @@ import 'react-tooltip/dist/react-tooltip.css';
 import LdapLoginPage from '../LdapLogin';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
+import InstanceLogin from '@/ManageInstanceSettings/InstanceLogin';
 import { ManageWorkspaceArchivePageComponent } from '@/_ui/ManageWorkspaceArchive/ManageWorspaceArchivePage';
 import WorkspaceConstants from '@/WorkspaceConstants';
+import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { SuperadminLoginPage } from '@/LoginPage/SuperadminLoginPage';
 
@@ -266,10 +267,10 @@ class AppComponent extends React.Component {
                   }
                 />
                 <Route
-                  path="sso"
+                  path="workspace-login"
                   element={
                     <AdminRoute>
-                      <ManageSSO switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      <OrganizationLogin switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </AdminRoute>
                   }
                 />
@@ -336,6 +337,10 @@ class AppComponent extends React.Component {
                 <Route
                   path="license"
                   element={<ManageLicenseKey switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="instance-login"
+                  element={<InstanceLogin switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
                 />
               </Route>
               <Route

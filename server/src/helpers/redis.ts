@@ -78,6 +78,7 @@ export class RedisPubSub {
     this.subscriber.on('message', (channel: string, message: any) => {
       if (channel.includes('-awareness')) {
         const pdoc = this.docs.get(channel.replace('-awareness', ''));
+        if (!pdoc) return;
         try {
           awarenessProtocol.applyAwarenessUpdate(
             pdoc.doc.awareness,

@@ -70,7 +70,6 @@ import { EMPTY_ARRAY, useEditorActions, useEditorState, useEditorStore } from '@
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
-import { useSocketOpen } from '@/_hooks/use-socket-open';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
@@ -86,7 +85,6 @@ const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).to
 
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
-  const isSocketOpen = useSocketOpen(socket);
   const mounted = useMounted();
 
   const {
@@ -108,15 +106,17 @@ const EditorComponent = (props) => {
   } = useEditorActions();
 
   const { setAppVersionCurrentEnvironment, setAppVersionPromoted, onEditorFreeze } = useAppVersionActions();
-  const { isVersionReleased, editingVersionId, releasedVersionId, isEditorFreezed } = useAppVersionStore(
-    (state) => ({
-      isVersionReleased: state?.isVersionReleased,
-      editingVersionId: state?.editingVersion?.id,
-      releasedVersionId: state?.releasedVersionId,
-      isEditorFreezed: state?.isEditorFreezed,
-    }),
-    shallow
-  );
+  const { isVersionReleased, editingVersionId, releasedVersionId, isEditorFreezed, isBannerMandatory } =
+    useAppVersionStore(
+      (state) => ({
+        isVersionReleased: state?.isVersionReleased,
+        editingVersionId: state?.editingVersion?.id,
+        releasedVersionId: state?.releasedVersionId,
+        isEditorFreezed: state?.isEditorFreezed,
+        isBannerMandatory: state?.isBannerMandatory,
+      }),
+      shallow
+    );
 
   const {
     appDefinition,
@@ -216,7 +216,6 @@ const EditorComponent = (props) => {
 
   useEffect(() => {
     updateState({ isLoading: true });
-    (app.creation_mode === 'GIT' || app.creationMode === 'GIT') && onEditorFreeze(true);
     const currentSession = authenticationService.currentSessionValue;
     const currentUser = {
       ...currentSession?.current_user,
@@ -498,7 +497,6 @@ const EditorComponent = (props) => {
 
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
-
     await fetchApp(props.params.pageHandle);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
@@ -741,6 +739,10 @@ const EditorComponent = (props) => {
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
 
+    //Freeze the app
+    const { should_freeze_editor } = data;
+    onEditorFreeze(should_freeze_editor);
+
     if (!environmentSwitch && (!releasedVersionId || !versionSwitched)) {
       const releasedId = data.current_version_id || data.currentVersionId;
       releasedId && useAppVersionStore.getState().actions.updateReleasedVersionId(releasedId);
@@ -808,9 +810,6 @@ const EditorComponent = (props) => {
       },
     });
 
-    if (data.creationMode === 'GIT') {
-      onEditorFreeze(true);
-    }
     updateEditorState({
       isLoading: false,
       appDefinition: appJson,
@@ -868,7 +867,6 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
-      if (appData.creationMode !== 'GIT') onEditorFreeze(false);
       setAppVersionPromoted(false);
       callBack(appData, null, versionSwitched, isEnvironmentSwitched, selectedEnvironmentId, extraProps);
       initComponentVersioning();
@@ -1847,7 +1845,7 @@ const EditorComponent = (props) => {
       />
       {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
       {isVersionReleased && <ReleasedVersionError />}
-      {!isVersionReleased && isEditorFreezed && creationMode !== 'GIT' && <FreezeVersionInfo />}
+      {!isVersionReleased && isEditorFreezed && isBannerMandatory && creationMode !== 'GIT' && <FreezeVersionInfo />}
       <EditorContextWrapper handleYmapEventUpdates={handleYmapEventUpdates}>
         <EditorHeader
           darkMode={props.darkMode}
@@ -1873,7 +1871,6 @@ const EditorComponent = (props) => {
           setCurrentAppVersionPromoted={(isCurrentVersionPromoted) => setAppVersionPromoted(isCurrentVersionPromoted)}
           fetchEnvironments={fetchEnvironments}
           isEditorFreezed={isEditorFreezed}
-          isSocketOpen={isSocketOpen}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">

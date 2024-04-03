@@ -68,6 +68,7 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonUploadCsvFile
   );
+
   cy.get(usersSelector.addUsersCardTitle).verifyVisibleElement(
     "have.text",
     usersText.addUsersCardTitle
@@ -121,6 +122,15 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonDownloadTemplate
   );
+
+  cy.exec("cd ./cypress/downloads/ && rm -rf *");
+  cy.get(usersSelector.buttonDownloadTemplate).click();
+  cy.wait(4000)
+  cy.exec("ls ./cypress/downloads/").then((result) => {
+    const downloadedAppExportFileName = result.stdout.split("\n")[0];
+    expect(downloadedAppExportFileName).to.contain.string("sample_upload.csv");
+  });
+
   cy.get(usersSelector.iconBulkUpload).should("be.visible");
   cy.get(usersSelector.helperTextSelectFile).verifyVisibleElement(
     "have.text",
@@ -263,17 +273,15 @@ export const fillUserInviteForm = (firstName, email) => {
 
 export const selectUserGroup = (groupName) => {
   cy.wait(1500);
-
   cy.get("body").then(($body) => {
     const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
 
     if (selectDropdown.length === 0) {
       cy.get('[data-cy="user-group-select"]>>>>>').click();
     }
-
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName);
     cy.wait(1000);
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(2).click();
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
   });
 };
 
@@ -295,11 +303,11 @@ export const inviteUserWithUserGroups = (
     }
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName1);
     cy.wait(1000);
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(2).click();
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
     cy.wait(1000);
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName2);
     cy.wait(1000);
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(4).click();
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
   });
 
   cy.get(usersSelector.buttonInviteUsers).click();
