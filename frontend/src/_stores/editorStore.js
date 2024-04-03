@@ -63,14 +63,18 @@ export const useEditorStore = create(
       setIsEditorActive: (isEditorActive) => set(() => ({ isEditorActive })),
       updateEditorState: (state) => set((prev) => ({ ...prev, ...state })),
       updateCurrentStateDiff: (currentStateDiff) => set(() => ({ currentStateDiff })),
-      updateComponentsNeedsUpdateOnNextRender: (componentsNeedsUpdateOnNextRender) =>
-        set(() => ({ componentsNeedsUpdateOnNextRender })),
-      flushComponentsNeedsUpdateOnNextRender: () => {
+      updateComponentsNeedsUpdateOnNextRender: (componentsNeedsUpdateOnNextRender) => {
+        console.log('---bacth---arpit::', { componentsNeedsUpdateOnNextRender });
+        set(() => ({ componentsNeedsUpdateOnNextRender }));
+      },
+      flushComponentsNeedsUpdateOnNextRender: (toRemoveIds = []) => {
         const currentComponents = get().componentsNeedsUpdateOnNextRender;
 
-        if (currentComponents.length === 0) return;
+        if (currentComponents.length === 0 || toRemoveIds.length === 0) return;
 
-        set(() => ({ componentsNeedsUpdateOnNextRender: [] }));
+        const updatedComponents = currentComponents.filter((item) => !toRemoveIds.includes(item));
+
+        set(() => ({ componentsNeedsUpdateOnNextRender: updatedComponents }));
       },
 
       updateQueryConfirmationList: (queryConfirmationList) => set({ queryConfirmationList }),
@@ -110,7 +114,10 @@ export const getComponentsToRenders = () => {
   return useEditorStore.getState().componentsNeedsUpdateOnNextRender;
 };
 
-export const flushComponentsToRender = (componentId) => {
-  console.log('--arpit:: flush', componentId);
-  useEditorStore.getState().actions.flushComponentsNeedsUpdateOnNextRender();
+export const flushComponentsToRender = (componentIds = []) => {
+  if (!componentIds.length) return;
+
+  console.log('--arpit:: flush', { componentIds });
+
+  useEditorStore.getState().actions.flushComponentsNeedsUpdateOnNextRender(componentIds);
 };

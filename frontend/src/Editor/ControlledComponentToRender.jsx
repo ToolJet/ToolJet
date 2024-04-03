@@ -36,12 +36,12 @@ export const shouldUpdate = (prevProps, nextProps) => {
 const ComponentWrapper = React.memo(({ componentName, ...props }) => {
   const ComponentToRender = getComponentToRender(componentName);
 
-  const renderCount = useRenderCount();
+  // const renderCount = useRenderCount();
 
-  useEffect(() => {
-    flushComponentsToRender(props?.id);
-  }),
-    [renderCount];
+  // useEffect(() => {
+  //   flushComponentsToRender(props?.id);
+  // }),
+  //   [renderCount];
 
   return <ComponentToRender {...props} />;
 }, shouldUpdate);

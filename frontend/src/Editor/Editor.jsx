@@ -70,7 +70,7 @@ import {
   resetAllStores,
 } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
-import { EMPTY_ARRAY, useEditorActions, useEditorStore } from '@/_stores/editorStore';
+import { EMPTY_ARRAY, flushComponentsToRender, useEditorActions, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useNoOfGrid } from '@/_stores/gridStore';
 import { useMounted } from '@/_hooks/use-mount';
@@ -214,6 +214,8 @@ const EditorComponent = (props) => {
   const prevAppDefinition = useRef(appDefinition);
   const prevEventsStoreRef = useRef(events);
 
+  const onAppLoadAndPageLoadEventsAreTriggered = useRef(false);
+
   useLayoutEffect(() => {
     resetAllStores();
   }, []);
@@ -296,18 +298,108 @@ const EditorComponent = (props) => {
 
   const currentStateDiff = useEditorStore.getState().currentStateDiff;
 
+  const prevCurrentStateRef = useRef(currentState);
+
+  function generatePath(obj, targetKey, currentPath = '') {
+    for (const key in obj) {
+      const newPath = currentPath ? currentPath + '.' + key : key;
+
+      if (key === targetKey) {
+        return newPath;
+      }
+
+      if (typeof obj[key] === 'object' && obj[key] !== null) {
+        const result = generatePath(obj[key], targetKey, newPath);
+        if (result) {
+          return result;
+        }
+      }
+    }
+    return null;
+  }
+
+  async function batchUpdateComponents(componentIds) {
+    if (componentIds.length === 0) return;
+
+    let updatedComponentIds = [];
+
+    for (let i = 0; i < componentIds.length; i += 10) {
+      const batch = componentIds.slice(i, i + 10);
+      batch.forEach((id) => {
+        // Logic to update component, if successful, add to updatedComponentIds
+        updatedComponentIds.push(id);
+      });
+
+      updateComponentsNeedsUpdateOnNextRender(batch);
+      // Delay to allow UI to process
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    // Flush only updated components
+    flushComponentsToRender(updatedComponentIds);
+  }
+
   useEffect(() => {
     const isEditorReady = useCurrentStateStore.getState().isEditorReady;
-    if (isEditorReady && currentStateDiff?.length > 0) {
+
+    if (!isEditorReady || !onAppLoadAndPageLoadEventsAreTriggered.current) return;
+
+    const diffState = diff(prevCurrentStateRef.current, currentState);
+
+    if (Object.keys(diffState).length > 0) {
+      const entitiesToTrack = ['queries', 'components', 'variables', 'page', 'constants'];
+
+      const entitiesChanged = Object.keys(diffState).filter((entity) => entitiesToTrack.includes(entity));
+
+      //
+
+      if (entitiesChanged.length === 0) return;
+
+      const diffObj = entitiesChanged.reduce((acc, entity) => {
+        acc[entity] = diffState[entity];
+        return acc;
+      }, {});
+
+      console.log('---doru::: diffObj', { diffObj });
+
+      const allPaths = entitiesChanged.reduce((acc, entity) => {
+        const paths = Object.keys(diffObj[entity]).map((key) => {
+          return generatePath(diffObj[entity], key);
+        });
+
+        acc[entity] = paths.map((path) => `${entity}.${path}`);
+        return acc;
+      }, {});
+
+      const currentStatePaths = Object.values(allPaths).flat();
+
       const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
-      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStateDiff);
+      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStatePaths);
+
+      console.log('---doru::: componentIdsWithReferences', { entitiesChanged, componentIdsWithReferences });
 
       if (componentIdsWithReferences.length > 0) {
-        updateComponentsNeedsUpdateOnNextRender(componentIdsWithReferences);
+        // updateComponentsNeedsUpdateOnNextRender(componentIdsWithReferences);
+        batchUpdateComponents(componentIdsWithReferences);
       }
+
+      prevCurrentStateRef.current = currentState;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentState)]);
+
+  // useEffect(() => {
+  //   const isEditorReady = useCurrentStateStore.getState().isEditorReady;
+  //   if (isEditorReady && currentStateDiff?.length > 0) {
+  //     const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
+  //     const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStateDiff);
+
+  //     if (componentIdsWithReferences.length > 0) {
+  //       updateComponentsNeedsUpdateOnNextRender(componentIdsWithReferences);
+  //     }
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [JSON.stringify(currentState)]);
 
   useEffect(
     () => {
@@ -894,6 +986,7 @@ const EditorComponent = (props) => {
         handleLowPriorityWork(async () => {
           await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
           await handleEvent('onPageLoad', currentPageEvents, {}, true);
+          await handleLowPriorityWork(() => (onAppLoadAndPageLoadEventsAreTriggered.current = true));
         });
       });
   };
