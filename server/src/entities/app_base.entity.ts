@@ -1,27 +1,23 @@
 import {
   Entity,
-  AfterLoad,
-  AfterInsert,
-  getRepository,
-  getManager,
   Column,
-  CreateDateColumn,
-  JoinColumn,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
+  CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
   BaseEntity,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
-import { AppVersion } from './app_version.entity';
-import { AppGroupPermission } from './app_group_permission.entity';
-import { GroupPermission } from './group_permission.entity';
 import { User } from './user.entity';
+import { AppVersion } from './app_version.entity';
+import { GroupPermission } from './group_permission.entity';
+import { AppGroupPermission } from './app_group_permission.entity';
 
 @Entity({ name: 'apps' })
-export class App extends BaseEntity {
+export class AppBase extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -78,22 +74,4 @@ export class App extends BaseEntity {
 
   @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, { onDelete: 'CASCADE' })
   appGroupPermissions: AppGroupPermission[];
-
-  public editingVersion;
-
-  @AfterInsert()
-  async updateSlug(): Promise<void> {
-    if (!this.slug) {
-      const appRepository = getRepository(App);
-      await appRepository.update(this.id, { slug: this.id });
-    }
-  }
-
-  @AfterLoad()
-  async afterLoad(): Promise<void> {
-    this.editingVersion = await getManager().findOne(AppVersion, {
-      where: { appId: this.id },
-      order: { updatedAt: 'DESC' },
-    });
-  }
 }
