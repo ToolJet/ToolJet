@@ -283,7 +283,7 @@ const EditorComponent = (props) => {
     if (mounted && didAppDefinitionChanged && currentPageId) {
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
-      computeComponentState(components);
+      // computeComponentState(components);
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
@@ -294,20 +294,61 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
 
-  const currentStateDiff = useEditorStore.getState().currentStateDiff;
-  useEffect(() => {
-    const isEditorReady = useCurrentStateStore.getState().isEditorReady;
+  const prevCurrentStateRef = useRef(currentState);
 
-    if (isEditorReady && currentStateDiff?.length > 0) {
+  function generatePath(obj, targetKey, currentPath = '') {
+    for (const key in obj) {
+      const newPath = currentPath ? currentPath + '.' + key : key;
+
+      if (key === targetKey) {
+        return newPath;
+      }
+
+      if (typeof obj[key] === 'object' && obj[key] !== null) {
+        const result = generatePath(obj[key], targetKey, newPath);
+        if (result) {
+          return result;
+        }
+      }
+    }
+    return null;
+  }
+
+  useEffect(() => {
+    const diffState = diff(prevCurrentStateRef.current, currentState);
+
+    if (Object.keys(diffState).length > 0) {
+      const entitiesToTrack = ['queries', 'components', 'variables', 'page', 'constants', 'layout'];
+
+      const entitiesChanged = Object.keys(diffState).filter((entity) => entitiesToTrack.includes(entity));
+
+      const diffObj = entitiesChanged.reduce((acc, entity) => {
+        acc[entity] = diffState[entity];
+        return acc;
+      }, {});
+
+      const allPaths = entitiesChanged.reduce((acc, entity) => {
+        const paths = Object.keys(diffObj[entity]).map((key) => {
+          return generatePath(diffObj[entity], key);
+        });
+
+        acc[entity] = paths.map((path) => `${entity}.${path}`);
+        return acc;
+      }, {});
+
+      const currentStatePaths = Object.values(allPaths).flat();
+
       const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
-      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStateDiff);
+      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStatePaths);
 
       if (componentIdsWithReferences.length > 0) {
         updateComponentsNeedsUpdateOnNextRender(componentIdsWithReferences);
       }
+
+      prevCurrentStateRef.current = currentState;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(currentStateDiff)]);
+  }, [JSON.stringify(currentState)]);
 
   useEffect(
     () => {
@@ -344,14 +385,6 @@ const EditorComponent = (props) => {
       });
     }
   }, [currentLayout, mounted]);
-
-  const handleYmapEventUpdates = () => {
-    props.ymap?.set('eventHandlersUpdated', {
-      currentVersionId: currentVersionId,
-      currentSessionId: currentSessionId,
-      update: true,
-    });
-  };
 
   const handleMessage = (event) => {
     const { data } = event;
@@ -743,13 +776,12 @@ const EditorComponent = (props) => {
 
     useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
-    });
-
-    updateEditorState({
-      isLoading: false,
-      appDefinition: appJson,
-      isUpdatingEditorStateInProcess: false,
-    });
+    }),
+      updateEditorState({
+        isLoading: false,
+        appDefinition: appJson,
+        isUpdatingEditorStateInProcess: false,
+      });
 
     updateState({ components: appJson.pages[homePageId]?.components });
 
@@ -889,6 +921,8 @@ const EditorComponent = (props) => {
             events: newEvents,
           });
         }
+
+        computeComponentState(currentComponents);
       })
       .finally(async () => {
         const currentPageEvents = data.events.filter(

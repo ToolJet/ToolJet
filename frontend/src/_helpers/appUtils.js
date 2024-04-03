@@ -73,79 +73,85 @@ const debouncedChange = _.debounce(() => {
 }, 100);
 
 export function onComponentOptionsChanged(component, options) {
-  const componentName = component.name;
   const { isEditorReady } = getCurrentState();
 
-  if (isEditorReady) {
-    if (duplicateCurrentState !== null) {
-      duplicateCurrentState = null;
-    }
+  if (!isEditorReady) return Promise.resolve();
 
-    const components = getCurrentState().components;
-    let componentData = components[componentName];
-    componentData = componentData || {};
+  const componentName = component.name;
 
-    for (const option of options) {
-      componentData[option[0]] = option[1];
-    }
+  // if (duplicateCurrentState !== null) {
+  //   duplicateCurrentState = null;
+  // }
 
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: { ...components, [componentName]: componentData },
-    });
-  } else {
-    const components = duplicateCurrentState === null ? getCurrentState().components : duplicateCurrentState;
-    let componentData = components[componentName];
-    componentData = componentData || {};
+  const components = getCurrentState().components;
+  let componentData = components[componentName];
+  componentData = componentData || {};
 
-    for (const option of options) {
-      componentData[option[0]] = option[1];
-    }
-
-    duplicateCurrentState = { ...components, [componentName]: componentData };
-
-    debouncedChange();
+  for (const option of options) {
+    componentData[option[0]] = option[1];
   }
+
+  useCurrentStateStore.getState().actions.setCurrentState({
+    components: { ...components, [componentName]: componentData },
+  });
   return Promise.resolve();
 }
 
+// export function onComponentOptionChanged(component, option_name, value) {
+//   const componentName = component.name;
+//   const { isEditorReady } = getCurrentState();
+//   if (isEditorReady) {
+//     if (duplicateCurrentState !== null) {
+//       duplicateCurrentState = null;
+//     }
+//     const components = getCurrentState().components;
+//     let componentData = components[componentName];
+//     componentData = componentData || {};
+//     componentData[option_name] = value;
+
+//     if (option_name !== 'id') {
+//       useCurrentStateStore.getState().actions.setCurrentState({
+//         components: { ...components, [componentName]: componentData },
+//       });
+//     } else if (!componentData?.id) {
+//       useCurrentStateStore.getState().actions.setCurrentState({
+//         components: { ...components, [componentName]: componentData },
+//       });
+//     }
+
+//     useCurrentStateStore.getState().actions.setCurrentState({
+//       components: { ...components, [componentName]: componentData },
+//     });
+//   } else {
+//     const components = duplicateCurrentState === null ? getCurrentState().components : duplicateCurrentState;
+//     let componentData = components[componentName];
+//     componentData = componentData || {};
+//     componentData[option_name] = value;
+
+//     duplicateCurrentState = { ...components, [componentName]: componentData };
+//     if (option_name !== 'id') {
+//       debouncedChange();
+//     } else if (!componentData?.id) {
+//       debouncedChange();
+//     }
+//   }
+
+//   return Promise.resolve();
+// }
+
 export function onComponentOptionChanged(component, option_name, value) {
+  const { isEditorReady, components: currentComponents } = getCurrentState();
+
+  if (!isEditorReady) return Promise.resolve();
+
   const componentName = component.name;
-  const { isEditorReady } = getCurrentState();
-  if (isEditorReady) {
-    if (duplicateCurrentState !== null) {
-      duplicateCurrentState = null;
-    }
-    const components = getCurrentState().components;
-    let componentData = components[componentName];
-    componentData = componentData || {};
-    componentData[option_name] = value;
+  const components = duplicateCurrentState === null ? currentComponents : duplicateCurrentState;
+  let componentData = components[componentName] || {};
+  componentData[option_name] = value;
 
-    if (option_name !== 'id') {
-      useCurrentStateStore.getState().actions.setCurrentState({
-        components: { ...components, [componentName]: componentData },
-      });
-    } else if (!componentData?.id) {
-      useCurrentStateStore.getState().actions.setCurrentState({
-        components: { ...components, [componentName]: componentData },
-      });
-    }
-
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: { ...components, [componentName]: componentData },
-    });
-  } else {
-    const components = duplicateCurrentState === null ? getCurrentState().components : duplicateCurrentState;
-    let componentData = components[componentName];
-    componentData = componentData || {};
-    componentData[option_name] = value;
-
-    duplicateCurrentState = { ...components, [componentName]: componentData };
-    if (option_name !== 'id') {
-      debouncedChange();
-    } else if (!componentData?.id) {
-      debouncedChange();
-    }
-  }
+  useCurrentStateStore.getState().actions.setCurrentState({
+    components: { ...components, [componentName]: componentData },
+  });
 
   return Promise.resolve();
 }
@@ -1379,11 +1385,14 @@ export function computeComponentState(components = {}) {
       }
     });
 
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: {
-        ...componentState,
+    useCurrentStateStore.getState().actions.setCurrentState(
+      {
+        components: {
+          ...componentState,
+        },
       },
-    });
+      'componentStateComputed'
+    );
 
     return new Promise((resolve) => {
       useEditorStore.getState().actions.updateEditorState({
