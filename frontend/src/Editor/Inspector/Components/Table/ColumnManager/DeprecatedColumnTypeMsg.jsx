@@ -44,7 +44,7 @@ const DeprecatedColumnTypeMsg = ({ columnType }) => {
   if (!deprecatedColumnType) return null;
   return (
     <div
-      className="d-flex"
+      className="d-flex mx-3"
       style={{ padding: '12px 16px', gap: '6px', backgroundColor: '#FCEEEF', borderRadius: '6px' }}
     >
       <span>

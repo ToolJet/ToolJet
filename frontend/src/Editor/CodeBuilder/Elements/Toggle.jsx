@@ -10,7 +10,10 @@ export const Toggle = ({ value, onChange, cyLabel, meta }) => {
             style={{ marginBottom: '0px', paddingLeft: '28px' }}
           >
             {meta.toggleLabel && (
-              <span className="font-weight-400 font-size-12 d-flex align-items-center" style={{ marginRight: '78px' }}>
+              <span
+                className="font-weight-400 font-size-12 d-flex align-items-center color-slate12"
+                style={{ marginRight: '78px' }}
+              >
                 {meta.toggleLabel}
               </span>
             )}
