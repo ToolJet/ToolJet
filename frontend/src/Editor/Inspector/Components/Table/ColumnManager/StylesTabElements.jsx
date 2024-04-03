@@ -183,6 +183,57 @@ export const StylesTabElements = ({
           </div>
         </>
       )}
+
+      {column.columnType === 'link' && (
+        <>
+          <div data-cy={`input-and-label-text-color`} className="field px-3">
+            <ProgramaticallyHandleProperties
+              label="Link color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="linkColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'color', displayName: 'Link color' }}
+              paramType="properties"
+            />
+          </div>
+          <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
+            <ProgramaticallyHandleProperties
+              label="Underline color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="underlineColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'color', displayName: 'Underline color' }}
+              paramType="properties"
+            />
+          </div>
+          <div className="d-flex px-3 flex-column custom-gap-16">
+            <div
+              data-cy={`input-overflow`}
+              className="field  d-flex custom-gap-12 align-items-center align-self-stretch"
+            >
+              <label data-cy={`label-overflow`} className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
+                Show underline
+              </label>
+              <ToggleGroup
+                onValueChange={(_value) => onColumnItemChange(index, 'underline', _value)}
+                defaultValue={column.underline || 'hover'}
+                style={{ flex: '1 1 0' }}
+              >
+                <ToggleGroupItem value="hover">Hover</ToggleGroupItem>
+                <ToggleGroupItem value="always">Always</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 };

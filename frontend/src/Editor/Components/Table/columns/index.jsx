@@ -146,7 +146,6 @@ export default function generateColumnsData({
           case undefined:
           case 'default': {
             const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
-
             const cellStyles = {
               color: textColor ?? '',
               overflow: 'hidden',
@@ -711,10 +710,23 @@ export default function generateColumnsData({
             );
           }
           case 'link': {
-            const linkTarget = resolveReferences(column?.linkTarget ?? '_blank', currentState);
+            const linkTarget = resolveReferences(column?.linkTarget ?? '{{true}}', currentState);
+            column = {
+              ...column,
+              linkColor: column?.linkColor ?? '#1B1F24',
+              underlineColor: column?.underlineColor ?? '#4368E3',
+            };
             return (
               <div className="h-100 d-flex align-items-center">
-                <Link cellValue={cellValue} linkTarget={linkTarget} />
+                <Link
+                  cellValue={cellValue}
+                  linkTarget={linkTarget}
+                  linkColor={column.linkColor}
+                  underlineColor={column.underlineColor}
+                  underline={column.underline}
+                  displayText={column.displayText}
+                  darkMode={darkMode}
+                />
               </div>
             );
           }
