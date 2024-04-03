@@ -32,6 +32,12 @@
       "type": "text",
       "description": "Appwrite project id"
     },
+    "database_id": {
+      "label": "Database ID",
+      "key": "database_id",
+      "type": "text",
+      "description": "Appwrite Database id"
+    },
     "secret_key": {
       "label": "Secret Key",
       "key": "secret_key",

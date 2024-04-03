@@ -2,11 +2,12 @@ export type SourceOptions = {
   host: string;
   project_id: string;
   secret_key: string;
+  database_id: string;
 };
 export type QueryOptions = {
   operation: string;
   collectionId: string;
-  limit: number;
+  limit: string;
   documentId: string;
   body: any;
   document_id_key: string;
