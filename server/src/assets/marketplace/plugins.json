@@ -57,6 +57,14 @@
     "timestamp": "Tue, 05 Dec 2023 00:27:16 GMT"
   },
   {
+    "name": "PocketBase",
+    "description": "API plugin from pocketbase",
+    "version": "1.0.0",
+    "id": "pocketbase",
+    "author": "Tooljet",
+    "timestamp": "Mon, 18 Mar 2024 14:39:34 GMT"
+  },
+  {
     "name": "Engagespot",
     "description": "Plugin for engagespot APIs",
     "version": "1.0.0",
