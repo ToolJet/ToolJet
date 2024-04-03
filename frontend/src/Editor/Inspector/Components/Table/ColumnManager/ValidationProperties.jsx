@@ -35,7 +35,12 @@ export const ValidationProperties = ({
       case 'text': {
         const properties = [];
         if (column.columnType !== 'text') {
-          properties.push({ property: 'regex', dateCy: 'input-and-label-regex', label: 'Regex' });
+          properties.push({
+            property: 'regex',
+            dateCy: 'input-and-label-regex',
+            label: 'Regex',
+            placeholder: `${/^[\w\s\d]+$/i}`,
+          });
         }
         properties.push(
           [
@@ -65,7 +70,7 @@ export const ValidationProperties = ({
       }
       case 'number':
         return [
-          { property: 'regex', dateCy: 'input-and-label-regex', label: 'Regex' },
+          { property: 'regex', dateCy: 'input-and-label-regex', label: 'Regex', placeholder: `${/^[\w\s\d]+$/i}` },
           [
             {
               property: 'minValue',
@@ -89,7 +94,15 @@ export const ValidationProperties = ({
         ];
       case 'dropdown':
       case 'select':
-        return [{ property: 'customRule', dateCy: 'input-and-label-custom-rule', label: 'Custom rule' }];
+      case 'newMultiSelect':
+        return [
+          {
+            property: 'customRule',
+            dateCy: 'input-and-label-custom-rule',
+            label: 'Custom rule',
+            placeholder: 'eg. {{ 1 < 2 }}',
+          },
+        ];
       case 'datepicker': {
         const isTimeChecked = column?.isTimeChecked;
         const properties = [];
@@ -144,6 +157,7 @@ export const ValidationProperties = ({
 
         return properties;
       }
+
       default:
         return [];
     }

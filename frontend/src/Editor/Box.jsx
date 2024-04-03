@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext, useRef, memo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useContext, memo } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -42,7 +42,6 @@ import { Html } from './Components/Html';
 import { ButtonGroup } from './Components/ButtonGroup';
 import { CustomComponent } from './Components/CustomComponent/CustomComponent';
 import { VerticalDivider } from './Components/verticalDivider';
-import { PDF } from './Components/PDF';
 import { ColorPicker } from './Components/ColorPicker';
 import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import { Kanban } from './Components/Kanban/Kanban';
@@ -68,8 +67,8 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
-import WidgetIcon from '@/../assets/images/icons/widgets';
 import { useModuleName } from '../_contexts/ModuleContext';
+import { isPDFSupported } from '@/_stores/utils';
 
 export const AllComponents = {
   Button,
@@ -114,7 +113,6 @@ export const AllComponents = {
   ButtonGroup,
   CustomComponent,
   VerticalDivider,
-  PDF,
   ColorPicker,
   KanbanBoard,
   Kanban,
@@ -125,6 +123,14 @@ export const AllComponents = {
   Form,
   BoundedBox,
 };
+
+/**
+ * Conditionally importing PDF component since importing it breaks app in older versions of browsers.
+ * refer: https://github.com/wojtekmaj/react-pdf?tab=readme-ov-file#compatibility
+ **/
+if (isPDFSupported()) {
+  AllComponents.PDF = await import('./Components/PDF').then((module) => module.PDF);
+}
 
 export const Box = memo(
   ({
@@ -159,6 +165,7 @@ export const Box = memo(
     const currentState = useCurrentState();
     const moduleName = useModuleName();
     const { events } = useAppInfo();
+    const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
     const componentMeta = useMemo(() => {
       return componentTypes.find((comp) => component.component === comp.component);
@@ -174,14 +181,18 @@ export const Box = memo(
       mode === 'edit' && component.validate
         ? validateProperties(resolvedProperties, componentMeta.properties)
         : [resolvedProperties, []];
+    if (shouldAddBoxShadowAndVisibility.includes(component.component)) {
+      validatedProperties.visibility = validatedProperties.visibility !== false ? true : false;
+    }
 
     const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
-
     const [validatedStyles, styleErrors] =
       mode === 'edit' && component.validate
         ? validateProperties(resolvedStyles, componentMeta.styles)
         : [resolvedStyles, []];
-
+    if (!shouldAddBoxShadowAndVisibility.includes(component.component)) {
+      validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
+    }
     const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
     const [validatedGeneralProperties, generalPropertiesErrors] =
       mode === 'edit' && component.validate
@@ -189,7 +200,7 @@ export const Box = memo(
         : [resolvedGeneralProperties, []];
 
     const resolvedGeneralStyles = resolveGeneralStyles(component, currentState, null, customResolvables);
-    resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
+
     const [validatedGeneralStyles, generalStylesErrors] =
       mode === 'edit' && component.validate
         ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
@@ -279,13 +290,16 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
-    const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
+    // const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'Table'];
+
+    const shouldHideWidget = component.component === 'PDF' && !isPDFSupported();
+
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
         delay={{ show: 500, hide: 0 }}
         trigger={
-          inCanvas && shouldAddBoxShadow.includes(component.component)
+          inCanvas && shouldAddBoxShadowAndVisibility.includes(component.component)
             ? !validatedProperties.tooltip?.toString().trim()
               ? null
               : ['hover', 'focus']
@@ -298,7 +312,7 @@ export const Box = memo(
             props,
             text: inCanvas
               ? `${
-                  shouldAddBoxShadow.includes(component.component)
+                  shouldAddBoxShadowAndVisibility.includes(component.component)
                     ? validatedProperties.tooltip
                     : validatedGeneralProperties.tooltip
                 }`
@@ -314,7 +328,7 @@ export const Box = memo(
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >
-          {!resetComponent ? (
+          {!resetComponent && !shouldHideWidget ? (
             <ComponentToRender
               onComponentClick={onComponentClick}
               onComponentOptionChanged={onComponentOptionChanged}
@@ -335,7 +349,7 @@ export const Box = memo(
               exposedVariables={exposedVariables}
               styles={{
                 ...validatedStyles,
-                ...(!shouldAddBoxShadow.includes(component.component)
+                ...(!shouldAddBoxShadowAndVisibility.includes(component.component)
                   ? { boxShadow: validatedGeneralStyles?.boxShadow }
                   : {}),
               }}

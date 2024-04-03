@@ -9,7 +9,9 @@ import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import MoreVertical from '@/_ui/Icon/solidIcons/MoreVertical';
 import SortableList from '@/_components/SortableList';
-import { resolveReferences } from '@/_helpers/utils';
+import { DeprecatedColumnTooltip } from '@/Editor/Inspector/Components/Table/ColumnManager/DeprecatedColumnTypeMsg';
+import Icons from '@/_ui/Icon/solidIcons/index';
+
 function List({ children, ...restProps }) {
   return <ListGroup {...restProps}>{children}</ListGroup>;
 }
@@ -28,6 +30,8 @@ function ListItem({
   showCopyColumnOption = false,
   showVisibilityIcon = false,
   isColumnVisible = true,
+  columnType,
+  isDeprecated,
   ...restProps
 }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -53,7 +57,13 @@ function ListItem({
             style={Icon ? { paddingLeft: '0px' } : { paddingLeft: '8px' }}
           >
             {primaryText}
-            <span className="list-item-secondary-text">{secondaryText}</span>
+            {isDeprecated && (
+              <DeprecatedColumnTooltip columnType={columnType}>
+                <span className={'list-item-deprecated-column-type'}>
+                  <Icons name={'warning'} height={14} width={14} fill="#DB4324" />
+                </span>
+              </DeprecatedColumnTooltip>
+            )}
             {isEditable && (
               <span style={{ marginLeft: '8px' }}>
                 <Edit width={16} />
@@ -64,6 +74,7 @@ function ListItem({
                 <SolidIcon name="eyedisable" width={16} />
               </span>
             )}
+            <span className="list-item-secondary-text">{secondaryText}</span>
           </div>
           <div className="col-auto d-flex align-items-center custom-gap-4">
             <OverlayTrigger
@@ -120,7 +131,7 @@ function ListItem({
                 )}
               </span>
             </OverlayTrigger>
-            {showCopyColumnOption && (
+            {showCopyColumnOption && isHovered && (
               <ButtonSolid
                 variant="ghostBlack"
                 size="xs"
@@ -136,7 +147,7 @@ function ListItem({
                 </span>
               </ButtonSolid>
             )}
-            {deleteIconOutsideMenu && (
+            {deleteIconOutsideMenu && isHovered && (
               <ButtonSolid
                 variant="danger"
                 size="xs"

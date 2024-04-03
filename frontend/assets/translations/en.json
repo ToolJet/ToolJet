@@ -706,7 +706,7 @@
             "columnType": "Column type",
             "columnName": "Column name",
             "overflow": "Overflow",
-            "key": "key",
+            "key": "Key",
             "textColor": "Text color",
             "validation": "Validation",
             "regex": "Regex",
@@ -728,6 +728,7 @@
             "addNewColumn": "Add new column",
             "noActionMessage": "This table doesn't have any action buttons",
             "horizontalAlignment":"Horizontal alignment",
+            "textAlignment":"Text alignment",
             "deciamalPlaces":"Decimal Places",
             "imageFit":"Image fit"
         },
