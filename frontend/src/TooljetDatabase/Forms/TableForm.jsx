@@ -41,20 +41,57 @@ const TableForm = ({
     toast.dismiss();
   }, []);
 
-  function createComparisonArray(a, b) {
-    const maxLength = Object.keys(a).length;
-    const comparisonArray = [];
+  function bodyColumns(columns, arrayOfTableColumns) {
+    let newArray = [];
 
-    for (let i = 0; i < maxLength; i++) {
-      comparisonArray.push({
-        newColumn: a[i] !== undefined ? a[i] : null,
-        oldColumn: b[i] !== undefined ? b[i] : null,
-      });
+    for (const key in columns) {
+      if (columns.hasOwnProperty(key)) {
+        let newColumn = {};
+        let oldColumn = {};
+
+        newColumn = columns[key];
+        oldColumn = arrayOfTableColumns[key];
+
+        if (oldColumn !== undefined) {
+          if (newColumn.data_type === 'serial') {
+            delete newColumn['column_default'];
+          }
+          if (oldColumn.data_type === 'serial') {
+            delete oldColumn['column_default'];
+          }
+          // delete newColumn['dataTypeDetails'];
+          // delete oldColumn['dataTypeDetails'];
+          newArray.push({ newColumn, oldColumn });
+        } else {
+          newArray.push({ newColumn });
+        }
+      }
     }
 
-    return comparisonArray;
+    arrayOfTableColumns.forEach((col, index) => {
+      if (!columns.hasOwnProperty(index)) {
+        let oldColumn = {};
+        oldColumn = col;
+        newArray.push({ oldColumn });
+      }
+    });
+
+    Object.values(columns).forEach((col, index) => {
+      if (!arrayOfTableColumns.hasOwnProperty(index)) {
+        let newColumn = col;
+        if (!newArray.some((item) => JSON.stringify(item.newColumn) === JSON.stringify(newColumn))) {
+          if (newColumn.data_type === 'serial') {
+            delete newColumn['column_default'];
+          }
+          // delete newColumn['dataTypeDetails'];
+          newArray.push({ newColumn });
+        }
+      }
+    });
+    return newArray;
   }
-  const comparisonArray = createComparisonArray(columns, arrayOfTableColumns);
+
+  let data = bodyColumns(columns, arrayOfTableColumns);
 
   const validateTableName = () => {
     if (isEmpty(tableName)) {
@@ -113,7 +150,7 @@ const TableForm = ({
       organizationId,
       selectedTable.table_name,
       tableName,
-      comparisonArray
+      data
     );
     setFetching(false);
 
@@ -148,51 +185,26 @@ const TableForm = ({
 
   const hasPrimaryKey = Object.values(columns).some((e) => e?.constraints_type?.is_primary_key === true);
 
-  function categorizeObjects(col, selectedTableDetails) {
-    const changesInObject = [];
+  const existingPrimaryKeyObjects = arrayOfTableColumns.filter((item) => item.constraints_type.is_primary_key);
 
-    for (let key in col) {
-      if (
-        !selectedTableDetails.hasOwnProperty(key) ||
-        JSON.stringify(col[key].constraints_type) !== JSON.stringify(selectedTableDetails[key].constraints_type)
-      ) {
-        changesInObject.push(col[key]);
-      }
+  const primaryKeyObjects = Object.values(columns).filter((item) => item.constraints_type?.is_primary_key === true);
+
+  const newPrimaryKeyChanges = Object.values(columns).filter((item) => {
+    if (item.constraints_type?.is_primary_key === true) {
+      return !existingPrimaryKeyObjects.some((obj) => obj.column_name === item.column_name);
+    } else {
+      return existingPrimaryKeyObjects.some((obj) => obj.column_name === item.column_name);
     }
+  });
 
-    return changesInObject;
-  }
-
-  function findIsNonChanges(tableColumns, changesInPrimaryKey, property) {
-    const duplicates = [];
-    const map = new Map();
-
-    // Create a map of unique values from the second array
-    changesInPrimaryKey.forEach((item) => {
-      map.set(item[property], true);
-    });
-
-    // Iterate over the first array and check for duplicates
-    tableColumns.forEach((item) => {
-      if (map.has(item[property])) {
-        duplicates.push(item);
-      }
-    });
-
-    return duplicates;
-  }
-
-  const changesInObject = categorizeObjects(columns, selectedTableColumns);
-  const isNonChangesInObject = findIsNonChanges(arrayOfTableColumns, changesInObject, 'column_name');
-
-  const currentPrimaryKeyIcons = isNonChangesInObject?.map((item, index) => {
+  const currentPrimaryKeyIcons = existingPrimaryKeyObjects?.map((item, index) => {
     return {
       columnName: item.column_name,
       icon: item.data_type,
     };
   });
 
-  const newPrimaryKeyIcons = changesInObject?.map((item, index) => {
+  const newPrimaryKeyIcons = primaryKeyObjects?.map((item, index) => {
     return {
       columnName: item.column_name,
       icon: item.data_type,
@@ -254,7 +266,7 @@ const TableForm = ({
         isEditMode={isEditMode}
         onClose={onClose}
         onEdit={() => {
-          if (changesInObject.length > 0) {
+          if (newPrimaryKeyChanges.length > 0) {
             setShowModal(true);
           } else {
             handleEdit();
@@ -265,7 +277,8 @@ const TableForm = ({
           isEmpty(tableName) ||
           (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
           isEmpty(columns) ||
-          hasPrimaryKey !== true
+          hasPrimaryKey !== true ||
+          (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
         }
       />
       <ConfirmDialog
