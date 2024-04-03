@@ -283,13 +283,11 @@ const EditorComponent = (props) => {
     if (mounted && didAppDefinitionChanged && currentPageId) {
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
-      // computeComponentState(components);
+      computeComponentState(components);
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
-      if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
-        handleLowPriorityWork(() => autoSave());
-      }
+      handleLowPriorityWork(() => autoSave());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
@@ -922,7 +920,7 @@ const EditorComponent = (props) => {
           });
         }
 
-        computeComponentState(currentComponents);
+        // computeComponentState(currentComponents);
       })
       .finally(async () => {
         const currentPageEvents = data.events.filter(
@@ -1179,6 +1177,7 @@ const EditorComponent = (props) => {
             });
 
             useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
+            // console.log('----arpit:: component', { newComponentsExposedData });
             useResolveStore.getState().actions.addAppSuggestions({
               components: newComponentsExposedData,
             });
