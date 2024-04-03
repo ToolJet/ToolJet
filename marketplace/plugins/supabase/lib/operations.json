@@ -48,7 +48,7 @@
       "get_filters": {
         "label": "Where",
         "key": "get_filters",
-        "type": "react-component-supabase-filter",
+        "type": "filters",
         "description": "Supabase filter component",
         "placeholders": {
           "columnKey": "Enter Column name",
@@ -97,7 +97,7 @@
       "get_sort": {
         "label": "Sort",
         "key": "get_sort",
-        "type": "react-component-supabase-sort",
+        "type": "sorts",
         "description": "Supabase sort component",
         "placeholders": {
           "columnKey": "Enter column name",
@@ -159,7 +159,7 @@
       "update_filters": {
         "label": "Where",
         "key": "update_filters",
-        "type": "react-component-supabase-filter",
+        "type": "filters",
         "description": "Supabase filter component",
         "placeholders": {
           "columnKey": "Enter Column name",
@@ -208,7 +208,7 @@
       "update_column_fields": {
         "label": "Columns",
         "key": "update_column_fields",
-        "type": "react-component-supabase-column",
+        "type": "columns",
         "description": "Supabase column component",
         "placeholders": {
           "columnKey": "Enter column name",
@@ -230,7 +230,7 @@
       "delete_filters": {
         "label": "Where",
         "key": "delete_filters",
-        "type": "react-component-supabase-filter",
+        "type": "filters",
         "description": "Supabase filter component",
         "placeholders": {
           "columnKey": "Enter Column name",
@@ -279,7 +279,7 @@
       "delete_sort": {
         "label": "Sort",
         "key": "delete_sort",
-        "type": "react-component-supabase-sort",
+        "type": "sorts",
         "description": "Supabase sort component",
         "placeholders": {
           "columnKey": "Enter column name",
@@ -321,7 +321,7 @@
       "count_filters": {
         "label": "Where",
         "key": "count_filters",
-        "type": "react-component-supabase-filter",
+        "type": "filters",
         "description": "Supabase filter component",
         "placeholders": {
           "columnKey": "Enter Column name",

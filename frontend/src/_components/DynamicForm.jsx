@@ -12,13 +12,12 @@ import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
-import { ConditionFilter, CondtionSort } from '@/_components/MultiConditions';
+import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
-import { SupabaseFilter, SupabaseSort, SupabaseColumn } from './Supabase';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
@@ -155,12 +154,8 @@ const DynamicForm = ({
         return OpenApi;
       case 'react-component-zendesk':
         return Zendesk;
-      case 'react-component-supabase-filter':
-        return SupabaseFilter;
-      case 'react-component-supabase-sort':
-        return SupabaseSort;
-      case 'react-component-supabase-column':
-        return SupabaseColumn;
+      case 'columns':
+        return MultiColumn;
       case 'filters':
         return ConditionFilter;
       case 'sorts':
@@ -367,7 +362,6 @@ const DynamicForm = ({
           spec: options.spec?.value,
           workspaceConstants: currentOrgEnvironmentConstants,
         };
-      case 'react-component-supabase-filter':
       case 'filters':
         return {
           operators: list || [],
@@ -375,7 +369,6 @@ const DynamicForm = ({
           onChange: (value) => optionchanged(key, value),
           placeholders,
         };
-      case 'react-component-supabase-sort':
       case 'sorts':
         return {
           orders: list || [],
@@ -383,7 +376,7 @@ const DynamicForm = ({
           onChange: (value) => optionchanged(key, value),
           placeholders,
         };
-      case 'react-component-supabase-column':
+      case 'columns':
         return {
           value: options?.[key] ?? {},
           onChange: (value) => optionchanged(key, value),
