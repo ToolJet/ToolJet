@@ -1012,8 +1012,18 @@
     gap: 3px;
   }
 }
-.table-column-lists.list-group-item{
-  margin-bottom: 0 !important;  
+.table-column-lists{
+  .list-group-item{
+    margin-bottom: 0 !important;  
+    background-color: var(--interactive-default) !important;
+  }
+  .active-column-list{
+    background-color: var(--interactive-hover) !important;
+  }
+  .list-group-item:hover{
+    background-color: var(--interactive-hover) !important;
+  }
+
 }
 .overlay-radio-table{
   span{
@@ -1026,12 +1036,8 @@
 
   }
 }
-.active-column-list{
-  background-color: var(--interactive-overlays-fill-hover) !important;
-  &.list-group-item:hover{
-    background-color: var(--interactive-overlays-fill-hover) !important;
-  }
-}
+
+
 .long-text-input{
   height: 100%;
   display: flex;

@@ -564,7 +564,7 @@ class TableComponent extends React.Component {
                                     }
                                   }}
                                 >
-                                  <div key={resolvedItemName}>
+                                  <div key={resolvedItemName} className="table-column-lists">
                                     <List.Item
                                       isDraggable={true}
                                       primaryText={resolvedItemName}
@@ -590,7 +590,7 @@ class TableComponent extends React.Component {
                                       showCopyColumnOption={true}
                                       showVisibilityIcon={true}
                                       isColumnVisible={resolveReferences(columnVisibility, this.state.currentState)}
-                                      className={`table-column-lists ${
+                                      className={`${
                                         this.state.activeColumnPopoverIndex === index && 'active-column-list'
                                       }`}
                                       columnType={item?.columnType}
