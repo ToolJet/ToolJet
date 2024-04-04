@@ -7,13 +7,15 @@ ToolJet can connect to OpenAI and utilize two main services: Completions and Cha
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/openai/openaiadd.gif" alt="Marketplace: openai" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/openai/openaiadd.gif" alt="Marketplace: openai" />
 
 </div>
 
 :::note
 Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
 :::
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Connection
 
@@ -23,9 +25,13 @@ For connecting to OpenAI, following credentials are required:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/openai/connection.png" alt="Marketplace: openai" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/openai/connection.png" alt="Marketplace: openai" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Supported queries
 
@@ -34,19 +40,23 @@ For connecting to OpenAI, following credentials are required:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/openai/list.png" alt="Marketplace: openai" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/openai/list.png" alt="Marketplace: openai" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Completions
 
 The purpose of this query is to generate text completions that resemble human writing based on a given prompt.
 
-#### Required parameters: 
+#### Required Parameters: 
 
 - **Prompt**: OpenAI uses the prompt as a starting point to generate a continuation or completion of the text, which can be in the form of a sentence, paragraph, or even an entire article. The quality and relevance of the generated text output can depend on the quality and specificity of the prompt provided.
 
-#### Optional parameters: 
+#### Optional Parameters: 
 
 - **Max Tokens**: This parameter that specifies the maximum number of tokens to generate in the text completion output. For example, if you set it to 50, then it will generate a text completion that contains up to 50 tokens.
 - **Temperature**: Temperature is used to control the creativity and randomness of the generated text. It ranges from 0 to 2, a higher value such as 0.8 will increase the randomness of the output, whereas a lower value such as 0.2 will make it more focused and deterministic.
@@ -55,19 +65,23 @@ The purpose of this query is to generate text completions that resemble human wr
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/openai/completions.png" alt="Marketplace: openai" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/openai/completions.png" alt="Marketplace: openai" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Chat
 
 The function of this query is to examine the user's input and generate a suitable response that simulates human-like conversation.
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Prompt**: A prompt is the initial message or question that is provided as input to the chatbot model to start a conversation.
 
-#### Optional parameters: 
+#### Optional Parameters: 
 
 - **Max Tokens**: This parameter that specifies the maximum number of tokens to generate in the text completion output. For example, if you set it to 50, then it will generate a text completion that contains up to 50 tokens.
 - **Temperature**: Temperature is used to control the creativity and randomness of the generated text. It ranges from 0 to 2, a higher value such as 0.8 will increase the randomness of the output, whereas a lower value such as 0.2 will make it more focused and deterministic.
@@ -76,6 +90,8 @@ The function of this query is to examine the user's input and generate a suitabl
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/openai/chat.png" alt="Marketplace: openai" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/openai/chat.png" alt="Marketplace: openai" />
+
+</div>
 
 </div>

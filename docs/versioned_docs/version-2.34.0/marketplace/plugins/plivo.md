@@ -7,13 +7,15 @@ ToolJet can connect to Plivo account to send SMS.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/plivo/plivoadd.gif" alt="Marketplace: plivo" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/plivo/plivoadd.gif" alt="Marketplace: plivo" />
 
 </div>
 
 :::note
 Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
 :::
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Connection
 
@@ -29,17 +31,21 @@ For connecting to plivo, following credentials are required:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/plivo/connection.png" alt="Marketplace: plivo" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/plivo/connection.png" alt="Marketplace: plivo" />
 
 </div>
 
-## Supported queries
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Supported Queries
 
 ### Send SMS
 
 The specified mobile number will receive the SMS upon execution of this query.
 
-#### Required parameters: 
+#### Required Parameters: 
 
 - **To Number**: 
 - **From Number**: 
@@ -47,6 +53,8 @@ The specified mobile number will receive the SMS upon execution of this query.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/plivo/sendsms.png" alt="Marketplace: plivo" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/plivo/sendsms.png" alt="Marketplace: plivo" />
+
+</div>
 
 </div>
