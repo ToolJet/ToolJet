@@ -35,7 +35,7 @@ If you are an existing user and wish to update to trial subscriptions, follow th
 </div>
 
 :::caution Note
-The trial subscription will be valid for 14 days. To fully enjoy ToolJet, we recommend upgrading to premium plans within this period. If you wish to upgrade from the trial to the business or enterprise edition, you can click the **Upgrade or Renew** button or contact our team via **[Slack](https://tooljet.com/slack)**. Upon expiration, access to premium features like OpenID SSO login and Audit logs will be restricted, ensuring no data loss occurs. However, don't worry! You can still upgrade to any of our premium plans and enjoy the benefits of ToolJet.
+Your trial subscription is active for 14 days. To upgrade to our Business subscription, simply click the Upgrade or Renew button or connect with our team on Slack for the Enterprise subscription. Premium features like OpenID SSO login and Audit logs will be restricted after the trial ends. However, you can still upgrade to any of our premium plans and continue to enjoy the full benefits of ToolJet.
 :::
 
 ## Upgrading to a Paid Subscription
