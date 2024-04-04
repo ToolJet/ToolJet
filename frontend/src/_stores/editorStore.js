@@ -64,7 +64,6 @@ export const useEditorStore = create(
       updateEditorState: (state) => set((prev) => ({ ...prev, ...state })),
       updateCurrentStateDiff: (currentStateDiff) => set(() => ({ currentStateDiff })),
       updateComponentsNeedsUpdateOnNextRender: (componentsNeedsUpdateOnNextRender) => {
-        console.log('---bacth---arpit::', { componentsNeedsUpdateOnNextRender });
         set(() => ({ componentsNeedsUpdateOnNextRender }));
       },
       flushComponentsNeedsUpdateOnNextRender: (toRemoveIds = []) => {
@@ -116,8 +115,6 @@ export const getComponentsToRenders = () => {
 
 export const flushComponentsToRender = (componentIds = []) => {
   if (!componentIds.length) return;
-
-  console.log('--arpit:: flush', { componentIds });
 
   useEditorStore.getState().actions.flushComponentsNeedsUpdateOnNextRender(componentIds);
 };

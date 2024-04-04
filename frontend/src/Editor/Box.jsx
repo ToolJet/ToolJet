@@ -22,11 +22,10 @@ export const Box = (props) => {
   const { id, component, mode, customResolvables } = props;
 
   /**
-   * This component does not consume the value returned from the below hook.
-   * Only purpose of the hook is to force rerender the component
+   * !This component does not consume the value returned from the below hook.
+   * Only purpose of the hook is to force one rerender the component
    * */
   useEditorStore((state) => state.componentsNeedsUpdateOnNextRender.find((compId) => compId === id), shallow);
-  console.log('deepEqualityCheckusingLoDash>> 1');
 
   return (
     <HydrateWithResolveReferences id={id} mode={mode} component={component} customResolvables={customResolvables}>
