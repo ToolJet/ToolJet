@@ -89,7 +89,7 @@ import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex } from './editorConstants';
-import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { findComponentsWithReferences, generatePath, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 
 setAutoFreeze(false);
 enablePatches();
@@ -294,29 +294,18 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
 
-  // const prevCurrentStateRef = useRef(currentState);
-
-  const currentStateDiff = useEditorStore.getState().currentStateDiff;
-
   const prevCurrentStateRef = useRef(currentState);
 
-  function generatePath(obj, targetKey, currentPath = '') {
-    for (const key in obj) {
-      const newPath = currentPath ? currentPath + '.' + key : key;
-
-      if (key === targetKey) {
-        return newPath;
-      }
-
-      if (typeof obj[key] === 'object' && obj[key] !== null) {
-        const result = generatePath(obj[key], targetKey, newPath);
-        if (result) {
-          return result;
-        }
-      }
-    }
-    return null;
-  }
+  /**
+   ** Async updates components in batches to optimize and processing efficiency.
+   * This function iterates over an array of component IDs, updating them in fixed-size batches,
+   * and introduces a delay after each batch to allow the UI thread to manage other tasks, such as rendering updates.
+   * After all batches are processed, it flushes the updates to clear any flags or temporary states indicating pending updates,
+   * ensuring the system is ready for the next cycle of updates.
+   *
+   * @param {Array} componentIds An array of component IDs that need updates.
+   * @returns {Promise<void>} A promise that resolves once all batches have been processed and flushed.
+   */
 
   async function batchUpdateComponents(componentIds) {
     if (componentIds.length === 0) return;
@@ -326,7 +315,6 @@ const EditorComponent = (props) => {
     for (let i = 0; i < componentIds.length; i += 10) {
       const batch = componentIds.slice(i, i + 10);
       batch.forEach((id) => {
-        // Logic to update component, if successful, add to updatedComponentIds
         updatedComponentIds.push(id);
       });
 
@@ -351,16 +339,12 @@ const EditorComponent = (props) => {
 
       const entitiesChanged = Object.keys(diffState).filter((entity) => entitiesToTrack.includes(entity));
 
-      //
-
       if (entitiesChanged.length === 0) return;
 
       const diffObj = entitiesChanged.reduce((acc, entity) => {
         acc[entity] = diffState[entity];
         return acc;
       }, {});
-
-      console.log('---doru::: diffObj', { diffObj });
 
       const allPaths = entitiesChanged.reduce((acc, entity) => {
         const paths = Object.keys(diffObj[entity]).map((key) => {
@@ -376,10 +360,7 @@ const EditorComponent = (props) => {
       const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
       const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStatePaths);
 
-      console.log('---doru::: componentIdsWithReferences', { entitiesChanged, componentIdsWithReferences });
-
       if (componentIdsWithReferences.length > 0) {
-        // updateComponentsNeedsUpdateOnNextRender(componentIdsWithReferences);
         batchUpdateComponents(componentIdsWithReferences);
       }
 
@@ -387,19 +368,6 @@ const EditorComponent = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentState)]);
-
-  // useEffect(() => {
-  //   const isEditorReady = useCurrentStateStore.getState().isEditorReady;
-  //   if (isEditorReady && currentStateDiff?.length > 0) {
-  //     const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
-  //     const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStateDiff);
-
-  //     if (componentIdsWithReferences.length > 0) {
-  //       updateComponentsNeedsUpdateOnNextRender(componentIdsWithReferences);
-  //     }
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [JSON.stringify(currentState)]);
 
   useEffect(
     () => {
