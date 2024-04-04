@@ -26,7 +26,7 @@ await actions.runQuery('getSalesData')
 In the screenshot below, we are triggering two different queries using two different syntax available for `Run Query` action.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/runqueryn-v2.png" alt="Print data from multiple tabs" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/runquery-v3.png" alt="Print data from multiple tabs" />
 </div>
 
 </div>
