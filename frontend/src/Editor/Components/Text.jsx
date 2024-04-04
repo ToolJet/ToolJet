@@ -150,9 +150,9 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
         <div style={commonStyles} className="text-widget-section">
           {textFormat === 'plainText' && <div style={commonScrollStyle}>{text}</div>}
           {textFormat === 'markdown' && (
-            <Markdown style={commonScrollStyle} className={'reactMarkdown'}>
-              {text}
-            </Markdown>
+            <div style={commonScrollStyle}>
+              <Markdown className={'reactMarkdown'}>{text}</Markdown>
+            </div>
           )}
           {(textFormat === 'html' || !textFormat) && (
             <div
