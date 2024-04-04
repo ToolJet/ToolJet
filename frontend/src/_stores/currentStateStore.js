@@ -50,45 +50,7 @@ export const useCurrentStateStore = create(
       ...initialState,
       actions: {
         setCurrentState: (currentState) => {
-          const currentStateEntites = Object.keys(currentState);
-
-          const existingStateOfEntities = currentStateEntites.reduce((acc, entity) => {
-            acc[entity] = get()[entity];
-            return acc;
-          }, {});
-
-          const diffState = diff(existingStateOfEntities, currentState);
-
-          if (_.isEmpty(diffState)) return;
-
           set({ ...currentState }, false, { type: 'SET_CURRENT_STATE', currentState });
-
-          //need to track only queries, components, variables, page, constants, layout
-          // from the diff, if any of these entities are changed, we need to update the store
-
-          if (get().isEditorReady) {
-            const entitiesToTrack = ['queries', 'components', 'variables', 'page', 'constants', 'layout'];
-
-            const entitiesChanged = Object.keys(diffState).filter((entity) => entitiesToTrack.includes(entity));
-
-            const diffObj = entitiesChanged.reduce((acc, entity) => {
-              acc[entity] = diffState[entity];
-              return acc;
-            }, {});
-
-            const allPaths = entitiesChanged.reduce((acc, entity) => {
-              const paths = Object.keys(diffObj[entity]).map((key) => {
-                return generatePath(diffObj[entity], key);
-              });
-
-              acc[entity] = paths.map((path) => `${entity}.${path}`).join(',');
-              return acc;
-            }, {});
-
-            const currentStatePaths = Object.values(allPaths);
-
-            useEditorStore.getState().actions.updateCurrentStateDiff(currentStatePaths);
-          }
         },
         setErrors: (error) => {
           set({ errors: { ...get().errors, ...error } }, false, { type: 'SET_ERRORS', error });

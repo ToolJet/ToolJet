@@ -70,7 +70,7 @@ import {
   resetAllStores,
 } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
-import { EMPTY_ARRAY, useEditorActions, useEditorStore } from '@/_stores/editorStore';
+import { EMPTY_ARRAY, flushComponentsToRender, useEditorActions, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useNoOfGrid } from '@/_stores/gridStore';
 import { useMounted } from '@/_hooks/use-mount';
@@ -89,7 +89,7 @@ import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex } from './editorConstants';
-import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { findComponentsWithReferences, generatePath, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 
 setAutoFreeze(false);
 enablePatches();
@@ -214,6 +214,8 @@ const EditorComponent = (props) => {
   const prevAppDefinition = useRef(appDefinition);
   const prevEventsStoreRef = useRef(events);
 
+  const onAppLoadAndPageLoadEventsAreTriggered = useRef(false);
+
   useLayoutEffect(() => {
     resetAllStores();
   }, []);
@@ -292,19 +294,77 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
 
-  // const prevCurrentStateRef = useRef(currentState);
+  const prevCurrentStateRef = useRef(currentState);
 
-  const currentStateDiff = useEditorStore.getState().currentStateDiff;
+  /**
+   ** Async updates components in batches to optimize and processing efficiency.
+   * This function iterates over an array of component IDs, updating them in fixed-size batches,
+   * and introduces a delay after each batch to allow the UI thread to manage other tasks, such as rendering updates.
+   * After all batches are processed, it flushes the updates to clear any flags or temporary states indicating pending updates,
+   * ensuring the system is ready for the next cycle of updates.
+   *
+   * @param {Array} componentIds An array of component IDs that need updates.
+   * @returns {Promise<void>} A promise that resolves once all batches have been processed and flushed.
+   */
+
+  async function batchUpdateComponents(componentIds) {
+    if (componentIds.length === 0) return;
+
+    let updatedComponentIds = [];
+
+    for (let i = 0; i < componentIds.length; i += 10) {
+      const batch = componentIds.slice(i, i + 10);
+      batch.forEach((id) => {
+        updatedComponentIds.push(id);
+      });
+
+      updateComponentsNeedsUpdateOnNextRender(batch);
+      // Delay to allow UI to process
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    // Flush only updated components
+    flushComponentsToRender(updatedComponentIds);
+  }
 
   useEffect(() => {
     const isEditorReady = useCurrentStateStore.getState().isEditorReady;
-    if (isEditorReady && currentStateDiff?.length > 0) {
+
+    if (!isEditorReady || !onAppLoadAndPageLoadEventsAreTriggered.current) return;
+
+    const diffState = diff(prevCurrentStateRef.current, currentState);
+
+    if (Object.keys(diffState).length > 0) {
+      const entitiesToTrack = ['queries', 'components', 'variables', 'page', 'constants'];
+
+      const entitiesChanged = Object.keys(diffState).filter((entity) => entitiesToTrack.includes(entity));
+
+      if (entitiesChanged.length === 0) return;
+
+      const diffObj = entitiesChanged.reduce((acc, entity) => {
+        acc[entity] = diffState[entity];
+        return acc;
+      }, {});
+
+      const allPaths = entitiesChanged.reduce((acc, entity) => {
+        const paths = Object.keys(diffObj[entity]).map((key) => {
+          return generatePath(diffObj[entity], key);
+        });
+
+        acc[entity] = paths.map((path) => `${entity}.${path}`);
+        return acc;
+      }, {});
+
+      const currentStatePaths = Object.values(allPaths).flat();
+
       const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
-      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStateDiff);
+      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStatePaths);
 
       if (componentIdsWithReferences.length > 0) {
-        updateComponentsNeedsUpdateOnNextRender(componentIdsWithReferences);
+        batchUpdateComponents(componentIdsWithReferences);
       }
+
+      prevCurrentStateRef.current = JSON.parse(JSON.stringify(currentState));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentState)]);
@@ -894,6 +954,7 @@ const EditorComponent = (props) => {
         handleLowPriorityWork(async () => {
           await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
           await handleEvent('onPageLoad', currentPageEvents, {}, true);
+          await handleLowPriorityWork(() => (onAppLoadAndPageLoadEventsAreTriggered.current = true));
         });
       });
   };
@@ -1141,7 +1202,7 @@ const EditorComponent = (props) => {
             });
 
             useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
-            // console.log('----arpit:: component', { newComponentsExposedData });
+
             useResolveStore.getState().actions.addAppSuggestions({
               components: newComponentsExposedData,
             });
