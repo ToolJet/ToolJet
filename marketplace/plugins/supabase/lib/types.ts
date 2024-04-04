@@ -1,5 +1,7 @@
+import { QueryError, SupabaseClient } from '@supabase/supabase-js';
+
 export type SourceOptions = {
-  project_url: string; 
+  project_url: string;
   service_role_secret: string;
 };
 export type QueryOptions = {
@@ -41,4 +43,20 @@ export type Filter = {
 export type Sort = {
   column: string;
   order: string;
+};
+
+export type ResultType = {
+  created: boolean;
+  deleted: boolean;
+};
+
+export type SupabaseQueryError = QueryError;
+
+export type SupabaseQueryResult = object[] | object | { created: boolean } | { deleted: boolean };
+
+export type SupabaseClientType = SupabaseClient;
+
+export type Response = {
+  error: SupabaseQueryError;
+  data: SupabaseQueryResult;
 };

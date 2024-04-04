@@ -1,13 +1,24 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { createClient } from '@supabase/supabase-js';
-import { SourceOptions, QueryOptions, Column, Filter, Sort } from './types';
+import {
+  SourceOptions,
+  QueryOptions,
+  Column,
+  Filter,
+  Sort,
+  SupabaseClientType,
+  SupabaseQueryError,
+  SupabaseQueryResult,
+  Response,
+} from './types';
+import { PostgrestFilterBuilder } from '@supabase/postgrest-js';
 
 export default class Supabase implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const supabaseClient = await this.getConnection(sourceOptions);
-    const operation = queryOptions.operation;
-    let result = {};
-    let error: any = false;
+    const operation: string = queryOptions.operation;
+    let result: SupabaseQueryResult;
+    let error: SupabaseQueryError;
     try {
       if (!operation) throw new Error('Select one operation');
       const { get_table_name, create_table_name, update_table_name, delete_table_name, count_table_name } =
@@ -20,7 +31,7 @@ export default class Supabase implements QueryService {
         count_rows: count_table_name,
       };
       if (!tableNameValues[operation]) throw new Error('Table name is required');
-      let res: any;
+      let res: Response;
       switch (operation) {
         case 'get_rows':
           res = await this.getRows(queryOptions, supabaseClient);
@@ -67,10 +78,10 @@ export default class Supabase implements QueryService {
     };
   }
 
-  async getRows(queryOptions: QueryOptions, supabaseClient: any) {
+  async getRows(queryOptions: QueryOptions, supabaseClient: SupabaseClientType): Promise<Response> {
     const { get_table_name, get_filters, get_sort, get_limit } = queryOptions;
 
-    let query: any = supabaseClient.from(get_table_name).select();
+    let query = supabaseClient.from(get_table_name).select();
     if (get_filters) {
       const getFiltersData: Filter[] = Object.values(get_filters);
       this.addQueryFilters(query, getFiltersData);
@@ -82,18 +93,18 @@ export default class Supabase implements QueryService {
     if (get_limit) {
       query = query.limit(Number(get_limit));
     }
-    const res: any = await query;
+    const res = await query;
     return res;
   }
 
-  async createRows(queryOptions: QueryOptions, supabaseClient: any) {
+  async createRows(queryOptions: QueryOptions, supabaseClient: SupabaseClientType): Promise<Response> {
     const { create_table_name, create_body } = queryOptions;
     if (!create_body) throw new Error('Body required to create rows in table');
-    const res: any = await supabaseClient.from(create_table_name).insert(JSON.parse(create_body));
+    const res = await supabaseClient.from(create_table_name).insert(JSON.parse(create_body));
     return res;
   }
 
-  async updateRows(queryOptions: QueryOptions, supabaseClient: any) {
+  async updateRows(queryOptions: QueryOptions, supabaseClient: SupabaseClientType): Promise<Response> {
     const { update_table_name, update_filters, update_column_fields } = queryOptions;
     if (!update_column_fields) throw new Error('No column(s) provided to update');
 
@@ -107,26 +118,26 @@ export default class Supabase implements QueryService {
     if (isDuplicate) {
       throw new Error('Duplicate column keys are not allowed');
     }
-    const updateQuery: any = supabaseClient.from(update_table_name).select();
+    const updateQuery = supabaseClient.from(update_table_name).select();
     if (update_filters) {
       const updateFiltersData: Filter[] = Object.values(update_filters);
       this.addQueryFilters(updateQuery, updateFiltersData);
     }
-    let updateQueryRes: any = await updateQuery;
-    if (updateQueryRes.error) throw new Error('Failed to fetch table rows to update');
+    const { data, error } = await updateQuery;
+    if (error) throw new Error('Failed to fetch table rows to update');
 
     const columnsData: object = {};
     updateColumnValues.forEach((columnObj) => {
       columnsData[columnObj.column] = columnObj.value;
     });
-    updateQueryRes = updateQueryRes.data.map((data: any) => ({ ...data, ...columnsData }));
-    updateQueryRes = await supabaseClient.from(update_table_name).upsert(updateQueryRes).select();
-    return updateQueryRes;
+    const updateQueryRes: object[] = data.map((data: object) => ({ ...data, ...columnsData }));
+    const res = await supabaseClient.from(update_table_name).upsert(updateQueryRes).select();
+    return res;
   }
 
-  async deleteRows(queryOptions: QueryOptions, supabaseClient: any) {
+  async deleteRows(queryOptions: QueryOptions, supabaseClient: SupabaseClientType): Promise<Response> {
     const { delete_table_name, delete_filters, delete_sort, delete_limit } = queryOptions;
-    let deleteQuery: any = supabaseClient.from(delete_table_name).delete();
+    let deleteQuery = supabaseClient.from(delete_table_name).delete();
     if (delete_filters) {
       const deleteFiltersData: Filter[] = Object.values(delete_filters);
       this.addQueryFilters(deleteQuery, deleteFiltersData);
@@ -138,23 +149,23 @@ export default class Supabase implements QueryService {
     if (delete_limit) {
       deleteQuery = deleteQuery.limit(Number(delete_limit));
     }
-    const res: any = await deleteQuery;
+    const res = await deleteQuery;
     return res;
   }
 
-  async countRows(queryOptions: QueryOptions, supabaseClient: any) {
+  async countRows(queryOptions: QueryOptions, supabaseClient: SupabaseClientType): Promise<Response> {
     const { count_table_name, count_filters } = queryOptions;
-    const countQuery: any = supabaseClient.from(count_table_name).select('count', { count: 'exact' });
+    const countQuery = supabaseClient.from(count_table_name).select('count', { count: 'exact' });
     if (count_filters) {
       const countFiltersData: Filter[] = Object.values(count_filters);
       this.addQueryFilters(countQuery, countFiltersData);
     }
-    const res: any = await countQuery;
+    const res = await countQuery;
     return res;
   }
 
-  addQueryFilters(query: any, filters: Filter[]) {
-    filters.forEach((filter: any) => {
+  addQueryFilters(query: PostgrestFilterBuilder<any, any, any[], string, unknown>, filters: Filter[]) {
+    filters.forEach((filter: Filter) => {
       const { operator, column, value } = filter;
       if (operator === '==') {
         query = query.eq(column, value);
@@ -178,14 +189,14 @@ export default class Supabase implements QueryService {
     });
   }
 
-  addQuerySort(query: any, sorts: Sort[]) {
-    sorts.forEach((sort: any) => {
+  addQuerySort(query: PostgrestFilterBuilder<any, any, any[], string, unknown>, sorts: Sort[]) {
+    sorts.forEach((sort: Sort) => {
       const { column, order } = sort;
       query = query.order(column, { ascending: order === 'ascend' });
     });
   }
 
-  async getConnection(sourceOptions: SourceOptions, _options?: object): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions, _options?: object): Promise<SupabaseClientType> {
     const { project_url, service_role_secret } = sourceOptions;
     // Create a single supabase client for interacting with your database
     const supabaseClient = createClient(project_url, service_role_secret);
@@ -196,12 +207,18 @@ export default class Supabase implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const supabaseClient = await this.getConnection(sourceOptions);
 
-    if (!supabaseClient) {
-      throw new Error('Invalid credentials');
-    }
+    try {
+      const res = await supabaseClient.from('').select('1');
 
-    return {
-      status: 'ok',
-    };
+      if (res.error) {
+        throw new QueryError(`Connection test failed`, res.error, {});
+      }
+
+      return {
+        status: 'ok',
+      };
+    } catch (error) {
+      throw new QueryError('Connection test failed', error.message, {});
+    }
   }
 }
