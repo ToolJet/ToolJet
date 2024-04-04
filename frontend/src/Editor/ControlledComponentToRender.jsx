@@ -24,6 +24,27 @@ export const shouldUpdate = (prevProps, nextProps) => {
     }
   }
 
+  console.log(
+    'deepEqualityCheckusingLoDash>>' +
+      (deepEqualityCheckusingLoDash(prevProps?.id, nextProps?.id) &&
+        deepEqualityCheckusingLoDash(prevProps?.component?.definition, nextProps?.component?.definition) &&
+        prevProps?.width === nextProps?.width &&
+        prevProps?.height === nextProps?.height &&
+        !needToRender),
+    {
+      'deepEqualityCheckusingLoDash(prevProps?.id, nextProps?.id)': deepEqualityCheckusingLoDash(
+        prevProps?.id,
+        nextProps?.id
+      ),
+      'deepEqualityCheckusingLoDash(prevProps?.component?.definition, nextProps?.component?.definition)':
+        deepEqualityCheckusingLoDash(prevProps?.component?.definition, nextProps?.component?.definition),
+      'prevProps?.width === nextProps?.width': prevProps?.width === nextProps?.width,
+      'prevProps?.height === nextProps?.height &&': prevProps?.height === nextProps?.height,
+      '!needToRender': !needToRender,
+    },
+    listToRender
+  );
+
   return (
     deepEqualityCheckusingLoDash(prevProps?.id, nextProps?.id) &&
     deepEqualityCheckusingLoDash(prevProps?.component?.definition, nextProps?.component?.definition) &&
@@ -36,7 +57,8 @@ export const shouldUpdate = (prevProps, nextProps) => {
 const ComponentWrapper = React.memo(({ componentName, ...props }) => {
   const ComponentToRender = getComponentToRender(componentName);
 
-  // const renderCount = useRenderCount();
+  const renderCount = useRenderCount();
+  console.log('useRenderCount----' + componentName, renderCount);
 
   // useEffect(() => {
   //   flushComponentsToRender(props?.id);
