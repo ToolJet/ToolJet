@@ -194,7 +194,7 @@ export default function generateColumnsData({
                     }}
                     readOnly={!isEditable}
                     onBlur={(e) => {
-                      if (e.target.defaultValue !== e.target.textContent) {
+                      if (cellValue !== e.target.textContent) {
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
@@ -205,7 +205,7 @@ export default function generateColumnsData({
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        if (e.target.defaultValue !== e.target.textContent) {
+                        if (cellValue !== e.target.textContent) {
                           handleCellValueChange(
                             cell.row.index,
                             column.key || column.name,
@@ -403,9 +403,8 @@ export default function generateColumnsData({
               const { isValid, validationError } = validationData;
               return (
                 <div className="h-100 d-flex flex-column justify-content-center position-relative">
-                  <div
-                    // rows="1"
-                    contentEditable={true}
+                  <textarea
+                    rows="1"
                     className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
                       darkMode ? ' textarea-dark-theme' : ''
                     }`}
@@ -418,11 +417,11 @@ export default function generateColumnsData({
                     }}
                     readOnly={!isEditable}
                     onBlur={(e) => {
-                      if (isEditable && e.target.defaultValue !== e.target.textContent) {
+                      if (isEditable && e.target.defaultValue !== e.target.value) {
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
-                          e.target.textContent,
+                          e.target.value,
                           cell.row.original
                         );
                       }
@@ -433,15 +432,14 @@ export default function generateColumnsData({
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
-                          e.target.textContent,
+                          e.target.value,
                           cell.row.original
                         );
                       }
                     }}
                     onFocus={(e) => e.stopPropagation()}
-                  >
-                    {cellValue}
-                  </div>
+                    defaultValue={cellValue}
+                  ></textarea>
                   <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
                 </div>
               );
