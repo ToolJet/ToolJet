@@ -7,7 +7,7 @@ ToolJet can connect to Amazon Textract to extract text and data from scanned doc
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/textract/textract.gif" alt="Marketplace: Amazon Textract" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/textract/textract.gif" alt="Marketplace: Amazon Textract" />
 
 </div>
 
@@ -15,6 +15,7 @@ ToolJet can connect to Amazon Textract to extract text and data from scanned doc
 Before following this guide, it is recommended to check the following doc: **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
 :::
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Connection
 
@@ -30,11 +31,15 @@ For connecting to Amazon Textract, following credentials are required:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/textract/creds.png" alt="Marketplace: Amazon Textract" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/textract/creds.png" alt="Marketplace: Amazon Textract" />
 
 </div>
 
-## Supported queries
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Supported Queries
 
 - **[Analyze Document](#analyze-document)**
 - **[Analyze document stored in AWS S3](#analyze-document-stored-in-aws-s3)**
@@ -42,6 +47,10 @@ For connecting to Amazon Textract, following credentials are required:
 :::info
 The data returned by the queries is in **JSON** format and may include additional information such as confidence scores and the location of the extracted content within the original document.
 :::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Analyze Document
 
@@ -56,17 +65,21 @@ This operation let's you to analyze the document by providing the document data 
   3. **Queries**: Extracted data from databases and other structured data sources.
   4. **Signature Detection**: Identification and extraction of signatures and signature blocks from documents.
 
-<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/textract/doc.png" alt="Marketplace: Amazon Textract" />
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/textract/doc.png" alt="Marketplace: Amazon Textract" />
+
+  </div>
 
 </div>
 
-### Analyze document stored in AWS S3
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Analyze Document Stored in AWS S3
 
 This operation let's you to analyze the document stored in your AWS S3 buckets by providing the **bucket** and **object** name.
 
-#### Required parameters: 
+#### Required Parameters: 
 
 - **Bucket**: Name of the S3 bucket that has the document stored
 - **Key**: Object name(document name) that needs to be extracted
@@ -76,8 +89,10 @@ This operation let's you to analyze the document stored in your AWS S3 buckets b
   3. **Queries**: Extracted data from databases and other structured data sources.
   4. **Signature Detection**: Identification and extraction of signatures and signature blocks from documents.
 
-<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/textract/s3.png" alt="Marketplace: Amazon Textract" />
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/textract/s3.png" alt="Marketplace: Amazon Textract" />
+
+  </div>
 
 </div>

@@ -7,13 +7,15 @@ HarperDB is a database and application development platform that is focused on p
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/harperdb/harperconnect.gif" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/harperconnect.gif" alt="Marketplace: HarperDB" />
 
 </div>
 
 :::note
 Before following this guide, it is recommended to check the following doc: **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
 :::
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Connection
 
@@ -26,20 +28,28 @@ To establish a connection with HarperDB, you need the following credentials:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/harperdb/creds.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/creds.png" alt="Marketplace: HarperDB" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying HarperDB
 To perform queries on HarperDB, click the `+Add` button in the query manager located at the bottom panel of the app builder. Select the HarperDB from the Global Datasource section in the query editor.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/harperdb/query.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/query.png" alt="Marketplace: HarperDB" />
 
 </div>
 
-### SQL mode
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### SQL Mode
 
 SQL mode enables you to perform various operations on the database using SQL statements.
 
@@ -58,7 +68,7 @@ SELECT * FROM sampleorg.people WHERE id = 1
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/harperdb/select.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/select.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -72,7 +82,7 @@ INSERT INTO sampleorg.people (id, name, age, country, hobby) VALUE (5, 'Shubh', 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/harperdb/insert.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/insert.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -86,7 +96,7 @@ UPDATE sampleorg.people SET hobby = 'chess' WHERE id = 5
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/harperdb/update.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/update.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -100,11 +110,15 @@ DELETE FROM sampleorg.people WHERE id = 5
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/harperdb/delete.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/delete.png" alt="Marketplace: HarperDB" />
 
 </div>
 
-### NoSQL mode
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### NoSQL Mode
 
 NoSQL mode enables you to perform schema-less storage and retrieval of JSON documents.
 
@@ -119,7 +133,7 @@ NoSQL mode enables you to perform schema-less storage and retrieval of JSON docu
 
 Insert operation allows to add one or more rows of data to a database table.
 
-| Parameters | Description |
+| <div style={{ width:"100px"}}> Parameters </div> | <div style={{ width:"100px"}}> Description </div> |
 | ---------- | ----------- |
 | Schema (required) | schema where the table you are inserting records into lives |
 | Table (required) | table name where you want to insert records |
@@ -132,7 +146,7 @@ Insert operation allows to add one or more rows of data to a database table.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_insert.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_insert.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -140,7 +154,7 @@ Insert operation allows to add one or more rows of data to a database table.
 
 The Update operation modifies the values of specified attributes in one or more rows of a database table based on the hash attribute(primary key) that identifies the rows.
 
-| Parameters | Description |
+| <div style={{ width:"100px"}}> Parameters </div> | <div style={{ width:"100px"}}> Description </div> |
 | ---------- | ----------- |
 | Schema (required) | schema where the table you are updating records into lives |
 | Table (required) | table name where you want to update records |
@@ -153,7 +167,7 @@ The Update operation modifies the values of specified attributes in one or more 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_update.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_update.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -161,7 +175,7 @@ The Update operation modifies the values of specified attributes in one or more 
 
 Removes one or more rows of data from a specified table.
 
-| Parameters | Description |
+| <div style={{ width:"100px"}}> Parameters </div> | <div style={{ width:"100px"}}> Description </div> |
 | ---------- | ----------- |
 | Schema (required) | schema where the table you are deleting records into lives |
 | Table (required) | table name where you want to delete records |
@@ -174,7 +188,7 @@ Removes one or more rows of data from a specified table.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_delete.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_delete.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -182,7 +196,7 @@ Removes one or more rows of data from a specified table.
 
 Returns data from a table for one or more hash values.
 
-| Parameters | Description |
+| <div style={{ width:"100px"}}> Parameters </div> | <div style={{ width:"100px"}}> Description </div> |
 | ---------- | ----------- |
 | Schema (required) | schema where the table you are searching lives |
 | Table (required) | table you wish to search |
@@ -201,7 +215,7 @@ Returns data from a table for one or more hash values.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyhash.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyhash.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -209,7 +223,7 @@ Returns data from a table for one or more hash values.
 
 Returns data from a table for a matching value.
 
-| Parameters | Description |
+| <div style={{ width:"100px"}}> Parameters </div> | <div style={{ width:"100px"}}> Description </div> |
 | ---------- | ----------- |
 | Schema (required) | schema where the table you are searching lives |
 | Table (required) | table you wish to search |
@@ -237,7 +251,7 @@ Joh* // using wild card
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyvalue.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyvalue.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -245,7 +259,7 @@ Joh* // using wild card
 
 Returns data from a table for one or more matching conditions.
 
-| Parameters | Description |
+| <div style={{ width:"100px"}}> Parameters </div> | <div style={{ width:"100px"}}> Description </div> |
 | ---------- | ----------- |
 | Schema (required) | schema where the table you are searching lives |
 | Table (required) | table you wish to search |
@@ -267,6 +281,8 @@ Returns data from a table for one or more matching conditions.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyconditions.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyconditions.png" alt="Marketplace: HarperDB" />
+
+</div>
 
 </div>

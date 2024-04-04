@@ -7,13 +7,15 @@ ToolJet can connect to GitHub account to read and write data. In order for ToolJ
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/githubadd.gif" alt="Marketplace: GitHub" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/githubadd.gif" alt="Marketplace: GitHub" />
 
 </div>
 
 :::note
 Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
 :::
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Connection
 
@@ -26,11 +28,15 @@ If a Personal Access Token is not provided, the data from the private repositori
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/connection.png" alt="Marketplace: GitHub" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/connection.png" alt="Marketplace: GitHub" />
 
 </div>
 
-## Supported queries
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Supported Queries
 
 - **[Get user info](#get-user-info)**
 - **[Get repository](#get-repository)**
@@ -39,44 +45,56 @@ If a Personal Access Token is not provided, the data from the private repositori
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/list.png" alt="Marketplace: GitHub" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/list.png" alt="Marketplace: GitHub" />
 
 </div>
 
-### Get user info
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Get User Info
 
 All the details regarding the user is retrieved by running this query.
 
-#### Required parameters: 
+#### Required Parameters: 
 
 - **Username**: To obtain the details, the username of the user must be provided for this field. You can input the username of a GitHub organization or a user for this field.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/getuserinfo.png" alt="Marketplace: GitHub" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/getuserinfo.png" alt="Marketplace: GitHub" />
 
 </div>
 
-### Get repository
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Get Repository
 
 All the details regarding the repository are retrieved by running this query.
 
-#### Required parameters: 
+#### Required Parameters: 
 
 - **Owner**: The owner's name of the repository is required for this field. The owner can either be a GitHub organization or a user.
 - **Repository**: Provide the name of the repository of which you want to retrieve the details.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/getrepo.png" alt="Marketplace: GitHub" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/getrepo.png" alt="Marketplace: GitHub" />
 
 </div>
 
-### Get repository issues
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Get Repository Issues
 
 Running this query will retrieve a list of issues from a repository. You can select whether to obtain All, Open, or Closed issues.
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Owner**: The owner's name of the repository is required for this field. The owner can either be a GitHub organization or a user.
 - **Repository**: Provide the name of the repository of which you want to retrieve the issues.
@@ -84,15 +102,19 @@ Running this query will retrieve a list of issues from a repository. You can sel
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/getissues.png" alt="Marketplace: GitHub" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/getissues.png" alt="Marketplace: GitHub" />
 
 </div>
 
-### Get repository pull requests
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Get Repository Pull Requests
 
 Running this query will retrieve a list of pull requests from a repository. You can select whether to obtain All, Open, or Closed issues.
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Owner**: The owner's name of the repository is required for this field. The owner can either be a GitHub organization or a user.
 - **Repository**: Provide the name of the repository of which you want to retrieve the pull requests.
@@ -100,6 +122,8 @@ Running this query will retrieve a list of pull requests from a repository. You 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/getpr.png" alt="Marketplace: GitHub" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/getpr.png" alt="Marketplace: GitHub" />
+
+</div>
 
 </div>
