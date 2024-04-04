@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
 import ReactDatePicker from 'react-datepicker';
 import moment from 'moment';
-import Timepicker from '@/ToolJetUI/TimePicker/Timepicker';
+import Timepicker from '@/ToolJetUI/Timepicker/Timepicker';
 import CustomDatePickerHeader from '@/Editor/Components/Table/CustomDatePickerHeader';
 
 const getDate = (date, format) => {
