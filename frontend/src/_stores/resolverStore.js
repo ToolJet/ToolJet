@@ -58,7 +58,7 @@ const initialState = {
     hints: {},
     resolvedRefs: {},
   },
-
+  lastUpdatedRefs: [],
   referenceMapper: new ReferencesBiMap(),
 };
 
@@ -78,6 +78,16 @@ export const useResolveStore = create(
         }));
       },
 
+      flushLastUpdatedRefs: () => {
+        set(() => ({ lastUpdatedRefs: [] }));
+      },
+      getLastUpdatedRefs: () => {
+        return get().lastUpdatedRefs;
+      },
+      //for queries references used in component definitons
+      updateLastUpdatedRefs: (updatedRefs) => {
+        set(() => ({ lastUpdatedRefs: updatedRefs }));
+      },
       addAppSuggestions: (partialRefState) => {
         if (Object.keys(partialRefState).length === 0) return;
 
@@ -85,6 +95,8 @@ export const useResolveStore = create(
 
         const lookupHintsMap = new Map([...get().lookupTable.hints]);
         const lookupResolvedRefs = new Map([...get().lookupTable.resolvedRefs]);
+
+        const newUpdatedrefs = [];
 
         hintsMap.forEach((value, key) => {
           const alreadyExists = lookupHintsMap.has(key);
@@ -97,6 +109,7 @@ export const useResolveStore = create(
 
             resolvedRefs.delete(value);
             resolvedRefs.set(existingLookupId, newResolvedRef);
+            newUpdatedrefs.push(key);
           }
         });
 
@@ -118,6 +131,7 @@ export const useResolveStore = create(
             hints: lookupHintsMap,
             resolvedRefs: lookupResolvedRefs,
           },
+          lastUpdatedRefs: newUpdatedrefs,
         }));
       },
 
@@ -156,6 +170,35 @@ export const useResolveStore = create(
 
           resolve({ status: 'ok' });
         });
+      },
+
+      updateResolvedRefsOfHints: (resolvedRefs = []) => {
+        const lookupResolvedRefs = new Map([...get().lookupTable.resolvedRefs]);
+        const hintsMap = new Map([...get().lookupTable.hints]);
+
+        const updatedList = [];
+
+        resolvedRefs.forEach((ref) => {
+          if (!ref.hint || !ref.newRef || !hintsMap.has(ref.hint)) return;
+
+          const refId = hintsMap.get(ref.hint);
+          const currentRef = lookupResolvedRefs.get(refId);
+
+          if (currentRef !== ref.newRef) {
+            lookupResolvedRefs.set(refId, ref.newRef);
+            updatedList.push(ref.hint);
+          }
+        });
+
+        if (updatedList.length > 0) {
+          set(() => ({
+            lookupTable: {
+              ...get().lookupTable,
+              resolvedRefs: lookupResolvedRefs,
+            },
+            lastUpdatedRefs: updatedList,
+          }));
+        }
       },
 
       updateJSHints: () => {

@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { create } from './utils';
 import { v4 as uuid } from 'uuid';
+import { useResolveStore } from './resolverStore';
 const STORE_NAME = 'Editor';
 
 export const EMPTY_ARRAY = [];
@@ -117,4 +118,5 @@ export const flushComponentsToRender = (componentIds = []) => {
   if (!componentIds.length) return;
 
   useEditorStore.getState().actions.flushComponentsNeedsUpdateOnNextRender(componentIds);
+  useResolveStore.getState().actions.getLastUpdatedRefs();
 };
