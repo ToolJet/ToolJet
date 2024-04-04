@@ -16,6 +16,7 @@ import {
   ValidationOptions,
   ValidateNested,
   IsBoolean,
+  IsObject,
 } from 'class-validator';
 import { sanitizeInput, validateDefaultValue } from 'src/helpers/utils.helper';
 
@@ -103,8 +104,8 @@ export class ConstraintTypeDto {
   @Validate(SQLInjectionValidator)
   is_not_null: boolean;
 
-  @IsString()
-  @Transform(({ value }) => sanitizeInput(value))
+  @IsBoolean()
+  // @Transform(({ value }) => sanitizeInput(value))
   @IsOptional()
   @Validate(SQLInjectionValidator)
   is_primary_key: Array<string>;
@@ -170,7 +171,21 @@ export class PostgrestTableColumnDto {
   constraints_type: ConstraintTypeDto;
 }
 
-export class RenamePostgrestTableDto {
+export class EditTableColumnsDto {
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => PostgrestTableColumnDto)
+  oldColumn: PostgrestTableColumnDto;
+
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => PostgrestTableColumnDto)
+  newColumn: PostgrestTableColumnDto;
+}
+
+export class EditTableDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(1, { message: 'Table name must be at least 1 character' })
@@ -180,6 +195,7 @@ export class RenamePostgrestTableDto {
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   table_name: string;
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
@@ -189,6 +205,13 @@ export class RenamePostgrestTableDto {
   })
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   new_table_name: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Table must have at least 1 column' })
+  @ValidateNested({ each: true })
+  @Type(() => EditTableColumnsDto)
+  columns: EditTableColumnsDto[];
 }
 
 export class EditColumnTableDto {

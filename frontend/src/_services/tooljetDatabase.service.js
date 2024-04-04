@@ -30,14 +30,24 @@ function createRow(headers, tableId, data) {
   return tooljetAdapter.post(`/tooljet-db/proxy/${tableId}`, data, headers);
 }
 
-function createColumn(organizationId, tableId, columnName, dataType, defaultValue, isNotNull) {
+function createColumn(
+  organizationId,
+  tableId,
+  columnName,
+  dataType,
+  defaultValue,
+  isNotNull,
+  isUniqueConstraint,
+  isCheckSerialType = false
+) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/column`, {
     column: {
       column_name: columnName,
       data_type: dataType,
-      column_default: defaultValue,
+      ...(!isCheckSerialType && { column_default: defaultValue }),
       constraints_type: {
         is_not_null: isNotNull,
+        is_unique: isUniqueConstraint,
       },
     },
   });
@@ -51,11 +61,12 @@ function updateTable(organizationId, tableName, columns) {
   });
 }
 
-function renameTable(organizationId, tableName, newTableName) {
+function renameTable(organizationId, tableName, newTableName, comparisonArray = []) {
   return tooljetAdapter.patch(`/tooljet-db/organizations/${organizationId}/table/${tableName}`, {
     action: 'rename_table',
     table_name: tableName,
-    new_table_name: newTableName,
+    ...(newTableName !== tableName && { new_table_name: newTableName }),
+    columns: comparisonArray,
   });
 }
 

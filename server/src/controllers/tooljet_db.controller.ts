@@ -28,7 +28,7 @@ import { Action, TooljetDbAbility } from 'src/modules/casl/abilities/tooljet-db-
 import { TooljetDbGuard } from 'src/modules/casl/tooljet-db.guard';
 import {
   CreatePostgrestTableDto,
-  RenamePostgrestTableDto,
+  EditTableDto,
   PostgrestTableColumnDto,
   EditColumnTableDto,
 } from '@dto/tooljet-db.dto';
@@ -87,8 +87,8 @@ export class TooljetDbController {
   @Patch('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.RenameTable, 'all'))
-  async renameTable(@Body() renameTableDto: RenamePostgrestTableDto, @Param('organizationId') organizationId) {
-    const result = await this.tooljetDbService.perform(organizationId, 'rename_table', renameTableDto);
+  async editTable(@Body() editTableBody: EditTableDto, @Param('organizationId') organizationId) {
+    const result = await this.tooljetDbService.perform(organizationId, 'edit_table', editTableBody);
     return decamelizeKeys({ result });
   }
 

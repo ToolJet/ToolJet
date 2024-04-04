@@ -21,7 +21,7 @@ export const dataTypes = [
   { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
 ];
 
-export const defaultdataType = [
+export const serialDataType = [
   { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
 ];
 
@@ -49,14 +49,14 @@ export const formatOptionLabel = ({ label, icon }) => {
   );
 };
 
-export const isSerialDataType = (columnDetails) => {
-  const { dataType = '', column_default = '' } = columnDetails;
+export const getColumnDataType = (columnDetails) => {
+  const { data_type = '', column_default = '' } = columnDetails;
   const serialDatatypeDefaultValuePattern = 'nextval(';
 
-  if (dataType === 'integer' && column_default) {
-    if (column_default.includes(serialDatatypeDefaultValuePattern)) return true;
+  if (data_type === 'integer' && column_default) {
+    if (column_default.includes(serialDatatypeDefaultValuePattern)) return 'serial';
   }
-  return false;
+  return data_type;
 };
 
 export const ChangesComponent = ({ currentPrimaryKeyIcons, newPrimaryKeyIcons }) => {
@@ -69,17 +69,17 @@ export const ChangesComponent = ({ currentPrimaryKeyIcons, newPrimaryKeyIcons })
       </div>
       <div className="key-changes-container">
         <div className="primarykeyDetails-container">
-          {currentPrimaryKeyIcons.map((item, index) => (
+          {Object.entries(currentPrimaryKeyIcons)?.map(([index, item]) => (
             <div className="currentKey-details" key={index}>
-              {item.icon}
+              {renderDatatypeIcon(item.icon)}
               <span className="currentPrimaryKey-columnName">{item.columnName}</span>
             </div>
           ))}
         </div>
         <div className="newkeyDetails-container">
-          {newPrimaryKeyIcons.map((item, index) => (
+          {Object.entries(newPrimaryKeyIcons)?.map(([index, item]) => (
             <div className="newKey-details" key={index}>
-              {item.icon}
+              {renderDatatypeIcon(item.icon)}
               <span className="newPrimaryKey-columnName">{item.columnName}</span>
             </div>
           ))}
@@ -152,7 +152,7 @@ export default function tjdbDropdownStyles(
       height: '36px !important',
       minHeight: '36px',
     }),
-    menuList: (provided, state) => ({
+    menuList: (provided, _state) => ({
       ...provided,
       padding: '8px',
       color: darkMode ? '#fff' : '#232e3c',
@@ -177,3 +177,30 @@ export default function tjdbDropdownStyles(
     }),
   };
 }
+
+export const renderDatatypeIcon = (type) => {
+  switch (type) {
+    case 'integer':
+      return <Integer width="18" height="18" className="tjdb-column-header-name" />;
+    case 'bigint':
+      return <BigInt width="18" height="18" className="tjdb-column-header-name" />;
+    case 'character varying':
+      return <CharacterVar width="18" height="18" className="tjdb-column-header-name" />;
+    case 'boolean':
+      return <Boolean width="18" height="18" className="tjdb-column-header-name" />;
+    case 'double precision':
+      return <Float width="18" height="18" className="tjdb-column-header-name" />;
+    case 'serial':
+      return <Serial width="18" height="14" className="tjdb-column-header-name" />;
+    default:
+      return type;
+  }
+};
+
+export const listAllPrimaryKeyColumns = (columns) => {
+  const primarykeyColumns = [];
+  columns.forEach((column) => {
+    if ((column?.constraints_type?.is_primary_key ?? false) && column.accessor) primarykeyColumns.push(column.accessor);
+  });
+  return primarykeyColumns;
+};

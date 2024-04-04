@@ -4,10 +4,10 @@ import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import CreateColumnsForm from './ColumnsForm';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import { isEmpty } from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { BreadCrumbContext } from '@/App/App';
 import WarningInfo from '../Icons/Edit-information.svg';
-import ArrowRight from '../Icons/ArrowRight.svg';
+// import ArrowRight from '../Icons/ArrowRight.svg';
 import { ConfirmDialog } from '@/_components';
 
 const TableForm = ({
@@ -20,7 +20,6 @@ const TableForm = ({
     },
   },
   selectedTableData = {},
-  selectedTableDetails = {},
   onCreate,
   onEdit,
   onClose,
@@ -28,18 +27,71 @@ const TableForm = ({
 }) => {
   const isEditMode = !isEmpty(selectedTable);
   const selectedTableColumns = isEditMode ? selectedTableData : selectedColumns;
+  const arrayOfTableColumns = Object.values(selectedTableColumns);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const [fetching, setFetching] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
-  const [columns, setColumns] = useState(selectedTableColumns);
+  const [columns, setColumns] = useState(_.cloneDeep(selectedTableColumns));
   const { organizationId } = useContext(TooljetDatabaseContext);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
     toast.dismiss();
   }, []);
+
+  function bodyColumns(columns, arrayOfTableColumns) {
+    let newArray = [];
+
+    for (const key in columns) {
+      if (columns.hasOwnProperty(key)) {
+        let newColumn = {};
+        let oldColumn = {};
+
+        newColumn = columns[key];
+        oldColumn = arrayOfTableColumns[key];
+
+        if (oldColumn !== undefined) {
+          if (newColumn.data_type === 'serial') {
+            delete newColumn['column_default'];
+          }
+          if (oldColumn.data_type === 'serial') {
+            delete oldColumn['column_default'];
+          }
+          // delete newColumn['dataTypeDetails'];
+          // delete oldColumn['dataTypeDetails'];
+          newArray.push({ newColumn, oldColumn });
+        } else {
+          newArray.push({ newColumn });
+        }
+      }
+    }
+
+    arrayOfTableColumns.forEach((col, index) => {
+      if (!columns.hasOwnProperty(index)) {
+        let oldColumn = {};
+        oldColumn = col;
+        newArray.push({ oldColumn });
+      }
+    });
+
+    Object.values(columns).forEach((col, index) => {
+      if (!arrayOfTableColumns.hasOwnProperty(index)) {
+        let newColumn = col;
+        if (!newArray.some((item) => JSON.stringify(item.newColumn) === JSON.stringify(newColumn))) {
+          if (newColumn.data_type === 'serial') {
+            delete newColumn['column_default'];
+          }
+          // delete newColumn['dataTypeDetails'];
+          newArray.push({ newColumn });
+        }
+      }
+    });
+    return newArray;
+  }
+
+  let data = bodyColumns(columns, arrayOfTableColumns);
 
   const validateTableName = () => {
     if (isEmpty(tableName)) {
@@ -94,7 +146,12 @@ const TableForm = ({
     if (!validateTableName()) return;
 
     setFetching(true);
-    const { error } = await tooljetDatabaseService.renameTable(organizationId, selectedTable.table_name, tableName);
+    const { error } = await tooljetDatabaseService.renameTable(
+      organizationId,
+      selectedTable.table_name,
+      tableName,
+      data
+    );
     setFetching(false);
 
     if (error) {
@@ -102,7 +159,7 @@ const TableForm = ({
       return;
     }
 
-    toast.success(`${tableName} edited successfully`);
+    toast.success(`${tableName} updated successfully`);
     updateSidebarNAV(tableName);
     updateSelectedTable({ ...selectedTable, table_name: tableName });
 
@@ -126,16 +183,33 @@ const TableForm = ({
     marginTop: '0px',
   };
 
-  const currentPrimaryKeyIcons = [
-    { icon: <WarningInfo />, columnName: 'WarningInfo' },
-    { icon: <ArrowRight />, columnName: 'ArrowRight' },
-  ];
-  const newPrimaryKeyIcons = [
-    { icon: <WarningInfo />, columnName: 'WarningInfo' },
-    { icon: <ArrowRight />, columnName: 'ArrowRight' },
-  ];
-
   const hasPrimaryKey = Object.values(columns).some((e) => e?.constraints_type?.is_primary_key === true);
+
+  const existingPrimaryKeyObjects = arrayOfTableColumns.filter((item) => item.constraints_type.is_primary_key);
+
+  const primaryKeyObjects = Object.values(columns).filter((item) => item.constraints_type?.is_primary_key === true);
+
+  const newPrimaryKeyChanges = Object.values(columns).filter((item) => {
+    if (item.constraints_type?.is_primary_key === true) {
+      return !existingPrimaryKeyObjects.some((obj) => obj.column_name === item.column_name);
+    } else {
+      return existingPrimaryKeyObjects.some((obj) => obj.column_name === item.column_name);
+    }
+  });
+
+  const currentPrimaryKeyIcons = existingPrimaryKeyObjects?.map((item, index) => {
+    return {
+      columnName: item.column_name,
+      icon: item.data_type,
+    };
+  });
+
+  const newPrimaryKeyIcons = primaryKeyObjects?.map((item, index) => {
+    return {
+      columnName: item.column_name,
+      icon: item.data_type,
+    };
+  });
 
   return (
     <div className="drawer-card-wrapper">
@@ -191,13 +265,20 @@ const TableForm = ({
         fetching={fetching}
         isEditMode={isEditMode}
         onClose={onClose}
-        onEdit={() => setShowModal(true)}
+        onEdit={() => {
+          if (newPrimaryKeyChanges.length > 0) {
+            setShowModal(true);
+          } else {
+            handleEdit();
+          }
+        }}
         onCreate={handleCreate}
         shouldDisableCreateBtn={
           isEmpty(tableName) ||
           (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
           isEmpty(columns) ||
-          hasPrimaryKey !== true
+          hasPrimaryKey !== true ||
+          (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
         }
       />
       <ConfirmDialog

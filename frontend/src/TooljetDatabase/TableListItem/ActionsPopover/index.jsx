@@ -35,7 +35,7 @@ export const ListItemPopover = ({
               onEdit();
             }}
           >
-            Rename table
+            Edit table
           </div>
         </div>
         <div className={`row mt-3 cursor-pointer`}>

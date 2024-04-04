@@ -8,12 +8,21 @@ import { ToolTip } from '@/_components';
 import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
-import { dataTypes } from '../constants';
+import { dataTypes, getColumnDataType } from '../constants';
 
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, columns, selectedTable, setSelectedTable, selectedTableData } =
-    useContext(TooljetDatabaseContext);
+  const {
+    organizationId,
+    columns,
+    selectedTable,
+    setSelectedTable,
+    selectedTableData,
+    setPageCount,
+    handleRefetchQuery,
+    pageSize,
+    setColumns,
+  } = useContext(TooljetDatabaseContext);
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showDropDownMenu, setShowDropDownMenu] = useState(false);
@@ -92,17 +101,31 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     return filteredDataTypes;
   };
 
-  // const primarKeyObjectsByDataType = (dataTypes, col) => {
-  //   const filteredDataTypes = col.filter((item) => {
-  //     return dataTypes.some((obj) => obj.value === item.dataType && item?.constraints_type?.is_primary_key);
-  //   });
+  const isEditTable = () => {
+    tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
+      if (error) {
+        toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
+        return;
+      }
 
-  //   return filteredDataTypes;
-  // };
+      if (data?.result?.length > 0) {
+        setColumns(
+          data?.result.map(({ column_name, data_type, ...rest }) => ({
+            Header: column_name,
+            accessor: column_name,
+            dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
+            ...rest,
+          }))
+        );
+      }
+    });
+    handleRefetchQuery({}, {}, 1, pageSize);
+    setPageCount(1);
+    setIsEditTableDrawerOpen(false);
+  };
 
   const selectedColumnDetails = columns.map((item, index) => {
     const matchedDataTypes = filterObjectsByDataType(dataTypes, [item]); // Get all matched data type objects
-    // const primary = primarKeyObjectsByDataType(dataTypes, [item]);
     return {
       [index]: {
         column_name: item.Header,
@@ -110,7 +133,6 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         constraints_type: item.constraints_type,
         dataTypeDetails: matchedDataTypes.length > 0 ? matchedDataTypes : null, // Add matched data types or null if no match found
         column_default: item.column_default,
-        // primary: primary.length > 0 ? primary : null,
       },
     };
   });
@@ -169,9 +191,8 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
           selectedColumns={formColumns}
           selectedTable={selectedTable}
           selectedTableData={selectedTableDetails}
-          selectedTableDetails={selectedTableDetails}
           updateSelectedTable={updateSelectedTable}
-          onEdit={() => setIsEditTableDrawerOpen(false)}
+          onEdit={isEditTable}
           onClose={() => setIsEditTableDrawerOpen(false)}
         />
       </Drawer>

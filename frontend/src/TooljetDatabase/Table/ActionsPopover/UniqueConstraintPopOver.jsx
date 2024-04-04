@@ -6,7 +6,16 @@ import DeleteIcon from '../../Icons/DeleteIcon.svg';
 import { ToolTip } from '@/_components/ToolTip';
 
 // eslint-disable-next-line no-unused-vars
-export const UniqueConstraintPopOver = ({ disabled, children, onDelete, darkMode, columns, setColumns, index }) => {
+export const UniqueConstraintPopOver = ({
+  disabled,
+  children,
+  onDelete,
+  darkMode,
+  columns,
+  setColumns,
+  index,
+  isEditMode,
+}) => {
   if (disabled) return children;
   const toolTipPlacementStyle = {
     width: '126px',
@@ -16,34 +25,22 @@ export const UniqueConstraintPopOver = ({ disabled, children, onDelete, darkMode
       <Popover.Body>
         <div className="unique-constraint-parent">
           <div className="column-popover row cursor-pointer p-1">
-            {columns[index]?.constraints_type?.is_primary_key === true ? (
-              <ToolTip
-                message="Primary key values
-        must be unique"
-                placement="top"
-                tooltipClassName="tootip-table"
-                style={toolTipPlacementStyle}
-              >
-                <div className="d-flex not-null-toggle">
-                  <label className={`form-switch`}>
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      checked={columns[index]?.constraints_type?.is_unique ?? false}
-                      onChange={(e) => {
-                        const prevColumns = { ...columns };
-                        const columnConstraints = prevColumns[index]?.constraints_type ?? {};
-                        columnConstraints.is_unique = e.target.checked;
-                        prevColumns[index].constraints_type = { ...columnConstraints };
-                        setColumns(prevColumns);
-                      }}
-                      disabled={columns[index]?.constraints_type?.is_primary_key === true}
-                    />
-                  </label>
-                  <span className="unique-tag">Unique</span>
-                </div>
-              </ToolTip>
-            ) : (
+            <ToolTip
+              message={
+                columns[index]?.constraints_type?.is_primary_key === true
+                  ? 'Primary key values must be unique'
+                  : columns[index]?.data_type === 'serial' && columns[index]?.constraints_type?.is_primary_key !== true
+                  ? 'Serial data type value must be unique'
+                  : null
+              }
+              placement="top"
+              tooltipClassName="tootip-table"
+              style={toolTipPlacementStyle}
+              show={
+                columns[index]?.constraints_type?.is_primary_key === true ||
+                (columns[index]?.data_type === 'serial' && columns[index]?.constraints_type?.is_primary_key !== true)
+              }
+            >
               <div className="d-flex not-null-toggle">
                 <label className={`form-switch`}>
                   <input
@@ -57,12 +54,15 @@ export const UniqueConstraintPopOver = ({ disabled, children, onDelete, darkMode
                       prevColumns[index].constraints_type = { ...columnConstraints };
                       setColumns(prevColumns);
                     }}
-                    disabled={columns[index]?.constraints_type?.is_primary_key === true}
+                    disabled={
+                      columns[index]?.constraints_type?.is_primary_key === true ||
+                      columns[index]?.data_type === 'serial'
+                    }
                   />
                 </label>
                 <span className="unique-tag">Unique</span>
               </div>
-            )}
+            </ToolTip>
           </div>
           <div className="col text-truncate unique-helper-text px-2 py-1">Unique value constraint is added</div>
         </div>

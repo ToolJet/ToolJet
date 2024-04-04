@@ -17,6 +17,7 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
   const [isNotNull, setIsNotNull] = useState(false);
+  const [isUniqueConstraint, setIsUniqueConstraint] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
 
@@ -81,10 +82,18 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
   }, []);
 
   const handleTypeChange = (value) => {
+    if (value.value === 'serial') {
+      setIsUniqueConstraint(true);
+      setIsNotNull(true);
+    } else {
+      setIsUniqueConstraint(false);
+      setIsNotNull(false);
+    }
     setDataType(value);
   };
 
   const handleCreate = async () => {
+    const isCheckSerialType = dataType?.value === 'serial' ? true : false;
     if (isEmpty(columnName)) {
       toast.error('Column name cannot be empty');
       return;
@@ -100,7 +109,9 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
       columnName,
       dataType?.value,
       defaultValue,
-      isNotNull
+      isNotNull,
+      isUniqueConstraint,
+      isCheckSerialType
     );
     setFetching(false);
     if (error) {
@@ -156,16 +167,18 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
           <input
             value={defaultValue}
             type="text"
-            placeholder="Enter default value"
+            placeholder={dataType?.value === 'serial' ? 'Auto-generated' : 'Enter default value'}
             className={
-              isNotNull === true && defaultValue.length <= 0 && rows.length > 0 ? 'form-error' : 'form-control'
+              dataType?.value !== 'serial' && isNotNull === true && defaultValue.length <= 0 && rows.length > 0
+                ? 'form-error'
+                : 'form-control'
             }
             data-cy="default-value-input-field"
             autoComplete="off"
             onChange={(e) => setDefaultValue(e.target.value)}
-            disabled={dataType === 'serial'}
+            disabled={dataType?.value === 'serial'}
           />
-          {isNotNull === true && rows.length > 0 && defaultValue.length <= 0 ? (
+          {isNotNull === true && dataType?.value !== 'serial' && rows.length > 0 && defaultValue.length <= 0 ? (
             <span className="form-error-message">
               Default value is required to populate this field in existing rows as NOT NULL constraint is added
             </span>
@@ -182,6 +195,7 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
                 onChange={(e) => {
                   setIsNotNull(e.target.checked);
                 }}
+                disabled={dataType?.value === 'serial'}
               />
             </label>
           </div>
@@ -192,13 +206,37 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
             </p>
           </div>
         </div>
+
+        <div className="row mb-3">
+          <div className="col-1">
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={isUniqueConstraint}
+                onChange={(e) => {
+                  setIsUniqueConstraint(e.target.checked);
+                }}
+                disabled={dataType?.value === 'serial'}
+              />
+            </label>
+          </div>
+          <div className="col d-flex flex-column">
+            <p className="m-0 p-0 fw-500">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
+            <p className="fw-400 secondary-text">
+              {isUniqueConstraint ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
+            </p>
+          </div>
+        </div>
       </div>
       <DrawerFooter
         fetching={fetching}
         onClose={onClose}
         onCreate={handleCreate}
         shouldDisableCreateBtn={
-          isEmpty(columnName) || isEmpty(dataType) || (isNotNull === true && rows.length > 0 && isEmpty(defaultValue))
+          isEmpty(columnName) ||
+          isEmpty(dataType) ||
+          (isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial')
         }
       />
     </div>

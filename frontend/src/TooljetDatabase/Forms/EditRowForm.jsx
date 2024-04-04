@@ -3,24 +3,19 @@ import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
-import Select from '@/_ui/Select';
 import _ from 'lodash';
-import { isSerialDataType } from '../constants';
-import BigInt from '../Icons/Biginteger.svg';
-import Float from '../Icons/Float.svg';
-import Integer from '../Icons/Integer.svg';
-import CharacterVar from '../Icons/Text.svg';
-import Boolean from '../Icons/Toggle.svg';
-import Serial from '../Icons/Serial.svg';
+import { renderDatatypeIcon, listAllPrimaryKeyColumns } from '../constants';
+import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
 
-const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
+const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, selectedTable, columns, selectedTableData } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
-  const [selectedRow, setSelectedRow] = useState(rowIdToBeEdited);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
-  const currentValue = selectedTableData.find((row) => row.id === selectedRow);
+  const currentValue = selectedRowObj;
   const [inputValues, setInputValues] = useState([]);
 
   useEffect(() => {
@@ -63,7 +58,8 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
 
       setInputValues(initialInputValues);
     }
-  }, [currentValue, selectedRow]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentValue]);
 
   const [rowData, setRowData] = useState(() => {
     const data = {};
@@ -143,34 +139,24 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
     setRowData({ ...rowData, [columnName]: value });
   };
 
-  const checkDataTypeIcons = (type) => {
-    switch (type) {
-      case 'integer':
-        return <Integer width="18" height="18" className="tjdb-column-header-name" />;
-      case 'bigint':
-        return <BigInt width="18" height="18" className="tjdb-column-header-name" />;
-      case 'character varying':
-        return <CharacterVar width="18" height="18" className="tjdb-column-header-name" />;
-      case 'boolean':
-        return <Boolean width="18" height="18" className="tjdb-column-header-name" />;
-      case 'double precision':
-        return <Float width="18" height="18" className="tjdb-column-header-name" />;
-      default:
-        return type;
-    }
-  };
-
   useEffect(() => {
     toast.dismiss();
   }, []);
 
-  const handleOnSelect = (selectedOption) => {
-    setSelectedRow(selectedOption);
-  };
-
   const handleSubmit = async () => {
     setFetching(true);
-    const query = `id=eq.${selectedRow}&order=id`;
+    const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
+    const filterQuery = new PostgrestQueryBuilder();
+    const sortQuery = new PostgrestQueryBuilder();
+
+    primaryKeyColumns.forEach((primaryKeyColumnName) => {
+      if (selectedRowObj[primaryKeyColumnName]) {
+        filterQuery.filter(primaryKeyColumnName, 'eq', selectedRowObj[primaryKeyColumnName]);
+        sortQuery.order(primaryKeyColumnName, 'desc');
+      }
+    });
+
+    const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, rowData, query);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
@@ -182,7 +168,7 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
     onEdit && onEdit();
   };
 
-  const renderElement = (columnName, dataType, isPrimaryKey, index) => {
+  const renderElement = (columnName, dataType, index, shouldInputBeDisabled = false) => {
     switch (dataType) {
       case 'character varying':
       case 'integer':
@@ -195,7 +181,7 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
               //defaultValue={currentValue}
               value={inputValues[index]?.value !== null && inputValues[index]?.value}
               type="text"
-              disabled={inputValues[index]?.disabled}
+              disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
               onChange={(e) => handleInputChange(index, e.target.value, columnName)}
               placeholder={inputValues[index]?.value !== null ? 'Enter a value' : null}
               className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
@@ -219,7 +205,7 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
               onChange={(e) => {
                 if (!inputValues[index]?.disabled) handleInputChange(index, e.target.checked, columnName);
               }}
-              disabled={inputValues[index]?.value === null}
+              disabled={inputValues[index]?.value === null || shouldInputBeDisabled}
             />
           </label>
         );
@@ -228,18 +214,6 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
         break;
     }
   };
-
-  const primaryColumn = columns.find((column) => column.constraints_type.is_primary_key)?.accessor || null;
-  const serialDatatypeColumn = columns.find((column) => column.constraints_type.is_primary_key);
-
-  const options = selectedTableData.map((row) => {
-    return {
-      value: row[primaryColumn],
-      label: row[primaryColumn],
-    };
-  });
-
-  const headerText = primaryColumn.charAt(0).toUpperCase() + primaryColumn.slice(1);
 
   let matchingObject = {};
   let matchingObjectForCharacter = {};
@@ -264,45 +238,20 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
     <div className="drawer-card-wrapper ">
       <div className="drawer-card-title">
         <h3 className="card-title" data-cy="edit-row-header">
-          Edit a row
+          Edit row
         </h3>
       </div>
       <div className="card-body">
         <div>
-          <div className="createRow-idContainer">
-            <div
-              className="form-label d-flex align-items-center justify-content-start mb-2"
-              data-cy={`${primaryColumn}-column-name-label`}
-            >
-              {isSerialDataType(serialDatatypeColumn) && (
-                <span style={{ width: '24px' }}>
-                  <Serial width="18" height="14" className="tjdb-column-header-name" />
-                </span>
-              )}
-              <span>{headerText}</span>
-            </div>
-
-            <div className="edit-row-container mb-3">
-              <div style={{ position: 'relative' }}>
-                <input
-                  value={selectedRow}
-                  type="text"
-                  disabled={true}
-                  className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
-                />
-              </div>
-            </div>
-          </div>
-
-          {selectedRow &&
+          {selectedRowObj &&
             Array.isArray(columns) &&
             columns?.map(({ Header, accessor, dataType, column_default, constraints_type }, index) => {
-              const currentValue = selectedTableData.find((row) => row.id === selectedRow)?.[accessor];
+              const currentValue = selectedRowObj[accessor];
               const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);
-              const isPrimaryKey = constraints_type.is_primary_key;
-              const isNullable = !constraints_type.is_not_null;
-
-              if (isPrimaryKey) return null;
+              const isPrimaryKey = constraints_type?.is_primary_key ?? false;
+              const isNullable = !constraints_type?.is_not_null;
+              const isSerialDataTypeColumn = dataType === 'serial';
+              const shouldInputBeDisabled = isPrimaryKey || isSerialDataTypeColumn;
 
               return (
                 <div className="edit-row-container mb-3" key={index}>
@@ -312,80 +261,74 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
                       data-cy={`${String(Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-name-label`}
                     >
                       <div className="d-flex align-items-center justify-content-start mb-2">
-                        <span style={{ width: '24px' }}>{checkDataTypeIcons(dataType)}</span>
-                        <span>{headerText}</span>
+                        <span style={{ width: '24px' }}>{renderDatatypeIcon(dataType)}</span>
+                        <span style={{ marginRight: '5px' }}>{headerText}</span>
+                        {constraints_type?.is_primary_key === true && <SolidIcon name="primarykey" />}
                       </div>
                     </div>
-                    {index > 0 && (
-                      <div
-                        className={`${
-                          darkMode ? 'row-tabs-dark' : 'row-tabs'
-                        } d-flex align-items-center justify-content-start gap-2`}
-                      >
-                        {isNullable && (
-                          <div
-                            onClick={() =>
-                              handleTabClick(
-                                index,
-                                'Null',
-                                column_default,
-                                isNullable,
-                                accessor,
-                                dataType,
-                                currentValue
-                              )
-                            }
-                            style={{
-                              backgroundColor:
-                                activeTab[index] === 'Null' && !darkMode
-                                  ? 'white'
-                                  : activeTab[index] === 'Null' && darkMode
-                                  ? '#242f3c'
-                                  : 'transparent',
-                              color:
-                                activeTab[index] === 'Null' && !darkMode
-                                  ? '#3E63DD'
-                                  : activeTab[index] === 'Null' && darkMode
-                                  ? 'white'
-                                  : '#687076',
-                            }}
-                            className="row-tab-content"
-                          >
-                            Null
-                          </div>
-                        )}
-                        {column_default !== null && (
-                          <div
-                            onClick={() =>
-                              handleTabClick(
-                                index,
-                                'Default',
-                                column_default,
-                                isNullable,
-                                accessor,
-                                dataType,
-                                currentValue
-                              )
-                            }
-                            style={{
-                              backgroundColor:
-                                activeTab[index] === 'Default' && !darkMode
-                                  ? 'white'
-                                  : activeTab[index] === 'Default' && darkMode
-                                  ? '#242f3c'
-                                  : 'transparent',
-                              color:
-                                activeTab[index] === 'Default' && !darkMode
-                                  ? '#3E63DD'
-                                  : activeTab[index] === 'Default' && darkMode
-                                  ? 'white'
-                                  : '#687076',
-                            }}
-                            className="row-tab-content"
-                          >
-                            Default value
-                          </div>
-                        )}
+
+                    <div
+                      className={`${
+                        darkMode ? 'row-tabs-dark' : 'row-tabs'
+                      } d-flex align-items-center justify-content-start gap-2`}
+                    >
+                      {isNullable && !isPrimaryKey && (
+                        <div
+                          onClick={() =>
+                            handleTabClick(index, 'Null', column_default, isNullable, accessor, dataType, currentValue)
+                          }
+                          style={{
+                            backgroundColor:
+                              activeTab[index] === 'Null' && !darkMode
+                                ? 'white'
+                                : activeTab[index] === 'Null' && darkMode
+                                ? '#242f3c'
+                                : 'transparent',
+                            color:
+                              activeTab[index] === 'Null' && !darkMode
+                                ? '#3E63DD'
+                                : activeTab[index] === 'Null' && darkMode
+                                ? 'white'
+                                : '#687076',
+                          }}
+                          className="row-tab-content"
+                        >
+                          Null
+                        </div>
+                      )}
+                      {column_default !== null && !isSerialDataTypeColumn && !isPrimaryKey && (
+                        <div
+                          onClick={() =>
+                            handleTabClick(
+                              index,
+                              'Default',
+                              column_default,
+                              isNullable,
+                              accessor,
+                              dataType,
+                              currentValue
+                            )
+                          }
+                          style={{
+                            backgroundColor:
+                              activeTab[index] === 'Default' && !darkMode
+                                ? 'white'
+                                : activeTab[index] === 'Default' && darkMode
+                                ? '#242f3c'
+                                : 'transparent',
+                            color:
+                              activeTab[index] === 'Default' && !darkMode
+                                ? '#3E63DD'
+                                : activeTab[index] === 'Default' && darkMode
+                                ? 'white'
+                                : '#687076',
+                          }}
+                          className="row-tab-content"
+                        >
+                          Default value
+                        </div>
+                      )}
+                      {!isSerialDataTypeColumn && !isPrimaryKey && (
                         <div
                           onClick={() =>
                             handleTabClick(
@@ -416,17 +359,29 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
                         >
                           Custom
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-
-                  {renderElement(accessor, dataType, isPrimaryKey, index)}
+                  <ToolTip
+                    message={
+                      isSerialDataTypeColumn
+                        ? 'Serial data type values cannot be modified'
+                        : constraints_type?.is_primary_key
+                        ? 'Cannot edit primary key values'
+                        : null
+                    }
+                    placement="top"
+                    tooltipClassName="tootip-table"
+                    show={isSerialDataTypeColumn || constraints_type?.is_primary_key}
+                  >
+                    {renderElement(accessor, dataType, index, shouldInputBeDisabled)}
+                  </ToolTip>
                 </div>
               );
             })}
         </div>
       </div>
-      {selectedRow && (
+      {selectedRowObj && (
         <DrawerFooter
           isEditMode={true}
           fetching={fetching}

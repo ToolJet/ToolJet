@@ -4,22 +4,26 @@ import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, getColumnDataType } from '../constants';
 import WarningInfo from '../Icons/Edit-information.svg';
 import { isEmpty } from 'lodash';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components/ToolTip';
 
 const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
-  const nullValue = selectedColumn.constraints_type.is_not_null;
+  const nullValue = selectedColumn?.constraints_type?.is_not_null ?? false;
+  const uniqueConstraintValue = selectedColumn?.constraints_type?.is_unique ?? false;
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
   const [defaultValue, setDefaultValue] = useState(selectedColumn?.column_default);
   const [dataType, setDataType] = useState(selectedColumn?.dataType);
   const [fetching, setFetching] = useState(false);
   const [isNotNull, setIsNotNull] = useState(nullValue);
+  const [isUniqueConstraint, setIsUniqueConstraint] = useState(uniqueConstraintValue);
   const { organizationId, selectedTable, handleRefetchQuery, queryFilters, pageCount, pageSize, sortFilters } =
     useContext(TooljetDatabaseContext);
   const disabledDataType = dataTypes.find((e) => e.value === dataType);
-  const [defaultValueLength, setDefaultValueLength] = useState(defaultValue?.length);
+  const [defaultValueLength] = useState(defaultValue?.length);
 
   const darkDisabledBackground = '#1f2936';
   const lightDisabledBackground = '#f4f6fa';
@@ -72,6 +76,8 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
         column_default: defaultValue,
         constraints_type: {
           is_not_null: isNotNull,
+          is_primary_key: selectedColumn?.constraints_type?.is_primary_key ?? false,
+          is_unique: isUniqueConstraint,
         },
         ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
       },
@@ -81,7 +87,8 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
       columnName !== selectedColumn?.Header ||
       defaultValue?.length > 0 ||
       defaultValue !== selectedColumn?.column_default ||
-      nullValue !== isNotNull
+      nullValue !== isNotNull ||
+      uniqueConstraintValue !== isUniqueConstraint
     ) {
       setFetching(true);
       const { error } = await tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
@@ -103,7 +110,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
           data?.result.map(({ column_name, data_type, ...rest }) => ({
             Header: column_name,
             accessor: column_name,
-            dataType: data_type,
+            dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
             ...rest,
           }))
         );
@@ -113,32 +120,6 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
     toast.success(`Column edited successfully`);
     onClose && onClose();
   };
-
-  // const handleEdit = async () => {
-  //   if (isEmpty(columnName)) {
-  //     toast.error('Column name cannot be empty');
-  //     return;
-  //   }
-  //   if (isEmpty(dataType?.value)) {
-  //     toast.error('Data type cannot be empty');
-  //     return;
-  //   }
-  // setFetching(true);
-  // const { error } = await tooljetDatabaseService.updateColumn(
-  //   organizationId,
-  //   selectedTable.table_name,
-  //   columnName,
-  //   dataType?.value,
-  //   defaultValue
-  // );
-  // setFetching(false);
-  // if (error) {
-  //   toast.error(error?.message ?? `Failed to create a new column in "${selectedTable.table_name}" table`);
-  //   return;
-  // }
-  // toast.success(`Column created successfully`);
-  //   onCreate && onCreate();
-  // };
 
   return (
     <div className="drawer-card-wrapper ">
@@ -158,7 +139,8 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
         </div>
         <div className="mb-3 tj-app-input">
           <div className="form-label" data-cy="column-name-input-field-label">
-            Column name
+            <span style={{ marginRight: '6px' }}>Column name</span>
+            {selectedColumn?.constraints_type?.is_primary_key === true && <SolidIcon name="primarykey" />}
           </div>
           <input
             value={columnName}
@@ -177,7 +159,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
           </div>
           <Select
             isDisabled={true}
-            defaultValue={disabledDataType}
+            defaultValue={selectedColumn?.dataType === 'serial' ? serialDataType : disabledDataType}
             formatOptionLabel={formatOptionLabel}
             options={dataTypes}
             onChange={handleTypeChange}
@@ -190,23 +172,32 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
           <div className="form-label" data-cy="default-value-input-field-label">
             Default value
           </div>
-          <input
-            value={defaultValue}
-            type="text"
-            placeholder="Enter default value"
-            className={'form-control'}
-            data-cy="default-value-input-field"
-            autoComplete="off"
-            onChange={(e) => setDefaultValue(e.target.value)}
-            disabled={dataType === 'serial'}
-          />
+          <ToolTip
+            message={selectedColumn?.dataType === 'serial' ? 'Serial data type values cannot be modified' : null}
+            placement="top"
+            tooltipClassName="tootip-table"
+            show={selectedColumn?.dataType === 'serial'}
+          >
+            <div>
+              <input
+                value={selectedColumn?.dataType === 'serial' ? 'Auto-generated' : defaultValue}
+                type="text"
+                placeholder="Enter default value"
+                className={'form-control'}
+                data-cy="default-value-input-field"
+                autoComplete="off"
+                onChange={(e) => setDefaultValue(e.target.value)}
+                disabled={selectedColumn?.dataType === 'serial'}
+              />
+            </div>
+          </ToolTip>
           {isNotNull === true && rows.length > 0 && !isEmpty(defaultValue) && defaultValueLength > 0 ? (
             <span className="form-warning-message">
               Changing the default value will NOT update the fields having existing default value
             </span>
           ) : null}
         </div>
-        <div className="row mb-3">
+        <div className="row mb-1">
           <div className="col-1">
             <label className={`form-switch`}>
               <input
@@ -216,6 +207,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
                 onChange={(e) => {
                   setIsNotNull(e.target.checked);
                 }}
+                disabled={selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key}
               />
             </label>
           </div>
@@ -223,6 +215,27 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
             <p className="m-0 p-0 fw-500">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
             <p className="fw-400 secondary-text">
               {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
+            </p>
+          </div>
+        </div>
+        <div className="row mb-1">
+          <div className="col-1">
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={isUniqueConstraint}
+                onChange={(e) => {
+                  setIsUniqueConstraint(e.target.checked);
+                }}
+                disabled={selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key}
+              />
+            </label>
+          </div>
+          <div className="col d-flex flex-column">
+            <p className="m-0 p-0 fw-500">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
+            <p className="fw-400 secondary-text">
+              {isNotNull ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
             </p>
           </div>
         </div>
