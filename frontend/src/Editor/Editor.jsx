@@ -364,7 +364,7 @@ const EditorComponent = (props) => {
         batchUpdateComponents(componentIdsWithReferences);
       }
 
-      prevCurrentStateRef.current = currentState;
+      prevCurrentStateRef.current = JSON.parse(JSON.stringify(currentState));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentState)]);
@@ -1202,7 +1202,7 @@ const EditorComponent = (props) => {
             });
 
             useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
-            // console.log('----arpit:: component', { newComponentsExposedData });
+
             useResolveStore.getState().actions.addAppSuggestions({
               components: newComponentsExposedData,
             });
