@@ -95,7 +95,6 @@ export function CodeBuilder({ initialValue, onChange, components }) {
         return { item: item };
       });
     } else {
-      console.log(currentWord);
       filteredVariables = fuse.search(currentWord);
     }
     return filteredVariables.map((variable) => renderVariable(type, key, variable.item.name));

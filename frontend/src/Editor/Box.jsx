@@ -2,7 +2,7 @@ import React from 'react';
 import HydrateWithResolveReferences from './Middlewares/HydrateWithResolveReferences';
 import BoxUI from './BoxUI';
 import _ from 'lodash';
-import { useEditorStore, flushComponentsToRender } from '@/_stores/editorStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
 function deepEqualityCheckusingLoDash(obj1, obj2) {

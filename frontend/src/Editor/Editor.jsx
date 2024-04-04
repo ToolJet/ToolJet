@@ -212,7 +212,6 @@ const EditorComponent = (props) => {
   const selectionRef = useRef(null);
 
   const prevAppDefinition = useRef(appDefinition);
-  const prevEventsStoreRef = useRef(events);
 
   const onAppLoadAndPageLoadEventsAreTriggered = useRef(false);
 
@@ -534,11 +533,6 @@ const EditorComponent = (props) => {
     socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') fetchApp();
-      // else if (data === 'dataQueriesChanged') {
-      //   fetchDataQueries(editingVersion?.id);
-      // } else if (data === 'dataSourcesChanged') {
-      //   fetchDataSources(editingVersion?.id);
-      // }
     });
   };
 
@@ -658,14 +652,6 @@ const EditorComponent = (props) => {
   const handleQueryPaneDragging = (bool) => setIsQueryPaneDragging(bool);
   const handleQueryPaneExpanding = (bool) => setIsQueryPaneExpanded(bool);
 
-  const handleOnComponentOptionChanged = (component, optionName, value) => {
-    return onComponentOptionChanged(component, optionName, value);
-  };
-
-  const handleOnComponentOptionsChanged = (component, options) => {
-    return onComponentOptionsChanged(component, options);
-  };
-
   const changeDarkMode = (newMode) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       globals: {
@@ -676,17 +662,9 @@ const EditorComponent = (props) => {
     props.switchDarkMode(newMode);
   };
 
-  // const handleEvent = memoizeFunction((eventName, event, options) => {
-  //   return onEvent(getEditorRef(), eventName, event, options, 'edit');
-  // });
-
-  // const handleEvent = (eventName, event, options) => {
-  //   return onEvent(getEditorRef(), eventName, event, options, 'edit');
-  // };
-
   const handleEvent = React.useCallback((eventName, event, options) => {
-    console.log('here--- handleEvent');
     return onEvent(getEditorRef(), eventName, event, options, 'edit');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleRunQuery = (queryId, queryName) => runQuery(getEditorRef(), queryId, queryName);
@@ -725,7 +703,6 @@ const EditorComponent = (props) => {
   };
 
   const getPagesWithIds = () => {
-    //! Needs attention
     return Object.entries(appDefinition?.pages).map(([id, page]) => ({ ...page, id }));
   };
 
@@ -941,8 +918,6 @@ const EditorComponent = (props) => {
             events: newEvents,
           });
         }
-
-        // computeComponentState(currentComponents);
       })
       .finally(async () => {
         const currentPageEvents = data.events.filter(
@@ -1152,8 +1127,6 @@ const EditorComponent = (props) => {
       //! The computeComponentPropertyDiff function manages the calculation of differences in table columns by requiring complete column data. Without this complete data, the resulting JSON structure may be incorrect.
       const paramDiff = computeComponentPropertyDiff(appDefinitionDiff, appDefinition, appDiffOptions);
       const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions, currentLayout);
-
-      console.log('here--- updateDiff--- ', paramDiff, updateDiff);
 
       if (updateDiff['error']) {
         const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';

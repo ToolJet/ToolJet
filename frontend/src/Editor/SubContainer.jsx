@@ -1,7 +1,7 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useDrop } from 'react-dnd';
-import { EditorConstants, ItemTypes } from './editorConstants';
+import { ItemTypes } from './editorConstants';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import _, { isEmpty } from 'lodash';
@@ -21,23 +21,17 @@ import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
 import { isPDFSupported } from '@/_stores/utils';
 import GhostWidget from './GhostWidget';
 
-const deviceWindowWidth = EditorConstants.deviceWindowWidth;
-
 export const SubContainer = ({
   mode,
   snapToGrid,
   onComponentClick,
   onEvent,
-  // appDefinition,
   appDefinitionChanged,
-  // onComponentOptionChanged,
-  // onComponentOptionsChanged,
   appLoading,
   zoomLevel,
   parent,
   parentRef,
   setSelectedComponent,
-  // deviceWindowWidth,
   selectedComponent,
   currentLayout,
   removeComponent,
@@ -56,19 +50,16 @@ export const SubContainer = ({
   childComponents = null,
   listmode = null,
   columns = 1,
-  // setSubContainerWidths,
   parentWidgetId,
-  // turnOffAutoLayout,
 }) => {
   //Todo add custom resolve vars for other widgets too
-  const mounted = useMounted();
+
   const widgetResolvables = Object.freeze({
     Listview: 'listItem',
   });
 
   const appDefinition = useEditorStore((state) => state.appDefinition, shallow);
 
-  const customResolverVariable = widgetResolvables[parentComponent?.component];
   const currentState = useCurrentState();
   const { selectedComponents } = useEditorStore(
     (state) => ({
@@ -79,7 +70,6 @@ export const SubContainer = ({
 
   const resizingComponentId = useResizingComponentId();
 
-  // const [noOfGrids] = useNoOfGrid();
   const noOfGrids = 43;
   const { isGridActive } = useGridStore((state) => ({ isGridActive: state.activeGrid === parent }), shallow);
 
@@ -96,6 +86,7 @@ export const SubContainer = ({
 
   zoomLevel = zoomLevel || 1;
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const allComponents = appDefinition.pages[currentPageId]?.components ?? {};
 
   const allChildComponents = useMemo(() => {
@@ -109,11 +100,10 @@ export const SubContainer = ({
     return _childWidgets;
   }, [allComponents, parent]);
 
-  // const [boxes, setBoxes] = useState(allComponents);
   const [childWidgets, setChildWidgets] = useState(() => allChildComponents);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
-  // const [subContainerHeight, setSubContainerHeight] = useState('100%'); //used to determine the height of the sub container for modal
+
   const subContainerHeightRef = useRef(height ?? '100%');
 
   useEffect(() => {
@@ -236,44 +226,6 @@ export const SubContainer = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childWidgets]);
-
-  // const { draggingState } = useDragLayer((monitor) => {
-  //   // TODO: Need to move to a performant version of the block below
-  //   if (monitor.getItem()) {
-  //     if (monitor.getItem().id === undefined) {
-  //       if (parentRef.current) {
-  //         const currentOffset = monitor.getSourceClientOffset();
-  //         if (currentOffset) {
-  //           const canvasBoundingRect = parentRef?.current
-  //             ?.getElementsByClassName('real-canvas')[0]
-  //             ?.getBoundingClientRect();
-  //           if (!canvasBoundingRect) return { draggingState: false };
-  //           if (
-  //             currentOffset.x > canvasBoundingRect.x &&
-  //             currentOffset.x < canvasBoundingRect.x + canvasBoundingRect.width
-  //           ) {
-  //             return { draggingState: true };
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-
-  //   if (monitor.isDragging() && monitor.getItem().parent) {
-  //     if (monitor.getItem().parent === parent) {
-  //       return { draggingState: true };
-  //     } else {
-  //       return { draggingState: false };
-  //     }
-  //   } else {
-  //     return { draggingState: false };
-  //   }
-  // });
-
-  //!Todo: need to check: this never gets called as draggingState is always false
-  // useEffect(() => {
-  //   setIsDragging(draggingState);
-  // }, [draggingState]);
 
   const [{ isOver, isOverCurrent }, drop] = useDrop(
     () => ({
@@ -458,14 +410,11 @@ export const SubContainer = ({
       appDefinition,
       appDefinitionChanged,
       currentState,
-      // onComponentOptionChanged,
-      // onComponentOptionsChanged,
       appLoading,
       zoomLevel,
       setSelectedComponent,
       removeComponent,
       currentLayout,
-      // deviceWindowWidth,
       selectedComponents,
       darkMode,
       readOnly,
@@ -497,8 +446,6 @@ export const SubContainer = ({
           {checkParentVisibility() &&
             Object.entries({
               ...childWidgets,
-              // ...(resizingComponentId &&
-              //   childWidgets[resizingComponentId] && { resizingComponentId: childWidgets[resizingComponentId] }),
             }).map(([key, box]) => {
               const canShowInCurrentLayout =
                 box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
@@ -551,13 +498,9 @@ export const SubContainer = ({
                       allComponents={allComponents}
                       {...box}
                       mode={mode}
-                      // resizingStatusChanged={(status) => setIsResizing(status)}
-                      // draggingStatusChanged={(status) => setIsDragging(status)}
                       inCanvas={true}
                       zoomLevel={zoomLevel}
-                      // setSelectedComponent={setSelectedComponent}
                       selectedComponent={selectedComponent}
-                      // deviceWindowWidth={deviceWindowWidth}
                       isSelectedComponent={
                         mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false
                       }
@@ -569,36 +512,8 @@ export const SubContainer = ({
                       onComponentHover={onComponentHover}
                       hoveredComponent={hoveredComponent}
                       parentId={parent}
-                      // sideBarDebugger={sideBarDebugger}
                       isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
                       exposedVariables={exposedVariables ?? {}}
-                      // childComponents={childComponents[key]}
-                      // containerProps={{
-                      //   mode,
-                      //   snapToGrid,
-                      //   onComponentClick,
-                      //   onEvent,
-                      //   appDefinition,
-                      //   appDefinitionChanged,
-                      //   currentState,
-                      //   onComponentOptionChanged,
-                      //   onComponentOptionsChanged,
-                      //   appLoading,
-                      //   zoomLevel,
-                      //   setSelectedComponent,
-                      //   removeComponent,
-                      //   currentLayout,
-                      //   deviceWindowWidth,
-                      //   selectedComponents,
-                      //   darkMode,
-                      //   readOnly,
-                      //   onComponentHover,
-                      //   hoveredComponent,
-                      //   sideBarDebugger,
-                      //   currentPageId,
-                      //   childComponents,
-                      //   setSubContainerWidths,
-                      // }}
                       getContainerProps={getContainerProps}
                     />
                   </SubWidgetWrapper>
@@ -623,7 +538,6 @@ export const SubContainer = ({
           </center>
         </div>
       )}
-      {/* <GhostWidget layout={childWidgets[]} */}
     </SubContianerWrapper>
   );
 };
@@ -681,7 +595,7 @@ const SubWidgetWrapper = ({
 
   useEffect(() => {
     const controlBox = document.querySelector(`[target-id="${id}"]`);
-    console.log('controlBox', { hide: !isOnScreen && isSelected && !isDragging && !isResizing, isOnScreen });
+    // console.log('controlBox', { hide: !isOnScreen && isSelected && !isDragging && !isResizing, isOnScreen });
     //adding attribute instead of class since react-moveable seems to replace classes internally on scroll stop
     if (!isOnScreen && isSelected && !isDragging && !isResizing) {
       controlBox?.classList.add('hide-control');
@@ -720,7 +634,6 @@ const SubWidgetWrapper = ({
 };
 
 const SubContianerWrapper = ({ children, isDragging, isResizing, isGridActive, readOnly, drop, styles, parent }) => {
-  // const [dragTarget] = useDragTarget();
   return (
     <div
       ref={drop}
@@ -728,7 +641,6 @@ const SubContianerWrapper = ({ children, isDragging, isResizing, isGridActive, r
       id={`canvas-${parent}`}
       data-parent={parent}
       className={`sub-canvas real-canvas ${
-        // (isDragging || isResizing || dragTarget === parent || isGridActive) && !readOnly ? 'show-grid' : 'hide-grid'
         (isDragging || isResizing || isGridActive) && !readOnly ? 'show-grid' : 'hide-grid'
       }`}
     >

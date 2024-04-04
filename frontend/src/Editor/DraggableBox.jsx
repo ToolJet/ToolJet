@@ -16,8 +16,6 @@ import WidgetBox from './WidgetBox';
 import * as Sentry from '@sentry/react';
 import { findHighestLevelofSelection } from './DragContainer';
 
-// const noOfGrid = 43;
-
 function computeWidth(currentLayoutOptions) {
   return `${currentLayoutOptions?.width}%`;
 }
@@ -239,10 +237,5 @@ const DraggableBox = React.memo(
     );
   }
 );
-
-// DraggableBox.whyDidYouRender = {
-//   logOnDifferentValues: true,
-//   customName: 'WDYRDraggableBox',
-// };
 
 export { DraggableBox };

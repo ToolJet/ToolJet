@@ -27,7 +27,6 @@ const EditorSelecto = ({
 
   const onAreaSelectionStart = useCallback(
     (e) => {
-      console.log('onAreaSelectionStart', e);
       const isMultiSelect = e.inputEvent.shiftKey || useEditorStore.getState().selectedComponents.length > 0;
       setSelectionInProgress(true);
       setSelectedComponents([...(isMultiSelect ? useEditorStore.getState().selectedComponents : EMPTY_ARRAY)]);
@@ -36,7 +35,6 @@ const EditorSelecto = ({
   );
 
   const onAreaSelection = useCallback((e) => {
-    console.log('onAreaSelection', e);
     e.added.forEach((el) => {
       el.classList.add('resizer-select');
     });
@@ -52,7 +50,6 @@ const EditorSelecto = ({
 
   const onAreaSelectionEnd = useCallback(
     (e) => {
-      console.log('onAreaSelectionEnd', e);
       setSelectionInProgress(false);
       e.selected.forEach((el, index) => {
         const id = el.getAttribute('widgetid');
