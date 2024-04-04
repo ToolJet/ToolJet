@@ -63,9 +63,6 @@ export class SampleDBService {
     const dataSource: DataSource = dataSourceList[0];
 
     const allEnvs = await this.appEnvironmentService.getAll(organizationId, manager);
-    console.log('All envs');
-
-    console.log(allEnvs);
 
     await Promise.all(
       allEnvs?.map(async (env) => {

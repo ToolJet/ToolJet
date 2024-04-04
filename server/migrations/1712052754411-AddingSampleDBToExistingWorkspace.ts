@@ -19,7 +19,7 @@ export class AddingSampleDBToExistingWorkspace1712052754411 implements Migration
     });
     for (const workspace of workspaces) {
       const { id: organizationId } = workspace;
-      sampleDBservice.createSampleDB(organizationId, entityManager);
+      await sampleDBservice.createSampleDB(organizationId, entityManager);
     }
   }
 
