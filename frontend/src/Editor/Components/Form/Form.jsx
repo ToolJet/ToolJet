@@ -280,6 +280,7 @@ export const Form = function Form(props) {
                   key={index}
                 >
                   <Box
+                    {...props}
                     component={item}
                     id={id}
                     width={width}
@@ -296,7 +297,6 @@ export const Form = function Form(props) {
                     // customResolvables={customResolvables}
                     parentId={id}
                     getContainerProps={getContainerProps}
-                    {...props}
                   />
                 </div>
               );

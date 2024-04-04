@@ -165,6 +165,7 @@ const BoxUI = (props) => {
           currentLayout={currentLayout}
           currentState={currentState}
           currentPageId={currentPageId}
+          getContainerProps={component.component === 'Form' ? getContainerProps : null}
         />
       </div>
     </OverlayTrigger>
