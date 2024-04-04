@@ -213,7 +213,7 @@ actions.generateFile('Pdffile1', 'pdf', '{{components.table1.currentPageData}}')
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Go to App
+### Go to App
 
 You can switch to a different application using the below action:
 
@@ -247,7 +247,7 @@ actions.showAlert('error' , 'This is an error' )
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Run Multiple Actions From runjs Query
+### Run Multiple Actions From RunJS Query
 
 To run multiple actions from a RunJS query, you'll have to use **async-await** in the function.
 
