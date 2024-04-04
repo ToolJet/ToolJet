@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { getComponentToRender } from '@/_helpers/editorHelpers';
 import _ from 'lodash';
 
-import { flushComponentsToRender, getComponentsToRenders } from '@/_stores/editorStore';
-import useRenderCount from '@/_hooks/useRenderCount';
+import { getComponentsToRenders } from '@/_stores/editorStore';
 
 function deepEqualityCheckusingLoDash(obj1, obj2) {
   return _.isEqual(obj1, obj2);
@@ -35,13 +34,6 @@ export const shouldUpdate = (prevProps, nextProps) => {
 
 const ComponentWrapper = React.memo(({ componentName, ...props }) => {
   const ComponentToRender = getComponentToRender(componentName);
-
-  const renderCount = useRenderCount();
-
-  useEffect(() => {
-    flushComponentsToRender(props?.id);
-  }),
-    [renderCount];
 
   return <ComponentToRender {...props} />;
 }, shouldUpdate);

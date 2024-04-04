@@ -178,3 +178,21 @@ export function handleLowPriorityWork(callback, timeout = null) {
   const options = timeout ? { timeout } : {};
   window.requestIdleCallback(callback, options);
 }
+
+export function generatePath(obj, targetKey, currentPath = '') {
+  for (const key in obj) {
+    const newPath = currentPath ? currentPath + '.' + key : key;
+
+    if (key === targetKey) {
+      return newPath;
+    }
+
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      const result = generatePath(obj[key], targetKey, newPath);
+      if (result) {
+        return result;
+      }
+    }
+  }
+  return null;
+}

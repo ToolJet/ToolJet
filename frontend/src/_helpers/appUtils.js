@@ -110,41 +110,20 @@ export function onComponentOptionsChanged(component, options) {
 
 export function onComponentOptionChanged(component, option_name, value) {
   const componentName = component.name;
-  const { isEditorReady } = getCurrentState();
+  const { isEditorReady, components: currentComponents } = getCurrentState();
+  const components = duplicateCurrentState === null ? currentComponents : duplicateCurrentState;
+  let componentData = components[componentName] || {};
+  componentData[option_name] = value;
+
   if (isEditorReady) {
-    if (duplicateCurrentState !== null) {
-      duplicateCurrentState = null;
-    }
-    const components = getCurrentState().components;
-    let componentData = components[componentName];
-    componentData = componentData || {};
-    componentData[option_name] = value;
-
-    if (option_name !== 'id') {
-      useCurrentStateStore.getState().actions.setCurrentState({
-        components: { ...components, [componentName]: componentData },
-      });
-    } else if (!componentData?.id) {
-      useCurrentStateStore.getState().actions.setCurrentState({
-        components: { ...components, [componentName]: componentData },
-      });
-    }
-
+    // Always update the current state if editor is ready
     useCurrentStateStore.getState().actions.setCurrentState({
       components: { ...components, [componentName]: componentData },
     });
   } else {
-    const components = duplicateCurrentState === null ? getCurrentState().components : duplicateCurrentState;
-    let componentData = components[componentName];
-    componentData = componentData || {};
-    componentData[option_name] = value;
-
+    // Update the duplicate state if editor is not ready
     duplicateCurrentState = { ...components, [componentName]: componentData };
-    if (option_name !== 'id') {
-      debouncedChange();
-    } else if (!componentData?.id) {
-      debouncedChange();
-    }
+    debouncedChange();
   }
 
   return Promise.resolve();
