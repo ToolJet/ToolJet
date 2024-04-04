@@ -326,47 +326,19 @@ const EditorComponent = (props) => {
     flushComponentsToRender(updatedComponentIds);
   }
 
+  const lastUpdatedRef = useResolveStore((state) => state.lastUpdatedRefs, shallow);
+
   useEffect(() => {
-    const isEditorReady = useCurrentStateStore.getState().isEditorReady;
-
-    if (!isEditorReady || !onAppLoadAndPageLoadEventsAreTriggered.current) return;
-
-    const diffState = diff(prevCurrentStateRef.current, currentState);
-
-    if (Object.keys(diffState).length > 0) {
-      const entitiesToTrack = ['queries', 'components', 'variables', 'page', 'constants'];
-
-      const entitiesChanged = Object.keys(diffState).filter((entity) => entitiesToTrack.includes(entity));
-
-      if (entitiesChanged.length === 0) return;
-
-      const diffObj = entitiesChanged.reduce((acc, entity) => {
-        acc[entity] = diffState[entity];
-        return acc;
-      }, {});
-
-      const allPaths = entitiesChanged.reduce((acc, entity) => {
-        const paths = Object.keys(diffObj[entity]).map((key) => {
-          return generatePath(diffObj[entity], key);
-        });
-
-        acc[entity] = paths.map((path) => `${entity}.${path}`);
-        return acc;
-      }, {});
-
-      const currentStatePaths = Object.values(allPaths).flat();
-
+    if (lastUpdatedRef.length > 0) {
       const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
-      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, currentStatePaths);
+      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, lastUpdatedRef);
 
       if (componentIdsWithReferences.length > 0) {
         batchUpdateComponents(componentIdsWithReferences);
       }
-
-      prevCurrentStateRef.current = JSON.parse(JSON.stringify(currentState));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(currentState)]);
+  }, [lastUpdatedRef]);
 
   useEffect(
     () => {
@@ -1175,7 +1147,6 @@ const EditorComponent = (props) => {
             });
 
             useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
-
             useResolveStore.getState().actions.addAppSuggestions({
               components: newComponentsExposedData,
             });
