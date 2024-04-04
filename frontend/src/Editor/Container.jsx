@@ -128,9 +128,7 @@ export const Container = ({
           : updatedBoxes[id].layouts.desktop;
       });
       setBoxes({ ...updatedBoxes });
-      // console.log('currentLayout', data);
     }
-    // setNoOfGrids(currentLayout === 'mobile' ? 12 : 43);
   }, [currentLayout]);
 
   const paramUpdatesOptsRef = useRef({});
@@ -315,10 +313,6 @@ export const Container = ({
     },
     [setCanvasHeight, currentLayout, mode]
   );
-
-  // useEffect(() => {
-  //   setIsDragging(draggingState);
-  // }, [draggingState]);
 
   const [{ isOver, isOverCurrent }, drop] = useDrop(
     () => ({
@@ -525,8 +519,6 @@ export const Container = ({
     setBoxes(updatedBoxes);
     updateCanvasHeight(updatedBoxes);
   };
-  //   [boxes, updateCanvasHeight, canvasWidth, gridWidth, currentLayout]
-  // );
 
   function onDragStop(boxPositions) {
     const copyOfBoxes = JSON.parse(JSON.stringify(boxes));
@@ -881,10 +873,7 @@ export const Container = ({
             onDrag={onDragStop}
             gridWidth={gridWidth}
             selectedComponents={selectedComponents}
-            // setIsDragging={setIsDragging}
-            // setIsResizing={setIsResizing}
             currentLayout={currentLayout}
-            // subContainerWidths={subContainerWidths}
             currentPageId={currentPageId}
             draggedSubContainer={draggedSubContainer}
             mode={isVersionReleased ? 'view' : mode}
@@ -940,7 +929,6 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
     width: width + 'px',
     height: layoutData.height + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
-    // ...(isGhostComponent ? { opacity: 0.5 } : isResizing ? { opacity: 0 } : {}),
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
     ...(isWidgetActive ? { zIndex: 3 } : {}),
   };
@@ -985,18 +973,7 @@ function DragGhostWidget() {
   );
 }
 
-function ContainerWrapper({
-  children,
-  canvasHeight,
-  // isDragging,
-  // isResizing,
-  isDropping,
-  showComments,
-  handleAddThread,
-  containerRef,
-  styles,
-}) {
-  // const [dragTarget] = useDragTarget();
+function ContainerWrapper({ children, canvasHeight, isDropping, showComments, handleAddThread, containerRef, styles }) {
   const { resizingComponentId, draggingComponentId, dragTarget } = useGridStore((state) => {
     const { resizingComponentId, draggingComponentId, dragTarget } = state;
     return { resizingComponentId, draggingComponentId, dragTarget };
@@ -1008,7 +985,6 @@ function ContainerWrapper({
       ref={containerRef}
       style={{ ...styles, height: canvasHeight }}
       className={cx('real-canvas', {
-        // 'show-grid': isDragging || isResizing || dragTarget === 'canvas',
         'show-grid': (!!resizingComponentId && !dragTarget) || (!!draggingComponentId && !dragTarget) || isDropping,
       })}
       id="real-canvas"

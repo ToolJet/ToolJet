@@ -24,10 +24,7 @@ export default function DragContainer({
   onDrag,
   gridWidth,
   selectedComponents = [],
-  // setIsDragging,
-  // setIsResizing,
   currentLayout,
-  // subContainerWidths,
   draggedSubContainer,
 }) {
   const lastDraggedEventsRef = useRef(null);
@@ -112,8 +109,6 @@ export default function DragContainer({
     },
   };
 
-  // const [dragTarget, useGridStore.getState().actions.setDragTarget] = useDragTarget();
-  // const [draggedTarget, setDraggedTarget] = useState();
   const moveableRef = useRef();
   const draggedOverElemRef = useRef(null);
   const childMoveableRefs = useRef({});
@@ -171,7 +166,6 @@ export default function DragContainer({
       console.error('Error---->', error);
     }
   }, [hoveredComponent, reloadGrid]);
-  // }, [JSON.stringify(selectedComponents), JSON.stringify(boxes), hoveredComponent]);
 
   useEffect(() => {
     setList(boxList);
@@ -233,16 +227,12 @@ export default function DragContainer({
     }
   }, [selectedComponents]);
 
-  // window.reloadGrid = reloadGrid;
-
   useEffect(() => {
     setList(boxList);
   }, [JSON.stringify(boxes)]);
 
   const groupedTargets = [
-    ...findHighestLevelofSelection(selectedComponents)
-      // .filter((component) => !component?.component?.parent)
-      .map((component) => '.ele-' + component.id),
+    ...findHighestLevelofSelection(selectedComponents).map((component) => '.ele-' + component.id),
   ];
 
   useEffect(() => {
@@ -256,8 +246,6 @@ export default function DragContainer({
     };
     lastDraggedEventsRef.current = posWithParent;
   };
-
-  // const handleResize = useCallback((e) => handleWidgetResize(e, list, boxes, gridWidth), [list, boxes, gridWidth]);
 
   return mode === 'edit' ? (
     <>
@@ -386,12 +374,7 @@ export default function DragContainer({
         onResizeStart={(e) => {
           performance.mark('onResizeStart');
           useGridStore.getState().actions.setResizingComponentId(e.target.id);
-          // setIsResizing(true);
           e.setMin([gridWidth, 10]);
-          // if (currentLayout === 'mobile' && autoComputeLayout) {
-          //   turnOffAutoLayout();
-          //   return false;
-          // }
         }}
         onResizeGroupStart={({ events }) => {
           const parentElm = events[0].target.closest('.real-canvas');
@@ -500,15 +483,12 @@ export default function DragContainer({
           if (hoveredComponent !== e.target.id) {
             return false;
           }
-          // setDraggedTarget(e.target.id);
         }}
         onDragEnd={(e) => {
           try {
             if (isDraggingRef.current) {
-              // setTimeout(() => useGridStore.getState().actions.setDraggingComponentId(null));
               useGridStore.getState().actions.setDraggingComponentId(null);
               isDraggingRef.current = false;
-              // setIsDragging(false);
             }
 
             if (draggedSubContainer) {
@@ -612,20 +592,16 @@ export default function DragContainer({
             element.classList.remove('show-grid');
             element.classList.add('hide-grid');
           });
-          // setDraggedTarget();
         }}
         onDrag={(e) => {
           if (!isDraggingRef.current) {
             useGridStore.getState().actions.setDraggingComponentId(e.target.id);
             isDraggingRef.current = true;
-            // setIsDragging(true);
           }
           if (draggedSubContainer) {
             return;
           }
-          // if (e.target.id !== draggedTarget) {
-          //   setDraggedTarget(e.target.id);
-          // }
+
           if (!draggedSubContainer) {
             const parentComponent = widgets[widgets[e.target.id]?.component?.parent];
             let top = e.translate[1];
@@ -667,7 +643,7 @@ export default function DragContainer({
             });
             const parentWidgetId = draggedOverContainer.getAttribute('data-parent') || draggedOverElem?.id;
             document.getElementById('canvas-' + parentWidgetId)?.classList.add('show-grid');
-            console.log('dragTarget-- parentWidgetId', parentWidgetId);
+
             useGridStore.getState().actions.setDragTarget(parentWidgetId);
 
             if (
@@ -679,7 +655,7 @@ export default function DragContainer({
               draggedOverElemRef.current = draggedOverContainer;
             }
           }
-          console.log('getOffset--', getOffset(e.target, document.querySelector('#real-canvas')));
+
           const offset = getOffset(e.target, document.querySelector('#real-canvas'));
           if (document.getElementById('moveable-drag-ghost')) {
             document.getElementById('moveable-drag-ghost').style.transform = `translate(${offset.x}px, ${offset.y}px)`;
@@ -862,8 +838,3 @@ function getOffset(childElement, grandparentElement) {
 
   return { x: offsetX, y: offsetY };
 }
-
-DragContainer.whyDidYouRender = {
-  logOnDifferentValues: true,
-  customName: 'WDYRDragContainer',
-};

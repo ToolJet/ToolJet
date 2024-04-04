@@ -32,8 +32,6 @@ const BoxUI = (props) => {
     changeCanDrag,
     removeComponent,
     canvasWidth,
-    // exposedVariables,
-    // fireEvent,
     parentId,
     customResolvables,
     currentLayout,
@@ -121,10 +119,9 @@ const BoxUI = (props) => {
       <div
         style={{
           ..._styles,
-          //   backgroundColor,
+
           padding: _styles?.padding == 'none' ? '0px' : '2px', //chart and image has a padding property other than container padding
         }}
-        // role={preview ? 'BoxPreview' : 'Box'}
         role={'Box'}
       >
         <ControlledComponentToRender
