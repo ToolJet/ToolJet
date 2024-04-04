@@ -396,7 +396,7 @@ export const NumberInput = function NumberInput({
                     backgroundColor: 'transparent',
                     zIndex: 3,
                   }}
-                  className="numberinput-up-arrow arrow"
+                  className="numberinput-up-arrow arrow number-input-arrow"
                   name="TriangleDownCenter"
                 ></SolidIcon>
               </div>
@@ -426,7 +426,7 @@ export const NumberInput = function NumberInput({
                   }}
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
                   height={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  className="numberinput-down-arrow arrow"
+                  className="numberinput-down-arrow arrow number-input-arrow"
                   name="TriangleUpCenter"
                 ></SolidIcon>
               </div>

@@ -12657,3 +12657,13 @@ tbody {
     -moz-appearance: textfield !important;
   }
 }
+
+.number-input-arrow {
+  &:hover {
+    background-color: var(--interactive-overlays-fill-hover) !important;
+  }
+
+  &:active {
+    background-color: var(--interactive-overlays-fill-pressed) !important;
+  }
+}
