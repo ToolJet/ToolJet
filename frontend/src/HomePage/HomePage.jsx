@@ -800,13 +800,6 @@ class HomePageComponent extends React.Component {
                           data-cy="import-option-input"
                         />
                       </label>
-                      <Dropdown.Item
-                        className="homepage-dropdown-style tj-text tj-text-xsm"
-                        onClick={() => this.setState({ showCreateModuleModal: true })}
-                        data-cy="create-module-button"
-                      >
-                        {this.props.t('homePage.header.createModule', 'Create module')}
-                      </Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
                 </div>
