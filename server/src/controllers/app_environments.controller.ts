@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { ForbiddenException } from '@nestjs/common';
@@ -16,6 +16,16 @@ export class AppEnvironmentsController {
     private globalDataSourcesAbilityFactory: GlobalDataSourceAbilityFactory,
     private orgEnvironmentVariablesAbilityFactory: OrgEnvironmentVariablesAbilityFactory
   ) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Get('init')
+  async init(@User() user, @Query('editing_version_id') editingVersionId: string) {
+    /* 
+     init is a method in the AppEnvironmentService class that is used to initialize the app environment mananger. 
+     Should not use for any other purpose. 
+    */
+    return await this.appEnvironmentServices.init(editingVersionId);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get()
@@ -39,9 +49,13 @@ export class AppEnvironmentsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('versions')
-  async getVersions(@User() user, @Query('app_id') appId: string) {
-    const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(user?.organizationId, appId);
+  @Get(':id/versions')
+  async getVersionsByEnvironment(@User() user, @Param('id') environmentId: string, @Query('app_id') appId: string) {
+    const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(
+      user?.organizationId,
+      appId,
+      environmentId
+    );
     return { appVersions };
   }
 }

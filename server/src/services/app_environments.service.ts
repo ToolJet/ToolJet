@@ -7,8 +7,43 @@ import { OrganizationConstant } from 'src/entities/organization_constants.entity
 import { EntityManager, FindOneOptions, In, DeleteResult } from 'typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
 
+export interface AppEnvironmentResponse {
+  editorVersion: Partial<AppVersion>;
+  editorEnvironment: AppEnvironment;
+  appVersionEnvironment: AppEnvironment;
+  shouldRenderPromoteButton: boolean;
+  shouldRenderReleaseButton: boolean;
+}
+
 @Injectable()
 export class AppEnvironmentService {
+  async init(editingVersionId: string, manager?: EntityManager): Promise<AppEnvironmentResponse> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const editorVersion = await manager.findOne(AppVersion, {
+        select: ['id', 'name', 'currentEnvironmentId'],
+        where: { id: editingVersionId },
+      });
+      const editorEnvironment = await manager.findOne(AppEnvironment, { id: editorVersion.currentEnvironmentId });
+      const { shouldRenderPromoteButton, shouldRenderReleaseButton } =
+        this.calculateButtonVisibility(editorEnvironment);
+      const response: AppEnvironmentResponse = {
+        editorVersion,
+        editorEnvironment,
+        appVersionEnvironment: editorEnvironment,
+        shouldRenderPromoteButton,
+        shouldRenderReleaseButton,
+      };
+      return response;
+    }, manager);
+  }
+
+  calculateButtonVisibility(appVersionEnvironment: AppEnvironment) {
+    /* Further conditions can handle from here */
+    const shouldRenderPromoteButton = false;
+    const shouldRenderReleaseButton = true;
+    return { shouldRenderPromoteButton, shouldRenderReleaseButton };
+  }
+
   async get(
     organizationId: string,
     id?: string,
