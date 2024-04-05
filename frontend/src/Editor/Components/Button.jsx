@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 const tinycolor = require('tinycolor2');
+import useRenderCount from '@/_hooks/useRenderCount';
 
 export const Button = function Button(props) {
+  useRenderCount(`Button Main component ${props.id}`);
+
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor, boxShadow } = styles;
 

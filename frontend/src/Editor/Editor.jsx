@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   appService,
   authenticationService,
@@ -25,7 +25,6 @@ import {
   onQueryConfirmOrCancel,
   runQuery,
   computeComponentState,
-  debuggerActions,
   cloneComponents,
   removeSelectedComponent,
   buildAppDefinition,
@@ -60,7 +59,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
+import { useAppVersionStore, useAppVersionActions } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
 import {
@@ -71,8 +70,8 @@ import {
   resetAllStores,
 } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
-import { EMPTY_ARRAY, useEditorActions, useEditorStore } from '@/_stores/editorStore';
-import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
+import { EMPTY_ARRAY, flushComponentsToRender, useEditorActions, useEditorStore } from '@/_stores/editorStore';
+import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useNoOfGrid } from '@/_stores/gridStore';
 import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
@@ -89,11 +88,11 @@ import AutoLayoutAlert from './AutoLayoutAlert';
 import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
+import { decimalToHex } from './editorConstants';
+import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 
 setAutoFreeze(false);
 enablePatches();
-
-const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
@@ -109,8 +108,13 @@ const EditorComponent = (props) => {
     autoUpdateEventStore,
   } = useAppDataActions();
 
-  const { updateEditorState, updateQueryConfirmationList, setSelectedComponents, setCurrentPageId } =
-    useEditorActions();
+  const {
+    updateEditorState,
+    updateQueryConfirmationList,
+    setSelectedComponents,
+    setCurrentPageId,
+    updateComponentsNeedsUpdateOnNextRender,
+  } = useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
   const { isVersionReleased, editingVersionId, releasedVersionId } = useAppVersionStore(
@@ -208,7 +212,8 @@ const EditorComponent = (props) => {
   const selectionRef = useRef(null);
 
   const prevAppDefinition = useRef(appDefinition);
-  const prevEventsStoreRef = useRef(events);
+
+  const onAppLoadAndPageLoadEventsAreTriggered = useRef(false);
 
   useLayoutEffect(() => {
     resetAllStores();
@@ -277,18 +282,61 @@ const EditorComponent = (props) => {
     }
 
     if (mounted && didAppDefinitionChanged && currentPageId) {
-      const components = appDefinition?.pages[currentPageId]?.components || {};
+      // const components = appDefinition?.pages[currentPageId]?.components || {};
 
-      computeComponentState(components);
+      // computeComponentState(components);
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
-      if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
-        autoSave();
-      }
+      handleLowPriorityWork(() => autoSave());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
+
+  /**
+   ** Async updates components in batches to optimize and processing efficiency.
+   * This function iterates over an array of component IDs, updating them in fixed-size batches,
+   * and introduces a delay after each batch to allow the UI thread to manage other tasks, such as rendering updates.
+   * After all batches are processed, it flushes the updates to clear any flags or temporary states indicating pending updates,
+   * ensuring the system is ready for the next cycle of updates.
+   *
+   * @param {Array} componentIds An array of component IDs that need updates.
+   * @returns {Promise<void>} A promise that resolves once all batches have been processed and flushed.
+   */
+
+  async function batchUpdateComponents(componentIds) {
+    if (componentIds.length === 0) return;
+
+    let updatedComponentIds = [];
+
+    for (let i = 0; i < componentIds.length; i += 10) {
+      const batch = componentIds.slice(i, i + 10);
+      batch.forEach((id) => {
+        updatedComponentIds.push(id);
+      });
+
+      updateComponentsNeedsUpdateOnNextRender(batch);
+      // Delay to allow UI to process
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    // Flush only updated components
+    flushComponentsToRender(updatedComponentIds);
+  }
+
+  const lastUpdatedRef = useResolveStore((state) => state.lastUpdatedRefs, shallow);
+
+  useEffect(() => {
+    if (lastUpdatedRef.length > 0) {
+      const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
+      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, lastUpdatedRef);
+
+      if (componentIdsWithReferences.length > 0) {
+        batchUpdateComponents(componentIdsWithReferences);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastUpdatedRef]);
 
   useEffect(
     () => {
@@ -325,14 +373,6 @@ const EditorComponent = (props) => {
       });
     }
   }, [currentLayout, mounted]);
-
-  const handleYmapEventUpdates = () => {
-    props.ymap?.set('eventHandlersUpdated', {
-      currentVersionId: currentVersionId,
-      currentSessionId: currentSessionId,
-      update: true,
-    });
-  };
 
   const handleMessage = (event) => {
     const { data } = event;
@@ -463,11 +503,6 @@ const EditorComponent = (props) => {
     socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') fetchApp();
-      // else if (data === 'dataQueriesChanged') {
-      //   fetchDataQueries(editingVersion?.id);
-      // } else if (data === 'dataSourcesChanged') {
-      //   fetchDataSources(editingVersion?.id);
-      // }
     });
   };
 
@@ -587,30 +622,6 @@ const EditorComponent = (props) => {
   const handleQueryPaneDragging = (bool) => setIsQueryPaneDragging(bool);
   const handleQueryPaneExpanding = (bool) => setIsQueryPaneExpanded(bool);
 
-  const handleOnComponentOptionChanged = (component, optionName, value) => {
-    return onComponentOptionChanged(component, optionName, value);
-  };
-
-  const handleOnComponentOptionsChanged = (component, options) => {
-    return onComponentOptionsChanged(component, options);
-  };
-
-  const handleComponentClick = (id, component) => {
-    updateEditorState({
-      selectedComponent: { id, component },
-    });
-  };
-
-  const sideBarDebugger = {
-    error: (data) => {
-      debuggerActions.error(data);
-    },
-    flush: () => {
-      debuggerActions.flush();
-    },
-    generateErrorLogs: (errors) => debuggerActions.generateErrorLogs(errors),
-  };
-
   const changeDarkMode = (newMode) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       globals: {
@@ -621,9 +632,10 @@ const EditorComponent = (props) => {
     props.switchDarkMode(newMode);
   };
 
-  const handleEvent = (eventName, event, options) => {
+  const handleEvent = React.useCallback((eventName, event, options) => {
     return onEvent(getEditorRef(), eventName, event, options, 'edit');
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleRunQuery = (queryId, queryName) => runQuery(getEditorRef(), queryId, queryName);
 
@@ -631,13 +643,13 @@ const EditorComponent = (props) => {
     dataSourceModalRef.current.dataSourceModalToggleStateHandler();
   };
 
-  const setSelectedComponent = (id, component, multiSelect = false) => {
+  const setSelectedComponent = React.useCallback((id, component, multiSelect = false) => {
     const isAlreadySelected = useEditorStore.getState()?.selectedComponents.find((component) => component.id === id);
 
     if (!isAlreadySelected) {
       setSelectedComponents([{ id, component }], multiSelect);
     }
-  };
+  }, []);
 
   const onVersionRelease = (versionId) => {
     useAppVersionStore.getState().actions.updateReleasedVersionId(versionId);
@@ -661,7 +673,6 @@ const EditorComponent = (props) => {
   };
 
   const getPagesWithIds = () => {
-    //! Needs attention
     return Object.entries(appDefinition?.pages).map(([id, page]) => ({ ...page, id }));
   };
 
@@ -732,13 +743,12 @@ const EditorComponent = (props) => {
 
     useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
-    });
-
-    updateEditorState({
-      isLoading: false,
-      appDefinition: appJson,
-      isUpdatingEditorStateInProcess: false,
-    });
+    }),
+      updateEditorState({
+        isLoading: false,
+        appDefinition: appJson,
+        isUpdatingEditorStateInProcess: false,
+      });
 
     updateState({ components: appJson.pages[homePageId]?.components });
 
@@ -782,17 +792,29 @@ const EditorComponent = (props) => {
         let dataQueries = JSON.parse(JSON.stringify(useDataQueriesStore.getState().dataQueries));
         let allEvents = JSON.parse(JSON.stringify(useAppDataStore.getState().events));
 
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])?.filter(
-          (entity) => entity && isValidUUID(entity)
-        );
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])
+          ?.map((entity) => {
+            if (entity && isValidUUID(entity)) {
+              return entity;
+            }
+          })
+          ?.filter((e) => e !== undefined);
 
-        const entityReferencesInQueryoOptions = findAllEntityReferences(dataQueries, [])?.filter(
-          (entity) => entity && isValidUUID(entity)
-        );
+        const entityReferencesInQueryoOptions = findAllEntityReferences(dataQueries, [])
+          ?.map((entity) => {
+            if (entity && isValidUUID(entity)) {
+              return entity;
+            }
+          })
+          ?.filter((e) => e !== undefined);
 
-        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])?.filter(
-          (entity) => entity && isValidUUID(entity)
-        );
+        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])
+          ?.map((entity) => {
+            if (entity && isValidUUID(entity)) {
+              return entity;
+            }
+          })
+          ?.filter((e) => e !== undefined);
 
         const manager = useResolveStore.getState().referenceMapper;
 
@@ -872,13 +894,13 @@ const EditorComponent = (props) => {
           (event) => event.target === 'page' && event.sourceId === homePageId
         );
 
-        const queuedQueriesForRunOnAppLoad = useDataQueriesStore.getState().queuedQueriesForRunOnAppLoad;
         const editorRef = getEditorRef();
 
-        await runQueries(queuedQueriesForRunOnAppLoad, editorRef);
-        await handleEvent('onPageLoad', currentPageEvents, {}, true);
-
-        useDataQueriesStore.getState().actions.clearQueuedQueriesForRunOnAppLoad();
+        handleLowPriorityWork(async () => {
+          await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
+          await handleEvent('onPageLoad', currentPageEvents, {}, true);
+          await handleLowPriorityWork(() => (onAppLoadAndPageLoadEventsAreTriggered.current = true));
+        });
       });
   };
 
@@ -918,7 +940,7 @@ const EditorComponent = (props) => {
     }, []);
   };
 
-  const appDefinitionChanged = async (newDefinition, opts = {}) => {
+  const appDefinitionChanged = useCallback(async (newDefinition, opts = {}) => {
     if (opts?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
       return new Promise((resolve) => {
@@ -930,7 +952,9 @@ const EditorComponent = (props) => {
       });
     }
     let updatedAppDefinition;
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
+    const appDefinition = useEditorStore.getState().appDefinition;
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+    const currentPageId = useEditorStore.getState().currentPageId;
 
     if (opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
       updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
@@ -959,7 +983,6 @@ const EditorComponent = (props) => {
 
         if (opts?.containerChanges || opts?.componentDefinitionChanged) {
           const currentPageComponents = newDefinition.pages[currentPageId]?.components;
-
           draft.pages[currentPageId].components = currentPageComponents;
         }
 
@@ -1024,7 +1047,7 @@ const EditorComponent = (props) => {
         appDefinition: updatedAppDefinition,
       });
     }
-  };
+  }, []);
 
   const cloneEventsForClonedComponents = (componentUpdateDiff, operation, componentMap) => {
     function getKeyFromComponentMap(componentMap, newItem) {
@@ -1108,24 +1131,26 @@ const EditorComponent = (props) => {
           }
 
           //Todo: Move this to a separate function or as a middleware of the api to createing a component
-          if (updateDiff?.type === 'components' && updateDiff?.operation === 'create') {
-            const componentsFromCurrentState = getCurrentState().components;
-            const newComponentIds = Object.keys(updateDiff?.updateDiff);
-            const newComponentsExposedData = {};
-            const componentEntityArray = [];
-            Object.values(componentsFromCurrentState).filter((component) => {
-              if (newComponentIds.includes(component.id)) {
-                const componentName = updateDiff?.updateDiff[component.id]?.name;
-                newComponentsExposedData[componentName] = component;
-                componentEntityArray.push({ id: component.id, name: componentName });
-              }
-            });
+          handleLowPriorityWork(() => {
+            if (updateDiff?.type === 'components' && updateDiff?.operation === 'create') {
+              const componentsFromCurrentState = getCurrentState().components;
+              const newComponentIds = Object.keys(updateDiff?.updateDiff);
+              const newComponentsExposedData = {};
+              const componentEntityArray = [];
+              Object.values(componentsFromCurrentState).filter((component) => {
+                if (newComponentIds.includes(component.id)) {
+                  const componentName = updateDiff?.updateDiff[component.id]?.name;
+                  newComponentsExposedData[componentName] = component;
+                  componentEntityArray.push({ id: component.id, name: componentName });
+                }
+              });
 
-            useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
-            useResolveStore.getState().actions.addAppSuggestions({
-              components: newComponentsExposedData,
-            });
-          }
+              useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
+              useResolveStore.getState().actions.addAppSuggestions({
+                components: newComponentsExposedData,
+              });
+            }
+          });
 
           if (
             updateDiff?.type === 'components' &&
@@ -1176,7 +1201,7 @@ const EditorComponent = (props) => {
   };
 
   const realtimeSave = debounce(appDefinitionChanged, 100);
-  const autoSave = debounce(saveEditingVersion, 150);
+  const autoSave = saveEditingVersion;
 
   function handlePaths(prevPatch, path = [], appJSON) {
     const paths = [...path];
@@ -1309,9 +1334,11 @@ const EditorComponent = (props) => {
       }
     }
   };
-  const removeComponent = (componentId) => {
+  const removeComponent = React.useCallback((componentId) => {
     if (!isVersionReleased) {
+      const appDefinition = useEditorStore.getState().appDefinition;
       let newDefinition = JSON.parse(JSON.stringify(appDefinition));
+      const currentPageId = useEditorStore.getState().currentPageId;
 
       let childComponents = [];
 
@@ -1330,7 +1357,6 @@ const EditorComponent = (props) => {
       });
 
       delete newDefinition.pages[currentPageId].components[componentId];
-
       const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
       if (platform.toLowerCase().indexOf('mac') > -1) {
         toast('Component deleted! (⌘ + Z to undo)', {
@@ -1365,37 +1391,12 @@ const EditorComponent = (props) => {
         });
       }
 
-      const newAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
-      const currentComponents = newAppDefinition.pages[currentPageId].components;
-      const currentDataQueries = useDataQueriesStore.getState().dataQueries;
-
-      const newComponentDefinition = useResolveStore
-        .getState()
-        .actions.findAndReplaceReferences(currentComponents, deletedComponentNames);
-
-      const entityReferencesInQuerries = findAllEntityReferences(currentDataQueries, []);
-
-      if (entityReferencesInQuerries.length > 0) {
-        const newDataQueries = useResolveStore
-          .getState()
-          .actions.findAndReplaceReferences(currentDataQueries, deletedComponentNames);
-
-        useDataQueriesStore.getState().actions.setDataQueries(newDataQueries, 'mappingUpdate');
-      }
-
-      newAppDefinition.pages[currentPageId].components = newComponentDefinition;
-
-      useEditorStore.getState().actions.updateEditorState({
-        appDefinition: newAppDefinition,
-        isUpdatingEditorStateInProcess: true,
-      });
-
       useResolveStore.getState().actions.removeEntitiesFromMap(deleteFromMap);
       useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
     } else {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }
-  };
+  }, []);
 
   const moveComponents = (direction) => {
     const _appDefinition = JSON.parse(JSON.stringify(appDefinition));
@@ -1880,9 +1881,9 @@ const EditorComponent = (props) => {
     }
   };
 
-  const deviceWindowWidth = 450;
+  const isEditorReady = useCurrentStateStore((state) => state.isEditorReady);
 
-  if (isLoading) {
+  if (isLoading && !isEditorReady) {
     return (
       <div className="apploader">
         <div className="col col-* editor-center-wrapper">
@@ -1937,7 +1938,6 @@ const EditorComponent = (props) => {
             canRedo={canRedo}
             handleUndo={handleUndo}
             handleRedo={handleRedo}
-            // saveError={saveError}
             onNameChanged={onNameChanged}
             setAppDefinitionFromVersion={setAppDefinitionFromVersion}
             onVersionRelease={onVersionRelease}
@@ -1960,7 +1960,6 @@ const EditorComponent = (props) => {
                 globalDataSourcesChanged={globalDataSourcesChanged}
                 onZoomChanged={onZoomChanged}
                 switchDarkMode={changeDarkMode}
-                debuggerActions={sideBarDebugger}
                 appDefinition={{
                   components: appDefinition?.pages[currentPageId]?.components ?? {},
                   pages: appDefinition?.pages ?? {},
@@ -2016,7 +2015,7 @@ const EditorComponent = (props) => {
                   onMouseUp={handleCanvasContainerMouseUp}
                   ref={canvasContainerRef}
                   onScroll={() => {
-                    selectionRef.current.checkScroll();
+                    selectionRef.current?.checkScroll();
                   }}
                 >
                   <div style={{ minWidth: `calc((100vw - 300px) - 48px)` }}>
@@ -2061,10 +2060,8 @@ const EditorComponent = (props) => {
                       {defaultComponentStateComputed && (
                         <>
                           <Container
-                            turnOffAutoLayout={turnOffAutoLayout}
                             canvasWidth={getCanvasWidth()}
                             socket={socket}
-                            appDefinition={appDefinition}
                             appDefinitionChanged={appDefinitionChanged}
                             snapToGrid={true}
                             darkMode={props.darkMode}
@@ -2074,17 +2071,13 @@ const EditorComponent = (props) => {
                                 : 'edit'
                             }
                             zoomLevel={zoomLevel}
-                            deviceWindowWidth={deviceWindowWidth}
                             appLoading={isLoading}
                             onEvent={handleEvent}
-                            onComponentOptionChanged={handleOnComponentOptionChanged}
-                            onComponentOptionsChanged={handleOnComponentOptionsChanged}
                             setSelectedComponent={setSelectedComponent}
                             handleUndo={handleUndo}
                             handleRedo={handleRedo}
                             removeComponent={removeComponent}
                             onComponentClick={noop} // Prop is used in Viewer hence using a dummy function to prevent error in editor
-                            sideBarDebugger={sideBarDebugger}
                             currentPageId={currentPageId}
                           />
                           <CustomDragLayer

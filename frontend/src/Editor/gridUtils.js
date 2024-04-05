@@ -1,3 +1,5 @@
+import { useGridStore } from '@/_stores/gridStore';
+
 export function correctBounds(layout, bounds) {
   layout = scaleLayouts(layout);
   const collidesWith = [];
@@ -233,3 +235,50 @@ function scaleLayouts(layouts, cols = 6) {
     width: layout.width * 3 > 43 ? 43 : layout.width * 3,
   }));
 }
+
+export const individualGroupableProps = (element) => {
+  if (element?.classList.contains('target2')) {
+    return {
+      resizable: false,
+    };
+  }
+};
+
+export const handleWidgetResize = (e, list, boxes, gridWidth) => {
+  const currentLayout = list.find(({ id }) => id === e.target.id);
+  const currentWidget = boxes.find(({ id }) => id === e.target.id);
+  let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
+  document.getElementById('canvas-' + currentWidget.component?.parent)?.classList.add('show-grid');
+  const currentWidth = currentLayout.width * _gridWidth;
+  const diffWidth = e.width - currentWidth;
+  const diffHeight = e.height - currentLayout.height;
+  const isLeftChanged = e.direction[0] === -1;
+  const isTopChanged = e.direction[1] === -1;
+
+  let transformX = currentLayout.left * _gridWidth;
+  let transformY = currentLayout.top;
+  if (isLeftChanged) {
+    transformX = currentLayout.left * _gridWidth - diffWidth;
+  }
+  if (isTopChanged) {
+    transformY = currentLayout.top - diffHeight;
+  }
+
+  const elemContainer = e.target.closest('.real-canvas');
+  const containerHeight = elemContainer.clientHeight;
+  const containerWidth = elemContainer.clientWidth;
+  const maxY = containerHeight - e.target.clientHeight;
+  const maxLeft = containerWidth - e.target.clientWidth;
+  const maxWidthHit = transformX < 0 || transformX >= maxLeft;
+  const maxHeightHit = transformY < 0 || transformY >= maxY;
+  transformY = transformY < 0 ? 0 : transformY > maxY ? maxY : transformY;
+  transformX = transformX < 0 ? 0 : transformX > maxLeft ? maxLeft : transformX;
+
+  if (!maxWidthHit || e.width < e.target.clientWidth) {
+    e.target.style.width = `${e.width}px`;
+  }
+  if (!maxHeightHit || e.height < e.target.clientHeight) {
+    e.target.style.height = `${e.height}px`;
+  }
+  e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
+};
