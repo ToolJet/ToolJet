@@ -210,6 +210,7 @@ class ViewerComponent extends React.Component {
 
         computeComponentState(components).then(async () => {
           this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
+          useCurrentStateStore.getState().actions.setEditorReady(true);
           this.runQueries(dataQueries);
 
           const currentPageEvents = this.state.events.filter(
