@@ -120,6 +120,7 @@
   .table-row:hover,
   .table-row:focus {
     background: var(--interactive-overlays-fill-hover);
+    border-bottom: 0px transparent
 
   }
 
@@ -130,7 +131,8 @@
 
   td {
     overflow-x: initial;
-    padding: 0.5rem !important;
+    padding: 8px 12px !important;
+
 
     &.has-number {
       padding: 0 !important;
@@ -200,9 +202,10 @@
       height: 100%;
     }
 
-    &:not(:focus-within):hover {
-      background: linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover)),
-        linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover));
+    &.isEditable {
+      &:not(:focus-within):hover {
+        background: linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover)),
+      }
     }
 
     display: flex !important;
@@ -348,6 +351,7 @@
 
   thead {
     width: 100%;
+
   }
 
   .select-search:not(.is-loading):not(.select-search--multiple) .select-search__value::after {
@@ -604,12 +608,14 @@
       border-top: 0 !important;
       padding: 6px 12px;
       align-items: center;
-      color: var(--slate12) !important;
-      font-weight: 400 !important;
-      font-size: 12px !important;
+      color: var(--text-primary) !important;
+      font-weight: 500 !important;
+      font-size: 14px !important;
       width: 100%;
+      text-transform: capitalize;
 
       &:hover {
+        
         background: linear-gradient(0deg, var(--surfaces-surface-02), var(--surfaces-surface-02)), linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover)) !important;
       }
 
@@ -819,6 +825,7 @@
       &:focus-within {
         border: 1px solid var(--interactive-overlays-focus-outline);
         background-color: var(--surfaces-surface-01) !important;
+        box-shadow: var(--elevation-200-box-shadow);
 
         &:has(.long-text-input) {
           border: 0;
@@ -842,6 +849,12 @@
       .table-column-type-div-element {
         display: flex;
         align-items: center;
+      }
+
+      &.has-textarea {
+        .table-column-type-div-element {
+          display: block;
+        }
       }
 
     }
@@ -1181,7 +1194,7 @@
 
 .table-radio-column-cell {
   overflow: hidden;
-
+  margin-top: 10px;
   div {
     height: 100%;
     display: flex;
@@ -1207,6 +1220,7 @@
 }
 
 .overlay-radio-table {
+  margin-top: 10px;
   span {
     font-family: 'IBM Plex Sans';
     line-height: 20px;
@@ -1234,7 +1248,7 @@
     overflow-y: auto;
     /* Enable vertical scrolling */
     position: absolute;
-    padding: 0 !important;
+    padding:  0.75rem !important;
     outline: none !important;
     border: 1px solid var(--interactive-overlays-focus-outline) !important;
     background-color: var(--surfaces-surface-01) !important;

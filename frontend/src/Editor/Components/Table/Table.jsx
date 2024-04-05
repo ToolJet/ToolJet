@@ -711,6 +711,7 @@ export function Table({
       },
     ];
   }, [JSON.stringify(state)]);
+
   const getDetailsOfPreSelectedRow = () => {
     const key = Object?.keys(defaultSelectedRow)[0] ?? '';
     const value = defaultSelectedRow?.[key] ?? undefined;
@@ -842,6 +843,7 @@ export function Table({
       setPageSize(rows?.length || 10);
     }
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
+
   useEffect(() => {
     const pageData = page.map((row) => row.original);
     if (preSelectRow.current) {
@@ -882,6 +884,7 @@ export function Table({
 
   const [paginationInternalPageIndex, setPaginationInternalPageIndex] = useState(pageIndex ?? 1);
   const [rowDetails, setRowDetails] = useState();
+
   useEffect(() => {
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
   }, [pageCount]);
@@ -1382,16 +1385,14 @@ export function Table({
                 let rowProps = { ...row.getRowProps() };
                 const contentWrap = resolveReferences(contentWrapProperty, currentState);
                 const isMaxRowHeightAuto = maxRowHeight === 'auto';
+                rowProps.style.minHeight = cellSize === 'condensed' ? '35px' : '43px'; // 1px is removed to accomodate 1px border-bottom
                 if (contentWrap) {
                   rowProps.style.maxHeight = isMaxRowHeightAuto
                     ? 'fit-content'
                     : resolveReferences(maxRowHeightValue, currentState) + 'px';
-                  rowProps.style.height = isMaxRowHeightAuto
-                    ? 'fit-content'
-                    : resolveReferences(maxRowHeightValue, currentState) + 'px';
                 } else {
-                  rowProps.style.maxHeight = cellSize === 'condensed' ? '40px' : '46px';
-                  rowProps.style.height = cellSize === 'condensed' ? '40px' : '46px';
+                  rowProps.style.maxHeight = cellSize === 'condensed' ? '36px' : '44px';
+                  rowProps.style.height = cellSize === 'condensed' ? '36px' : '44px';
                 }
                 return (
                   <tr
@@ -1531,6 +1532,8 @@ export function Table({
                               'has-link': cell.column.columnType === 'link',
                               'has-radio': cell.column.columnType === 'radio',
                               'has-toggle': cell.column.columnType === 'toggle',
+                              'has-textarea': ['string', 'text'].includes(cell.column.columnType),
+                              isEditable: isEditable,
                             }
                           )}
                           {...cellProps}

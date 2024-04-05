@@ -91,7 +91,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
       children: (
         <>
           <div className="grey-bg-section mb-2 border">
-            <div style={{ background: 'var(--surfaces-surface-02)', padding: '6px', borderRadius: '6px' }}>
+            <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px', borderRadius: '6px' }}>
               <ProgramaticallyHandleProperties
                 label="Enable date selection"
                 currentState={currentState}
@@ -161,7 +161,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
             )}
           </div>
           <div className="grey-bg-section mb-2 border">
-            <div style={{ background: 'var(--surfaces-surface-02)', padding: '6px', borderRadius: '6px' }}>
+            <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px', borderRadius: '6px' }}>
               <ProgramaticallyHandleProperties
                 label="Enable time selection"
                 currentState={currentState}

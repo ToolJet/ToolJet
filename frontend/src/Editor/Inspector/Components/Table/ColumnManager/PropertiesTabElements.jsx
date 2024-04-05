@@ -239,7 +239,7 @@ export const PropertiesTabElements = ({
       )}
       {!['image', 'link'].includes(column.columnType) && (
         <div className="border mx-3" style={{ borderRadius: '6px', overflow: 'hidden' }}>
-          <div style={{ background: 'var(--surfaces-surface-02)', padding: '6px' }}>
+          <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
             <ProgramaticallyHandleProperties
               label="make editable"
               currentState={currentState}
@@ -267,7 +267,7 @@ export const PropertiesTabElements = ({
         </div>
       )}
       <div className="border mx-3" style={{ borderRadius: '6px', overflow: 'hidden' }}>
-        <div style={{ background: 'var(--surfaces-surface-02)', padding: '6px' }}>
+        <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
           <ProgramaticallyHandleProperties
             label="Visibility"
             currentState={currentState}
