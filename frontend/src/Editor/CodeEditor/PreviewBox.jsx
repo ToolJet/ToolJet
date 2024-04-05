@@ -12,14 +12,7 @@ import Card from 'react-bootstrap/Card';
 // eslint-disable-next-line import/no-unresolved
 import { JsonViewer } from '@textea/json-viewer';
 
-export const PreviewBox = ({
-  currentValue,
-  validationSchema,
-  setErrorStateActive,
-  componentId,
-  fxActive,
-  setErrorMessage,
-}) => {
+export const PreviewBox = ({ currentValue, validationSchema, setErrorStateActive, componentId, setErrorMessage }) => {
   const { variablesExposedForPreview } = useContext(EditorContext);
 
   const customVariables = variablesExposedForPreview?.[componentId] ?? {};
@@ -27,10 +20,8 @@ export const PreviewBox = ({
   const [resolvedValue, setResolvedValue] = useState('');
   const [error, setError] = useState(null);
   const [coersionData, setCoersionData] = useState(null);
-
   const getPreviewContent = (content, type) => {
     if (!content) return currentValue;
-
     try {
       switch (type) {
         case 'Object':
@@ -75,12 +66,7 @@ export const PreviewBox = ({
   }, [error]);
 
   useEffect(() => {
-    const [valid, _error, newValue, resolvedValue] = resolveReferences(
-      currentValue,
-      validationSchema,
-      customVariables,
-      fxActive
-    );
+    const [valid, _error, newValue, resolvedValue] = resolveReferences(currentValue, validationSchema, customVariables);
 
     if (!validationSchema || isEmpty(validationSchema)) {
       return setResolvedValue(newValue);
@@ -345,7 +331,6 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
       </div>
     );
   }
-
   return (
     <div class="p-2 pt-0">
       <pre
@@ -366,7 +351,9 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
           padding: '0',
         }}
       >
-        {prettyPrintedJson}
+        {prettyPrintedJson?.startsWith('{{')
+          ? prettyPrintedJson?.replace(/{{/g, '').replace(/}}/g, '')
+          : prettyPrintedJson}
       </pre>
     </div>
   );
