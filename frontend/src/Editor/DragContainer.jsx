@@ -561,11 +561,11 @@ export default function DragContainer({
                 toast.error(`${currentWidget} is not compatible as a child component of ${parentWidget}`);
                 e.target.style.transform = `translate(${left}px, ${top}px)`;
               }
-            } else {
-              e.target.style.transform = `translate(${Math.round(left / _gridWidth) * _gridWidth}px, ${
-                Math.round(top / 10) * 10
-              }px)`;
             }
+
+            e.target.style.transform = `translate(${Math.round(left / _gridWidth) * _gridWidth}px, ${
+              Math.round(top / 10) * 10
+            }px)`;
 
             if (draggedOverElemId === currentParentId || isParentChangeAllowed) {
               // Adding the new updates to the macro task queue to unblock UI
