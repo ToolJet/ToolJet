@@ -96,6 +96,10 @@ class ViewerComponent extends React.Component {
       appDefinition: { ...appDefData },
       pages: appDefData.pages,
     });
+
+    useEditorStore.getState().actions.updateEditorState({
+      appDefinition: { ...appDefData },
+    });
   };
 
   setStateForContainer = async (data, appVersionId) => {
