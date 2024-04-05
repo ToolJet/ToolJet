@@ -37,6 +37,7 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useGridStore } from '@/_stores/gridStore';
 import { useResolveStore } from '@/_stores/resolverStore';
+import { handleLowPriorityWork } from './editorHelpers';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -110,41 +111,40 @@ export function onComponentOptionsChanged(component, options) {
 
 export function onComponentOptionChanged(component, option_name, value) {
   const componentName = component.name;
-  const { isEditorReady } = getCurrentState();
+  const { isEditorReady, components: currentComponents } = getCurrentState();
+  const components = duplicateCurrentState === null ? currentComponents : duplicateCurrentState;
+  let componentData = components[componentName] || {};
+  componentData[option_name] = value;
+
+  const path = option_name ? `components.${componentName}.${option_name}` : null;
+
   if (isEditorReady) {
-    if (duplicateCurrentState !== null) {
-      duplicateCurrentState = null;
-    }
-    const components = getCurrentState().components;
-    let componentData = components[componentName];
-    componentData = componentData || {};
-    componentData[option_name] = value;
-
-    if (option_name !== 'id') {
-      useCurrentStateStore.getState().actions.setCurrentState({
-        components: { ...components, [componentName]: componentData },
-      });
-    } else if (!componentData?.id) {
-      useCurrentStateStore.getState().actions.setCurrentState({
-        components: { ...components, [componentName]: componentData },
-      });
-    }
-
+    // Always update the current state if editor is ready
     useCurrentStateStore.getState().actions.setCurrentState({
       components: { ...components, [componentName]: componentData },
     });
-  } else {
-    const components = duplicateCurrentState === null ? getCurrentState().components : duplicateCurrentState;
-    let componentData = components[componentName];
-    componentData = componentData || {};
-    componentData[option_name] = value;
 
-    duplicateCurrentState = { ...components, [componentName]: componentData };
-    if (option_name !== 'id') {
-      debouncedChange();
-    } else if (!componentData?.id) {
-      debouncedChange();
+    if (!_.isEmpty(useResolveStore.getState().lookupTable?.resolvedRefs) && path) {
+      const lookUpTable = useResolveStore.getState().lookupTable;
+
+      const existingRef = lookUpTable.resolvedRefs?.get(lookUpTable.hints?.get(path));
+
+      if (typeof existingRef === 'function') return;
+
+      const shouldUpdateRef = existingRef !== componentData[option_name];
+
+      if (shouldUpdateRef) {
+        handleLowPriorityWork(() => {
+          useResolveStore
+            .getState()
+            .actions.updateResolvedRefsOfHints([{ hint: path, newRef: componentData[option_name] }]);
+        });
+      }
     }
+  } else {
+    // Update the duplicate state if editor is not ready
+    duplicateCurrentState = { ...components, [componentName]: componentData };
+    debouncedChange();
   }
 
   return Promise.resolve();
@@ -1112,6 +1112,14 @@ export function runQuery(
           },
           errors: {},
         });
+        useResolveStore.getState().actions.addAppSuggestions({
+          queries: {
+            [queryName]: {
+              data: [],
+              isLoading: true,
+            },
+          },
+        });
       }
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
@@ -1288,9 +1296,15 @@ export function runQuery(
               queries: {
                 [queryName]: {
                   data: finalData,
+                  isLoading: false,
                 },
               },
             });
+
+            const basePath = `queries.${queryName}`;
+
+            useResolveStore.getState().actions.updateLastUpdatedRefs([`${basePath}.data`, `${basePath}.isLoading`]);
+
             resolve({ status: 'ok', data: finalData });
             onEvent(_self, 'onDataQuerySuccess', queryEvents, mode);
           }
