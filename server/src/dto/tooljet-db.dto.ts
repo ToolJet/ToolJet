@@ -99,18 +99,14 @@ class ReservedKeywordConstraint implements ValidatorConstraintInterface {
 }
 
 export class ConstraintTypeDto {
-  @IsOptional()
   @IsBoolean()
   @Validate(SQLInjectionValidator)
   is_not_null: boolean;
 
   @IsBoolean()
-  // @Transform(({ value }) => sanitizeInput(value))
-  @IsOptional()
   @Validate(SQLInjectionValidator)
   is_primary_key: Array<string>;
 
-  @IsOptional()
   @IsBoolean()
   @Validate(SQLInjectionValidator)
   is_unique: boolean;
@@ -206,7 +202,6 @@ export class EditTableDto {
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   new_table_name: string;
 
-  @IsOptional()
   @IsArray()
   @ArrayMinSize(1, { message: 'Table must have at least 1 column' })
   @ValidateNested({ each: true })
