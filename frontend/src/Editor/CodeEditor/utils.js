@@ -112,7 +112,7 @@ const resolveWorkspaceVariables = (query, state) => {
       resolvedStr = resolvedStr.replace(serverMatch, 'HiddenEnvironmentVariable');
       error = 'Server variables cannot be resolved in the client.';
     } else {
-      const [resolvedCode, err] = resolveCode(code, state);
+      const [resolvedCode, err] = resolveCode(code);
 
       if (!resolvedCode) {
         error = err ? err : `Cannot resolve ${query}`;
@@ -126,7 +126,7 @@ const resolveWorkspaceVariables = (query, state) => {
   return [valid, error, resolvedStr];
 };
 
-function resolveCode(code, state, customObjects = {}, withError = true, reservedKeyword, isJsCode) {
+function resolveCode(code, customObjects = {}, withError = true, reservedKeyword, isJsCode) {
   let result = '';
   let error;
 
@@ -135,6 +135,7 @@ function resolveCode(code, state, customObjects = {}, withError = true, reserved
     error = `Cannot resolve function call ${code}`;
   } else {
     try {
+      const state = useCurrentStateStore.getState();
       const evalFunction = Function(
         [
           'variables',
@@ -200,7 +201,7 @@ const resolveMultiDynamicReferences = (code, lookupTable) => {
         resolvedValue = resolvedValue.replace(variable, res);
       } else {
         const currentState = useCurrentStateStore.getState();
-        const [resolvedCode] = resolveCode(variableToResolve, currentState, {}, true, [], true);
+        const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
 
         resolvedValue = resolvedCode;
       }
@@ -216,11 +217,9 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
   let resolvedValue = query;
   let error = null;
 
-  const currentState = useCurrentStateStore.getState();
-
   //Todo : remove resolveWorkspaceVariables when workspace variables are removed
   if (query?.startsWith('%%') && query?.endsWith('%%')) {
-    return resolveWorkspaceVariables(query, currentState);
+    return resolveWorkspaceVariables(query);
   }
 
   if ((!validationSchema || isEmpty(validationSchema)) && (!query?.includes('{{') || !query?.includes('}}'))) {
@@ -253,10 +252,10 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
         let jscode = value.replace(toResolveReference, resolvedValue);
         jscode = value.replace(toResolveReference, `'${resolvedValue}'`);
 
-        resolvedValue = resolveCode(jscode, currentState, customResolvers);
+        resolvedValue = resolveCode(jscode, customResolvers);
       }
     } else {
-      const [resolvedCode, errorRef] = resolveCode(value, currentState, customResolvers, true, [], true);
+      const [resolvedCode, errorRef] = resolveCode(value, customResolvers, true, [], true);
 
       resolvedValue = resolvedCode;
       error = errorRef || null;

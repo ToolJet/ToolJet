@@ -2039,7 +2039,7 @@ export const buildAppDefinition = (data) => {
   _.unset(editingVersion, 'id');
 
   const pages = data.pages.reduce((acc, page) => {
-    const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components));
+    const currentComponents = buildComponentMetaDefinition(page?.components);
 
     page.components = currentComponents;
 
