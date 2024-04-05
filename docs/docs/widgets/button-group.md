@@ -2,19 +2,21 @@
 id: button-group
 title: Button Group
 ---
-# Button group
+# Button Group
 
 The Button group component is used to group a series of buttons together in a single line. It is used to group related buttons.
 
 <div style={{textAlign: 'left'}}>
 
-<img className="screenshot-full" src="/img/widgets/button-group/buttongroup1.png" alt="Button group" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/widgets/button-group/buttongroup1.png" alt="Button group" />
 
 </div>
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Properties
 
-| Properties | Description | Expected Value |
+| <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:----------- |:----------- |:-------------- |
 | **label** | Used to set the title of the button-group. | Any **String** value: `Select the options` or `{{queries.queryname.data.text}}` |
 | **values** | It can be used to set the values of the button group items. | **Array** of strings and numbers: `{{[1,2,3]}}` |
@@ -22,17 +24,43 @@ The Button group component is used to group a series of buttons together in a si
 | **Default selected** | Initial selected values can be set using this. | **Array** of strings and numbers: `{{[1]}}` will select the first button by default. |
 | **Enable multiple selection** | Toggle on or off to enable multiple selection. | **Boolean** value: `{{true}}` or `{{false}}` |
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Events
 
 Events are actions that can be triggered programmatically when the user interacts with the component. Click on the component handle to open its properties on the right. Go to the **Events** accordion and click on **+ Add handler**.
 
-| Events      | Description |
+| <div style={{ width:"100px"}}> Events </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
 | **On click** | This event is triggered when the user clicks on the button in the button group. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the button-group component.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Exposed Variables
+
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"100px"}}> Description </div>|
+| :---------- | :---------- |
+| **selected** | If the **enable multiple selection** option is turned off, then the variable is an array of objects, and the first object holds the value of the selected button. However, if the **enable multiple selection** option is turned on, the variable type changes from an array to an object, and the selected button values are stored as a string within that object. The value can be accessed using `{{components.buttongroup1.selected[0]}}` or `{{components.buttongroup1.selected}}` |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## General
 #### Tooltip
@@ -41,9 +69,13 @@ A Tooltip is often used to display additional information when the user hovers t
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/button-group/grouptooltip.png" alt="Button group layout" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/widgets/button-group/grouptooltip.png" alt="Button group layout" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Layout
 
@@ -55,9 +87,13 @@ Use this toggle to show or hide the component in the desktop view. You can dynam
 
 Use this toggle to show or hide the component in the mobile view. You can dynamically configure the value by clicking on **Fx** and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to  **`{{true}}`** or **`{{false}}`**.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Styles
 
-| Style      | Description | Expected value |
+| <div style={{ width:"135px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Expected value </div> |
 | :---------- | :---------- | :-------------- |
 | **Background color** | Set a background color for the buttons in buttons group. | Choose a color from the picker or enter the Hex color code. ex: `#000000` |
 | **Text color** | Set a text color for the buttons in buttons group. | Choose a color from the picker or enter the Hex color code. ex: `#000000` |
@@ -68,12 +104,4 @@ Use this toggle to show or hide the component in the mobile view. You can dynami
 | **Selected background color** | Use this property to modify the background color of selected button | Choose a color from the picker or enter the Hex color code. ex: `#000000` |
 | **Box Shadow** | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent X, Y, blur, spread, and color. Example: `9px 11px 5px 5px #00000040`` |
 
-## Exposed Variables
-
-| Variable      | Description |
-| :---------- | :---------- |
-| **selected** | If the **enable multiple selection** option is turned off, then the variable is an array of objects, and the first object holds the value of the selected button. However, if the **enable multiple selection** option is turned on, the variable type changes from an array to an object, and the selected button values are stored as a string within that object. The value can be accessed using `{{components.buttongroup1.selected[0]}}` or `{{components.buttongroup1.selected}}` |
-
-## Component specific actions (CSA)
-
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the button-group component.
+</div>

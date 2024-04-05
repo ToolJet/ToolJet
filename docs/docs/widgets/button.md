@@ -36,6 +36,32 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
+## Component Specific Actions (CSA)
+
+Following actions of button component can be controlled using the component specific actions(CSA):
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
+| :----------- | :----------- |
+| **click** | You can regulate the click of a button via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.button1.click()` |
+| **setText** | button's text can be controlled using component specific action from any of the event handler. You can also use RunJS query to execute component specific actions: `await components.button1.setText('New Button Text')` |
+| **disable** | button can be disabled using the component specific action from any of the event handler. You can also use RunJS query to execute this action: `await components.button1.disable(true)` or `await components.button1.disable(false)` |
+| **visibility** | button can be hidden using the component specific action from any of the event handler. You can also use RunJS query to execute this action: `await components.button1.visibility(true)` or `await components.button1.visibility(false)` |
+| **loading** | The loading state of the button can be set dynamically using the component specific actions from any of the event handler. You can also use this action from RunJS: `await components.button1.loading(true)` or `await components.button1.loading(false)` |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Exposed Variables
+
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"100px"}}> Description </div> |
+| :----------- | :----------- |
+| **buttonText** | This variable stores the text displayed on the button. Its value can be dynamically accessed through JavaScript using the following syntax: `{{components.button1.buttonText}}` |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## General
 #### Tooltip
 
@@ -60,9 +86,11 @@ A Tooltip is often used to display additional information when the user hovers t
 
 </div>
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| <div style={{ width:"135px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :----------- |
 | **Background color** | Change the background color. | Choose color from the colorpicker or enter the Hex color code. ex: `#000000` |
 | **Text color** | Change the text color. | Choose color from the colorpicker or enter the Hex color code. ex: `#000000` |
@@ -72,29 +100,5 @@ A Tooltip is often used to display additional information when the user hovers t
 | **Border radius** | Add a border radius to the button using this property. | Any numerical value from `0` to `100` |
 | **Border color** | Change the border color of the button. | Choose color from the colorpicker or enter the Hex color code. ex: `#000000` |
 | **Box Shadow** | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent X, Y, blur, spread, and color. Example: `9px 11px 5px 5px #00000040`` |
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Exposed Variables
-
-| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"100px"}}> Description </div> |
-| :----------- | :----------- |
-| **buttonText** | This variable stores the text displayed on the button. Its value can be dynamically accessed through JavaScript using the following syntax: `{{components.button1.buttonText}}` |
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Component Specific Actions (CSA)
-
-Following actions of button component can be controlled using the component specific actions(CSA):
-
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
-| :----------- | :----------- |
-| **click** | You can regulate the click of a button via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.button1.click()` |
-| **setText** | button's text can be controlled using component specific action from any of the event handler. You can also use RunJS query to execute component specific actions: `await components.button1.setText('New Button Text')` |
-| **disable** | button can be disabled using the component specific action from any of the event handler. You can also use RunJS query to execute this action: `await components.button1.disable(true)` or `await components.button1.disable(false)` |
-| **visibility** | button can be hidden using the component specific action from any of the event handler. You can also use RunJS query to execute this action: `await components.button1.visibility(true)` or `await components.button1.visibility(false)` |
-| **loading** | The loading state of the button can be set dynamically using the component specific actions from any of the event handler. You can also use this action from RunJS: `await components.button1.loading(true)` or `await components.button1.loading(false)` |
 
 </div>

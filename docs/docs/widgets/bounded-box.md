@@ -96,6 +96,33 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the bounding box component.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Exposed Variables
+
+| Variable    | Description |
+| :----------- | :----------- | 
+| **annotations** | This variable is an array of objects, where each object represents an annotation added to an image. The object contains the following keys: type, x, y, width, height, text, and id |
+| **annotations.`type`** | There are two types of annotations: `RECTANGLE` and `POINT` |
+| **annotations.`x`** | coordinates on the x axis  |
+| **annotations.`y`** | coordinates on the y axis |
+| **annotations.`width`** | width of the annotation |
+| **annotations.`height`** | height of the annotation |
+| **annotations.`text`** | label selected for the annotation |
+| **annotations.`id`** | unique ID of the annotation (system generated) |
+
+The values can be accessed dynamically using `{{components.boundedbox1.annotations[0].text}}` or `{{components.boundedbox1.annotations[1].width}}`
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## General
 
 #### Tooltip
@@ -130,32 +157,5 @@ A Tooltip is often used to specify the extra information when the user hovers th
 | **Visibility** | Toggle on or off to control the visibility of the component when the app is loaded |  **`{{true}}`** or **`{{false}}`**, By default, it's set to `{{true}}` |
 | **Disable** | Toggle on to disable the component. | **`{{true}}`** or **`{{false}}`**, By default, it's set to `{{false}}` |
 | **Box shadow** | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent x,y, blur, spread and color. Ex: `9px 11px 5px 5px #00000040` |
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Exposed Variables
-
-| Variable    | Description |
-| :----------- | :----------- | 
-| **annotations** | This variable is an array of objects, where each object represents an annotation added to an image. The object contains the following keys: type, x, y, width, height, text, and id |
-| **annotations.`type`** | There are two types of annotations: `RECTANGLE` and `POINT` |
-| **annotations.`x`** | coordinates on the x axis  |
-| **annotations.`y`** | coordinates on the y axis |
-| **annotations.`width`** | width of the annotation |
-| **annotations.`height`** | height of the annotation |
-| **annotations.`text`** | label selected for the annotation |
-| **annotations.`id`** | unique ID of the annotation (system generated) |
-
-The values can be accessed dynamically using `{{components.boundedbox1.annotations[0].text}}` or `{{components.boundedbox1.annotations[1].width}}`
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Component specific actions (CSA)
-
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the bounding box component.
 
 </div>
