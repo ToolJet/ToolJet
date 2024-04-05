@@ -12,7 +12,7 @@ import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
-import { ConditionFilter, CondtionSort } from '@/_components/MultiConditions';
+import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 
@@ -154,6 +154,8 @@ const DynamicForm = ({
         return OpenApi;
       case 'react-component-zendesk':
         return Zendesk;
+      case 'columns':
+        return MultiColumn;
       case 'filters':
         return ConditionFilter;
       case 'sorts':
@@ -370,6 +372,12 @@ const DynamicForm = ({
       case 'sorts':
         return {
           orders: list || [],
+          value: options?.[key] ?? {},
+          onChange: (value) => optionchanged(key, value),
+          placeholders,
+        };
+      case 'columns':
+        return {
           value: options?.[key] ?? {},
           onChange: (value) => optionchanged(key, value),
           placeholders,
