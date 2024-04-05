@@ -21,17 +21,35 @@ Upon the creation of a new app, it is automatically assigned a unique app name.
 
 Switch the canvas mode in Mobile or Desktop layout from the topbar.
 
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/mobiledesktopswitch.png" alt="App Builder: Topbar"/>
+
+</div>
+
 #### Showing component on mobile layout
 
-Click on the component handle to open [component config inspector](/docs/app-builder/components-library#component-config-inspector) on the right sidebar. Scroll down to the **Layout** section and toggle on the Mobile Layout option. The width of the components will be adjusted to fit the Mobile Layout.
+Click on the component handle to open [component config inspector](/docs/app-builder/components-library#component-config-inspector) on the right sidebar. Scroll down to the **Devices** section and toggle on the Mobile Layout option. The width of the components will be adjusted to fit the Mobile Layout.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/showonmobile.png" alt="App Builder: Topbar"/>
+
+</div>
 
 #### Adding a new component to mobile layout
 
-Switch the canvas to mobile layout by clicking the mobile icon on the topbar. Drag and drop a new component to the canvas. This component will not be visible on the desktop layout unless **Show on desktop** is enabled from the component config inspector.
+Switch the canvas to mobile layout by clicking the mobile icon on the topbar. Drag and drop a new component (marked in red) to the canvas. This component will not be visible on the desktop layout unless **Show on desktop** is enabled from the component config inspector.
 
 :::info
 Width of the component will be automatically adjusted to fit the screen while viewing the application in app viewer.
 :::
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/canvasmodesstatic.png" alt="App Builder: Topbar"/>
+
+</div>
 
 ### Changes saved indicator
 
@@ -50,6 +68,20 @@ This will show a profile picture of the developer who is currently working on th
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/profile-v2.png" alt="App Builder: Topbar"/>
+
+</div>
+
+### App Environment
+
+Effortlessly configure your app's environment by selecting from the `Env` dropdown menu. Choose between **Development**, **Staging**, and **Production** environments to smoothly transition between different stages of application development.
+
+:::tip
+Learn more about multi-environment configuration **[here](/docs/release-management/multi-environment/)**.
+:::
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/multienv.png" alt="App Builder: Topbar"/>
 
 </div>
 
