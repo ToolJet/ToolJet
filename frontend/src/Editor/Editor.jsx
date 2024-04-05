@@ -89,7 +89,7 @@ import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex } from './editorConstants';
-import { findComponentsWithReferences, generatePath, handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 
 setAutoFreeze(false);
 enablePatches();
@@ -282,9 +282,9 @@ const EditorComponent = (props) => {
     }
 
     if (mounted && didAppDefinitionChanged && currentPageId) {
-      const components = appDefinition?.pages[currentPageId]?.components || {};
+      // const components = appDefinition?.pages[currentPageId]?.components || {};
 
-      computeComponentState(components);
+      // computeComponentState(components);
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
@@ -292,8 +292,6 @@ const EditorComponent = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
-
-  const prevCurrentStateRef = useRef(currentState);
 
   /**
    ** Async updates components in batches to optimize and processing efficiency.
@@ -1133,24 +1131,26 @@ const EditorComponent = (props) => {
           }
 
           //Todo: Move this to a separate function or as a middleware of the api to createing a component
-          if (updateDiff?.type === 'components' && updateDiff?.operation === 'create') {
-            const componentsFromCurrentState = getCurrentState().components;
-            const newComponentIds = Object.keys(updateDiff?.updateDiff);
-            const newComponentsExposedData = {};
-            const componentEntityArray = [];
-            Object.values(componentsFromCurrentState).filter((component) => {
-              if (newComponentIds.includes(component.id)) {
-                const componentName = updateDiff?.updateDiff[component.id]?.name;
-                newComponentsExposedData[componentName] = component;
-                componentEntityArray.push({ id: component.id, name: componentName });
-              }
-            });
+          handleLowPriorityWork(() => {
+            if (updateDiff?.type === 'components' && updateDiff?.operation === 'create') {
+              const componentsFromCurrentState = getCurrentState().components;
+              const newComponentIds = Object.keys(updateDiff?.updateDiff);
+              const newComponentsExposedData = {};
+              const componentEntityArray = [];
+              Object.values(componentsFromCurrentState).filter((component) => {
+                if (newComponentIds.includes(component.id)) {
+                  const componentName = updateDiff?.updateDiff[component.id]?.name;
+                  newComponentsExposedData[componentName] = component;
+                  componentEntityArray.push({ id: component.id, name: componentName });
+                }
+              });
 
-            useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
-            useResolveStore.getState().actions.addAppSuggestions({
-              components: newComponentsExposedData,
-            });
-          }
+              useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
+              useResolveStore.getState().actions.addAppSuggestions({
+                components: newComponentsExposedData,
+              });
+            }
+          });
 
           if (
             updateDiff?.type === 'components' &&
@@ -1201,7 +1201,7 @@ const EditorComponent = (props) => {
   };
 
   const realtimeSave = debounce(appDefinitionChanged, 100);
-  const autoSave = debounce(saveEditingVersion, 150);
+  const autoSave = saveEditingVersion;
 
   function handlePaths(prevPatch, path = [], appJSON) {
     const paths = [...path];

@@ -40,15 +40,14 @@ export default function DragContainer({
             const preant = boxes.find((box) => box.id == lastDraggedEventsRef.current.events[0].target.id)?.component
               ?.parent;
             // Adding the new updates to the macro task queue to unblock UI
-            setTimeout(() =>
-              onDrag(
-                lastDraggedEventsRef.current.events.map((ev) => ({
-                  id: ev.target.id,
-                  x: ev.translate[0],
-                  y: ev.translate[1],
-                  parent: preant,
-                }))
-              )
+
+            onDrag(
+              lastDraggedEventsRef.current.events.map((ev) => ({
+                id: ev.target.id,
+                x: ev.translate[0],
+                y: ev.translate[1],
+                parent: preant,
+              }))
             );
           }
           if (useGridStore.getState().isGroupHandleHoverd) {
@@ -363,9 +362,9 @@ export default function DragContainer({
               resizeData.gw = _gridWidth;
             }
             // Adding the new updates to the macro task queue to unblock UI
-            setTimeout(() => {
-              onResizeStop([resizeData]);
-            });
+            // setTimeout(() => {
+            // });
+            onResizeStop([resizeData]);
           } catch (error) {
             console.error('ResizeEnd error ->', error);
           }
@@ -432,9 +431,9 @@ export default function DragContainer({
 
             if (groupResizeDataRef.current.length) {
               // Adding the new updates to the macro task queue to unblock UI
-              setTimeout(() => {
-                onResizeStop([newBoxs]);
-              });
+              // setTimeout(() => {
+              // });
+              onResizeStop([newBoxs]);
             } else {
               events.forEach((ev) => {
                 const currentWidget = boxes.find(({ id }) => {
@@ -570,16 +569,16 @@ export default function DragContainer({
 
             if (draggedOverElemId === currentParentId || isParentChangeAllowed) {
               // Adding the new updates to the macro task queue to unblock UI
-              setTimeout(() =>
-                onDrag([
-                  {
-                    id: e.target.id,
-                    x: left,
-                    y: Math.round(top / 10) * 10,
-                    parent: isParentChangeAllowed ? draggedOverElemId : undefined,
-                  },
-                ])
-              );
+              //   setTimeout(() =>
+              // );
+              onDrag([
+                {
+                  id: e.target.id,
+                  x: left,
+                  y: Math.round(top / 10) * 10,
+                  parent: isParentChangeAllowed ? draggedOverElemId : undefined,
+                },
+              ]);
             }
             const box = boxes.find((box) => box.id === e.target.id);
             setTimeout(() => useEditorStore.getState().actions.setSelectedComponents([{ ...box }]));
@@ -696,31 +695,29 @@ export default function DragContainer({
             const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
 
             // Adding the new updates to the macro task queue to unblock UI
-            setTimeout(() =>
-              onDrag(
-                events.map((ev) => {
-                  let posX = ev.lastEvent.translate[0];
-                  let posY = ev.lastEvent.translate[1];
-                  if (posLeft < 0) {
-                    posX = ev.lastEvent.translate[0] - posLeft;
-                  }
-                  if (posTop < 0) {
-                    posY = ev.lastEvent.translate[1] - posTop;
-                  }
-                  if (posRight < 0) {
-                    posX = ev.lastEvent.translate[0] + posRight;
-                  }
-                  if (posBottom < 0) {
-                    posY = ev.lastEvent.translate[1] + posBottom;
-                  }
-                  return {
-                    id: ev.target.id,
-                    x: posX,
-                    y: posY,
-                    parent: parentId,
-                  };
-                })
-              )
+            onDrag(
+              events.map((ev) => {
+                let posX = ev.lastEvent.translate[0];
+                let posY = ev.lastEvent.translate[1];
+                if (posLeft < 0) {
+                  posX = ev.lastEvent.translate[0] - posLeft;
+                }
+                if (posTop < 0) {
+                  posY = ev.lastEvent.translate[1] - posTop;
+                }
+                if (posRight < 0) {
+                  posX = ev.lastEvent.translate[0] + posRight;
+                }
+                if (posBottom < 0) {
+                  posY = ev.lastEvent.translate[1] + posBottom;
+                }
+                return {
+                  id: ev.target.id,
+                  x: posX,
+                  y: posY,
+                  parent: parentId,
+                };
+              })
             );
           } catch (error) {
             console.error('Error dragging group', error);

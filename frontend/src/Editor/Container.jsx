@@ -6,14 +6,14 @@ import { ItemTypes, EditorConstants } from './editorConstants';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import { componentTypes } from './WidgetManager/components';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
-import { useCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useAppInfo } from '@/_stores/appDataStore';
@@ -25,7 +25,7 @@ import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
 import { isPDFSupported } from '@/_stores/utils';
 import toast from 'react-hot-toast';
-import { isOnlyLayoutUpdate } from '@/_helpers/editorHelpers';
+import { isOnlyLayoutUpdate, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import GhostWidget from './GhostWidget';
 import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
 
@@ -594,22 +594,26 @@ export const Container = ({
       ...copyOfBoxes,
       ...updatedBoxes,
     };
-    const diffState = diff(boxes, newBoxes);
 
-    setBoxes((prev) => {
-      const updatedComponentsAsperDiff = Object.keys(diffState).reduce((acc, key) => {
-        const component = newBoxes[key];
-        if (component) {
-          acc[key] = component;
-        }
-        return acc;
-      }, {});
+    handleLowPriorityWork(() => {
+      const diffState = diff(boxes, newBoxes);
 
-      return {
-        ...prev,
-        ...updatedComponentsAsperDiff,
-      };
+      setBoxes((prev) => {
+        const updatedComponentsAsperDiff = Object.keys(diffState).reduce((acc, key) => {
+          const component = newBoxes[key];
+          if (component) {
+            acc[key] = component;
+          }
+          return acc;
+        }, {});
+
+        return {
+          ...prev,
+          ...updatedComponentsAsperDiff,
+        };
+      });
     });
+
     updateCanvasHeight(newBoxes);
   }
 
@@ -819,7 +823,8 @@ export const Container = ({
             .map(([id, box]) => {
               const canShowInCurrentLayout =
                 box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
-              if (box.parent || !resolveReferences(canShowInCurrentLayout, useCurrentStateStore.getState())) {
+
+              if (box.parent || !resolveWidgetFieldValue(canShowInCurrentLayout)) {
                 return '';
               }
               return (

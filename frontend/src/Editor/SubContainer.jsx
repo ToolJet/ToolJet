@@ -7,12 +7,12 @@ import update from 'immutability-helper';
 import _, { isEmpty } from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor, onComponentOptionChanged, onComponentOptionsChanged } from '@/_helpers/appUtils';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import { restrictedWidgetsObj } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
-import { useMounted } from '@/_hooks/use-mount';
+
 import { useEditorStore } from '@/_stores/editorStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
@@ -450,7 +450,7 @@ export const SubContainer = ({
               const canShowInCurrentLayout =
                 box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
 
-              if (box.component.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
+              if (box.component.parent && resolveWidgetFieldValue(canShowInCurrentLayout)) {
                 return (
                   <SubWidgetWrapper
                     isResizing={resizingComponentId === key}

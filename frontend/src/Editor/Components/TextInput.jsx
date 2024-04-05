@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
+
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
@@ -45,8 +45,8 @@ export const TextInput = function TextInput({
   const [visibility, setVisibility] = useState(properties.visibility);
   const { isValid, validationError } = validate(value);
   const [showValidationError, setShowValidationError] = useState(false);
-  const currentState = useCurrentState();
-  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+
+  const isMandatory = resolveWidgetFieldValue(component?.definition?.validation?.mandatory?.value);
   const [labelWidth, setLabelWidth] = useState(0);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const [loading, setLoading] = useState(loadingState);

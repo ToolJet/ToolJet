@@ -8,10 +8,12 @@ import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { getCurrentState } from '@/_stores/currentStateStore';
+import { getCurrentState, useCurrentState } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
+import { resolveReferences as newResolver } from '@/Editor/CodeEditor/utils';
+import { useResolveStore } from '@/_stores/resolverStore';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -324,10 +326,22 @@ export const serializeNestedObjectToQueryParams = function (obj, prefix) {
   return str.join('&');
 };
 
-export function resolveWidgetFieldValue(prop, state, _default = [], customResolveObjects = {}) {
+export function resolveWidgetFieldValue(prop, _default = [], customResolveObjects = {}) {
   const widgetFieldValue = prop;
 
+  const isStoreAndEditorReady = useResolveStore.getState().updateStoreState && useCurrentState.getState().isEditorReady;
+
   try {
+    if (isStoreAndEditorReady) {
+      const [_, _error, resolveValue] = newResolver(widgetFieldValue?.value);
+
+      if (_error) {
+        return _default;
+      }
+
+      return resolveValue;
+    }
+    const state = getCurrentState();
     return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
     console.log(err);
@@ -347,7 +361,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const maxValue = validationObject?.maxValue?.value;
   const customRule = validationObject?.customRule?.value;
   const mandatory = validationObject?.mandatory?.value;
-  const validationRegex = resolveWidgetFieldValue(regex, currentState, '', customResolveObjects);
+  const validationRegex = resolveWidgetFieldValue(regex, '', customResolveObjects);
   const re = new RegExp(validationRegex, 'g');
 
   if (!re.test(widgetValue)) {
@@ -357,7 +371,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     };
   }
 
-  const resolvedMinLength = resolveWidgetFieldValue(minLength, currentState, 0, customResolveObjects);
+  const resolvedMinLength = resolveWidgetFieldValue(minLength, 0, customResolveObjects);
   if ((widgetValue || '').length < parseInt(resolvedMinLength)) {
     return {
       isValid: false,
@@ -365,7 +379,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     };
   }
 
-  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, currentState, undefined, customResolveObjects);
+  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, undefined, customResolveObjects);
   if (resolvedMaxLength !== undefined) {
     if ((widgetValue || '').length > parseInt(resolvedMaxLength)) {
       return {
@@ -375,7 +389,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     }
   }
 
-  const resolvedMinValue = resolveWidgetFieldValue(minValue, currentState, undefined, customResolveObjects);
+  const resolvedMinValue = resolveWidgetFieldValue(minValue, undefined, customResolveObjects);
   if (resolvedMinValue !== undefined) {
     if (widgetValue === undefined || widgetValue < parseFloat(resolvedMinValue)) {
       return {
@@ -395,12 +409,12 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     }
   }
 
-  const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
+  const resolvedCustomRule = resolveWidgetFieldValue(customRule, false, customResolveObjects);
   if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
     return { isValid: false, validationError: resolvedCustomRule };
   }
 
-  const resolvedMandatory = resolveWidgetFieldValue(mandatory, currentState, false, customResolveObjects);
+  const resolvedMandatory = resolveWidgetFieldValue(mandatory, false, customResolveObjects);
 
   if (resolvedMandatory == true) {
     if (!widgetValue) {
