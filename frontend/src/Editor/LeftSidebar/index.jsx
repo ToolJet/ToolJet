@@ -221,6 +221,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
         app={app}
         realState={currentState}
         backgroundFxQuery={backgroundFxQuery}
+        setPinned={handlePin}
+        pinned={pinned}
       />
     ),
   };

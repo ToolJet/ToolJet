@@ -24,6 +24,8 @@ export const GlobalSettings = ({
   isMaintenanceOn,
   backgroundFxQuery,
   realState,
+  setPinned,
+  pinned,
 }) => {
   const { t } = useTranslation();
   const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor } = globalSettings;
@@ -150,7 +152,22 @@ export const GlobalSettings = ({
       <div id="" className={cx({ 'dark-theme': darkMode })}>
         <div bsPrefix="global-settings-popover">
           <HeaderSection darkMode={darkMode}>
-            <HeaderSection.PanelHeader title="Global settings" />
+            <HeaderSection.PanelHeader title="Global settings">
+              <div className="d-flex justify-content-end">
+                <ButtonSolid
+                  title={`${pinned ? 'Unpin' : 'Pin'}`}
+                  onClick={() => setPinned(!pinned)}
+                  darkMode={darkMode}
+                  styles={{ width: '28px', padding: 0 }}
+                  data-cy={`left-sidebar-inspector`}
+                  variant="tertiary"
+                  className="left-sidebar-header-btn"
+                  leftIcon={pinned ? 'unpin' : 'pin'}
+                  iconWidth="14"
+                  fill={`var(--slate12)`}
+                ></ButtonSolid>
+              </div>
+            </HeaderSection.PanelHeader>
           </HeaderSection>
           <div className="card-body">
             <div className="app-slug-container">
