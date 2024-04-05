@@ -22,6 +22,7 @@ function TableSchema({
   handleDelete,
   isEditMode,
   isActiveForeignKey,
+  indexHover,
 }) {
   const { Option } = components;
 
@@ -95,9 +96,12 @@ function TableSchema({
   };
 
   return (
-    <div>
+    <div className="column-schema-container">
       {Object.keys(columns).map((index) => (
-        <div key={index} className="list-group-item mb-1 mt-2 table-schema">
+        <div
+          key={index}
+          className={`list-group-item mb-1 mt-2 table-schema ${index == indexHover ? 'foreignKey-hover' : ''}`}
+        >
           <div className="table-schema-row">
             {/* <div className="col-1">
                   <DragIcon />
@@ -120,9 +124,9 @@ function TableSchema({
             </div>
             <div className="foreign-key-relation">
               {isActiveForeignKey ? (
-                <ForeignKeyActive width="14" height="14" />
+                <ForeignKeyActive width="13" height="13" />
               ) : (
-                <ForeignKeyRelation width="14" height="14" />
+                <ForeignKeyRelation width="13" height="13" />
               )}
             </div>
 
