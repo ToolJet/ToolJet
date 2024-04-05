@@ -1,6 +1,7 @@
 import React from 'react';
 import Select, { components } from 'react-select';
-import tjdbDropdownStyles, { dataTypes, formatOptionLabel, defaultdataType } from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType } from '../constants';
+import SelectBox from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/SelectBox';
 
 function TableDetailsDropdown({ firstColumnName, secondColumnName, firstColumnPlaceholder, secondColumnPlaceholder }) {
   const { Option } = components;

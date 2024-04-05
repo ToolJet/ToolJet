@@ -11,11 +11,22 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const ColumnsForm = ({ columns, setColumns, isEditMode }) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
+  const [indexHoveredColumn, setIndexHoveredColumn] = useState(null);
 
   const handleDelete = (index) => {
     const newColumns = { ...columns };
     delete newColumns[index];
     setColumns(newColumns);
+  };
+
+  const onMouseHover = (char = 'date') => {
+    const isNameAvailable = Object.values(columns).some((obj) => Object.values(obj).includes(char));
+    const index = Object.values(columns).findIndex((obj) => Object.values(obj).includes(char));
+    if (isNameAvailable === true) {
+      setIndexHoveredColumn(index);
+    } else {
+      setIndexHoveredColumn(null);
+    }
   };
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -60,7 +71,8 @@ const ColumnsForm = ({ columns, setColumns, isEditMode }) => {
           setColumnSelection={setColumnSelection}
           handleDelete={handleDelete}
           isEditMode={isEditMode}
-          isActiveForeignKey={true}
+          isActiveForeignKey={false}
+          indexHover={indexHoveredColumn}
         />
 
         <div className="d-flex mb-2 mt-2 border-none" style={{ maxHeight: '32px' }}>
@@ -79,7 +91,7 @@ const ColumnsForm = ({ columns, setColumns, isEditMode }) => {
           </ButtonSolid>
         </div>
 
-        <ForeignKeyRelation />
+        <ForeignKeyRelation onMouseHoverFunction={onMouseHover} setIndexHoveredColumn={setIndexHoveredColumn} />
       </div>
     </div>
   );
