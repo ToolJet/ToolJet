@@ -25,13 +25,13 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable, setWindowTitle, pageTitles } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, setWindowTitle, pageTitles, isValidUUID } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 import { withRouter } from '@/_hoc/withRouter';
-import { useEditorStore } from '@/_stores/editorStore';
+import { flushComponentsToRender, useEditorActions, useEditorStore } from '@/_stores/editorStore';
 import { setCookie } from '@/_helpers/cookie';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
@@ -46,6 +46,12 @@ import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
 import MobileHeader from './Viewer/MobileHeader';
 import DesktopHeader from './Viewer/DesktopHeader';
 import './Viewer/viewer.scss';
+import { useResolveStore } from '@/_stores/resolverStore';
+import { findComponentsWithReferences } from '@/_helpers/editorHelpers';
+import { findAllEntityReferences } from '@/_stores/utils';
+import { dfs } from '@/_stores/handleReferenceTransactions';
+// eslint-disable-next-line import/no-unresolved
+import produce from 'immer';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -166,6 +172,9 @@ class ViewerComponent extends React.Component {
     const currentPage = pages.find((page) => page.id === currentPageId);
 
     useDataQueriesStore.getState().actions.setDataQueries(dataQueries);
+    useEditorStore.getState().actions.updateEditorState({
+      currentPageId: currentPageId,
+    });
     this.props.setCurrentState({
       queries: queryState,
       components: {},
@@ -189,6 +198,25 @@ class ViewerComponent extends React.Component {
     });
     useEditorStore.getState().actions.toggleCurrentLayout(this.props?.currentLayout == 'mobile' ? 'mobile' : 'desktop');
     this.props.updateState({ events: data.events ?? [] });
+    const currentPageComponents = appDefData?.pages[currentPageId]?.components;
+
+    if (currentPageComponents && !_.isEmpty(currentPageComponents)) {
+      const referenceManager = useResolveStore.getState().referenceMapper;
+
+      const newComponents = Object.keys(currentPageComponents).map((componentId) => {
+        const component = currentPageComponents[componentId];
+
+        if (!referenceManager.get(componentId)) {
+          return {
+            id: componentId,
+            name: component.component.name,
+          };
+        }
+      });
+
+      useResolveStore.getState().actions.addEntitiesToMap(newComponents);
+    }
+
     this.setState(
       {
         currentUser,
@@ -206,9 +234,100 @@ class ViewerComponent extends React.Component {
         events: data.events ?? [],
       },
       () => {
-        const components = appDefData?.pages[currentPageId]?.components || {};
+        // const components = appDefData?.pages[currentPageId]?.components || {};
 
-        computeComponentState(components).then(async () => {
+        const appJson = JSON.parse(JSON.stringify(appDefData));
+        const currentPageId = useEditorStore.getState().currentPageId;
+        const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components;
+        let dataQueries = JSON.parse(JSON.stringify(useDataQueriesStore.getState().dataQueries));
+        let allEvents = JSON.parse(JSON.stringify(useAppDataStore.getState().events));
+
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        const entityReferencesInQueryOptions = findAllEntityReferences(dataQueries, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        const manager = useResolveStore.getState().referenceMapper;
+
+        if (
+          Array.isArray(entityReferencesInComponentDefinitions) &&
+          entityReferencesInComponentDefinitions?.length > 0
+        ) {
+          let newComponentDefinition = JSON.parse(JSON.stringify(currentComponents));
+
+          entityReferencesInComponentDefinitions.forEach((entity) => {
+            const entityrefExists = manager.has(entity);
+
+            if (entityrefExists) {
+              const value = manager.get(entity);
+              newComponentDefinition = dfs(newComponentDefinition, entity, value);
+            }
+          });
+
+          const newAppDefinition = produce(appJson, (draft) => {
+            draft.pages[homePageId].components = newComponentDefinition;
+          });
+
+          useEditorStore.getState().actions.updateEditorState({
+            isUpdatingEditorStateInProcess: false,
+            appDefinition: newAppDefinition,
+          });
+        }
+
+        if (Array.isArray(entityReferencesInQueryOptions) && entityReferencesInQueryOptions?.length > 0) {
+          let newQueryOptions = {};
+          dataQueries?.forEach((query) => {
+            newQueryOptions[query.id] = query.options;
+            ``;
+          });
+
+          entityReferencesInQueryOptions.forEach((entity) => {
+            const entityrefExists = manager.has(entity);
+
+            if (entityrefExists) {
+              const value = manager.get(entity);
+              newQueryOptions = dfs(newQueryOptions, entity, value);
+            }
+          });
+
+          dataQueries = dataQueries.map((query) => {
+            const queryId = query.id;
+            const dqOptions = newQueryOptions[queryId];
+
+            return {
+              ...query,
+              options: dqOptions,
+            };
+          });
+
+          useDataQueriesStore.getState().actions.setDataQueries(dataQueries, 'mappingUpdate');
+        }
+
+        if (Array.isArray(entityReferencesInEvents) && entityReferencesInEvents?.length > 0) {
+          let newEvents = JSON.parse(JSON.stringify(allEvents));
+
+          entityReferencesInEvents.forEach((entity) => {
+            const entityrefExists = manager.has(entity);
+
+            if (entityrefExists) {
+              const value = manager.get(entity);
+              newEvents = dfs(newEvents, entity, value);
+            }
+          });
+
+          this.props.updateState({
+            events: newEvents,
+          });
+        }
+
+        computeComponentState(currentComponents).then(async () => {
           this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
           useCurrentStateStore.getState().actions.setEditorReady(true);
           this.runQueries(dataQueries);
@@ -771,14 +890,52 @@ class ViewerComponent extends React.Component {
 }
 const withStore = (Component) => (props) => {
   const currentState = useCurrentStateStore();
-  const { currentLayout, queryConfirmationList } = useEditorStore(
+  const { currentLayout, queryConfirmationList, currentPageId } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
       queryConfirmationList: state?.queryConfirmationList,
+      currentPageId: state?.currentPageId,
     }),
     shallow
   );
+
+  const { updateComponentsNeedsUpdateOnNextRender } = useEditorActions();
   const { updateState } = useAppDataActions();
+
+  const lastUpdatedRef = useResolveStore((state) => state.lastUpdatedRefs, shallow);
+
+  async function batchUpdateComponents(componentIds) {
+    if (componentIds.length === 0) return;
+
+    let updatedComponentIds = [];
+
+    for (let i = 0; i < componentIds.length; i += 10) {
+      const batch = componentIds.slice(i, i + 10);
+      batch.forEach((id) => {
+        updatedComponentIds.push(id);
+      });
+
+      updateComponentsNeedsUpdateOnNextRender(batch);
+      // Delay to allow UI to process
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    // Flush only updated components
+    flushComponentsToRender(updatedComponentIds);
+  }
+
+  React.useEffect(() => {
+    if (lastUpdatedRef.length > 0) {
+      const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
+      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, lastUpdatedRef);
+
+      if (componentIdsWithReferences.length > 0) {
+        batchUpdateComponents(componentIdsWithReferences);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastUpdatedRef]);
+
   return (
     <Component
       {...props}
