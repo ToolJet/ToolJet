@@ -21,19 +21,19 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
       if (
         showModal &&
         event.target.closest('#parameter-form-popover') === null &&
-        event.target.closest('#cm-complete-0') === null
+        event.target.closest('.cm-completionListIncompleteBottom') === null
       ) {
         closeMenu();
       }
     };
 
     if (showModal) {
-      document.addEventListener('mouseup', handleClickOutside);
+      document.addEventListener('click', handleClickOutside);
     } else {
-      document.removeEventListener('mouseup', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mouseup', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
