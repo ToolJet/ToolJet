@@ -14,7 +14,6 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
   const { errors, succededQuery } = useCurrentStateStore(
     (state) => ({
       errors: state.errors,
-      queries: state.queries,
       succededQuery: state.succededQuery,
     }),
     shallow

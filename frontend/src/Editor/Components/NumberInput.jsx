@@ -3,8 +3,8 @@ import './numberinput.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
+
 const tinycolor = require('tinycolor2');
 import Label from '@/_ui/Label';
 
@@ -19,8 +19,6 @@ export const NumberInput = function NumberInput({
   darkMode,
   dataCy,
   isResizing,
-  adjustHeightBasedOnAlignment,
-  currentLayout,
 }) {
   const { loadingState, disabledState, label, placeholder } = properties;
   const {
@@ -40,9 +38,9 @@ export const NumberInput = function NumberInput({
   } = styles;
 
   const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
-  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState) ?? false;
-  const minValue = resolveReferences(component?.definition?.validation?.minValue?.value, currentState) ?? null;
-  const maxValue = resolveReferences(component?.definition?.validation?.maxValue?.value, currentState) ?? null;
+  const isMandatory = resolveWidgetFieldValue(component?.definition?.validation?.mandatory?.value) ?? false;
+  const minValue = resolveWidgetFieldValue(component?.definition?.validation?.minValue?.value) ?? null;
+  const maxValue = resolveWidgetFieldValue(component?.definition?.validation?.maxValue?.value) ?? null;
 
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(loadingState);
@@ -52,7 +50,7 @@ export const NumberInput = function NumberInput({
   const [isFocused, setIsFocused] = useState(false);
 
   const inputRef = useRef(null);
-  const currentState = useCurrentState();
+
   const [disable, setDisable] = useState(disabledState || loadingState);
   const labelRef = useRef();
   const _width = (width / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
@@ -61,13 +59,6 @@ export const NumberInput = function NumberInput({
     setExposedVariable('label', label);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label]);
-
-  useEffect(() => {
-    if (alignment == 'top' && ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)))
-      adjustHeightBasedOnAlignment(true);
-    else adjustHeightBasedOnAlignment(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length, currentLayout, width, auto]);
 
   useEffect(() => {
     setValue(Number(parseFloat(value).toFixed(properties.decimalPlaces)));

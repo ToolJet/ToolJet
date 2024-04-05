@@ -56,7 +56,7 @@ export const useAppDataStore = create(
             let updateDiff = appDefinitionDiff.updateDiff;
 
             if (appDefinitionDiff.operation === 'update') {
-              updateDiff = useResolveStore.getState().actions.findAndReplaceReferences(updateDiff);
+              updateDiff = useResolveStore.getState().actions.findReferences(updateDiff);
             }
 
             appVersionService
@@ -91,7 +91,7 @@ export const useAppDataStore = create(
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
-          const entityIdMappingData = useResolveStore.getState().actions.findAndReplaceReferences(events);
+          const entityIdMappingData = useResolveStore.getState().actions.findReferences(events);
 
           const response = await appVersionService.saveAppVersionEventHandlers(
             appId,
@@ -111,9 +111,13 @@ export const useAppDataStore = create(
             }
           });
 
-          const entityReferencesInEvents = findAllEntityReferences(updatedEvents, [])?.filter(
-            (entity) => entity && isValidUUID(entity)
-          );
+          const entityReferencesInEvents = findAllEntityReferences(updatedEvents, [])
+            ?.map((entity) => {
+              if (entity && isValidUUID(entity)) {
+                return entity;
+              }
+            })
+            ?.filter((e) => e !== undefined);
           const manager = useResolveStore.getState().referenceMapper;
           let newEvents = JSON.parse(JSON.stringify(updatedEvents));
 

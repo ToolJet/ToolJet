@@ -3,6 +3,7 @@ import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown';
 import './text.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import useRenderCount from '@/_hooks/useRenderCount';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -10,7 +11,17 @@ const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   bottom: 'flex-end',
 };
 
-export const Text = function Text({ height, properties, fireEvent, styles, darkMode, setExposedVariable, dataCy }) {
+export const Text = function Text({
+  height,
+  properties,
+  fireEvent,
+  styles,
+  darkMode,
+  setExposedVariable,
+  dataCy,
+  ...props
+}) {
+  useRenderCount(`TextComponent Main component ${props.id}`);
   let {
     textSize,
     textColor,
