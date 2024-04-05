@@ -1,75 +1,83 @@
 [
-  {
-    "name": "plivo",
-    "description": "Plugin for Plivo APIs",
-    "version": "1.0.0",
-    "id": "plivo",
-    "author": "Tooljet",
-    "timestamp": "Thu, 02 Mar 2023 10:40:06 GMT"
-  },
-  {
-    "name": "GitHub",
-    "description": "Plugin for GitHub APIs",
-    "version": "1.0.0",
-    "id": "github",
-    "author": "Tooljet",
-    "timestamp": "Thu, 02 Mar 2023 11:52:32 GMT"
-  },
-  {
-    "name": "OpenAI",
-    "description": "Plugin for OpenAI APIs",
-    "version": "1.0.0",
-    "id": "openai",
-    "author": "Tooljet",
-    "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT"
-  },
-  {
-    "name": "AWS Textract",
-    "description": "Plugin for AWS Textract machine-learning service",
-    "version": "1.0.0",
-    "id": "textract",
-    "author": "Tooljet",
-    "timestamp": "Wed, 19 Apr 2023 11:36:56 GMT"
-  },
-  {
-    "name": "HarperDB",
-    "repo": "",
-    "description": "Plugin for HarperDB data source",
-    "version": "1.0.0",
-    "id": "harperdb",
-    "author": "Tooljet",
-    "timestamp": "Thu, 08 Jun 2023 09:50:05 GMT"
-  },
-  {
-    "name": "AWS Redshift",
-    "description": "Plugin for Amazon Redshift data warehouse",
-    "version": "1.0.0",
-    "id": "awsredshift",
-    "author": "Tooljet",
-    "timestamp": "Wed, 17 Jan 2024 20:05:16 GMT"
-  },
-  {
-    "name": "aws-lambda",
-    "description": "Plugin for aws-lambda",
-    "version": "1.0.0",
-    "id": "aws-lambda",
-    "author": "Tooljet",
-    "timestamp": "Tue, 05 Dec 2023 00:27:16 GMT"
-  },
-  {
-    "name": "PocketBase",
-    "description": "API plugin from pocketbase",
-    "version": "1.0.0",
-    "id": "pocketbase",
-    "author": "Tooljet",
-    "timestamp": "Mon, 18 Mar 2024 14:39:34 GMT"
-  },
-  {
-    "name": "Engagespot",
-    "description": "Plugin for engagespot APIs",
-    "version": "1.0.0",
-    "id": "engagespot",
-    "author": "Tooljet",
-    "timestamp": "Thu, 29 Feb 2024 09:46:21 GMT"
-  }
+	{
+		"name": "plivo",
+		"description": "Plugin for Plivo APIs",
+		"version": "1.0.0",
+		"id": "plivo",
+		"author": "Tooljet",
+		"timestamp": "Thu, 02 Mar 2023 10:40:06 GMT"
+	},
+	{
+		"name": "GitHub",
+		"description": "Plugin for GitHub APIs",
+		"version": "1.0.0",
+		"id": "github",
+		"author": "Tooljet",
+		"timestamp": "Thu, 02 Mar 2023 11:52:32 GMT"
+	},
+	{
+		"name": "OpenAI",
+		"description": "Plugin for OpenAI APIs",
+		"version": "1.0.0",
+		"id": "openai",
+		"author": "Tooljet",
+		"timestamp": "Mon, 10 Apr 2023 06:33:21 GMT"
+	},
+	{
+		"name": "AWS Textract",
+		"description": "Plugin for AWS Textract machine-learning service",
+		"version": "1.0.0",
+		"id": "textract",
+		"author": "Tooljet",
+		"timestamp": "Wed, 19 Apr 2023 11:36:56 GMT"
+	},
+	{
+		"name": "HarperDB",
+		"repo": "",
+		"description": "Plugin for HarperDB data source",
+		"version": "1.0.0",
+		"id": "harperdb",
+		"author": "Tooljet",
+		"timestamp": "Thu, 08 Jun 2023 09:50:05 GMT"
+	},
+	{
+		"name": "AWS Redshift",
+		"description": "Plugin for Amazon Redshift data warehouse",
+		"version": "1.0.0",
+		"id": "awsredshift",
+		"author": "Tooljet",
+		"timestamp": "Wed, 17 Jan 2024 20:05:16 GMT"
+	},
+	{
+		"name": "aws-lambda",
+		"description": "Plugin for aws-lambda",
+		"version": "1.0.0",
+		"id": "aws-lambda",
+		"author": "Tooljet",
+		"timestamp": "Tue, 05 Dec 2023 00:27:16 GMT"
+	},
+	{
+		"name": "PocketBase",
+		"description": "API plugin from pocketbase",
+		"version": "1.0.0",
+		"id": "pocketbase",
+		"author": "Tooljet",
+		"timestamp": "Mon, 18 Mar 2024 14:39:34 GMT"
+	},
+	{
+		"name": "Supabase",
+		"description": "Plugin for Supabase",
+		"version": "1.0.0",
+		"id": "supabase",
+		"author": "Tooljet",
+		"timestamp": "Mon, 25 Mar 2024 20:05:16 GMT"
+	},
+	{
+		"name": "Engagespot",
+		"description": "Plugin for engagespot APIs",
+		"version": "1.0.0",
+		"id": "engagespot",
+		"author": "Tooljet",
+		"timestamp": "Thu, 29 Feb 2024 09:46:21 GMT"
+	}
 ]
