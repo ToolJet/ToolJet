@@ -24,6 +24,10 @@
     }
 }
 
+.cm-widgetBuffer {
+    display: none !important;
+}
+
 
 
 .cm-base-autocomplete {
@@ -153,16 +157,33 @@
     }
 }
 
+.query-manager-sort-filter-popup {
+    .cm-base-autocomplete {
+        position: fixed !important;
+        top: 130px !important;
+    }
+}
 
+.canvas-codehinter-container {
+    .cm-base-autocomplete {
+        position: fixed !important;
+        top: 500px !important;
+        left: 38px !important;
+    }
+}
 
 .widget-code-editor {
     height: 100%;
 
     .cm-content {
-        max-width: 220px !important;
+        max-width: 100% !important;
         white-space: pre-wrap;
         word-wrap: break-word;
     }
+}
+
+.cm-placeholder {
+    width: 220px;
 }
 
 .code-hinter-wrapper {
@@ -224,6 +245,7 @@
 
     .cm-tooltip-autocomplete {
         @extend .cm-base-autocomplete;
+        top: 0px !important;
     }
 }
 
@@ -277,6 +299,7 @@
     overflow-y: auto !important;
     overflow-x: hidden !important;
     padding: 2px !important;
+    overscroll-behavior: contain;
 }
 
 .cm-focused {
@@ -315,8 +338,6 @@
 
 .code-hinter-preview-card-body::-webkit-scrollbar {
     width: 4px !important;
-    /* for vertical scrollbars */
-    ;
 }
 
 .code-hinter-preview-card-body::-webkit-scrollbar-track {
