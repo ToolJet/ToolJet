@@ -175,6 +175,7 @@ export class TooljetDbService {
     const {
       table_name: tableName,
       // columns: [column, ...restColumns],
+      foreign_keys = [],
     } = params;
 
     const queryRunner = this.manager.connection.createQueryRunner();
@@ -185,17 +186,20 @@ export class TooljetDbService {
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
 
+    // Todo: Check if all the Referenced Foreign key tables are valid
     try {
       const internalTable = queryRunner.manager.create(InternalTable, {
         tableName,
         organizationId,
       });
+
       await queryRunner.manager.save(internalTable);
 
       await tjdbQueryRunner.createTable(
         new Table({
           name: internalTable.id,
           columns: this.prepareColumnListForCreateTable(params?.columns),
+          ...(foreign_keys.length && { foreignKeys: this.prepareForeignKeyDetails(foreign_keys) }),
         })
       );
       if (primaryKeyColumnList.length) await tjdbQueryRunner.createPrimaryKey(internalTable.id, primaryKeyColumnList);
@@ -662,5 +666,27 @@ export class TooljetDbService {
       };
     });
     return columnList;
+  }
+
+  private prepareForeignKeyDetails(foreign_keys) {
+    if (!foreign_keys.length) return [];
+    const foreignKeyList = foreign_keys.map((foreignKeyDetail) => {
+      const {
+        column_names,
+        referenced_table_name,
+        referenced_column_names,
+        on_delete = '',
+        on_update = '',
+      } = foreignKeyDetail;
+
+      return {
+        columnNames: column_names,
+        referencedTableName: referenced_table_name,
+        referencedColumnNames: referenced_column_names,
+        ...(on_delete && { onDelete: on_delete }),
+        ...(on_update && { onUpdate: on_update }),
+      };
+    });
+    return foreignKeyList;
   }
 }
