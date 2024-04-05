@@ -1,5 +1,5 @@
 import React, { useContext, useMemo, useState } from 'react';
-import { allSources } from '../../../../Editor/QueryManager/QueryEditors';
+import { allSources, source } from '../../../../Editor/QueryManager/QueryEditors';
 import Select from 'react-select';
 import WorkflowEditorContext from '../../../context';
 import { capitalize, isUndefined, find } from 'lodash';
@@ -34,12 +34,21 @@ const staticDataSourceSchemas = {
 export default function QueryNode(props) {
   // const { exposeToCodeHinter } = useContext(EditorContext) || {};
   const { editorSession, updateQuery } = useContext(WorkflowEditorContext);
-  const { data: nodeData, id } = props;
+  const { data: nodeData, id, selectedNode } = props;
   const queryData = find(editorSession.queries, { idOnDefinition: nodeData.idOnDefinition });
   const sourceData = find(editorSession.dataSources, { id: queryData.data_source_id });
 
-  const QueryBuilder = useMemo(() => allSources[capitalize(queryData.kind)], [queryData.kind]);
-  const schema = useMemo(() => staticDataSourceSchemas[queryData.kind], [queryData.kind]);
+  const QueryBuilder = useMemo(() => {
+    return (selectedNode.plugin !== undefined || selectedNode.plugin !== null) && selectedNode.pluginId !== undefined
+      ? source
+      : allSources[capitalize(queryData.kind)];
+  }, [queryData.kind]);
+
+  const schema = useMemo(() => {
+    return (selectedNode.plugin !== undefined || selectedNode.plugin !== null) && selectedNode.pluginId !== undefined
+      ? selectedNode?.plugin?.operationsFile?.data
+      : staticDataSourceSchemas[queryData.kind];
+  }, [queryData.kind]);
 
   const [queryName, setQueryName] = useState(queryData.name);
 
