@@ -792,29 +792,17 @@ const EditorComponent = (props) => {
         let dataQueries = JSON.parse(JSON.stringify(useDataQueriesStore.getState().dataQueries));
         let allEvents = JSON.parse(JSON.stringify(useAppDataStore.getState().events));
 
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
 
-        const entityReferencesInQueryoOptions = findAllEntityReferences(dataQueries, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
+        const entityReferencesInQueryOptions = findAllEntityReferences(dataQueries, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
 
-        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
+        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])?.filter(
+          (entity) => entity && isValidUUID(entity)
+        );
 
         const manager = useResolveStore.getState().referenceMapper;
 
@@ -843,14 +831,14 @@ const EditorComponent = (props) => {
           });
         }
 
-        if (Array.isArray(entityReferencesInQueryoOptions) && entityReferencesInQueryoOptions?.length > 0) {
+        if (Array.isArray(entityReferencesInQueryOptions) && entityReferencesInQueryOptions?.length > 0) {
           let newQueryOptions = {};
           dataQueries?.forEach((query) => {
             newQueryOptions[query.id] = query.options;
             ``;
           });
 
-          entityReferencesInQueryoOptions.forEach((entity) => {
+          entityReferencesInQueryOptions.forEach((entity) => {
             const entityrefExists = manager.has(entity);
 
             if (entityrefExists) {

@@ -1300,14 +1300,16 @@ export function runQuery(
               },
             });
 
-            useResolveStore.getState().actions.addAppSuggestions({
-              queries: {
-                [queryName]: {
-                  data: finalData,
-                  isLoading: false,
+            if (mode === 'edit') {
+              useResolveStore.getState().actions.addAppSuggestions({
+                queries: {
+                  [queryName]: {
+                    data: finalData,
+                    isLoading: false,
+                  },
                 },
-              },
-            });
+              });
+            }
 
             const basePath = `queries.${queryName}`;
 
