@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import cx from 'classnames';
 import { appVersionService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
 
 const appVersionLoadingStatus = Object.freeze({
   loading: 'loading',
@@ -20,18 +21,56 @@ export const AppVersionsManager = function ({
   isEditable = true,
   isViewer,
 }) {
-  const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
+  const { initializedEnvironmentDropdown, versionsPromotedToEnvironment, lazyLoadAppVersions, appVersionsLazyLoaded } =
+    useEnvironmentsAndVersionsStore(
+      (state) => ({
+        appVersionsLazyLoaded: state.appVersionsLazyLoaded,
+        initializedEnvironmentDropdown: state.initializedEnvironmentDropdown,
+        versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
+        lazyLoadAppVersions: state.actions.lazyLoadAppVersions,
+      }),
+      shallow
+    );
+
+  if (initializedEnvironmentDropdown) {
+    return (
+      <RenderComponent
+        appId={appId}
+        setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+        onVersionDelete={onVersionDelete}
+        isEditable={isEditable}
+        isViewer={isViewer}
+        versionsPromotedToEnvironment={versionsPromotedToEnvironment}
+        lazyLoadAppVersions={lazyLoadAppVersions}
+        appVersionsLazyLoaded={appVersionsLazyLoaded}
+      />
+    );
+  } else {
+    return <></>;
+  }
+};
+
+const RenderComponent = ({
+  appId,
+  isEditable,
+  isViewer,
+  setAppDefinitionFromVersion,
+  onVersionDelete,
+  versionsPromotedToEnvironment,
+  lazyLoadAppVersions,
+  appVersionsLazyLoaded,
+}) => {
+  const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loaded);
   const [deleteVersion, setDeleteVersion] = useState({
     versionId: '',
     versionName: '',
     showModal: false,
   });
+  const [forceMenuOpen, setForceMenuOpen] = useState(false);
 
-  const { releasedVersionId, editingVersion, appVersions, setAppVersions } = useAppVersionStore(
+  const { releasedVersionId, editingVersion } = useAppVersionStore(
     (state) => ({
       editingVersion: state.editingVersion,
-      appVersions: state.appVersions,
-      setAppVersions: state.actions?.setAppVersions,
       releasedVersionId: state.releasedVersionId,
     }),
     shallow
@@ -42,16 +81,6 @@ export const AppVersionsManager = function ({
     }),
     shallow
   );
-
-  useEffect(() => {
-    if (appVersions && appVersions.length > 0) {
-      setGetAppVersionStatus(appVersionLoadingStatus.loaded);
-    }
-
-    return () => {
-      setGetAppVersionStatus(appVersionLoadingStatus.loading);
-    };
-  }, [appVersions]);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -93,13 +122,12 @@ export const AppVersionsManager = function ({
       })
       .finally(() => {
         appVersionService.getAll(appId, true).then((data) => {
-          setAppVersions(data.versions);
           onVersionDelete();
         });
       });
   };
 
-  const options = appVersions.map((appVersion) => ({
+  const options = versionsPromotedToEnvironment.map((appVersion) => ({
     value: appVersion.id,
     isReleasedVersion: appVersion.id === releasedVersionId,
     appVersionName: appVersion.name,
@@ -139,10 +167,17 @@ export const AppVersionsManager = function ({
     ),
   }));
 
+  const onMenuOpen = async () => {
+    if (!appVersionsLazyLoaded) {
+      setGetAppVersionStatus(appVersionLoadingStatus.loading);
+      await lazyLoadAppVersions(appId);
+      setGetAppVersionStatus(appVersionLoadingStatus.loaded);
+    }
+    setForceMenuOpen(!forceMenuOpen);
+  };
+
   const customSelectProps = {
     appId,
-    appVersions,
-    setAppVersions,
     setAppDefinitionFromVersion,
     editingVersion,
     setDeleteVersion,
@@ -175,6 +210,9 @@ export const AppVersionsManager = function ({
             {...customSelectProps}
             className={` ${darkMode && 'dark-theme'}`}
             isEditable={isEditable}
+            onMenuOpen={onMenuOpen}
+            onMenuClose={() => setForceMenuOpen(false)}
+            menuIsOpen={forceMenuOpen}
           />
         </div>
       </div>

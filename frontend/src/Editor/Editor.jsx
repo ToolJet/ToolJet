@@ -707,8 +707,6 @@ const EditorComponent = (props) => {
       useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
     }
 
-    const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
-    setAppVersions(appVersions.appVersions);
     const currentOrgId = data?.organization_id || data?.organizationId;
 
     updateState({

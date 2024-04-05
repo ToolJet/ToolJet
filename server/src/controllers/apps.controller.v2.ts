@@ -32,6 +32,7 @@ import { PageService } from '@services/page.service';
 import { EventsService } from '@services/events_handler.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { CreateEventHandlerDto, UpdateEventHandlerDto } from '@dto/event-handler.dto';
+import { VersionReleaseDto } from '@dto/version-release.dto';
 
 @Controller({
   path: 'apps',
@@ -498,5 +499,21 @@ export class AppsControllerV2 {
     }
 
     return await this.eventService.deleteEvent(eventId, versionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Put(':id/release')
+  async releaseVersion(
+    @User() user,
+    @Param('id') id,
+    @AppDecorator() app: App,
+    @Body() versionReleaseDto: VersionReleaseDto
+  ) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+    if (!ability.can('updateParams', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+    return await this.appsService.releaseVersion(app.id, versionReleaseDto);
   }
 }
