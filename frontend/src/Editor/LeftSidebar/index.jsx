@@ -19,8 +19,6 @@ import { useDataSources } from '@/_stores/dataSourcesStore';
 import { shallow } from 'zustand/shallow';
 import useDebugger from './SidebarDebugger/useDebugger';
 import { GlobalSettings } from '../Header/GlobalSettings';
-import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -77,7 +75,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     }),
     shallow
   );
-  const currentState = useCurrentState();
   const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
 
   const { errorLogs, clearErrorLogs, unReadErrorCount, allLog } = useDebugger({
@@ -140,96 +137,97 @@ export const LeftSidebar = forwardRef((props, ref) => {
 
   const backgroundFxQuery = appDefinition?.globalSettings?.backgroundFxQuery;
 
-  const SELECTED_ITEMS = {
-    page: (
-      <LeftSidebarPageSelector
-        darkMode={darkMode}
-        selectedSidebarItem={selectedSidebarItem}
-        appDefinition={appDefinition}
-        currentPageId={currentPageId}
-        addNewPage={addNewPage}
-        switchPage={switchPage}
-        deletePage={deletePage}
-        renamePage={renamePage}
-        hidePage={hidePage}
-        unHidePage={unHidePage}
-        disableEnablePage={disableEnablePage}
-        updateHomePage={updateHomePage}
-        updatePageHandle={updatePageHandle}
-        clonePage={clonePage}
-        pages={
-          Object.entries(_.cloneDeep(appDefinition).pages)
-            .map(([id, page]) => ({ id, ...page }))
-            .sort((a, b) => a.index - b.index) || []
-        }
-        homePageId={appDefinition.homePageId}
-        showHideViewerNavigationControls={showHideViewerNavigationControls}
-        updateOnSortingPages={updateOnSortingPages}
-        apps={apps}
-        setPinned={handlePin}
-        pinned={pinned}
-      />
-    ),
-    inspect: (
-      <LeftSidebarInspector
-        darkMode={darkMode}
-        selectedSidebarItem={selectedSidebarItem}
-        appDefinition={appDefinition}
-        setSelectedComponent={setSelectedComponent}
-        removeComponent={removeComponent}
-        runQuery={runQuery}
-        popoverContentHeight={popoverContentHeight}
-        setPinned={handlePin}
-        pinned={pinned}
-      />
-    ),
-    datasource: (
-      <LeftSidebarDataSources
-        darkMode={darkMode}
-        appId={appId}
-        dataSourcesChanged={dataSourcesChanged}
-        globalDataSourcesChanged={globalDataSourcesChanged}
-        dataQueriesChanged={dataQueriesChanged}
-        toggleDataSourceManagerModal={toggleDataSourceManagerModal}
-        showDataSourceManagerModal={showDataSourceManagerModal}
-        onDeleteofAllDataSources={() => {
-          handleSelectedSidebarItem(null);
-          handlePin(false);
-          delete sideBarBtnRefs.current['datasource'];
-        }}
-        setPinned={handlePin}
-        pinned={pinned}
-      />
-    ),
-    debugger: (
-      <LeftSidebarDebugger
-        darkMode={darkMode}
-        errors={errorLogs}
-        clearErrorLogs={clearErrorLogs}
-        setPinned={handlePin}
-        pinned={pinned}
-        allLog={allLog}
-      />
-    ),
-    settings: (
-      <GlobalSettings
-        globalSettingsChanged={globalSettingsChanged}
-        globalSettings={appDefinition.globalSettings}
-        darkMode={darkMode}
-        toggleAppMaintenance={toggleAppMaintenance}
-        isMaintenanceOn={isMaintenanceOn}
-        app={app}
-        realState={currentState}
-        backgroundFxQuery={backgroundFxQuery}
-      />
-    ),
+  const renderPopoverContent = () => {
+    if (selectedSidebarItem === null) return null;
+    switch (selectedSidebarItem) {
+      case 'page':
+        return (
+          <LeftSidebarPageSelector
+            darkMode={darkMode}
+            selectedSidebarItem={selectedSidebarItem}
+            appDefinition={appDefinition}
+            currentPageId={currentPageId}
+            addNewPage={addNewPage}
+            switchPage={switchPage}
+            deletePage={deletePage}
+            renamePage={renamePage}
+            hidePage={hidePage}
+            unHidePage={unHidePage}
+            disableEnablePage={disableEnablePage}
+            updateHomePage={updateHomePage}
+            updatePageHandle={updatePageHandle}
+            clonePage={clonePage}
+            pages={
+              Object.entries(_.cloneDeep(appDefinition).pages)
+                .map(([id, page]) => ({ id, ...page }))
+                .sort((a, b) => a.index - b.index) || []
+            }
+            homePageId={appDefinition.homePageId}
+            showHideViewerNavigationControls={showHideViewerNavigationControls}
+            updateOnSortingPages={updateOnSortingPages}
+            apps={apps}
+            setPinned={handlePin}
+            pinned={pinned}
+          />
+        );
+      case 'inspect':
+        return (
+          <LeftSidebarInspector
+            darkMode={darkMode}
+            selectedSidebarItem={selectedSidebarItem}
+            appDefinition={appDefinition}
+            setSelectedComponent={setSelectedComponent}
+            removeComponent={removeComponent}
+            runQuery={runQuery}
+            popoverContentHeight={popoverContentHeight}
+            setPinned={handlePin}
+            pinned={pinned}
+          />
+        );
+      case 'datasource':
+        return (
+          <LeftSidebarDataSources
+            darkMode={darkMode}
+            appId={appId}
+            dataSourcesChanged={dataSourcesChanged}
+            globalDataSourcesChanged={globalDataSourcesChanged}
+            dataQueriesChanged={dataQueriesChanged}
+            toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+            showDataSourceManagerModal={showDataSourceManagerModal}
+            onDeleteofAllDataSources={() => {
+              handleSelectedSidebarItem(null);
+              handlePin(false);
+              delete sideBarBtnRefs.current['datasource'];
+            }}
+            setPinned={handlePin}
+            pinned={pinned}
+          />
+        );
+      case 'debugger':
+        return (
+          <LeftSidebarDebugger
+            darkMode={darkMode}
+            errors={errorLogs}
+            clearErrorLogs={clearErrorLogs}
+            setPinned={handlePin}
+            pinned={pinned}
+            allLog={allLog}
+          />
+        );
+      case 'settings':
+        return (
+          <GlobalSettings
+            globalSettingsChanged={globalSettingsChanged}
+            globalSettings={appDefinition.globalSettings}
+            darkMode={darkMode}
+            toggleAppMaintenance={toggleAppMaintenance}
+            isMaintenanceOn={isMaintenanceOn}
+            app={app}
+            backgroundFxQuery={backgroundFxQuery}
+          />
+        );
+    }
   };
-
-  useEffect(() => {
-    backgroundFxQuery &&
-      globalSettingsChanged({ canvasBackgroundColor: resolveReferences(backgroundFxQuery, currentState) });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(resolveReferences(backgroundFxQuery, currentState))]);
 
   return (
     <div className="left-sidebar" data-cy="left-sidebar-inspector">
@@ -289,7 +287,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         open={pinned || !!selectedSidebarItem}
         popoverContentClassName={`p-0 sidebar-h-100-popover ${selectedSidebarItem}`}
         side="right"
-        popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
+        popoverContent={renderPopoverContent()}
         popoverContentHeight={popoverContentHeight}
       />
 

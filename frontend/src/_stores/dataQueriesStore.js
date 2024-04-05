@@ -1,9 +1,11 @@
-import { create, findAllEntityReferences, zustandDevTools } from './utils';
+import { create, zustandDevTools } from './utils';
 import { getDefaultOptions } from './storeHelper';
 import { dataqueryService } from '@/_services';
+// import debounce from 'lodash/debounce';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { runQueries } from '@/_helpers/appUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
 import _, { isEmpty, throttle } from 'lodash';
@@ -25,7 +27,7 @@ const initialState = {
   isUpdatingQueryInProcess: false,
   /** When a 'Create Data Query' operation is in progress, rename/update API calls are cached in the variable. */
   queuedActions: {},
-  queuedQueriesForRunOnAppLoad: [],
+  // queuedQueriesForRunOnAppLoad: [],
 };
 
 export const useDataQueriesStore = create(
@@ -35,7 +37,7 @@ export const useDataQueriesStore = create(
       actions: {
         // TODO: Remove editor state while changing currentState
         fetchDataQueries: async (appVersionId, selectFirstQuery = false, runQueriesOnAppLoad = false, ref) => {
-          set({ loadingDataQueries: true });
+          get().loadingDataQueries && set({ loadingDataQueries: true });
           const data = await dataqueryService.getAll(appVersionId);
 
           const diff = _.differenceWith(data.data_queries, get().dataQueries, _.isEqual);
@@ -73,7 +75,20 @@ export const useDataQueriesStore = create(
             const currentQueries = useCurrentStateStore.getState().queries;
 
             data.data_queries.forEach(({ id, name, options }) => {
-              updatedQueries[name] = _.merge(currentQueries[name], { id: id, isLoading: false, data: [], rawData: [] });
+              if (runQueriesOnAppLoad && options.runOnPageLoad) {
+                updatedQueries[name] = _.merge(currentQueries[name], {
+                  id: id,
+                  isLoading: true,
+                  data: [],
+                  rawData: [],
+                });
+              } else
+                updatedQueries[name] = _.merge(currentQueries[name], {
+                  id: id,
+                  isLoading: false,
+                  data: [],
+                  rawData: [],
+                });
 
               if (options && options?.requestConfirmation && options?.runOnPageLoad) {
                 queryConfirmationList.push({ queryId: id, queryName: name });
@@ -91,23 +106,18 @@ export const useDataQueriesStore = create(
           }
 
           // Runs query on loading application
-          if (runQueriesOnAppLoad) {
-            set({ queuedQueriesForRunOnAppLoad: data.data_queries });
-          }
+          // if (runQueriesOnAppLoad) {
+          //   set({ queuedQueriesForRunOnAppLoad: data.data_queries });
+          // }
         },
         setDataQueries: (dataQueries, type = 'initial') => {
           set({ dataQueries });
           if (type === 'mappingUpdate') {
             const { actions } = useQueryPanelStore.getState();
+            actions.setSelectedQuery(null);
+            const queryId = dataQueries[0]?.id;
 
-            return new Promise((resolve) => {
-              actions.setSelectedQuery(null);
-              resolve();
-            }).then(() => {
-              const queryId = dataQueries[0]?.id;
-
-              actions.setSelectedQuery(queryId);
-            });
+            actions.setSelectedQuery(queryId);
           }
         },
         deleteDataQueries: (queryId) => {
@@ -139,30 +149,6 @@ export const useDataQueriesStore = create(
                   }
                   return acc;
                 }, {}),
-              });
-
-              const newAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
-              const currentPageId = useEditorStore.getState().currentPageId;
-              const currentComponents = newAppDefinition.pages[currentPageId].components;
-
-              const newComponentDefinition = useResolveStore
-                .getState()
-                .actions.findAndReplaceReferences(currentComponents, [deletedQueryName]);
-              const entityReferencesInQuerries = findAllEntityReferences(get().dataQueries, []);
-
-              if (entityReferencesInQuerries.length > 0) {
-                const newDataQueries = useResolveStore
-                  .getState()
-                  .actions.findAndReplaceReferences(get().dataQueries, [deletedQueryName]);
-
-                get().actions.setDataQueries(newDataQueries, 'mappingUpdate');
-              }
-
-              newAppDefinition.pages[currentPageId].components = newComponentDefinition;
-
-              useEditorStore.getState().actions.updateEditorState({
-                appDefinition: newAppDefinition,
-                isUpdatingEditorStateInProcess: true,
               });
 
               const referenceManager = useResolveStore.getState().referenceMapper;
@@ -491,7 +477,7 @@ export const useDataQueriesStore = create(
             set({ queuedActions: { ...get().queuedActions, saveData: newValues } });
             return;
           }
-          const entityIdMappedOptions = useResolveStore.getState().actions.findAndReplaceReferences(newValues?.options);
+          const entityIdMappedOptions = useResolveStore.getState().actions.findReferences(newValues?.options);
 
           useAppDataStore.getState().actions.setIsSaving(true);
           set({ isUpdatingQueryInProcess: true });
@@ -565,9 +551,9 @@ export const useDataQueriesStore = create(
               useAppDataStore.getState().actions.setIsSaving(false);
             });
         },
-        clearQueuedQueriesForRunOnAppLoad: () => {
-          set({ queuedQueriesForRunOnAppLoad: [] });
-        },
+        // clearQueuedQueriesForRunOnAppLoad: () => {
+        //   set({ queuedQueriesForRunOnAppLoad: [] });
+        // },
         updateQueryOptionsState: (queryOptionsList) => {
           set({ isUpdatingQueryInProcess: true });
           const { actions, selectedQuery } = useQueryPanelStore.getState();
