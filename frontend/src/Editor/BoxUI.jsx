@@ -32,12 +32,11 @@ const BoxUI = (props) => {
     changeCanDrag,
     removeComponent,
     canvasWidth,
-    // exposedVariables,
-    // fireEvent,
     parentId,
     customResolvables,
     currentLayout,
     readOnly,
+    currentPageId,
   } = props;
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -120,10 +119,9 @@ const BoxUI = (props) => {
       <div
         style={{
           ..._styles,
-          //   backgroundColor,
+
           padding: _styles?.padding == 'none' ? '0px' : '2px', //chart and image has a padding property other than container padding
         }}
-        // role={preview ? 'BoxPreview' : 'Box'}
         role={'Box'}
       >
         <ControlledComponentToRender
@@ -166,6 +164,8 @@ const BoxUI = (props) => {
           dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
           currentLayout={currentLayout}
           currentState={currentState}
+          currentPageId={currentPageId}
+          getContainerProps={component.component === 'Form' ? getContainerProps : null}
         />
       </div>
     </OverlayTrigger>
