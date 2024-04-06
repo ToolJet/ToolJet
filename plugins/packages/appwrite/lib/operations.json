@@ -123,14 +123,6 @@
             "name": ">="
           },
           {
-            "value": "equal",
-            "name": "Equal"
-          },
-          {
-            "value": "notEqual",
-            "name": "Not Equal"
-          },
-          {
             "value": "is",
             "name": "Is"
           },

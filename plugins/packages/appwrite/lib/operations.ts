@@ -1,20 +1,21 @@
 import { Databases, Query } from 'node-appwrite';
+import { ParsedObject, AwModelDocument, AwModelDocumentList, AwQueryTypes } from './types';
 
-function parseValue(value: string | object) {
+function parseValue(value: ParsedObject) {
   try {
-    return JSON.parse(value as string);
+    return typeof value === 'string' ? JSON.parse(value) : value;
   } catch (err) {
     return value;
   }
 }
 
-function computeValue(value: string) {
-  const numConverted = Number.parseInt(value);
-  return isNaN(numConverted) ? parseValue(value) : numConverted;
+function computeValue(value: AwQueryTypes | ParsedObject) {
+  const numConverted = Number.parseInt(value as string);
+  return isNaN(numConverted) ? parseValue(value as ParsedObject) : numConverted;
 }
 
 export async function queryCollection(
-  db: any,
+  db: Databases,
   databaseId: string,
   collection: string,
   limit: string,
@@ -22,8 +23,8 @@ export async function queryCollection(
   order_types: string | string[],
   where_field: string,
   where_operation: string,
-  where_value: any
-): Promise<object> {
+  where_value: AwQueryTypes
+): Promise<AwModelDocumentList> {
   const limitProvided = isNaN(Number.parseInt(limit));
   let queryString: string;
   if (where_field || where_operation || where_value) {
@@ -58,12 +59,6 @@ export async function queryCollection(
       case '<=':
         queryString = Query.lessThanEqual(where_field, where_value);
         break;
-      case 'equal':
-        queryString = Query.equal(where_field, where_value);
-        break;
-      case 'notEqual':
-        queryString = Query.notEqual(where_field, where_value);
-        break;
       case 'is':
         if (String(where_value).toLowerCase() === 'not null') {
           queryString = Query.isNotNull(where_field);
@@ -72,13 +67,13 @@ export async function queryCollection(
         }
         break;
       case 'startsWith':
-        queryString = Query.startsWith(where_field, where_value);
+        queryString = Query.startsWith(where_field, where_value as string);
         break;
       case 'endsWith':
-        queryString = Query.endsWith(where_field, where_value);
+        queryString = Query.endsWith(where_field, where_value as string);
         break;
       case 'search':
-        queryString = Query.search(where_field, where_value);
+        queryString = Query.search(where_field, where_value as string);
         break;
       default:
         break;
@@ -120,7 +115,7 @@ export async function getDocument(
   databaseId: string,
   collectionId: string,
   documentId: string
-): Promise<object> {
+): Promise<AwModelDocument> {
   return await db.getDocument(databaseId, collectionId, documentId);
 }
 
@@ -129,7 +124,7 @@ export async function createDocument(
   databaseId: string,
   collectionId: string,
   body: object
-): Promise<object> {
+): Promise<AwModelDocument> {
   return await db.createDocument(databaseId, collectionId, 'unique()', body);
 }
 
@@ -139,7 +134,7 @@ export async function updateDocument(
   collectionId: string,
   documentId: string,
   body: object
-): Promise<object> {
+): Promise<AwModelDocument> {
   return await db.updateDocument(databaseId, collectionId, documentId, body);
 }
 

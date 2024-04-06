@@ -1,5 +1,5 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions, ReturnObject } from './types';
 import sdk from 'node-appwrite';
 import { bulkUpdate, createDocument, deleteDocument, getDocument, queryCollection, updateDocument } from './operations';
 const JSON5 = require('json5');
@@ -37,7 +37,7 @@ export default class Appwrite implements QueryService {
           break;
         case 'add_document':
           if (isBodyEmpty) throw new Error('Body is required');
-          result = await createDocument(database, database_id, queryOptions.collectionId, body);
+          result = await createDocument(database, database_id, queryOptions.collectionId, body as object);
           break;
         case 'update_document':
           if (!queryOptions.documentId) throw new Error('Document id is required');
@@ -47,7 +47,7 @@ export default class Appwrite implements QueryService {
             database_id,
             queryOptions.collectionId,
             queryOptions.documentId,
-            body
+            body as object
           );
           break;
         case 'delete_document':
@@ -61,7 +61,7 @@ export default class Appwrite implements QueryService {
             database,
             database_id,
             queryOptions.collectionId,
-            this.returnObject(queryOptions.records),
+            this.returnObject(queryOptions.records) as object[],
             queryOptions['document_id_key']
           );
           break;
@@ -76,14 +76,14 @@ export default class Appwrite implements QueryService {
     };
   }
 
-  private returnObject(data: any) {
+  returnObject(data: ReturnObject | string): ReturnObject {
     if (!data) {
       return {};
     }
     return typeof data === 'string' ? JSON5.parse(data) : data;
   }
 
-  async getConnection(sourceOptions: SourceOptions, _options?: object): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions, _options?: object): Promise<sdk.Databases> {
     const { host, secret_key, project_id } = sourceOptions;
     const client = new sdk.Client();
 
@@ -98,14 +98,14 @@ export default class Appwrite implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const databaseClient = await this.getConnection(sourceOptions);
 
-    if (!databaseClient) {
-      throw new Error('Invalid credentials');
+    try {
+      await databaseClient.listCollections(sourceOptions.database_id);
+
+      return {
+        status: 'ok',
+      };
+    } catch (err) {
+      throw new Error(`Connection test failed - ${err.message}`);
     }
-
-    await databaseClient.listCollections(sourceOptions.database_id);
-
-    return {
-      status: 'ok',
-    };
   }
 }
