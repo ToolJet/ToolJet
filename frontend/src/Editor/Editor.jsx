@@ -983,7 +983,7 @@ const EditorComponent = (props) => {
       updateEditorState({
         isUpdatingEditorStateInProcess: false,
       });
-    } else if (!isEmpty(editingVersion)) {
+    } else if (!isEmpty(editingVersion) && !isEmpty(appDiffOptions) && appDefinition) {
       //! The computeComponentPropertyDiff function manages the calculation of differences in table columns by requiring complete column data. Without this complete data, the resulting JSON structure may be incorrect.
       const paramDiff = computeComponentPropertyDiff(appDefinitionDiff, appDefinition, appDiffOptions);
       const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions, currentLayout);
