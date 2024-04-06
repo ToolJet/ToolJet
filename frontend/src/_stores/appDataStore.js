@@ -46,7 +46,6 @@ export const useAppDataStore = create(
         updateEditingVersion: (version) => set(() => ({ editingVersion: version })),
         updateApps: (apps) => set(() => ({ apps: apps })),
         updateState: (state) => set((prev) => ({ ...prev, ...state })),
-
         updateAppDefinitionDiff: (appDefinitionDiff) => set(() => ({ appDefinitionDiff: appDefinitionDiff })),
         updateAppVersion: (appId, versionId, pageId, appDefinitionDiff, isUserSwitchedVersion = false) => {
           return new Promise((resolve, reject) => {
