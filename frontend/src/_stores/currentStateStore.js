@@ -1,10 +1,7 @@
 import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
-import _, { debounce, merge, omit } from 'lodash';
+import _, { omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
-// eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
-import { useEditorStore } from './editorStore';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 
 const initialState = {
@@ -88,19 +85,26 @@ useCurrentStateStore.subscribe((state) => {
   const isStoreIntialized = useResolveStore.getState().storeReady;
 
   if (!isStoreIntialized) {
-    handleLowPriorityWork(() => {
-      useResolveStore.getState().actions.updateAppSuggestions({
-        queries: state.queries,
-        components: state.components,
-        globals: state.globals,
-        page: state.page,
-        variables: state.variables,
-        client: state.client,
-        server: state.server,
-        constants: state.constants,
-      });
-    });
-    console.log('Resolver store initialized with current state.');
+    const isPageSwitched = useResolveStore.getState().isPageSwitched;
+
+    handleLowPriorityWork(
+      () => {
+        useResolveStore.getState().actions.updateAppSuggestions({
+          queries: state.queries,
+          components: state.components,
+          globals: state.globals,
+          page: state.page,
+          variables: state.variables,
+          client: state.client,
+          server: state.server,
+          constants: state.constants,
+        });
+        useResolveStore.getState().actions.pageSwitched(false);
+      },
+      null,
+      isPageSwitched
+    );
+
     return useResolveStore.getState().actions.updateStoreState({ storeReady: true });
   }
 }, shallow);

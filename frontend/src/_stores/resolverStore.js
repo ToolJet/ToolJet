@@ -60,6 +60,7 @@ const initialState = {
   },
   lastUpdatedRefs: [],
   referenceMapper: new ReferencesBiMap(),
+  isPageSwitched: false,
 };
 
 export const useResolveStore = create(
@@ -69,6 +70,10 @@ export const useResolveStore = create(
       updateStoreState: (state) => {
         set(() => ({ ...state, storeReady: true }));
       },
+      resetStore: () => {
+        set(() => initialState);
+      },
+      pageSwitched: (bool) => set(() => ({ isPageSwitched: bool })),
       updateAppSuggestions: (refState) => {
         const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState, false, true);
 

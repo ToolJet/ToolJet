@@ -200,7 +200,6 @@ const resolveMultiDynamicReferences = (code, lookupTable) => {
 
         resolvedValue = resolvedValue.replace(variable, res);
       } else {
-        const currentState = useCurrentStateStore.getState();
         const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
 
         resolvedValue = resolvedCode;
@@ -241,7 +240,10 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
     if (value.startsWith('#') || value.includes('table-')) {
       value = JSON.stringify(value);
     }
-    const { toResolveReference, jsExpression, jsExpMatch } = inferJSExpAndReferences(value, lookupTable.hints);
+    const { toResolveReference, jsExpression, jsExpMatch } =
+      lookupTable.hints || lookupTable.hints.has
+        ? inferJSExpAndReferences(value, lookupTable.hints)
+        : { toResolveReference: null, jsExpression: null, jsExpMatch: null };
 
     if (!jsExpMatch && toResolveReference && lookupTable.hints.has(toResolveReference)) {
       const idToLookUp = lookupTable.hints.get(toResolveReference);
@@ -307,7 +309,7 @@ const inferJSExpAndReferences = (code, hintsMap) => {
     const potentialReference = referenceChain ? referenceChain + '.' + segment : segment;
 
     // Check if the potential reference exists in hintsMap
-    if (hintsMap.has(potentialReference)) {
+    if (hintsMap.has && hintsMap.has(potentialReference)) {
       // If it does, update the referenceChain
       referenceChain = potentialReference;
     } else {
