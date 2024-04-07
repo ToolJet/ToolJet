@@ -509,7 +509,9 @@ const EditorComponent = (props) => {
   const initEventListeners = () => {
     socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
-      if (data === 'versionReleased') fetchApp();
+      if (data === 'versionReleased') {
+        //TODO update the released version id
+      }
     });
   };
 
@@ -518,7 +520,7 @@ const EditorComponent = (props) => {
 
     useResolveStore.getState().actions.updateJSHints();
 
-    await fetchApp(props.params.pageHandle, true);
+    await runForInitialLoad();
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
     await fetchOrgEnvironmentConstants();
@@ -704,13 +706,51 @@ const EditorComponent = (props) => {
   };
 
   /* Only for the first load of an app. Should not use for any other cases */
-  const startInit = async () => {
-    const appId = this.props.appId;
-    const appData = await appService.fetchApp(appId).then((data) => callBack(data, startingPageHandle));
-    const { name: appName, current_version_id } = appData;
+  const runForInitialLoad = async () => {
+    const appId = props.id;
+    const appData = await appService.fetchApp(appId);
+    const {
+      name: appName,
+      current_version_id,
+      editing_version,
+      organization_id: organizationId,
+      slug,
+      is_maintenance_on: isMaintenanceOn,
+      is_public: isPublic,
+      user_id: userId,
+      events,
+    } = appData;
     const startingPageHandle = props.params.pageHandle;
     setWindowTitle({ page: pageTitles.EDITOR, appName });
-    useAppVersionStore.getState().actions.updateReleasedVersionId(current_version_id);
+    useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
+    current_version_id && useAppVersionStore.getState().actions.updateReleasedVersionId(current_version_id);
+
+    updateState({
+      slug,
+      isMaintenanceOn,
+      organizationId,
+      isPublic,
+      appName,
+      userId,
+      appId,
+      events,
+      currentVersionId: editing_version?.id,
+      app: appData,
+    });
+
+    await processNewAppDefinition(appData, startingPageHandle, ({ homePageId }) => {
+      const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
+
+      const editorRef = getEditorRef();
+
+      handleLowPriorityWork(async () => {
+        await useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
+        await fetchDataSources(editing_version?.id);
+        await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
+        await handleEvent('onPageLoad', currentPageEvents, {}, true);
+        await handleLowPriorityWork(() => (onAppLoadAndPageLoadEventsAreTriggered.current = true));
+      });
+    });
   };
 
   const afterEntireEditorInitCompleted = async () => {
@@ -735,27 +775,7 @@ const EditorComponent = (props) => {
     console.log('inside', 'completed');
   }, [completedEnvironmentAndVersionsInit]);
 
-  const callBack = async (data, startingPageHandle, versionSwitched = false) => {
-    useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
-    if (!releasedVersionId || !versionSwitched) {
-      useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
-    }
-
-    const currentOrgId = data?.organization_id || data?.organizationId;
-
-    updateState({
-      slug: data.slug,
-      isMaintenanceOn: data?.is_maintenance_on,
-      organizationId: currentOrgId,
-      isPublic: data?.is_public || data?.isPublic,
-      appName: data?.name,
-      userId: data?.user_id,
-      appId: data?.id,
-      events: data.events,
-      currentVersionId: data?.editing_version?.id,
-      app: data,
-    });
-
+  const processNewAppDefinition = async (data, startingPageHandle, onComplete) => {
     const appDefData = buildAppDefinition(data);
 
     const appJson = appDefData;
@@ -784,19 +804,7 @@ const EditorComponent = (props) => {
 
     updateState({ components: appJson.pages[homePageId]?.components });
 
-    if (versionSwitched) {
-      props?.navigate(`/${getWorkspaceId()}/apps/${data.slug ?? appId}/${appJson.pages[homePageId]?.handle}`, {
-        state: {
-          isSwitchingPage: true,
-        },
-      });
-    }
-
-    Promise.all([
-      await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id),
-      await fetchDataSources(data.editing_version?.id),
-      await fetchDataQueries(data.editing_version?.id, true, true),
-    ])
+    Promise.all([await fetchDataQueries(data.editing_version?.id, true, true)])
       .then(() => {
         useCurrentStateStore.getState().actions.setEditorReady(true);
 
@@ -922,28 +930,10 @@ const EditorComponent = (props) => {
         }
       })
       .finally(async () => {
-        const currentPageEvents = data.events.filter(
-          (event) => event.target === 'page' && event.sourceId === homePageId
-        );
-
-        const editorRef = getEditorRef();
-
-        handleLowPriorityWork(async () => {
-          await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
-          await handleEvent('onPageLoad', currentPageEvents, {}, true);
-          await handleLowPriorityWork(() => (onAppLoadAndPageLoadEventsAreTriggered.current = true));
-        });
+        const pageHandle = appJson.pages[homePageId]?.handle;
+        const funcParams = { homePageId, pageHandle };
+        await onComplete(funcParams);
       });
-  };
-
-  const fetchApp = async (startingPageHandle, onMount = false) => {
-    const _appId = props?.params?.id || props?.params?.slug;
-
-    if (!onMount) {
-      await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
-    } else {
-      callBack(app, startingPageHandle);
-    }
   };
 
   const setAppDefinitionFromVersion = (appData) => {
@@ -960,7 +950,21 @@ const EditorComponent = (props) => {
         isLoading: true,
       });
 
-      callBack(appData, null, true);
+      useAppVersionStore.getState().actions.updateEditingVersion(version);
+      const { slug, editingVersion } = appData;
+      updateState({
+        events,
+        currentVersionId: editingVersion?.id,
+        app: appData,
+      });
+      processNewAppDefinition(appData, null, ({ pageHandle }) => {
+        const route = `/${getWorkspaceId()}/apps/${slug ?? appId}/${pageHandle}`;
+        props?.navigate(route, {
+          state: {
+            isSwitchingPage: true,
+          },
+        });
+      });
       initComponentVersioning();
     }
   };
