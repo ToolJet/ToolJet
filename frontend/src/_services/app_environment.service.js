@@ -6,6 +6,7 @@ export const appEnvironmentService = {
   getAllEnvironments,
   getVersionsByEnvironment,
   init,
+  postVersionDeleteAction,
 };
 
 function getAllEnvironments() {
@@ -35,4 +36,14 @@ function init(editing_version_id = null) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const query = queryString.stringify({ editing_version_id });
   return fetch(`${config.apiUrl}/app-environments/init?${query}`, requestOptions).then(handleResponse);
+}
+
+function postVersionDeleteAction(actionParams = {}) {
+  const requestOptions = {
+    method: 'POST',
+    body: JSON.stringify(actionParams),
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-environments/post-action/version_deleted`, requestOptions).then(handleResponse);
 }

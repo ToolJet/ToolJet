@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { ForbiddenException } from '@nestjs/common';
@@ -8,6 +8,7 @@ import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/globa
 import { DataSource } from 'src/entities/data_source.entity';
 import { OrgEnvironmentVariablesAbilityFactory } from 'src/modules/casl/abilities/org-environment-variables-ability.factory';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
+import { AppEnvironmentActionParametersDto } from '@dto/environment_action_parameters.dto';
 
 @Controller('app-environments')
 export class AppEnvironmentsController {
@@ -25,6 +26,19 @@ export class AppEnvironmentsController {
      Should not use for any other purpose. 
     */
     return await this.appEnvironmentServices.init(editingVersionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/post-action/:action')
+  async environmentActions(
+    @Param('action') action: string,
+    @Body() appEnvironmentActionParametersDto: AppEnvironmentActionParametersDto
+  ) {
+    /* 
+     init is a method in the AppEnvironmentService class that is used to initialize the app environment mananger. 
+     Should not use for any other purpose. 
+    */
+    return await this.appEnvironmentServices.processActions(action, appEnvironmentActionParametersDto);
   }
 
   @UseGuards(JwtAuthGuard)

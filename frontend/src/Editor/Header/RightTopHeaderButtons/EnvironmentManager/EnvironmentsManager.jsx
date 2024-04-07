@@ -21,7 +21,7 @@ const EnvironmentManager = () => {
     setEnvironmentDropdownStatus(true);
   };
 
-  return <div></div>;
+  return <></>;
 };
 
 export default EnvironmentManager;

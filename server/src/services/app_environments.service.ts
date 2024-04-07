@@ -6,6 +6,7 @@ import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_consta
 import { OrganizationConstant } from 'src/entities/organization_constants.entity';
 import { EntityManager, FindOneOptions, In, DeleteResult } from 'typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
+import { AppEnvironmentActionParametersDto } from '@dto/environment_action_parameters.dto';
 
 export interface AppEnvironmentResponse {
   editorVersion: Partial<AppVersion>;
@@ -13,6 +14,10 @@ export interface AppEnvironmentResponse {
   appVersionEnvironment: AppEnvironment;
   shouldRenderPromoteButton: boolean;
   shouldRenderReleaseButton: boolean;
+}
+
+export enum AppEnvironmentActions {
+  VERSION_DELETED = 'version_deleted',
 }
 
 @Injectable()
@@ -37,11 +42,114 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  calculateButtonVisibility(appVersionEnvironment: AppEnvironment) {
+  calculateButtonVisibility(appVersionEnvironment?: AppEnvironment) {
     /* Further conditions can handle from here */
     const shouldRenderPromoteButton = false;
     const shouldRenderReleaseButton = true;
     return { shouldRenderPromoteButton, shouldRenderReleaseButton };
+  }
+
+  getSelectedVersion(selectedEnvironmentId: string, manager?: EntityManager): Promise<any> {
+    const newVersionQuery = `
+    SELECT name, id, current_environment_id
+    FROM app_versions
+    WHERE current_environment_id IN (
+        SELECT id
+        FROM app_environments
+        WHERE priority => (
+            SELECT priority
+            FROM app_environments
+            WHERE id = $1
+        )
+    )
+    ORDER BY updated_at DESC
+    LIMIT 1;
+    `;
+    return manager.query(newVersionQuery, [selectedEnvironmentId]);
+  }
+
+  async processActions(action: string, actionParameters: AppEnvironmentActionParametersDto) {
+    const { editorEnvironmentId, deletedVersionId, editorVersionId, appId } = actionParameters;
+
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      switch (action) {
+        case AppEnvironmentActions.VERSION_DELETED: {
+          const appEnvironmentResponse: Partial<AppEnvironmentResponse> = {};
+          const isUserDeletedTheCurrentVersion = editorVersionId === deletedVersionId;
+          /* 
+            This is post action which is triggered when a version is deleted from the app version manager. 
+          */
+
+          const multiEnvironmentsNotAvailable = !editorEnvironmentId;
+          if (multiEnvironmentsNotAvailable) {
+            const { shouldRenderPromoteButton, shouldRenderReleaseButton } = this.calculateButtonVisibility();
+            appEnvironmentResponse.shouldRenderPromoteButton = shouldRenderPromoteButton;
+            appEnvironmentResponse.shouldRenderReleaseButton = shouldRenderReleaseButton;
+            if (isUserDeletedTheCurrentVersion) {
+              const newVersionQuery = `
+              SELECT name, id, current_environment_id
+              FROM app_versions
+              WHERE app_id = $1
+              ORDER BY updated_at DESC
+              LIMIT 1;
+              `;
+              const selectedVersionQueryResponse = await manager.query(newVersionQuery, [appId]);
+              const selectedVersion = selectedVersionQueryResponse[0];
+              const selectedEnvironment = await manager.findOneOrFail(AppEnvironment, {
+                where: { id: selectedVersion.current_environment_id },
+              });
+              appEnvironmentResponse.editorEnvironment = selectedEnvironment;
+              appEnvironmentResponse.editorVersion = selectedVersion;
+              appEnvironmentResponse.appVersionEnvironment = selectedEnvironment;
+            }
+            return appEnvironmentResponse;
+          }
+
+          /* If the editorEnvironment is null then the method will return all the versions of an App */
+          const versionsCountOfEnvironment = await manager.count(AppVersion, {
+            where: { currentEnvironmentId: editorEnvironmentId, appId },
+          });
+          const environmentDoensNotHaveVersions = versionsCountOfEnvironment === 0;
+          if (environmentDoensNotHaveVersions) {
+            /* Send back new editor environment and version */
+            const newEnvironmentQuery = `
+            SELECT *
+            FROM app_environments
+            WHERE priority < (
+                SELECT priority
+                FROM app_environments
+                WHERE id = $1
+            )
+            ORDER BY priority DESC
+            LIMIT 1;            
+            `;
+            const selectedEnvironmentResponse = await manager.query(newEnvironmentQuery, [editorEnvironmentId]);
+            const selectedEnvironment = selectedEnvironmentResponse[0];
+            const selectedVersion = await this.getSelectedVersion(selectedEnvironment.id, manager);
+            appEnvironmentResponse.editorEnvironment = selectedEnvironment;
+            appEnvironmentResponse.editorVersion = selectedVersion;
+            /* Add extra things to respons */
+          } else if (isUserDeletedTheCurrentVersion) {
+            const selectedEnvironment = await manager.findOneOrFail(AppEnvironment, {
+              id: editorEnvironmentId,
+            });
+            /* User deleted current editor version. Client needs new editor version */
+            if (selectedEnvironment) {
+              const selectedVersion = await this.getSelectedVersion(editorEnvironmentId, manager);
+              const appVersionEnvironment = await manager.findOneOrFail(AppEnvironment, {
+                where: { id: selectedVersion.current_environment_id },
+              });
+              appEnvironmentResponse.editorVersion = selectedVersion;
+              appEnvironmentResponse.editorEnvironment = selectedEnvironment;
+              appEnvironmentResponse.appVersionEnvironment = appVersionEnvironment;
+            }
+          }
+          break;
+        }
+        default:
+          break;
+      }
+    });
   }
 
   async get(
@@ -120,7 +228,12 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  async getVersionsByEnvironment(organizationId: string, appId: string, currentEnvironmentId?: string) {
+  async getVersionsByEnvironment(
+    organizationId: string,
+    appId: string,
+    currentEnvironmentId?: string,
+    manager?: EntityManager
+  ) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const conditions = { appId };
       if (currentEnvironmentId) {
@@ -151,7 +264,7 @@ export class AppEnvironmentService {
         },
         select: ['id', 'name', 'appId'],
       });
-    });
+    }, manager);
   }
 
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {
