@@ -466,7 +466,7 @@ export const widgets = [
         loadingState: { value: '{{false}}' },
         data: {
           value:
-            "{{ [ { id: 1, name: 'Olivia Nguyen', email: 'olivia.nguyen@example.com', date: '15/05/2022', mobile_number: '9876543210', interest: 'Reading' }, { id: 2, name: 'Liam Patel', email: 'liam.patel@example.com', date: '20/09/2021', mobile_number: '8765432109', interest: 'Traveling' }, { id: 3, name: 'Sophia Reyes', email: 'sophia.reyes@example.com', date: '01/01/2023', mobile_number: '7654321098', interest: 'Music' }, { id: 4, name: 'Jacob Hernandez', email: 'jacob.hernandez@example.com', date: '10/11/2022', mobile_number: '6543210987', interest: 'Reading' }, { id: 5, name: 'Ava Diaz', email: 'ava.diaz@example.com', date: '28/03/2021', mobile_number: '5432109876', interest: 'Traveling' }, { id: 6, name: 'William Sanchez', email: 'william.sanchez@example.com', date: '01/07/2022', mobile_number: '4321098765', interest: 'Music' }, { id: 7, name: 'Isabella Gutierrez', email: 'isabella.gutierrez@example.com', date: '15/02/2023', mobile_number: '3210987654', interest: 'Reading' }, { id: 8, name: 'Ethan Morales', email: 'ethan.morales@example.com', date: '05/11/2021', mobile_number: '2109876543', interest: 'Traveling' }, { id: 9, name: 'Mia Tiana', email: 'mia.tiana@example.com', date: '21/11/2022', mobile_number: '1098705217', interest: 'Music' }, { id: 10, name: 'Lucas Ramirez', email: 'lucas.ramirez@example.com', date: '31/03/2023', mobile_number: '9876543210', interest: 'Reading' }, { id: 11, name: 'Emma Flores', email: 'emma.flores@example.com', date: '12/06/2021', mobile_number: '8765432109', interest: 'Traveling' }, { id: 12, name: 'Alexander Vela', email: 'alexander.vela@example.com', date: '07/09/2022', mobile_number: '7654321098', interest: 'Music' }, { id: 13, name: 'Abigail Castillo', email: 'abigail.castillo@example.com', date: '01/04/2023', mobile_number: '6543210987', interest: 'Reading' }, { id: 14, name: 'Michael Reyes', email: 'michael.reyes@example.com', date: '25/12/2021', mobile_number: '5432109876', interest: 'Traveling' }, { id: 15, name: 'Isabella Suarez', email: 'isabella.suarez@example.com', date: '14/02/2022', mobile_number: '4321098765', interest: 'Music' } ] }}",
+            "{{ [ \n\t\t{ id: 1, name: 'Olivia Nguyen', email: 'olivia.nguyen@example.com', date: '15/05/2022', mobile_number: '9876543210', interest: [{ label: 'Reading', value: 'Reading' }] }, \n\t\t{ id: 2, name: 'Liam Patel', email: 'liam.patel@example.com', date: '20/09/2021', mobile_number: '8765432109', interest: [{ label: 'Cooking', value: 'Cooking' }] }, \n\t\t{ id: 3, name: 'Sophia Reyes', email: 'sophia.reyes@example.com', date: '01/01/2023', mobile_number: '7654321098', interest: [{ label: 'Music', value: 'Music' }] }, \n\t\t{ id: 4, name: 'Jacob Hernandez', email: 'jacob.hernandez@example.com', date: '10/11/2022', mobile_number: '6543210987', interest: [{ label: 'Reading', value: 'Reading' }] }, \n\t\t{ id: 5, name: 'Ava Diaz', email: 'ava.diaz@example.com', date: '28/03/2021', mobile_number: '5432109876', interest: [{ label: 'Cooking', value: 'Cooking' }] }, \n\t\t{ id: 6, name: 'William Sanchez', email: 'william.sanchez@example.com', date: '01/07/2022', mobile_number: '4321098765', interest: [{ label: 'Music', value: 'Music' }] }, \n\t\t{ id: 7, name: 'Isabella Gutierrez', email: 'isabella.gutierrez@example.com', date: '15/02/2023', mobile_number: '3210987654', interest: [{ label: 'Reading', value: 'Reading' }] }, \n\t\t{ id: 8, name: 'Ethan Morales', email: 'ethan.morales@example.com', date: '05/11/2021', mobile_number: '2109876543', interest: [{ label: 'Cooking', value: 'Cooking' }] }, \n\t\t{ id: 9, name: 'Mia Tiana', email: 'mia.tiana@example.com', date: '21/11/2022', mobile_number: '1098705217', interest: [{ label: 'Music', value: 'Music' }] }, \n\t\t{ id: 10, name: 'Lucas Ramirez', email: 'lucas.ramirez@example.com', date: '31/03/2023', mobile_number: '9876543210', interest: [{ label: 'Reading', value: 'Reading' }] }, \n\t\t{ id: 11, name: 'Emma Flores', email: 'emma.flores@example.com', date: '12/06/2021', mobile_number: '8765432109', interest: [{ label: 'Cooking', value: 'Cooking' }] }, \n\t\t{ id: 12, name: 'Alexander Vela', email: 'alexander.vela@example.com', date: '07/09/2022', mobile_number: '7654321098', interest: [{ label: 'Music', value: 'Music' }] }, \n\t\t{ id: 13, name: 'Abigail Castillo', email: 'abigail.castillo@example.com', date: '01/04/2023', mobile_number: '6543210987', interest: [{ label: 'Reading', value: 'Reading' }] }, \n\t\t{ id: 14, name: 'Michael Reyes', email: 'michael.reyes@example.com', date: '25/12/2021', mobile_number: '5432109876', interest: [{ label: 'Cooking', value: 'Cooking' }] }, \n\t\t{ id: 15, name: 'Isabella Suarez', email: 'isabella.suarez@example.com', date: '14/02/2022', mobile_number: '4321098765', interest: [{ label: 'Music', value: 'Music' }] } \n] }}",
         },
         useDynamicColumn: { value: '{{false}}' },
         columnData: {
@@ -507,25 +507,25 @@ export const widgets = [
             },
             {
               name: 'date',
-              id: '74eabec5cb304cfca130b05115b2d2f50b2c35f9b85e0e27f8a30fda8d81f0d2',
-              autogenerated: true,
+              id: '27b75c8af9d34d1eaa1f9bb7f8f9f7b0abf1823e799748c8bb57e74f53b2c1dc',
+              // autogenerated: true,
               fxActiveFields: [],
               columnType: 'datepicker',
             },
             {
               name: 'mobile_number',
-              id: '6a14f4e6cb39441ea883e7f2e92eb43d7f36d227b82c0a2f8746c6e4f963e6f7',
-              autogenerated: true,
+              id: '9c2e3c40572a4aefb8e179ee39a0e1ac9dc2b2e6634be56e1c05be13c3d1de56',
+              // autogenerated: true,
               fxActiveFields: [],
               columnType: 'number',
             },
             {
               name: 'interest',
-              id: '27b75c8af9d34d1eaa1f9bb7f8f9f7b0abf1823e799748c8bb57e74f53b2c1dc',
-              autogenerated: true,
+              key: 'interest',
+              id: 'f23b7d134b2e490ea41e3bb8eeb8c8e37472af243bf6b70d5af294482097e3a1',
+              // autogenerated: true,
               fxActiveFields: [],
               columnType: 'newMultiSelect',
-              isEditable: true,
             },
           ],
         },
