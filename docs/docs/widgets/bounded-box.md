@@ -96,7 +96,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Component specific actions (CSA)
+## Component Specific Actions (CSA)
 
 There are currently no CSA (Component-Specific Actions) implemented to regulate or control the bounding box component.
 

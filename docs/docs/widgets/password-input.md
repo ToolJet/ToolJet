@@ -6,6 +6,8 @@ title: Password Input
 
 The Password Input component allows users to enter passwords securely. In this component, passwords are concealed, displaying each character as an asterisk to ensure privacy. In this document, we'll go through all the configuration options for the **Password Input** component. 
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Properties
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
 |:---------------|:-------------------------------------------------|:-----------------------------|
@@ -13,6 +15,9 @@ The Password Input component allows users to enter passwords securely. In this c
 | Placeholder   | A hint displayed to guide the user on what to enter.  | String (e.g., `SecurePassword123`).          |
 | Default value | The default value that the component will hold when the app is loaded. | String (e.g., `Default Text`). |
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Events
 
@@ -26,6 +31,10 @@ The Password Input component allows users to enter passwords securely. In this c
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
 :::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
@@ -45,6 +54,10 @@ Following actions of component can be controlled using the component specific ac
 Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
 :::
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Exposed Variables
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
@@ -56,6 +69,10 @@ Check the **component specific actions** available for this component **[here](/
 | isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.isLoading}}`). |
 | isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.isVisible}}`). |
 | isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.isDisabled}}`). |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Validation
 
@@ -73,6 +90,10 @@ To add regex inside `Custom Validation`, you can use the below format:
 
 **Example**: `{{(/^\d{1,10}$/.test(components.passwordinput1.value)) ? '' : 'Error message';}}`
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Additional Actions
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
@@ -82,19 +103,27 @@ To add regex inside `Custom Validation`, you can use the below format:
 | Disable            | Enables or disables the component.    | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 | Tooltip            | Provides additional information on hover.    | String (e.g., `Enter your password here.` ).                       |
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Devices
 
-**Show on desktop**
+|<div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
+|:---------- |:----------- |:----------|
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 
-Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
-
-**Show on mobile**
-
-Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
+</div>
 
 ---
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 # Styles 
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Label
 
@@ -103,6 +132,10 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 | Text      | Sets the color of the component's label. | Select the color or click on `fx` and input JavaScript code that programmatically returns a Hex color code.          |
 | Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on `fx` to input code that programmatically returns an alignment value - `side` or `top`. |
 | Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in `fx` that returns a numeric value. |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Field
 
@@ -116,10 +149,13 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 | Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value.           |
 | Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or set it programmatically using `fx`. |
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Container
 
 **Padding** <br/>
 Allows you to maintain a standard padding by enabling the `Default` option.
 
-
+</div>
