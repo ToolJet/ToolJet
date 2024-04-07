@@ -89,7 +89,8 @@ import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex } from './editorConstants';
-import { findComponentsWithReferences, generatePath, handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { useEnvironmentsAndVersionsStore } from '../_stores/environmentsAndVersionsStore';
 
 setAutoFreeze(false);
 enablePatches();
@@ -185,6 +186,10 @@ const EditorComponent = (props) => {
     }),
     shallow
   );
+
+  const { completedEnvironmentAndVersionsInit } = useEnvironmentsAndVersionsStore((state) => ({
+    completedEnvironmentAndVersionsInit: state.completedEnvironmentAndVersionsInit,
+  }));
 
   const currentState = useCurrentState();
 
@@ -548,10 +553,6 @@ const EditorComponent = (props) => {
     useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
   };
 
-  const onVersionDelete = () => {
-    fetchApp(props.params.pageHandle);
-  };
-
   const toggleAppMaintenance = () => {
     const newState = !isMaintenanceOn;
 
@@ -702,8 +703,39 @@ const EditorComponent = (props) => {
     });
   };
 
+  /* Only for the first load of an app. Should not use for any other cases */
+  const startInit = async () => {
+    const appId = this.props.appId;
+    const appData = await appService.fetchApp(appId).then((data) => callBack(data, startingPageHandle));
+    const { name: appName, current_version_id } = appData;
+    const startingPageHandle = props.params.pageHandle;
+    setWindowTitle({ page: pageTitles.EDITOR, appName });
+    useAppVersionStore.getState().actions.updateReleasedVersionId(current_version_id);
+  };
+
+  const afterEntireEditorInitCompleted = async () => {
+    const organizationId = useAppDataStore.getState()?.organizationId;
+    const editingVersionId = useAppDataStore.getState()?.currentVersionId;
+    const homePageId = useEditorStore.getState()?.currentPageId;
+    await useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
+    await fetchDataSources(editingVersionId);
+
+    const events = useAppDataStore.getState()?.events;
+    const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
+    const editorRef = getEditorRef();
+
+    handleLowPriorityWork(async () => {
+      await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
+      await handleEvent('onPageLoad', currentPageEvents, {}, true);
+      await handleLowPriorityWork(() => (onAppLoadAndPageLoadEventsAreTriggered.current = true));
+    });
+  };
+
+  useEffect(() => {
+    console.log('inside', 'completed');
+  }, [completedEnvironmentAndVersionsInit]);
+
   const callBack = async (data, startingPageHandle, versionSwitched = false) => {
-    setWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
     if (!releasedVersionId || !versionSwitched) {
       useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
@@ -1940,7 +1972,6 @@ const EditorComponent = (props) => {
             setAppDefinitionFromVersion={setAppDefinitionFromVersion}
             onVersionRelease={onVersionRelease}
             saveEditingVersion={saveEditingVersion}
-            onVersionDelete={onVersionDelete}
             isMaintenanceOn={isMaintenanceOn}
             appName={appName}
             appId={appId}

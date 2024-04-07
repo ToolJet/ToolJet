@@ -101,9 +101,10 @@ export const useEnvironmentsAndVersionsStore = create(
                 editorVersionId: versionId,
                 deletedVersionId: versionId,
               });
+              const selectedVersion = response.editorVersion;
               optionsToUpdate = {
                 ...optionsToUpdate,
-                selectedVersion: response.editorVersion,
+                selectedVersion,
                 selectedEnvironment: response.editorEnvironment,
                 appVersionEnvironment: response.appVersionEnvironment,
                 shouldRenderPromoteButton: response.shouldRenderPromoteButton,
@@ -114,7 +115,12 @@ export const useEnvironmentsAndVersionsStore = create(
               ...state,
               ...optionsToUpdate,
             }));
-            onSuccess();
+            let newVersionDef;
+            const newEditorVersion = optionsToUpdate.selectedVersion;
+            if (newEditorVersion) {
+              newVersionDef = await appVersionService.getAppVersionData(appId, newEditorVersion.id);
+            }
+            onSuccess(newVersionDef);
           } catch (error) {
             onFailure(error);
           }

@@ -14,13 +14,7 @@ const appVersionLoadingStatus = Object.freeze({
   error: 'error',
 });
 
-export const AppVersionsManager = function ({
-  appId,
-  setAppDefinitionFromVersion,
-  onVersionDelete,
-  isEditable = true,
-  isViewer,
-}) {
+export const AppVersionsManager = function ({ appId, setAppDefinitionFromVersion, isEditable = true, isViewer }) {
   const { initializedEnvironmentDropdown } = useEnvironmentsAndVersionsStore(
     (state) => ({
       initializedEnvironmentDropdown: state.initializedEnvironmentDropdown,
@@ -33,7 +27,6 @@ export const AppVersionsManager = function ({
       <RenderComponent
         appId={appId}
         setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-        onVersionDelete={onVersionDelete}
         isEditable={isEditable}
         isViewer={isViewer}
       />
@@ -43,7 +36,7 @@ export const AppVersionsManager = function ({
   }
 };
 
-const RenderComponent = ({ appId, isEditable, isViewer, setAppDefinitionFromVersion, onVersionDelete }) => {
+const RenderComponent = ({ appId, isEditable, isViewer, setAppDefinitionFromVersion }) => {
   const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loaded);
   const [deleteVersion, setDeleteVersion] = useState({
     versionId: '',
@@ -120,7 +113,11 @@ const RenderComponent = ({ appId, isEditable, isViewer, setAppDefinitionFromVers
     deleteVersionAction(
       appId,
       versionId,
-      () => {
+      (newVersionDef) => {
+        if (newVersionDef) {
+          /* User deleted new version */
+          setAppDefinitionFromVersion(newVersionDef);
+        }
         toast.dismiss(deleteingToastId);
         toast.success(`Version - ${versionName} Deleted`);
         resetDeleteModal();
