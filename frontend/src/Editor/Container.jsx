@@ -46,8 +46,8 @@ export const Container = ({
   socket,
   handleUndo,
   handleRedo,
-  currentPageId,
 }) => {
+  const currentPageId = useEditorStore.getState().currentPageId;
   const appDefinition = useEditorStore.getState().appDefinition;
   // Dont update first time to skip
   // redundant save on app definition load
@@ -278,6 +278,10 @@ export const Container = ({
     if (shouldUpdate) {
       appDefinitionChanged(newDefinition, opts);
     }
+
+    return () => {
+      firstUpdate.current = true;
+    };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
