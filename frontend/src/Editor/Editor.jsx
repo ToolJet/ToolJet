@@ -753,12 +753,12 @@ const EditorComponent = (props) => {
 
     useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
-    }),
-      updateEditorState({
-        isLoading: false,
-        appDefinition: appJson,
-        isUpdatingEditorStateInProcess: false,
-      });
+    });
+    updateEditorState({
+      isLoading: false,
+      appDefinition: appJson,
+      isUpdatingEditorStateInProcess: false,
+    });
 
     updateState({ components: appJson.pages[homePageId]?.components });
 
@@ -776,7 +776,7 @@ const EditorComponent = (props) => {
       await fetchDataQueries(data.editing_version?.id, true, true),
     ])
       .then(async () => {
-        await onEditorLoad(appJson, homePageId);
+        await onEditorLoad(appJson, homePageId, versionSwitched);
         updateEntityReferences(appJson, homePageId);
       })
       .finally(async () => {
@@ -817,6 +817,9 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
+      useCurrentStateStore.getState().actions.setCurrentState({});
+      useCurrentStateStore.getState().actions.setEditorReady(false);
+      useResolveStore.getState().actions.resetStore();
 
       callBack(appData, null, true);
       initComponentVersioning();
@@ -1380,7 +1383,7 @@ const EditorComponent = (props) => {
     }
   };
 
-  const onEditorLoad = (appJson, pageId, isPageSwitch = false) => {
+  const onEditorLoad = (appJson, pageId, isPageSwitchOrVersionSwitch = false) => {
     useCurrentStateStore.getState().actions.setEditorReady(true);
     const currentComponents = appJson?.pages?.[pageId]?.components;
 
@@ -1389,7 +1392,7 @@ const EditorComponent = (props) => {
     const newComponents = Object.keys(currentComponents).map((componentId) => {
       const component = currentComponents[componentId];
 
-      if (isPageSwitch || !referenceManager.get(componentId)) {
+      if (isPageSwitchOrVersionSwitch || !referenceManager.get(componentId)) {
         return {
           id: componentId,
           name: component.component.name,
