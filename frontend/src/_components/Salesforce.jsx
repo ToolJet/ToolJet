@@ -6,22 +6,25 @@ import Button from '@/_ui/Button';
 import Select from '@/_ui/Select';
 import Input from '@/_ui/Input';
 
-const Salesforce = ({ optionchanged, createDataSource, options, isSaving }) => {
+const Salesforce = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource, workspaceConstants }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
-  const redirectUri = '/oauth/callback/salesforce';
+  const redirectUri = `http://localhost:8082/oauth2/authorize`;
   const selectOptions = [
     { value: 'v1', label: 'v1' },
     { value: 'v2', label: 'v2' },
   ];
-  function authGoogle() {
-    const provider = 'salesforce';
+  function authSalesforce() {
+    const provider = selectedDataSource?.kind;
+    const plugin_id = selectedDataSource?.plugin?.id;
+    const source_options = options;
     setAuthStatus('waiting_for_url');
 
     datasourceService
-      .fetchOauth2BaseUrl(provider)
+      .fetchOauth2BaseUrl(provider, plugin_id, source_options)
       .then((data) => {
-        console.log(data);
+        console.log('options', source_options);
+        console.log('data from Oauth', data);
       })
       .catch(({ error }) => {
         toast.error(error);
@@ -33,15 +36,36 @@ const Salesforce = ({ optionchanged, createDataSource, options, isSaving }) => {
     <div>
       <div>
         <label className="form-label mt-3">API Version</label>
-        <Select width="100%" options={selectOptions}></Select>
+        <Select
+          width="100%"
+          type="select"
+          className="form-control"
+          options={selectOptions}
+          onChange={(e) => optionchanged('api_version', e.target.value)}
+          value={options?.api_version?.value ?? ''}
+        ></Select>
       </div>
       <div>
         <label className="form-label mt-3">Client ID</label>
-        <Input type="text" className="form-control" />
+        <Input
+          type="text"
+          className="form-control"
+          onChange={(e) => optionchanged('client_id', e.target.value)}
+          value={options?.client_id?.value ?? ''}
+          placeholder="Client ID"
+          workspaceConstants={workspaceConstants}
+        />
       </div>
       <div>
         <label className="form-label mt-3">Client Secret</label>
-        <Input type="password" encrypted={true} className="form-control" />
+        <Input
+          type="text"
+          className="form-control"
+          onChange={(e) => optionchanged('client_secret', e.target.value)}
+          value={options?.client_secret?.value ?? ''}
+          placeholder="Client Secret"
+          workspaceConstants={workspaceConstants}
+        />
       </div>
       <div>
         <label className="form-label mt-3">Redirect URI</label>
@@ -55,7 +79,7 @@ const Salesforce = ({ optionchanged, createDataSource, options, isSaving }) => {
       </div>
       <div className="row mt-3">
         <center>
-          <Button onClick={() => authGoogle()}>{t('slack.connectSalesforce', 'Connect to Salesforce')}</Button>
+          <Button onClick={() => authSalesforce()}>{t('slack.connectSalesforce', 'Connect to Salesforce')}</Button>
         </center>
       </div>
     </div>

@@ -187,10 +187,11 @@ export class DataQueriesService {
           } catch (error) {
             if (error.constructor.name === 'OAuthUnauthorizedClientError') {
               // unauthorized error need to re-authenticate
+              const result = await this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions);
               return {
                 status: 'needs_oauth',
                 data: {
-                  auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
+                  auth_url: result.url,
                 },
               };
             }
@@ -248,10 +249,11 @@ export class DataQueriesService {
             }
           );
         } else if (dataSource.kind === 'restapi' || dataSource.kind === 'openapi' || dataSource.kind === 'graphql') {
+          const result = await this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions);
           return {
             status: 'needs_oauth',
             data: {
-              auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
+              auth_url: result.url,
             },
           };
         } else {

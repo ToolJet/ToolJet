@@ -518,9 +518,10 @@ export class DataSourcesService {
     });
   }
 
-  getAuthUrl(provider: string, sourceOptions?: any): { url: string } {
-    const service = new allPlugins[provider]();
-    return { url: service.authUrl(sourceOptions) };
+  async getAuthUrl(provider: string, source_options?: any, plugin_id?: any): Promise<{ url: string }> {
+    const service = await this.pluginsHelper.getService(plugin_id, provider);
+    //const service = new allPlugins[provider]();
+    return { url: service.authUrl(source_options) };
   }
 
   async resolveConstants(str: string, organization_id: string, environmentId: string) {
