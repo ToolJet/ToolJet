@@ -1320,6 +1320,8 @@
 }
 
 .react-datepicker__time-box {
+  display: flex;
+
   ul {
     padding: 0px 10px 0px 10px !important;
   }
