@@ -64,49 +64,70 @@ You can create query for Supabase data source to perform several operations such
   #### Required parameters:
   - **Table** - Database table name.
 
-  #### Optional Parameters
+
+
+  #### Optional Parameters:
   - **Where** - Filter rows based on a condition.
   - **Sort** - Sort rows based on a column.
   - **Limit** - Limit the number of rows returned.
 
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/get-rows.png" alt="Get Rows" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/get_rows.png" alt="Get Rows" />
 </div>
+
+
 ### Create Row(s)
 
   #### Required parameters:
   - **Table** - Database table name.
-  - **Body** - Data to be inserted into the table.
+  - **Body** - Data to be inserted into the table. It should be an array of object(s).
 
 
 
   <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/create_rows.png" alt="Supabase Install" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/create_rows.png" alt="Create Rows" />
 </div>
 
 ### Update Row(s)
 
   #### Required parameters:
   - **Table** - Database table name.
+  - **Columns** - Column name and value to be updated.
 
-  #### Optional Parameters
-<br/>
+
+  #### Optional Parameters:
+  - **Where** - Update rows based on a condition. If not provided, all rows will be updated.
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/update_rows.png" alt="Update Rows" />
+</div>
+
 
 ### Delete Row(s)
 
   #### Required parameters:
   - **Table** - Database table name.
+  - **Where** - Delete rows based on a condition.
 
-  #### Optional Parameters
-<br/>
+  <div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/delete_rows.png" alt="Delete Rows" />
+</div>
+
 
 ### Count Rows
 
   #### Required parameters:
   - **Table** - Database table name.
 
-  #### Optional Parameters
+
+
+  #### Optional Parameters:
+  - **Where** - Filter rows based on a condition.
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/count_rows.png" alt="Count Rows" />
+</div>
 <br/>
 
 
