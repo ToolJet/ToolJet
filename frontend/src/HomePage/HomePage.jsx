@@ -24,6 +24,7 @@ import { getWorkspaceId, pageTitles, setWindowTitle } from '@/_helpers/utils';
 import { withRouter } from '@/_hoc/withRouter';
 import FolderFilter from './FolderFilter';
 import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
+import Skeleton from 'react-loading-skeleton';
 
 const { iconList, defaultIcon } = configs;
 
@@ -824,6 +825,16 @@ class HomePageComponent extends React.Component {
               data-cy="home-page-content"
             >
               <div className="w-100 mb-5 container home-page-content-container">
+                {isLoading && (
+                  <Skeleton
+                    count={1}
+                    height={20}
+                    width={880}
+                    baseColor="#ECEEF0"
+                    className="mb-3"
+                    style={{ marginTop: '2rem' }}
+                  />
+                )}
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
@@ -873,23 +884,22 @@ class HomePageComponent extends React.Component {
                     </span>
                   </div>
                 )}
-                {isLoading ||
-                  (meta.total_count > 0 && (
-                    <AppList
-                      apps={apps}
-                      canCreateApp={this.canCreateApp}
-                      canDeleteApp={this.canDeleteApp}
-                      canUpdateApp={this.canUpdateApp}
-                      deleteApp={this.deleteApp}
-                      exportApp={this.exportApp}
-                      meta={meta}
-                      currentFolder={currentFolder}
-                      isLoading={isLoading}
-                      darkMode={this.props.darkMode}
-                      appActionModal={this.appActionModal}
-                      removeAppFromFolder={this.removeAppFromFolder}
-                    />
-                  ))}
+                {meta.total_count > 0 && (
+                  <AppList
+                    apps={apps}
+                    canCreateApp={this.canCreateApp}
+                    canDeleteApp={this.canDeleteApp}
+                    canUpdateApp={this.canUpdateApp}
+                    deleteApp={this.deleteApp}
+                    exportApp={this.exportApp}
+                    meta={meta}
+                    currentFolder={currentFolder}
+                    isLoading={isLoading}
+                    darkMode={this.props.darkMode}
+                    appActionModal={this.appActionModal}
+                    removeAppFromFolder={this.removeAppFromFolder}
+                  />
+                )}
               </div>
               <div className="footer-container">
                 {this.pageCount() > MAX_APPS_PER_PAGE && (
