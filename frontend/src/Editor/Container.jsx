@@ -279,10 +279,6 @@ export const Container = ({
       appDefinitionChanged(newDefinition, opts);
     }
 
-    return () => {
-      firstUpdate.current = true;
-    };
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 
