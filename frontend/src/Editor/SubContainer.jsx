@@ -515,6 +515,7 @@ export const SubContainer = ({
                       isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
                       exposedVariables={exposedVariables ?? {}}
                       getContainerProps={getContainerProps}
+                      isFromSubContainer={true}
                     />
                   </SubWidgetWrapper>
                 );

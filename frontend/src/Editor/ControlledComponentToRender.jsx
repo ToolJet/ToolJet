@@ -23,6 +23,9 @@ export const shouldUpdate = (prevProps, nextProps) => {
     }
   }
 
+  // Added to render the defaukt child components
+  if (prevProps?.childComponents === null && nextProps?.childComponents) return false;
+
   return (
     deepEqualityCheckusingLoDash(prevProps?.id, nextProps?.id) &&
     deepEqualityCheckusingLoDash(prevProps?.component?.definition, nextProps?.component?.definition) &&
