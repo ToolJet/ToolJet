@@ -291,7 +291,7 @@ export class AuthService {
     if (existingUser?.invitationToken) {
       this.emailService
         .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
-        .catch((err) => console.error(err));
+        .catch((err) => console.error('Error while sending welcome mail', err));
       return;
     }
   }
@@ -305,7 +305,7 @@ export class AuthService {
     if (existingUser?.invitationToken) {
       this.emailService
         .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
-        .catch((err) => console.error(err));
+        .catch((err) => console.error('Error while sending welcome mail', err));
       throw new NotAcceptableException(
         'The user is already registered. Please check your inbox for the activation link'
       );
@@ -359,7 +359,7 @@ export class AuthService {
       });
       this.emailService
         .sendWelcomeEmail(user.email, user.firstName, user.invitationToken, null, organization.id, null, null)
-        .catch((err) => console.error(err));
+        .catch((err) => console.error('Error while sending welcome mail', err));
 
       await this.auditLoggerService.perform(
         {
@@ -383,7 +383,9 @@ export class AuthService {
     }
     const forgotPasswordToken = uuid.v4();
     await this.usersService.updateUser(user.id, { forgotPasswordToken });
-    await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken, user.organizationId);
+    this.emailService
+      .sendPasswordResetEmail(email, forgotPasswordToken, user.organization.id, user.firstName)
+      .catch((err) => console.error('Error while sending password reset mail', err));
   }
 
   async resetPassword(token: string, password: string) {
@@ -494,7 +496,7 @@ export class AuthService {
     const { companyName, name, email, id } = userCreateDto;
 
     try {
-      const licenseKey = await this.organizationLicenseService.generateCloudTrialLicense(
+      await this.organizationLicenseService.generateCloudTrialLicense(
         {
           email,
           customerId: id,
@@ -504,7 +506,6 @@ export class AuthService {
         },
         manager
       );
-      await this.licenseService.updateLicense({ key: licenseKey }, organizationId, manager);
     } catch (error) {
       console.log({ error });
       throw new HttpException(error?.error || 'Trial could not be activated. Please try again!', error?.status || 500);

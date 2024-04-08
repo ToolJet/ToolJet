@@ -4,14 +4,16 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Organization } from './organization.entity';
 import { User } from './user.entity';
+import { OrganizationSubscriptionInvoice } from './organization_subscription_invoice.entity';
 
-@Entity({ name: 'organizations_payments' })
-export class OrganizationPayment {
+@Entity({ name: 'organization_subscriptions' })
+export class OrganizationSubscription {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
@@ -21,11 +23,11 @@ export class OrganizationPayment {
   @Column({ name: 'user_id' })
   userId: string;
 
-  @Column({ name: 'subscription_id' })
+  @Column({ name: 'subscription_id', unique: true })
   subscriptionId: string;
 
-  @Column({ name: 'invoice_id', unique: true })
-  invoiceId: string;
+  @Column({ name: 'customer_id' })
+  customerId: string;
 
   @Column({ name: 'company_name' })
   companyName: string;
@@ -35,36 +37,24 @@ export class OrganizationPayment {
 
   @Column({
     type: 'enum',
-    name: 'payment_status',
-    enumName: 'stripe_payment_status',
+    name: 'status',
+    enumName: 'subscription_status',
     nullable: false,
-    enum: ['success', 'failed'],
+    enum: ['active', 'incomplete', 'incomplete_expired', 'trialing', 'past_due', 'canceled', 'unpaid'],
   })
-  paymentStatus: string;
+  status: string;
 
   @Column({ name: 'is_license_generated', default: false })
   isLicenseGenerated: boolean;
 
-  @Column({ name: 'invoice_paid_date' })
-  invoicePaidDate: Date;
-
   @Column({
     type: 'enum',
-    enumName: 'cloud_subscription_type',
+    enumName: 'subscription_type',
     name: 'subscription_type',
     nullable: false,
     enum: ['monthly', 'yearly'],
   })
   subscriptionType: string;
-
-  @Column({
-    type: 'enum',
-    enumName: 'stripe_invoice_type',
-    name: 'invoice_type',
-    nullable: false,
-    enum: ['recurring', 'subscription'],
-  })
-  invoiceType: string;
 
   @Column({
     type: 'enum',
@@ -94,4 +84,11 @@ export class OrganizationPayment {
   @ManyToOne(() => User, (user) => user.id)
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @OneToMany(
+    () => OrganizationSubscriptionInvoice,
+    (organizationSubscriptionInvoice: OrganizationSubscriptionInvoice) =>
+      organizationSubscriptionInvoice.organizationSubscription
+  )
+  organizationSubscriptionInvoices: OrganizationSubscriptionInvoice[];
 }

@@ -131,7 +131,7 @@ export class OrganizationUsersService {
         organizationUser.organization.name,
         organizationUser.organizationId
       )
-      .catch((err) => console.error(err));
+      .catch((err) => console.error('Error while sending welcome mail', err));
 
     return;
   }

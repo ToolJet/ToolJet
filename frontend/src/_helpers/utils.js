@@ -1246,6 +1246,31 @@ export const determineJustifyContentValue = (value) => {
   }
 };
 
+export const calculateDueDate = (currentPeriodEnd) => {
+  const currentPeriodEndDate = new Date(currentPeriodEnd * 1000);
+  const currentDate = new Date();
+  let dueMessage;
+
+  if (currentPeriodEndDate > currentDate) {
+    const timeDiff = currentPeriodEndDate.getTime() - currentDate.getTime();
+    const daysDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
+
+    if (daysDiff < 7) {
+      dueMessage = `Due in ${daysDiff} days`;
+    } else {
+      dueMessage = currentPeriodEndDate.toLocaleDateString();
+    }
+  } else if (currentPeriodEndDate.toDateString() === currentDate.toDateString()) {
+    dueMessage = `Due today`;
+  } else {
+    const timeDiff = currentDate.getTime() - currentPeriodEndDate.getTime();
+    const daysDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
+    dueMessage = `Due ${daysDiff} days ago`;
+  }
+
+  return dueMessage;
+};
+
 export const USER_DRAWER_MODES = {
   EDIT: 'EDIT',
   CREATE: 'CREATE',
@@ -1262,6 +1287,10 @@ export const humanizeifDefaultGroupName = (groupName) => {
     default:
       return groupName;
   }
+};
+
+export const centsToUSD = (amountInCents) => {
+  return (amountInCents / 100).toFixed(2);
 };
 
 export function isPDFSupported() {

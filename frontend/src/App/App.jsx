@@ -48,6 +48,7 @@ import { Settings } from '@/Settings';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import { ManageSubscriptionKey } from '@/ManageLicenseKey/MangeSubscriptionKey';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { SubscriptionKey } from '@/ManageLicenseKey/SubscriptionKey';
 import InstanceLogin from '@/ManageInstanceSettings/InstanceLogin';
 import { ManageWorkspaceArchivePageComponent } from '@/_ui/ManageWorkspaceArchive/ManageWorspaceArchivePage';
 import WorkspaceConstants from '@/WorkspaceConstants';
@@ -474,6 +475,14 @@ class AppComponent extends React.Component {
                   <PrivateRoute>
                     <AccountSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </PrivateRoute>
+                }
+              />
+              <Route
+                path="/:workspaceId/add-license-key"
+                element={
+                  <AdminRoute>
+                    <SubscriptionKey switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </AdminRoute>
                 }
               />
               <Route

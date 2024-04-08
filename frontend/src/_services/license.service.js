@@ -9,6 +9,12 @@ export const licenseService = {
   generateCloudTrial,
   getDomainsList,
   upgradePlan,
+  getUpcomingInvoice,
+  updateInvoice,
+  getCurrentPlan,
+  getProration,
+  updateSubscription,
+  getPortalLink,
 };
 
 function get() {
@@ -16,6 +22,75 @@ function get() {
   const organizationId = headers['tj-workspace-id'];
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/license/organization/${organizationId}`, requestOptions).then(handleResponse);
+}
+
+function getUpcomingInvoice() {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization/payment/${organizationId}/invoice`, requestOptions).then(handleResponse);
+}
+
+function getCurrentPlan() {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization/payment/${organizationId}/plan`, requestOptions).then(handleResponse);
+}
+
+function getPortalLink(portalDto) {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(portalDto),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/organization/payment/${organizationId}/portal-link`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function updateInvoice(id) {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/organization/payment/${organizationId}/invoice/${id}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function updateSubscription(updatedSubscription) {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    body: JSON.stringify(updatedSubscription),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/organization/payment/${organizationId}/subscription`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getProration(prorationData) {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(prorationData),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/organization/payment/${organizationId}/proration`, requestOptions).then(
+    handleResponse
+  );
 }
 
 async function update(body) {
@@ -68,5 +143,5 @@ function upgradePlan(planDetails) {
     body: JSON.stringify(planDetails),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/license/organization/payment/redirect`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/organization/payment/redirect`, requestOptions).then(handleResponse);
 }

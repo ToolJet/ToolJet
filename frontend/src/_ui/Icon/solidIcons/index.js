@@ -161,6 +161,7 @@ import Save from './Save.jsx';
 import Cross from './Cross.jsx';
 import InformationPrimary from './InformationPrimary.jsx';
 import Support from './Support.jsx';
+import Outbound from './Outbound.jsx';
 import Danger from './Danger.jsx';
 import DangerDark from './DangerDark.jsx';
 import EnterButtonIcon from './EnterButtonIcon.jsx';
@@ -528,6 +529,8 @@ const Icon = (props) => {
       return <Cross {...props} />;
     case 'support':
       return <Support {...props} />;
+    case 'oubound':
+      return <Outbound {...props} />;
     case 'underline':
       return <Underline {...props} />;
     case 'overline':

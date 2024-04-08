@@ -13,15 +13,18 @@ export default function ModalBase({
   handleConfirm,
   isLoading,
   children,
+  size = 'sm',
+  footerBody,
+  className,
   cancelDisabled,
 }) {
   return (
     <Modal
       show={show}
       onHide={handleClose}
-      size="sm"
+      size={size}
       centered={true}
-      contentClassName={`${darkMode ? 'theme-dark dark-theme modal-base' : 'modal-base'}`}
+      contentClassName={`${className} ${darkMode ? 'theme-dark dark-theme modal-base' : 'modal-base'}`}
     >
       <Modal.Header>
         <Modal.Title className="font-weight-500" data-cy="modal-title">
@@ -41,19 +44,25 @@ export default function ModalBase({
         )}
       </Modal.Body>
       <Modal.Footer>
-        <ButtonSolid disabled={cancelDisabled} variant={'tertiary'} onClick={handleClose} data-cy="cancel-button">
-          Cancel
-        </ButtonSolid>
-        <ButtonSolid
-          disabled={isLoading || confirmBtnProps?.disabled}
-          isLoading={isLoading}
-          variant={confirmBtnProps?.variant || 'primary'}
-          onClick={handleConfirm}
-          {...confirmBtnProps}
-          data-cy="confirm-button"
-        >
-          {confirmBtnProps?.title || 'Continue'}
-        </ButtonSolid>
+        {footerBody ? (
+          footerBody
+        ) : (
+          <>
+            <ButtonSolid disabled={cancelDisabled} variant={'tertiary'} onClick={handleClose} data-cy="cancel-button">
+              Cancel
+            </ButtonSolid>
+            <ButtonSolid
+              disabled={isLoading || confirmBtnProps?.disabled}
+              isLoading={isLoading}
+              variant={confirmBtnProps?.variant || 'primary'}
+              onClick={handleConfirm}
+              {...confirmBtnProps}
+              data-cy="confirm-button"
+            >
+              {confirmBtnProps?.title || 'Continue'}
+            </ButtonSolid>
+          </>
+        )}
       </Modal.Footer>
     </Modal>
   );

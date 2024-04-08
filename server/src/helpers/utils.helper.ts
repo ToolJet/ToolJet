@@ -394,3 +394,7 @@ export const getMaxCopyNumber = (existNameList) => {
   const maxNumber = Math.max(...numbers, 0);
   return maxNumber + 1;
 };
+
+export const centsToUSD = (amountInCents) => {
+  return (amountInCents / 100).toFixed(2);
+};

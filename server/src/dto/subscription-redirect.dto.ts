@@ -37,10 +37,10 @@ export class PaymentRedirectDto {
   @IsEmail()
   customer_email: string;
 
-  @IsInt()
+  @IsInt({ message: 'Number of builders should be an integer. ' })
   NumberOfEditor: number;
 
-  @IsInt()
+  @IsInt({ message: 'Number of end users should be an integer.' })
   NumberOfViewers: number;
 }
 

@@ -30,7 +30,7 @@ export default class OrganizationLicense {
   private _type: string;
   private _metaData: object;
 
-  constructor(licenseData: Terms, licenseStartDate) {
+  constructor(licenseData: Terms, licenseStartDate: Date, expiryDate: Date) {
     if (process.env.NODE_ENV !== 'test') {
       if (!licenseData) {
         this._isLicenseValid = false;
@@ -62,7 +62,7 @@ export default class OrganizationLicense {
         this._isComments = licenseData?.features?.comments === false ? false : true;
         this._isGitSync = licenseData?.features?.gitSync === false ? false : true;
         this._startDate = licenseStartDate;
-        this._expiryDate = new Date(`${licenseData.expiry} 23:59:59`);
+        this._expiryDate = expiryDate;
         this._workspaceId = licenseData?.workspaceId;
         this._isLicenseValid = true;
         this._workspacesCount = licenseData?.workspaces;

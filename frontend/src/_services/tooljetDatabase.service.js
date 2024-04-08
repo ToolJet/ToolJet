@@ -15,7 +15,7 @@ async function getTablesLimit() {
   const headers = authHeader();
   const organizationId = headers['tj-workspace-id'];
   const res = await tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/tables/limits`);
-  return res;
+  return res?.data;
 }
 
 function createTable(organizationId, tableName, columns) {

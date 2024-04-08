@@ -36,6 +36,7 @@ import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 import ModalBase from '@/_ui/Modal';
 import Skeleton from 'react-loading-skeleton';
 import { LicenseBanner } from '@/LicenseBanner';
+import DueBanner from '@/ManageLicenseKey/DueBanner';
 import FolderFilter from './FolderFilter';
 import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
 
@@ -1222,11 +1223,14 @@ class HomePageComponent extends React.Component {
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   this.props.appType !== 'workflow' && (
-                    <LicenseBannerCloud
-                      classes="mt-3"
-                      limits={featureAccess}
-                      type={featureAccess?.licenseStatus?.licenseType}
-                    />
+                    <>
+                      <LicenseBannerCloud
+                        classes="mt-3"
+                        limits={featureAccess}
+                        type={featureAccess?.licenseStatus?.licenseType}
+                      />
+                      <DueBanner visibleOnlyFor={['failed']} license={featureAccess} />
+                    </>
                   )
                 ) : (
                   <Skeleton

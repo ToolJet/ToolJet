@@ -25,7 +25,7 @@ export class LicenseService {
       //cloud-licensing specific, don't change
     } else {
       const license = await this.organizationLicenseService.getLicense(organizationId);
-      organizationLicense = new OrganizationLicense(license?.terms, license?.updatedAt); // get terms from organization license table and pass it here)
+      organizationLicense = new OrganizationLicense(license?.terms, license?.updatedAt, license?.expiryWithGracePeriod); // get terms from organization license table and pass it here)
     }
 
     if (Array.isArray(type)) {
@@ -335,7 +335,7 @@ export class LicenseService {
   }
 
   async createCRMUser(user: CRMData): Promise<boolean> {
-    if (process.env.NODE_ENV === 'test') return true;
+    if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') return true;
 
     try {
       await got(`${freshDeskBaseUrl}contacts`, {

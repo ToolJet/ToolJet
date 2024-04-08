@@ -34,6 +34,9 @@ export class OrganizationsLicense extends BaseEntity {
   @Column({ name: 'expiry_date' })
   expiryDate: Date; // this should be with time add 23:59:59
 
+  @Column({ name: 'expiry_with_grace_period' })
+  expiryWithGracePeriod: Date;
+
   @Column({ type: 'json' })
   terms: Terms;
 

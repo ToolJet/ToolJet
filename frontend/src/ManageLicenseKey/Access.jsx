@@ -4,13 +4,14 @@ import SolidIcon from '../_ui/Icon/SolidIcons';
 import { LoadingScreen } from './LoadingScreen';
 
 const FeatureLabels = {
-  auditLogs: 'Audit logs',
   openid: 'Open ID Connect',
   ldap: 'LDAP',
   saml: 'SAML',
+  auditLogs: 'Audit logs',
   customStyling: 'Custom styles',
   multiEnvironment: 'Multi-Environment',
   gitSync: 'GitSync',
+  multiPlayerEdit: 'Multiplayer editing',
 };
 
 const Access = () => {
@@ -40,11 +41,11 @@ const Access = () => {
         {features
           ?.filter((feature) => Object.keys(FeatureLabels).indexOf(feature?.key) !== -1)
           .map((feature, index) => (
-            <label key={index} className="form-switch d-flex align-items-center metric">
+            <label key={index} className="form-switch d-flex align-items-center metric access-switch">
+              <SolidIcon name={!feature?.value ? 'circularToggleDisabled' : 'circularToggleEnabled'} />
               <span className="form-check-label" data-cy={`${feature?.label.toLowerCase().replace(/\s+/g, '-')}-label`}>
                 {feature?.label}
               </span>
-              <SolidIcon name={!feature?.value ? 'circularToggleDisabled' : 'circularToggleEnabled'} />
             </label>
           ))}
       </div>

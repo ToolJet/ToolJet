@@ -9,14 +9,14 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { LoadingScreen } from './LoadingScreen';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 
-const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
+const SubscriptionKey = () => {
   const [license, setLicense] = useState(null);
   const [licenseLoading, setLicenseLoading] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [licenseKey, setLicenseKey] = useState(false);
+  const [licenseKey, setLicenseKey] = useState('');
+  const [featureAccess, setFeatureAccess] = useState(false);
   const { state } = useLocation();
   const hasKeyChanged = licenseKey !== license?.license_key;
-  const [isLicenseUpdated, setIsLicenseUpdated] = useState(false);
   const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
   const { workspaceId } = useParams();
 
@@ -42,13 +42,18 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
       });
   };
 
+  const fetchFeatureAccess = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      setFeatureAccess(data);
+    });
+  };
+
   const updateLicense = () => {
     setLoading(true);
     licenseService
       .update({ key: licenseKey })
       .then(() => {
         setLoading(false);
-        setIsLicenseUpdated(true);
         window.location = `/${workspaceId}/settings/subscription?currentTab=subscriptionKey`;
       })
       .catch((error) => {
@@ -64,6 +69,7 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
 
   useEffect(() => {
     fetchLicenseSettings();
+    fetchFeatureAccess();
     if (state?.updated) {
       toast.success('Subscription key updated successfully. Start using premium features now!', {
         position: 'top-center',
@@ -73,41 +79,45 @@ const SubscriptionKey = ({ fetchFeatureAccess, featureAccess }) => {
     }
   }, []);
 
-  return licenseLoading ? (
+  return licenseLoading && featureAccess ? (
     <LoadingScreen />
   ) : (
-    <div className="general-wrapper">
-      <div className="metrics-wrapper">
-        <div className="col-md-12">
-          <label className="form-label mt-3" data-cy="subscription-key-label">
-            Subscription key
-          </label>
-          <div style={{ position: 'relative' }}>
-            <Textarea
-              placeholder="Enter subscription key"
-              className={cx('form-control', { 'errored-textarea': featureAccess?.licenseStatus?.isExpired })}
-              rows="12"
-              value={licenseKey}
-              onChange={(e) => optionChanged(e.target.value)}
-              disabled={loading}
-              data-cy="subscription-key-text-area"
-            />
-            <div className="tj-text-xsm mt-1" data-cy="subscription-key-helper-text">
-              This subscription is configured for the current workspace only
+    <div style={{ height: '100vh' }} className="wrapper enterprise-page">
+      <div className="wrapper license-page">
+        <div className="general-wrapper">
+          <div className="metrics-wrapper">
+            <div className="col-md-12">
+              <label className="form-label mt-3" data-cy="subscription-key-label">
+                Subscription key
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Textarea
+                  placeholder="Enter subscription key"
+                  className={cx('form-control', { 'errored-textarea': featureAccess?.licenseStatus?.isExpired })}
+                  rows="12"
+                  value={licenseKey}
+                  onChange={(e) => optionChanged(e.target.value)}
+                  disabled={loading}
+                  data-cy="subscription-key-text-area"
+                />
+                <div className="tj-text-xsm mt-1" data-cy="subscription-key-helper-text">
+                  This subscription is configured for the current workspace only
+                </div>
+              </div>
             </div>
+            <ButtonSolid
+              disabled={loading || !hasKeyChanged}
+              isLoading={loading}
+              onClick={updateLicense}
+              variant="primary"
+              fill="#fff"
+              className="mt-3"
+              data-cy="update-button"
+            >
+              Update
+            </ButtonSolid>
           </div>
         </div>
-        <ButtonSolid
-          disabled={loading || !hasKeyChanged}
-          isLoading={loading}
-          onClick={updateLicense}
-          variant="primary"
-          fill="#fff"
-          className="mt-3"
-          data-cy="update-button"
-        >
-          Update
-        </ButtonSolid>
       </div>
     </div>
   );

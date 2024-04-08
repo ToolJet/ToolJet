@@ -74,4 +74,5 @@ export const TOOLTIP_MESSAGES = {
 export const PLANS = {
   BUSINESS: 'business',
   ENTERPRISE: 'enterprise',
+  TRIAL: 'trial',
 };
