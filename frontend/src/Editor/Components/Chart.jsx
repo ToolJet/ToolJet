@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, memo, useCallback } from 'react';
-// Use plotly basic bundle
 // eslint-disable-next-line import/no-unresolved
-import Plotly from 'plotly.js-basic-dist-min';
+import Plotly from 'plotly.js-dist-min';
 import createPlotlyComponent from 'react-plotly.js/factory';
 import { isJson } from '@/_helpers/utils';
 const Plot = createPlotlyComponent(Plotly);
