@@ -1313,3 +1313,12 @@
 .table-link-hover:hover {
   text-decoration: underline;
 }
+
+.react-datepicker__time-list-item,
+.react-datepicker__time-list-item--selected {
+  margin-bottom: 3px !important;
+}
+
+.react-datepicker__time-box {
+  padding: 0px 0px 0px 10px !important;
+}
