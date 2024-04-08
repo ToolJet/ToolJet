@@ -38,7 +38,7 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
             </div>
             <div className="tjdb-create-new-table">
               <ButtonSolid
-                variant="tertiary"
+                variant="zBlack"
                 disabled={false}
                 onClick={() => setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen)}
                 size="sm"
