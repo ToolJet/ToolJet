@@ -12,6 +12,7 @@ import moment from 'moment';
 import { Boolean } from '../Boolean';
 import { CustomSelect } from '../CustomSelect';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import Text from '../Text';
 
 export default function generateColumnsData({
   columnProperties,
@@ -72,16 +73,23 @@ export default function generateColumnsData({
       }
     }
     if (columnType === 'datepicker') {
-      column.isTimeChecked = column.isTimeChecked ? column.isTimeChecked : false;
-      column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
-      column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
-      column.isDateSelectionEnabled = column.isDateSelectionEnabled ?? true;
+      // Preserve existing properties
+      column = {
+        ...column,
+        isTimeChecked: column.isTimeChecked !== undefined ? column.isTimeChecked : column.isTimeChecked ?? false,
+        dateFormat: column.dateFormat || 'DD/MM/YYYY',
+        parseDateFormat: column.parseDateFormat ?? column.dateFormat, //backwards compatibility
+        isDateSelectionEnabled: column.isDateSelectionEnabled ?? true,
+      };
+
       sortType = (firstDate, secondDate) => {
         const columnKey = column.key || column.name;
         // Return -1 if second date is higher, 1 if first date is higher
         if (secondDate?.original[columnKey] === '') {
           return 1;
-        } else if (firstDate?.original[columnKey] === '') return -1;
+        } else if (firstDate?.original[columnKey] === '') {
+          return -1;
+        }
 
         const parsedFirstDate = moment(firstDate?.original[columnKey], column.parseDateFormat);
         const parsedSecondDate = moment(secondDate?.original[columnKey], column.parseDateFormat);
@@ -180,7 +188,7 @@ export default function generateColumnsData({
               return (
                 <div className="h-100 d-flex flex-column justify-content-center position-relative">
                   <div
-                    // rows="1"
+                    rows="1"
                     contentEditable={true}
                     className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input ${
                       darkMode ? ' textarea-dark-theme' : ''
@@ -352,7 +360,6 @@ export default function generateColumnsData({
                         fill={'var(--icons-default)'}
                       ></SolidIcon>
                     </div>
-
                     <div onClick={(e) => handleDecrement(e)}>
                       <SolidIcon
                         style={{
@@ -382,82 +389,23 @@ export default function generateColumnsData({
               </div>
             );
           }
-          case 'text': {
-            if (isEditable) {
-              const validationData = validateWidget({
-                validationObject: {
-                  minLength: {
-                    value: column.minLength,
-                  },
-                  maxLength: {
-                    value: column.maxLength,
-                  },
-                  customRule: {
-                    value: column.customRule,
-                  },
-                },
-                widgetValue: cellValue,
-                currentState,
-                customResolveObjects: { cellValue },
-              });
-              const { isValid, validationError } = validationData;
-              return (
-                <div className="h-100 d-flex flex-column justify-content-center position-relative">
-                  <textarea
-                    rows="1"
-                    className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
-                      darkMode ? ' textarea-dark-theme' : ''
-                    }`}
-                    style={{
-                      color: cellTextColor ? cellTextColor : 'inherit',
-                      maxWidth: width,
-                      outline: 'none',
-                      border: 'none',
-                      background: 'inherit',
-                    }}
-                    readOnly={!isEditable}
-                    onBlur={(e) => {
-                      if (isEditable && e.target.defaultValue !== e.target.value) {
-                        handleCellValueChange(
-                          cell.row.index,
-                          column.key || column.name,
-                          e.target.value,
-                          cell.row.original
-                        );
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      e.persist();
-                      if (e.key === 'Enter' && !e.shiftKey && isEditable) {
-                        handleCellValueChange(
-                          cell.row.index,
-                          column.key || column.name,
-                          e.target.value,
-                          cell.row.original
-                        );
-                      }
-                    }}
-                    onFocus={(e) => e.stopPropagation()}
-                    defaultValue={cellValue}
-                  ></textarea>
-                  <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
-                </div>
-              );
-            }
+          case 'text':
             return (
-              <div
-                className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
-                  horizontalAlignment
-                )}`}
-                style={{
-                  color: cellTextColor ? cellTextColor : 'inherit',
-                  overflow: 'hidden',
-                }}
-              >
-                {cellValue}
+              <div className="h-100 d-flex flex-column justify-content-center position-relative">
+                <Text
+                  isEditable={isEditable}
+                  darkMode={darkMode}
+                  handleCellValueChange={handleCellValueChange}
+                  cellTextColor={cellTextColor}
+                  horizontalAlignment={horizontalAlignment}
+                  cellValue={cellValue}
+                  column={column}
+                  currentState={currentState}
+                  width={width}
+                  cell={cell}
+                />
               </div>
             );
-          }
           case 'dropdown':
           case 'select':
           case 'newMultiSelect': {
@@ -588,15 +536,16 @@ export default function generateColumnsData({
             );
           }
           case 'image': {
+            const computeImageHeight = column?.height ? `${column?.height}px` : '100%';
             return (
-              <div>
+              <div style={{ height: '100%' }}>
                 {cellValue && (
                   <img
                     src={cellValue}
                     style={{
                       pointerEvents: 'auto',
                       width: `${column?.width}px`,
-                      height: `${column?.height}px`,
+                      height: computeImageHeight,
                       borderRadius: `${column?.borderRadius}%`,
                       objectFit: `${column?.objectFit}`,
                     }}

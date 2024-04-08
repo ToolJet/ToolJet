@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
-export const Radio = ({ options, value, onChange, readOnly, containerWidth }) => {
+export const Radio = ({ options, value, onChange, readOnly, containerWidth, darkMode }) => {
   value = value === undefined ? [] : value;
   options = Array.isArray(options) ? options : [];
 
@@ -39,7 +39,6 @@ export const Radio = ({ options, value, onChange, readOnly, containerWidth }) =>
   };
 
   const getOverlay = (options, containerWidth) => {
-    const darkMode = localStorage.getItem('darkMode') === 'true';
     return Array.isArray(options) ? (
       <div
         style={{
