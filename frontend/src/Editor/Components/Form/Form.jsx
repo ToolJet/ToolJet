@@ -41,10 +41,6 @@ export const Form = function Form(props) {
 
   const { events: allAppEvents } = useAppInfo();
 
-  console.log('childComponents--- ', childComponents);
-
-  // const { childComponents } = containerProps;
-
   const formEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
   const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
   const { buttonToSubmit, loadingState, advanced, JSONSchema } = properties;
