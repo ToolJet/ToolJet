@@ -420,7 +420,7 @@ export const Container = ({
             const newChildComponent = addNewWidgetToTheEditor(
               componentData,
               {},
-              boxes,
+              { ...boxes, ...childrenBoxes },
               {},
               item.currentLayout,
               snapToGrid,
@@ -754,28 +754,31 @@ export const Container = ({
     return componentWithChildren;
   }, [components]);
 
-  const getContainerProps = React.useCallback((componentId) => {
-    return {
-      mode,
-      snapToGrid,
-      onComponentClick,
-      onEvent,
-      appDefinition,
-      appDefinitionChanged,
-      currentState,
-      appLoading,
-      zoomLevel,
-      setSelectedComponent,
-      removeComponent,
-      currentLayout,
-      selectedComponents,
-      darkMode,
-      currentPageId,
-      childComponents: childComponents[componentId],
-      parentGridWidth: gridWidth,
-      draggedSubContainer,
-    };
-  }, []);
+  const getContainerProps = React.useCallback(
+    (componentId) => {
+      return {
+        mode,
+        snapToGrid,
+        onComponentClick,
+        onEvent,
+        appDefinition,
+        appDefinitionChanged,
+        currentState,
+        appLoading,
+        zoomLevel,
+        setSelectedComponent,
+        removeComponent,
+        currentLayout,
+        selectedComponents,
+        darkMode,
+        currentPageId,
+        childComponents: childComponents[componentId],
+        parentGridWidth: gridWidth,
+        draggedSubContainer,
+      };
+    },
+    [childComponents, selectedComponents, draggedSubContainer]
+  );
 
   return (
     <ContainerWrapper
@@ -860,6 +863,7 @@ export const Container = ({
                     getContainerProps={getContainerProps}
                     isVersionReleased={isVersionReleased}
                     currentPageId={currentPageId}
+                    childComponents={childComponents[id]}
                   />
                 </WidgetWrapper>
               );

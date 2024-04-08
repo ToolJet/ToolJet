@@ -37,6 +37,10 @@ const BoxUI = (props) => {
     currentLayout,
     readOnly,
     currentPageId,
+    onOptionChanged,
+    onOptionsChanged,
+    isFromSubContainer,
+    childComponents,
   } = props;
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -127,13 +131,25 @@ const BoxUI = (props) => {
         <ControlledComponentToRender
           componentName={component.component}
           onComponentClick={onComponentClick}
-          onComponentOptionChanged={onComponentOptionChanged}
           onEvent={onEvent}
           id={id}
           paramUpdated={paramUpdated}
           width={width}
           changeCanDrag={changeCanDrag}
-          onComponentOptionsChanged={onComponentOptionsChanged}
+          onComponentOptionChanged={isFromSubContainer ? onOptionChanged : onComponentOptionChanged}
+          onComponentOptionsChanged={isFromSubContainer ? onOptionsChanged : onComponentOptionsChanged}
+          setExposedVariable={(variable, value) =>
+            isFromSubContainer
+              ? onOptionChanged(component, variable, value, id)
+              : onComponentOptionChanged(component, variable, value, id)
+          }
+          setExposedVariables={(variableSet) => {
+            if (isFromSubContainer) {
+              onOptionsChanged(component, Object.entries(variableSet), id);
+            } else {
+              onComponentOptionsChanged(component, Object.entries(variableSet), id);
+            }
+          }}
           height={height}
           component={component}
           containerProps={getContainerProps(id)}
@@ -148,8 +164,6 @@ const BoxUI = (props) => {
               ? { boxShadow: generalStyles?.boxShadow }
               : {}),
           }}
-          setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
-          setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet), id)}
           fireEvent={fireEvent}
           validate={validate}
           parentId={parentId}
@@ -166,6 +180,7 @@ const BoxUI = (props) => {
           currentState={currentState}
           currentPageId={currentPageId}
           getContainerProps={component.component === 'Form' ? getContainerProps : null}
+          childComponents={childComponents}
         />
       </div>
     </OverlayTrigger>

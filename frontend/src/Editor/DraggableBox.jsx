@@ -53,6 +53,10 @@ const DraggableBox = React.memo(
     parentId,
     getContainerProps,
     currentPageId,
+    onComponentOptionChanged = null,
+    onComponentOptionsChanged = null,
+    isFromSubContainer = false,
+    childComponents = null,
   }) => {
     const isResizing = useGridStore((state) => state.resizingComponentId === id);
     const [canDrag, setCanDrag] = useState(true);
@@ -222,6 +226,10 @@ const DraggableBox = React.memo(
                   parentId={parentId}
                   getContainerProps={getContainerProps}
                   currentPageId={currentPageId}
+                  onOptionChanged={onComponentOptionChanged}
+                  onOptionsChanged={onComponentOptionsChanged}
+                  isFromSubContainer={isFromSubContainer}
+                  childComponents={childComponents}
                 />
               </Sentry.ErrorBoundary>
             </div>

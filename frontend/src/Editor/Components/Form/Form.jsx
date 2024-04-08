@@ -31,11 +31,14 @@ export const Form = function Form(props) {
     mode,
     getContainerProps,
     containerProps,
+    childComponents,
   } = props;
 
   const { events: allAppEvents } = useAppInfo();
 
-  const { childComponents } = containerProps;
+  console.log('childComponents--- ', childComponents);
+
+  // const { childComponents } = containerProps;
 
   const formEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
   const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
@@ -122,13 +125,16 @@ export const Form = function Form(props) {
     let formattedChildData = {};
     let childValidation = true;
 
-    if (childComponents === null) {
+    console.log('here--- Inside useEffect--- ', containerProps.childComponents);
+
+    if (!childComponents) {
       const exposedVariables = {
         data: formattedChildData,
         isValid: childValidation,
         ...(!advanced && { children: formattedChildData }),
       };
 
+      console.log('here--- exposedVariables--- ', exposedVariables);
       setExposedVariables(exposedVariables);
       return setValidation(childValidation);
     }
@@ -154,6 +160,7 @@ export const Form = function Form(props) {
       data: removeFunctionObjects(formattedChildData),
       isValid: childValidation,
     };
+    console.log('here--- useEffect--- ', childComponents, exposedVariables);
     setValidation(childValidation);
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -211,6 +218,7 @@ export const Form = function Form(props) {
   }
 
   const onOptionChange = ({ component, optionName, value, componentId }) => {
+    console.log('here--- onOptionChange');
     const optionData = {
       ...(childDataRef.current[componentId] ?? {}),
       name: component.name,
