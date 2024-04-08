@@ -743,18 +743,20 @@ const EditorComponent = (props) => {
     });
 
     await processNewAppDefinition(appData, startingPageHandle, false, ({ homePageId }) => {
-      const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
-
-      const editorRef = getEditorRef();
-
       handleLowPriorityWork(async () => {
         await useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
         await fetchDataSources(editing_version?.id);
-        await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
-        await handleEvent('onPageLoad', currentPageEvents, {}, true);
-        await handleLowPriorityWork(() => (onAppLoadAndPageLoadEventsAreTriggered.current = true));
+        commonLowPriorityActions(events, { homePageId });
       });
     });
+  };
+
+  const commonLowPriorityActions = async (events, { homePageId }) => {
+    const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
+    const editorRef = getEditorRef();
+    await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
+    await handleEvent('onPageLoad', currentPageEvents, {}, true);
+    await handleLowPriorityWork(() => (onAppLoadAndPageLoadEventsAreTriggered.current = true));
   };
 
   const processNewAppDefinition = async (data, startingPageHandle, versionSwitched = false, onComplete) => {
@@ -818,6 +820,7 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
+
       useCurrentStateStore.getState().actions.setCurrentState({});
       useCurrentStateStore.getState().actions.setEditorReady(false);
       useResolveStore.getState().actions.resetStore();
@@ -829,7 +832,12 @@ const EditorComponent = (props) => {
         currentVersionId: editing_version?.id,
         app: appData,
       });
-      processNewAppDefinition(appData, null, true);
+      processNewAppDefinition(appData, null, true, ({ homePageId }) => {
+        handleLowPriorityWork(async () => {
+          await fetchDataSources(editing_version?.id);
+          commonLowPriorityActions(events, homePageId);
+        });
+      });
       initComponentVersioning();
     }
   };
