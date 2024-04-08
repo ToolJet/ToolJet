@@ -57,11 +57,11 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
                         display: 'flex',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        background: 'var(--indigo3)',
-                        borderColor: `${darkMode ? '#ecedee' : '#AEC0F5'} `,
+                        background: '#273E89',
+                        borderColor: `${darkMode ? 'rgba(62, 99, 221, 0.2)' : '#AEC0F5'} `,
                       }}
                       leftIcon="cheveronleftdouble"
-                      fill={darkMode ? '#ecedee' : '#3E63DD'}
+                      fill={darkMode ? '#3E63DD' : '#ecedee'}
                       iconWidth="14"
                       size="md"
                       onClick={toggleCollapsibleSidebar}
