@@ -1236,14 +1236,15 @@
 
 .long-text-input {
   height: 100%;
-  display: flex;
-  align-items: center;
+  // display: flex;
+  // align-items: center;
 
   &:focus {
     width: 100%;
-    min-height: 100px;
+    // min-height: 100px;
+    // height: 100%;
     /* Set a minimum height */
-    max-height: 200px;
+    // max-height: 200px;
     resize: vertical;
     /* Allow vertical resizing */
     overflow-y: auto;
