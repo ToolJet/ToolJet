@@ -65,13 +65,25 @@ You can create query for Supabase data source to perform several operations such
   - **Table** - Database table name.
 
   #### Optional Parameters
+  - **Where** - Filter rows based on a condition.
+  - **Sort** - Sort rows based on a column.
+  - **Limit** - Limit the number of rows returned.
 
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/get-rows.png" alt="Get Rows" />
+</div>
 ### Create Row(s)
 
   #### Required parameters:
   - **Table** - Database table name.
+  - **Body** - Data to be inserted into the table.
 
-  #### Optional Parameters
+
+
+  <div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/create_rows.png" alt="Supabase Install" />
+</div>
 
 ### Update Row(s)
 
