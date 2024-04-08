@@ -73,16 +73,23 @@ export default function generateColumnsData({
       }
     }
     if (columnType === 'datepicker') {
-      column.isTimeChecked = column.isTimeChecked ? column.isTimeChecked : false;
-      column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
-      column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
-      column.isDateSelectionEnabled = column.isDateSelectionEnabled ?? true;
+      // Preserve existing properties
+      column = {
+        ...column,
+        isTimeChecked: column.isTimeChecked !== undefined ? column.isTimeChecked : column.isTimeChecked ?? false,
+        dateFormat: column.dateFormat || 'DD/MM/YYYY',
+        parseDateFormat: column.parseDateFormat ?? column.dateFormat, //backwards compatibility
+        isDateSelectionEnabled: column.isDateSelectionEnabled ?? true,
+      };
+
       sortType = (firstDate, secondDate) => {
         const columnKey = column.key || column.name;
         // Return -1 if second date is higher, 1 if first date is higher
         if (secondDate?.original[columnKey] === '') {
           return 1;
-        } else if (firstDate?.original[columnKey] === '') return -1;
+        } else if (firstDate?.original[columnKey] === '') {
+          return -1;
+        }
 
         const parsedFirstDate = moment(firstDate?.original[columnKey], column.parseDateFormat);
         const parsedSecondDate = moment(secondDate?.original[columnKey], column.parseDateFormat);
