@@ -3,18 +3,13 @@ import Selecto from 'react-selecto';
 import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
-const EditorSelecto = ({
-  selectionRef,
-  canvasContainerRef,
-  currentPageId,
-  setSelectedComponent,
-  appDefinition,
-  selectionDragRef,
-}) => {
-  const { setSelectionInProgress, setSelectedComponents } = useEditorStore(
+const EditorSelecto = ({ selectionRef, canvasContainerRef, setSelectedComponent, selectionDragRef }) => {
+  const { setSelectionInProgress, setSelectedComponents, currentPageId, appDefinition } = useEditorStore(
     (state) => ({
       setSelectionInProgress: state?.actions?.setSelectionInProgress,
       setSelectedComponents: state?.actions?.setSelectedComponents,
+      currentPageId: state?.currentPageId,
+      appDefinition: state?.appDefinition,
     }),
     shallow
   );

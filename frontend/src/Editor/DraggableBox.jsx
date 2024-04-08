@@ -131,7 +131,7 @@ const DraggableBox = React.memo(
     const configWidgetHandlerForModalComponent =
       !isSelectedComponent &&
       component.component === 'Modal' &&
-      resolveWidgetFieldValue(component.definition.properties.useDefaultButton, currentState)?.value === false;
+      resolveWidgetFieldValue(component.definition.properties.useDefaultButton?.value) === false;
 
     const onComponentHover = useCallback(
       (id) => {

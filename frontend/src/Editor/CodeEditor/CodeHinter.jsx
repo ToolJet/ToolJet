@@ -88,8 +88,7 @@ const Portal = ({ children, ...restProps }) => {
 const PopupIcon = ({ callback, icon, tip, position, isMultiEditor = false }) => {
   const size = 16;
   const topRef = isNumber(position?.height) ? Math.floor(position?.height) - 30 : 32;
-  let top = isMultiEditor ? 370 : topRef > 32 ? topRef : 0;
-
+  let top = isMultiEditor ? 270 : topRef > 32 ? topRef : 0;
   return (
     <div className="d-flex justify-content-end w-100 position-absolute codehinter-popup-icon" style={{ top: top }}>
       <OverlayTrigger
