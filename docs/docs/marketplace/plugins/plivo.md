@@ -3,13 +3,7 @@ id: marketplace-plugin-plivo
 title: Plivo
 ---
 
-ToolJet can connect to Plivo account to send SMS.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/marketplace/plugins/plivo/plivoadd.gif" alt="Marketplace: plivo" />
-
-</div>
+You can integrate your ToolJet application with Plivo for SMS functionality.
 
 :::note
 Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
@@ -17,9 +11,9 @@ Before following this guide, it is assumed that you have already completed the p
 
 ## Connection
 
-For connecting to plivo, following credentials are required:
-- **Auth Token**:
-- **Auth ID**: 
+To use the Plivo plugin, you need the following credentials:
+- **Auth Token**
+- **Auth ID**
 
 :::info Generating Auth Token/ID
 - Navigate to the Plivo Console (https://www.plivo.com/)
@@ -29,24 +23,24 @@ For connecting to plivo, following credentials are required:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/plivo/connection.png" alt="Marketplace: plivo" />
+<img className="screenshot-full" src="/img/marketplace/plugins/plivo/connection-v2.png" alt="Configuring Plivo In ToolJet" />
 
 </div>
 
-## Supported queries
+## Supported Queries
 
 ### Send SMS
 
-The specified mobile number will receive the SMS upon execution of this query.
+You can use the Send SMS operation to send an SMS to a specified mobile number.
 
-#### Required parameters: 
+#### Required Parameters: 
 
-- **To Number**: 
-- **From Number**: 
-- **Body**: 
+- **To Number**
+- **From Number**
+- **Body**
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/plivo/sendsms.png" alt="Marketplace: plivo" />
+<img className="screenshot-full" src="/img/marketplace/plugins/plivo/sendsms-v2.png" alt="Send SMS Using plivo" />
 
 </div>
