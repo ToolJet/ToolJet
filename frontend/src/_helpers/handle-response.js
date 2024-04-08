@@ -5,9 +5,7 @@ export function handleResponse(response, avoidRedirection = false) {
     const data = text && JSON.parse(text);
     if (!response.ok) {
       if ([401].indexOf(response.status) !== -1) {
-        const errorMessageJson = typeof data.message === 'string' ? JSON.parse(data.message) : undefined;
-        const workspaceId = errorMessageJson?.organizationId;
-        avoidRedirection ? authenticationService.logout(false, workspaceId) : location.reload(true);
+        avoidRedirection ? authenticationService.logout() : location.reload(true);
       }
 
       const error = (data && data.message) || response.statusText;

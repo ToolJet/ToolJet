@@ -10,7 +10,7 @@ import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import Tick from '../Icons/Tick.svg';
 import './styles.scss';
 
-const ColumnForm = ({ onCreate, onClose, rows }) => {
+const ColumnForm = ({ onCreate, onClose }) => {
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
@@ -157,18 +157,14 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
             value={defaultValue}
             type="text"
             placeholder="Enter default value"
-            className={
-              isNotNull === true && defaultValue.length <= 0 && rows.length > 0 ? 'form-error' : 'form-control'
-            }
+            className={isNotNull === true && defaultValue.length <= 0 ? 'form-error' : 'form-control'}
             data-cy="default-value-input-field"
             autoComplete="off"
             onChange={(e) => setDefaultValue(e.target.value)}
             disabled={dataType === 'serial'}
           />
-          {isNotNull === true && rows.length > 0 && defaultValue.length <= 0 ? (
-            <span className="form-error-message">
-              Default value is required to populate this field in existing rows as NOT NULL constraint is added
-            </span>
+          {isNotNull === true && defaultValue.length <= 0 ? (
+            <span className="form-error-message">Default value cannot be empty when NOT NULL constraint is added</span>
           ) : null}
         </div>
 
@@ -198,7 +194,7 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
         onClose={onClose}
         onCreate={handleCreate}
         shouldDisableCreateBtn={
-          isEmpty(columnName) || isEmpty(dataType) || (isNotNull === true && rows.length > 0 && isEmpty(defaultValue))
+          isEmpty(columnName) || isEmpty(dataType) || (isNotNull === true && isEmpty(defaultValue))
         }
       />
     </div>

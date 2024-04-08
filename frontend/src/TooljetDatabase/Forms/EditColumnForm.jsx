@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react';
+//import Select from '@/_ui/Select';
 import Select from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { toast } from 'react-hot-toast';
@@ -6,9 +7,8 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import WarningInfo from '../Icons/Edit-information.svg';
-import { isEmpty } from 'lodash';
 
-const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
+const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
   const nullValue = selectedColumn.constraints_type.is_not_null;
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
@@ -16,10 +16,8 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
   const [dataType, setDataType] = useState(selectedColumn?.dataType);
   const [fetching, setFetching] = useState(false);
   const [isNotNull, setIsNotNull] = useState(nullValue);
-  const { organizationId, selectedTable, handleRefetchQuery, queryFilters, pageCount, pageSize, sortFilters } =
-    useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
   const disabledDataType = dataTypes.find((e) => e.value === dataType);
-  const [defaultValueLength, setDefaultValueLength] = useState(defaultValue?.length);
 
   const darkDisabledBackground = '#1f2936';
   const lightDisabledBackground = '#f4f6fa';
@@ -69,11 +67,17 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
       column: {
         column_name: selectedColumn?.Header,
         data_type: selectedColumn?.dataType,
-        column_default: defaultValue,
-        constraints_type: {
-          is_not_null: isNotNull,
-        },
         ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
+        ...(defaultValue?.length > 0 || defaultValue !== selectedColumn?.column_default
+          ? { column_default: defaultValue }
+          : {}),
+        ...(nullValue !== isNotNull
+          ? {
+              constraints_type: {
+                is_not_null: isNotNull,
+              },
+            }
+          : {}),
       },
     };
 
@@ -91,7 +95,6 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
         return;
       }
     }
-
     tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
       if (error) {
         toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
@@ -109,7 +112,6 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
         );
       }
     });
-    handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
     toast.success(`Column edited successfully`);
     onClose && onClose();
   };
@@ -194,16 +196,18 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
             value={defaultValue}
             type="text"
             placeholder="Enter default value"
-            className={'form-control'}
+            className={
+              isNotNull === true && (defaultValue?.length <= 0 || defaultValue === null)
+                ? 'form-control form-error'
+                : 'form-control'
+            }
             data-cy="default-value-input-field"
             autoComplete="off"
             onChange={(e) => setDefaultValue(e.target.value)}
             disabled={dataType === 'serial'}
           />
-          {isNotNull === true && rows.length > 0 && !isEmpty(defaultValue) && defaultValueLength > 0 ? (
-            <span className="form-warning-message">
-              Changing the default value will NOT update the fields having existing default value
-            </span>
+          {isNotNull === true && (defaultValue?.length <= 0 || defaultValue === null) ? (
+            <span className="form-error-message">Default value cannot be empty when NOT NULL constraint is added</span>
           ) : null}
         </div>
         <div className="row mb-3">
@@ -232,7 +236,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
         fetching={fetching}
         onClose={onClose}
         onEdit={handleEdit}
-        shouldDisableCreateBtn={columnName === ''}
+        shouldDisableCreateBtn={columnName === '' || (isNotNull && defaultValue?.length <= 0)}
       />
     </div>
   );

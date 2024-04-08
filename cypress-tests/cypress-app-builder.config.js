@@ -76,8 +76,14 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: [
-      "cypress/e2e/happyPath/appbuilder/commonTestcases/**/*.cy.js",
-      "cypress/e2e/happyPath/appbuilder/ceTestcases/**/*.cy.js"
+      "cypress/e2e/editor/widget/*.cy.js",
+      "cypress/e2e/editor/multipage/*.cy.js",
+      "cypress/e2e/editor/globalSetingsHappyPath.cy.js",
+      "cypress/e2e/editor/inspectorHappypath.cy.js",
+      "cypress/e2e/editor/queries/runpyHappyPath.cy.js",
+      "cypress/e2e/editor/queries/runjsHappyPath.cy.js",
+      "cypress/e2e/editor/multipage/multipageHappypath.cy.js",
+      "cypress/e2e/editor/queries/chainingOfQueries.cy.js",
     ],
     numTestsKeptInMemory: 1,
     redirectionLimit: 7,

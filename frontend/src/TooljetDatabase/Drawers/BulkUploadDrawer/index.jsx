@@ -5,7 +5,6 @@ import { TooljetDatabaseContext } from '../../index';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { FileDropzone } from './FileDropzone';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import Spinner from '@/_ui/Spinner';
 
 function BulkUploadDrawer({
   isBulkUploadDrawerOpen,
@@ -17,7 +16,6 @@ function BulkUploadDrawer({
   errors,
 }) {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
-  const [progress, setProgress] = useState(0);
   const { columns, selectedTable } = useContext(TooljetDatabaseContext);
   const hiddenFileInput = useRef(null);
 
@@ -119,38 +117,25 @@ function BulkUploadDrawer({
                 handleFileChange={handleBulkUploadFileChange}
                 onButtonClick={handleBulkUpload}
                 onDrop={onDrop}
-                progress={progress}
-                setProgress={setProgress}
               />
             </div>
           </div>
         </div>
         <div className="position-sticky bottom-0 right-0 w-100  mt-auto">
-          <div className="d-flex justify-content-end drawer-footer-btn-wrap bulk-upload-btn">
+          <div className="d-flex justify-content-end drawer-footer-btn-wrap">
             <ButtonSolid variant="tertiary" data-cy={`cancel-button`} onClick={() => setIsBulkUploadDrawerOpen(false)}>
               Cancel
             </ButtonSolid>
-            {isBulkUploading === true ? (
-              <ButtonSolid
-                data-cy={`upload-data-button`}
-                onClick={handleBulkUpload}
-                loading={isBulkUploading}
-                style={{ cursor: 'not-allowed', pointerEvents: 'none' }}
-              >
-                <Spinner />
-              </ButtonSolid>
-            ) : (
-              <ButtonSolid
-                disabled={!bulkUploadFile || errors.client.length > 0 || errors.server.length > 0 || progress <= 99}
-                data-cy={`upload-data-button`}
-                onClick={handleBulkUpload}
-                fill="#fff"
-                leftIcon="floppydisk"
-                loading={isBulkUploading}
-              >
-                Upload data
-              </ButtonSolid>
-            )}
+            <ButtonSolid
+              disabled={!bulkUploadFile || errors.client.length > 0 || errors.server.length > 0}
+              data-cy={`upload-data-button`}
+              onClick={handleBulkUpload}
+              fill="#fff"
+              leftIcon="floppydisk"
+              loading={isBulkUploading}
+            >
+              Upload data
+            </ButtonSolid>
           </div>
         </div>
       </Drawer>

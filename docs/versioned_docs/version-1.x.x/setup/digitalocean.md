@@ -44,11 +44,11 @@ Now you can quickly deploy ToolJet using the Deploy to DigitalOcean button.
 ToolJet server and client can be deployed as standalone applications. If you do not want to deploy the client on DigitalOcean, modify `package.json` accordingly. We have a [guide](/docs/setup/client) on deploying ToolJet client using services such as Firebase.
 :::
 
-## Upgrading to the Latest Version
+## Upgrading to v2.24.3-ee2.10.2
 
-The latest version includes architectural changes and, hence, comes with new migrations.
+Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
 
-If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
+If this is a new installation of the application, you may start directly with version v2.24.3-ee2.10.2. This guide is not required for new installations.
 
 #### Prerequisites for Upgrading to the Latest Version:
 
@@ -56,6 +56,6 @@ If this is a new installation of the application, you may start directly with th
 
 - Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
 
-- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
+- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to v2.24.3-ee2.10.2.
 
 For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.

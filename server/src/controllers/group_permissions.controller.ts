@@ -110,8 +110,8 @@ export class GroupPermissionsController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Get(':id/addable_users')
-  async addableUsers(@User() user, @Param('id') id, @Query('input') searchInput: string) {
-    const users = await this.groupPermissionsService.findAddableUsers(user, id, searchInput.trim());
+  async addableUsers(@User() user, @Param('id') id, @Query('input') searchInput) {
+    const users = await this.groupPermissionsService.findAddableUsers(user, id, searchInput);
 
     return decamelizeKeys({ users });
   }

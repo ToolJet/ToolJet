@@ -470,17 +470,15 @@ export class GroupPermissionsService {
 
     const getOrConditions = () => {
       return new Brackets((qb) => {
-        if (searchInput) {
-          qb.orWhere('lower(user.email) like :email', {
-            email: `%${searchInput.toLowerCase()}%`,
-          });
-          qb.orWhere('lower(user.firstName) like :firstName', {
-            firstName: `%${searchInput.toLowerCase()}%`,
-          });
-          qb.orWhere('lower(user.lastName) like :lastName', {
-            lastName: `%${searchInput.toLowerCase()}%`,
-          });
-        }
+        qb.orWhere('lower(user.email) like :email', {
+          email: `%${searchInput.toLowerCase()}%`,
+        });
+        qb.orWhere('lower(user.firstName) like :firstName', {
+          firstName: `%${searchInput.toLowerCase()}%`,
+        });
+        qb.orWhere('lower(user.lastName) like :lastName', {
+          lastName: `%${searchInput.toLowerCase()}%`,
+        });
       });
     };
 
@@ -492,13 +490,14 @@ export class GroupPermissionsService {
         'organization_users.organizationId = :organizationId',
         { organizationId: user.organizationId }
       )
-      .where('user.id NOT IN (:...userList)', { userList: [...usersInGroupIds, ...adminUserIds] })
-      .andWhere(getOrConditions());
+      .andWhere(getOrConditions)
+      .where('user.id NOT IN (:...userList)', { userList: [...usersInGroupIds, ...adminUserIds] });
 
-    if (!searchInput) {
+    if (searchInput) {
+      builtQuery.andWhere(getOrConditions);
+    } else {
       builtQuery.take(10); // Limiting to 10 users if there's no search input
     }
-
     builtQuery.orderBy('user.firstName');
     return await builtQuery.getMany();
   }

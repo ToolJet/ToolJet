@@ -10,16 +10,8 @@ import Search from '../Search';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const List = () => {
-  const {
-    organizationId,
-    tables,
-    searchParam,
-    selectedTable,
-    setTables,
-    setSelectedTable,
-    loadingState,
-    setLoadingState,
-  } = useContext(TooljetDatabaseContext);
+  const { organizationId, tables, searchParam, selectedTable, setTables, setSelectedTable } =
+    useContext(TooljetDatabaseContext);
   const [loading, setLoading] = useState(false);
   const [showInput, setShowInput] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -27,10 +19,8 @@ const List = () => {
 
   async function fetchTables() {
     setLoading(true);
-    setLoadingState(true);
     const { error, data } = await tooljetDatabaseService.findAll(organizationId);
     setLoading(false);
-    setLoadingState(false);
 
     if (error) {
       toast.error(error?.message ?? 'Failed to fetch tables');
@@ -92,14 +82,12 @@ const List = () => {
             onClearCallback={() => setShowInput(false)}
             customClass="tj-common-search-input"
             autoFocus={true}
-            setShowInput={setShowInput}
           />
         )}
       </div>
       <div className="list-group mb-3">
-        {loading && loadingState && <Skeleton count={3} height={22} />}
+        {loading && <Skeleton count={3} height={22} />}
         {!loading &&
-          !loadingState &&
           filteredTables?.map(({ id, table_name }, index) => (
             <ListItem
               key={index}

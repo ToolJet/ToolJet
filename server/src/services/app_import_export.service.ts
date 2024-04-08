@@ -17,7 +17,6 @@ import {
   catchDbException,
   extractMajorVersion,
   isTooljetVersionWithNormalizedAppDefinitionSchem,
-  isVersionGreaterThanOrEqual,
 } from 'src/helpers/utils.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -244,8 +243,7 @@ export class AppImportExportService {
       schemaUnifiedAppParams,
       user,
       externalResourceMappings,
-      isNormalizedAppDefinitionSchema,
-      tooljetVersion
+      isNormalizedAppDefinitionSchema
     );
     await this.createAdminGroupPermissions(this.entityManager, importedApp);
 
@@ -323,8 +321,7 @@ export class AppImportExportService {
     appParams: any,
     user: User,
     externalResourceMappings: Record<string, unknown>,
-    isNormalizedAppDefinitionSchema: boolean,
-    tooljetVersion: string
+    isNormalizedAppDefinitionSchema: boolean
   ) {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -387,8 +384,7 @@ export class AppImportExportService {
         importingDefaultAppEnvironmentId,
         importingPages,
         importingComponents,
-        importingEvents,
-        tooljetVersion
+        importingEvents
       );
 
       if (!isNormalizedAppDefinitionSchema) {
@@ -417,8 +413,7 @@ export class AppImportExportService {
                 pageComponents,
                 componentEvents,
                 appResourceMappings.componentsMapping,
-                isNormalizedAppDefinitionSchema,
-                tooljetVersion
+                isNormalizedAppDefinitionSchema
               );
 
               const componentLayouts = [];
@@ -586,8 +581,7 @@ export class AppImportExportService {
     importingDefaultAppEnvironmentId: string,
     importingPages: Page[],
     importingComponents: Component[],
-    importingEvents: EventHandler[],
-    tooljetVersion: string
+    importingEvents: EventHandler[]
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -741,8 +735,7 @@ export class AppImportExportService {
             const { properties, styles, general, validation, generalStyles } = migrateProperties(
               component.type as NewRevampedComponent,
               component,
-              NewRevampedComponents,
-              tooljetVersion
+              NewRevampedComponents
             );
             newComponent.id = newComponentIdsMap[component.id];
             newComponent.name = component.name;
@@ -1692,11 +1685,8 @@ function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
 function migrateProperties(
   componentType: NewRevampedComponent,
   component: Component,
-  componentTypes: NewRevampedComponent[],
-  tooljetVersion: string
+  componentTypes: NewRevampedComponent[]
 ) {
-  const shouldHandleBackwardCompatibility = isVersionGreaterThanOrEqual(tooljetVersion, '2.29.0') ? false : true;
-
   const properties = { ...component.properties };
   const styles = { ...component.styles };
   const general = { ...component.general };
@@ -1724,10 +1714,7 @@ function migrateProperties(
       delete generalStyles?.boxShadow;
     }
 
-    if (
-      shouldHandleBackwardCompatibility &&
-      (componentType === 'TextInput' || componentType === 'PasswordInput' || componentType === 'NumberInput')
-    ) {
+    if (componentType === 'TextInput' || componentType === 'PasswordInput' || componentType === 'NumberInput') {
       properties.label = '';
     }
 
@@ -1750,8 +1737,7 @@ function transformComponentData(
   data: object,
   componentEvents: any[],
   componentsMapping: Record<string, string>,
-  isNormalizedAppDefinitionSchema = true,
-  tooljetVersion: string
+  isNormalizedAppDefinitionSchema = true
 ): Component[] {
   const transformedComponents: Component[] = [];
 
@@ -1800,8 +1786,7 @@ function transformComponentData(
       const { properties, styles, general, validation, generalStyles } = migrateProperties(
         componentData.component,
         componentData.definition,
-        NewRevampedComponents,
-        tooljetVersion
+        NewRevampedComponents
       );
       transformedComponent.id = uuid();
       transformedComponent.name = componentData.name;

@@ -78,7 +78,7 @@ export const CellEditMenu = ({
       closePopover();
     }
 
-    if (e.key === 'Enter' && cellValue != previousCellValue && show) {
+    if (e.key === 'Enter' && cellValue !== previousCellValue && show) {
       saveFunction(cellValue);
     }
 

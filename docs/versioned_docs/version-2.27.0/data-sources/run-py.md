@@ -3,91 +3,53 @@ id: run-py
 title: Run Python code
 ---
 
-You can write custom Python code to interact with components and queries. To do that, you need to create a new query and select **Run Python code** from the available data sources.
+You can write custom Python code to interact with components and queries. To do that, you just need to create a new query and select **Run Python Code** from the available datasources.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/custom-python/add-run-py.png" alt="Run Python code" />
+
+<img className="screenshot-full" src="/img/datasource-reference/custom-python/run-py.png" alt="Run JavaScript code" />
+
 </div>
 
-## Using Python Code to Trigger Component Specific Actions
+#### Example: Using Python code to trigger component specific actions
 
-- Drag a **Text** component onto the canvas. We will set the text on the Text component using the Python query.
-- Create a query and select **Run Python code** from the available data sources
-- Paste the below code in the code editor and save the query:
+- Let's drag a **button** and a **text** widget onto the canvas. We will set a text on the text component and trigger button click event from the Python query.
+- Click on the `+` on the query panel to create a query and select **Run Python code** from the available datasources
+- Let's write the code in **Python Editor** and save the query:
 
-```python
-class Person:
-    def __init__(self, name, age):
+    ```python
+    class Person:
+      def __init__(self, name, age):
         self.name = name
         self.age = age
         
-    def myfunc(self):
+      def myfunc(self):
         return "Hello my name is " + self.name
-
-p1 = Person(tj_globals.currentUser.firstName, 36)
-
-components.text1.setText(p1.myfunc())
-```
-
-- The above code has a function `myfunc` which returns a string and we are using a **[Component Specific Action](/docs/tooljet-concepts/component-specific-actions)** to set the Text Component's value from the Python query. 
+        
+    p1 = Person(tj_globals.currentUser.firstName, 36)
+    
+    components.text1.setText(p1.myfunc())
+    components.button1.click()
+    ```
+- The code above has a function `myfunc` which returns a string and we using the component specific action to set the **text component**'s value from the Python query. We are also triggering the button click using `components.button1.click()`
 
 :::tip
-- As of now, Run Python code only supports the [Python standard library](https://docs.python.org/3/library/).
-- Check **[RunPy Limitations](/docs/contributing-guide/troubleshooting/runpy-limitations)** to go through the limitations with using Python code
+- ToolJet's global variables can be accessed using **tj_globals**. ex: `tj_globals.currentUser.firstName`
+- As of now, Run Python code only supports the [Python standard library](https://docs.python.org/3/library/) only.
+- Check **[RunPy Limitations](/docs/contributing-guide/troubleshooting/runpy-limitations)**
 :::
 
-## Trigger Queries
-To trigger queries in Python, you can use the below functions:
+- Let's edit the properties of widgets:
+    - Add an event handler to the button - Select **On Click** event, **Show alert** action, and set a success message `Triggered using RunPy`. This will show a success alert popup whenever the button click event is triggered from the Python code.
+    - For the text component, we don't have to edit any property since we are changing the value directly from the Python code.
 
-```py
-actions.runQuery('getSalesData')
-```
+<div style={{textAlign: 'center'}}>
 
-```py
-queries.getSalesData.run()
-```
+<img className="screenshot-full" src="/img/datasource-reference/custom-python/runpyg.gif" alt="Run Python code" />
 
-## Using Transformations With Python
-**Run Python code** can be used to transform the data that is fetched in the queries. To test transformations using Python, create a new `REST API` query, leave the method as `GET` and enter the below url under the `URL` property.
+</div>
 
-```js
-https://dummyjson.com/products
-```
-
-Click on the **Run** button and check the preview of the returned data, below is the data structure of the response:
-
-```js
-products_data = {
-    "products": [
-        {"title": "iPhone 9", ...},
-        {"title": "iPhone X", ...},
-        # Additional products...
-    ]
-}
-```
-
-#### Filter the titles from the response
-To extract a list of product titles from the given data structure, we iterate through the `products` list and collect each product's `title` using the below code. Enable `Transformations` in the Query Editor and use the below code:
-
-```python
-return [product["title"] for product in data["products"]]
-```
-
-### Filtering Products by Category
-
-To filter products by a specific category, such as "smartphones", and extract their titles. Enable `Transformations` in the Query Editor and use the below code:
-
-```python
-return [product["title"] for product in data["products"] if product["category"] == "smartphones"]
-```
-
-### Calculating Average Price of a Category
-
-To calculate the average price of products within the "laptops" category. Enable `Transformations` in the Query Editor and use the below code:
-
-```python
-return sum(product["price"] for product in data["products"] if product["category"] == "laptops") / len([product for product in data["products"] if product["category"] == "laptops"]) if len([product for product in data["products"] if product["category"] == "laptops"]) > 0 else 0
-```
+You can also write custom Python code to get the data from **External APIs** and manipulate the response for graphical representation. 
 
 :::info
 Issues with writing custom Python code? Ask in our [Slack community](https://www.tooljet.com/slack).

@@ -16,7 +16,6 @@ const Search = ({
   callBack,
   onClearCallback,
   autoFocus = false,
-  setShowInput,
 }) => {
   const [searchText, setSearchText] = useState('');
   const debouncedSearchTerm = useDebounce(searchText, debounceDelay);
@@ -64,14 +63,7 @@ const Search = ({
           })}
           placeholder="Search table"
           onFocus={() => setFocussed(true)}
-          onBlur={() => {
-            if (searchText.length > 0) {
-              setFocussed(false);
-            } else {
-              setFocussed(false);
-              setShowInput(false);
-            }
-          }}
+          onBlur={() => setFocussed(false)}
           data-cy={`${dataCy}-search-bar`}
           autoFocus={autoFocus}
         />

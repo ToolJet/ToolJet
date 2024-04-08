@@ -1,6 +1,6 @@
 ---
 id: setup
-title: OpenID Setup
+title: Setup
 ---
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
@@ -52,7 +52,6 @@ The following is an example of the user info returned by Google OpenID provider:
 | **hd** | End-User's hosted domain, if any. | `{{globals.currentUser.ssoUserInfo.hd}}` |
 | **access_token** | Access token returned by the OpenID provider. | `{{globals.currentUser.ssoUserInfo.access_token}}` |
 | **id_token** | ID token returned by the OpenID provider. | `{{globals.currentUser.ssoUserInfo.id_token}}` |
-| **id_token_encrpted** | It is the JSON value of encrypted `id_token` | `{{globals.currentUser.ssoUserInfo.id_token_encrpted}}` |
 
 <div style={{textAlign: 'center'}}>
 

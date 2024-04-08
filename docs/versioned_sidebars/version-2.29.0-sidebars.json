@@ -175,7 +175,6 @@
       "type": "category",
       "label": "How To",
       "items": [
-        "how-to/use-url-params-on-load",
         "how-to/use-custom-parameters",
         "how-to/setup-rsyslog",
         "how-to/use-inspector",

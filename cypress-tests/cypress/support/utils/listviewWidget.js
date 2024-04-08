@@ -95,7 +95,7 @@ export const verifyValuesOnList = (
     cy.get(commonWidgetSelector.draggableWidget(childName)).each(
       ($element, i) => {
         if (isChild) {
-          cy.wrap($element).should(`have.${type}`, value[i]);
+          cy.wrap($element).find("input").should(`have.${type}`, value[i]);
         } else {
           cy.wrap($element).should(`have.${type}`, value[i]);
         }

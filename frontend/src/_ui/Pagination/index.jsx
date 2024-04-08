@@ -14,14 +14,9 @@ const Pagination = ({
 
   const handleOnChange = (value) => {
     const parsedValue = parseInt(value, 10);
+
     if (parsedValue > 0 && parsedValue <= totalPage && parsedValue !== currentPage) {
       gotoNextPage(true, parsedValue);
-    } else if (parsedValue > totalPage) {
-      setCurrentPageNumber(totalPage);
-      gotoNextPage(true, totalPage);
-    } else if (isNaN(parsedValue) || parsedValue === 0) {
-      setCurrentPageNumber(1);
-      gotoNextPage(true, 1);
     }
   };
 

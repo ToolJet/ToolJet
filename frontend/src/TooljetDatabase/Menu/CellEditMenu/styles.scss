@@ -2,7 +2,6 @@
     min-width: 300px;
     height: auto;
     margin-top: 2px;
-    inset: 0px auto auto -9px !important;
 
     .tjdb-bool-cell-menu-badge-default {
         padding: 2px 12px;
@@ -16,7 +15,7 @@
     }
 
     .boolean-state-selected {
-        border-color: #3E63DD;
+        border-color:#3E63DD;
         background: var(--indigo3);
         color: #3E63DD;
     }
@@ -38,17 +37,17 @@
     }
 
     .cell-editmenu-keyActions {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 5px;
-
-        .leftNav-parent-container,
-        .rightNav-parent-container {
-            border-radius: 6px;
-            border: 1px solid var(--slate7);
-            width: 24px;
-            text-align: center;
-        }
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 5px;
+  
+      .leftNav-parent-container,
+      .rightNav-parent-container {
+        border-radius: 6px;
+        border: 1px solid var(--slate7);
+        width: 24px;
+        text-align: center;
+      }
     }
 }

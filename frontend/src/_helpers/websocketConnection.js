@@ -1,18 +1,10 @@
 import config from 'config';
 
 class WebSocketConnection {
-  static instance;
-  static appId;
-
   constructor(appId) {
-    if (WebSocketConnection.instance && WebSocketConnection.appId === appId) {
-      return WebSocketConnection.instance;
-    }
-
     this.socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.getWebsocketUrl()}`);
-    this.addListeners(appId);
 
-    WebSocketConnection.instance = this;
+    this.addListeners(appId);
   }
 
   getWebsocketUrl() {
@@ -47,8 +39,6 @@ class WebSocketConnection {
           data: appId,
         })
       );
-
-      this.appId = appId;
     });
 
     // Connection closed

@@ -112,7 +112,7 @@ Follow these steps to setup and run ToolJet on macOS for development purposes. O
     cd ./frontend && npm start
     ```
 
-    The client will start on the port 8082, you can access the client by visiting:  [http://localhost:8082](http://localhost:8082)
+    The client will start on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082)
 
 9. Create login credentials
 

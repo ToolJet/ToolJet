@@ -12,13 +12,10 @@ export const selectEvent = (
     .click()
     .find("input")
     .type(`{selectAll}{backspace}${event}{enter}`);
-    cy.get('[data-cy="event-label"]').click({force:true})
-
   cy.get('[data-cy="action-selection"]')
     .click()
     .find("input")
     .type(`{selectAll}{backspace}${action}{enter}`);
-    cy.get('[data-cy="event-label"]').click({force:true})
   cy.wait("@events");
 };
 
@@ -32,19 +29,14 @@ export const selectCSA = (
     .click()
     .find("input")
     .type(`{selectAll}{backspace}${component}{enter}`);
-    cy.get('[data-cy="event-label"]').click({force:true})
-
   cy.get('[data-cy="action-options-action-selection-field"]')
     .click()
     .find("input")
     .type(`{selectAll}{backspace}${componentAction}{enter}`);
-    cy.get('[data-cy="event-label"]').click({force:true})
-
   cy.wait("@events");
   cy.get('[data-cy="debounce-input-field"]')
     .click()
     .type(`{selectAll}{backspace}${debounce}{enter}`);
-    cy.get('[data-cy="event-label"]').click({force:true})
   cy.wait("@events");
 };
 
@@ -53,7 +45,6 @@ export const addSupportCSAData = (field, data) => {
   cy.get(`[data-cy="event-${field}-input-field"]`)
     .click({ force: true })
     .clearAndTypeOnCodeMirror(data);
-    cy.get('[data-cy="event-label"]').click({force:true})
 };
 
 export const selectSupportCSAData = (option) => {
@@ -63,7 +54,6 @@ export const selectSupportCSAData = (option) => {
     .click()
     .find("input")
     .type(`{selectAll}{backspace}${option}{enter}`);
-    cy.get('[data-cy="event-label"]').click({force:true})
   cy.wait("@events");
 };
 
@@ -74,6 +64,5 @@ export const changeEventType = (event, eventIndex = 0) => {
     .click()
     .find("input")
     .type(`{selectAll}{backspace}${event}{enter}`);
-    cy.get('[data-cy="event-label"]').click({force:true})
   cy.wait("@events");
 };

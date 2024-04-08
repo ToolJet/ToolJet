@@ -4,7 +4,6 @@ import Float from './Icons/Float.svg';
 import Integer from './Icons/Integer.svg';
 import CharacterVar from './Icons/Text.svg';
 import Boolean from './Icons/Toggle.svg';
-import Serial from './Icons/Serial.svg';
 
 export const dataTypes = [
   {
@@ -19,9 +18,7 @@ export const dataTypes = [
   { name: 'Boolean True/False', label: 'boolean', icon: <Boolean width="16" height="16" />, value: 'boolean' },
 ];
 
-export const primaryKeydataTypes = [
-  { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
-];
+export const primaryKeydataTypes = [{ value: 'serial', label: 'serial' }];
 
 export const operators = [
   { value: 'eq', label: 'equals' },
@@ -45,16 +42,6 @@ export const formatOptionLabel = ({ label, icon }) => {
       <span>{label}</span>
     </div>
   );
-};
-
-export const isSerialDataType = (columnDetails) => {
-  const { dataType = '', column_default = '' } = columnDetails;
-  const serialDatatypeDefaultValuePattern = 'nextval(';
-
-  if (dataType === 'integer' && column_default) {
-    if (column_default.includes(serialDatatypeDefaultValuePattern)) return true;
-  }
-  return false;
 };
 
 export default function tjdbDropdownStyles(
@@ -132,14 +119,6 @@ export default function tjdbDropdownStyles(
     singleValue: (provided) => ({
       ...provided,
       color: darkMode ? '#fff' : '#232e3c',
-    }),
-    placeholder: () => ({
-      position: 'absolute',
-      left: '10px',
-      top: '50%',
-      transform: 'translateY(-50%)',
-      zIndex: '1',
-      color: '#808080',
     }),
   };
 }

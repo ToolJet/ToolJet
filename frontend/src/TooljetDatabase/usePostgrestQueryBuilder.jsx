@@ -5,13 +5,7 @@ import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { TooljetDatabaseContext } from './index';
 
-export const usePostgrestQueryBuilder = ({
-  organizationId,
-  selectedTable,
-  setSelectedTableData,
-  setTotalRecords,
-  setLoadingState,
-}) => {
+export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSelectedTableData, setTotalRecords }) => {
   const { pageSize } = useContext(TooljetDatabaseContext);
 
   const postgrestQueryBuilder = useRef({
@@ -34,7 +28,6 @@ export const usePostgrestQueryBuilder = ({
   };
 
   const updateSelectedTableData = async () => {
-    setLoadingState(true);
     const sortQuery = isEmpty(postgrestQueryBuilder.current.sortQuery.url.toString())
       ? 'order=id.desc'
       : postgrestQueryBuilder.current.sortQuery.url.toString();
@@ -56,7 +49,6 @@ export const usePostgrestQueryBuilder = ({
     const totalRecords = headers['content-range'].split('/')[1] || 0;
 
     if (Array.isArray(data)) {
-      setLoadingState(false);
       setTotalRecords(totalRecords);
       setSelectedTableData(data);
     }

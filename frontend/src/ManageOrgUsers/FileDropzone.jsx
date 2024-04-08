@@ -7,11 +7,7 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
   const [fileData, setFileData] = useState();
   const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
     accept: { parsedFileType: ['text/csv'] },
-    onDrop: (acceptedFiles) => {
-      onDrop(acceptedFiles);
-      const file = acceptedFiles[0];
-      setFileData(file);
-    },
+    onDrop,
     noClick: true,
     onDropRejected: (files) => {
       if (files[0].size > 1048576) {
@@ -68,6 +64,7 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
           <span className="file-upload-error" data-cy="file-error">
             {errors['file']}
           </span>
+          <ul>{acceptedFiles}</ul>
           {fileData?.name && <ul data-cy="uploaded-file-data">{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>}
         </div>
       </div>

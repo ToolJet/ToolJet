@@ -5,8 +5,8 @@ import CreateColumnForm from '../../Forms/ColumnForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 
-const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerOpen, rows }) => {
-  const { organizationId, selectedTable, setColumns, setPageCount, handleRefetchQuery, pageSize } =
+const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerOpen }) => {
+  const { organizationId, selectedTable, setColumns, setSelectedTableData, setPageCount } =
     useContext(TooljetDatabaseContext);
 
   return (
@@ -31,12 +31,22 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
                 );
               }
             });
-            handleRefetchQuery({}, {}, 1, pageSize);
+            tooljetDatabaseService
+              .findOne(organizationId, selectedTable.id, 'order=id.desc')
+              .then(({ data = [], error }) => {
+                if (error) {
+                  toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
+                  return;
+                }
+
+                if (Array.isArray(data) && data?.length > 0) {
+                  setSelectedTableData(data);
+                }
+              });
             setPageCount(1);
             setIsCreateColumnDrawerOpen(false);
           }}
           onClose={() => setIsCreateColumnDrawerOpen(false)}
-          rows={rows}
         />
       </Drawer>
     </>

@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext, Injectable, NotFoundException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AppsService } from 'src/services/apps.service';
 
@@ -25,17 +25,6 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       return true;
     }
 
-    // Throw a custom exception with workspace ID if the app is not public
-    try {
-      const authResult = await super.canActivate(context);
-      return authResult;
-    } catch (error) {
-      throw new UnauthorizedException(
-        JSON.stringify({
-          organizationId: app?.organizationId,
-          message: 'Authentication is required to access this app.',
-        })
-      );
-    }
+    return super.canActivate(context);
   }
 }

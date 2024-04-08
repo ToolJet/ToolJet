@@ -66,7 +66,6 @@ export function UserGroupsSelect(props) {
           type="checkbox"
           className="form-check-input"
           checked={isSelected}
-          data-cy="group-check-input"
         />
         <div className="select-option">{children}</div>
       </components.Option>
