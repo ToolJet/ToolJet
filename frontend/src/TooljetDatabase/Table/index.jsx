@@ -76,11 +76,7 @@ const Table = ({ collapseSidebar }) => {
     errorState: false,
   });
   const [filterEnable, setFilterEnable] = useState(false);
-  const selectedCellRef = useRef({
-    rowIndex: null,
-    columnIndex: null,
-    editable: false,
-  });
+  const selectedCellRef = useRef({ rowIndex: null, columnIndex: null, editable: false });
 
   const [cellVal, setCellVal] = useState('');
   const [editPopover, setEditPopover] = useState(false);
@@ -97,11 +93,7 @@ const Table = ({ collapseSidebar }) => {
   const updateCellNavigationRefToDefault = () => {
     if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null)
       removeCellSelectionClassNames(selectedCellRef.current.rowIndex, selectedCellRef.current.columnIndex);
-    selectedCellRef.current = {
-      rowIndex: null,
-      columnIndex: null,
-      editable: false,
-    };
+    selectedCellRef.current = { rowIndex: null, columnIndex: null, editable: false };
   };
 
   const toggleSelectOrDeSelectAllRows = (totalRowsCount) => {
@@ -358,7 +350,6 @@ const Table = ({ collapseSidebar }) => {
     },
     useRowSelect
   );
-  // console.log(rows);
 
   const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
 
@@ -1068,7 +1059,8 @@ const Table = ({ collapseSidebar }) => {
                             <SolidIcon name="expand" width={16} viewBox="0 0 16 16" />
                           </div>
                         </div>
-                      </td>{' '}
+                      </td>
+
                       {row.cells.map((cell, index) => {
                         const dataCy =
                           cell.column.id === 'selection'
@@ -1096,8 +1088,6 @@ const Table = ({ collapseSidebar }) => {
                                     cellClick.cellIndex === index &&
                                     cellClick.editable === true
                                   ? 'table-editable-parent-cell'
-                                  : darkMode
-                                  ? `table-cell table-cell-dark`
                                   : `table-cell`
                               }`,
                               {
