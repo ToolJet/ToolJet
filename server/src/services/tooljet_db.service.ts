@@ -289,6 +289,7 @@ export class TooljetDbService {
 
         // New columns to be inserted
         if (isEmpty(old_column) && !isEmpty(new_column)) {
+          const is_primary_key_column = new_column?.constraints_type.is_primary_key || false;
           columnsToBeInserted.push(
             new TableColumn({
               name: new_column.column_name,
@@ -301,13 +302,14 @@ export class TooljetDbService {
                       : new_column.column_default,
                 }),
               isNullable: !new_column?.constraints_type.is_not_null,
-              isUnique: new_column?.constraints_type.is_unique,
+              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
             })
           );
         }
 
         // Columns to be updated
         if (!isEmpty(old_column) && !isEmpty(new_column)) {
+          const is_primary_key_column = new_column?.constraints_type.is_primary_key || false;
           columnstoBeUpdated.push({
             oldColumn: new TableColumn({
               name: old_column.column_name,
@@ -333,7 +335,7 @@ export class TooljetDbService {
                       : new_column.column_default,
                 }),
               isNullable: !new_column?.constraints_type.is_not_null,
-              isUnique: new_column?.constraints_type.is_unique,
+              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
             }),
           });
         }
@@ -395,9 +397,9 @@ export class TooljetDbService {
                 ? this.addQuotesIfString(column['column_default'])
                 : column['column_default'],
           }),
-          ...(column?.constraints_type?.is_not_null ?? false ? { isNullable: false } : { isNullable: true }),
-          ...(column?.constraints_type?.is_primary_key ? { isPrimary: true } : {}),
-          ...(column?.constraints_type?.is_unique ?? false ? { isUnique: true } : { isUnique: false }),
+          isNullable: !column?.constraints_type.is_not_null || false,
+          isUnique: column?.constraints_type.is_unique || false,
+          ...(column?.constraints_type.is_primary_key && { isPrimary: true }),
         })
       );
       await tjdbQueryRunnner.commitTransaction();
@@ -591,7 +593,6 @@ export class TooljetDbService {
 
   private async editColumn(organizationId: string, params) {
     const { table_name: tableName, column } = params;
-    const { constraints_type = {} } = column;
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, tableName },
     });
@@ -616,9 +617,9 @@ export class TooljetDbService {
                 ? this.addQuotesIfString(column['column_default'])
                 : column['column_default'],
           }),
-          ...(constraints_type?.is_not_null ? { isNullable: false } : { isNullable: true }),
-          ...(column?.constraints_type?.is_primary_key ? { isPrimary: true } : { isPrimary: false }),
-          ...(constraints_type?.is_unique ?? false ? { isUnique: true } : { isUnique: false }),
+          isNullable: !column?.constraints_type.is_not_null || false,
+          isUnique: column?.constraints_type.is_unique || false,
+          isPrimary: column?.constraints_type.is_primary_key || false,
         })
       );
 
@@ -647,6 +648,7 @@ export class TooljetDbService {
   private prepareColumnListForCreateTable(columns) {
     const columnList = columns.map((column) => {
       const { column_name, data_type, column_default = undefined, constraints_type = {} } = column;
+      const is_primary_key_column = constraints_type?.is_primary_key || false;
 
       return {
         name: column_name,
@@ -654,8 +656,8 @@ export class TooljetDbService {
         ...(column_default && {
           default: data_type === 'character varying' ? this.addQuotesIfString(column_default) : column_default,
         }),
-        ...(constraints_type?.is_not_null ?? false ? { isNullable: false } : { isNullable: true }),
-        ...(constraints_type?.is_unique ?? false ? { isUnique: true } : { isUnique: false }),
+        isNullable: constraints_type?.is_not_null ? false : true,
+        isUnique: constraints_type?.is_unique && !is_primary_key_column ? true : false,
       };
     });
     return columnList;

@@ -175,7 +175,7 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
                         <span style={{ marginRight: '5px' }}>
                           <Serial width="16" />
                         </span>
-                        <span>{columns[0].data_type}</span>
+                        <span>{columns[0]?.data_type}</span>
                       </div>
                     ) : (
                       <div>
