@@ -622,7 +622,11 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
         delete customAppVariables[key];
-        // useResolveStore.getState().actions.removeAppSuggestions(key);
+        useResolveStore.getState().actions.removeAppSuggestions([`variables.${key}`]);
+        useResolveStore
+          .getState()
+          .actions.updateResolvedRefsOfHints([{ hint: 'variables', newRef: customAppVariables }]);
+
         return useCurrentStateStore.getState().actions.setCurrentState({
           variables: customAppVariables,
         });
@@ -635,9 +639,14 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           ...getCurrentState().page.variables,
           [key]: value,
         };
+
         useResolveStore.getState().actions.addAppSuggestions({
-          variables: customPageVariables,
+          page: {
+            ...getCurrentState().page,
+            variables: customPageVariables,
+          },
         });
+
         return useCurrentStateStore.getState().actions.setCurrentState({
           page: {
             ...getCurrentState().page,
@@ -657,7 +666,23 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       case 'unset-page-variable': {
         const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customPageVariables = _.omit(getCurrentState().page.variables, key);
-        // useResolveStore.getState().actions.removeAppSuggestions(key);
+
+        useResolveStore.getState().actions.removeAppSuggestions([`page.variables.${key}`]);
+
+        const pageRef = {
+          page: {
+            ...getCurrentState().page,
+            variables: customPageVariables,
+          },
+        };
+
+        const toUpdateRefs = [
+          { hint: 'page', newRef: pageRef },
+          { hint: 'page.variables', newRef: customPageVariables },
+        ];
+
+        useResolveStore.getState().actions.updateResolvedRefsOfHints(toUpdateRefs);
+
         return useCurrentStateStore.getState().actions.setCurrentState({
           page: {
             ...getCurrentState().page,
