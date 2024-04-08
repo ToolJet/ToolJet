@@ -293,12 +293,13 @@ export class TooljetDbService {
             new TableColumn({
               name: newColumn.column_name,
               type: newColumn.data_type,
-              ...(newColumn?.column_default && {
-                default:
-                  newColumn.data_type === 'character varying'
-                    ? this.addQuotesIfString(newColumn.column_default)
-                    : newColumn.column_default,
-              }),
+              ...(newColumn?.column_default &&
+                newColumn.data_type !== 'serial' && {
+                  default:
+                    newColumn.data_type === 'character varying'
+                      ? this.addQuotesIfString(newColumn.column_default)
+                      : newColumn.column_default,
+                }),
               isNullable: !newColumn?.constraints_type.is_not_null,
               isUnique: newColumn?.constraints_type.is_unique,
             })
@@ -311,24 +312,26 @@ export class TooljetDbService {
             oldColumn: new TableColumn({
               name: oldColumn.column_name,
               type: oldColumn.data_type,
-              ...(oldColumn?.column_default && {
-                default:
-                  oldColumn.data_type === 'character varying'
-                    ? this.addQuotesIfString(oldColumn.column_default)
-                    : oldColumn.column_default,
-              }),
+              ...(oldColumn?.column_default &&
+                oldColumn.data_type !== 'serial' && {
+                  default:
+                    oldColumn.data_type === 'character varying'
+                      ? this.addQuotesIfString(oldColumn.column_default)
+                      : oldColumn.column_default,
+                }),
               isNullable: !oldColumn?.constraints_type.is_not_null,
               isUnique: oldColumn?.constraints_type.is_unique,
             }),
             newColumn: new TableColumn({
               name: newColumn.column_name,
               type: newColumn.data_type,
-              ...(newColumn?.column_default && {
-                default:
-                  newColumn.data_type === 'character varying'
-                    ? this.addQuotesIfString(newColumn.column_default)
-                    : newColumn.column_default,
-              }),
+              ...(newColumn?.column_default &&
+                newColumn.data_type !== 'serial' && {
+                  default:
+                    newColumn.data_type === 'character varying'
+                      ? this.addQuotesIfString(newColumn.column_default)
+                      : newColumn.column_default,
+                }),
               isNullable: !newColumn?.constraints_type.is_not_null,
               isUnique: newColumn?.constraints_type.is_unique,
             }),
