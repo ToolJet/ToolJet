@@ -60,6 +60,7 @@ const initialState = {
   },
   lastUpdatedRefs: [],
   referenceMapper: new ReferencesBiMap(),
+  isPageSwitched: false,
 };
 
 export const useResolveStore = create(
@@ -69,6 +70,10 @@ export const useResolveStore = create(
       updateStoreState: (state) => {
         set(() => ({ ...state, storeReady: true }));
       },
+      resetStore: () => {
+        set(() => initialState);
+      },
+      pageSwitched: (bool) => set(() => ({ isPageSwitched: bool })),
       updateAppSuggestions: (refState) => {
         const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState, false, true);
 
@@ -136,13 +141,13 @@ export const useResolveStore = create(
       },
 
       removeAppSuggestions: (suggestionsArray) => {
-        if (suggestionsArray.length === 0) return new Promise((resolve) => resolve({ status: '' }));
+        if (suggestionsArray?.length === 0) return new Promise((resolve) => resolve({ status: '' }));
 
         const lookupHintsMap = new Map([...get().lookupTable.hints]);
         const lookupResolvedRefs = new Map([...get().lookupTable.resolvedRefs]);
         const currentSuggestions = get().suggestions.appHints;
 
-        suggestionsArray.forEach((suggestion) => {
+        suggestionsArray?.forEach((suggestion) => {
           const index = currentSuggestions.findIndex((s) => s.hint === suggestion);
 
           if (index === -1) return;

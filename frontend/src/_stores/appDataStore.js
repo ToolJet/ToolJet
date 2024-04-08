@@ -46,7 +46,6 @@ export const useAppDataStore = create(
         updateEditingVersion: (version) => set(() => ({ editingVersion: version })),
         updateApps: (apps) => set(() => ({ apps: apps })),
         updateState: (state) => set((prev) => ({ ...prev, ...state })),
-
         updateAppDefinitionDiff: (appDefinitionDiff) => set(() => ({ appDefinitionDiff: appDefinitionDiff })),
         updateAppVersion: (appId, versionId, pageId, appDefinitionDiff, isUserSwitchedVersion = false) => {
           return new Promise((resolve, reject) => {
@@ -111,13 +110,10 @@ export const useAppDataStore = create(
             }
           });
 
-          const entityReferencesInEvents = findAllEntityReferences(updatedEvents, [])
-            ?.map((entity) => {
-              if (entity && isValidUUID(entity)) {
-                return entity;
-              }
-            })
-            ?.filter((e) => e !== undefined);
+          const entityReferencesInEvents = findAllEntityReferences(updatedEvents, [])?.filter(
+            (entity) => entity && isValidUUID(entity)
+          );
+
           const manager = useResolveStore.getState().referenceMapper;
           let newEvents = JSON.parse(JSON.stringify(updatedEvents));
 

@@ -604,6 +604,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
         customAppVariables[key] = value;
+        useResolveStore.getState().actions.addAppSuggestions({
+          variables: customAppVariables,
+        });
         return useCurrentStateStore.getState().actions.setCurrentState({
           variables: customAppVariables,
         });
@@ -619,6 +622,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
         delete customAppVariables[key];
+        // useResolveStore.getState().actions.removeAppSuggestions(key);
         return useCurrentStateStore.getState().actions.setCurrentState({
           variables: customAppVariables,
         });
@@ -631,6 +635,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           ...getCurrentState().page.variables,
           [key]: value,
         };
+        useResolveStore.getState().actions.addAppSuggestions({
+          variables: customPageVariables,
+        });
         return useCurrentStateStore.getState().actions.setCurrentState({
           page: {
             ...getCurrentState().page,
@@ -650,6 +657,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       case 'unset-page-variable': {
         const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customPageVariables = _.omit(getCurrentState().page.variables, key);
+        // useResolveStore.getState().actions.removeAppSuggestions(key);
         return useCurrentStateStore.getState().actions.setCurrentState({
           page: {
             ...getCurrentState().page,
@@ -1292,14 +1300,16 @@ export function runQuery(
               },
             });
 
-            useResolveStore.getState().actions.addAppSuggestions({
-              queries: {
-                [queryName]: {
-                  data: finalData,
-                  isLoading: false,
+            if (mode === 'edit') {
+              useResolveStore.getState().actions.addAppSuggestions({
+                queries: {
+                  [queryName]: {
+                    data: finalData,
+                    isLoading: false,
+                  },
                 },
-              },
-            });
+              });
+            }
 
             const basePath = `queries.${queryName}`;
 
@@ -2039,7 +2049,7 @@ export const buildAppDefinition = (data) => {
   _.unset(editingVersion, 'id');
 
   const pages = data.pages.reduce((acc, page) => {
-    const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components));
+    const currentComponents = buildComponentMetaDefinition(page?.components);
 
     page.components = currentComponents;
 
