@@ -8393,6 +8393,9 @@ tbody {
     background-color: #2F3C4C !important;
     background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
   }
+  .react-loading-skeleton::after {
+    background-image: linear-gradient(90deg, #2F3C4C, #3A4251, #2F3C4C) !important;
+  }
 }
 
 @keyframes up-and-down {
