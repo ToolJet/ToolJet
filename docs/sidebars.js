@@ -86,7 +86,14 @@ const sidebars = {
                 'widgets/button',
                 'widgets/button-group',
                 'widgets/calendar',
-                'widgets/chart',
+                {
+                  'type': 'category',
+                  'label': 'Chart',
+                  'items': [
+                    'widgets/chart-properties',
+                    'widgets/chart-examples'
+                  ]
+                },
                 'widgets/checkbox',
                 'widgets/circular-progress-bar',
                 'widgets/code-editor',
