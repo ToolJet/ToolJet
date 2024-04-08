@@ -29,6 +29,7 @@ const Header = ({
   setIsEditRowDrawerOpen,
   setFilterEnable,
   filterEnable,
+  isDirectRowExpand,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
@@ -149,7 +150,7 @@ const Header = ({
             <div className="row align-items-center">
               <div className="col-8 align-items-center p-3 gap-1">
                 <>
-                  {Object.keys(selectedRowIds).length === 0 && (
+                  {(isDirectRowExpand || Object.keys(selectedRowIds).length === 0) && (
                     <>
                       <AddNewDataPopOver
                         disabled={false}
@@ -199,9 +200,10 @@ const Header = ({
                       setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
                       selectedRowIds={selectedRowIds}
                       rows={rows}
+                      isDirectRowExpand={isDirectRowExpand}
                     />
                   ) : null}
-                  {Object.keys(selectedRowIds).length > 0 && (
+                  {!isDirectRowExpand && Object.keys(selectedRowIds).length > 0 && (
                     <div>
                       <ButtonSolid
                         variant="dangerTertiary"
