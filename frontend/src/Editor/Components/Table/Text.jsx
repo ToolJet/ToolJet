@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
+import React, { useState, useEffect, useRef } from 'react';
+import { validateWidget } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
@@ -8,7 +8,6 @@ const Text = ({
   darkMode,
   handleCellValueChange,
   cellTextColor,
-  horizontalAlignment,
   cellValue,
   column,
   currentState,
@@ -32,7 +31,7 @@ const Text = ({
     customResolveObjects: { cellValue },
   });
   const { isValid, validationError } = validationData;
-  const elem = document.querySelector('.table-text-column-cell');
+  const ref = useRef();
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [contentEditable, setContentEditable] = useState(false);
@@ -46,7 +45,7 @@ const Text = ({
   }, [hovered]);
 
   const _renderTextArea = () => (
-    <p
+    <div
       contentEditable={contentEditable}
       className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
         darkMode ? ' textarea-dark-theme' : ''
@@ -59,13 +58,13 @@ const Text = ({
         background: 'inherit',
         overflowY: 'auto',
         whiteSpace: 'pre-wrap',
+        position: 'static',
       }}
       readOnly={!isEditable}
       onBlur={(e) => {
         if (isEditable && cellValue !== e.target.textContent) {
           const div = e.target;
           let content = div.innerHTML;
-          console.log({ content }, 'content');
           handleCellValueChange(cell.row.index, column.key || column.name, content, cell.row.original);
         }
       }}
@@ -85,43 +84,46 @@ const Text = ({
       onClick={(e) => {
         setContentEditable(true);
       }}
-      // defaultValue={cellValue}
     />
   );
 
   const getOverlay = () => {
     return (
       <div
-        style={{
-          maxWidth: containerWidth,
-          width: containerWidth,
-        }}
         className={`overlay-cell-table ${darkMode && 'dark-theme'}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cellValue) }}
         style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}
-      />
+      >
+        <span
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cellValue) }}
+          style={{
+            maxWidth: containerWidth,
+            width: containerWidth,
+          }}
+        ></span>
+      </div>
     );
   };
+  const _showOverlay = ref.current && ref.current?.parentElement?.clientHeight < ref.current?.scrollHeight;
   return (
     <>
       <OverlayTrigger
         placement="bottom"
-        overlay={elem && elem?.parentElement?.clientHeight < elem?.scrollHeight ? getOverlay() : <div></div>}
-        trigger={elem && elem?.parentElement?.clientHeight < elem?.scrollHeight && ['hover']}
+        overlay={_showOverlay ? getOverlay() : <div></div>}
+        trigger={_showOverlay && ['hover']}
         rootClose={true}
-        show={elem && elem?.parentElement?.clientHeight < elem?.scrollHeight && showOverlay}
+        show={_showOverlay && showOverlay}
       >
-        <div className="h-100 d-flex flex-column justify-content-center position-relative">
+        <div className="h-100 d-flex flex-column position-relative">
           <div
-            className="table-text-column-cell"
             onMouseMove={() => {
               if (!hovered) setHovered(true);
             }}
             onMouseOut={() => setHovered(false)}
+            ref={ref}
           >
-            <div>{_renderTextArea()}</div>
+            {_renderTextArea()}
           </div>
           <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
         </div>

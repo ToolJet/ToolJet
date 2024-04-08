@@ -1385,14 +1385,14 @@ export function Table({
                 let rowProps = { ...row.getRowProps() };
                 const contentWrap = resolveReferences(contentWrapProperty, currentState);
                 const isMaxRowHeightAuto = maxRowHeight === 'auto';
-                rowProps.style.minHeight = cellSize === 'condensed' ? '35px' : '43px'; // 1px is removed to accomodate 1px border-bottom
+                rowProps.style.minHeight = cellSize === 'condensed' ? '39px' : '45px'; // 1px is removed to accomodate 1px border-bottom
                 if (contentWrap) {
                   rowProps.style.maxHeight = isMaxRowHeightAuto
                     ? 'fit-content'
                     : resolveReferences(maxRowHeightValue, currentState) + 'px';
                 } else {
-                  rowProps.style.maxHeight = cellSize === 'condensed' ? '36px' : '44px';
-                  rowProps.style.height = cellSize === 'condensed' ? '36px' : '44px';
+                  rowProps.style.maxHeight = cellSize === 'condensed' ? '40px' : '46px';
+                  rowProps.style.height = cellSize === 'condensed' ? '40px' : '46px';
                 }
                 return (
                   <tr
@@ -1578,6 +1578,7 @@ export function Table({
                               cellTextColor={cellTextColor}
                               cell={cell}
                               currentState={currentState}
+                              cellWidth={cell.column.width}
                             />
                           </div>
                         </td>

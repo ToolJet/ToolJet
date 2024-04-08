@@ -1,7 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import _ from 'lodash';
 import { validateWidget } from '@/_helpers/utils';
 import { useMounted } from '@/_hooks/use-mount';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import DOMPurify from 'dompurify';
 
 export default function GenerateEachCellValue({
   cellValue,
@@ -15,12 +17,28 @@ export default function GenerateEachCellValue({
   cellTextColor,
   cell,
   currentState,
+  darkMode,
+  cellWidth,
 }) {
   const mounted = useMounted();
   const updateCellValue = useRef();
   const isTabKeyPressed = useRef(false);
   const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
   const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number', undefined];
+  const ref = useRef();
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [hovered, setHovered] = useState(false);
+
+  useEffect(() => {
+    if (hovered) {
+      setShowOverlay(true);
+    } else {
+      setShowOverlay(false);
+    }
+  }, [hovered]);
+
+  const _showOverlay = ref?.current && ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth;
+
   let validationData = {};
   if (cell.column.isEditable && showHighlightedCells) {
     if (cell.column.columnType === 'number') {
@@ -72,6 +90,24 @@ export default function GenerateEachCellValue({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rowData, rowChangeSet]);
 
+  const getOverlay = () => {
+    return (
+      <div
+        className={`overlay-cell-table ${darkMode && 'dark-theme'}`}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}
+      >
+        <span
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cellValue) }}
+          style={{
+            maxWidth: cellWidth,
+          }}
+        ></span>
+      </div>
+    );
+  };
+
   let htmlElement = cellValue;
   if (cellValue?.toString()?.toLowerCase().includes(globalFilter?.toLowerCase())) {
     if (globalFilter) {
@@ -116,32 +152,48 @@ export default function GenerateEachCellValue({
       className={`w-100 h-100 ${columnType === 'selector' && 'd-flex align-items-center justify-content-center'} `}
     >
       {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
-        <div
-          className="d-flex justify-content-center flex-column w-100 h-100 generate-cell-value-component-div-wrapper"
-          style={{ oveflow: 'hidden' }}
+        <OverlayTrigger
+          placement="bottom"
+          overlay={_showOverlay ? getOverlay() : <div></div>}
+          trigger={_showOverlay && ['hover']}
+          rootClose={true}
+          show={_showOverlay && showOverlay}
         >
           <div
-            style={{
-              color: cellTextColor,
+            className="d-flex justify-content-center flex-column w-100 h-100 generate-cell-value-component-div-wrapper"
+            style={{ oveflow: 'hidden' }}
+            onMouseMove={() => {
+              if (!hovered) setHovered(true);
             }}
-            dangerouslySetInnerHTML={{
-              __html: htmlElement,
-            }}
-            tabIndex={0}
-            className={`table-column-type-div-element ${columnType === 'text' && 'h-100 my-1'}`}
-          ></div>
-          <div
-            style={{
-              display: cell.column.isEditable && validationData.validationError ? 'block' : 'none',
-              width: '100%',
-              marginTop: ' 0.25rem',
-              fontSize: ' 85.7142857%',
-              color: '#d63939',
-            }}
+            onMouseOut={() => setHovered(false)}
           >
-            {validationData.validationError}
+            <div
+              style={{
+                color: cellTextColor,
+              }}
+              ref={ref}
+              tabIndex={0}
+              className={`table-column-type-div-element ${columnType === 'text' && 'h-100 my-1'}`}
+            >
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: htmlElement,
+                }}
+              ></span>
+            </div>
+            <div
+              style={{
+                display: cell.column.isEditable && validationData.validationError ? 'block' : 'none',
+                width: '100%',
+                marginTop: ' 0.25rem',
+                fontSize: ' 85.7142857%',
+                color: '#d63939',
+              }}
+            >
+              {validationData.validationError}
+            </div>
           </div>
-        </div>
+        </OverlayTrigger>
       ) : (
         cellRender
       )}
