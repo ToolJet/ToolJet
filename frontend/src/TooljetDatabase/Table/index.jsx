@@ -24,6 +24,7 @@ import Boolean from '../Icons/Toggle.svg';
 import Serial from '../Icons/Serial.svg';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
+import WarningDark from '../Icons/warning-dark.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 import TjdbTableHeader from './Header';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -1304,8 +1305,8 @@ const Table = ({ collapseSidebar }) => {
         {rows.length === 0 && !loadingState && (
           <div className="empty-table-container">
             <div>
-              <div className="warning-icon-container">
-                <Warning />
+              <div className={darkMode ? 'warning-icon-container-dark' : 'warning-icon-container'}>
+                {darkMode ? <WarningDark /> : <Warning />}
               </div>
               <div
                 className="text-h3"
@@ -1326,7 +1327,7 @@ const Table = ({ collapseSidebar }) => {
                 >
                   <span className="col-auto">
                     <ButtonSolid
-                      variant="tertiary"
+                      variant={`${darkMode ? 'zBlack' : 'tertiary'}`}
                       disabled={false}
                       onClick={() => toggleAddNewDataMenu(true)}
                       size="sm"
