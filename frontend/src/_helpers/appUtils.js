@@ -126,7 +126,7 @@ export function getDataFromLocalStorage(key) {
 }
 
 const evaluatePythonCode = async (options) => {
-  const { _ref, query, mode, isPreview, code, queryResult } = options;
+  const { _ref, query, mode, currentState, isPreview, code, queryResult } = options;
   let pyodide;
   try {
     pyodide = await loadPyodide();
@@ -140,7 +140,7 @@ const evaluatePythonCode = async (options) => {
   }
   const log = (line) => console.log({ line });
   let result = {};
-  const currentState = getCurrentState(_ref.moduleName);
+
   try {
     const appStateVars = currentState['variables'] ?? {};
 
