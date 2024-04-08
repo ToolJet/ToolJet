@@ -63,7 +63,7 @@ function orderSuggestions(suggestions, validationType) {
   return [...matchingSuggestions, ...otherSuggestions];
 }
 
-export const generateHints = (hints, isFxHinter = false, totalReferences = 1) => {
+export const generateHints = (hints, totalReferences = 1) => {
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
@@ -90,9 +90,7 @@ export const generateHints = (hints, isFxHinter = false, totalReferences = 1) =>
           insert: completion.label,
         };
 
-        let anchorSelection = isFxHinter
-          ? pickedCompletionConfig.insert.length
-          : pickedCompletionConfig.insert.length + 2;
+        let anchorSelection = pickedCompletionConfig.insert.length + 2;
 
         if (completion.type === 'js_methods') {
           pickedCompletionConfig.from = from;
