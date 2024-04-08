@@ -213,8 +213,6 @@ const EditorComponent = (props) => {
 
   const prevAppDefinition = useRef(appDefinition);
 
-  const onAppLoadAndPageLoadEventsAreTriggered = useRef(false);
-
   useLayoutEffect(() => {
     resetAllStores();
   }, []);
@@ -282,9 +280,9 @@ const EditorComponent = (props) => {
     }
 
     if (mounted && didAppDefinitionChanged && currentPageId) {
-      // const components = appDefinition?.pages[currentPageId]?.components || {};
+      const components = appDefinition?.pages[currentPageId]?.components || {};
 
-      // computeComponentState(components);
+      computeComponentState(components);
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
@@ -789,7 +787,6 @@ const EditorComponent = (props) => {
         handleLowPriorityWork(async () => {
           await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
           await handleEvent('onPageLoad', currentPageEvents, {}, true);
-          await handleLowPriorityWork(() => (onAppLoadAndPageLoadEventsAreTriggered.current = true));
         });
       });
   };

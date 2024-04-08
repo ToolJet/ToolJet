@@ -3,17 +3,15 @@ import moment from 'moment';
 import _, { isEmpty } from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
-import { previewQuery, executeAction } from '@/_helpers/appUtils';
+import { executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { getCurrentState, useCurrentState } from '@/_stores/currentStateStore';
+import { getCurrentState } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
-import { resolveReferences as newResolver } from '@/Editor/CodeEditor/utils';
-import { useResolveStore } from '@/_stores/resolverStore';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -329,18 +327,7 @@ export const serializeNestedObjectToQueryParams = function (obj, prefix) {
 export function resolveWidgetFieldValue(prop, _default = [], customResolveObjects = {}) {
   const widgetFieldValue = prop;
 
-  const isStoreAndEditorReady = useResolveStore.getState().updateStoreState && useCurrentState.getState().isEditorReady;
-
   try {
-    if (isStoreAndEditorReady) {
-      const [_, _error, resolveValue] = newResolver(widgetFieldValue?.value);
-
-      if (_error) {
-        return _default;
-      }
-
-      return resolveValue;
-    }
     const state = getCurrentState();
     return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
