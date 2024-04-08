@@ -22,9 +22,9 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:----------- |:----------- |:----------------- |
-| Placeholder |  It specifies a hint that describes the expected value.| This field requires a `String` value |
-| Mode |  It is used to specify the language to be used for the code-editor.| See `info` below for the list of all supported languages |
-| Show Line Number |  This property is used to show or hide line numbers to the left of the editor.| This fields expects a boolean value `{{true}}` or `{{false}}` |
+| Placeholder |  Specifies a hint that describes the expected value.| This field requires a `String` value |
+| Mode |  Specifies the language to be used for the code-editor.| See `info` below for the list of all supported languages |
+| Show line number | Show or hides line numbers to the left of the editor.| This fields expects a boolean value `{{true}}` or `{{false}}` |
 
 :::info
 <details>
@@ -178,9 +178,9 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| value | This variable holds the value whenever the user inputs anything on the code-editor . You can access the value dynamically using JS: `{{components.codeeditor1.value}}`| 
+| <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:---------- |
+| value | This variable holds the value whenever the user inputs anything on the code-editor . | Access the value dynamically using JS: `{{components.codeeditor1.value}}`| 
 
 </div>
 
@@ -210,10 +210,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Styles </div> | <div style={{ width:"100px"}}> Description </div> | 
-|:----------- |:----------- |
-| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
-| Disable | This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
-| Border radius | Use this property to modify the border radius of the editor. The field expects only numerical value from `1` to `100`, default is `0`. |
+| <div style={{ width:"100px"}}> Styles </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Default Value </div> |
+|:----------- |:----------- |:----------- |
+| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. | By default, it's set to `{{true}}` |
+| Disable | This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. | By default, its value is set to `{{false}}` |
+| Border radius | Modifies the border radius of the editor. The field expects only numerical value from `1` to `100`. | Default is `0`. |
 
 </div>

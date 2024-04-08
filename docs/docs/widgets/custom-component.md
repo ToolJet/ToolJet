@@ -90,9 +90,9 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variables  </div>    | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| data | This variable will hold the variables assigned inside the `code` for custom component. You can access the value dynamically using JS: `{{components.customcomponent1.data.title}}`|
+| <div style={{ width:"100px"}}> Variables  </div>    | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:---------- |
+| data | This variable will hold the variables assigned inside the `code` for custom component.| Access the value dynamically using JS: `{{components.customcomponent1.data.title}}`|
 
 </div>
 
@@ -122,9 +122,9 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description   </div>                                                                                                                                                                                                                                           |
-|:---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}`. |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description   </div>                                                                                                                                                                                                                                           | <div style={{ width:"100px"}}> Default value </div> |
+|:---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |:--------- |
+| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. | By default, it's set to `{{true}}`. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
