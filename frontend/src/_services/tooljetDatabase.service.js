@@ -66,7 +66,7 @@ function renameTable(organizationId, tableName, newTableName, data = []) {
   let bodyData = _.cloneDeep(data);
   bodyData.forEach((obj) => {
     ['new_column', 'old_column'].forEach(function (key) {
-      delete obj[key].dataTypeDetails;
+      delete obj[key]?.dataTypeDetails;
     });
   });
   return tooljetAdapter.patch(`/tooljet-db/organizations/${organizationId}/table/${tableName}`, {
