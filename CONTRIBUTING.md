@@ -8,6 +8,7 @@ We love your input! We want to make contributing to this project as easy and tra
 
 ## Setup 
 
+
 - [Mac OS](https://docs.tooljet.io/docs/contributing-guide/setup/macos)
 - [Docker](https://docs.tooljet.io/docs/contributing-guide/setup/docker)
 - [Ubuntu](https://docs.tooljet.io/docs/contributing-guide/setup/ubuntu)
