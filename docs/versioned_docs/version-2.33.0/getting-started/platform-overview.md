@@ -5,14 +5,9 @@ slug: /
 ---
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-<!-- ## What is ToolJet?
-
-ToolJet is a fast, secure, and user-friendly development platform to build custom internal tools. ToolJet streamlines the development process with seamless integrations, robust security, and a comprehensive suite of app-building tools.  -->
-
 ## What is ToolJet?
 
 ToolJet is a low-code platform that enables developers to rapidly build and deploy custom internal tools. It has a drag-and-drop app builder with 45 pre-built components, so developers can create complex applications in minutes. ToolJet also connects to most popular data sources and APIs out of the box, and it has a group-based permission system for easy user access management. ToolJet also comes with a lot of other features, but for now, let’s build a basic ToolJet app.
-
 
 </div>
 
@@ -21,7 +16,7 @@ ToolJet is a low-code platform that enables developers to rapidly build and depl
 ## How ToolJet Works:
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/platform-overview/platform-overview-v2.jpg" alt="Platform Overview" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/platform-overview/platform-overview-v2.png" alt="Platform Overview" />
 </div>
 
 **With ToolJet, you can streamline app development with 4 core steps:** <br/>
@@ -42,10 +37,9 @@ Below is a detailed overview of ToolJet's key functionalities, demonstrating how
 
 ### Visual App Builder
 Enables the creation of visually appealing front-ends with a drag-and-drop interface and pre-built components. 
-<!-- It simplifies the app-development process, making it accessible even for non-technical users. -->
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0'}} className="screenshot-full" src="/img/platform-overview/app-builder.png" alt="App-Builder" />
+    <img  className="screenshot-full" src="/img/platform-overview/app-builder.png" alt="App-Builder" />
 </div>
 
 </div>
@@ -54,10 +48,9 @@ Enables the creation of visually appealing front-ends with a drag-and-drop inter
 
 ### Integrations
 Offers seamless integration with a wide range of data sources, including over 50 applications, databases, and APIs. 
-<!-- This feature facilitates easy data connectivity and aggregation from various systems. -->
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0'}} className="screenshot-full" src="/img/platform-overview/integrations.png" alt="Integrations" />
+    <img style={{}} className="screenshot-full" src="/img/platform-overview/integrations-v2.png" alt="Integrations" />
 </div>
 
 </div>
@@ -92,7 +85,7 @@ Designed with advanced security features and a scalable infrastructure to meet t
 <!-- This ensures the protection of sensitive data and the reliability of the platform in handling large-scale applications. -->
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', borderRadius:'5px'}} className="screenshot-full" src="/img/platform-overview/security.png" alt="Security" />
+    <img style={{ border:'0', borderRadius:'5px'}} className="screenshot-full" src="/img/platform-overview/security-v2.png" alt="Security" />
 </div>
 
 </div>
@@ -102,10 +95,9 @@ Designed with advanced security features and a scalable infrastructure to meet t
 ### SSO Support
 
 Single Sign-On (SSO) capabilities, supporting a variety of providers including Okta, Google, Azure AD, and OpenID Connect. 
-<!-- This enhances user authentication and bolsters overall security. -->
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', borderRadius:'5px'}} className="screenshot-full" src="/img/platform-overview/sso.png" alt="SSO Support" />
+    <img style={{ border:'0', borderRadius:'5px'}} className="screenshot-full" src="/img/platform-overview/sso-v2.png" alt="SSO Support" />
 </div>
 
 </div>
