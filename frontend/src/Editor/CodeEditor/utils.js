@@ -112,7 +112,7 @@ const resolveWorkspaceVariables = (query, state) => {
       resolvedStr = resolvedStr.replace(serverMatch, 'HiddenEnvironmentVariable');
       error = 'Server variables cannot be resolved in the client.';
     } else {
-      const [resolvedCode, err] = resolveCode(code, state);
+      const [resolvedCode, err] = resolveCode(code);
 
       if (!resolvedCode) {
         error = err ? err : `Cannot resolve ${query}`;
@@ -126,7 +126,7 @@ const resolveWorkspaceVariables = (query, state) => {
   return [valid, error, resolvedStr];
 };
 
-function resolveCode(code, state, customObjects = {}, withError = true, reservedKeyword, isJsCode) {
+function resolveCode(code, customObjects = {}, withError = true, reservedKeyword, isJsCode) {
   let result = '';
   let error;
 
@@ -135,6 +135,7 @@ function resolveCode(code, state, customObjects = {}, withError = true, reserved
     error = `Cannot resolve function call ${code}`;
   } else {
     try {
+      const state = useCurrentStateStore.getState();
       const evalFunction = Function(
         [
           'variables',
@@ -199,8 +200,7 @@ const resolveMultiDynamicReferences = (code, lookupTable) => {
 
         resolvedValue = resolvedValue.replace(variable, res);
       } else {
-        const currentState = useCurrentStateStore.getState();
-        const [resolvedCode] = resolveCode(variableToResolve, currentState, {}, true, [], true);
+        const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
 
         resolvedValue = resolvedCode;
       }
@@ -210,40 +210,40 @@ const resolveMultiDynamicReferences = (code, lookupTable) => {
   return resolvedValue;
 };
 
-export const resolveReferences = (query, validationSchema, customResolvers = {}, fxActive = false) => {
+export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
   if (!query || typeof query !== 'string') return [false, null, null];
-
   let resolvedValue = query;
   let error = null;
 
-  const currentState = useCurrentStateStore.getState();
-
   //Todo : remove resolveWorkspaceVariables when workspace variables are removed
   if (query?.startsWith('%%') && query?.endsWith('%%')) {
-    return resolveWorkspaceVariables(query, currentState);
+    return resolveWorkspaceVariables(query);
   }
 
   if ((!validationSchema || isEmpty(validationSchema)) && (!query?.includes('{{') || !query?.includes('}}'))) {
     return [true, error, resolvedValue];
   }
 
-  if (validationSchema && !fxActive && !query?.includes('{{') && !query?.includes('}}')) {
+  if (validationSchema && !query?.includes('{{') && !query?.includes('}}')) {
     const [valid, errors, newValue] = validateComponentProperty(query, validationSchema);
     return [valid, errors, newValue, resolvedValue];
   }
 
-  const hasMultiDynamicVariables = getDynamicVariables(query);
+  const hasMultiDynamicVariables = getDynamicVariables(query)?.length > 1;
 
   const { lookupTable } = useResolveStore.getState();
-  if (isEmpty(validationSchema) && hasMultiDynamicVariables) {
+  if (hasMultiDynamicVariables) {
     resolvedValue = resolveMultiDynamicReferences(query, lookupTable);
   } else {
-    let value = !fxActive ? query?.replace(/{{|}}/g, '').trim() : query;
+    let value = query?.replace(/{{|}}/g, '').trim();
 
-    if (fxActive && (value.startsWith('#') || value.includes('table-'))) {
+    if (value.startsWith('#') || value.includes('table-')) {
       value = JSON.stringify(value);
     }
-    const { toResolveReference, jsExpression, jsExpMatch } = inferJSExpAndReferences(value, lookupTable.hints);
+    const { toResolveReference, jsExpression, jsExpMatch } =
+      lookupTable.hints || lookupTable.hints.has
+        ? inferJSExpAndReferences(value, lookupTable.hints)
+        : { toResolveReference: null, jsExpression: null, jsExpMatch: null };
 
     if (!jsExpMatch && toResolveReference && lookupTable.hints.has(toResolveReference)) {
       const idToLookUp = lookupTable.hints.get(toResolveReference);
@@ -253,10 +253,10 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
         let jscode = value.replace(toResolveReference, resolvedValue);
         jscode = value.replace(toResolveReference, `'${resolvedValue}'`);
 
-        resolvedValue = resolveCode(jscode, currentState, customResolvers);
+        resolvedValue = resolveCode(jscode, customResolvers);
       }
     } else {
-      const [resolvedCode, errorRef] = resolveCode(value, currentState, customResolvers, true, [], true);
+      const [resolvedCode, errorRef] = resolveCode(value, customResolvers, true, [], true);
 
       resolvedValue = resolvedCode;
       error = errorRef || null;
@@ -309,7 +309,7 @@ const inferJSExpAndReferences = (code, hintsMap) => {
     const potentialReference = referenceChain ? referenceChain + '.' + segment : segment;
 
     // Check if the potential reference exists in hintsMap
-    if (hintsMap.has(potentialReference)) {
+    if (hintsMap.has && hintsMap.has(potentialReference)) {
       // If it does, update the referenceChain
       referenceChain = potentialReference;
     } else {

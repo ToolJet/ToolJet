@@ -25,12 +25,19 @@ import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { Page } from 'src/entities/page.entity';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { Layout } from 'src/entities/layout.entity';
-
 import { Component } from 'src/entities/component.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { VersionReleaseDto } from '@dto/version-release.dto';
 
+import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { isEmpty } from 'lodash';
 const uuid = require('uuid');
+
+interface AppResourceMappings {
+  dataQueryMapping: Record<string, string>;
+  componentsMapping: Record<string, string>;
+}
+
 @Injectable()
 export class AppsService {
   constructor(
@@ -392,6 +399,11 @@ export class AppsService {
         const { oldComponentToNewComponentMapping, oldPageToNewPageMapping } =
           await this.createNewPagesAndComponentsForVersion(manager, appVersion, versionFrom.id, versionFrom.homePageId);
 
+        await this.updateEntityReferencesForNewVersion(manager, {
+          componentsMapping: oldComponentToNewComponentMapping,
+          dataQueryMapping: oldDataQueryToNewMapping,
+        });
+
         await this.updateEventActionsForNewVersionWithNewMappingIds(
           manager,
           appVersion.id,
@@ -405,6 +417,64 @@ export class AppsService {
     }, manager);
   }
 
+  async updateEntityReferencesForNewVersion(manager: EntityManager, resourceMapping: AppResourceMappings) {
+    const mappings = { ...resourceMapping.componentsMapping, ...resourceMapping.dataQueryMapping };
+    const newComponentIds = Object.values(resourceMapping.componentsMapping);
+    const newQueriesIds = Object.values(resourceMapping.dataQueryMapping);
+
+    if (newComponentIds.length > 0) {
+      const components = await manager
+        .createQueryBuilder(Component, 'components')
+        .where('components.id IN(:...componentIds)', { componentIds: newComponentIds })
+        .select([
+          'components.id',
+          'components.properties',
+          'components.styles',
+          'components.general',
+          'components.validation',
+          'components.generalStyles',
+          'components.displayPreferences',
+        ])
+        .getMany();
+
+      const toUpdateComponents = components.filter((component) => {
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        if (entityReferencesInComponentDefinitions.length > 0) {
+          return updateEntityReferences(component, mappings);
+        }
+      });
+
+      if (!isEmpty(toUpdateComponents)) {
+        await manager.save(toUpdateComponents);
+      }
+    }
+
+    if (newQueriesIds.length > 0) {
+      const dataQueries = await manager
+        .createQueryBuilder(DataQuery, 'dataQueries')
+        .where('dataQueries.id IN(:...dataQueryIds)', { dataQueryIds: newQueriesIds })
+        .select(['dataQueries.id', 'dataQueries.options'])
+        .getMany();
+
+      const toUpdateDataQueries = dataQueries.filter((dataQuery) => {
+        const entityReferencesInQueryOptions = findAllEntityReferences(dataQuery, []).filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        if (entityReferencesInQueryOptions.length > 0) {
+          return updateEntityReferences(dataQuery, mappings);
+        }
+      });
+
+      if (!isEmpty(toUpdateDataQueries)) {
+        await manager.save(toUpdateDataQueries);
+      }
+    }
+  }
+
   async updateEventActionsForNewVersionWithNewMappingIds(
     manager: EntityManager,
     versionId: string,
@@ -416,8 +486,10 @@ export class AppsService {
       where: { appVersionId: versionId },
     });
 
+    const mappings = { ...oldDataQueryToNewMapping, ...oldComponentToNewComponentMapping } as Record<string, string>;
+
     for (const event of allEvents) {
-      const eventDefinition = event.event;
+      const eventDefinition = updateEntityReferences(event.event, mappings);
 
       if (eventDefinition?.actionId === 'run-query') {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
