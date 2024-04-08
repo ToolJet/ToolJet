@@ -1,4 +1,5 @@
 import HttpClient from '@/_helpers/http-client';
+import _ from 'lodash';
 
 const tooljetAdapter = new HttpClient();
 
@@ -61,12 +62,18 @@ function updateTable(organizationId, tableName, columns) {
   });
 }
 
-function renameTable(organizationId, tableName, newTableName, comparisonArray = []) {
+function renameTable(organizationId, tableName, newTableName, data = []) {
+  let bodyData = _.cloneDeep(data);
+  bodyData.forEach((obj) => {
+    ['new_column', 'old_column'].forEach(function (key) {
+      delete obj[key].dataTypeDetails;
+    });
+  });
   return tooljetAdapter.patch(`/tooljet-db/organizations/${organizationId}/table/${tableName}`, {
     action: 'rename_table',
     table_name: tableName,
     ...(newTableName !== tableName && { new_table_name: newTableName }),
-    columns: comparisonArray,
+    columns: bodyData,
   });
 }
 

@@ -6,20 +6,24 @@
   display: none;
 }
 
-.tjdb-menu-icon-parent {
-  width: 20px;
-  height: 20px;
+// .tjdb-menu-icon-parent {
+//   //   width: 20px;
+//   //   height: 20px;
+// }
+
+.header-primaryKey-container {
+  margin-right: 6px !important;
 }
 
 .primaryKeyTooltip {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 89% !important;
+  width: 100% !important;
 }
 
 .column-popover {
-  width: 137px !important;
+  width: 150px !important;
 }
 
 .column-popover-parent {
@@ -298,6 +302,7 @@
 .create-table-list-items {
   .popover-body {
     padding: 0px !important;
+    width: 240px !important;
 
     .unique-constraint-parent {
       padding: 16px 16px 0px 16px !important;
@@ -325,5 +330,16 @@
       font-weight: 400 !important;
     }
 
+  }
+}
+
+.table-list-items {
+  button {
+    border: none;
+    background: none;
+  }
+
+  .disabled-btn {
+    cursor: not-allowed !important;
   }
 }

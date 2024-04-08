@@ -6,6 +6,7 @@ import EditIcon from '../../Icons/EditColumn.svg';
 // import CloneIcon from './Icons/Clone.svg';
 import DeleteIcon from './Icons/Delete.svg';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import Menu from '../../Icons/Menu.svg';
 
 export const ListItemPopover = ({
   onEdit,
@@ -97,9 +98,7 @@ export const ListItemPopover = ({
   return (
     <OverlayTrigger trigger="click" placement="bottom" rootClose onToggle={onMenuToggle} overlay={popover}>
       <div className={cx(`float-right cursor-pointer table-list-item-popover`)} data-cy="table-kebab-icon">
-        <span>
-          <SolidIcon name="morevertical" width="14" fill={darkMode ? '#FDFDFE' : '#11181C'} />
-        </span>
+        <Menu width="20" height="20" />
       </div>
     </OverlayTrigger>
   );

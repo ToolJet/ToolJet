@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-//import Select from '@/_ui/Select';
+import cx from 'classnames';
 import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { isEmpty } from 'lodash';
@@ -93,12 +93,12 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
   };
 
   const handleCreate = async () => {
-    const isCheckSerialType = dataType?.value === 'serial' ? true : false;
+    const isSerialType = dataType.value === 'serial' ? true : false;
     if (isEmpty(columnName)) {
       toast.error('Column name cannot be empty');
       return;
     }
-    if (isEmpty(dataType?.value)) {
+    if (isEmpty(dataType.value)) {
       toast.error('Data type cannot be empty');
       return;
     }
@@ -107,11 +107,11 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
       organizationId,
       selectedTable.table_name,
       columnName,
-      dataType?.value,
+      dataType.value,
       defaultValue,
       isNotNull,
       isUniqueConstraint,
-      isCheckSerialType
+      isSerialType
     );
     setFetching(false);
     if (error) {
@@ -168,11 +168,11 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
             value={defaultValue}
             type="text"
             placeholder={dataType?.value === 'serial' ? 'Auto-generated' : 'Enter default value'}
-            className={
-              dataType?.value !== 'serial' && isNotNull === true && defaultValue.length <= 0 && rows.length > 0
-                ? 'form-error'
-                : 'form-control'
-            }
+            className={cx({
+              'form-error':
+                dataType?.value !== 'serial' && isNotNull === true && defaultValue.length <= 0 && rows.length > 0,
+              'form-control': true,
+            })}
             data-cy="default-value-input-field"
             autoComplete="off"
             onChange={(e) => setDefaultValue(e.target.value)}

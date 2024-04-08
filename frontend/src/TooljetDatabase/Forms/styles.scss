@@ -27,14 +27,12 @@
   padding: 8px;
   display: flex;
   align-items: start;
-  // justify-content: space-between;
-  // gap: 5px;
+  justify-content: center;
   border-radius: 6px;
   border: 1px solid #FDD8D3;
 
   .edit-warning-icon {
     width: 28px !important;
-    height: 28px !important;
   }
 
   .edit-warning-text {
@@ -341,7 +339,7 @@
 
   .key-changes-container {
     display: flex;
-    align-items: center;
+    align-items: start;
     justify-content: space-between;
     padding: 12px;
     font-weight: 500;
@@ -369,7 +367,7 @@
     }
 
     .newkeyDetails-container {
-      margin-left: 44px;
+      margin-left: 65px;
     }
 
   }

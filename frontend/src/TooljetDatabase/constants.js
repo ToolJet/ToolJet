@@ -49,12 +49,17 @@ export const formatOptionLabel = ({ label, icon }) => {
   );
 };
 
+function checkString(inputString) {
+  const regex = /^nextval\(.+::regclass\)$/;
+  return regex.test(inputString);
+}
+
 export const getColumnDataType = (columnDetails) => {
   const { data_type = '', column_default = '' } = columnDetails;
-  const serialDatatypeDefaultValuePattern = 'nextval(';
+  const result = checkString(column_default);
 
   if (data_type === 'integer' && column_default) {
-    if (column_default.includes(serialDatatypeDefaultValuePattern)) return 'serial';
+    if (result) return 'serial';
   }
   return data_type;
 };

@@ -798,13 +798,20 @@ const Table = ({ collapseSidebar }) => {
     }
   };
 
-  function tableHeaderContent(column) {
+  function tableHeaderContent(column, index) {
     const { constraints_type = {}, dataType = '' } = column;
     const { is_primary_key } = constraints_type;
 
     return is_primary_key ? (
       <ToolTip show message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
-        <div className="primaryKeyTooltip">
+        <div
+          className={cx({
+            'header-primaryKey-container':
+              editColumnHeader?.hoveredColumn === index ||
+              (editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index),
+            primaryKeyTooltip: true,
+          })}
+        >
           <div>
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
               {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
@@ -981,7 +988,7 @@ const Table = ({ collapseSidebar }) => {
                       onMouseOut={() => handleMouseOut()}
                     >
                       <div className="d-flex align-items-center justify-content-between">
-                        {tableHeaderContent(column)}
+                        {tableHeaderContent(column, index)}
 
                         <TablePopover
                           onEdit={() => {

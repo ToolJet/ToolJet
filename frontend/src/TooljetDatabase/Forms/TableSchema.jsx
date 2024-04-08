@@ -38,6 +38,9 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
       columns[columnSelection.index]?.data_type === 'integer'
         ? 'serial'
         : columns[columnSelection.index]?.data_type;
+    // const checkString = columns[columnSelection.index]?.column_default;
+    // const regex = /^nextval(".*"::regclass)$/;
+    // console.log('first', regex.test(checkString));
     return (
       <Option {...props}>
         <div className="selected-dropdownStyle d-flex align-items-center justify-content-between">
@@ -82,6 +85,18 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
       width: isEditMode && columns[index]?.constraints_type?.is_primary_key === true ? '150px' : '126px',
     };
   };
+
+  function countPrimaryKeyLength(primaryKeyColumn) {
+    let _count = 0;
+    for (const key in primaryKeyColumn) {
+      if (primaryKeyColumn[key]?.constraints_type?.is_primary_key === true) {
+        _count++;
+      }
+    }
+    return _count;
+  }
+
+  const primaryKeyLength = countPrimaryKeyLength(columns);
 
   return (
     <div>
@@ -201,14 +216,7 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
                     prevColumns[index].column_default = e.target.value;
                     setColumns(prevColumns);
                   }}
-                  value={
-                    columns[index].data_type === 'serial' ||
-                    (columns[index].data_type === 'serial' && columns[index]?.column_default?.includes('nextval('))
-                      ? 'Auto-generated'
-                      : columns[index].data_type !== 'serial' && columns[index]?.column_default?.includes('nextval(')
-                      ? null
-                      : columns[index].column_default
-                  }
+                  value={columns[index].data_type === 'serial' ? 'Auto-generated' : columns[index].column_default}
                   type="text"
                   className="form-control defaultValue"
                   data-cy="default-input-field"
@@ -228,24 +236,32 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
               </div>
             </ToolTip>
 
-            <div className="primary-check">
-              <IndeterminateCheckbox
-                checked={columns[index]?.constraints_type?.is_primary_key ?? false}
-                onChange={(e) => {
-                  const prevColumns = { ...columns };
-                  const columnConstraints = prevColumns[index]?.constraints_type ?? {};
-                  // const data = e.target.checked === true ? true : false;
-                  columnConstraints.is_primary_key = e.target.checked;
-                  columnConstraints.is_not_null =
-                    e.target.checked === true || prevColumns[index].data_type === 'serial' ? true : false;
-                  columnConstraints.is_unique =
-                    e.target.checked === true || prevColumns[index].data_type === 'serial' ? true : false;
-                  prevColumns[index].constraints_type = { ...columnConstraints };
-                  // prevColumns[index].data_type = data === false && '';
-                  setColumns(prevColumns);
-                }}
-              />
-            </div>
+            <ToolTip
+              message={'There must be atleast one Primary key'}
+              placement="top"
+              tooltipClassName="tootip-table"
+              show={primaryKeyLength === 1 && columns[index]?.constraints_type?.is_primary_key === true}
+            >
+              <div className="primary-check">
+                <IndeterminateCheckbox
+                  checked={columns[index]?.constraints_type?.is_primary_key ?? false}
+                  onChange={(e) => {
+                    const prevColumns = { ...columns };
+                    const columnConstraints = prevColumns[index]?.constraints_type ?? {};
+                    // const data = e.target.checked === true ? true : false;
+                    columnConstraints.is_primary_key = e.target.checked;
+                    columnConstraints.is_not_null =
+                      e.target.checked === true || prevColumns[index].data_type === 'serial' ? true : false;
+                    columnConstraints.is_unique =
+                      e.target.checked === true || prevColumns[index].data_type === 'serial' ? true : false;
+                    prevColumns[index].constraints_type = { ...columnConstraints };
+                    // prevColumns[index].data_type = data === false && '';
+                    setColumns(prevColumns);
+                  }}
+                  disabled={primaryKeyLength === 1 && columns[index]?.constraints_type?.is_primary_key === true}
+                />
+              </div>
+            </ToolTip>
 
             <ToolTip
               // message="Primary key values cannot be null"

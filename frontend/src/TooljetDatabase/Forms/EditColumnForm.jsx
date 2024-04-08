@@ -235,7 +235,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
           <div className="col d-flex flex-column">
             <p className="m-0 p-0 fw-500">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
             <p className="fw-400 secondary-text">
-              {isNotNull ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
+              {isUniqueConstraint ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
             </p>
           </div>
         </div>
