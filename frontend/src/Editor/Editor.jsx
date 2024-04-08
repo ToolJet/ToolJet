@@ -187,10 +187,6 @@ const EditorComponent = (props) => {
     shallow
   );
 
-  const { completedEnvironmentAndVersionsInit } = useEnvironmentsAndVersionsStore((state) => ({
-    completedEnvironmentAndVersionsInit: state.completedEnvironmentAndVersionsInit,
-  }));
-
   const currentState = useCurrentState();
 
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -760,28 +756,6 @@ const EditorComponent = (props) => {
       });
     });
   };
-
-  const afterEntireEditorInitCompleted = async () => {
-    const organizationId = useAppDataStore.getState()?.organizationId;
-    const editingVersionId = useAppDataStore.getState()?.currentVersionId;
-    const homePageId = useEditorStore.getState()?.currentPageId;
-    await useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
-    await fetchDataSources(editingVersionId);
-
-    const events = useAppDataStore.getState()?.events;
-    const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
-    const editorRef = getEditorRef();
-
-    handleLowPriorityWork(async () => {
-      await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
-      await handleEvent('onPageLoad', currentPageEvents, {}, true);
-      await handleLowPriorityWork(() => (onAppLoadAndPageLoadEventsAreTriggered.current = true));
-    });
-  };
-
-  useEffect(() => {
-    console.log('inside', 'completed');
-  }, [completedEnvironmentAndVersionsInit]);
 
   const processNewAppDefinition = async (data, startingPageHandle, versionSwitched = false, onComplete) => {
     const appDefData = buildAppDefinition(data);
