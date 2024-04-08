@@ -67,7 +67,7 @@ const RenderComponent = ({ appId, isEditable, isViewer, setAppDefinitionFromVers
     lazyLoadAppVersions,
     appVersionsLazyLoaded,
     setEnvironmentAndVersionsInitStatus,
-    setSelectedVersion,
+    changeEditorVersion,
     selectedVersion,
     deleteVersionAction,
   } = useEnvironmentsAndVersionsStore(
@@ -78,8 +78,8 @@ const RenderComponent = ({ appId, isEditable, isViewer, setAppDefinitionFromVers
       selectedVersion: state.selectedVersion,
       lazyLoadAppVersions: state.actions.lazyLoadAppVersions,
       setEnvironmentAndVersionsInitStatus: state.actions.setEnvironmentAndVersionsInitStatus,
-      setSelectedVersion: state.actions.setSelectedVersion,
       deleteVersionAction: state.actions.deleteVersion,
+      changeEditorVersion: state.actions.changeEditorVersion,
     }),
     shallow
   );
@@ -100,15 +100,18 @@ const RenderComponent = ({ appId, isEditable, isViewer, setAppDefinitionFromVers
       });
     }
 
-    return appVersionService
-      .getAppVersionData(appId, id)
-      .then((data) => {
-        setSelectedVersion(id);
-        setAppDefinitionFromVersion(data);
-      })
-      .catch((error) => {
+    changeEditorVersion(
+      appId,
+      id,
+      (newDeff) => {
+        setAppDefinitionFromVersion(newDeff);
+      },
+      (error) => {
         toast.error(error);
-      });
+      }
+    );
+
+    return;
   };
 
   const resetDeleteModal = () => {

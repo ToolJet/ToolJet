@@ -801,7 +801,7 @@ const EditorComponent = (props) => {
       })
       .finally(async () => {
         const funcParams = { homePageId };
-        await onComplete(funcParams);
+        typeof onComplete === 'function' && (await onComplete(funcParams));
       });
   };
 
@@ -822,11 +822,11 @@ const EditorComponent = (props) => {
       useCurrentStateStore.getState().actions.setEditorReady(false);
       useResolveStore.getState().actions.resetStore();
 
-      useAppVersionStore.getState().actions.updateEditingVersion(version);
-      const { slug, editingVersion } = appData;
+      const { editing_version } = appData;
+      useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
       updateState({
         events,
-        currentVersionId: editingVersion?.id,
+        currentVersionId: editing_version?.id,
         app: appData,
       });
       processNewAppDefinition(appData, null, true);

@@ -125,6 +125,20 @@ export const useEnvironmentsAndVersionsStore = create(
             onFailure(error);
           }
         },
+        changeEditorVersion: async (appId, versionId, onSuccess, onFailure) => {
+          try {
+            const data = await appVersionService.getAppVersionData(appId, versionId);
+            const selectedVersion = {
+              id: data.editing_version.id,
+              name: data.editing_version.name,
+              current_environment_id: data.editing_version.currentEnvironmentId,
+            };
+            set((state) => ({ ...state, selectedVersion }));
+            onSuccess(data);
+          } catch (error) {
+            onFailure(error);
+          }
+        },
       },
     }),
     { name: 'App Version Manager Store' }

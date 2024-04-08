@@ -1,4 +1,4 @@
-import { useEnvironmentsAndVersionsActions } from '@/_stores/environmentsAndVersionsStore';
+import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
 import React, { useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -10,9 +10,16 @@ const EnvironmentManager = () => {
     }),
     shallow
   );
-  const { init, setEnvironmentDropdownStatus } = useEnvironmentsAndVersionsActions();
+  const { init, setEnvironmentDropdownStatus, initializedEnvironmentDropdown } = useEnvironmentsAndVersionsStore(
+    (state) => ({
+      initializedEnvironmentDropdown: state.initializedEnvironmentDropdown,
+      init: state.actions.init,
+      setEnvironmentDropdownStatus: state.actions.setEnvironmentDropdownStatus,
+    }),
+    shallow
+  );
   useEffect(() => {
-    initComponent();
+    !initializedEnvironmentDropdown && initComponent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
