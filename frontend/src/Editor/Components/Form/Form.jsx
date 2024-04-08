@@ -7,7 +7,12 @@ import _, { omit } from 'lodash';
 import { Box } from '@/Editor/Box';
 import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
-import { onComponentClick, onComponentOptionChanged, removeFunctionObjects } from '@/_helpers/appUtils';
+import {
+  onComponentClick,
+  onComponentOptionChanged,
+  onComponentOptionsChanged,
+  removeFunctionObjects,
+} from '@/_helpers/appUtils';
 import { useAppInfo } from '@/_stores/appDataStore';
 export const Form = function Form(props) {
   const {
@@ -125,8 +130,6 @@ export const Form = function Form(props) {
     let formattedChildData = {};
     let childValidation = true;
 
-    console.log('here--- Inside useEffect--- ', containerProps.childComponents);
-
     if (!childComponents) {
       const exposedVariables = {
         data: formattedChildData,
@@ -134,7 +137,6 @@ export const Form = function Form(props) {
         ...(!advanced && { children: formattedChildData }),
       };
 
-      console.log('here--- exposedVariables--- ', exposedVariables);
       setExposedVariables(exposedVariables);
       return setValidation(childValidation);
     }
@@ -160,7 +162,6 @@ export const Form = function Form(props) {
       data: removeFunctionObjects(formattedChildData),
       isValid: childValidation,
     };
-    console.log('here--- useEffect--- ', childComponents, exposedVariables);
     setValidation(childValidation);
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -218,7 +219,6 @@ export const Form = function Form(props) {
   }
 
   const onOptionChange = ({ component, optionName, value, componentId }) => {
-    console.log('here--- onOptionChange');
     const optionData = {
       ...(childDataRef.current[componentId] ?? {}),
       name: component.name,
@@ -290,7 +290,7 @@ export const Form = function Form(props) {
                   <Box
                     {...props}
                     component={item}
-                    id={id}
+                    id={index}
                     width={width}
                     height={item.defaultSize.height}
                     mode={mode}
@@ -305,6 +305,9 @@ export const Form = function Form(props) {
                     // customResolvables={customResolvables}
                     parentId={id}
                     getContainerProps={getContainerProps}
+                    onOptionChanged={onComponentOptionChangedForSubcontainer}
+                    onOptionsChanged={onComponentOptionsChanged}
+                    isFromSubContainer={true}
                   />
                 </div>
               );
