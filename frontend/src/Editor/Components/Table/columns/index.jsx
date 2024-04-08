@@ -536,15 +536,16 @@ export default function generateColumnsData({
             );
           }
           case 'image': {
+            const computeImageHeight = column?.height ? `${column?.height}px` : '100%';
             return (
-              <div>
+              <div style={{ height: '100%' }}>
                 {cellValue && (
                   <img
                     src={cellValue}
                     style={{
                       pointerEvents: 'auto',
                       width: `${column?.width}px`,
-                      height: `${column?.height}px`,
+                      height: computeImageHeight,
                       borderRadius: `${column?.borderRadius}%`,
                       objectFit: `${column?.objectFit}`,
                     }}
