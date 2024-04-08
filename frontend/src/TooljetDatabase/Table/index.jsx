@@ -1097,7 +1097,7 @@ const Table = ({ collapseSidebar }) => {
                                     cellClick.editable === true
                                   ? 'table-editable-parent-cell'
                                   : darkMode
-                                  ? `table-cell-dark table-cell`
+                                  ? `table-cell table-cell-dark`
                                   : `table-cell`
                               }`,
                               {
