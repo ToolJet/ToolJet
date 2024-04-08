@@ -121,13 +121,30 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
     onClose && onClose();
   };
 
+  const toolTipPlacementStyle = {
+    width: '126px',
+  };
+
   return (
     <div className="drawer-card-wrapper ">
       <div className="drawer-card-title ">
-        <h3 className="" data-cy="create-new-column-header">
+        <h3 className="primaryKey-indication-container" data-cy="create-new-column-header">
           Edit column
+          {selectedColumn.constraints_type.is_primary_key === true && (
+            <ToolTip
+              message={'Primary key'}
+              placement="bottom"
+              tooltipClassName="primary-key-tooltip"
+              show={selectedColumn.constraints_type.is_primary_key === true}
+            >
+              <div className="primaryKey-indication">
+                <SolidIcon name="primarykey" />
+              </div>
+            </ToolTip>
+          )}
         </h3>
       </div>
+
       <div className="card-body">
         <div className="edit-warning-info mb-3">
           <div className="edit-warning-icon">
@@ -140,7 +157,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
         <div className="mb-3 tj-app-input">
           <div className="form-label" data-cy="column-name-input-field-label">
             <span style={{ marginRight: '6px' }}>Column name</span>
-            {selectedColumn?.constraints_type?.is_primary_key === true && <SolidIcon name="primarykey" />}
+            {selectedColumn?.constraints_type?.is_primary_key === true}
           </div>
           <input
             value={columnName}
@@ -157,16 +174,20 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
           <div className="form-label" data-cy="data-type-input-field-label">
             Data type
           </div>
-          <Select
-            isDisabled={true}
-            defaultValue={selectedColumn?.dataType === 'serial' ? serialDataType : disabledDataType}
-            formatOptionLabel={formatOptionLabel}
-            options={dataTypes}
-            onChange={handleTypeChange}
-            components={{ IndicatorSeparator: () => null }}
-            styles={customStyles}
-            isSearchable={false}
-          />
+          <ToolTip message={'Data type cannot be modified'} placement="top" tooltipClassName="tootip-table">
+            <div>
+              <Select
+                isDisabled={true}
+                defaultValue={selectedColumn?.dataType === 'serial' ? serialDataType : disabledDataType}
+                formatOptionLabel={formatOptionLabel}
+                options={dataTypes}
+                onChange={handleTypeChange}
+                components={{ IndicatorSeparator: () => null }}
+                styles={customStyles}
+                isSearchable={false}
+              />
+            </div>
+          </ToolTip>
         </div>
         <div className="mb-3 tj-app-input">
           <div className="form-label" data-cy="default-value-input-field-label">
@@ -180,9 +201,9 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
           >
             <div>
               <input
-                value={selectedColumn?.dataType === 'serial' ? 'Auto-generated' : defaultValue}
+                value={selectedColumn?.dataType !== 'serial' ? defaultValue : null}
                 type="text"
-                placeholder="Enter default value"
+                placeholder={selectedColumn?.dataType === 'serial' ? 'Auto-generated' : 'Enter default value'}
                 className={'form-control'}
                 data-cy="default-value-input-field"
                 autoComplete="off"
@@ -191,54 +212,100 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
               />
             </div>
           </ToolTip>
-          {isNotNull === true && rows.length > 0 && !isEmpty(defaultValue) && defaultValueLength > 0 ? (
+          {isNotNull === true &&
+          selectedColumn?.dataType !== 'serial' &&
+          rows.length > 0 &&
+          !isEmpty(defaultValue) &&
+          defaultValueLength > 0 ? (
             <span className="form-warning-message">
               Changing the default value will NOT update the fields having existing default value
             </span>
           ) : null}
         </div>
-        <div className="row mb-1">
-          <div className="col-1">
-            <label className={`form-switch`}>
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={isNotNull}
-                onChange={(e) => {
-                  setIsNotNull(e.target.checked);
-                }}
-                disabled={selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key}
-              />
-            </label>
+        <ToolTip
+          message={
+            selectedColumn.constraints_type.is_primary_key === true
+              ? 'Primary key values cannot be null'
+              : selectedColumn.dataType === 'serial' &&
+                (selectedColumn.constraints_type.is_primary_key !== true ||
+                  selectedColumn.constraints_type.is_primary_key === true)
+              ? 'Serial data type cannot have null value'
+              : null
+          }
+          placement="top"
+          tooltipClassName="tooltip-table-edit-column"
+          style={toolTipPlacementStyle}
+          show={
+            selectedColumn.constraints_type.is_primary_key === true ||
+            (selectedColumn.dataType === 'serial' &&
+              (selectedColumn.constraints_type.is_primary_key !== true ||
+                selectedColumn.constraints_type.is_primary_key === true))
+          }
+        >
+          <div className="row mb-1">
+            <div className="col-1">
+              <label className={`form-switch`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={isNotNull}
+                  onChange={(e) => {
+                    setIsNotNull(e.target.checked);
+                  }}
+                  disabled={selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key}
+                />
+              </label>
+            </div>
+            <div className="col d-flex flex-column">
+              <p className="m-0 p-0 fw-500">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
+              <p className="fw-400 secondary-text">
+                {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
+              </p>
+            </div>
           </div>
-          <div className="col d-flex flex-column">
-            <p className="m-0 p-0 fw-500">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
-            <p className="fw-400 secondary-text">
-              {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
-            </p>
+        </ToolTip>
+        <ToolTip
+          message={
+            selectedColumn.constraints_type.is_primary_key === true
+              ? 'Primary key values must be unique'
+              : selectedColumn.dataType === 'serial' &&
+                (selectedColumn.constraints_type.is_primary_key !== true ||
+                  selectedColumn.constraints_type.is_primary_key === true)
+              ? 'Serial data type value must be unique'
+              : null
+          }
+          placement="top"
+          tooltipClassName="tooltip-table-edit-column"
+          style={toolTipPlacementStyle}
+          show={
+            selectedColumn.constraints_type?.is_primary_key === true ||
+            (selectedColumn.dataType === 'serial' &&
+              (selectedColumn.constraints_type.is_primary_key !== true ||
+                selectedColumn.constraints_type.is_primary_key === true))
+          }
+        >
+          <div className="row mb-1">
+            <div className="col-1">
+              <label className={`form-switch`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={isUniqueConstraint}
+                  onChange={(e) => {
+                    setIsUniqueConstraint(e.target.checked);
+                  }}
+                  disabled={selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key}
+                />
+              </label>
+            </div>
+            <div className="col d-flex flex-column">
+              <p className="m-0 p-0 fw-500">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
+              <p className="fw-400 secondary-text">
+                {isUniqueConstraint ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="row mb-1">
-          <div className="col-1">
-            <label className={`form-switch`}>
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={isUniqueConstraint}
-                onChange={(e) => {
-                  setIsUniqueConstraint(e.target.checked);
-                }}
-                disabled={selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key}
-              />
-            </label>
-          </div>
-          <div className="col d-flex flex-column">
-            <p className="m-0 p-0 fw-500">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
-            <p className="fw-400 secondary-text">
-              {isUniqueConstraint ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
-            </p>
-          </div>
-        </div>
+        </ToolTip>
       </div>
       <DrawerFooter
         isEditMode={true}

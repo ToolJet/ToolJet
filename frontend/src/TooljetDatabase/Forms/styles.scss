@@ -373,3 +373,26 @@
   }
 
 }
+
+.tooltip-table-edit-column {
+  inset: auto auto 0px -183px !important
+}
+
+.primaryKey-indication-container {
+  display: flex;
+  align-items: center;
+  column-gap: 5px;
+
+  .primaryKey-indication {
+    background: var(--slate8) !important;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+  }
+
+}
+
+.primary-key-tooltip {
+  inset: -5px auto 0px 0px !important;
+}
