@@ -100,7 +100,6 @@ export const ColumnPopoverContent = ({
             currentState={currentState}
             onColumnItemChange={onColumnItemChange}
             getPopoverFieldSource={getPopoverFieldSource}
-            setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
             component={component}
           />
         )}

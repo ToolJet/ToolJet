@@ -41,7 +41,7 @@ export const OptionsList = ({
     await recordOptions(source.index, destination.index);
   };
 
-  const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => {
+  const getItemStyle = (draggableStyle) => {
     return {
       ...draggableStyle,
       userSelect: 'none',
@@ -181,10 +181,10 @@ export const OptionsList = ({
   const defaultOptionsValues = () => {
     return {
       options: [
-        { label: 'Jane Cooper', value: 'Jane Copoper' },
-        { label: 'Cameron Williamson', value: 'Cameron Williamson' },
-        { label: 'Leslie Alexander', value: 'Leslie Alexander' },
-        { label: 'Brooklyn Simmons', value: 'Brooklyn Simmons' },
+        { label: 'Reading', value: 'Reading' },
+        { label: 'Traveling', value: 'Traveling' },
+        { label: 'Photography', value: 'Photography' },
+        { label: 'Music', value: 'Music' },
       ],
     };
   };
@@ -221,10 +221,10 @@ export const OptionsList = ({
               popOverCallback={(showing) => {
                 setColumnPopoverRootCloseBlocker('dynamicOptions', showing);
               }}
-              placeholder={`{{[{ label: 'Jane Cooper', value: 'Jane Cooper' },
-                { label: 'Cameron Williamson', value: 'Cameron Williamson' },
-                { label: 'Leslie Alexander', value: 'Leslie Alexander' },
-                { label: 'Brooklyn Simmons', value: 'Brooklyn Simmons' }]}}`}
+              placeholder={`{{[{ label: 'Reading', value: 'Reading' },
+                { label: 'Traveling', value: 'Traveling' },
+                { label: 'Photography', value: 'Photography' },
+                { label: 'Music', value: 'Music' }]}}`}
             />
             <ProgramaticallyHandleProperties
               label="Options loading state"
@@ -269,7 +269,7 @@ export const OptionsList = ({
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
-                                  style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                                  style={{ ...getItemStyle(provided.draggableProps.style) }}
                                 >
                                   <OverlayTrigger
                                     trigger="click"

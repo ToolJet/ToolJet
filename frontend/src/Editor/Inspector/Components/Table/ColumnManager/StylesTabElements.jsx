@@ -17,7 +17,6 @@ export const StylesTabElements = ({
   currentState,
   onColumnItemChange,
   getPopoverFieldSource,
-  setColumnPopoverRootCloseBlocker,
   component,
 }) => {
   const { t } = useTranslation();
