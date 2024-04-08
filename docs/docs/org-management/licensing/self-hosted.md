@@ -1,6 +1,6 @@
 ---
-id: licensing
-title: Licensing
+id: self-hosted
+title: Self-Hosted
 ---
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
@@ -110,6 +110,7 @@ If you have an active license, you can find its validity period in the Settings.
 If your business or enterprise license key expires, your instance will revert to operating as a free plan. While you can still create unlimited apps, workspaces, and add users, premium features such as OpenID and Audit logs will no longer be accessible. For further information, please refer to the relevant **[plans](https://www.tooljet.com/pricing)**.
 
 ### 4) How can I add more users? 
+
 There are different methods to do this:
 
 **a)** You can renew directly using the **[business plan](https://www.tooljet.com/pricing)**. (Note: Please do check the list of premium features available with this plan)
