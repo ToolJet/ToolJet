@@ -270,70 +270,70 @@ export class TooljetDbService {
       const columnsToBeDeleted = [];
 
       columns.forEach((column) => {
-        const { oldColumn = {}, newColumn = {} } = column;
+        const { old_column = {}, new_column = {} } = column;
 
         // Filter Primary Key column
-        if (!isEmpty(newColumn) && newColumn?.constraints_type.is_primary_key) {
+        if (!isEmpty(new_column) && new_column?.constraints_type.is_primary_key) {
           updatedPrimaryKeys.push(
             new TableColumn({
-              name: newColumn.column_name,
-              type: newColumn.data_type,
+              name: new_column.column_name,
+              type: new_column.data_type,
             })
           );
         }
 
         // Columns to be deleted
-        if (!isEmpty(oldColumn) && isEmpty(newColumn)) {
-          if (oldColumn.column_name) columnsToBeDeleted.push(oldColumn.column_name);
+        if (!isEmpty(old_column) && isEmpty(new_column)) {
+          if (old_column.column_name) columnsToBeDeleted.push(old_column.column_name);
         }
 
         // New columns to be inserted
-        if (isEmpty(oldColumn) && !isEmpty(newColumn)) {
+        if (isEmpty(old_column) && !isEmpty(new_column)) {
           columnsToBeInserted.push(
             new TableColumn({
-              name: newColumn.column_name,
-              type: newColumn.data_type,
-              ...(newColumn?.column_default &&
-                newColumn.data_type !== 'serial' && {
+              name: new_column.column_name,
+              type: new_column.data_type,
+              ...(new_column?.column_default &&
+                new_column.data_type !== 'serial' && {
                   default:
-                    newColumn.data_type === 'character varying'
-                      ? this.addQuotesIfString(newColumn.column_default)
-                      : newColumn.column_default,
+                    new_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(new_column.column_default)
+                      : new_column.column_default,
                 }),
-              isNullable: !newColumn?.constraints_type.is_not_null,
-              isUnique: newColumn?.constraints_type.is_unique,
+              isNullable: !new_column?.constraints_type.is_not_null,
+              isUnique: new_column?.constraints_type.is_unique,
             })
           );
         }
 
         // Columns to be updated
-        if (!isEmpty(oldColumn) && !isEmpty(newColumn)) {
+        if (!isEmpty(old_column) && !isEmpty(new_column)) {
           columnstoBeUpdated.push({
             oldColumn: new TableColumn({
-              name: oldColumn.column_name,
-              type: oldColumn.data_type,
-              ...(oldColumn?.column_default &&
-                oldColumn.data_type !== 'serial' && {
+              name: old_column.column_name,
+              type: old_column.data_type,
+              ...(old_column?.column_default &&
+                old_column.data_type !== 'serial' && {
                   default:
-                    oldColumn.data_type === 'character varying'
-                      ? this.addQuotesIfString(oldColumn.column_default)
-                      : oldColumn.column_default,
+                    old_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(old_column.column_default)
+                      : old_column.column_default,
                 }),
-              isNullable: !oldColumn?.constraints_type.is_not_null,
-              isUnique: oldColumn?.constraints_type.is_unique,
+              isNullable: !old_column?.constraints_type.is_not_null,
+              isUnique: old_column?.constraints_type.is_unique,
             }),
             newColumn: new TableColumn({
-              name: newColumn.column_name,
-              type: newColumn.data_type,
-              ...(newColumn?.column_default &&
-                newColumn.data_type !== 'serial' && {
+              name: new_column.column_name,
+              type: new_column.data_type,
+              ...(new_column?.column_default &&
+                new_column.data_type !== 'serial' && {
                   default:
-                    newColumn.data_type === 'character varying'
-                      ? this.addQuotesIfString(newColumn.column_default)
-                      : newColumn.column_default,
+                    new_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(new_column.column_default)
+                      : new_column.column_default,
                 }),
-              isNullable: !newColumn?.constraints_type.is_not_null,
-              isUnique: newColumn?.constraints_type.is_unique,
+              isNullable: !new_column?.constraints_type.is_not_null,
+              isUnique: new_column?.constraints_type.is_unique,
             }),
           });
         }

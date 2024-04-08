@@ -172,13 +172,13 @@ export class EditTableColumnsDto {
   @IsObject()
   @ValidateNested()
   @Type(() => PostgrestTableColumnDto)
-  oldColumn: PostgrestTableColumnDto;
+  old_column: PostgrestTableColumnDto;
 
   @IsOptional()
   @IsObject()
   @ValidateNested()
   @Type(() => PostgrestTableColumnDto)
-  newColumn: PostgrestTableColumnDto;
+  new_column: PostgrestTableColumnDto;
 }
 
 export class EditTableDto {
