@@ -1320,5 +1320,7 @@
 }
 
 .react-datepicker__time-box {
-  padding: 0px 0px 0px 10px !important;
+  ul {
+    padding: 0px 10px 0px 10px !important;
+  }
 }
