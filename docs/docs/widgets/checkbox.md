@@ -17,7 +17,7 @@ The checkbox widget consists of a single checkbox input.
 | <div style={{ width:"100px"}}> Property </div>     | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
 | Label | The text is to be used as the label for the checkbox. This field expects a `String` input. |
-| Default Status | The property is used to set the default status (enabled or disabled) of the checkbox widget when the app is loaded. By default, the checkbox component is set to `{{false}}`/disabled. |
+| Default status | Sets the default status (enabled or disabled) of the checkbox widget when the app is loaded. By default, the checkbox component is set to `{{false}}`/disabled. |
 
 </div>
 
@@ -44,9 +44,9 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 Following actions of checkbox component can be controlled using the component specific actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions   </div>  | <div style={{ width:"100px"}}> Description </div> |
-| ----------- | ----------- |
-| setChecked | You can change the status of the checkbox component using component specific action from within any event handler. Additionally, you have the option to trigger it from the RunJS query: `await components.checkbox1.setChecked(true)` or `await components.checkbox1.setChecked(false)` |
+| <div style={{ width:"100px"}}> Actions   </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:---------|
+| setChecked | Changes the status of the checkbox component using component specific action from within any event handler.| Trigger it from the RunJS query: `await components.checkbox1.setChecked(true)` or `await components.checkbox1.setChecked(false)` |
 
 </div>
 
@@ -54,9 +54,9 @@ Following actions of checkbox component can be controlled using the component sp
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variables  </div>    | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| value | This variable holds the boolean value `true` if the checkbox is checked and `false` if unchecked. You can access the value dynamically using JS: `{{components.checkbox1.value}}`| 
+| <div style={{ width:"100px"}}> Variables  </div>    | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:----------|
+| value | Holds the boolean value `true` if the checkbox is checked and `false` if unchecked.| Access the value dynamically using JS: `{{components.checkbox1.value}}`| 
 
 </div>
 

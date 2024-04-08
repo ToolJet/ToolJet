@@ -11,7 +11,7 @@ Color Picker widget is used to select the desired color from the color picker
 
 ## Properties
 
-### Default Color
+### Default color
 
 The data needs to be an valid hex color
 
@@ -34,7 +34,7 @@ To add an event to a color-picker component, click on the widget handle to open 
 
 | <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
-| **On change** | On change event is triggered when the color is changed on the color-picker|
+| On change | On change event is triggered when the color is changed on the color-picker|
 
 </div>
 
@@ -44,9 +44,9 @@ To add an event to a color-picker component, click on the widget handle to open 
 
 Following actions of color picker component can be controlled using the component specific actions(CSA):
 
-| Actions     | Description |
-| ----------- | ----------- |
-| setColor | Set a color on the color component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.colorpicker1.setColor('#64A07A')` |
+| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:----------- |
+| setColor | Set a color on the color component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.colorpicker1.setColor('#64A07A')` |
 
 </div>
 
@@ -54,11 +54,11 @@ Following actions of color picker component can be controlled using the componen
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| selectedColorHex | This variable gets updated with HEX color code whenever a user selects a color from the color picker. You can access the value dynamically using JS: `{{components.colorpicker1.selectedColorHex}}`|
-| selectedColorRGB | This variable gets updated with RGB color code whenever a user selects a color from the color picker. You can access the value dynamically using JS: `{{components.colorpicker1.selectedColorRGB}}`|
-| selectedColorRGBA | This variable gets updated with RGBA color code whenever a user selects a color from the color picker. You can access the value dynamically using JS: `{{components.colorpicker1.selectedColorRGBA}}`|
+| <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:---------- |
+| selectedColorHex | Gets updated with HEX color code whenever a user selects a color from the color picker.| Access the value dynamically using JS: `{{components.colorpicker1.selectedColorHex}}`|
+| selectedColorRGB | Gets updated with RGB color code whenever a user selects a color from the color picker. | Access the value dynamically using JS: `{{components.colorpicker1.selectedColorRGB}}`|
+| selectedColorRGBA | Gets updated with RGBA color code whenever a user selects a color from the color picker.| Access the value dynamically using JS: `{{components.colorpicker1.selectedColorRGBA}}`|
 
 </div>
 
@@ -68,8 +68,8 @@ Following actions of color picker component can be controlled using the componen
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value  </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle on or off to display desktop view. | Programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | Programmatically determinine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
@@ -77,9 +77,9 @@ Following actions of color picker component can be controlled using the componen
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description    </div>                                                                                                                                                                                                                                          |
-|:---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}`. |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description    </div>                                                                                                                                                                                                                                          | <div style={{ width:"135px"}}> Expected Value </div> |
+|:---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |:---------- |
+| Visibility | Toggle on or off to control the visibility of the widget.| Programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}` |
 
 </div>
 
@@ -87,8 +87,8 @@ Following actions of color picker component can be controlled using the componen
 
 ## Actions
 
-| Action      | Description | Properties |
-| ----------- | ----------- | ------------------ |
+| <div style={{ width:"100px"}}> Action  </div>    | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Properties </div> |
+|:----------- |:----------- |:------------------ |
 | setColor | Set the  color. | `color` eg - `#ffffff` |
 
 :::info
