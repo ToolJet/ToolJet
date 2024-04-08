@@ -213,6 +213,7 @@
     .td-container {
       margin-top: auto;
       margin-bottom: auto;
+      overflow: hidden
     }
 
     .td-container:has(.action-button) {
@@ -966,7 +967,7 @@
 .table-column-popover#popover-basic-2 {
   z-index: 9999 !important;
   min-width: 280px;
-
+  max-height: 800px !important;
   .popover-body {
     display: flex;
     flex-direction: column;
