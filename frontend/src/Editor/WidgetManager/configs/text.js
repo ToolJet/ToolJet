@@ -24,17 +24,14 @@ export const textConfig = {
       type: 'code',
       displayName: 'TextComponentTextInput', // Keeping this name unique so that we can filter it in Codehinter
       validation: {
-        schema: { type: 'string' },
-        defaultValue: 'Hello, there!',
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
       },
-      showLabel: false,
     },
     loadingState: {
       type: 'toggle',
       displayName: 'Show loading state',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: false,
       },
       section: 'additionalActions',
     },
@@ -43,7 +40,6 @@ export const textConfig = {
       displayName: 'Visibility',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: true,
       },
       section: 'additionalActions',
     },
@@ -52,14 +48,13 @@ export const textConfig = {
       displayName: 'Disable',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: false,
       },
       section: 'additionalActions',
     },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
-      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      validation: { schema: { type: 'string' } },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
     },
@@ -78,7 +73,6 @@ export const textConfig = {
       displayName: 'Size',
       validation: {
         schema: [{ type: 'string' }, { type: 'number' }],
-        defaultValue: 14,
       },
       accordian: 'Text',
     },
@@ -128,14 +122,13 @@ export const textConfig = {
       displayName: 'Alignment',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'left',
       },
       accordian: 'Text',
     },
     verticalAlignment: {
       type: 'switch',
       displayName: '',
-      validation: { schema: { type: 'string' }, defaultValue: 'center' },
+      validation: { schema: { type: 'string' } },
       showLabel: false,
       isIcon: true,
       options: [
@@ -144,7 +137,6 @@ export const textConfig = {
         { displayName: 'alignverticallybottom', value: 'bottom', iconName: 'alignverticallybottom' },
       ],
       accordian: 'Text',
-      isFxNotRequired: true,
     },
     decoration: {
       type: 'switch',
@@ -189,7 +181,6 @@ export const textConfig = {
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#fff00000',
       },
       accordian: 'Container',
       colorPickerPosition: 'top',
@@ -199,7 +190,6 @@ export const textConfig = {
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
       },
       accordian: 'Container',
       colorPickerPosition: 'top',
@@ -207,28 +197,24 @@ export const textConfig = {
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
       accordian: 'Container',
     },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: '0px 0px 0px 0px #00000090',
-      },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
       accordian: 'Container',
     },
     padding: {
       type: 'switch',
       displayName: 'Padding',
-      validation: { schema: { type: 'string' }, defaultValue: 'default' },
+      validation: { schema: { type: 'string' } },
       options: [
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },
       ],
       accordian: 'Container',
-      isFxNotRequired: true,
     },
   },
   exposedVariables: {
@@ -267,7 +253,7 @@ export const textConfig = {
     },
     properties: {
       textFormat: { value: 'html' },
-      text: { value: `Hello {{globals.currentUser.firstName}}👋` },
+      text: { value: `Hello {{globals?.currentUser?.firstName}}👋` },
       loadingState: { value: `{{false}}` },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
@@ -276,22 +262,22 @@ export const textConfig = {
     styles: {
       backgroundColor: { value: '#fff00000' },
       textColor: { value: '#000000' },
-      textSize: { value: 14 },
+      textSize: { value: '14' },
       textAlign: { value: 'left' },
       fontWeight: { value: 'normal' },
       decoration: { value: 'none' },
       transformation: { value: 'none' },
       fontStyle: { value: 'normal' },
-      lineHeight: { value: 1.5 },
-      textIndent: { value: 0 },
-      letterSpacing: { value: 0 },
-      wordSpacing: { value: 0 },
+      lineHeight: { value: '1.5' },
+      textIndent: { value: '0' },
+      letterSpacing: { value: '0' },
+      wordSpacing: { value: '0' },
       fontVariant: { value: 'normal' },
       verticalAlignment: { value: 'center' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
       borderColor: { value: '' },
-      borderRadius: { value: 6 },
+      borderRadius: { value: '6' },
       isScrollRequired: { value: 'enabled' },
     },
   },
