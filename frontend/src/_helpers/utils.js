@@ -13,6 +13,7 @@ import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 
+const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
@@ -158,7 +159,7 @@ export function resolveReferences(
   forPreviewBox = false
 ) {
   if (object === '{{{}}}') return '';
-  const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
+
   object = _.clone(object);
   const objectType = typeof object;
   let error;
@@ -422,6 +423,19 @@ export function validateEmail(email) {
 
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
+  if ([...reservedKeyword, 'this'].some((keyword) => code.includes(keyword))) {
+    const message = `Code contains ${reservedKeyword.join(' or ')} or this keywords`;
+    const description = 'Cannot resolve code with reserved keywords in it. Please remove them and try again.';
+
+    return {
+      status: 'failed',
+      data: {
+        message,
+        description,
+      },
+    };
+  }
+
   const currentState = getCurrentState();
   let result = {},
     error = null;
