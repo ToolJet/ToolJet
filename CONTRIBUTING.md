@@ -6,6 +6,7 @@ We love your input! We want to make contributing to this project as easy and tra
 - Submitting a fix
 - Proposing new features
 
+
 ## Setup 
 
 - [Mac OS](https://docs.tooljet.io/docs/contributing-guide/setup/macos)
