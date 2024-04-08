@@ -14,7 +14,7 @@ Once you have the key, open it in a text editor and copy the contents. Paste the
 Click on **Test connection** button to verify if the key is valid. Click on **Save** button to save the data source.
 
 
-<img className="screenshot-full" src="/img/datasource-reference/firestore/add-ds-firestore.gif"  alt="firestore add ds"/>
+<img className="screenshot-full" src="/img/datasource-reference/firestore/add-ds-firestore-v2.png"  alt="firestore add ds"/>
 
 
 ## Querying Firestore 

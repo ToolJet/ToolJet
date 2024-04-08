@@ -326,3 +326,29 @@ By default, only embedding of public apps is permitted. By setting this variable
 :::caution
 The option is only available starting from ToolJet Enterprise Edition `2.8.0` or higher, and `2.10.0` for the Community edition and cloud version.
 :::
+
+## Configuring the Default Language
+To change the default language, set the LANGUAGE variable to your desired language code. 
+
+| Variable        | Description                           |
+| --------------- | ------------------------------------- |
+| LANGUAGE | `LANGUAGE_CODE` |
+
+Available Languages with their codes and native names:
+
+| Language    | Code | Native Name       |
+|-------------|------|-------------------|
+| English     | en   | English           |
+| French      | fr   | Français          |
+| Spanish     | es   | Español           |
+| Italian     | it   | Italiano          |
+| Indonesian  | id   | Bahasa Indonesia  |
+| Ukrainian   | uk   | Українська        |
+| Russian     | ru   | Русский           |
+| German      | de   | Deutsch           |
+
+For instance, to set the language to French, you can set the LANGUAGE variable to `fr`. 
+
+:::info
+The option to set a default language is not available on cloud version of ToolJet.
+:::

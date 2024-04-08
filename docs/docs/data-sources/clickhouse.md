@@ -29,7 +29,7 @@ ToolJet requires the following to connect to your ClickHouse Database:
 - **Debug**
 - **Raw**
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/connection.png" alt="ClickHouse connection" />
+<img className="screenshot-full" src="/img/datasource-reference/clickhouse/connection-v2.png" alt="ClickHouse connection" />
 
 ## Querying ClickHouse
 
