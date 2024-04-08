@@ -41,7 +41,7 @@ export const OptionsList = ({
     await recordOptions(source.index, destination.index);
   };
 
-  const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => {
+  const getItemStyle = (draggableStyle) => {
     return {
       ...draggableStyle,
       userSelect: 'none',
@@ -269,7 +269,7 @@ export const OptionsList = ({
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
-                                  style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                                  style={{ ...getItemStyle(provided.draggableProps.style) }}
                                 >
                                   <OverlayTrigger
                                     trigger="click"

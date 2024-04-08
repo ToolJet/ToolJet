@@ -3,11 +3,10 @@ import moment from 'moment';
 import _, { isEmpty } from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
-import { previewQuery, executeAction } from '@/_helpers/appUtils';
+import { executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { useSuperStore } from '../_stores/superStore';
-import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
@@ -533,7 +532,6 @@ export async function executeMultilineJS(
     .getState()
     .modules[_ref.moduleName].useDataQueriesStore.getState()
     .dataQueries.find((q) => q.id === queryId);
-  hasParamSupport = !hasParamSupport ? queryDetails?.options?.hasParamSupport : hasParamSupport;
 
   const defaultParams =
     queryDetails?.options?.parameters?.reduce(
