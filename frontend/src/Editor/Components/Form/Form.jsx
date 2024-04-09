@@ -80,7 +80,7 @@ export const Form = function Form(props) {
     };
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
+  }, [isValid, formEvents]);
 
   const extractData = (data) => {
     const result = {};
@@ -183,7 +183,7 @@ export const Form = function Form(props) {
     document.addEventListener('submitForm', handleFormSubmission);
     return () => document.removeEventListener('submitForm', handleFormSubmission);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents)]);
+  }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents), formEvents]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
