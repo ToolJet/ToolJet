@@ -109,7 +109,6 @@ const ParameterForm = ({
                     usePortalEditor={false}
                     style={{ height: '32px', width: '177px', marginBotto: '16px' }}
                     initialValue={defaultValue}
-                    enablePreview={false}
                   />
                 </div>
               </div>
