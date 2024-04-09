@@ -189,7 +189,7 @@ export const Container = ({
     } else {
       const diffState = diff(components, boxes);
 
-      if (!_.isEmpty(diffState) && !isOnlyLayoutUpdate(diffState)) {
+      if (!_.isEmpty(diffState)) {
         setBoxes(components);
       }
     }
