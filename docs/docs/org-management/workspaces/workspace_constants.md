@@ -21,7 +21,11 @@ Users can define environment-specific configurations by setting different values
 
 ## Server-Side Resolution
 
-Workspace constants are designed to be resolved on the server side only. This means that when you make network calls, the payload sent will not include the actual values of the constants. Instead, the server will resolve the constants and use their actual values while processing the requests. This ensures that the constants remain secure and are not exposed to the client-side.
+Workspace constants are designed to be resolved on the server side only. This means that when you make network calls, the payload sent will not include the actual values of the constants. Instead, the server will resolve the constants and use their actual values while processing the requests. This ensures that the constants remain secure and are not exposed to the client-side.<br/>
+Workspace constants are encrypted before being stored in the database, providing an additional layer of security for sensitive data like API keys, tokens, and other confidential values.
+:::info
+Workspace constants encryption was introduced in ToolJet version 2.34.1. If you are upgrading from a version prior to 2.34.1, all your existing workspace constants will be automatically encrypted. You can continue utilizing the workspace constants as before, while benefiting from the added security provided by the encryption feature.
+:::
 
 </div>
 

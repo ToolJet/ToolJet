@@ -3,38 +3,18 @@ id: marketplace-plugin-github
 title: GitHub
 ---
 
-ToolJet can connect to GitHub account to read and write data. In order for ToolJet to access and manipulate data on GitHub, a **GitHub Personal Access Token** is necessary to authenticate and interact with the GitHub API.
-
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/githubadd.gif" alt="Marketplace: GitHub" />
-
-</div>
-
-:::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
-:::
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+ToolJet offers seamless integration with GitHub. This connection allows you to directly interact with GitHub repositories and data.
 
 ## Connection
 
-For connecting to GitHub, following credentials are required:
-- **Personal Access Token**: Generate a Personal Access Token from your **[GitHub Account Settings](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)**
+To connect to GitHub, you need the following credential:
+- **Personal Access Token**: You can generate this token through your **[GitHub Account Settings](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)**.
 
-:::caution
-If a Personal Access Token is not provided, the data from the private repositories will not be retrieved via the GitHub Plugin. However, the public repositories data can still be retrieved.
-:::
+You'll need a Personal Access Token to access data from private repositories. Public repository data remains accessible without a Personal Access Token.
 
 <div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/connection.png" alt="Marketplace: GitHub" />
-
+    <img className="screenshot-full" src="/img/marketplace/plugins/github/connection-v2.png" alt="Marketplace: GitHub" />
 </div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Supported Queries
 
@@ -43,87 +23,43 @@ If a Personal Access Token is not provided, the data from the private repositori
 - **[Get repository issues](#get-repository-issues)**
 - **[Get repository pull requests](#get-repository-pull-requests)**
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/list.png" alt="Marketplace: GitHub" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Get User Info
 
-All the details regarding the user is retrieved by running this query.
+This operation fetches details for a specified user.
 
 #### Required Parameters: 
 
-- **Username**: To obtain the details, the username of the user must be provided for this field. You can input the username of a GitHub organization or a user for this field.
+- **Username**: Specify the GitHub username or organization to retrieve their details.
 
 <div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/getuserinfo.png" alt="Marketplace: GitHub" />
-
+    <img className="screenshot-full" src="/img/marketplace/plugins/github/getuserinfo-v2.png" alt="Marketplace: GitHub" />
 </div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Get Repository
 
-All the details regarding the repository are retrieved by running this query.
+Fetches detailed information about a specific repository.
 
 #### Required Parameters: 
 
-- **Owner**: The owner's name of the repository is required for this field. The owner can either be a GitHub organization or a user.
-- **Repository**: Provide the name of the repository of which you want to retrieve the details.
-
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/getrepo.png" alt="Marketplace: GitHub" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+- **Owner**: Name of the repository's owner, which can be either a GitHub user or an organization.
+- **Repository**: The exact name of the repository.
 
 ### Get Repository Issues
 
-Running this query will retrieve a list of issues from a repository. You can select whether to obtain All, Open, or Closed issues.
+Generates a list of issues associated with a repository, with options to filter them by their status.
 
 #### Required Parameters:
 
-- **Owner**: The owner's name of the repository is required for this field. The owner can either be a GitHub organization or a user.
-- **Repository**: Provide the name of the repository of which you want to retrieve the issues.
-- **State**: Choose the state of the issues that you would like to retrieve: All, Open, or Closed.
-
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/getissues.png" alt="Marketplace: GitHub" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+- **Owner**: The name of the repository's owner. The owner can either be a GitHub organization or a user.
+- **Repository**: The repository name for which the issues are to be retrieved.
+- **State**: Filter the issues by their status: All, Open, or Closed.
 
 ### Get Repository Pull Requests
 
-Running this query will retrieve a list of pull requests from a repository. You can select whether to obtain All, Open, or Closed issues.
+Generates a list of pull requests from a repository, with options to filter them by their status.
 
 #### Required Parameters:
 
-- **Owner**: The owner's name of the repository is required for this field. The owner can either be a GitHub organization or a user.
-- **Repository**: Provide the name of the repository of which you want to retrieve the pull requests.
-- **State**: Choose the state of the pull requests that you would like to retrieve: All, Open, or Closed.
-
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/github/getpr.png" alt="Marketplace: GitHub" />
-
-</div>
-
-</div>
+- **Owner**: The name of the repository's owner. The owner can either be a GitHub organization or a user.
+- **Repository**: The repository name for which the pull requests are to be retrieved.
+- **State**: Filter the pull requests by their status: All, Open, or Closed.

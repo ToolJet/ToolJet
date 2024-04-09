@@ -5,7 +5,7 @@ title: 'Marketplace: Overview'
 
 # Marketplace: Overview
 
-With ToolJet Marketplace, ToolJet users can conveniently add custom plugins (data sources) to their workspaces. This feature enables users to create plugins that cater to their specific needs and integrate them seamlessly with ToolJet.
+ToolJet Marketplace allows users to enhance their workspaces by adding custom plugins (data sources) tailored to their unique requirements. This functionality facilitates the seamless integration of user-created plugins with ToolJet.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/overview/marketplace-v2.png" alt="Marketplace Overview" />
@@ -62,18 +62,10 @@ You can now see the list of installed marketplace plugins that you can configure
 
 - After successfully configuring a plugin, you can access it when trying to add a new query from the Query Panel.
 
-<!-- <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/overview/add-query.png" alt="Marketplace" />
-</div> -->
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Removing a Plugin
 
 :::caution
-If you remove a plugin, all the queries associated with it will be eliminated from all the applications.
+If you remove a plugin, all the queries associated with it will be eliminated from the applications.
 :::
 
 To remove a plugin, follow these steps:
@@ -90,7 +82,7 @@ To remove a plugin, follow these steps:
 - **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
 - **[Plivo](/docs/marketplace/plugins/marketplace-plugin-plivo)**
 - **[Pocketbase](/docs/marketplace/plugins/marketplace-plugin-pocketbase)**
-
+- **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
 :::info For Plugin Developers
 Refer to the **[Plugin Development guide](/docs/contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.
 :::
