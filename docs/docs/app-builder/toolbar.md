@@ -3,153 +3,117 @@ id: topbar
 title: Topbar
 ---
 
-Topbar is present at the top of the app-builder, and is used to configure the app settings.
+The Topbar of the app-builder interface serves as a central hub for configuring app settings.
 
-### App name
+### Application Name
 
-The App name can be modified by selecting the application name located on the left side of the topbar.
-
-Upon the creation of a new app, it is automatically assigned a unique app name.
+To modify the app name, click on the application name on the left side of the topbar.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/appnamenew-v2.png" alt="App Builder: Topbar"/>
-
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/appnamenew-v2.png" alt="App Builder: App Name"/>
 </div>
 
 ### Desktop or Mobile layout
 
-Switch the canvas mode in Mobile or Desktop layout from the topbar.
+Toggle between Mobile and Desktop views directly from the topbar to switch the canvas mode.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/mobiledesktopswitch.png" alt="App Builder: Topbar"/>
-
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/mobiledesktopswitch.png" alt="App Builder: Mobile and Desktop Mode"/>
 </div>
 
-#### Showing component on mobile layout
+#### Showing Components on Mobile or Desktop layout
 
-Click on the component handle to open [component config inspector](/docs/app-builder/components-library#component-config-inspector) on the right sidebar. Scroll down to the **Devices** section and toggle on the Mobile Layout option. The width of the components will be adjusted to fit the Mobile Layout.
+Select a component and navigate to its Properties Panel on the right. Scroll down to the **Devices** section and toggle on the `Show on mobile` option. This will ensure that the component is visible in Mobile view.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/showonmobile.png" alt="App Builder: Topbar"/>
-
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/showonmobile.png" alt="App Builder: Show On Mobile Icon"/>
 </div>
 
-#### Adding a new component to mobile layout
+Similarly, you can toggle on the `Show on desktop` option to make the component visible in the Desktop view.
 
-Switch the canvas to mobile layout by clicking the mobile icon on the topbar. Drag and drop a new component (marked in red) to the canvas. This component will not be visible on the desktop layout unless **Show on desktop** is enabled from the component config inspector.
+### Changes Saved Indicator
 
-:::info
-Width of the component will be automatically adjusted to fit the screen while viewing the application in app viewer.
-:::
+Whenever changes are made in the application, they are saved automatically. The topbar's `Changes Saved` indicator shows the save status.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/canvasmodesstatic.png" alt="App Builder: Topbar"/>
-
-</div>
-
-### Changes saved indicator
-
-Whenever a change is made on the component or the query panel/queries, the changes are saved automatically. The changes saved indicator will be displayed on the topbar. This helps the developer to know if the changes are saved or not.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/changessaved-v2.png" alt="App Builder: Topbar"/>
-
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/changessaved-v2.png" alt="App Builder: Changes Saved Indicator"/>
 </div>
 
 ### Developer Details
 
-This will show a profile picture of the developer who is currently working on the application. Hovering over the profile picture will show the name of the developer. If there is no profile picture, then the first letter of the first name and last name will be displayed.
+The Developer Details icon will show a profile picture of the currently active developer. Hovering over this picture reveals the developer's name. If no picture is set, initials are displayed.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/profile-v2.png" alt="App Builder: Topbar"/>
-
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/profile-v2.png" alt="App Builder: Developer Details"/>
 </div>
 
 ### App Environment
 
-Effortlessly configure your app's environment by selecting from the `Env` dropdown menu. Choose between **Development**, **Staging**, and **Production** environments to smoothly transition between different stages of application development.
+You can use the Env dropdown menu to select an environment for your app: Development, Staging, or Production. This feature facilitates seamless transition through the app development cycle.
 
 :::tip
 Learn more about multi-environment configuration **[here](/docs/release-management/multi-environment/)**.
 :::
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/multienv.png" alt="App Builder: Topbar"/>
-
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/multienv.png" alt="App Builder: App Env"/>
 </div>
 
 ### Version Manager
 
-**Add** or **remove** versions of an application from the Version Manager. Click on the `edit` icon next to version name to rename the version.
-
-When many developers are working on an app, **Versioning** allows them to save their own version of the app. This also prevents developers from overwriting the other developer's work.
+You can manage application versions through the Version Manager. You can use this dropdown to edit a version name or adding/removing versions.
 
 :::tip
 Versioning is also helpful when working with **[multiple environments](/docs/release-management/multi-environment/)** like development, staging and production.
 :::
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/versionsnew-v2.png" alt="App Builder: Topbar"/>
-
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/versionsnew-v2.png" alt="App Builder: Version Manager"/>
 </div>
 
+
+### Gitsync
+The `Gitsync` icon next to the versions dropdown allows you to sync your application with your GitHub repository.
+
+Read more about Gitsync **[here](/docs/gitsync.md)**. 
 ### Undo or Redo
 
-Undo or Redo any action performed on the canvas.
+You can Undo or Redo any action performed on the canvas using the Undo and Redo buttons. 
 
 You can also use **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)** to perform such actions.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/undo-v3.png" alt="App Builder: Topbar"/>
-
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/undo-v3.png" alt="App Builder: Topbar"/>
 </div>
 
 ### Share
 
-Share your applications with a unique URL generated automatically or edit the URL slug to personalize it.
-
-- When **Make application public** toggle is off and **Shareable app link** is shared then the users will have to login to ToolJet to use the application. Toggle on to make the application public and accessible to anyone on the internet without requiring a ToolJet login. Only released apps can be accessed using the **Shareable app link**. 
-- ToolJet generates the **Embedded link** which can be used to embed application on the webpages.
+The Share button allows you to share your applications with a unique URL generated automatically or edit the URL slug to personalize it. The share button will only be active when your application is released. 
 
 :::tip
-Learn more about **[Sharing](/docs/app-builder/share)** your tooljet applications.
+Learn more about **[Sharing](/docs/app-builder/share)** your ToolJet applications.
 :::
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/sharenew-v2.png" alt="App Builder: Topbar"/>
-
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/sharenew-v2.png" alt="App Builder: Share"/>
 </div>
 
 ### Preview
 
-Clicking on **Preview** button will open up the currently opened version of the app in the new tab. This is really handy when the app developer wants to immediately check the app preview in production.
+The Preview button allows you to view the current app version in a new tab, facilitating immediate feedback on changes.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/previewnew-v2.png" alt="App Builder: Topbar"/>
-
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/previewnew-v2.png" alt="App Builder: Preview"/>
 </div>
 
 ### Release
 
-Release the app to publish the current version of the app and push the changes into the production.
+Use the Release button on the right to publish the current app version. The Release button, used to publish the current app version, becomes visible only in the Production environment, ensuring that only finalized versions are made public.
 
 :::caution
 ToolJet will block editing of the Released version of an app and will display a prompt to create a new version to make the changes. This is to prevent accidentally pushing an unfinished app to the live version.
 :::
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/releasenew-v2.png" alt="App Builder: Topbar"/>
-
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/releasenew-v2.png" alt="App Builder: Topbar"/>
 </div>
