@@ -54,7 +54,10 @@ export const textConfig = {
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
-      validation: { schema: { type: 'string' } },
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '',
+      },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
     },
@@ -257,6 +260,7 @@ export const textConfig = {
       loadingState: { value: `{{false}}` },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
