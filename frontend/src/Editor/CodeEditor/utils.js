@@ -219,6 +219,8 @@ const queryHasStringOtherThanVariable = (query) => {
 };
 
 export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
+  if ((!query && query == '') || typeof query !== 'string') return [true, null, ' ', ' '];
+
   if (!query || typeof query !== 'string') return [false, null, null];
   let resolvedValue = query;
   let error = null;
