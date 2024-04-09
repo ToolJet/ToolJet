@@ -1,10 +1,8 @@
 ---
 id: upload-files-aws
-title: Upload Files on AWS S3 Bucket
+title: Upload and Download Files on AWS S3 Bucket
 ---
 <div style={{paddingBottom:'24px'}}>
-
-# Upload and Download Files on AWS S3 Bucket
 
 This guide will help you in quickly building a basic UI for uploading or downloading files from AWS S3 buckets.
 
@@ -58,7 +56,7 @@ Now, let's edit the properties of **dropdown** widget.
 
 You can later add an event handler for running the **listObject** query whenever an option is selected from the dropdown.
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
 ![ToolJet - How To - Upload files on AWS S3 bucket](/img/how-to/upload-files-aws/dropdown.png)
 
@@ -153,7 +151,7 @@ Click on the widget handle to edit the file picker properties:
  To accept any/all file type(s), set `Accept file types` to an empty value.
 :::
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
 ![ToolJet - How To - Upload files using GCS](/img/how-to/upload-files-gcs/config-filepicker.png)
 

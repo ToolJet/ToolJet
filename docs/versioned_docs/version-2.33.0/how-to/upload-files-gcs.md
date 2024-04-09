@@ -4,8 +4,6 @@ title: Upload Files Using GCS
 ---
 <div style={{paddingBottom:'24px'}}>
 
-# Upload Files Using GCS
-
 In this guide, we are going to create an interface to upload PDFs to Google Cloud Storage.
 
 Before adding the new data source we will need to have a private key for our GCS bucket and make sure the key has the appropriate rights.
@@ -53,7 +51,7 @@ Before adding the new data source we will need to have a private key for our GCS
  To accept any/all file type(s), set `Accept file types` to an empty value.
 :::
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
 ![ToolJet - How To - Upload files using GCS](/img/how-to/upload-files-gcs/config-filepicker.png)
 

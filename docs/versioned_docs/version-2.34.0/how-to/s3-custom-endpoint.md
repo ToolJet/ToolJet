@@ -1,6 +1,6 @@
 ---
 id: s3-custom-endpoints
-title: Use Custom Endpoint for s3 Hosts
+title: Use Custom Endpoint for S3 Hosts
 ---
 <div style={{paddingBottom:'24px'}}>
 
@@ -8,8 +8,9 @@ In this how-to guide, we will see how we can connect to different **S3 compatibl
 
 - Go to the ToolJet dashboard, and create a new application
 - On the left-sidebar, go to the **Sources** and add a new AWS S3 datasource
-- Now the connection modal will pop-up
-    <div style={{textAlign: 'center'}}>
+- Now the connection modal will pop-up.
+
+    <div style={{textAlign: 'left'}}>
 
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/s3-custom/connection.png" alt="Custom Endpoint - S3 hosts" width="500" />
 
