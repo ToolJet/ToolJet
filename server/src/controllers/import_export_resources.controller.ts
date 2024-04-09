@@ -54,7 +54,7 @@ export class ImportExportResourcesController {
   @UseGuards(JwtAuthGuard)
   @Post('/clone')
   async clone(@User() user, @Body() cloneResourcesDto: CloneResourcesDto) {
-    const ability = await this.appsAbilityFactory.appsActions(user);
+    const ability = await this.appsAbilityFactory.appsActions(user, cloneResourcesDto?.app?.[0]?.id);
 
     if (!ability.can('cloneApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
