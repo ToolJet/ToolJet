@@ -1572,7 +1572,6 @@ export function Table({
                                 cellTextColor,
                                 contentWrap,
                                 autoHeight,
-                                maxRowHeight,
                               })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
