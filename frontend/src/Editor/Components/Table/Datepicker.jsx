@@ -137,6 +137,8 @@ export const Datepicker = function Datepicker({
       parseInUnixTimestamp,
       isTimeChecked,
     });
+    if (!isDateSelectionEnabled && !isTimeChecked) return '';
+
     const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT';
     const selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
 
