@@ -118,5 +118,5 @@ export const flushComponentsToRender = (componentIds = []) => {
   if (!componentIds.length) return;
 
   useEditorStore.getState().actions.flushComponentsNeedsUpdateOnNextRender(componentIds);
-  useResolveStore.getState().actions.getLastUpdatedRefs();
+  useResolveStore.getState().actions.flushLastUpdatedRefs();
 };
