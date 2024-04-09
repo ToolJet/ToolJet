@@ -47,9 +47,9 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variables </div>   | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| value | This variable holds the value of the timer in the following keys: **hour**, **minute**, **second**, and **mSecond**. You can access the value dynamically using JS: `{{components.timer1.value.second}}`|
+| <div style={{ width:"100px"}}> Variables </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:-------- |
+| value | This variable holds the value of the timer in the following keys: **hour**, **minute**, **second**, and **mSecond**.| Access the value dynamically using JS: `{{components.timer1.value.second}}`|
 
 </div>
 

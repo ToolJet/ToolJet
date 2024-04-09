@@ -69,8 +69,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Layout
 
-|  <div style={{ width:"100px"}}> Layout </div> |  <div style={{ width:"100px"}}> Description </div> |  <div style={{ width:"100px"}}> Expected Value </div>|
-|:----- |:---------  |:------------- |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
 | Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 | Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
@@ -80,9 +80,9 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div>     | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- | 
-| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
+| <div style={{ width:"100px"}}> Style </div>     | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> How To Access </div> |
+|:----------- |:----------- |:--------|
+| Visibility | Toggle on or off to control the visibility of the component. | Programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.

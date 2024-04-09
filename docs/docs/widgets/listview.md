@@ -104,14 +104,14 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 ## Exposed Variables
 
-|  <div style={{ width:"100px"}}> Variables </div>   |  <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| data | This variable stores the data loaded into the list view component. You can retrieve the data of each record in the list view using `{{components.listview1.data["0"].text1.text}}` |
-| selectedRowId (deprecated) | This variable holds the ID of the clicked row in the list view. The row ID starts from `0`. You can access the selectedRowId using `{{components.listview1.selectedRowId}}` |
-| selectedRow (deprecated) | This variable contains the data of the components within the selected row. You can access the data using `{{components.listview1.selectedRow.text1}}` |
-| selectedRecordId | This variable holds the ID of the clicked record in the list view. The record ID starts from `0`. You can access the selectedRecordId using `{{components.listview1.selectedRecordId}}` |
-| selectedRecord | This variable stores the data of the components within the selected record. You can access the data using `{{components.listview1.selectedRecord.text1}}` |
-| children | This variable stores the data of the components within all the records in listview component. The purpose of exposing children is to enable the child components to be [controlled using component specific actions](#controlling-child-components). |
+|  <div style={{ width:"100px"}}> Variables </div>   |  <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:-------- |
+| data | This variable stores the data loaded into the list view component. | Retrieve the data of each record in the list view using `{{components.listview1.data["0"].text1.text}}` |
+| selectedRowId (deprecated) | This variable holds the ID of the clicked row in the list view. The row ID starts from `0`. | Access the selectedRowId using `{{components.listview1.selectedRowId}}` |
+| selectedRow (deprecated) | This variable contains the data of the components within the selected row. | Access the data using `{{components.listview1.selectedRow.text1}}` |
+| selectedRecordId | This variable holds the ID of the clicked record in the list view. The record ID starts from `0`. | Access the selectedRecordId using `{{components.listview1.selectedRecordId}}` |
+| selectedRecord | This variable stores the data of the components within the selected record. | Access the data using `{{components.listview1.selectedRecord.text1}}` |
+| children | This variable stores the data of the components within all the records in listview component. | The purpose of exposing children is to enable the child components to be [controlled using component specific actions](#controlling-child-components). |
 
 </div>
 
@@ -130,10 +130,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
@@ -143,8 +143,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Style  </div>    | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
-| Background Color |  You can change the background color of the component by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Border Color |  You can change the border color of the listview by entering the `Hex color code` or choosing a color of your choice from the color picker. |
+| Background color |  You can change the background color of the component by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Border color |  You can change the border color of the listview by entering the `Hex color code` or choosing a color of your choice from the color picker. |
 | Visibility | This is to control the visibility of the component. If `{{false}}` the component will not be visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
 | Disable |  This property only accepts boolean values. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 | Border radius | Use this property to modify the border radius of the list view. The field expects only numerical value from `1` to `100`, default is `0`. |

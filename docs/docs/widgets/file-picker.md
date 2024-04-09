@@ -22,9 +22,9 @@ Filepicker widget allows the user to drag and drop files or upload files by brow
 
 | <div style={{ width:"135px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
-| Instruction Text | Instruction text can be set to give information on the file picker. |
-| Use Drop zone | Creates a drag & drop zone. Files can be dragged and dropped to the "drag & drop" zone. |
-| Use File Picker | On clicking it invokes the default OS file prompt. |
+| Instruction text | Instruction text can be set to give information on the file picker. |
+| Use drop zone | Creates a drag & drop zone. Files can be dragged and dropped to the "drag & drop" zone. |
+| Use file picker | On clicking it invokes the default OS file prompt. |
 | Pick multiple files | Allows drag and drop (or selection from the file dialog) of multiple files. `Pick multiple files` is disabled by default. |
 | Max file count | The maximum accepted number of files The default value is `2`. |
 | Accept file types | By providing types, you can make the dropzone accept specific file types and reject the others. Example: `{{"image/*,application/pdf,application/msword"}}`. |
@@ -59,9 +59,9 @@ Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how t
 
 ## Component Specific Actions (CSA)
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:-------- |:----------- |
-| clearFiles() | You can clear the selected files on the filepicker component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.filepicker1.clearFiles()` |
+| clearFiles() | You can clear the selected files on the filepicker component via a component-specific action within any event handler. |Employ a RunJS query to execute component-specific actions such as `await components.filepicker1.clearFiles()` |
 
 </div>
 
@@ -106,10 +106,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
@@ -121,7 +121,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 |:----------- |:----------- |:----------- |
 | Visibility | This is to control the visibility of the widget. If `{{false}}` the widget will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. | By default, it's set to `{{true}}`.  |
 | Disable | This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. | By default, its value is set to `{{false}}`. |
-| Border Radius | Use this property to modify the border radius of the filepicker widget. The field expects only numerical value from `1` to `100`. | By default, its value is set to `0`. |
+| Border radius | Use this property to modify the border radius of the filepicker widget. The field expects only numerical value from `1` to `100`. | By default, its value is set to `0`. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.

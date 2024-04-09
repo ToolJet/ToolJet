@@ -15,8 +15,8 @@ Image widget is used to display images in your app.
 | URL | Enter the URL of the image to display it on the widget. |
 | Loading state | Loading state can be used to show a spinner as the image content. Loading state is commonly used with `isLoading` property of the queries to show a loading status while a query is being run. Switch the toggle **On** or click on `fx` to programmatically set the value `{{true}}` or `{{false}}`. |
 | Alternative text | Used for alt text of images. |
-| Zoom buttons | Toggle this to enable zoom options inside image. |
-| Rotate buttons | Toggle this on to enable rotate button in the image. |
+| Zoom button | Toggle this to enable zoom options inside image. |
+| Rotate button | Toggle this on to enable rotate button in the image. |
 
 </div>
 
@@ -65,10 +65,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 

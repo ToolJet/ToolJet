@@ -54,10 +54,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
@@ -67,10 +67,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}>  Description </div> |
 |:------------ |:-------------|
-| Primary Label Colour | You can change the primary label color by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Primary Text Colour | You can change the primary text color of the primary label by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Secondary Label Colour | You can change the secondary label color of the primary label by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Secondary Text Colour | You can change the secondary text color of the primary label by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Primary label colour | You can change the primary label color by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Primary text colour | You can change the primary text color of the primary label by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Secondary label colour | You can change the secondary label color of the primary label by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Secondary text colour | You can change the secondary text color of the primary label by entering the Hex color code or choosing a color of your choice from the color picker. |
 | Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
 
 :::info

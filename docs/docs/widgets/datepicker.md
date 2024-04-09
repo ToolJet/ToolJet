@@ -55,9 +55,9 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variables </div>  | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| value | This variable will hold the date selected on the component, the date value will be returned according to the format set in the datepicker properties. You can access the value dynamically using JS: `{{components.datepicker1.value}}`|
+| <div style={{ width:"100px"}}> Variables </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- | :---------- |
+| value | This variable holds the date selected on the component, the date value will be returned according to the format set in the datepicker properties. | Access the value dynamically using JS: `{{components.datepicker1.value}}`|
 
 </div>
 
@@ -91,10 +91,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Layout
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | 
-| :----------- | :----------- | 
-| **Show on Desktop** | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, the  values can be set to `{{true}}` or `{{false}}` |  
-| **Show on Mobile** | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, the  values can be set to `{{true}}` or `{{false}}` |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
@@ -106,7 +106,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
 | Visibility | This is to control the visibility of the widget. If `{{false}}` the widget will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}` | By default, it's set to `{{true}}` |
 | Disable | This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional | By default, its value is set to `{{false}}` |
-| Border Radius | Use this property to modify the border radius of the date-picker. The field expects only numerical value from `1` to `100` | By default, its value is set to `0` |
+| Border radius | Use this property to modify the border radius of the date-picker. The field expects only numerical value from `1` to `100` | By default, its value is set to `0` |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.

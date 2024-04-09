@@ -5,34 +5,69 @@ title: Form
 
 The **Form** component is designed to capture user input. It can act as a parent component to various components such as **Text**, **Text Input**, **Dropdown** and **Buttons** to initiate specific events. In this document, we'll go through all the configuration options for the **Form** component. 
 
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/formnew.png" alt="Form" />
-
-</div>
-<br/>
-
 :::caution Restricted components
 Components like **Kanban**, **Calendar**, **Modal**, **Container**, **ListView**, **Tabs**, and **Form** can't be dropped inside the Form component.
 :::
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Properties
 
-| Properties | Description | Expected Value |
+| <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :---------- | :--------------------------- | :------------- |
-| **Button To Submit For**m | This dropdown can be used to select a **Button** that will be used to submit the form. | Any button that is a child component inside the **Form** component
-| **Loading State** | Loading state can be used to show a spinner while the content is loaded. Loading state is commonly used with the **isLoading** property of queries. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`|
-| **Use Custom Schema** | Enabling this property allows you to provide a schema for the Form component in the JSON format. | Switch the toggle or click on `Fx` to programmatically enable the **JSON schema**|
+| Button To submit form | This dropdown can be used to select a **Button** that will be used to submit the form. | Any button that is a child component inside the **Form** component
+| Loading state | Loading state can be used to show a spinner while the content is loaded. Loading state is commonly used with the **isLoading** property of queries. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`|
+| Use custom schema | Enabling this property allows you to provide a schema for the Form component in the JSON format. | Switch the toggle or click on `Fx` to programmatically enable the **JSON schema**|
 
 :::info
 If you need a step-by-step guide on using a **Form** component, you can checkout **[this](/docs/how-to/use-form-component)** guide.  
 :::
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Events
+
+To add an event to the **Form** component, go to the **Events** section and click on **Add handler**.
+
+| <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
+|:------------|:-----------------|
+| On submit  | **On submit** event is triggered when the submit button on the form component is clicked. |
+| On invalid | **On invalid** event is triggered when the input on the form is invalid.                  |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Component Specific Actions (CSA)
+
+Following actions of form component can be controlled using the Component Specific Actions(CSA):
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+| :----------- | :----------- |:----------- |
+| submitForm | Submits the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. |Employ a RunJS query to execute component-specific actions such as `await components.form1.submitForm()` |
+| resetForm | Resets the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.form1.resetForm()` |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Exposed Variables
+
+| <div style={{ width:"100px"}}> Variables </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| :----------- | :----------- | :-------- |
+| data | This variable holds the data of all the components that are nested inside the form component. | You can access the value dynamically using JS. For example, `{{components.form1.data.numberinput1.value}}`|
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Using Custom Schema
 
 To provide the form schema in JSON format, we'll pass a JavaScript object with **title**, **properties** and **submitButton**.
 
-| Key  | Description |
+| <div style={{ width:"100px"}}> Key </div>  | <div style={{ width:"100px"}}> Description </div> |
 | :----------- | :----------- | 
 | title | The **title** key specifies the title of the form. | 
 | properties | The **properties** key holds an object that defines the properties of the components that will be inside the form. | 
@@ -130,26 +165,18 @@ Here's an example using the custom schema of **Text Input**, **Number Input** an
 }}
 ```
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/widgets/form/customform.png" alt="Example form schema" />
-</div>
-
-## Events
-
-To add an event to the **Form** component, go to the **Events** section and click on **Add handler**.
-
-| Event      | Description  |
-|:------------|:-----------------|
-| **On submit**  | **On submit** event is triggered when the submit button on the form component is clicked. |
-| **On invalid** | **On invalid** event is triggered when the input on the form is invalid.                  |
 
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## General
-<font size="4"><b>Tooltip</b></font>
+### Tooltip
 
 A Tooltip is often used to specify the extra information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text.
 
@@ -157,53 +184,44 @@ A Tooltip is often used to specify the extra information when the user hovers th
     <img className="screenshot-full" src="/img/widgets/form/tooltip.png" alt="Tooltip Example" />
 </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Layout
 
-<font size="4"><b>Show on desktop</b></font>
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
-Use this toggle to show or hide the component in the desktop view. You can dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to `{{true}}` or `{{false}}`.
+</div>
 
-<font size="4"><b>Show on mobile</b></font>
-
-Use this toggle to show or hide the component in the mobile view. You can dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to `{{true}}` or `{{false}}`. 
-
---- 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Styles
 
-| Style      | Description | Expected Value |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **Background color** |  Changes the background color of the form. | Hex color code/choose a color using the color picker|
-| **Border radius** | Adjusts the roundness of the component's corners. | Numeric value|
-| **Border color** |  Changes the border color of the component.| Hex color code/choose a color using the color picker|
-| **Visibility** | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible.| Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
-| **Disable** | Makes the component non-functional when set to true. | Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
+| Background color |  Changes the background color of the form. | Hex color code/choose a color using the color picker|
+| Border radius | Adjusts the roundness of the component's corners. | Numeric value|
+| Border color |  Changes the border color of the component.| Hex color code/choose a color using the color picker|
+| Visibility | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible.| Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
+| Disable | Makes the component non-functional when set to true. | Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## General
 
-<font size="4"><b>Box Shadow</b></font>
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> |
+|:-------- |:-------- |
+| Box Shadow | The **Box Shadow** property is used to add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow. |
 
-The **Box Shadow** property is used to add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow.
-
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/widgets/form/box-shadow.png" alt="Box Shadow Example" />
 </div>
 
-## Exposed Variables
-
-| Variables      | Description | Expected Value
-| :----------- | :----------- | :-------- |
-| **data** | This variable holds the data of all the components that are nested inside the form component. | You can access the value dynamically using JS. For example, `{{components.form1.data.numberinput1.value}}`
-
-## Component Specific Actions (CSA)
-
-Following actions of form component can be controlled using the Component Specific Actions(CSA):
-
-| Actions     | Description |
-| :----------- | :----------- |
-| **submitForm** | Submits the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. Additionally, there is an option to employ a RunJS query to execute component-specific actions such as `await components.form1.submitForm()` |
-| **resetForm** | Resets the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. Additionally, there is an option to employ a RunJS query to execute component-specific actions such as `await components.form1.resetForm()` |
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Custom Schema Examples
 - **[Datepicker](#datepicker)**
@@ -221,6 +239,10 @@ Following actions of form component can be controlled using the Component Specif
 - **[Button](#button)**
 - **[Text](#text)**
 - **[Radio](#radio)**
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Datepicker
 
@@ -242,23 +264,22 @@ datepicker1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'datepicker' |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `borderRadius`, `disabled`, `visibility` etc. |
-| **borderRadius** | Specifies the border radius of the component. | Numeric value like 5, 10, 20 etc. |
-| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
-| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
-| **value** | Specifies the default date of the datepicker. | Any date in the format specified in the `format` key |
-| **disabledDates** | Specifies the dates that you want to disable. | Provide the dates in an array that you want to disable |
-| **enableTime** | Specifies whether to enable time or not. | set `true` to enable time or `false` to disable it |
-| **format** | Specifies the format of the date. | 'DD/MM/YYYY' |
-| **label** | Specifies the label of the component. | Any string value |
+| type | Specifies the type of component. | 'datepicker' |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `borderRadius`, `disabled`, `visibility` etc. |
+| borderRadius | Specifies the border radius of the component. | Numeric value like 5, 10, 20 etc. |
+| disabled | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| visibility | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| value | Specifies the default date of the datepicker. | Any date in the format specified in the `format` key |
+| disabledDates | Specifies the dates that you want to disable. | Provide the dates in an array that you want to disable |
+| enableTime | Specifies whether to enable time or not. | set `true` to enable time or `false` to disable it |
+| format | Specifies the format of the date. | 'DD/MM/YYYY' |
+| label | Specifies the label of the component. | Any string value |
 
-
-<div style={{textAlign:'center'}}>
-  <img className="screenshot-full" src="/img/widgets/form/datepickerschema.png" alt="Form custom schema" />
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Number Input
 
@@ -283,27 +304,25 @@ numberInput1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'number' |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `borderRadius`, `textColor`, `borderColor`, `disabled`, `visibility` etc. |
-| **backgroundColor** | Specifies the background color of the component. | Color name or Hex color code '#f6f5ff' |
-| **borderRadius** | Specifies the border radius of the component. | Numeric value like 5, 10, 20 etc. |
-| **textColor** | Specifies the text color of the component. | Color name or Hex color code '#f6f5ff'|
-| **borderColor** | Specifies the border color of the component. | Color name or Hex color code '#f6f5ff'|
-| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
-| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
-| **value** | Specifies the default value of the number input. | Numeric value |
-| **maxValue** | Specifies the maximum value of the number input. | Numeric value |
-| **minValue** | Specifies the minimum value of the number input. | Numeric value |
-| **placeholder** | Specifies the placeholder text of the number input. | Any string value |
-| **label** | Specifies the label of the component. | Any string value |
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/numberinput.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'number' |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `borderRadius`, `textColor`, `borderColor`, `disabled`, `visibility` etc. |
+| backgroundColor | Specifies the background color of the component. | Color name or Hex color code '#f6f5ff' |
+| borderRadius | Specifies the border radius of the component. | Numeric value like 5, 10, 20 etc. |
+| textColor | Specifies the text color of the component. | Color name or Hex color code '#f6f5ff'|
+| borderColor | Specifies the border color of the component. | Color name or Hex color code '#f6f5ff'|
+| disabled | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| visibility | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| value | Specifies the default value of the number input. | Numeric value |
+| maxValue | Specifies the maximum value of the number input. | Numeric value |
+| minValue | Specifies the minimum value of the number input. | Numeric value |
+| placeholder | Specifies the placeholder text of the number input. | Any string value |
+| label | Specifies the label of the component. | Any string value |
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Password
 
@@ -328,27 +347,24 @@ passwordInput1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'password' |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `borderRadius`, `disabled`, `visibility` etc. |
-| **backgroundColor** | Specifies the background color of the component. | Color name or Hex color code '#f6f5ff' |
-| **borderRadius** | Specifies the border radius of the component. | Numeric value like 10 |
-| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
-| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
-| **validation** | Specifies validation rules for the password. | Object containing `maxLength`, `minLength`, and `regex` properties |
-| **maxLength** | Specifies the maximum length of the password. | Numeric value like 9 |
-| **minLength** | Specifies the minimum length of the password. | Numeric value like 5 |
-| **regex** | Specifies the regular expression for password validation. | Regular expression pattern like '^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$' |
-| **placeholder** | Specifies the placeholder text of the password input. | Any string value like 'Enter a password' |
-| **label** | Specifies the label of the component. | Any string value (in this case, it's an empty string), to hide the label you can use whitespace within quotes `' '` |
-
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/password.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'password' |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `borderRadius`, `disabled`, `visibility` etc. |
+| backgroundColor | Specifies the background color of the component. | Color name or Hex color code '#f6f5ff' |
+| borderRadius | Specifies the border radius of the component. | Numeric value like 10 |
+| disabled | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| visibility | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| validation | Specifies validation rules for the password. | Object containing `maxLength`, `minLength`, and `regex` properties |
+| maxLength | Specifies the maximum length of the password. | Numeric value like 9 |
+| minLength | Specifies the minimum length of the password. | Numeric value like 5 |
+| regex | Specifies the regular expression for password validation. | Regular expression pattern like '^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$' |
+| placeholder | Specifies the placeholder text of the password input. | Any string value like 'Enter a password' |
+| label | Specifies the label of the component. | Any string value (in this case, it's an empty string), to hide the label you can use whitespace within quotes `' '` |
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Checkbox
 
@@ -368,23 +384,20 @@ checkbox1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'checkbox' |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `checkboxColor`, `disabled`, `textColor`, `visibility` etc. |
-| **checkboxColor** | Specifies the color of the checkbox. | Color name or Hex color code '#f6f5ff' |
-| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
-| **textColor** | Specifies the text color of the component. | Color name or Hex color code '#f6f5ff' |
-| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
-| **value** | Specifies the default value of the checkbox. | Boolean value (true or false) |
-| **label** | Specifies the label of the component. | Any string value like 'Checkbox' |
-
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/checkbox.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'checkbox' |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `checkboxColor`, `disabled`, `textColor`, `visibility` etc. |
+| checkboxColor | Specifies the color of the checkbox. | Color name or Hex color code '#f6f5ff' |
+| disabled | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| textColor | Specifies the text color of the component. | Color name or Hex color code '#f6f5ff' |
+| visibility | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| value | Specifies the default value of the checkbox. | Boolean value (true or false) |
+| label | Specifies the label of the component. | Any string value like 'Checkbox' |
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Toggle
 
@@ -404,23 +417,20 @@ toggleswitch1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'toggle' |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `textColor`, `disabled`, `visibility`, `toggleSwitchColor` etc. |
-| **textColor** | Specifies the text color of the component. | Color name or Hex color code '#f6f5ff' |
-| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
-| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
-| **toggleSwitchColor** | Specifies the color of the toggle switch. | Color name or Hex color code '#f6f5ff' |
-| **value** | Specifies the default value of the toggle switch. | Boolean value (true or false) |
-| **label** | Specifies the label of the component. | Any string value like 'Toggle switch' |
-
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/toggle.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'toggle' |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `textColor`, `disabled`, `visibility`, `toggleSwitchColor` etc. |
+| textColor | Specifies the text color of the component. | Color name or Hex color code '#f6f5ff' |
+| disabled | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| visibility | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| toggleSwitchColor | Specifies the color of the toggle switch. | Color name or Hex color code '#f6f5ff' |
+| value | Specifies the default value of the toggle switch. | Boolean value (true or false) |
+| label | Specifies the label of the component. | Any string value like 'Toggle switch' |
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Text Area
 
@@ -440,23 +450,20 @@ textArea1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'textarea' |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `borderRadius` etc. |
-| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
-| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
-| **borderRadius** | Specifies the border radius of the component. | Numeric value like 20 |
-| **value** | Specifies the default value of the text area. | Any string value like 'This is a text area' |
-| **placeholder** | Specifies the placeholder text of the text area. | Any string value like 'Enter text here' |
-| **label** | Specifies the label of the component. | Any string value like 'Text Area' |
-
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/textarea.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'textarea' |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `borderRadius` etc. |
+| disabled | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| visibility | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| borderRadius | Specifies the border radius of the component. | Numeric value like 20 |
+| value | Specifies the default value of the text area. | Any string value like 'This is a text area' |
+| placeholder | Specifies the placeholder text of the text area. | Any string value like 'Enter text here' |
+| label | Specifies the label of the component. | Any string value like 'Text Area' |
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Date Range Picker
 
@@ -477,23 +484,21 @@ daterangepicker1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'daterangepicker' |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `borderRadius` etc. |
-| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
-| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
-| **borderRadius** | Specifies the border radius of the component. | Numeric value like 5 |
-| **defaultEndDate** | Specifies the default end date of the date range picker. | Date in the format specified in the `format` key, e.g., '12/04/2022' |
-| **defaultStartDate** | Specifies the default start date of the date range picker. | Date in the format specified in the `format` key, e.g., '1/04/2022' |
-| **format** | Specifies the format of the date. | 'DD/MM/YYYY' |
-| **label** | Specifies the label of the component. | Any string value like 'Select a date range' |
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/daterange.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'daterangepicker' |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `borderRadius` etc. |
+| disabled | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| visibility | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| borderRadius | Specifies the border radius of the component. | Numeric value like 5 |
+| defaultEndDate | Specifies the default end date of the date range picker. | Date in the format specified in the `format` key, e.g., '12/04/2022' |
+| defaultStartDate | Specifies the default start date of the date range picker. | Date in the format specified in the `format` key, e.g., '1/04/2022' |
+| format | Specifies the format of the date. | 'DD/MM/YYYY' |
+| label | Specifies the label of the component. | Any string value like 'Select a date range' |
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Multiselect
 
@@ -515,25 +520,22 @@ multiselect1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'multiselect' |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `borderRadius` etc. |
-| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
-| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
-| **borderRadius** | Specifies the border radius of the component. | Numeric value like 5 |
-| **displayValues** | Specifies the value for option labels in an array format. | Array of strings like `["one", "two", "three"]` |
-| **label** | Specifies the label of the component. | Any string value like 'Select options of your choice' |
-| **value** | Specifies the default value(s) in an array. | Array of values like `[2, 3]` |
-| **values** | Specifies the values in an array. | Array of values like `[1, 2, 3]` |
-| **showAllOption** | Specifies whether to show the 'All' option in the multiselect or not. | set `true` to show the 'All' option or `false` to hide it |
-
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/multiselect.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'multiselect' |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `borderRadius` etc. |
+| disabled | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| visibility | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| borderRadius | Specifies the border radius of the component. | Numeric value like 5 |
+| displayValues | Specifies the value for option labels in an array format. | Array of strings like `["one", "two", "three"]` |
+| label | Specifies the label of the component. | Any string value like 'Select options of your choice' |
+| value | Specifies the default value(s) in an array. | Array of values like `[2, 3]` |
+| values | Specifies the values in an array. | Array of values like `[1, 2, 3]` |
+| showAllOption | Specifies whether to show the 'All' option in the multiselect or not. | set `true` to show the 'All' option or `false` to hide it |
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Star Rating
 
@@ -556,26 +558,23 @@ starRating1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'starrating' |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `textColor`, `labelColor` etc. |
-| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
-| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
-| **textColor** | Specifies the color of the stars. | Color name or Hex color code '#f6f5ff' |
-| **labelColor** | Specifies the color of the label. | Color name or Hex color code '#f6f5ff' |
-| **allowHalfStar** | Specifies whether to allow selection of half star rating or not. | set `true` to allow half-star ratings or `false` to disable it |
-| **defaultSelected** | Specifies the default value of the star rating. | Numeric value like 4.5 |
-| **maxRating** | Specifies the maximum rating. | Numeric value like 10 |
-| **tooltips** | Specifies the tooltips for each star in an array. | Array of strings like `['one', 'two', 'three', 'four']` |
-| **label** | Specifies the label of the component. | Any string value like 'Select a rating' |
-
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/star.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'starrating' |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `textColor`, `labelColor` etc. |
+| disabled | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| visibility | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| textColor | Specifies the color of the stars. | Color name or Hex color code '#f6f5ff' |
+| labelColor | Specifies the color of the label. | Color name or Hex color code '#f6f5ff' |
+| allowHalfStar | Specifies whether to allow selection of half star rating or not. | set `true` to allow half-star ratings or `false` to disable it |
+| defaultSelected | Specifies the default value of the star rating. | Numeric value like 4.5 |
+| maxRating | Specifies the maximum rating. | Numeric value like 10 |
+| tooltips | Specifies the tooltips for each star in an array. | Array of strings like `['one', 'two', 'three', 'four']` |
+| label | Specifies the label of the component. | Any string value like 'Select a rating' |
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### File Picker
 
@@ -600,27 +599,25 @@ filepicker1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'filepicker' |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `visibility`, `borderRadius` etc. |
-| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
-| **borderRadius** | Specifies the border radius of the component. | Numeric value like 10 |
-| **enableMultiple** | Specifies whether to enable multiple file selection or not. | set `true` to enable multiple file selection or `false` to disable it |
-| **fileType** | Specifies the mime file type. | Mime types like '*/*' (accepts all file types) |
-| **instructionText** | Specifies the instruction text of the file picker. | Any string value like 'Click here to select files' |
-| **maxFileCount** | Specifies the maximum number of files that can be selected. | Numeric value like 5 |
-| **maxSize** | Specifies the maximum size of the file in bytes. | Numeric value like 6000000 (6MB) |
-| **minSize** | Specifies the minimum size of the file in bytes. | Numeric value like 25 |
-| **parseContent** | Specifies whether to parse the content of the file or not. | set `true` to parse the content or `false` to disable it |
-| **parseFileType** | Specifies the file type to parse (e.g., csv, text, xlsx). | File type like 'csv' |
-| **label** | Specifies the label of the component. | Any string value like 'Select a file' |
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/filepicker.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'filepicker' |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `visibility`, `borderRadius` etc. |
+| visibility | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| borderRadius | Specifies the border radius of the component. | Numeric value like 10 |
+| enableMultiple | Specifies whether to enable multiple file selection or not. | set `true` to enable multiple file selection or `false` to disable it |
+| fileType | Specifies the mime file type. | Mime types like '*/*' (accepts all file types) |
+| instructionText | Specifies the instruction text of the file picker. | Any string value like 'Click here to select files' |
+| maxFileCount | Specifies the maximum number of files that can be selected. | Numeric value like 5 |
+| maxSize | Specifies the maximum size of the file in bytes. | Numeric value like 6000000 (6MB) |
+| minSize | Specifies the minimum size of the file in bytes. | Numeric value like 25 |
+| parseContent | Specifies whether to parse the content of the file or not. | set `true` to parse the content or `false` to disable it |
+| parseFileType | Specifies the file type to parse (e.g., csv, text, xlsx). | File type like 'csv' |
+| label | Specifies the label of the component. | Any string value like 'Select a file' |
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Text Input
 
@@ -646,27 +643,25 @@ textinput1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'textinput' |
-| **value** | Specifies the default value of the text input. | Any string value like 'Random text' |
-| **placeholder** | Specifies the placeholder text of the text input. | Any string value like 'enter first name here' |
-| **label** | Specifies the label of the component. | Any string value like 'First name' |
-| **validation** | Specifies validation rules for the text input. | Object containing `maxLength` property |
-| **maxLength** | Specifies the maximum length validation of the text input. | Numeric value like 6 |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `borderRadius`, `errorTextColor`, `disabled`, `visibility`, `textColor` etc. |
-| **backgroundColor** | Specifies the background color of the component. | Color name or Hex color code '#f6f5ff' |
-| **borderRadius** | Specifies the border radius of the component. | Numeric value like 20 |
-| **errorTextColor** | Specifies the color of the error text. | Color name or Hex color code '#f6f5ff' |
-| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
-| **visibility** | Specifies whether to show the component or not. | set `false` to hide the component or `true` to show it |
-| **textColor** | Specifies the text color of the component. | Color name or Hex color code '#f6f5ff' |
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/textinput.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'textinput' |
+| value | Specifies the default value of the text input. | Any string value like 'Random text' |
+| placeholder | Specifies the placeholder text of the text input. | Any string value like 'enter first name here' |
+| label | Specifies the label of the component. | Any string value like 'First name' |
+| validation | Specifies validation rules for the text input. | Object containing `maxLength` property |
+| maxLength | Specifies the maximum length validation of the text input. | Numeric value like 6 |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `borderRadius`, `errorTextColor`, `disabled`, `visibility`, `textColor` etc. |
+| backgroundColor | Specifies the background color of the component. | Color name or Hex color code '#f6f5ff' |
+| borderRadius | Specifies the border radius of the component. | Numeric value like 20 |
+| errorTextColor | Specifies the color of the error text. | Color name or Hex color code '#f6f5ff' |
+| disabled | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| visibility | Specifies whether to show the component or not. | set `false` to hide the component or `true` to show it |
+| textColor | Specifies the text color of the component. | Color name or Hex color code '#f6f5ff' |
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Dropdown
 
@@ -689,26 +684,23 @@ dropdown1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'dropdown' |
-| **displayValues** | Specifies the value for option labels in an array format. | Array of values like `[1, 2, 3]` |
-| **values** | Specifies the option labels in an array. | Array of strings like `['one', 'two', 'three']` |
-| **loading** | Specifies whether to show the loading state or not. | set `true` to show the loading state or `false` to hide it |
-| **value** | Specifies the default selected value of the dropdown. | Any value from the `values` array, like 'two' |
-| **label** | Specifies the label of the component. | Any string value like 'Select a number' |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `borderRadius`, `justifyContent` etc. |
-| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
-| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
-| **borderRadius** | Specifies the border radius of the component. | Numeric value like 5 |
-| **justifyContent** | Specifies the alignment of the dropdown options. | 'start', 'center', or 'end' |
-
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/dropdown.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'dropdown' |
+| displayValues | Specifies the value for option labels in an array format. | Array of values like `[1, 2, 3]` |
+| values | Specifies the option labels in an array. | Array of strings like `['one', 'two', 'three']` |
+| loading | Specifies whether to show the loading state or not. | set `true` to show the loading state or `false` to hide it |
+| value | Specifies the default selected value of the dropdown. | Any value from the `values` array, like 'two' |
+| label | Specifies the label of the component. | Any string value like 'Select a number' |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `borderRadius`, `justifyContent` etc. |
+| disabled | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| visibility | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| borderRadius | Specifies the border radius of the component. | Numeric value like 5 |
+| justifyContent | Specifies the alignment of the dropdown options. | 'start', 'center', or 'end' |
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Button
 
@@ -731,25 +723,23 @@ button1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'button' |
-| **value** | Specifies the button text. | Any string value like 'Submit' |
-| **label** | Specifies the label of the component. | Set to `''` (empty string) to hide the label |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `textColor`, `borderRadius`, `borderColor`, `loaderColor`, `visibility`, `disabled` etc. |
-| **backgroundColor** | Specifies the background color of the button. | Color name or Hex color code '#f6f5ff' |
-| **textColor** | Specifies the text color of the button. | Color name or Hex color code '#f6f5ff' |
-| **borderRadius** | Specifies the border radius of the button. | Numeric value like 5 |
-| **borderColor** | Specifies the border color of the button. | Color name or Hex color code '#f6f5ff' |
-| **loaderColor** | Specifies the color of the loader on the button. | Color name or Hex color code '#f6f5ff' |
-| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
-| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/button.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'button' |
+| value | Specifies the button text. | Any string value like 'Submit' |
+| label | Specifies the label of the component. | Set to `''` (empty string) to hide the label |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `textColor`, `borderRadius`, `borderColor`, `loaderColor`, `visibility`, `disabled` etc. |
+| backgroundColor | Specifies the background color of the button. | Color name or Hex color code '#f6f5ff' |
+| textColor | Specifies the text color of the button. | Color name or Hex color code '#f6f5ff' |
+| borderRadius | Specifies the border radius of the button. | Numeric value like 5 |
+| borderColor | Specifies the border color of the button. | Color name or Hex color code '#f6f5ff' |
+| loaderColor | Specifies the color of the loader on the button. | Color name or Hex color code '#f6f5ff' |
+| visibility | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| disabled | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Text
 
@@ -769,22 +759,20 @@ text1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'text' |
-| **value** | Specifies the value of the text component. | Any string value like 'This is a text component' |
-| **label** | Specifies the label of the component. | Set to `''` (empty string) to hide the label |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `textColor`, `fontSize`, `fontWeight` etc. |
-| **backgroundColor** | Specifies the background color of the text. | Color name or Hex color code '#f6f5ff' |
-| **textColor** | Specifies the text color of the text. | Color name or Hex color code '#f6f5ff' |
-| **fontSize** | Specifies the font size of the text. | Numeric value like 24 |
-| **fontWeight** | Specifies the font weight of the text. | Numeric value like 30 |
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/text.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'text' |
+| value | Specifies the value of the text component. | Any string value like 'This is a text component' |
+| label | Specifies the label of the component. | Set to `''` (empty string) to hide the label |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `textColor`, `fontSize`, `fontWeight` etc. |
+| backgroundColor | Specifies the background color of the text. | Color name or Hex color code '#f6f5ff' |
+| textColor | Specifies the text color of the text. | Color name or Hex color code '#f6f5ff' |
+| fontSize | Specifies the font size of the text. | Numeric value like 24 |
+| fontWeight | Specifies the font weight of the text. | Numeric value like 30 |
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Radio
 
@@ -805,20 +793,16 @@ radioButton1: {
 }
 ```
 
-| Key | Description | Expected Value |
+| <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :-----------|
-| **type** | Specifies the type of component. | 'radio' |
-| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `textColor`, `disabled`, `visibility` etc. |
-| **textColor** | Specifies the text color of the radio options. | Color name or Hex color code '#f6f5ff' |
-| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
-| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
-| **displayValues** | Specifies the value for labels in an array format. | Array of strings like `['option 1', 'option 2', 'option 3']` |
-| **label** | Specifies the label of the component. | Any string value like 'Radio Buttons' |
-| **value** | Specifies the default selected value of the radio button. | Any value from the `values` array, like 2 |
-| **values** | Specifies the values in an array. | Array of values like `[1, 2, 3]` |
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/radio.png" alt="Form custom schema" />
+| type | Specifies the type of component. | 'radio' |
+| styles | Specifies the styles of the component. | Object that will contain the styles of the component like `textColor`, `disabled`, `visibility` etc. |
+| textColor | Specifies the text color of the radio options. | Color name or Hex color code '#f6f5ff' |
+| disabled | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| visibility | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| displayValues | Specifies the value for labels in an array format. | Array of strings like `['option 1', 'option 2', 'option 3']` |
+| label | Specifies the label of the component. | Any string value like 'Radio Buttons' |
+| value | Specifies the default selected value of the radio button. | Any value from the `values` array, like 2 |
+| values | Specifies the values in an array. | Array of values like `[1, 2, 3]` |
 
 </div>

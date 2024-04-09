@@ -58,9 +58,9 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 ## Exposed Variables
 
-| Variables    | Description |
-| ----------- | ----------- |
-| currentStepId | This variable holds the id of the currently selected step on the step component. You can access the value dynamically using JS: `{{components.steps1.currentStepId}}`|
+| <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div>|
+|:----------- |:----------- |:--------------|
+| currentStepId | This variable holds the id of the currently selected step on the step component.| Access the value dynamically using JS: `{{components.steps1.currentStepId}}`|
 
 </div>
 
@@ -79,10 +79,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
@@ -94,7 +94,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 |:------------ |:-------------|
 | Theme | You can change the theme of widget by selecting available themes from dropdown. |
 | Colour | You can change the  color of the widget by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Text Colour | You can change the  text color of the widget by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Text colour | You can change the  text color of the widget by entering the Hex color code or choosing a color of your choice from the color picker. |
 | Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
 
 :::info
