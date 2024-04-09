@@ -59,7 +59,7 @@ jobs:
       - name: Validate PAT
         run: |
           sed -i "s|https://PAT@github.com/ToolJet/tj-ee.git|https://${{ env.PACKER_GITHUB_PAT }}@github.com/ToolJet/tj-ee|g" ./deploy/ec2/setup_machine.sh
-        
+
       # build artifact
       - name: Build Artifact
         uses: hashicorp/packer-github-actions@master
@@ -75,9 +75,9 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="Job '${{ env.JOB_NAME }}' succeeded! AMI = tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal"
+            message="ToolJet enterprise AWS AMI published:\\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal\`"
           else
-            message="Job '${{ env.JOB_NAME }}' failed! AMI = tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal"
+            message="ToolJet enterprise AWS AMI release failed! \\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal\`"
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

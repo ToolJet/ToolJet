@@ -56,10 +56,10 @@ envsubst "${VARS_TO_SUBSTITUTE}" < /tmp/nginx.conf > /tmp/nginx-substituted.conf
 sudo cp /tmp/nginx-substituted.conf /usr/local/openresty/nginx/conf/nginx.conf
 
 # Download and setup postgrest binary
-curl -OL https://github.com/PostgREST/postgrest/releases/download/v10.1.1/postgrest-v10.1.1-linux-static-x64.tar.xz
-tar xJf postgrest-v10.1.1-linux-static-x64.tar.xz
+curl -OL https://github.com/PostgREST/postgrest/releases/download/v12.0.2/postgrest-v12.0.2-linux-static-x64.tar.xz
+tar xJf postgrest-v12.0.2-linux-static-x64.tar.xz
 sudo mv ./postgrest /bin/postgrest
-sudo rm postgrest-v10.1.1-linux-static-x64.tar.xz
+sudo rm postgrest-v12.0.2-linux-static-x64.tar.xz
 
 # Add the Redis APT repository
 sudo add-apt-repository ppa:redislabs/redis -y
