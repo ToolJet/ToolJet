@@ -3,7 +3,7 @@ id: workspace_constants
 title: Workspace Constants
 ---
 
-Workspace constants are predefined values(usually tokens/secret keys/API keys) that can be used across your application to maintain consistency and facilitate easy updates. They allow you to store important data or configurations that should remain unchanged during the application's runtime. This doc will guide you through the usage and management of workspace constants within your workspaces. 
+Workspace constants are predefined values(usually tokens/secret keys/API keys) that can be used across your application to maintain consistency and facilitate easy updates. They allow you to store important data or configurations that should remain unchanged during the application's runtime. This doc will guide you through the usage and management of workspace constants within your workspaces.
 
 :::danger
 Workspace constants are handled server-side and are not intended for use in query transformations or RunJS and RunPy queries. For these operations, employ variables and page variables instead.
@@ -15,7 +15,11 @@ Users can define environment-specific configurations by setting different values
 
 ## Server-Side Resolution
 
-Workspace constants are designed to be resolved on the server side only. This means that when you make network calls, the payload sent will not include the actual values of the constants. Instead, the server will resolve the constants and use their actual values while processing the requests. This ensures that the constants remain secure and are not exposed to the client-side.
+Workspace constants are designed to be resolved on the server side only. This means that when you make network calls, the payload sent will not include the actual values of the constants. Instead, the server will resolve the constants and use their actual values while processing the requests. This ensures that the constants remain secure and are not exposed to the client-side.<br/>
+Workspace constants are encrypted before being stored in the database, providing an additional layer of security for sensitive data like API keys, tokens, and other confidential values.
+:::info
+Workspace constants encryption was introduced in ToolJet version 2.34.1. If you are upgrading from a version prior to 2.34.1, all your existing workspace constants will be automatically encrypted. You can continue utilizing the workspace constants as before, while benefiting from the added security provided by the encryption feature.
+:::
 
 ## Access Control
 
@@ -32,15 +36,16 @@ To use a workspace constant, you need to follow the syntax: **`{{constants.const
 ## Creating Workspace Constants
 
 To create workspace constants, follow these steps:
+
 - Access the ToolJet Dashboard and navigate to Workspace Settings.
 - Select the Workspace Constants tab.
 - Click on the **Create New Constant** button.
-- A drawer will appear; enter the desired name and value for the constant.
+- A drawer will appear. Enter the desired name and value for the constant.
 - Click the **Add Constant** button to save the constant.
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/workspace-const/createconstant.gif" alt="Workspace constants: create"/>
+<img className="screenshot-full" src="/img/workspace-const/create-constant-v2.gif" alt="Workspace constants: create"/>
     
 </div>
 
@@ -48,7 +53,7 @@ To create workspace constants, follow these steps:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/workspace-const/editdelete.png" alt="Workspace constants: edit/delete"/>
+<img className="screenshot-full" src="/img/workspace-const/edit-delete-v2.png" alt="Workspace constants: edit/delete"/>
 
 </div>
 
@@ -58,7 +63,7 @@ Workspace constants can be used in the app builder and the global datasource con
 
 ### Using Workspace Constants in Global Datasource Connection
 
-You can use workspace constants in the **[global datasource connection](/docs/data-sources/overview#connecting-global-datasources)** form to store sensitive information like API keys, tokens, etc. This will ensure that the data remains secure and is not exposed to the client-side. You can use the syntax `{{constants.constant_name}}` to access the value of the constant. 
+You can use workspace constants in the **[global datasource connection](/docs/data-sources/overview#connecting-global-datasources)** form to store sensitive information like API keys, tokens, etc. This will ensure that the data remains secure and is not exposed to the client-side. You can use the syntax `{{constants.constant_name}}` to access the value of the constant.
 
  <div style={{textAlign: 'center'}}>
 
@@ -77,6 +82,7 @@ Inside the App Builder, you will find the **[Inspector](/docs/app-builder/left-s
  </div>
 
 As you build the application, you can easily refer to the constants and incorporate them into different elements of your app.
+
  <div style={{textAlign: 'center'}}>
     
  <img className="screenshot-full" src="/img/workspace-const/querypanel.png" alt="Workspace constants: querypanel"/>

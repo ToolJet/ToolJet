@@ -121,8 +121,8 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
-          includeCurrentVersion: true,
-          lastVersion: '2.33.0',
+          includeCurrentVersion: false,
+          lastVersion: '2.34.0',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

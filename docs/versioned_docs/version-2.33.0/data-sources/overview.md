@@ -13,7 +13,7 @@ Data Source page is available only on **ToolJet version 2.3.0 and above**.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/overview/overview.png" alt="Data Sources: Overview" width="600"/>
+<img className="screenshot-full" src="/img/datasource-reference/overview/overview-v2.png" alt="Data Sources: Overview" />
 
 </div>
 
@@ -26,19 +26,13 @@ Data Source page is available only on **ToolJet version 2.3.0 and above**.
 
   </div>
 
-  Or you can directly go to the **Data Sources** page from the left sidebar of the dashboard
-
-  <div style={{textAlign: 'left'}}>
-
-  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/newgds.png" alt="Data Sources: Overview" />
-
-  </div>
+  Or you can directly go to the **Data Sources** page from the left sidebar of the dashboard.
 
 2. Within the **Data Sources** page, you'll find various categories of data sources on the left side, including Databases, APIs, Cloud Storages, and plugins. Click on each category to view the list of accessible data sources. As you hover over the desired data source, an `Add` button will appear. Upon clicking this button, the selected data source will be integrated into the workspace.
    
   <div style={{textAlign: 'center'}}>
   
-  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/gdsadd.gif" alt="Overview of Data Sources" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/gdsadd-v2.png" alt="Overview of Data Sources" />
   
   </div>
 
@@ -48,7 +42,7 @@ Data Source page is available only on **ToolJet version 2.3.0 and above**.
 
   <div style={{textAlign: 'center'}}>
   
-  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/connectinggds.gif" alt="Overview of Data Sources" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/connectinggds-v2.gif" alt="Overview of Data Sources" />
   
   </div>
 

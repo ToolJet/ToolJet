@@ -24,7 +24,7 @@ You can find the endpoint and key in the **[Azure Portal](https://portal.azure.c
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - CosmosDB](/img/datasource-reference/cosmosdb/cosmosdb-connect.png)
+![ToolJet - Data source - CosmosDB](/img/datasource-reference/cosmosdb/cosmosdb-connect-v2.png)
 
 </div>
 
