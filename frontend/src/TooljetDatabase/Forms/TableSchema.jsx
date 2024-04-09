@@ -8,7 +8,7 @@ import SelectIcon from '../Icons/Select-column.svg';
 import MenuIcon from '../Icons/Unique-menu.svg';
 // import DeleteIcon from '../Icons/DeleteIcon.svg';
 import Tick from '../Icons/Tick.svg';
-import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType } from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, getColumnDataType } from '../constants';
 import Select, { components } from 'react-select';
 
 function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumnSelection, handleDelete, isEditMode }) {
@@ -33,14 +33,15 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
   const dropdownContainerWidth = '360px';
 
   const CustomSelectOption = (props) => {
-    const isCheckDataType =
-      columns[columnSelection.index]?.column_default?.includes('nextval(') &&
-      columns[columnSelection.index]?.data_type === 'integer'
-        ? 'serial'
-        : columns[columnSelection.index]?.data_type;
-    // const checkString = columns[columnSelection.index]?.column_default;
-    // const regex = /^nextval(".*"::regclass)$/;
-    // console.log('first', regex.test(checkString));
+    // const isCheckDataType =
+    //   columns[columnSelection.index]?.column_default?.includes('nextval(') &&
+    //   columns[columnSelection.index]?.data_type === 'integer'
+    //     ? 'serial'
+    //     : columns[columnSelection.index]?.data_type;
+    const isCheckDataType = getColumnDataType({
+      data_type: columns[columnSelection.index]?.data_type,
+      column_default: columns[columnSelection.index]?.column_default,
+    });
     return (
       <Option {...props}>
         <div className="selected-dropdownStyle d-flex align-items-center justify-content-between">

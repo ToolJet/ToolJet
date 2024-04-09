@@ -57,7 +57,6 @@ function checkString(inputString) {
 
 export const getColumnDataType = (columnDetails) => {
   const { data_type = '', column_default = '' } = columnDetails;
-  console.log('first', column_default);
   const result = checkString(column_default);
 
   if (data_type === 'integer' && column_default) {
