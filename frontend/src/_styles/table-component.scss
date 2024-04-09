@@ -1052,6 +1052,8 @@
 }
 
 .table-select-column-accordian {
+    padding: 0px 16px 0px;
+    margin-top: -24px;
   .accordion-button {
     padding: 16px 0px !important;
   }
@@ -1060,10 +1062,14 @@
     padding: 0 !important;
   }
 
-  // .accordian-item{
-  //   border: solid var(--slate5);
-  //   border-width: 1px 0px 0px 0px;
-  // }
+  .accordion-item{
+    border-width: 0px 0px 0px 0px !important;
+    border: solid var(--slate5);
+  }
+
+  .list-group-item {
+    margin-bottom: 4px !important;
+  }
 }
 
 .table-select-custom-menu-list {
