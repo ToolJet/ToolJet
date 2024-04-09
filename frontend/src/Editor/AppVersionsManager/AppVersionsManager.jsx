@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-import { appVersionService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
@@ -16,29 +15,7 @@ const appVersionLoadingStatus = Object.freeze({
 });
 
 export const AppVersionsManager = function ({ appId, setAppDefinitionFromVersion, isEditable = true, isViewer }) {
-  const { initializedEnvironmentDropdown } = useEnvironmentsAndVersionsStore(
-    (state) => ({
-      initializedEnvironmentDropdown: state.initializedEnvironmentDropdown,
-    }),
-    shallow
-  );
-
-  if (initializedEnvironmentDropdown) {
-    return (
-      <RenderComponent
-        appId={appId}
-        setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-        isEditable={isEditable}
-        isViewer={isViewer}
-      />
-    );
-  } else {
-    return <></>;
-  }
-};
-
-const RenderComponent = ({ appId, isEditable, isViewer, setAppDefinitionFromVersion }) => {
-  const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loaded);
+  const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
   const [deleteVersion, setDeleteVersion] = useState({
     versionId: '',
     versionName: '',
@@ -63,6 +40,7 @@ const RenderComponent = ({ appId, isEditable, isViewer, setAppDefinitionFromVers
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const {
+    initializedEnvironmentDropdown,
     versionsPromotedToEnvironment,
     lazyLoadAppVersions,
     appVersionsLazyLoaded,
@@ -88,6 +66,12 @@ const RenderComponent = ({ appId, isEditable, isViewer, setAppDefinitionFromVers
     setEnvironmentAndVersionsInitStatus(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (initializedEnvironmentDropdown) {
+      setGetAppVersionStatus(appVersionLoadingStatus.loaded);
+    }
+  }, [initializedEnvironmentDropdown]);
 
   const selectVersion = (id) => {
     const currentVersionId = useAppDataStore.getState().currentVersionId;

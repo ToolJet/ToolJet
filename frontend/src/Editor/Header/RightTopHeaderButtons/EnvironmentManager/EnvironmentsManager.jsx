@@ -18,6 +18,7 @@ const EnvironmentManager = () => {
     }),
     shallow
   );
+
   useEffect(() => {
     !initializedEnvironmentDropdown && initComponent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
