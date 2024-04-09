@@ -202,12 +202,20 @@ const resolveMultiDynamicReferences = (code, lookupTable) => {
       } else {
         const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
 
-        resolvedValue = resolvedCode;
+        resolvedValue = resolvedValue.replace(variable, resolvedCode);
       }
     });
   }
 
   return resolvedValue;
+};
+
+const queryHasStringOtherThanVariable = (query) => {
+  if (query.startsWith('{{') && query.endsWith('}}')) {
+    return false;
+  }
+
+  return true;
 };
 
 export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
@@ -229,7 +237,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
     return [valid, errors, newValue, resolvedValue];
   }
 
-  const hasMultiDynamicVariables = getDynamicVariables(query)?.length > 1;
+  const hasMultiDynamicVariables = queryHasStringOtherThanVariable(query) || getDynamicVariables(query)?.length > 1;
 
   const { lookupTable } = useResolveStore.getState();
   if (hasMultiDynamicVariables) {

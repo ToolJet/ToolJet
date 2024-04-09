@@ -622,7 +622,11 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
         delete customAppVariables[key];
-        // useResolveStore.getState().actions.removeAppSuggestions(key);
+        useResolveStore.getState().actions.removeAppSuggestions([`variables.${key}`]);
+        useResolveStore
+          .getState()
+          .actions.updateResolvedRefsOfHints([{ hint: 'variables', newRef: customAppVariables }]);
+
         return useCurrentStateStore.getState().actions.setCurrentState({
           variables: customAppVariables,
         });
@@ -635,9 +639,14 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           ...getCurrentState().page.variables,
           [key]: value,
         };
+
         useResolveStore.getState().actions.addAppSuggestions({
-          variables: customPageVariables,
+          page: {
+            ...getCurrentState().page,
+            variables: customPageVariables,
+          },
         });
+
         return useCurrentStateStore.getState().actions.setCurrentState({
           page: {
             ...getCurrentState().page,
@@ -657,7 +666,23 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       case 'unset-page-variable': {
         const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customPageVariables = _.omit(getCurrentState().page.variables, key);
-        // useResolveStore.getState().actions.removeAppSuggestions(key);
+
+        useResolveStore.getState().actions.removeAppSuggestions([`page.variables.${key}`]);
+
+        const pageRef = {
+          page: {
+            ...getCurrentState().page,
+            variables: customPageVariables,
+          },
+        };
+
+        const toUpdateRefs = [
+          { hint: 'page', newRef: pageRef },
+          { hint: 'page.variables', newRef: customPageVariables },
+        ];
+
+        useResolveStore.getState().actions.updateResolvedRefsOfHints(toUpdateRefs);
+
         return useCurrentStateStore.getState().actions.setCurrentState({
           page: {
             ...getCurrentState().page,
@@ -2078,3 +2103,68 @@ export const removeFunctionObjects = (obj) => {
   }
   return obj;
 };
+
+export function isPDFSupported() {
+  const browser = getBrowserUserAgent();
+
+  if (!browser) {
+    return true;
+  }
+
+  const isChrome = browser.name === 'Chrome' && browser.major >= 92;
+  const isEdge = browser.name === 'Edge' && browser.major >= 92;
+  const isSafari = browser.name === 'Safari' && browser.major >= 15 && browser.minor >= 4; // Handle minor version check for Safari
+  const isFirefox = browser.name === 'Firefox' && browser.major >= 90;
+
+  console.log('browser--', browser, isChrome || isEdge || isSafari || isFirefox);
+
+  return isChrome || isEdge || isSafari || isFirefox;
+}
+
+function getBrowserUserAgent(userAgent) {
+  var regexps = {
+      Chrome: [/Chrome\/(\S+)/],
+      Firefox: [/Firefox\/(\S+)/],
+      MSIE: [/MSIE (\S+);/],
+      Opera: [/Opera\/.*?Version\/(\S+)/ /* Opera 10 */, /Opera\/(\S+)/ /* Opera 9 and older */],
+      Safari: [/Version\/(\S+).*?Safari\//],
+    },
+    re,
+    m,
+    browser,
+    version;
+
+  if (userAgent === undefined) userAgent = navigator.userAgent;
+
+  for (browser in regexps)
+    while ((re = regexps[browser].shift()))
+      if ((m = userAgent.match(re))) {
+        version = m[1].match(new RegExp('[^.]+(?:.[^.]+){0,1}'))[0];
+        const { major, minor } = extractVersion(version);
+        return {
+          name: browser,
+          major,
+          minor,
+        };
+      }
+
+  return null;
+}
+
+function extractVersion(versionStr) {
+  // Split the string by "."
+  const parts = versionStr.split('.');
+
+  // Check for valid input
+  if (parts.length === 0 || parts.some((part) => isNaN(part))) {
+    return { major: null, minor: null };
+  }
+
+  // Extract major version
+  const major = parseInt(parts[0], 10);
+
+  // Handle minor version (default to 0)
+  const minor = parts.length > 1 ? parseInt(parts[1], 10) : 0;
+
+  return { major, minor };
+}

@@ -6,7 +6,12 @@ import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import _, { isEmpty } from 'lodash';
 import { componentTypes } from './WidgetManager/components';
-import { addNewWidgetToTheEditor, onComponentOptionChanged, onComponentOptionsChanged } from '@/_helpers/appUtils';
+import {
+  addNewWidgetToTheEditor,
+  onComponentOptionChanged,
+  onComponentOptionsChanged,
+  isPDFSupported,
+} from '@/_helpers/appUtils';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import { restrictedWidgetsObj } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
@@ -18,7 +23,6 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { diff } from 'deep-object-diff';
 // eslint-disable-next-line import/namespace
 import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
-import { isPDFSupported } from '@/_stores/utils';
 import GhostWidget from './GhostWidget';
 
 export const SubContainer = ({
@@ -515,6 +519,7 @@ export const SubContainer = ({
                       isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
                       exposedVariables={exposedVariables ?? {}}
                       getContainerProps={getContainerProps}
+                      isFromSubContainer={true}
                     />
                   </SubWidgetWrapper>
                 );

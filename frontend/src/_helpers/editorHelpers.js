@@ -49,6 +49,7 @@ import { Icon } from '@/Editor/Components/Icon';
 import { Link } from '@/Editor/Components/Link';
 import { Form } from '@/Editor/Components/Form/Form';
 import { BoundedBox } from '@/Editor/Components/BoundedBox/BoundedBox';
+import { isPDFSupported } from '@/_helpers/appUtils';
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -119,8 +120,13 @@ export const AllComponents = {
   Form,
   BoundedBox,
 };
+if (isPDFSupported()) {
+  AllComponents.PDF = await import('@/Editor/Components/PDF').then((module) => module.PDF);
+}
 
 export const getComponentToRender = (componentName) => {
+  const shouldHideWidget = componentName === 'PDF' && !isPDFSupported();
+  if (shouldHideWidget) return null;
   return AllComponents[componentName];
 };
 
