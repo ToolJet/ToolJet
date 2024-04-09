@@ -433,7 +433,7 @@ export default function DragContainer({
               // Adding the new updates to the macro task queue to unblock UI
               // setTimeout(() => {
               // });
-              onResizeStop([newBoxs]);
+              onResizeStop(newBoxs);
             } else {
               events.forEach((ev) => {
                 const currentWidget = boxes.find(({ id }) => {
