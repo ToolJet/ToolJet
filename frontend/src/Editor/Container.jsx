@@ -12,8 +12,8 @@ import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
-import { useCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
+import { addComponents, addNewWidgetToTheEditor, isPDFSupported } from '@/_helpers/appUtils';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useAppInfo } from '@/_stores/appDataStore';
@@ -23,7 +23,6 @@ import _, { cloneDeep, isEmpty } from 'lodash';
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
-import { isPDFSupported } from '@/_stores/utils';
 import toast from 'react-hot-toast';
 import { isOnlyLayoutUpdate, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import GhostWidget from './GhostWidget';
@@ -420,7 +419,7 @@ export const Container = ({
             const newChildComponent = addNewWidgetToTheEditor(
               componentData,
               {},
-              boxes,
+              { ...boxes, ...childrenBoxes },
               {},
               item.currentLayout,
               snapToGrid,
@@ -754,28 +753,31 @@ export const Container = ({
     return componentWithChildren;
   }, [components]);
 
-  const getContainerProps = React.useCallback((componentId) => {
-    return {
-      mode,
-      snapToGrid,
-      onComponentClick,
-      onEvent,
-      appDefinition,
-      appDefinitionChanged,
-      currentState,
-      appLoading,
-      zoomLevel,
-      setSelectedComponent,
-      removeComponent,
-      currentLayout,
-      selectedComponents,
-      darkMode,
-      currentPageId,
-      childComponents: childComponents[componentId],
-      parentGridWidth: gridWidth,
-      draggedSubContainer,
-    };
-  }, []);
+  const getContainerProps = React.useCallback(
+    (componentId) => {
+      return {
+        mode,
+        snapToGrid,
+        onComponentClick,
+        onEvent,
+        appDefinition,
+        appDefinitionChanged,
+        currentState,
+        appLoading,
+        zoomLevel,
+        setSelectedComponent,
+        removeComponent,
+        currentLayout,
+        selectedComponents,
+        darkMode,
+        currentPageId,
+        childComponents: childComponents[componentId],
+        parentGridWidth: gridWidth,
+        draggedSubContainer,
+      };
+    },
+    [childComponents, selectedComponents, draggedSubContainer]
+  );
 
   return (
     <ContainerWrapper
@@ -860,6 +862,7 @@ export const Container = ({
                     getContainerProps={getContainerProps}
                     isVersionReleased={isVersionReleased}
                     currentPageId={currentPageId}
+                    childComponents={childComponents[id]}
                   />
                 </WidgetWrapper>
               );

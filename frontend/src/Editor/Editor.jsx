@@ -19,8 +19,6 @@ import { componentTypes } from './WidgetManager/components';
 import { Inspector } from './Inspector/Inspector';
 import QueryPanel from './QueryPanel/QueryPanel';
 import {
-  onComponentOptionChanged,
-  onComponentOptionsChanged,
   onEvent,
   onQueryConfirmOrCancel,
   runQuery,
@@ -213,8 +211,6 @@ const EditorComponent = (props) => {
 
   const prevAppDefinition = useRef(appDefinition);
 
-  const onAppLoadAndPageLoadEventsAreTriggered = useRef(false);
-
   useLayoutEffect(() => {
     resetAllStores();
   }, []);
@@ -282,9 +278,9 @@ const EditorComponent = (props) => {
     }
 
     if (mounted && didAppDefinitionChanged && currentPageId) {
-      // const components = appDefinition?.pages[currentPageId]?.components || {};
+      const components = appDefinition?.pages[currentPageId]?.components || {};
 
-      // computeComponentState(components);
+      computeComponentState(components);
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
@@ -787,7 +783,6 @@ const EditorComponent = (props) => {
         handleLowPriorityWork(async () => {
           await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
           await handleEvent('onPageLoad', currentPageEvents, {}, true);
-          await handleLowPriorityWork(() => (onAppLoadAndPageLoadEventsAreTriggered.current = true));
         });
       });
   };
@@ -1403,9 +1398,14 @@ const EditorComponent = (props) => {
 
   const updateEntityReferences = (appJson, pageId) => {
     const currentComponents = appJson?.pages?.[pageId]?.components;
+    const globalSettings = appJson['globalSettings'];
 
     let dataQueries = JSON.parse(JSON.stringify(useDataQueriesStore.getState().dataQueries));
     let allEvents = JSON.parse(JSON.stringify(useAppDataStore.getState().events));
+
+    const entittyReferencesInGlobalSettings = findAllEntityReferences(globalSettings, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
 
     const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])?.filter(
       (entity) => entity && isValidUUID(entity)
@@ -1421,6 +1421,27 @@ const EditorComponent = (props) => {
 
     const manager = useResolveStore.getState().referenceMapper;
 
+    if (Array.isArray(entittyReferencesInGlobalSettings) && entittyReferencesInGlobalSettings?.length > 0) {
+      let newGlobalSettings = JSON.parse(JSON.stringify(globalSettings));
+      entittyReferencesInGlobalSettings.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+          newGlobalSettings = dfs(newGlobalSettings, entity, value);
+        }
+      });
+
+      const newAppDefinition = produce(appJson, (draft) => {
+        draft.globalSettings = newGlobalSettings;
+      });
+
+      updateEditorState({
+        isUpdatingEditorStateInProcess: false,
+        appDefinition: newAppDefinition,
+      });
+    }
+
     if (Array.isArray(entityReferencesInComponentDefinitions) && entityReferencesInComponentDefinitions?.length > 0) {
       let newComponentDefinition = JSON.parse(JSON.stringify(currentComponents));
 
@@ -1433,7 +1454,8 @@ const EditorComponent = (props) => {
         }
       });
 
-      const newAppDefinition = produce(appJson, (draft) => {
+      const appDefinition = useEditorStore.getState().appDefinition;
+      const newAppDefinition = produce(appDefinition, (draft) => {
         draft.pages[pageId].components = newComponentDefinition;
       });
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { getComponentToRender } from '@/_helpers/editorHelpers';
 import _ from 'lodash';
 
@@ -23,6 +23,9 @@ export const shouldUpdate = (prevProps, nextProps) => {
     }
   }
 
+  // Added to render the defaukt child components
+  if (prevProps?.childComponents === null && nextProps?.childComponents) return false;
+
   return (
     deepEqualityCheckusingLoDash(prevProps?.id, nextProps?.id) &&
     deepEqualityCheckusingLoDash(prevProps?.component?.definition, nextProps?.component?.definition) &&
@@ -33,7 +36,18 @@ export const shouldUpdate = (prevProps, nextProps) => {
 };
 
 const ComponentWrapper = React.memo(({ componentName, ...props }) => {
+  const [key, setKey] = useState(Math.random());
+
+  const resetComponent = useCallback(() => {
+    setKey(Math.random());
+  }, []);
+
   const ComponentToRender = getComponentToRender(componentName);
+
+  if (ComponentToRender === null) return;
+  if (componentName === 'Form') {
+    return <ComponentToRender key={key} resetComponent={resetComponent} {...props} />;
+  }
 
   return <ComponentToRender {...props} />;
 }, shouldUpdate);
