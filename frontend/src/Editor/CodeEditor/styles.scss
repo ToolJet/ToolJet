@@ -245,7 +245,7 @@
 
     .cm-tooltip-autocomplete {
         @extend .cm-base-autocomplete;
-        top: 0px !important;
+        top: content-box !important;
     }
 }
 
