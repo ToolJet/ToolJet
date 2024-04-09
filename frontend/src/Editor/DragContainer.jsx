@@ -132,6 +132,7 @@ export default function DragContainer({
   const hoveredComponent = useEditorStore((state) => state?.hoveredComponent, shallow);
 
   useEffect(() => {
+    console.log('hoveredComponentChanged', hoveredComponent);
     if (!moveableRef.current) {
       return;
     }
@@ -164,7 +165,7 @@ export default function DragContainer({
     } catch (error) {
       console.error('Error---->', error);
     }
-  }, [hoveredComponent, reloadGrid]);
+  }, [hoveredComponent, reloadGrid, JSON.stringify(widgets)]);
 
   useEffect(() => {
     setList(boxList);
@@ -482,6 +483,7 @@ export default function DragContainer({
           if (hoveredComponent !== e.target.id) {
             return false;
           }
+          console.log('DragStarted-----', e);
         }}
         onDragEnd={(e) => {
           try {
@@ -593,15 +595,18 @@ export default function DragContainer({
           });
         }}
         onDrag={(e) => {
+          console.log('DragStarted----- onDrag-----', e);
           if (!isDraggingRef.current) {
             useGridStore.getState().actions.setDraggingComponentId(e.target.id);
             isDraggingRef.current = true;
           }
           if (draggedSubContainer) {
+            console.log('DragStarted----- draggedSubContainer-----', e);
             return;
           }
 
           if (!draggedSubContainer) {
+            console.log('DragStarted----- !draggedSubContainer-----', e);
             const parentComponent = widgets[widgets[e.target.id]?.component?.parent];
             let top = e.translate[1];
             let left = e.translate[0];
@@ -626,6 +631,7 @@ export default function DragContainer({
           }
 
           if (document.elementFromPoint(e.clientX, e.clientY)) {
+            console.log('DragStarted----- elementFromPoint-----', e);
             const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
             const draggedOverElements = targetElems.filter(
               (ele) =>
@@ -657,6 +663,7 @@ export default function DragContainer({
 
           const offset = getOffset(e.target, document.querySelector('#real-canvas'));
           if (document.getElementById('moveable-drag-ghost')) {
+            console.log('DragStarted----- elementFromPoint-----', e);
             document.getElementById('moveable-drag-ghost').style.transform = `translate(${offset.x}px, ${offset.y}px)`;
             document.getElementById('moveable-drag-ghost').style.width = `${e.target.clientWidth}px`;
             document.getElementById('moveable-drag-ghost').style.height = `${e.target.clientHeight}px`;
