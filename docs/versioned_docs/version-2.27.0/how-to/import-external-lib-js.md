@@ -16,7 +16,7 @@ You can import various JavaScript libraries using their Content Delivery Network
 Start by creating a new application in ToolJet. Then, proceed to create a new RunJS query from the query panel.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/neww.png" alt="reate a new RunJS query" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/create-new-query.png" alt="Create a new RunJS query" />
 </div>
 
 </div>
