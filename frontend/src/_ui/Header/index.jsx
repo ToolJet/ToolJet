@@ -57,11 +57,11 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
                         display: 'flex',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        background: '#273E89',
+                        background: `${darkMode ? '#273E89' : 'var(--indigo3)'}`,
                         borderColor: `${darkMode ? 'rgba(62, 99, 221, 0.2)' : '#AEC0F5'} `,
                       }}
                       leftIcon="cheveronleftdouble"
-                      fill={darkMode ? '#3E63DD' : '#ecedee'}
+                      fill="#3E63DD"
                       iconWidth="14"
                       size="md"
                       onClick={toggleCollapsibleSidebar}
@@ -88,11 +88,11 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
                       display: 'flex',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      background: '#273E89',
+                      background: `${darkMode ? '#273E89' : 'var(--indigo3)'}`,
                       borderColor: `${darkMode ? 'rgba(62, 99, 221, 0.2)' : '#AEC0F5'} `,
                     }}
                     leftIcon="cheveronrightdouble"
-                    fill={darkMode ? '#3E63DD' : '#ecedee'}
+                    fill="#3E63DD"
                     iconWidth="14"
                     size="md"
                     onClick={toggleCollapsibleSidebar}
