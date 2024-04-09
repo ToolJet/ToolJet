@@ -402,7 +402,7 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
       if (_type === 'Array') {
         map.set(newPath, { type: _type });
 
-        if (path.startsWith('queries') && key === 'data' && value.length > 2) {
+        if (path.startsWith('queries') && key === 'data' && value.length > 2000) {
           // do nothing
         } else {
           buildMap(value, newPath);
