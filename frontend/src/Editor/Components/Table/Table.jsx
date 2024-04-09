@@ -429,6 +429,7 @@ export function Table({
     t,
     darkMode,
     tableColumnEvents: tableColumnEvents,
+    isMaxRowHeightAuto: maxRowHeight === 'auto',
   });
 
   columnData = useMemo(
@@ -438,7 +439,7 @@ export function Table({
           return column;
         }
       }),
-    [columnData, currentState]
+    [columnData, currentState, maxRowHeight]
   );
 
   const transformations = columnProperties
@@ -550,6 +551,7 @@ export function Table({
       highlightSelectedRow,
       JSON.stringify(tableActionEvents),
       JSON.stringify(tableColumnEvents),
+      maxRowHeight,
     ] // Hack: need to fix
   );
 
@@ -1570,6 +1572,7 @@ export function Table({
                                 cellTextColor,
                                 contentWrap,
                                 autoHeight,
+                                maxRowHeight,
                               })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
