@@ -7,7 +7,12 @@ import _, { omit } from 'lodash';
 import { Box } from '@/Editor/Box';
 import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
-import { onComponentClick, onComponentOptionChanged, removeFunctionObjects } from '@/_helpers/appUtils';
+import {
+  onComponentClick,
+  onComponentOptionChanged,
+  onComponentOptionsChanged,
+  removeFunctionObjects,
+} from '@/_helpers/appUtils';
 import { useAppInfo } from '@/_stores/appDataStore';
 export const Form = function Form(props) {
   const {
@@ -31,11 +36,10 @@ export const Form = function Form(props) {
     mode,
     getContainerProps,
     containerProps,
+    childComponents,
   } = props;
 
   const { events: allAppEvents } = useAppInfo();
-
-  const { childComponents } = containerProps;
 
   const formEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
   const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
@@ -76,7 +80,7 @@ export const Form = function Form(props) {
     };
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
+  }, [isValid, formEvents]);
 
   const extractData = (data) => {
     const result = {};
@@ -122,7 +126,7 @@ export const Form = function Form(props) {
     let formattedChildData = {};
     let childValidation = true;
 
-    if (childComponents === null) {
+    if (!childComponents) {
       const exposedVariables = {
         data: formattedChildData,
         isValid: childValidation,
@@ -179,7 +183,7 @@ export const Form = function Form(props) {
     document.addEventListener('submitForm', handleFormSubmission);
     return () => document.removeEventListener('submitForm', handleFormSubmission);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents)]);
+  }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents), formEvents]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -282,7 +286,7 @@ export const Form = function Form(props) {
                   <Box
                     {...props}
                     component={item}
-                    id={id}
+                    id={index}
                     width={width}
                     height={item.defaultSize.height}
                     mode={mode}
@@ -297,6 +301,9 @@ export const Form = function Form(props) {
                     // customResolvables={customResolvables}
                     parentId={id}
                     getContainerProps={getContainerProps}
+                    onOptionChanged={onComponentOptionChangedForSubcontainer}
+                    onOptionsChanged={onComponentOptionsChanged}
+                    isFromSubContainer={true}
                   />
                 </div>
               );

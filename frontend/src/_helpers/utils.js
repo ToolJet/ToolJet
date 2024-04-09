@@ -3,18 +3,17 @@ import moment from 'moment';
 import _, { isEmpty } from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
-import { previewQuery, executeAction } from '@/_helpers/appUtils';
+import { executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { getCurrentState, useCurrentState } from '@/_stores/currentStateStore';
+import { getCurrentState } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
-import { resolveReferences as newResolver } from '@/Editor/CodeEditor/utils';
-import { useResolveStore } from '@/_stores/resolverStore';
 
+const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
@@ -160,7 +159,7 @@ export function resolveReferences(
   forPreviewBox = false
 ) {
   if (object === '{{{}}}') return '';
-  const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
+
   object = _.clone(object);
   const objectType = typeof object;
   let error;
@@ -329,18 +328,7 @@ export const serializeNestedObjectToQueryParams = function (obj, prefix) {
 export function resolveWidgetFieldValue(prop, _default = [], customResolveObjects = {}) {
   const widgetFieldValue = prop;
 
-  const isStoreAndEditorReady = useResolveStore.getState().updateStoreState && useCurrentState.getState().isEditorReady;
-
   try {
-    if (isStoreAndEditorReady) {
-      const [_, _error, resolveValue] = newResolver(widgetFieldValue?.value);
-
-      if (_error) {
-        return _default;
-      }
-
-      return resolveValue;
-    }
     const state = getCurrentState();
     return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
@@ -435,6 +423,19 @@ export function validateEmail(email) {
 
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
+  if ([...reservedKeyword, 'this'].some((keyword) => code.includes(keyword))) {
+    const message = `Code contains ${reservedKeyword.join(' or ')} or this keywords`;
+    const description = 'Cannot resolve code with reserved keywords in it. Please remove them and try again.';
+
+    return {
+      status: 'failed',
+      data: {
+        message,
+        description,
+      },
+    };
+  }
+
   const currentState = getCurrentState();
   let result = {},
     error = null;
