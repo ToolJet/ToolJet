@@ -359,7 +359,6 @@ const Table = ({ collapseSidebar }) => {
     },
     useRowSelect
   );
-  // console.log(rows);
 
   const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
 
@@ -1069,7 +1068,7 @@ const Table = ({ collapseSidebar }) => {
                             <SolidIcon name="expand" width={16} viewBox="0 0 16 16" />
                           </div>
                         </div>
-                      </td>{' '}
+                      </td>
                       {row.cells.map((cell, index) => {
                         const dataCy =
                           cell.column.id === 'selection'
