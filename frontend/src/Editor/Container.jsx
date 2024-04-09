@@ -594,23 +594,21 @@ export const Container = ({
       ...updatedBoxes,
     };
 
-    handleLowPriorityWork(() => {
-      const diffState = diff(boxes, newBoxes);
+    const diffState = diff(boxes, newBoxes);
 
-      setBoxes((prev) => {
-        const updatedComponentsAsperDiff = Object.keys(diffState).reduce((acc, key) => {
-          const component = newBoxes[key];
-          if (component) {
-            acc[key] = component;
-          }
-          return acc;
-        }, {});
+    setBoxes((prev) => {
+      const updatedComponentsAsperDiff = Object.keys(diffState).reduce((acc, key) => {
+        const component = newBoxes[key];
+        if (component) {
+          acc[key] = component;
+        }
+        return acc;
+      }, {});
 
-        return {
-          ...prev,
-          ...updatedComponentsAsperDiff,
-        };
-      });
+      return {
+        ...prev,
+        ...updatedComponentsAsperDiff,
+      };
     });
 
     updateCanvasHeight(newBoxes);
