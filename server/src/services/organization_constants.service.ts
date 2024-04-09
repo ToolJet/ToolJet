@@ -67,7 +67,10 @@ export class OrganizationConstantsService {
       const result = await query.getMany();
 
       const constantsWithValues = result.map(async (constant) => {
-        const decryptedValue = await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value);
+        const decryptedValue =
+          constant.orgEnvironmentConstantValues[0].value.length > 0
+            ? await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value)
+            : '';
         return {
           id: constant.id,
           name: constant.constantName,

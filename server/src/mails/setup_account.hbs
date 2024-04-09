@@ -39,9 +39,13 @@
         </tr>
         <tr>
           <td class="padding-y-20 footer-note">
-            <span>Welcome aboard,</span>
-            <br />
-            <span>The ToolJet Team</span>
+            {{#if (eq whiteLabelText "ToolJet")}}
+              <span>Welcome aboard,</span>
+              <br />
+              <span>The ToolJet Team</span>
+            {{else}}
+              <span>Welcome aboard!</span>
+            {{/if}}
           </td>
         </tr>
       </table>

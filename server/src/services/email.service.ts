@@ -16,6 +16,7 @@ handlebars.registerHelper('highlightMentionedUser', function (comment) {
   const regex = /(\()([^)]+)(\))/g;
   return comment.replace(regex, '<span style="color: #218DE3">$2</span>');
 });
+handlebars.registerHelper('eq', (a, b) => a == b);
 
 @Injectable()
 export class EmailService {
@@ -50,33 +51,35 @@ export class EmailService {
         template: './base/base_template',
         context: templateData,
         from: `"${this.WHITE_LABEL_TEXT}" <${this.FROM_EMAIL}>`,
-        attachments: [
-          {
-            filename: 'rocket.png',
-            path: join(__dirname, '../mails/assets/rocket.png'),
-            cid: 'rocket',
-          },
-          {
-            filename: 'twitter.png',
-            path: join(__dirname, '../mails/assets/twitter.png'),
-            cid: 'twitter',
-          },
-          {
-            filename: 'linkedin.png',
-            path: join(__dirname, '../mails/assets/linkedin.png'),
-            cid: 'linkedin',
-          },
-          {
-            filename: 'youtube.png',
-            path: join(__dirname, '../mails/assets/youtube.png'),
-            cid: 'youtube',
-          },
-          {
-            filename: 'github.png',
-            path: join(__dirname, '../mails/assets/github.png'),
-            cid: 'github',
-          },
-        ],
+        ...(templateData?.whiteLabelText === 'ToolJet' && {
+          attachments: [
+            {
+              filename: 'rocket.png',
+              path: join(__dirname, '../mails/assets/rocket.png'),
+              cid: 'rocket',
+            },
+            {
+              filename: 'twitter.png',
+              path: join(__dirname, '../mails/assets/twitter.png'),
+              cid: 'twitter',
+            },
+            {
+              filename: 'linkedin.png',
+              path: join(__dirname, '../mails/assets/linkedin.png'),
+              cid: 'linkedin',
+            },
+            {
+              filename: 'youtube.png',
+              path: join(__dirname, '../mails/assets/youtube.png'),
+              cid: 'youtube',
+            },
+            {
+              filename: 'github.png',
+              path: join(__dirname, '../mails/assets/github.png'),
+              cid: 'github',
+            },
+          ],
+        }),
       };
 
       const info = await this.mailerService.sendMail(message);
@@ -106,6 +109,7 @@ export class EmailService {
     organizationName?: string,
     sender?: string
   ) {
+    await this.init();
     const isOrgInvite = organizationInvitationToken && sender && organizationName;
     const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId);
     const subject = isOrgInvite ? `Welcome to ${organizationName || 'ToolJet'}` : 'Set up your account!';
@@ -118,6 +122,8 @@ export class EmailService {
       inviteUrl,
       sender,
       organizationName,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
     };
     const templatePath = isOrgInvite ? 'invite_user.hbs' : 'setup_account.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
@@ -127,6 +133,8 @@ export class EmailService {
       bodyContent: htmlEmailContent,
       footerText: footerText,
       inviteUrl,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });
   }
 
@@ -137,6 +145,7 @@ export class EmailService {
     invitationtoken: string,
     organizationName: string
   ) {
+    await this.init();
     const subject = `Welcome to ${organizationName || 'ToolJet'}`;
     const inviteUrl = generateOrgInviteURL(invitationtoken);
     const templateData = {
@@ -144,6 +153,8 @@ export class EmailService {
       inviteUrl,
       sender,
       organizationName,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
     };
     const templatePath = 'invite_user.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
@@ -151,17 +162,22 @@ export class EmailService {
     return await this.sendEmail(to, subject, {
       bodyHeader: subject,
       bodyContent: htmlEmailContent,
-      footerText: 'You have received this email as an invitation to join ToolJet’s workspace',
       inviteUrl,
+      footerText: 'You have received this email as an invitation to join ToolJet’s workspace',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });
   }
 
   async sendPasswordResetEmail(to: string, token: string, firstName?: string) {
+    await this.init();
     const subject = 'Reset your password';
     const url = `${this.TOOLJET_HOST}/reset-password/${token}`;
     const templateData = {
       name: firstName || '',
       resetLink: url,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
     };
     const templatePath = 'reset_password.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
@@ -169,6 +185,8 @@ export class EmailService {
     return await this.sendEmail(to, subject, {
       bodyContent: htmlEmailContent,
       footerText: 'You have received this email as because a request to reset your password was made',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });
   }
 
