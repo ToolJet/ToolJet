@@ -103,7 +103,7 @@ return flatten({
 Preview the output in the query manager or run the query to see the flattened JSON.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/flattens.png" alt="reate a new RunJS query" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/flatten-js.png" alt="Use FlattenJS" />
 </div>
 
 </div>
