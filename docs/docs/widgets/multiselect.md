@@ -42,11 +42,11 @@ For comprehensive information on all available **Actions**, refer to the [Action
 
 Following actions of multselect component can be controlled using the component specific actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| selectOption | Select an option on the multiselect component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.multiselect1.selectOption(3)` |
-| deselectOption | Deselect a selected option on the multiselect component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.multiselect1.deselectOption(3)` | 
-| clearOptions | Clear all the selected options from the multiselect component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.multiselect1.clearSelections(2,3)` |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:-------- |
+| selectOption | Select an option on the multiselect component via a component-specific action within any event handler.| Employ a RunJS query to execute component-specific actions such as `await components.multiselect1.selectOption(3)` |
+| deselectOption | Deselect a selected option on the multiselect component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.multiselect1.deselectOption(3)` | 
+| clearOptions | Clear all the selected options from the multiselect component via a component-specific action within any event handler. |Employ a RunJS query to execute component-specific actions such as `await components.multiselect1.clearSelections(2,3)` |
 
 </div>
 
@@ -54,10 +54,10 @@ Following actions of multselect component can be controlled using the component 
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| values | This variable holds the values of the multiselect component in an array of objects where the objects are the options in the multiselect. You can access the value dynamically using JS: `{{components.multiselect1.values[1]}}` |
-| searchText | This variable stores the user-entered search text in the multiselect component. The value of this variable is updated with each character entered in the search field. |
+| <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:----------|
+| values | This variable holds the values of the multiselect component in an array of objects where the objects are the options in the multiselect.| Access the value dynamically using JS: `{{components.multiselect1.values[1]}}` |
+| searchText | This variable stores the user-entered search text in the multiselect component. | The value of this variable is updated with each character entered in the search field |
 
 </div>
 
@@ -76,10 +76,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 

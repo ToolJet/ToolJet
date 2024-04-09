@@ -29,7 +29,7 @@ To add widgets to the Modals please refer to **[Tutorial - Adding widgets to a m
 | <div style={{ width:"100px"}}> Property   </div>   | <div style={{ width:"100px"}}> Description </div> | 
 |:----------- |:----------- |
 | Title | Title that should be shown on the header of the modal. |
-| Loading State | Loading state can be used to show a spinner on the modal content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. Enable the toggle **On** or click on `fx` to programmatically set the value `{{true}}` or `{{false}}` . |
+| Loading state | Loading state can be used to show a spinner on the modal content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. Enable the toggle **On** or click on `fx` to programmatically set the value `{{true}}` or `{{false}}` . |
 | Hide title bar | Enabling this option hides the title bar in the modal. The value `{{true}}` or `{{false}}` can be set programmatically by clicking on the `Fx` button next to it. |
 | Hide close button | By enabling this option, the close button within the modal will be hidden. The value can be programmatically set to either `{{true}}` or `{{false}}` by clicking the adjacent `Fx` button. |
 | Close on escape key | Enabling this option will cause the modal to close whenever the escape key is pressed. The value can be programmatically set to either `{{true}}` or `{{false}}` by clicking the adjacent `Fx` button. This property is enabled by default. |
@@ -59,10 +59,10 @@ Just like any other event on ToolJet, you can set multiple handlers for the even
 
 Following actions of modal component can be controlled using the component specific actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| open | Control the opening and closing of the modal componennt via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.modal1.open()` |
-| close | Control the closing of the modal componennt via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.modal1.close()` |
+| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:--------- |
+| open | Control the opening and closing of the modal componennt via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.modal1.open()` |
+| close | Control the closing of the modal componennt via a component-specific action within any event handler.| Employ a RunJS query to execute component-specific actions such as `await components.modal1.close()` |
 
 </div>
 
@@ -93,10 +93,10 @@ A modal can be triggered using the default trigger button, [action](/docs/action
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 

@@ -23,10 +23,10 @@ The **Textarea** component allows users to enter text in an input field similar 
 
 Following actions of the **Textarea** component can be controlled using Component-Specific Actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"135px"}}> Description </div> |
-| :----------- | :----------- |
-| setText | Sets the text on the text area component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textarea1.setText('this is a textarea')`. |
-| clear | Clears the value from the text area component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textarea1.clear()`. |
+| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+| :----------- | :----------- |:---------|
+| setText | Sets the text on the text area component via a component-specific action within any event handler.|  Employ a RunJS query to execute component-specific actions such as `await components.textarea1.setText('this is a textarea')`. |
+| clear | Clears the value from the text area component via a component-specific action within any event handler.| Employ a RunJS query to execute component-specific actions such as `await components.textarea1.clear()`. |
 
 </div>
 
@@ -34,9 +34,9 @@ Following actions of the **Textarea** component can be controlled using Componen
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |: ----------- |: ----------- | :-------------|
-| value | This variable holds the value entered in the text area component. | You can access the value dynamically using JS. For example, `{{components.textarea1.value}}`|
+| value | This variable holds the value entered in the text area component. | Sccess the value dynamically using JS. For example, `{{components.textarea1.value}}`|
 
 </div>
 
@@ -56,10 +56,10 @@ In the input field under **Tooltip**, you can enter some text and the component 
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
@@ -69,11 +69,11 @@ In the input field under **Tooltip**, you can enter some text and the component 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Property  </div>    |  <div style={{ width:"100px"}}> Description </div> |  <div style={{ width:"100px"}}> Expected Value </div> |
+| <div style={{ width:"100px"}}> Style  </div>    |  <div style={{ width:"100px"}}> Description </div> |  <div style={{ width:"135px"}}> Expected Value </div> |
 |:---------------|:-----------|:---------------|
 | Visibility | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible after the app is deployed.| Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
 | Disable | Makes the component non-functional when set to true. | Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
-| Border Radius | Adjusts the roundness of the component's corners.  | Numeric value|
+| Border radius | Adjusts the roundness of the component's corners.  | Numeric value|
 
 </div>
 

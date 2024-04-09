@@ -64,7 +64,7 @@ The text is to be used as the title for the tree select. This field expects a `S
 Note: The `value` should be unique throughout the structure array.
 :::
 
-### Checked Values
+### Checked values
 
 Checked values is an array of values passed to select the checkboxes by default.
 
@@ -74,7 +74,7 @@ Checked values is an array of values passed to select the checkboxes by default.
 ["asia", "spain"]
 ```
 
-### Expanded Values
+### Expanded values
 
 Similar to checked values, expanded values is an array of values passed to expand the node by default.
 
@@ -114,12 +114,12 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| checked | This variable holds the value of all the checked items on the tree select component. You can access the value dynamically using JS: `{{components.treeselect1.checked[1]}}`|
-| expanded | This variable holds the value of expanded items on the tree select component. You can access the value dynamically using JS: `{{components.treeselect1.expanded[0]}}`|
-| checkedPathArray | This variable holds the path of the checked items in differet arrays. You can access the value dynamically using JS: `{{components.treeselect1.checkedPathArray[1][1]}}`|
-| checkedPathStrings | This variable holds the path of the checked items in strings separated by a dash(-). You can access the value dynamically using JS: `{{components.treeselect1.checkedPathStrings[2]}}`|
+| <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div>|
+|:----------- |:----------- |:-------|
+| checked | This variable holds the value of all the checked items on the tree select component. | Access the value dynamically using JS: `{{components.treeselect1.checked[1]}}`|
+| expanded | This variable holds the value of expanded items on the tree select component.|  Access the value dynamically using JS: `{{components.treeselect1.expanded[0]}}`|
+| checkedPathArray | This variable holds the path of the checked items in differet arrays. | Access the value dynamically using JS: `{{components.treeselect1.checkedPathArray[1][1]}}`|
+| checkedPathStrings | This variable holds the path of the checked items in strings separated by a dash(-).| Access the value dynamically using JS: `{{components.treeselect1.checkedPathStrings[2]}}`|
 
 </div>
 
@@ -127,10 +127,10 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
+|  <div style={{ width:"100px"}}> Layout </div> |  <div style={{ width:"100px"}}> Description </div> |  <div style={{ width:"135px"}}> Expected Value </div>|
+|:----- |:---------  |:------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 

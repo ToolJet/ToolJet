@@ -15,9 +15,9 @@ Components like **Kanban**, **Calendar**, **Modal**, **Container**, **ListView**
 
 | <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :---------- | :--------------------------- | :------------- |
-| Button To Submit Form | This dropdown can be used to select a **Button** that will be used to submit the form. | Any button that is a child component inside the **Form** component
-| Loading State | Loading state can be used to show a spinner while the content is loaded. Loading state is commonly used with the **isLoading** property of queries. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`|
-| Use Custom Schema | Enabling this property allows you to provide a schema for the Form component in the JSON format. | Switch the toggle or click on `Fx` to programmatically enable the **JSON schema**|
+| Button To submit form | This dropdown can be used to select a **Button** that will be used to submit the form. | Any button that is a child component inside the **Form** component
+| Loading state | Loading state can be used to show a spinner while the content is loaded. Loading state is commonly used with the **isLoading** property of queries. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`|
+| Use custom schema | Enabling this property allows you to provide a schema for the Form component in the JSON format. | Switch the toggle or click on `Fx` to programmatically enable the **JSON schema**|
 
 :::info
 If you need a step-by-step guide on using a **Form** component, you can checkout **[this](/docs/how-to/use-form-component)** guide.  
@@ -44,10 +44,10 @@ To add an event to the **Form** component, go to the **Events** section and clic
 
 Following actions of form component can be controlled using the Component Specific Actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
-| :----------- | :----------- |
-| submitForm | Submits the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. Additionally, there is an option to employ a RunJS query to execute component-specific actions such as `await components.form1.submitForm()` |
-| resetForm | Resets the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. Additionally, there is an option to employ a RunJS query to execute component-specific actions such as `await components.form1.resetForm()` |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+| :----------- | :----------- |:----------- |
+| submitForm | Submits the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. |Employ a RunJS query to execute component-specific actions such as `await components.form1.submitForm()` |
+| resetForm | Resets the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.form1.resetForm()` |
 
 </div>
 
@@ -190,10 +190,10 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 

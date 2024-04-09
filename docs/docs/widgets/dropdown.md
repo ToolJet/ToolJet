@@ -50,9 +50,9 @@ Each object in the array should include the following key-value pairs:
 
 ## Component Specific Actions (CSA)
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
-|:-------- |:----------- |
-| selectOption | You can set an option on the dropdown component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.dropdown1.setOption(1)` |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:-------- |:----------- |:-------- |
+| selectOption | You can set an option on the dropdown component via a component-specific action within any event handler.| The option to employ a RunJS query to execute component-specific actions such as `await components.dropdown1.setOption(1)` |
 
 </div>
 
@@ -60,13 +60,13 @@ Each object in the array should include the following key-value pairs:
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"100px"}}> Description </div> |
-|:-------- |:----------- |
-| Value | This variable holds the value of the currently selected item on the dropdown. Value can be accesed using `{{components.dropdown1.value}}` |
-| searchText | This variable is initially empty and will hold the value whenever the user searches on the dropdown. searchText's value can be accesed using`{{components.dropdown1.searchText}}` |
-| label | The variable label holds the label name of the dropdown. label's value can be accesed using`{{components.dropdown1.searchText}}` |
-| optionLabels | The optionLabels holds the option labels for the values of the dropdown. optionLabels can be accesed using`{{components.dropdown1.optionLabels}}` for all the option labels in the array form or `{{components.dropdown1.optionLabels[0]}}` for particular option label |
-| selectedOptionLabel | The variable holds the label of the selected option in the dropdown components. The selected option label can be accessed dynamically using `{{components.dropdown1.selectedOptionLabel}}` |
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:-------- |:----------- |:--------- |
+| Value | Holds the value of the currently selected item on the dropdown.|  Value can be accesed using `{{components.dropdown1.value}}` |
+| searchText | This variable is initially empty and will hold the value whenever the user searches on the dropdown. | searchText's value can be accesed using`{{components.dropdown1.searchText}}` |
+| label | The variable label holds the label name of the dropdown. | label's value can be accesed using`{{components.dropdown1.searchText}}` |
+| optionLabels | The optionLabels holds the option labels for the values of the dropdown. | optionLabels can be accesed using`{{components.dropdown1.optionLabels}}` for all the option labels in the array form or `{{components.dropdown1.optionLabels[0]}}` for particular option label |
+| selectedOptionLabel | The variable holds the label of the selected option in the dropdown components. | The selected option label can be accessed dynamically using `{{components.dropdown1.selectedOptionLabel}}` |
 
 </div>
 
@@ -95,10 +95,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
@@ -108,7 +108,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | 
 |:--------------- |:----------------------------------------- |
-| Border Radius | Use this property to modify the border radius of the dropdown. The field expects only numerical value from `1` to `100`. By default, it's set to `0` |
+| Border radius | Use this property to modify the border radius of the dropdown. The field expects only numerical value from `1` to `100`. By default, it's set to `0` |
 | Visibility | This is to control the visibility of the widget. If `{{false}}` the widget will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}` |
 | Selected text color | Change the text color of the selected option in the widget by providing the `HEX color code` or choosing the color from color picker|
 | Disable | This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}` |

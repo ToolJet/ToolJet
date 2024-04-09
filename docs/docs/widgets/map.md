@@ -22,7 +22,7 @@ If you are utilizing the self-hosted version of ToolJet, it is necessary to conf
 | <div style={{ width:"100px"}}> Properties   </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:----------- |:----------- |:------------------ |
 | Initial location | default location when the app is loaded initially. | An object containing the **latitude** and **langitude** as key value pairs. ex: `{{ {"lat": 40.7128, "lng": -73.935242} }}` |
-| Default Markers | Number of markers that should be shown on the map | An array of objects containing the coordinates. ex: `{{ [{"lat": 40.7128, "lng": -73.935242}, {"lat": 40.7128, "lng": -73.935242}] }}` |
+| Default markers | Number of markers that should be shown on the map | An array of objects containing the coordinates. ex: `{{ [{"lat": 40.7128, "lng": -73.935242}, {"lat": 40.7128, "lng": -73.935242}] }}` |
 | Polygon points | Create a polygon on the map using the given coordinates. | An array of objects containing the coordinates. ex: `{{ [{"lat": 40.7128, "lng": -73.935242}, {"lat": 40.7128, "lng": -73.935242}] }}` |
 | Add new markers | On clicking the map, a new marker will be added to the map. | By default, it's set to `On`. Toggle `off` to disable adding new markers on the map. Click `Fx` to set `{{true}}` or `{{false}}` programmatically. |
 | Search for places | Enable to show the search box on the map. | By default, it's set to `On`. Toggle `off` to disable the search box on the map. Click `Fx` to set `{{true}}` or `{{false}}` programmatically. |
@@ -52,9 +52,9 @@ For detailed information about all the available **Actions**, please refer to th
 
 Following actions of map component can be controlled using the component specific actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"100px"}}> Description </div> |
-|:---------- |:---------- |
-| setLocation | Set the marker's location on map using latitude and longitude values as parameteres via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as: `component.map1.setLocation(40.7128, -73.935242)`  |
+| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:---------- |:---------- |:------- |
+| setLocation | Set the marker's location on map using latitude and longitude values as parameteres via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as: `component.map1.setLocation(40.7128, -73.935242)`  |
 
 </div>
 
@@ -64,17 +64,17 @@ Following actions of map component can be controlled using the component specifi
 
 Exposed variables can be used to get data from the component.
 
-| <div style={{ width:"100px"}}> Variables </div>   | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
+| <div style={{ width:"100px"}}> Variables </div>   | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:--------- |
 | center | This variable will hold the latitude, longitude and the google map url value. |
-| center.`lat` | This variable holds the latitude value of the marker on the map component. You can access the value dynamically using JS: `{{components.map1.center.lat}}`|
-| center.`lng` | This variable gets updated with RGB color code whenever a user selects a color from the color picker. You can access the value dynamically using JS: `{{components.map1.center.lng}}`|
-| center.`googleMapUrl` | This variable holds the URL of the location where the center marker is placed on the map component. You can access the value dynamically using JS: `{{components.map1.center.googleMapUrl}}`|
-| markers | The markers variable will hold the value only if `add new markers` is enabled from the map properties. Each marker is an object and will have `lat` and `lng` keys. Values can be accessed dynamically using `{{components.map1.markers[1].lat}}` |
+| center.`lat` | This variable holds the latitude value of the marker on the map component. | Access the value dynamically using JS: `{{components.map1.center.lat}}`|
+| center.`lng` | This variable gets updated with RGB color code whenever a user selects a color from the color picker. | Access the value dynamically using JS: `{{components.map1.center.lng}}`|
+| center.`googleMapUrl` | This variable holds the URL of the location where the center marker is placed on the map component. | Access the value dynamically using JS: `{{components.map1.center.googleMapUrl}}`|
+| markers | The markers variable will hold the value only if `add new markers` is enabled from the map properties. Each marker is an object and will have `lat` and `lng` keys. | Access the values dynamically using `{{components.map1.markers[1].lat}}` |
 | selectedMarker | Object with the marker selected by the user |
 | bounds | It constructs a rectangle from the points at its south-west and north-east corners |
-| bounds.northEast | It holds the latitude and longitude of the north-east corner of the rectangle. You can access the value dynamically using JS: `{{components.map1.bounds.northEast.lat}}` or `{{components.map1.bounds.northEast.lng}}` |
-| bounds.southWest | It holds the latitude and longitude of the south-west corner of the rectangle. You can access the value dynamically using JS: `{{components.map1.bounds.southWest.lat}}` or `{{components.map1.bounds.southWest.lng}}` |
+| bounds.northEast | It holds the latitude and longitude of the north-east corner of the rectangle.| Access the value dynamically using JS: `{{components.map1.bounds.northEast.lat}}` or `{{components.map1.bounds.northEast.lng}}` |
+| bounds.southWest | It holds the latitude and longitude of the south-west corner of the rectangle. | Access the value dynamically using JS: `{{components.map1.bounds.southWest.lat}}` or `{{components.map1.bounds.southWest.lng}}` |
 
 </div>
 
@@ -91,10 +91,10 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 

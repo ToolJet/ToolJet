@@ -39,12 +39,12 @@ For instance, you can set the `Data` property of a Text component on a card usin
 
 | <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:----------- |:----------- |:----------- |
-| Column Data | Enter the columns data - `id` and `title` in the form of array of objects or from a query that returns an array of objects. | `{{[{ "id": "c1", "title": "to do" },{ "id": "c2", "title": "in progress" },{ "id": "c3", "title": "Completed" }]}}` or `{{queries.xyz.data}}` |
-| Card Data | Enter the cards data - `id`, `title` and `columnId` in the form of array of objects or from a query that returns an array of objects. | `{{[{ id: "r1", title: "Title 1", description: "Description 1", columnId: "c1" },{ id: "r2", title: "Title 2", description: "Description 2", columnId: "c2" },{ id: "r3", title: "Title 3", description: "Description 3",columnId: "c3" }]}}` or `{{queries.abc.data}}` |
-| Card Width | Set the width of the card | This property expects a numerical value. By default, the value is set to `{{302}}` |
-| Card Height | Set the width of the card | This property expects a numerical value. By default, the value is set to `{{100}}` |
-| Enable Add Card | This property allows you to show or hide the **+Add Cards** button on the Kanban. | By default its enabled, you can programmatically set value to `{{true}}` or `{{false}}` to enable/disable button by clicking on the `Fx` next to it |
-| Show Delete button | This property allows you to show or hide the **Drop here to delete cards** section at the bottom of the kanban. | By default its enabled, you can programmatically set value to `{{true}}` or `{{false}}` to enable/disable button by clicking on the `Fx` next to it |
+| Column data | Enter the columns data - `id` and `title` in the form of array of objects or from a query that returns an array of objects. | `{{[{ "id": "c1", "title": "to do" },{ "id": "c2", "title": "in progress" },{ "id": "c3", "title": "Completed" }]}}` or `{{queries.xyz.data}}` |
+| Card data | Enter the cards data - `id`, `title` and `columnId` in the form of array of objects or from a query that returns an array of objects. | `{{[{ id: "r1", title: "Title 1", description: "Description 1", columnId: "c1" },{ id: "r2", title: "Title 2", description: "Description 2", columnId: "c2" },{ id: "r3", title: "Title 3", description: "Description 3",columnId: "c3" }]}}` or `{{queries.abc.data}}` |
+| Card width | Set the width of the card | This property expects a numerical value. By default, the value is set to `{{302}}` |
+| Card height | Set the width of the card | This property expects a numerical value. By default, the value is set to `{{100}}` |
+| Enable add card | This property allows you to show or hide the **+Add Cards** button on the Kanban. | By default its enabled, you can programmatically set value to `{{true}}` or `{{false}}` to enable/disable button by clicking on the `Fx` next to it |
+| Show delete button | This property allows you to show or hide the **Drop here to delete cards** section at the bottom of the kanban. | By default its enabled, you can programmatically set value to `{{true}}` or `{{false}}` to enable/disable button by clicking on the `Fx` next to it |
 
 </div>
 
@@ -60,12 +60,6 @@ To add an event, click on the component handle to open the component properties 
 - **[Card added](#card-added)**
 - **[Card moved](#card-moved)**
 - **[Card selected](#card-selected)**
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/kanban/kanban2/events.png" alt="ToolJet - Component Reference - Kanban component" width="700" />
-
-</div>
 
 Just like any other event on ToolJet, you can set multiple handlers for any of the above mentioned events.
 
@@ -90,15 +84,15 @@ Check the **[Component Specific Action](#component-specific-actions-csa)** avail
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variable </div>| <div style={{ width:"100px"}}> Description </div> |
-|:-------- |:----------- |
-| updatedCardData | The `updatedCardData` variable will hold the latest values of all the cards in the kanban. This variable won't have any values initially, it will have values only when any action on any of the card is performed like when the card is moved, added, deleted, or updated. |
-| lastAddedCard | The variable `lastAddedCard` holds the values of the the last added card. It holds the following data - `id`, `title`, `description` and `columnId` of the last added card. You can get the values using `{{components.kanban1.lastAddedCard.title}}` |
-| lastRemovedCard | The variable `lastRemovedCard` holds the properties of the card that has been recently deleted from the kanban. It holds the following data - `id`, `title`, `description` and `columnId` of the recently deleted card. You can get the values using `{{components.kanbanboard1.lastRemovedCard.title}}` |
-| lastCardMovement | The variable `lastCardMovement` holds the properties of the card that has been recently moved from its original position. It holds the following data - `originColumnId`, `destinationColumnId`, `originCardIndex`, `destinationCardIndex` and an object `cardDetails` which includes `id`, `title`, `description` and `columnId` of the moved card. You can get the values using `{{components.kanbanboard1.lastCardMovement.cardDetails.title}}` or `{{components.kanbanboard1.lastCardMovement.destinationCardIndex}}` |
-| lastSelectedCard | The variable `lastSelectedCard` holds the `id`, `title`, `columnId`, and `description` of the last selected(clicked to view) card on the kanban. You can get the values using `{{components.kanban1.lastSelectedCard.columnId}}` |
-| lastUpdatedCard | The variable `lastUpdatedCard` holds the `id`, `title`, `description`, and `columnId` of the last updated card(using componenet specific action). You can get the values using `{{components.kanban1.lastUpdatedCard.columnId}}` |
-| lastCardUpdate | The variable `lastCardUpdate` holds the old an new values of the property that has been changed in the card(using componenet specific action). You can get the values using `{{components.kanban1.lastCardUpdate[0].title.oldValue}}` |
+| <div style={{ width:"100px"}}> Variable </div>| <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:-------- |:----------- |:---------- |
+| updatedCardData | The `updatedCardData` variable will hold the latest values of all the cards in the kanban. This variable won't have any values. | It will have values only when any action on any of the card is performed like when the card is moved, added, deleted, or updated. |
+| lastAddedCard | The variable `lastAddedCard` holds the values of the the last added card. It holds the following data - `id`, `title`, `description` and `columnId` of the last added card. | Get the values using `{{components.kanban1.lastAddedCard.title}}` |
+| lastRemovedCard | The variable `lastRemovedCard` holds the properties of the card that has been recently deleted from the kanban. It holds the following data - `id`, `title`, `description` and `columnId` of the recently deleted card. | Get the values using `{{components.kanbanboard1.lastRemovedCard.title}}` |
+| lastCardMovement | The variable `lastCardMovement` holds the properties of the card that has been recently moved from its original position. It holds the following data - `originColumnId`, `destinationColumnId`, `originCardIndex`, `destinationCardIndex` and an object `cardDetails` which includes `id`, `title`, `description` and `columnId` of the moved card. | Get the values using `{{components.kanbanboard1.lastCardMovement.cardDetails.title}}` or `{{components.kanbanboard1.lastCardMovement.destinationCardIndex}}` |
+| lastSelectedCard | The variable `lastSelectedCard` holds the `id`, `title`, `columnId`, and `description` of the last selected(clicked to view) card on the kanban. | Get the values using `{{components.kanban1.lastSelectedCard.columnId}}` |
+| lastUpdatedCard | The variable `lastUpdatedCard` holds the `id`, `title`, `description`, and `columnId` of the last updated card(using componenet specific action). | Get the values using `{{components.kanban1.lastUpdatedCard.columnId}}` |
+| lastCardUpdate | The variable `lastCardUpdate` holds the old an new values of the property that has been changed in the card(using componenet specific action). | Get the values using `{{components.kanban1.lastCardUpdate[0].title.oldValue}}` |
 
 </div>
 
@@ -108,12 +102,12 @@ Check the **[Component Specific Action](#component-specific-actions-csa)** avail
 
 Following actions of kanban component can be controlled using the component specific actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| updateCardData | Update the card data of kanban component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `components.kanban1.updateCardData('c1', {title: 'New Title'})` |
-| moveCard | Move a card from one column to other column on the kanban via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.kanban1.moveCard('card id,'column id')` ex: `await components.kanban1.moveCard('c1','r2')` |
-| addCard | Add a card onto the kanban via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.kanban1.addCard('c1', {title: 'New Title'})` |
-| deleteCard | Delete a card from the kanban via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.kanban1.deleteCard('card id')` ex: `await components.kanban1.deleteCard('c2')` |
+| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:----------- |
+| updateCardData | Update the card data of kanban component via a component-specific action within any event handler.| Employ a RunJS query to execute component-specific actions such as `components.kanban1.updateCardData('c1', {title: 'New Title'})` |
+| moveCard | Move a card from one column to other column on the kanban via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.kanban1.moveCard('card id,'column id')` ex: `await components.kanban1.moveCard('c1','r2')` |
+| addCard | Add a card onto the kanban via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.kanban1.addCard('c1', {title: 'New Title'})` |
+| deleteCard | Delete a card from the kanban via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.kanban1.deleteCard('card id')` ex: `await components.kanban1.deleteCard('c2')` |
 
 </div>
 
@@ -132,10 +126,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}` |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
