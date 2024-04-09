@@ -64,7 +64,7 @@ Enable the **Run this query on application load?** option to make the libraries 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/importeds.png" alt="reate a new RunJS query" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/import-successful.png" alt="Import Successful" />
 </div>
 
 </div>
