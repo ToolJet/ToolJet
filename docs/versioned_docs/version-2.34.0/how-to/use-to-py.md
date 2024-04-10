@@ -1,6 +1,6 @@
 ---
 id: use-to-py-function-in-runpy
-title: "Utilize the to_py() Function in RunPy: Translating JavaScript Objects to Python"
+title: "Translating JavaScript Objects to Python in RunPy"
 ---
 <div style={{paddingBottom:'24px'}}>
 

@@ -1,6 +1,6 @@
 ---
 id: access-users-location
-title: Accessing User Location with RunJS Query (Geolocation API)
+title: Accessing User Location with RunJS Query
 ---
 <div style={{paddingBottom:'24px'}}>
 
