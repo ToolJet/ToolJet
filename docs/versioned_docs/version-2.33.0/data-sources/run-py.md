@@ -53,7 +53,7 @@ queries.getSalesData.run()
 
 To immediately access the data returned by a query in **Run Python code**, you can use the below functions: 
 
-#### Retrieve the latest data of a query:
+#### Trigger a query and retrieve its data:
 ```py
 response = await queries.getSalesData.run()
 #replace getSalesData with your query name
@@ -64,7 +64,7 @@ value = queries.getSalesData.getData()
 value
 ```
 
-#### Retrieve the latest raw data of a query:
+#### Trigger a query and retrieve its raw data:
 ```py
 response = await queries.getCustomerData.run()
 #replace getCustomerData with your query name
@@ -75,7 +75,7 @@ value = queries.getCustomerData.getRawData()
 value
 ```
 
-#### Retrieve the loading state of a query:
+#### Trigger a query and retrieve its loading state:
 ```py
 response = await queries.getTodos.run()
 #replace getTodos with your query name
@@ -88,9 +88,9 @@ value
 
 ## Get Variables
 
-To immediately access a variable or page variable after setting it in the **Run Python code**, you can use the below functions.
+To immediately access a variable or page variable after setting it in the **Run Python code**, you can use the below functions:
 
-#### Retrieve the current value of a variable: 
+#### Set and retrieve a variable:
 ```py
 actions.setVariable('mode','dark')
 #replace mode with your desired variable name
@@ -99,7 +99,7 @@ actions.getVariable('mode')
 #replace mode with your desired variable name
 ```
 
-#### Retrieve the current value of a page-specific variable:
+#### Set and retrieve a page-specific variable:
 ```py
 actions.setPageVariable('number',1)
 #replace number with your desired variable name
