@@ -40,7 +40,7 @@ In the previous section, we saw how we can trigger queries. Once the queries are
 #### Trigger a query and retrieve its data:
 
 ```js
-let response = await queries.getSalesData.run(); 
+await queries.getSalesData.run(); 
 // replace getSalesData with your query name
 
 let value = queries.getSalesData.getData(); 
@@ -50,7 +50,7 @@ let value = queries.getSalesData.getData();
 #### Trigger a query and retrieve its raw data:
 
 ```js
-let response = await queries.getCustomerData.run(); 
+await queries.getCustomerData.run(); 
 //replace getCustomerData with your query name
 
 let value = queries.getCustomerData.getRawData(); 
@@ -60,7 +60,7 @@ let value = queries.getCustomerData.getRawData();
 #### Trigger a query and retrieve its loading state:
 
 ```js
-let response = await queries.getTodos.run()
+await queries.getTodos.run()
 //replace getTodos with your query name
 
 let value = queries.getTodos.getLoadingState();

@@ -55,35 +55,29 @@ To immediately access the data returned by a query in **Run Python code**, you c
 
 #### Trigger a query and retrieve its data:
 ```py
-response = await queries.getSalesData.run()
+await queries.getSalesData.run()
 #replace getSalesData with your query name
 
 value = queries.getSalesData.getData()
 #replace getSalesData with your query name
-
-value
 ```
 
 #### Trigger a query and retrieve its raw data:
 ```py
-response = await queries.getCustomerData.run()
+await queries.getCustomerData.run()
 #replace getCustomerData with your query name
 
 value = queries.getCustomerData.getRawData()
 #replace getCustomerData with your query name
-
-value
 ```
 
 #### Trigger a query and retrieve its loading state:
 ```py
-response = await queries.getTodos.run()
+await queries.getTodos.run()
 #replace getTodos with your query name
 
 value = queries.getTodos.getLoadingState()
 #replace getTodos with your query name
-
-value
 ```
 
 ## Get Variables
