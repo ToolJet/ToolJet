@@ -46,7 +46,15 @@ export const UniqueConstraintPopOver = ({
                   <input
                     className="form-check-input"
                     type="checkbox"
-                    checked={columns[index]?.constraints_type?.is_unique ?? false}
+                    checked={
+                      isEditMode &&
+                      columns[index]?.constraints_type?.is_unique === false &&
+                      columns[index]?.constraints_type?.is_primary_key
+                        ? true
+                        : columns[index]?.constraints_type?.is_unique
+                        ? true
+                        : false
+                    }
                     onChange={(e) => {
                       const prevColumns = { ...columns };
                       const columnConstraints = prevColumns[index]?.constraints_type ?? {};
