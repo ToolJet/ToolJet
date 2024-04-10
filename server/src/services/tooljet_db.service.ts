@@ -637,7 +637,8 @@ export class TooljetDbService {
         Object.entries(internalTableInfo).forEach(([key, value]) => {
           customErrorMessage = customErrorMessage.replace(key, value as string);
         });
-        throw new HttpException(customErrorMessage, 422);
+        error.message = customErrorMessage;
+        // throw new HttpException(customErrorMessage, 422);
       }
       await tjdbQueryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
