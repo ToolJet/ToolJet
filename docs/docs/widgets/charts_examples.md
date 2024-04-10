@@ -32,35 +32,21 @@ It offers four different modes:
 ## Examples of Plotly JSON chart schema
 
 In the **JSON description**, the value needs to be the `data` array with x and y axis values and at the end we need to specify the `type`. let's take a look at the examples for different chart types.
+
 ### Line
+Displays trends and patterns in data over time.
 
 ```bash
-  {
+{
     "data": [
         {
-            "x": [
-                "Jan",
-                "Feb",
-                "Mar"
-            ],
-            "y": [
-                100,
-                80,
-                40
-            ],
+            "x": ["Jan", "Feb", "Mar"],
+            "y": [100, 80, 40],
             "type": "line"
         },
         {
-            "x": [
-                "Jan",
-                "Feb",
-                "Mar"
-            ],
-            "y": [
-                300,
-                30,
-                20
-            ],
+            "x": ["Jan", "Feb", "Mar"],
+            "y": [300, 30, 20],
             "type": "line"
         }
     ]
@@ -69,11 +55,12 @@ In the **JSON description**, the value needs to be the `data` array with x and y
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/chart/plotly/line.png" alt="ToolJet - Widget Reference - Chart" />
+<img className="screenshot-full" src="/img/widgets/chart/plotly/line-v2.png" alt="ToolJet - Widget Reference - Line Chart" />
 
 </div>
 
 ### Bar
+Compares categories of data or visualizes changes in a variable across different groups.
 
 ```bash
 {
@@ -81,16 +68,8 @@ In the **JSON description**, the value needs to be the `data` array with x and y
         {
             "name": "SF Zoo",
             "type": "bar",
-            "x": [
-                20,
-                14,
-                23
-            ],
-            "y": [
-                "giraffes",
-                "orangutans",
-                "monkeys"
-            ],
+            "x": [20, 14, 23],
+            "y": ["giraffes", "orangutans", "monkeys"],
             "marker": {
                 "line": {
                     "color": "rgba(55, 128, 191, 1.0)",
@@ -103,16 +82,8 @@ In the **JSON description**, the value needs to be the `data` array with x and y
         {
             "name": "LA Zoo",
             "type": "bar",
-            "x": [
-                12,
-                18,
-                29
-            ],
-            "y": [
-                "giraffes",
-                "orangutans",
-                "monkeys"
-            ],
+            "x": [12, 18, 29],
+            "y": ["giraffes", "orangutans", "monkeys"],
             "marker": {
                 "line": {
                     "color": "rgba(255, 153, 51, 1.0)",
@@ -125,17 +96,17 @@ In the **JSON description**, the value needs to be the `data` array with x and y
     ],
     "layout": {
         "barmode": "stack"
-    },
-    "frames": []
+    }
 }
 ```
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/chart/plotly/bar2.png" alt="ToolJet - Widget Reference - Chart" />
+<img className="screenshot-full" src="/img/widgets/chart/plotly/bar-v2.png" alt="ToolJet - Widget Reference - Bar" />
 
 </div>
 
 ### Candlestick
+Analyzes the price movement of financial instruments (stocks, currencies, etc.) over a specific time frame.
 
 ```bash
 {
@@ -148,39 +119,97 @@ In the **JSON description**, the value needs to be the `data` array with x and y
       "open": [115, 120, 125],
       "type": "candlestick"
     }
-  ],
-  "layout": {
-    "title": "Candlestick Chart"
-  }
+  ]
 }
 ```
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/widgets/chart/plotly/area.png" alt="ToolJet - Widget Reference - Chart" />
+    <img className="screenshot-full" src="/img/widgets/chart/plotly/candlestick.png" alt="ToolJet - Widget Reference - Candlestick" />
 </div>
 
-### Candlestick
+### Contour
+Typically used to represent three-dimensional data in two dimensions using contour lines.
+
 
 ```bash
 {
   "data": [
     {
-      "x": ["2024-04-02", "2024-04-03", "2024-04-04"],
-      "close": [120, 125, 130],
-      "high": [125, 130, 135],
-      "low": [115, 120, 125],
-      "open": [115, 120, 125],
-      "type": "candlestick"
+      "x": [1, 2, 3, 4],
+      "y": [1, 2, 3, 4],
+      "z": [[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6], [4, 5, 6, 7]],
+      "type": "contour"
     }
-  ],
-  "layout": {
-    "title": "Candlestick Chart"
-  }
+  ]
 }
 ```
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/widgets/chart/plotly/area.png" alt="ToolJet - Widget Reference - Chart" />
+    <img className="screenshot-full" src="/img/widgets/chart/plotly/contour.png" alt="ToolJet - Widget Reference - Contour" />
+</div>
+
+### Heatmap
+
+Reveals the density or magnitude of data points across two dimensions, using color to represent intensity.
+
+```bash
+{
+    "data": [
+        {
+            "z": [[1, 20, 30], [20, 1, 60], [30, 60, 1]],
+            "x": ["Experiment 1", "Experiment 2", "Experiment 3"],
+            "y": ["Trial 1", "Trial 2", "Trial 3"],
+            "type": "heatmap"
+        }
+    ]
+}
+```
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/widgets/chart/plotly/heatmap.png" alt="ToolJet - Widget Reference - Heatmap" />
+</div>
+
+### Icicle
+
+Displays hierarchical data in a nested structure, ideal for understanding the relative sizes of parts within a whole.
+
+```bash
+{
+    "data": [
+        {
+            "labels": ["A", "B", "C", "D", "E", "F"],
+            "parents": ["", "A", "A", "B", "B", "B"],
+            "type": "icicle"
+        }
+    ]
+}
+```
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/widgets/chart/plotly/icicle.png" alt="ToolJet - Widget Reference - Icicle" />
+</div>
+
+### 3D Mesh
+
+Represents three-dimensional surfaces, often used in scientific or engineering data visualization.
+
+```bash
+{
+    "data": [
+        {
+            "x": [0, 1, 2, 0],
+            "y": [0, 0, 1, 2],
+            "z": [0, 2, 0, 1],
+            "alphahull": 5,
+            "type": "mesh3d"
+        }
+    ]
+}
+
+```
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/widgets/chart/plotly/3d-mesh.png" alt="ToolJet - Widget Reference - 3D Mesh" />
 </div>
 
 
