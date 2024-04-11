@@ -73,7 +73,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
       column: {
         column_name: selectedColumn?.Header,
         data_type: selectedColumn?.dataType,
-        column_default: defaultValue,
+        ...(selectedColumn?.dataType !== 'serial' && { column_default: defaultValue }),
         constraints_type: {
           is_not_null: isNotNull,
           is_primary_key: selectedColumn?.constraints_type?.is_primary_key ?? false,
