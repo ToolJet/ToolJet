@@ -59,7 +59,7 @@ import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore, useAppVersionActions } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
-import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
+import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
 import {
   computeAppDiff,
   computeComponentPropertyDiff,
@@ -184,8 +184,6 @@ const EditorComponent = (props) => {
     shallow
   );
 
-  const currentState = useCurrentState();
-
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isQueryPaneDragging, setIsQueryPaneDragging] = useState(false);
   const [isQueryPaneExpanded, setIsQueryPaneExpanded] = useState(false); //!check where this is used
@@ -241,7 +239,7 @@ const EditorComponent = (props) => {
         });
         useCurrentStateStore.getState().actions.setCurrentState({
           globals: {
-            ...currentState.globals,
+            ...getCurrentState().globals,
             theme: { name: props?.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
             currentUser: userVars,
@@ -621,7 +619,7 @@ const EditorComponent = (props) => {
   const changeDarkMode = (newMode) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       globals: {
-        ...currentState.globals,
+        ...getCurrentState().globals,
         theme: { name: newMode ? 'dark' : 'light' },
       },
     });
@@ -1618,7 +1616,7 @@ const EditorComponent = (props) => {
     };
 
     const globals = {
-      ...currentState.globals,
+      ...getCurrentState().globals,
     };
     useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
   };
@@ -1660,7 +1658,7 @@ const EditorComponent = (props) => {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const globals = {
-      ...currentState.globals,
+      ...getCurrentState().globals,
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
     };
 
@@ -2098,7 +2096,7 @@ const EditorComponent = (props) => {
                       {defaultComponentStateComputed && (
                         <>
                           <Container
-                            canvasWidth={getCanvasWidth()}
+                            widthOfCanvas={getCanvasWidth()}
                             socket={socket}
                             appDefinitionChanged={appDefinitionChanged}
                             snapToGrid={true}
