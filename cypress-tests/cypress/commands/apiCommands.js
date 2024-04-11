@@ -133,23 +133,6 @@ Cypress.Commands.add(
   }
 );
 
-// cy.apiLogin();
-// cy.apiCreateApp();
-// cy.apiCreateGDS(
-//   "http://localhost:3000/api/v2/data_sources",
-//   "aaaaaadish",
-//   "postgresql",
-//   [
-//     { key: "host", value: "localhost" },
-//     { key: "port", value: 5432 },
-//     { key: "database", value: "" },
-//     { key: "username", value: "dev@tooljet.io" },
-//     { key: "password", value: "password", encrypted: true },
-//     { key: "ssl_enabled", value: true, encrypted: false },
-//     { key: "ssl_certificate", value: "none", encrypted: false },
-//   ]
-// );
-
 Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request(
@@ -212,6 +195,7 @@ Cypress.Commands.add("userInviteApi", (userName, userEmail) => {
     });
   });
 });
+
 Cypress.Commands.add("addQueryApi", (queryName, query, dataQueryId) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     const headers = {
@@ -236,3 +220,53 @@ Cypress.Commands.add("addQueryApi", (queryName, query, dataQueryId) => {
     });
   });
 });
+
+Cypress.Commands.add(
+  "apiAddQueryToApp",
+  (queryName, options, dsName, dsKind) => {
+    cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
+      const authToken = `tj_auth_token=${cookie.value}`;
+      const workspaceId = Cypress.env("workspaceId");
+      const appId = Cypress.env("appId");
+
+      cy.request({
+        method: "GET",
+        url: `http://localhost:3000/api/apps/${appId}`,
+        headers: {
+          "Tj-Workspace-Id": workspaceId,
+          Cookie: `${authToken}; app_id=${appId}`,
+        },
+        body: {},
+      }).then((appResponse) => {
+        const editingVersionId = appResponse.body.editing_version.id;
+        Cypress.env("version-id", editingVersionId);
+
+        cy.request({
+          method: "POST",
+          url: "http://localhost:3000/api/data_queries",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: authToken,
+            "tj-workspace-id": workspaceId,
+          },
+          body: {
+            app_id: appId,
+            app_version_id: editingVersionId,
+            name: queryName,
+            kind: dsKind,
+            options: options,
+            data_source_id: dsName != null ? Cypress.env(`${dsName}-id`) : null,
+            plugin_id: null,
+          },
+        }).then((queryResponse) => {
+          expect(queryResponse.status).to.equal(201);
+          Cypress.log({
+            name: "Created queery",
+            displayName: "QUERY CREATED",
+            message: `: ${queryName}: ${dsKind}`,
+          });
+        });
+      });
+    });
+  }
+);

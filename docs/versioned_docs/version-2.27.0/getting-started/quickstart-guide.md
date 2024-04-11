@@ -119,7 +119,7 @@ Click on the Preview button to see a preview of the fetched data.
 
 ### 4. List Employees
 
-Now, we need to bind the data returned by the `getEmployees` query above with the Table created in Step 1. Click on the Table component to open its configuration panel on the right. Under the `Data` property, paste the below code:
+Now, we need to bind the data returned by the `getEmployees` query above with the Table created in Step 1. Click on the Table component to open its properties panel on the right. Under the `Data` property, paste the below code:
 
 ```js
 {{queries.getEmployees.data}}
@@ -178,7 +178,7 @@ Let's continue working on this query. The data needs to reload once this query r
 We are now ready with a query that will allow us to add new employee data. Let's link this query to a button.
 
 In the bottom-right corner of the Table component, there is a `+`/Add new row button. Follow the below steps to run the `addEmployee` query on click of the `+`/Add new row button: 
-- Click on the Table component, go to Events in configuration panel and add a New event handler.
+- Click on the Table component, go to Events in properties panel and add a New event handler.
 - Choose Add new rows as Event, Run Query as Action.
 - Select `addEmployee` as the Query.
 

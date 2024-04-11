@@ -30,6 +30,12 @@ export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
+import WorkspaceConstants from '@/WorkspaceConstants';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { ManageOrgUsers } from '@/ManageOrgUsers';
+import { ManageGroupPermissions } from '@/ManageGroupPermissions';
+import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
+import { ManageOrgVars } from '@/ManageOrgVars';
 
 const AppWrapper = (props) => {
   return (
@@ -56,6 +62,7 @@ class AppComponent extends React.Component {
   };
   fetchMetadata = () => {
     tooljetService.fetchMetaData().then((data) => {
+      useAppDataStore.getState().actions.setMetadata(data);
       localStorage.setItem('currentVersion', data.installed_version);
       if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
         this.setState({ updateAvailable: true });
@@ -180,6 +187,15 @@ class AppComponent extends React.Component {
               />
               <Route
                 exact
+                path="/:workspaceId/workspace-constants"
+                element={
+                  <PrivateRoute>
+                    <WorkspaceConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
                 path="/applications/:slug/:pageHandle?"
                 element={
                   <PrivateRoute>
@@ -213,7 +229,36 @@ class AppComponent extends React.Component {
                     <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </PrivateRoute>
                 }
-              />
+              >
+                <Route
+                  path="users"
+                  element={
+                    <AdminRoute>
+                      <ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="workspace-login"
+                  element={
+                    <AdminRoute>
+                      <OrganizationLogin switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="groups"
+                  element={
+                    <AdminRoute>
+                      <ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="workspace-variables"
+                  element={<ManageOrgVars switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+              </Route>
               <Route
                 exact
                 path="/:workspaceId/settings"

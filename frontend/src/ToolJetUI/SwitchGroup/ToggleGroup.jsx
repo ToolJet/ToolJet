@@ -8,7 +8,6 @@ const ToggleGroup1 = ({ children, className, onValueChange, defaultValue, ...res
   React.useEffect(() => {
     setValue(defaultValue);
   }, [defaultValue]);
-
   return (
     <ToggleGroup.Root
       className={`ToggleGroup ${className}`}

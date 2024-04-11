@@ -25,6 +25,11 @@ const initialState = {
   appId: null,
   areOthersOnSameVersionAndPage: false,
   appVersionPreviewLink: null,
+  metadata: null,
+  eventsUpdatedLoader: false,
+  eventsCreatedLoader: false,
+  actionsUpdatedLoader: false,
+  eventToDeleteLoaderIndex: null,
 };
 
 export const useAppDataStore = create(
@@ -35,6 +40,7 @@ export const useAppDataStore = create(
         updateEditingVersion: (version) => set(() => ({ editingVersion: version })),
         updateApps: (apps) => set(() => ({ apps: apps })),
         updateState: (state) => set((prev) => ({ ...prev, ...state })),
+
         updateAppDefinitionDiff: (appDefinitionDiff) => set(() => ({ appDefinitionDiff: appDefinitionDiff })),
         updateAppVersion: (appId, versionId, pageId, appDefinitionDiff, isUserSwitchedVersion = false) => {
           return new Promise((resolve, reject) => {
@@ -62,14 +68,21 @@ export const useAppDataStore = create(
               .finally(() => resolve());
           });
         },
-        updateAppVersionEventHandlers: async (events, updateType = 'update') => {
+        updateAppVersionEventHandlers: async (events, updateType = 'update', param) => {
           useAppDataStore.getState().actions.setIsSaving(true);
+          if (param === 'actionId') {
+            set({ actionsUpdatedLoader: true });
+          }
+          if (param === 'eventId') {
+            set({ eventsUpdatedLoader: true });
+          }
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
           const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, events, updateType);
 
           useAppDataStore.getState().actions.setIsSaving(false);
+          set({ eventsUpdatedLoader: false, actionsUpdatedLoader: false });
           const updatedEvents = get().events;
 
           updatedEvents.forEach((e, index) => {
@@ -84,12 +97,16 @@ export const useAppDataStore = create(
 
         createAppVersionEventHandlers: async (event) => {
           useAppDataStore.getState().actions.setIsSaving(true);
+          set({ eventsCreatedLoader: true });
+
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
           const updatedEvents = get().events;
           const response = await appVersionService.createAppVersionEventHandler(appId, versionId, event);
           useAppDataStore.getState().actions.setIsSaving(false);
+          set({ eventsCreatedLoader: false });
+
           updatedEvents.push(response);
 
           set(() => ({ events: updatedEvents }));
@@ -104,6 +121,8 @@ export const useAppDataStore = create(
 
           const response = await appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId);
           useAppDataStore.getState().actions.setIsSaving(false);
+
+          set({ eventToDeleteLoaderIndex: null });
           if (response?.affected === 1) {
             updatedEvents.splice(
               updatedEvents.findIndex((e) => e.id === eventId),
@@ -122,6 +141,8 @@ export const useAppDataStore = create(
         setIsSaving: (isSaving) => set(() => ({ isSaving })),
         setAppId: (appId) => set(() => ({ appId })),
         setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),
+        setMetadata: (metadata) => set(() => ({ metadata })),
+        setEventToDeleteLoaderIndex: (index) => set(() => ({ eventToDeleteLoaderIndex: index })),
       },
     }),
     { name: 'App Data Store' }

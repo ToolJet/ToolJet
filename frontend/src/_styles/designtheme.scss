@@ -64,8 +64,21 @@
 :root {
     --base: #FCFCFD;
     --base-black: #18181A;
-    --text-black-000 : #000000;
-    --slate12:#313739;
+    --text-black-000: #000000;
+    --slate12: #313739;
+
+    --tj-text-input-widget-border-default: #6A727C47;
+    --tj-text-input-widget-field-default: #FFFFFF;
+    --tj-text-input-widget-hover: #F1F3F5;
+    --tj-text-input-widget-error: #DB4324;
+    --tj-text-input-widget-disabled: #DFE3E6;
+    --tj-text-input-widget-border-clicked: #3E63DD;
+    --controls-switch-tab: #fff;
+    --controls-switch-tag: #CCD1D54D;
+    --text-disabled: #889099;
+    --text-default: #1B1F24;
+
+
 }
 
 .dark-theme {
@@ -73,5 +86,18 @@
     --base: #1f2936;
     --base-black: #FBFCFD;
     --text-black-000: #ffffff;
-    --slate1:#1f2936; 
+    --slate1: #1f2936;
+
+    --tj-text-input-widget-border-default: #6D757D7A;
+    --tj-text-input-widget-field-default: #313538;
+    --tj-text-input-widget-hover: #292D2F;
+    --tj-text-input-widget-error: #EC5E41;
+    --tj-text-input-widget-disabled: #2B2F3199;
+    --tj-text-input-widget-border-clicked: #3E63DD;
+
+    --controls-switch-tab: #2B3036;
+    --controls-switch-tag: #121518;
+    --text-disabled: #6D757D;
+    --text-default: #FAFCFF;
+
 }

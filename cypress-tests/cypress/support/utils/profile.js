@@ -16,14 +16,11 @@ export const profilePageElements = () => {
     "have.text",
     profileText.changePasswordButton
   );
-  cy.get(profileSelector.firstNameInput).verifyVisibleElement(
+  cy.get(profileSelector.userNameInput).verifyVisibleElement(
     "have.value",
-    profileText.firstName
+    profileText.userName
   );
-  cy.get(profileSelector.lastNameInput).verifyVisibleElement(
-    "have.value",
-    profileText.lastName
-  );
+
   cy.get(profileSelector.emailInput).verifyVisibleElement(
     "have.value",
     profileText.email

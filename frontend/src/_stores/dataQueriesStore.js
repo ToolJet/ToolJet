@@ -11,7 +11,7 @@ import { toast } from 'react-hot-toast';
 import _, { isEmpty, throttle } from 'lodash';
 import { useEditorStore } from './editorStore';
 import { shallow } from 'zustand/shallow';
-import { useCurrentStateStore } from './currentStateStore';
+import { getCurrentState, useCurrentStateStore } from './currentStateStore';
 
 const initialState = {
   dataQueries: [],
@@ -47,7 +47,8 @@ export const useDataQueriesStore = create(
             const currentQueries = useCurrentStateStore.getState().queries;
 
             data.data_queries.forEach(({ id, name, options }) => {
-              updatedQueries[name] = _.merge(currentQueries[name], { id: id });
+              updatedQueries[name] = _.merge(currentQueries[name], { id: id, isLoading: false, data: [], rawData: [] });
+
               if (options && options?.requestConfirmation && options?.runOnPageLoad) {
                 queryConfirmationList.push({ queryId: id, queryName: name });
               }
@@ -58,7 +59,7 @@ export const useDataQueriesStore = create(
             }
 
             useCurrentStateStore.getState().actions.setCurrentState({
-              ...useCurrentStateStore.getState(),
+              ...getCurrentState(),
               queries: updatedQueries,
             });
           }
@@ -93,6 +94,18 @@ export const useDataQueriesStore = create(
                 isDeletingQueryInProcess: false,
                 dataQueries: state.dataQueries.filter((query) => query.id !== queryId),
               }));
+
+              const currentQueries = useCurrentStateStore.getState().queries;
+
+              useCurrentStateStore.getState().actions.setCurrentState({
+                ...getCurrentState(),
+                queries: Object.keys(currentQueries).reduce((acc, key) => {
+                  if (currentQueries[key].id !== queryId) {
+                    acc[key] = currentQueries[key];
+                  }
+                  return acc;
+                }, {}),
+              });
             })
             .catch(() => {
               set({
@@ -178,6 +191,21 @@ export const useDataQueriesStore = create(
                 get().actions.saveData({ ...get().queuedActions.saveData, id: data.id });
                 set({ queuedActions: { ...get().queuedActions, saveData: undefined } });
               }
+
+              const currentQueries = useCurrentStateStore.getState().queries;
+
+              useCurrentStateStore.getState().actions.setCurrentState({
+                ...getCurrentState(),
+                queries: {
+                  ...currentQueries,
+                  [data.name]: {
+                    id: data.id,
+                    isLoading: false,
+                    data: [],
+                    rawData: [],
+                  },
+                },
+              });
             })
             .catch((error) => {
               set((state) => ({
@@ -215,6 +243,23 @@ export const useDataQueriesStore = create(
                 }),
               }));
               useQueryPanelStore.getState().actions.setSelectedQuery(id);
+
+              const currentQueries = useCurrentStateStore.getState().queries;
+
+              const queryName = Object.keys(currentQueries).find((key) => currentQueries[key].id === id);
+
+              const { [queryName]: _, ...rest } = currentQueries;
+
+              useCurrentStateStore.getState().actions.setCurrentState({
+                ...getCurrentState(),
+                queries: {
+                  ...rest,
+                  [newName]: {
+                    ...currentQueries[queryName],
+                    name: newName,
+                  },
+                },
+              });
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
@@ -353,10 +398,18 @@ export const useDataQueriesStore = create(
 
 const sortByAttribute = (data, sortBy, order) => {
   if (order === 'asc') {
-    return data.sort((a, b) => (a[sortBy] > b[sortBy] ? 1 : -1));
+    if (sortBy === 'kind' || sortBy === 'updated_at') {
+      // sort by name first and then by the attribute
+      return data.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
+    }
+    return data.sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
   }
   if (order === 'desc') {
-    return data.sort((a, b) => (a[sortBy] < b[sortBy] ? 1 : -1));
+    if (sortBy === 'kind' || sortBy === 'updated_at') {
+      // sort by name first and then by the attribute
+      return data.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => b[sortBy].localeCompare(a[sortBy]));
+    }
+    return data.sort((a, b) => b[sortBy].localeCompare(a[sortBy]));
   }
 };
 

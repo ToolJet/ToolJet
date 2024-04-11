@@ -193,6 +193,7 @@ class DataSourceManagerComponent extends React.Component {
   createDataSource = () => {
     const { appId, options, selectedDataSource, selectedDataSourcePluginId, dataSourceMeta, dataSourceSchema } =
       this.state;
+    const OAuthDs = ['slack', 'zendesk', 'googlesheets'];
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -209,6 +210,10 @@ class DataSourceManagerComponent extends React.Component {
         ...(!options[key]?.value && { credential_id: options[key]?.credential_id }),
       };
     });
+    if (OAuthDs.includes(kind)) {
+      const value = localStorage.getItem('OAuthCode');
+      parsedOptions.push({ key: 'code', value, encrypted: false });
+    }
     if (name.trim() !== '') {
       let service = scope === 'global' ? globalDatasourceService : datasourceService;
       if (selectedDataSource.id) {
@@ -901,7 +906,11 @@ class DataSourceManagerComponent extends React.Component {
                   <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
                   <a
                     className="color-primary tj-docs-link tj-text-sm"
-                    href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}
+                    href={
+                      selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
+                        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`
+                        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource.kind}`
+                    }
                     target="_blank"
                     rel="noreferrer"
                   >

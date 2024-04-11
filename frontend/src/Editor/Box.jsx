@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext, useRef, memo } from 'react';
+import React, { useEffect, useState, useMemo, useContext, memo } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -42,7 +42,6 @@ import { Html } from './Components/Html';
 import { ButtonGroup } from './Components/ButtonGroup';
 import { CustomComponent } from './Components/CustomComponent/CustomComponent';
 import { VerticalDivider } from './Components/verticalDivider';
-import { PDF } from './Components/PDF';
 import { ColorPicker } from './Components/ColorPicker';
 import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import { Kanban } from './Components/Kanban/Kanban';
@@ -68,9 +67,9 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
-import WidgetIcon from '@/../assets/images/icons/widgets';
+import { isPDFSupported } from '@/_stores/utils';
 
-const AllComponents = {
+export const AllComponents = {
   Button,
   Image,
   Text,
@@ -113,7 +112,6 @@ const AllComponents = {
   ButtonGroup,
   CustomComponent,
   VerticalDivider,
-  PDF,
   ColorPicker,
   KanbanBoard,
   Kanban,
@@ -124,6 +122,14 @@ const AllComponents = {
   Form,
   BoundedBox,
 };
+
+/**
+ * Conditionally importing PDF component since importing it breaks app in older versions of browsers.
+ * refer: https://github.com/wojtekmaj/react-pdf?tab=readme-ov-file#compatibility
+ **/
+if (isPDFSupported()) {
+  AllComponents.PDF = await import('./Components/PDF').then((module) => module.PDF);
+}
 
 export const Box = memo(
   ({
@@ -149,23 +155,15 @@ export const Box = memo(
     sideBarDebugger,
     readOnly,
     childComponents,
+    isResizing,
+    adjustHeightBasedOnAlignment,
+    currentLayout,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
-
-    let styles = {
-      height: '100%',
-      padding: '1px',
-    };
-
-    if (inCanvas) {
-      styles = {
-        ...styles,
-      };
-    }
-
     const { events } = useAppInfo();
+    const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
     const componentMeta = useMemo(() => {
       return componentTypes.find((comp) => component.component === comp.component);
@@ -181,14 +179,18 @@ export const Box = memo(
       mode === 'edit' && component.validate
         ? validateProperties(resolvedProperties, componentMeta.properties)
         : [resolvedProperties, []];
+    if (shouldAddBoxShadowAndVisibility.includes(component.component)) {
+      validatedProperties.visibility = validatedProperties.visibility !== false ? true : false;
+    }
 
     const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
     const [validatedStyles, styleErrors] =
       mode === 'edit' && component.validate
         ? validateProperties(resolvedStyles, componentMeta.styles)
         : [resolvedStyles, []];
-    validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
-
+    if (!shouldAddBoxShadowAndVisibility.includes(component.component)) {
+      validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
+    }
     const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
     const [validatedGeneralProperties, generalPropertiesErrors] =
       mode === 'edit' && component.validate
@@ -196,7 +198,7 @@ export const Box = memo(
         : [resolvedGeneralProperties, []];
 
     const resolvedGeneralStyles = resolveGeneralStyles(component, currentState, null, customResolvables);
-    resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
+
     const [validatedGeneralStyles, generalStylesErrors] =
       mode === 'edit' && component.validate
         ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
@@ -205,6 +207,15 @@ export const Box = memo(
     const darkMode = localStorage.getItem('darkMode') === 'true';
     const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
+    let styles = {
+      height: '100%',
+    };
+
+    if (inCanvas) {
+      styles = {
+        ...styles,
+      };
+    }
     useEffect(() => {
       if (!component?.parent) {
         onComponentOptionChanged && onComponentOptionChanged(component, 'id', id);
@@ -257,13 +268,11 @@ export const Box = memo(
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(customResolvables), readOnly]);
-
     useEffect(() => {
       if (resetComponent) setResetStatus(false);
     }, [resetComponent]);
 
     let exposedVariables = currentState?.components[component.name] ?? {};
-
     const fireEvent = (eventName, options) => {
       if (mode === 'edit' && eventName === 'onClick') {
         onComponentClick(id, component);
@@ -280,16 +289,30 @@ export const Box = memo(
         customResolveObjects: customResolvables,
       });
 
+    const shouldHideWidget = component.component === 'PDF' && !isPDFSupported();
+
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
         delay={{ show: 500, hide: 0 }}
-        trigger={inCanvas && !validatedGeneralProperties.tooltip?.toString().trim() ? null : ['hover', 'focus']}
+        trigger={
+          inCanvas && shouldAddBoxShadowAndVisibility.includes(component.component)
+            ? !validatedProperties.tooltip?.toString().trim()
+              ? null
+              : ['hover', 'focus']
+            : !validatedGeneralProperties.tooltip?.toString().trim()
+            ? null
+            : ['hover', 'focus']
+        }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${validatedGeneralProperties.tooltip}`
+              ? `${
+                  shouldAddBoxShadowAndVisibility.includes(component.component)
+                    ? validatedProperties.tooltip
+                    : validatedGeneralProperties.tooltip
+                }`
               : `${t(`widget.${component.name}.description`, component.description)}`,
           })
         }
@@ -298,10 +321,11 @@ export const Box = memo(
           style={{
             ...styles,
             backgroundColor,
+            padding: validatedStyles?.padding == 'none' ? '0px' : '2px', //chart and image has a padding property other than container padding
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >
-          {!resetComponent ? (
+          {!resetComponent && !shouldHideWidget ? (
             <ComponentToRender
               onComponentClick={onComponentClick}
               onComponentOptionChanged={onComponentOptionChanged}
@@ -320,7 +344,12 @@ export const Box = memo(
               canvasWidth={canvasWidth}
               properties={validatedProperties}
               exposedVariables={exposedVariables}
-              styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
+              styles={{
+                ...validatedStyles,
+                ...(!shouldAddBoxShadowAndVisibility.includes(component.component)
+                  ? { boxShadow: validatedGeneralStyles?.boxShadow }
+                  : {}),
+              }}
               setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
               setExposedVariables={(variableSet) =>
                 onComponentOptionsChanged(component, Object.entries(variableSet), id)
@@ -338,6 +367,9 @@ export const Box = memo(
               resetComponent={() => setResetStatus(true)}
               childComponents={childComponents}
               dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
+              isResizing={isResizing}
+              adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
+              currentLayout={currentLayout}
             ></ComponentToRender>
           ) : (
             <></>

@@ -29,7 +29,10 @@ function randomSentence() {
 
 function randomRgba() {
   let rgba = faker.color.rgb({ format: "decimal", includeAlpha: true });
-  rgba[rgba.length - 1] = rgba[rgba.length - 1].toPrecision(2) * 100;
+  let alpha = rgba[rgba.length - 1].toPrecision(2) * 100;
+
+  alpha = Math.min(Math.max(alpha, 20), 80);
+  rgba[rgba.length - 1] = alpha;
   return rgba;
 }
 
