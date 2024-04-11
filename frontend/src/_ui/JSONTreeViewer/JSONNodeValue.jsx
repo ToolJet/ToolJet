@@ -37,8 +37,8 @@ const JSONTreeValueNode = ({ data, type }) => {
         <span
           style={{
             fontSize: '10px',
-            backgroundColor: '#CCD1D5',
-            borderRadius: '50%',
+            backgroundColor: 'var(--controls-switch-tag)',
+            borderRadius: '11px',
             padding: '3px 6px',
             fontWeight: '500',
             color: '#6A727C',

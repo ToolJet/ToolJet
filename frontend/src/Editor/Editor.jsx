@@ -606,6 +606,15 @@ const EditorComponent = (props) => {
   };
 
   const changeDarkMode = (newMode) => {
+    useSuperStore
+      .getState()
+      .modules[moduleName].useCurrentStateStore.getState()
+      .actions.setCurrentState({
+        globals: {
+          ...currentState.globals,
+          theme: { name: newMode ? 'dark' : 'light' },
+        },
+      });
     props.switchDarkMode(newMode);
   };
 
