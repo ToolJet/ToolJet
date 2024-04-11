@@ -66,13 +66,11 @@ value
 
 #### Retrieve the latest raw data of a query:
 ```py
-response = await queries.getCustomerData.run()
+await queries.getCustomerData.run()
 #replace getCustomerData with your query name
 
 value = queries.getCustomerData.getRawData()
 #replace getCustomerData with your query name
-
-value
 ```
 
 #### Retrieve the loading state of a query:
