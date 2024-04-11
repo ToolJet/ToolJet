@@ -38,19 +38,20 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
   const darkBorder = '#dadcde';
   const dropdownContainerWidth = '360px';
 
-  const keyColumns = Object.values(columns).sort((a, b) => {
-    const isPrimaryKey1 = a?.constraints_type?.is_primary_key;
-    const isPrimaryKey2 = b?.constraints_type?.is_primary_key;
-    if (isPrimaryKey1 && !isPrimaryKey2) {
-      return -1;
-    } else if (!isPrimaryKey1 && isPrimaryKey2) {
-      return 1;
-    } else {
-      return 0;
-    }
-  });
+  // const keyColumns = Object.values(columns).sort((a, b) => {
+  //   const isPrimaryKey1 = a?.constraints_type?.is_primary_key;
+  //   const isPrimaryKey2 = b?.constraints_type?.is_primary_key;
+  //   if (isPrimaryKey1 && !isPrimaryKey2) {
+  //     return -1;
+  //   } else if (!isPrimaryKey1 && isPrimaryKey2) {
+  //     return 1;
+  //   } else {
+  //     return 0;
+  //   }
+  // });
 
-  const editColumns = Object.assign({}, keyColumns);
+  // const editColumns = Object.assign({}, keyColumns);
+  const editColumns = Object.assign({}, columns);
   const columnDetails = isEditMode ? editColumns : columns;
 
   const CustomSelectOption = (props) => {

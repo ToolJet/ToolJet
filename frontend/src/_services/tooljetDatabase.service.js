@@ -66,6 +66,7 @@ function renameTable(organizationId, tableName, newTableName, data = []) {
   let bodyData = _.cloneDeep(data);
   bodyData.forEach((obj) => {
     ['new_column', 'old_column'].forEach(function (key) {
+      if (obj[key]?.data_type === 'serial') delete obj[key]?.column_default;
       delete obj[key]?.dataTypeDetails;
     });
   });
