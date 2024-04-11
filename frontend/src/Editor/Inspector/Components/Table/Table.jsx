@@ -367,8 +367,16 @@ class TableComponent extends React.Component {
 
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
-    const column = columns.value[index];
-
+    let column = columns.value[index];
+    if (item === 'columnType' && value === 'datepicker') {
+      column = {
+        ...column,
+        isTimeChecked: false,
+        dateFormat: 'DD/MM/YYYY',
+        parseDateFormat: 'DD/MM/YYYY',
+        isDateSelectionEnabled: true,
+      };
+    }
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
@@ -426,7 +434,6 @@ class TableComponent extends React.Component {
 
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
-
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
     if (!component.component.definition.properties.displaySearchBox)

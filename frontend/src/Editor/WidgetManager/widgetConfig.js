@@ -466,7 +466,7 @@ export const widgets = [
         loadingState: { value: '{{false}}' },
         data: {
           value:
-            "{{ [ \n\t\t{ id: 1, name: 'Olivia Nguyen', email: 'olivia.nguyen@example.com', date: '11/05/2022', mobile_number: '9876543210', interest: [{ label: 'Reading', value: 'Reading' }] }, \n\t\t{ id: 2, name: 'Liam Patel', email: 'liam.patel@example.com', date: '12/09/2021', mobile_number: '8765432109', interest: [{ label: 'Cooking', value: 'Cooking' }] }, \n\t\t{ id: 3, name: 'Sophia Reyes', email: 'sophia.reyes@example.com', date: '01/01/2023', mobile_number: '7654321098', interest: [{ label: 'Music', value: 'Music' }] }, \n\t\t{ id: 4, name: 'Jacob Hernandez', email: 'jacob.hernandez@example.com', date: '10/11/2022', mobile_number: '6543210987', interest: [{ label: 'Reading', value: 'Reading' }] }, \n\t\t{ id: 5, name: 'Ava Diaz', email: 'ava.diaz@example.com', date: '4/03/2021', mobile_number: '5432109876', interest: [{ label: 'Cooking', value: 'Cooking' }] }, \n\t\t{ id: 6, name: 'William Sanchez', email: 'william.sanchez@example.com', date: '01/07/2022', mobile_number: '4321098765', interest: [{ label: 'Music', value: 'Music' }] }, \n\t\t{ id: 7, name: 'Isabella Gutierrez', email: 'isabella.gutierrez@example.com', date: '09/02/2023', mobile_number: '3210987654', interest: [{ label: 'Reading', value: 'Reading' }] }, \n\t\t{ id: 8, name: 'Ethan Morales', email: 'ethan.morales@example.com', date: '05/11/2021', mobile_number: '2109876543', interest: [{ label: 'Cooking', value: 'Cooking' }] }, \n\t\t{ id: 9, name: 'Mia Tiana', email: 'mia.tiana@example.com', date: '06/11/2022', mobile_number: '1098705217', interest: [{ label: 'Music', value: 'Music' }] }, \n\t\t{ id: 10, name: 'Lucas Ramirez', email: 'lucas.ramirez@example.com', date: '02/03/2023', mobile_number: '9876543210', interest: [{ label: 'Reading', value: 'Reading' }] }, \n\t\t{ id: 11, name: 'Emma Flores', email: 'emma.flores@example.com', date: '12/06/2021', mobile_number: '8765432109', interest: [{ label: 'Cooking', value: 'Cooking' }] }, \n\t\t{ id: 12, name: 'Alexander Vela', email: 'alexander.vela@example.com', date: '07/09/2022', mobile_number: '7654321098', interest: [{ label: 'Music', value: 'Music' }] }, \n\t\t{ id: 13, name: 'Abigail Castillo', email: 'abigail.castillo@example.com', date: '01/04/2023', mobile_number: '6543210987', interest: [{ label: 'Reading', value: 'Reading' }] }, \n\t\t{ id: 14, name: 'Michael Reyes', email: 'michael.reyes@example.com', date: '05/12/2021', mobile_number: '5432109876', interest: [{ label: 'Cooking', value: 'Cooking' }] }, \n\t\t{ id: 15, name: 'Isabella Suarez', email: 'isabella.suarez@example.com', date: '03/02/2022', mobile_number: '4321098765', interest: [{ label: 'Music', value: 'Music' }] } \n] }}",
+            "{{ [ \n\t\t{ id: 1, name: 'Olivia Nguyen', email: 'olivia.nguyen@example.com', date: '11/05/2022', mobile_number: '9876543210', interest: [{ label: 'Reading', value: 'Reading' }], photo: 'https://reqres.in/img/faces/1-image.jpg' }, \n\t\t{ id: 2, name: 'Liam Patel', email: 'liam.patel@example.com', date: '12/09/2021', mobile_number: '8765432109', interest: [{ label: 'Cooking', value: 'Cooking' }], photo: 'https://reqres.in/img/faces/2-image.jpg' }, \n\t\t{ id: 3, name: 'Sophia Reyes', email: 'sophia.reyes@example.com', date: '01/01/2023', mobile_number: '7654321098', interest: [{ label: 'Music', value: 'Music' }], photo: 'https://reqres.in/img/faces/3-image.jpg' }, \n\t\t{ id: 4, name: 'Jacob Hernandez', email: 'jacob.hernandez@example.com', date: '10/11/2022', mobile_number: '6543210987', interest: [{ label: 'Reading', value: 'Reading' }], photo: 'https://reqres.in/img/faces/4-image.jpg' }, \n\t\t{ id: 5, name: 'Alexander Vela', email: 'alexander.vela@example.com', date: '4/03/2021', mobile_number: '5432109876', interest: [{ label: 'Cooking', value: 'Cooking' }], photo: 'https://reqres.in/img/faces/5-image.jpg' }, \n\t\t{ id: 6, name: 'William Sanchez', email: 'william.sanchez@example.com', date: '01/07/2022', mobile_number: '4321098765', interest: [{ label: 'Music', value: 'Music' }], photo: 'https://reqres.in/img/faces/6-image.jpg' }, \n\t\t{ id: 7, name: 'Gutierrez Isabella', email: 'isabella.gutierrez@example.com', date: '09/02/2023', mobile_number: '3210987654', interest: [{ label: 'Reading', value: 'Reading' }], photo: 'https://reqres.in/img/faces/7-image.jpg' }, \n\t\t{ id: 8, name: 'Ethan Morales', email: 'ethan.morales@example.com', date: '05/11/2021', mobile_number: '2109876543', interest: [{ label: 'Cooking', value: 'Cooking' }], photo: 'https://reqres.in/img/faces/8-image.jpg' }, \n\t\t{ id: 9, name: 'Milan Tiana', email: 'milan.tiana@example.com', date: '06/11/2022', mobile_number: '1098705217', interest: [{ label: 'Music', value: 'Music' }], photo: 'https://reqres.in/img/faces/9-image.jpg' }, \n\t\t{ id: 10, name: 'Lucas Ramirez', email: 'lucas.ramirez@example.com', date: '02/03/2023', mobile_number: '9876543210', interest: [{ label: 'Reading', value: 'Reading' }], photo: 'https://reqres.in/img/faces/10-image.jpg' } \n] }}",
         },
         useDynamicColumn: { value: '{{false}}' },
         columnData: {
@@ -511,6 +511,10 @@ export const widgets = [
               autogenerated: true,
               fxActiveFields: [],
               columnType: 'datepicker',
+              isTimeChecked: false,
+              dateFormat: 'DD/MM/YYYY',
+              parseDateFormat: 'DD/MM/YYYY',
+              isDateSelectionEnabled: true,
             },
             {
               name: 'mobile_number',
@@ -526,6 +530,15 @@ export const widgets = [
               autogenerated: true,
               fxActiveFields: [],
               columnType: 'newMultiSelect',
+            },
+            {
+              name: 'photo',
+              key: 'photo',
+              id: 'f23b7d134b2e490ea41e3bb8eeb8c8e37472af243bf6b70d5af294482097e3a2',
+              autogenerated: true,
+              fxActiveFields: [],
+              columnType: 'image',
+              height: '40',
             },
           ],
         },
