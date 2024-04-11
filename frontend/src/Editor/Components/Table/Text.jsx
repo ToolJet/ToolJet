@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { validateWidget } from '@/_helpers/utils';
+import { validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
@@ -13,6 +13,7 @@ const Text = ({
   currentState,
   containerWidth,
   cell,
+  horizontalAlignment,
 }) => {
   const validationData = validateWidget({
     validationObject: {
@@ -35,6 +36,9 @@ const Text = ({
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [contentEditable, setContentEditable] = useState(false);
+  const cellStyles = {
+    color: cellTextColor ?? 'inherit',
+  };
 
   useEffect(() => {
     if (hovered) {
@@ -87,6 +91,17 @@ const Text = ({
     />
   );
 
+  const _renderNonEditableData = () => (
+    <div
+      className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+        horizontalAlignment
+      )}`}
+      style={cellStyles}
+    >
+      {cellValue}
+    </div>
+  );
+
   const getOverlay = () => {
     return (
       <div
@@ -106,6 +121,7 @@ const Text = ({
     );
   };
   const _showOverlay = ref.current && ref.current?.parentElement?.clientHeight < ref.current?.scrollHeight;
+
   return (
     <>
       <OverlayTrigger
@@ -115,7 +131,7 @@ const Text = ({
         rootClose={true}
         show={_showOverlay && showOverlay}
       >
-        <div className="h-100 d-flex flex-column position-relative">
+        <div className="h-100 d-flex justify-content-center flex-column position-relative">
           <div
             onMouseMove={() => {
               if (!hovered) setHovered(true);
@@ -123,7 +139,7 @@ const Text = ({
             onMouseOut={() => setHovered(false)}
             ref={ref}
           >
-            {_renderTextArea()}
+            {!isEditable ? _renderNonEditableData() : _renderTextArea()}
           </div>
           <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
         </div>

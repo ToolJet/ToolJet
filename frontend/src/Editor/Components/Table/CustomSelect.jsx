@@ -23,6 +23,7 @@ export const CustomSelect = ({
   containerWidth,
   optionsLoadingState = false,
   horizontalAlignment = 'left',
+  isEditable,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef(null);
@@ -98,7 +99,7 @@ export const CustomSelect = ({
   const customCustomComponents = {
     MenuList: (props) => <CustomMenuList {...props} optionsLoadingState={optionsLoadingState} inputRef={inputRef} />,
     Option: CustomMultiSelectOption,
-    DropdownIndicator,
+    DropdownIndicator: isEditable ? DropdownIndicator : null,
     ...(isMulti && {
       MultiValueRemove,
       MultiValueContainer: CustomMultiValueContainer,

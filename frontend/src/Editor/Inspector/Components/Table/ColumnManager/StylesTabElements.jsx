@@ -24,7 +24,7 @@ export const StylesTabElements = ({
     <>
       <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
         <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-          {t('widget.Table.textAlignment', 'Text Alignment')}
+          {column.columnType !== 'boolean' ? t('widget.Table.textAlignment', 'Text Alignment') : 'Alignment'}
         </label>
         <ToggleGroup
           onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
@@ -125,9 +125,9 @@ export const StylesTabElements = ({
         <div className="d-flex flex-column custom-gap-16">
           <div className="field px-3">
             <Color
-              param={{ name: 'Toggle on bg' }}
+              param={{ name: 'Checked' }}
               paramType="properties"
-              componentMeta={{ properties: { color: { displayName: 'Toggle on bg' } } }}
+              componentMeta={{ properties: { color: { displayName: 'Checked' } } }}
               definition={{ value: column?.toggleOnBg ? column.toggleOnBg : darkMode ? '#849DFF' : '#3A5CCC' }}
               onChange={(name, value, color) => onColumnItemChange(index, 'toggleOnBg', color)}
               shouldFlexDirectionBeRow={true}
@@ -135,9 +135,9 @@ export const StylesTabElements = ({
           </div>
           <div className="field px-3">
             <Color
-              param={{ name: 'Toggle off bg' }}
+              param={{ name: 'Unchecked' }}
               paramType="properties"
-              componentMeta={{ properties: { color: { displayName: 'Toggle off bg' } } }}
+              componentMeta={{ properties: { color: { displayName: 'Unchecked' } } }}
               definition={{ value: column?.toggleOffBg ? column.toggleOffBg : darkMode ? '#3A3F42' : '#D7DBDF' }}
               onChange={(name, value, color) => onColumnItemChange(index, 'toggleOffBg', color)}
               shouldFlexDirectionBeRow={true}

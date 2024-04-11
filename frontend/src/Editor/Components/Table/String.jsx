@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { validateWidget } from '@/_helpers/utils';
+import { validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 const String = ({
@@ -12,6 +12,7 @@ const String = ({
   currentState,
   containerWidth,
   cell,
+  horizontalAlignment,
 }) => {
   const validationData = validateWidget({
     validationObject: {
@@ -33,6 +34,9 @@ const String = ({
     customResolveObjects: { cellValue },
   });
   const { isValid, validationError } = validationData;
+  const cellStyles = {
+    color: cellTextColor ?? 'inherit',
+  };
   const ref = React.useRef(null);
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -96,6 +100,18 @@ const String = ({
     );
   };
   const _showOverlay = ref?.current && ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth;
+  if (!isEditable) {
+    return (
+      <div
+        className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+          horizontalAlignment
+        )}`}
+        style={cellStyles}
+      >
+        {cellValue}
+      </div>
+    );
+  }
   return (
     <>
       <OverlayTrigger
