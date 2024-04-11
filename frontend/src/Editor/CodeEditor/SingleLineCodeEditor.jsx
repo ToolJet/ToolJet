@@ -129,7 +129,7 @@ const EditorInput = ({
 
     let queryInput = context.state.doc.toString();
 
-    if (totalReferences > 1) {
+    if (totalReferences > 0) {
       const currentWord = queryInput.split('{{').pop().split('}}')[0];
       queryInput = '{{' + currentWord + '}}';
     }
