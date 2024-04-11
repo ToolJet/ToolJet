@@ -1,7 +1,7 @@
 module.exports = async () => {
   return {
     verbose: true,
-    moduleFileExtensions: ['js', 'json', 'ts'],
+    moduleFileExtensions: ['js', 'json', 'ts', "node"],
     rootDir: '.',
     testEnvironment: 'node',
     testRegex: '.spec.ts$',
