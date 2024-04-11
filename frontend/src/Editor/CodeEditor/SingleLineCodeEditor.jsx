@@ -19,7 +19,7 @@ import { getAutocompletion } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
 
-const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxActive, ...restProps }) => {
+const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
   const { validation = {} } = fieldMeta;
 
@@ -120,6 +120,7 @@ const EditorInput = ({
   lang,
   isFocused,
   componentId,
+  type,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
@@ -197,6 +198,8 @@ const EditorInput = ({
     }, 50);
   };
 
+  const showLineNumbers = lang == 'jsx' || type === 'extendedSingleLine' || false;
+
   return (
     <div
       ref={currentEditorHeightRef}
@@ -229,7 +232,7 @@ const EditorInput = ({
           <CodeMirror
             value={currentValue}
             placeholder={placeholder}
-            height={lang === 'jsx' ? '400px' : '100%'}
+            height={showLineNumbers ? '400px' : '100%'}
             width="100%"
             extensions={[javascript({ jsx: lang === 'jsx' }), autoCompleteConfig, keymap.of([...customKeyMaps])]}
             onChange={(val) => {
@@ -237,7 +240,7 @@ const EditorInput = ({
               handleOnChange(val);
             }}
             basicSetup={{
-              lineNumbers: lang === 'jsx',
+              lineNumbers: showLineNumbers,
               syntaxHighlighting: true,
               bracketMatching: true,
               foldGutter: false,

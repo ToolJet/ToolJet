@@ -66,14 +66,13 @@ export default ({
       {bodyToggle ? (
         <div>
           <CodeHinter
-            type="multiline"
+            type="extendedSingleLine"
             initialValue={jsonBody ?? ''}
             lang="javascript"
             height={'300px'}
             className="query-hinter"
             onChange={(value) => onJsonBodyChange(value)}
             componentName={`${componentName}/${tabType}`}
-            showPreview={true}
           />
         </div>
       ) : (
