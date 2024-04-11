@@ -1,9 +1,8 @@
 ---
 id: use-s3-signed-url-to-upload-docs
-title: Use S3 signed URL to upload documents
+title: Use S3 Signed URL to Upload Documents
 ---
-
-# Use S3 signed URL to upload documents
+<div style={{paddingBottom:'24px'}}>
 
 In this how-to guide, you'll learn to upload documents to S3 buckets using the **S3 signed URL** from a ToolJet application. 
 
@@ -13,17 +12,21 @@ For this guide, We are going to use one of the existing templates on ToolJet: **
 On ToolJet Dashboard, Click on the down arrow on the right of the **New App** button, from the dropdown choose the **Choose from template** option. 
 :::
 
-<div style={{textAlign: 'center'}}>
+</div>
 
-<img className="screenshot-full" src="/img/how-to/uses3presignedurl/template.png" alt="Use S3 pre-signed URL to upload documents: Choose template" width="700"/>
+<div style={{textAlign: 'left'}}>
+
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/template.png" alt="Use S3 pre-signed URL to upload documents: Choose template" width="700"/>
 
 </div>  
 
 - Once you've created a new app using the template, you'll be prompted to create a **new version** of the existing version. After creating a new version, you'll be able to make changes in the app.
 
+
+
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/newversion.png" alt="Use S3 pre-signed URL to upload documents: new version"/>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/newversion.png" alt="Use S3 pre-signed URL to upload documents: new version"/>
 
   </div>
 
@@ -33,33 +36,41 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
   Check the [AWS S3 datasource reference](/docs/data-sources/s3) to learn more about connnection and choosing your preferred authentication method.
   :::
 
-  <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/s3connect.png" alt="Use S3 pre-signed URL to upload documents: add datasource"/>
+
+  <div style={{textAlign: 'left'}}>
+
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/s3connect.png" alt="Use S3 pre-signed URL to upload documents: add datasource"/>
 
   </div>
 
 - Once the datasource is connected successfully, go to the query manager and **Run** the **getBuckets** query. The operation selected in the getBuckets query is **List Buckets** which will fetch an array of all the buckets.
 
+
+
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/getbuckets.png" alt="Use S3 pre-signed URL to upload documents: getBuckets query"/>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/getbuckets.png" alt="Use S3 pre-signed URL to upload documents: getBuckets query"/>
 
   </div>
 
 - Running the **getBuckets** query will load all the buckets in the dropdown in the app.
 
+
+
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/dropdown.png" alt="Use S3 pre-signed URL to upload documents: loading buckets"/>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/dropdown.png" alt="Use S3 pre-signed URL to upload documents: loading buckets"/>
 
   </div>
 
 - Select a **bucket** from the dropdown and click on the **Fetch files** button to list all the files from the selected bucket on the table. The **Fetch files** button has the event handler added that triggers the **s32** query, the **s32** query uses the **List objects in a bucket** operation, and the bucket field in the query gets the value dynamically from the dropdown.
 
+
+
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/fetchfiles.png" alt="Use S3 pre-signed URL to upload documents: list objects in a bucket"/>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/fetchfiles.png" alt="Use S3 pre-signed URL to upload documents: list objects in a bucket"/>
 
   </div>
 
@@ -70,9 +81,11 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
   - **Expires in:** This sets an expiration time of URL, by default its `3600` seconds (1 hour)
   - **Content Type**: `{{components.filepicker1.file[0].type}}` this will get the file type from the filepickers exposed variables
 
+
+
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/upload.png" alt="Use S3 pre-signed URL to upload documents"/>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/upload.png" alt="Use S3 pre-signed URL to upload documents"/>
 
   </div>
 
@@ -88,9 +101,11 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
   return fileObj
   ```
 
+
+
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/runjs1.png" alt="Use S3 pre-signed URL to upload documents"/>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/runjs1.png" alt="Use S3 pre-signed URL to upload documents"/>
 
   </div>
 
@@ -133,37 +148,47 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
   ```
   :::
 
+
+
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/runjs2.png" alt="Use S3 pre-signed URL to upload documents"/>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/runjs2.png" alt="Use S3 pre-signed URL to upload documents"/>
 
   </div>
 
 - Go to the **uploadToS3**, scroll down and add an event handler to the **uploadToS3** query. Select the **Query Success** event, **Run Query** as the action, and **runjs1** as the query to be triggered. **Save** the query.
+
+
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/eventhandlerupload.png" alt="Use S3 pre-signed URL to upload documents"/>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/eventhandlerupload.png" alt="Use S3 pre-signed URL to upload documents"/>
 
   </div>
 
 - Let's go to the **runjs1** query and add the event handler to run a query on query success event, similar to how we did in the previous step. In the event handler, choose **runjs2** query. **Save** the query.
+
+
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/eventhandlerrunjs2.png" alt="Use S3 pre-signed URL to upload documents"/>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/eventhandlerrunjs2.png" alt="Use S3 pre-signed URL to upload documents"/>
 
   </div>
 
 - Now, let's go the final query **copySignedURL** that is connected to the table's action button. This query copy's the generated **Signed URL for download** onto the **clipboard**.
+
+
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/copysigned.png" alt="Use S3 pre-signed URL to upload documents"/>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/copysigned.png" alt="Use S3 pre-signed URL to upload documents"/>
 
   </div>
 
 - Now that we have updated all the queries, and connected them through the event handlers. We can go ahead and pick a file from the file picker. Click on the file picker, select a file and then hit the **Upload file to S3** button.
+
+
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/uploadbutton.png" alt="Use S3 pre-signed URL to upload documents"/>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/uploadbutton.png" alt="Use S3 pre-signed URL to upload documents"/>
 
   </div>
 
