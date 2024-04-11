@@ -12,6 +12,7 @@ import { getManager, In } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+//fix tests
 
 describe('UsersService', () => {
   let nestApp: INestApplication;
