@@ -171,7 +171,7 @@ const RowForm = ({ onCreate, onClose }) => {
               className="form-check-input"
               data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-check-input`}
               type="checkbox"
-              checked={inputValues[index].checkboxValue}
+              checked={inputValues[index].checkboxValue === 'true' ? true : false}
               onChange={(e) => {
                 if (!inputValues[index].disabled) handleCheckboxChange(index, e.target.checked, columnName);
               }}
