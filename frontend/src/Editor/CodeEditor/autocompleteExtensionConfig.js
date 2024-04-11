@@ -67,7 +67,7 @@ export const generateHints = (hints, totalReferences = 1) => {
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
-    let displayedHint = type === 'js_method' ? `${hint}()` : hint;
+    let displayedHint = type === 'js_method' || type === 'Function' ? `${hint}()` : hint;
 
     const maxHintLength = 20;
     const hintLength = displayedHint.length;

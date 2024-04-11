@@ -1290,7 +1290,9 @@ const EditorComponent = (props) => {
     const _appDefinition = JSON.parse(JSON.stringify(appDefinition));
     let newComponents = _appDefinition?.pages[currentPageId].components;
     const selectedComponents = useEditorStore.getState()?.selectedComponents;
+    const componentsIds = [];
     for (const selectedComponent of selectedComponents) {
+      componentsIds.push(selectedComponent.id);
       let top = newComponents[selectedComponent.id].layouts[currentLayout].top;
       let left = newComponents[selectedComponent.id].layouts[currentLayout].left;
       const width = newComponents[selectedComponent.id]?.layouts[currentLayout]?.width;
@@ -1327,6 +1329,8 @@ const EditorComponent = (props) => {
     _appDefinition.pages[currentPageId].components = newComponents;
 
     appDefinitionChanged(_appDefinition, { containerChanges: true, widgetMovedWithKeyboard: true });
+    // console.log('arpit::', { componentsIds });
+    // updateComponentsNeedsUpdateOnNextRender(componentsIds);
   };
 
   const copyComponents = () =>
