@@ -3,8 +3,8 @@ import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import { useTranslation } from 'react-i18next';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
-import { useSuperStore } from '../../_stores/superStore';
-import { ModuleContext } from '../../_contexts/ModuleContext';
+import { useSuperStore } from '@/_stores/superStore';
+import { ModuleContext } from '@/_contexts/ModuleContext';
 // import { ModuleContext } from '../_contexts/ModuleContext';
 
 const APP_MODES = [
