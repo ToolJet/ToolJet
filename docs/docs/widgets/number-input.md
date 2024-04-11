@@ -18,7 +18,7 @@ The Number Input component allows users to enter numeric values. It can be used 
 ## Events
 
 | Event            | Description         |
-|------------------|---------------------|
+|:------------------|:---------------------|
 | **On change**    | Triggers whenever the user types something in the input field.                                   |
 | **On focus**     | Triggers whenever the user clicks inside the input field.                                        |
 | **On blur**      | Triggers whenever the user clicks outside the input field.                                       |

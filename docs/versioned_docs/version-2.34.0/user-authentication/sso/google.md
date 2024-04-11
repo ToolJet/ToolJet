@@ -65,6 +65,6 @@ The Google sign-in button will now be available in your ToolJet login screen.
 ## Setting default SSO
 To set Google as default SSO for the instance use environment variable.
 
-| variable                              | description                                                   |
+| <div style={{ width:"100px"}}> Variable </div>                             | <div style={{ width:"100px"}}>Description </div>                                                   |
 | ------------------------------------- | -----------------------------------------------------------   |
 | SSO_GOOGLE_OAUTH2_CLIENT_ID           | Google OAuth client id |

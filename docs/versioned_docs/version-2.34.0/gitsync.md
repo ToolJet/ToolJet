@@ -11,9 +11,15 @@ import TabItem from '@theme/TabItem';
 
 The GitSync feature enables synchronization of workspace applications with a git repository, streamlining application management and version control on ToolJet.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Overview
 
 ToolJet applications can be synchronized with a Git repository, offering the flexibility to tailor your application development and deployment processes across various environments while aligning with best practices for the application development lifecycle.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Key Use-Cases:
 
@@ -31,8 +37,14 @@ Facilitating the movement of applications across different ToolJet deployments (
 
 <br/>
 
+</div>
+
+
+
 <Tabs>
 <TabItem value="GitHub" label="Setting up GitSyncing with GitHub">
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Setting up GitSyncing with GitHub
 
@@ -94,7 +106,11 @@ Go back to the **Configure git** tab on ToolJet, and click on the **Finalize set
 </div>
 <br/>
 
-## Auto-commit on promoting environment
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Auto-commit on Promoting Environment
 
 When you promote an environment, from **Developement to Staging** or from **Staging to Production**, the changes will be automatically committed to the git repository. The commit message will be `<version_number> Version of <app_name> promoted from <source_environment> to <destination_environment>`. The author will be the user who promoted the environment.
 
@@ -109,6 +125,10 @@ This option can be enabled or disabled from the **Configure git** tab on the **W
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/autocommit-v2.png" alt="GitSync" />
 </div>
 <br/>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Enable/Disable GitSync
 
@@ -127,7 +147,11 @@ On clicking the GitSync button, the users will be able to commit changes to the 
 </div>
 <br/>
 
-## Delete GitSync configuration
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Delete GitSync Configuration
 
 To delete the GitSync configuration, go to the **Configure git** tab on the **Workspace settings** page, and click on the **Delete configuration** button. This will delete the SSH key from the ToolJet configuration and the GitSync feature will be disabled.
 
@@ -139,7 +163,11 @@ To delete the GitSync configuration, go to the **Configure git** tab on the **Wo
 </div>
 <br/>
 
-## Git repo
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Git Repo
 
 Once the initial commit is made, you can see the app files in the git repository. The repository will have the individual app folders and a **.meta** folder. The app folders will be named as the app name and will have the respective **JSON** file of the application. The **.meta** folder will have the `meta.json` file that contains the meta information of each application synced to git repo.
 
@@ -150,11 +178,15 @@ The **meta.json** file holds information about apps such as the **App name**, **
 </div>
 <br/>
 
-## Pushing changes to git repo
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Pushing Changes to Git Repo
 
 Once the GitSync feature is configured, you can start pushing changes to the git repository. 
 
-### App creation
+### App Creation
 
 When you create a new app, you will see an option to select the `Commit changes`. If you select the `commit changes` option, the changes will be committed to the git repository.
 
@@ -163,7 +195,7 @@ If the app name is same as the name of the existing app in the git repo, it will
 :::
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/commitchanges.png" alt="GitSync" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/commitchanges-v2.png" alt="GitSync" />
 </div>
 <br/>
 
@@ -174,7 +206,7 @@ Selecting the `Commit changes` option will create a new commit in the git reposi
 </div>
 <br/>
 
-### App rename
+### App Rename
 
 Whenever an app is renamed, the changes will be automatically committed to the git repository. The commit message will be `App is renamed` and the author will be the user who renamed the app.
 
@@ -183,7 +215,7 @@ Whenever an app is renamed, the changes will be automatically committed to the g
 </div>
 <br/>
 
-### App updates
+### App Updates
 
 Whenever a user makes a change in an app, they can make a commit to the git repository by clicking on the **GitSync** button on the topbar. On clicking the **GitSync** button, a modal will open with the option to enter the commit message. The user can enter the commit message and click on the **Commit changes** button to commit the changes to the git repository. Along with the commit message, the user can also see the connnected **Git repo URL** and the **last commit details**. 
 
@@ -201,11 +233,11 @@ Once the changes are committed, the user can see the commit message, author, and
 </div>
 <br/>
 
-### App deletion
+### App Deletion
 
 Whenever a user deleted an app from the workspace, the app will not be deleted from the git repository. The app will be available in the git repository in the same state as it was before the app was deleted.
 
-### App version update
+### App Version Update
 
 Whenever a user creates a new app version and creates a commit to git repository, the **JSON** file in the app folder will be replaced with the new version of the app that was created. The **meta.json** file in the **.meta** folder will also be updated with the new version id and version name.
 
@@ -214,14 +246,18 @@ Whenever a user creates a new app version and creates a commit to git repository
 </div>
 <br/>
 
-## Pulling changes from git repo
+</div>
+
+
+
+## Pulling Changes from Git Repo
 
 You can configure the GitSync feature on another workspace to pull the changes from the git repository. To configure the GitSync feature on another workspace, follow the steps mentioned in the [Setting up GitSyncing with GitHub](#setting-up-git-syncing-with-github) section.
 
 Once the GitSync feature is configured, go to the ToolJet dashboard and click on the three dots on the right side of the **Create new app** button. Click on the **Import from git repository** option.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/importgit.png" alt="GitSync" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/importgit-v2.png" alt="GitSync" />
 </div>
 <br/>
 
@@ -234,11 +270,11 @@ On clicking the **Import from git repository** option, a modal will open with th
 :::
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/importmodal.png" alt="GitSync" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/importmodal-v2.png" alt="GitSync" />
 </div>
 <br/>
 
-### Checking for updates
+### Checking for Updates
 
 You can check for updates in the git repository by clicking on the **GitSync** button on the topbar. On clicking the **GitSync** button, a modal will open with the option to **Check for updates**. Click on the **Check for updates** button to check for updates in the git repository. If there are any updates, you will see the details of the updates such as commit message, author, and the date in the modal. Click on the **Pull changes** button to pull the changes from the git repository.
 
