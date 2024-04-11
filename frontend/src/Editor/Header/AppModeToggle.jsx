@@ -27,7 +27,7 @@ const AppModeToggle = ({ globalSettingsChanged }) => {
             onAppModeChange(value);
             let exposedTheme = value;
             if (value === 'auto') {
-              exposedTheme = localStorage.getItem('darkMode') ? 'dark' : 'light';
+              exposedTheme = localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
             }
             useSuperStore
               .getState()
