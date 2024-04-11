@@ -78,7 +78,6 @@
         "type": "codehinter",
         "description": "Supports HTML",
         "height": "150px",
-        "mode": "handlebars",
         "lineNumbers": true
       }
     }

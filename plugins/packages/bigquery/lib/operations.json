@@ -340,7 +340,6 @@
         "label": "Query",
         "key": "query",
         "type": "codehinter",
-        "mode": "text",
         "placeholder": "SELECT name FROM `bigquery-public-data.usa_names.usa_1910_2013` WHERE state = 'TX' LIMIT 100",
         "description": "Enter query",
         "height": "150px"

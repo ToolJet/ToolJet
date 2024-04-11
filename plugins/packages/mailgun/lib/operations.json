@@ -54,8 +54,7 @@
         "key": "text",
         "type": "codehinter",
         "description": "Enter text",
-        "height": "150px",
-        "mode": "text"
+        "height": "150px"
       },
       "html": {
         "label": "Body as HTML",
@@ -63,9 +62,8 @@
         "type": "codehinter",
         "description": "Enter html",
         "height": "150px",
-        "mode": "handlebars",
-        "lineNumbers": true
-      }
+        "lineNumbers":true
+        }
     }
   }
 }
