@@ -354,21 +354,22 @@
     }
 }
 
-.multiline-previewbox-wrapper {
-    box-shadow: 0px 4px 8px 0px #3032331A;
-    border: 1px solid var(--borders-disabled-on-white, #E4E7EB);
-    background: #FFFFFF;
-    width: Fixed (548px)px;
-    border-radius: 8px;
-    max-height: 300px;
-    overflow-y: auto;
-    position: relative;
-}
+// remove if multiline codehinter is moved to side
+// .multiline-previewbox-wrapper {
+//     box-shadow: 0px 4px 8px 0px #3032331A;
+//     border: 1px solid var(--borders-disabled-on-white, #E4E7EB);
+//     background: #FFFFFF;
+//     width: Fixed (548px)px;
+//     border-radius: 8px;
+//     max-height: 300px;
+//     overflow-y: auto;
+//     position: relative;
+// }
 
-.dark-theme,
-.theme-dark {
-    .multiline-previewbox-wrapper {
-        background: #1E2226;
-        border: 1px solid rgba(43, 48, 54, 20%);
-    }
-}
+// .dark-theme,
+// .theme-dark {
+//     .multiline-previewbox-wrapper {
+//         background: #1E2226;
+//         border: 1px solid rgba(43, 48, 54, 20%);
+//     }
+// }

@@ -15,7 +15,6 @@ import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { PreviewBox } from './PreviewBox';
-import { resolveCode } from './utils';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -43,16 +42,6 @@ const MultiLineCodeEditor = (props) => {
   } = props;
 
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
-  // const [resolvedValue, setResolvedValue] = React.useState(() => initialValue);
-
-  // useEffect(() => {
-  //   if (showPreview == true) {
-  //     // resolveCode(currentValue);
-  //     console.log('test---', resolveCode(currentValue));
-
-  //     // setResolvedValue();
-  //   }
-  // }, [JSON.stringify(currentValue)]);
 
   const context = useContext(CodeHinterContext);
 
