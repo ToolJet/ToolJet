@@ -42,16 +42,6 @@ const MultiLineCodeEditor = (props) => {
   } = props;
 
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
-  // const [resolvedValue, setResolvedValue] = React.useState(() => initialValue);
-
-  // useEffect(() => {
-  //   if (showPreview == true) {
-  //     // resolveCode(currentValue);
-  //     console.log('test---', resolveCode(currentValue));
-
-  //     // setResolvedValue();
-  //   }
-  // }, [JSON.stringify(currentValue)]);
 
   const context = useContext(CodeHinterContext);
 
