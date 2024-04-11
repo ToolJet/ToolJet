@@ -10,6 +10,7 @@ import {
     disableSSO,
     setSignupStatus,
     deleteOrganisationSSO,
+    passwordToggle
 } from "Support/utils/eeCommon";
 import { commonEeSelectors, ssoEeSelector } from "Selectors/eeCommon";
 import { commonEeText, ssoEeText } from "Texts/eeCommon";
@@ -28,6 +29,10 @@ describe("Manage SSO for multi workspace", () => {
             "ldap",
         ]);
     });
+    after(() => {
+        cy.apiLogin();
+        passwordToggle(true)
+    })
     it("Should verify General settings page elements", () => {
         SSO.defaultSSO(true);
         setSignupStatus(false);
