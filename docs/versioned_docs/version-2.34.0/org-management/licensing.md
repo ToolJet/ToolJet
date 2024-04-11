@@ -17,7 +17,8 @@ Let's look into three types of licenses:
 2. **Business License**: This is a paid license that you can purchase **[directly](https://www.tooljet.com/pricing)**.
 3. **Enterprise License**: This is a paid license with customizable options. To obtain this license, you have to contact our sales team.
 
----
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Updating Your Trial License Key (For Existing Users)
 
@@ -32,13 +33,10 @@ If you are an existing user and wish to update your trial license key, follow th
 The trial license key will be valid for 14 days. To fully enjoy ToolJet, we recommend upgrading to premium plans within this period. If you wish to upgrade from the trial to the business or enterprise edition, you can click the **Upgrade or Renew** button or contact our team via **[Slack](https://tooljet.com/slack)**. Upon expiration, access to premium features like OpenID SSO login and Audit logs will be restricted, ensuring no data loss occurs. However, don't worry! You can still upgrade to any of our premium plans and enjoy the benefits of ToolJet.
 :::
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/licensing/licensingpage1.png" alt="Licensing" />
 
 </div>
 
-**Ref: Screenshot to update license key**
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Purchasing a Paid License
 
@@ -59,7 +57,9 @@ The business license key will be valid for 3 months only. You can renew it to co
 - To update the enterprise license key, follow the steps outlined previously.
 - The remaining days of your enterprise edition period can be conveniently viewed on the dashboard.
 
----
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Updating License Key
 
@@ -75,30 +75,32 @@ As a super admin, you can conveniently view the remaining days of your enterpris
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/licensing/licensingpage2.png" alt="Licensing" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/licensing/licensingpage2-v2.png" alt="Licensing" />
 
 </div>
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/licensing/licensingpage3.png" alt="Licensing" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/licensing/licensingpage3-v2.png" alt="Licensing" />
 
 </div>
 
----
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Frequently Asked Questions (FAQs)
 
 ### 1) How can I upgrade or renew my license?
-If your business or enterprise edition license key is nearing expiration, please click the **Upgrade or Renew** button or contact us via email at hello@tooljet.com to obtain an extended license key. If you intend to increase the number of users, please reach out to us via **[Slack](https://tooljet.com/slack)** or review our pricing page at https://www.tooljet.com/pricing before making a request.
+If your business or enterprise edition license key is nearing expiration, please click the **Upgrade** button or contact us via email at hello@tooljet.com to obtain an extended license key. If you intend to increase the number of users, please reach out to us via **[Slack](https://tooljet.com/slack)** or review our pricing page at https://www.tooljet.com/pricing before making a request.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/licensing/licensingpage4.png" alt="Licensing" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/licensing/licensingpage4-v2.png" alt="Licensing" />
 
 </div>
 
-**Ref: Screenshot addressing upgrade/renew CTAs. Note that there are a couple of other pages which will display banners or CTAs, from where you can upgrade/renew.**
+Ref: Screenshot addressing upgrade/renew CTAs. Note that there are a couple of other pages which will display banners or CTAs, from where you can upgrade/renew.
 
 ### 2) What is the duration of my license's validity?
 If you have an active license, you can find its validity period in the Settings. Generally, the duration of your license varies based on the type:
@@ -117,3 +119,5 @@ There are different methods to do this:
 **b)** You can directly reach out to us via **[Slack](https://tooljet.com/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support. 
 
 ***Lastly, please keep in mind that your license key is private and strictly prohibited from being shared with any third parties.***
+
+</div>

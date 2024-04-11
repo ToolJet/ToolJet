@@ -5,11 +5,13 @@ title: 'Marketplace: Overview'
 
 # Marketplace: Overview
 
-With ToolJet Marketplace, ToolJet users can conveniently add custom plugins (data sources) to their workspaces. This feature enables users to create plugins that cater to their specific needs and integrate them seamlessly with ToolJet.
+ToolJet Marketplace allows users to enhance their workspaces by adding custom plugins (data sources) tailored to their unique requirements. This functionality facilitates the seamless integration of user-created plugins with ToolJet.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/overview/marketplace-v2.png" alt="Marketplace Overview" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/overview/marketplace-v2.png" alt="Marketplace Overview" />
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Enabling Marketplace 
 
@@ -25,7 +27,11 @@ When running ToolJet locally, ensure that all the plugins are available by build
 The logged-in user should be an **Administrator** to access the marketplace page.
 :::
 
-## Installing a plugin
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Installing a Plugin
 
 To navigate to the Marketplace page, click on the settings icon on the bottom left of the dashboard, and click on **Marketplace** from the selection menu.
 
@@ -34,8 +40,12 @@ The Marketplace page will contain two tabs: **Installed** and **Marketplace**.
 Under the **Marketplace** tab, you will see a list of all the available plugins that can be installed on the workspace. To install a plugin, click on the **Install** button on the plugin's card. Once the installation is complete, the status will change from Install to **Installed**.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/overview/allplugins-v2.png" alt="List of All Plugins" /> 
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/overview/allplugins-v2.png" alt="List of All Plugins" /> 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Using Marketplace Plugins
 
@@ -47,19 +57,15 @@ You can access any installed plugins by following these steps:
 You can now see the list of installed marketplace plugins that you can configure as data sources.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/overview/installed-plugins.png" alt="Installed plugins" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/overview/installed-plugins.png" alt="Installed plugins" />
 </div>
 
 - After successfully configuring a plugin, you can access it when trying to add a new query from the Query Panel.
 
-<!-- <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/overview/add-query.png" alt="Marketplace" />
-</div> -->
-
 ## Removing a Plugin
 
 :::caution
-If you remove a plugin, all the queries associated with it will be eliminated from all the applications.
+If you remove a plugin, all the queries associated with it will be eliminated from the applications.
 :::
 
 To remove a plugin, follow these steps:
@@ -79,3 +85,5 @@ To remove a plugin, follow these steps:
 :::info For Plugin Developers
 Refer to the **[Plugin Development guide](/docs/contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.
 :::
+
+</div>
