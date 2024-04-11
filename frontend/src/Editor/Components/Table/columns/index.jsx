@@ -102,7 +102,6 @@ export default function generateColumnsData({
         }
       };
     }
-
     const width = columnSize || defaultColumn.width;
     return {
       id: column.id,
@@ -133,11 +132,12 @@ export default function generateColumnsData({
         cellTextColor = '',
         contentWrap = true,
         autoHeight = true,
+        isMultiSelectColumnFocused,
+        setIsMultiSelectColumnFocused,
       }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
-
         const rowData = tableData?.[cell?.row?.index];
         if (
           cell.row.index === 0 &&
@@ -489,6 +489,8 @@ export default function generateColumnsData({
                     }
                     horizontalAlignment={determineJustifyContentValue(horizontalAlignment)}
                     isEditable={isEditable}
+                    isFocused={isMultiSelectColumnFocused}
+                    setIsFocused={setIsMultiSelectColumnFocused}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>

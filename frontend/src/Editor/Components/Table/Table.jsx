@@ -180,7 +180,7 @@ export function Table({
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
   const mergeToAddNewRowsDetails = (payload) => dispatch(reducerActions.mergeToAddNewRowsDetails(payload));
   const mounted = useMounted();
-
+  const [isMultiSelectColumnFocused, setIsMultiSelectColumnFocused] = React.useState(false);
   const [resizingColumnId, setResizingColumnId] = useState(null);
 
   const prevDataFromProps = useRef();
@@ -1570,6 +1570,8 @@ export function Table({
                                 cellTextColor,
                                 contentWrap,
                                 autoHeight,
+                                isMultiSelectColumnFocused,
+                                setIsMultiSelectColumnFocused,
                               })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}

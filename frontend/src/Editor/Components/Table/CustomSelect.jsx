@@ -24,8 +24,9 @@ export const CustomSelect = ({
   optionsLoadingState = false,
   horizontalAlignment = 'left',
   isEditable,
+  isFocused,
+  setIsFocused,
 }) => {
-  const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef(null);
   const inputRef = useRef(null); // Ref for the input search box
 
@@ -96,7 +97,7 @@ export const CustomSelect = ({
       fontSize: '12px',
     }),
   };
-  const customCustomComponents = {
+  const customComponents = {
     MenuList: (props) => <CustomMenuList {...props} optionsLoadingState={optionsLoadingState} inputRef={inputRef} />,
     Option: CustomMultiSelectOption,
     DropdownIndicator: isEditable ? DropdownIndicator : null,
@@ -110,8 +111,8 @@ export const CustomSelect = ({
   return (
     <OverlayTrigger
       placement="bottom"
-      overlay={isMulti && getOverlay(value, containerWidth, isMulti)}
-      trigger={isMulti && ['hover']}
+      overlay={isMulti && !isFocused ? getOverlay(value, containerWidth, darkMode) : <div></div>}
+      trigger={isMulti && !isFocused && ['hover']}
       rootClose={true}
     >
       <div className="w-100 h-100 d-flex align-items-center">
@@ -121,16 +122,15 @@ export const CustomSelect = ({
           fuzzySearch={fuzzySearch}
           isDisabled={disabled}
           className={className}
-          components={customCustomComponents}
+          components={customComponents}
           value={value}
-          onMenuInputFocus={() => setIsFocused(true)}
+          onFocus={() => {
+            setTimeout(() => {
+              setIsFocused(true);
+            }, 10);
+          }}
           onChange={(value) => {
             onChange(value);
-            setIsFocused(false);
-          }}
-          {...{
-            menuIsOpen: isFocused || undefined,
-            isFocused: isFocused || undefined,
           }}
           useCustomStyles={true}
           styles={customStyles}
@@ -140,6 +140,8 @@ export const CustomSelect = ({
           hideSelectedOptions={false}
           isClearable={false}
           clearIndicator={false}
+          menuIsOpen={isFocused}
+          isFocused={isFocused}
         />
       </div>
     </OverlayTrigger>
@@ -232,8 +234,7 @@ const CustomMultiValueContainer = (props) => {
   );
 };
 
-const getOverlay = (value, containerWidth) => {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
+const getOverlay = (value, containerWidth, darkMode) => {
   return Array.isArray(value) ? (
     <div
       style={{
