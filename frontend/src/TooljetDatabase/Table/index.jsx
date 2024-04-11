@@ -275,7 +275,6 @@ const Table = ({ collapseSidebar }) => {
               Header: column_name,
               accessor: column_name,
               dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
-              // dataType: data_type,
               ...rest,
             }))
           );

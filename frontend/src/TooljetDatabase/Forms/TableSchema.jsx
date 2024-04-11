@@ -6,15 +6,8 @@ import ForeignKeyRelation from '../Icons/Fk-relation.svg';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import SelectIcon from '../Icons/Select-column.svg';
 import MenuIcon from '../Icons/Unique-menu.svg';
-// import DeleteIcon from '../Icons/DeleteIcon.svg';
 import Tick from '../Icons/Tick.svg';
-import tjdbDropdownStyles, {
-  dataTypes,
-  formatOptionLabel,
-  serialDataType,
-  getColumnDataType,
-  checkDefaultValue,
-} from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, checkDefaultValue } from '../constants';
 import Select, { components } from 'react-select';
 
 function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumnSelection, handleDelete, isEditMode }) {
@@ -55,10 +48,10 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
   const columnDetails = isEditMode ? editColumns : columns;
 
   const CustomSelectOption = (props) => {
-    const isCheckDataType = getColumnDataType({
-      data_type: columnDetails[columnSelection.index]?.data_type,
-      column_default: columnDetails[columnSelection.index]?.column_default,
-    });
+    // const isCheckDataType = getColumnDataType({
+    //   data_type: columnDetails[columnSelection.index]?.data_type,
+    //   column_default: columnDetails[columnSelection.index]?.column_default,
+    // });
     return (
       <Option {...props}>
         <div className="selected-dropdownStyle d-flex align-items-center justify-content-between">
@@ -68,7 +61,7 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
             <span className="dataType-dropdown-value">{props.data.name}</span>
           </div>
           <div>
-            {isCheckDataType === props.data.value ? (
+            {columnDetails[columnSelection.index]?.data_type === props.data.value ? (
               <div>
                 <Tick width="16" height="16" />
               </div>
