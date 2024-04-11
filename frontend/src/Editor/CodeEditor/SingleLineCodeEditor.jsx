@@ -40,7 +40,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (cursorInsidePreview || portalProps?.isOpen) {
+      if (cursorInsidePreview || portalProps?.isOpen || event.target.closest('.cm-tooltip-autocomplete')) {
         return;
       }
 
