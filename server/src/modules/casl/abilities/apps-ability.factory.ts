@@ -8,6 +8,7 @@ import { UsersService } from 'src/services/users.service';
 type Actions =
   | 'authorizeOauthForSource'
   | 'cloneApp'
+  | 'importApp'
   | 'createApp'
   | 'createDataSource'
   | 'createQuery'
@@ -53,6 +54,7 @@ export class AppsAbilityFactory {
 
     if (await this.usersService.userCan(user, 'create', 'App')) {
       can('createApp', App);
+      can('importApp', App);
       if (canUpdateApp) {
         can('cloneApp', App, { organizationId: user.organizationId });
       }

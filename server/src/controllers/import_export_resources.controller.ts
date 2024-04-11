@@ -40,7 +40,7 @@ export class ImportExportResourcesController {
   async import(@User() user, @Body() importResourcesDto: ImportResourcesDto) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
-    if (!ability.can('cloneApp', App)) {
+    if (!ability.can('importApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const isNotCompatibleVersion = !checkVersionCompatibility(importResourcesDto.tooljet_version);
