@@ -9,13 +9,15 @@ title: User Lifecycle
 Check Workspace docs [here](/docs/tutorial/workspace_overview).
 :::
 
-### User onboarding
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### User Onboarding
 
   - User can sign up using the sign up link provided on the login page, user will receive a welcome email with activation link. New workspace will be created for the user.
 
     <div style={{textAlign: 'center'}}>
 
-    ![ToolJet - Workspace sign up](/img/user-lifecycle/signup-mw.png)
+      <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/user-lifecycle/signup-mw.png" alt="ToolJet - Workspace sign up" />
 
     </div>
 
@@ -23,7 +25,7 @@ Check Workspace docs [here](/docs/tutorial/workspace_overview).
 
     <div style={{textAlign: 'center'}}>
 
-    ![ToolJet - Workspace sign up](/img/user-lifecycle/user-mw.png)
+    <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/user-lifecycle/user-mw.png" alt="ToolJet - Workspace sign up" />
 
     </div>
 
@@ -31,7 +33,7 @@ Check Workspace docs [here](/docs/tutorial/workspace_overview).
 
     <div style={{textAlign: 'center'}}>
 
-    ![ToolJet - Workspace sign up](/img/user-lifecycle/invite-link-mw.png)
+    <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/user-lifecycle/invite-link-mw.png" alt="ToolJet - Workspace sign up" />
 
     </div>
 
@@ -39,7 +41,7 @@ Check Workspace docs [here](/docs/tutorial/workspace_overview).
 
     <div style={{textAlign: 'center'}}>
 
-    ![ToolJet - Workspace accept invite](/img/user-lifecycle/sso-onboard-sw.png)
+    <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/user-lifecycle/sso-onboard-sw.png" alt="ToolJet - Workspace accept invite" />
 
     </div>
 
@@ -47,25 +49,33 @@ Check Workspace docs [here](/docs/tutorial/workspace_overview).
 
     <div style={{textAlign: 'center'}}>
 
-    ![ToolJet - Workspace sign up using SSO](/img/user-lifecycle/sso-enable-signup-sw.png)
+    <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/user-lifecycle/sso-enable-signup-sw.png" alt="ToolJet - Workspace sign up using SSO" />
 
     </div>
 
-### Archive user
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Archive User
   - User can be archived by workspace admin from using `Manage User` page
 
     <div style={{textAlign: 'center'}}>
 
-    ![ToolJet -Workspace Archive user](/img/user-lifecycle/archive-user.png)
+    <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/user-lifecycle/archive-user.png" alt="ToolJet -Workspace Archive user" />
 
     </div>
 
-### Unarchive user
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Unarchive User
   - User can be unarchive by workspace admin from using `Manage User` page
 
     <div style={{textAlign: 'center'}}>
 
-    ![ToolJet - Single-Workspace Unarchive user](/img/user-lifecycle/unarchive-user-mw.png)
+    <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/user-lifecycle/unarchive-user-mw.png" alt="ToolJet - Single-Workspace Unarchive user" />
 
     </div>
 
@@ -73,24 +83,36 @@ Check Workspace docs [here](/docs/tutorial/workspace_overview).
   Archive or unarchive will not affect user login, user can login and use other workspaces where user is in active state.
   :::
 
-### Switch between workspaces
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Switch Between Workspaces
 
   <div style={{textAlign: 'center'}}>
 
-  ![ToolJet - Workspace sign up using SSO](/img/user-lifecycle/switch.png)
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/user-lifecycle/switch.png" alt="ToolJet - Workspace sign up using SSO" />
 
   </div>
 
+</div>
 
-## User status
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-| Status   | Able to log in   | How to activate                      |
+
+## User Status
+
+| <div style={{ width:"100px"}}> Status </div>  |  <div style={{ width:"100px"}}> Able to log in </div>  |  <div style={{ width:"100px"}}> How to activate   </div>                   |
 | -------- | ---------------- | ------------------------------------ |
 | active   | Yes              |                                      |
 | invited  | No (Yes with SSO)| Login through SSO or invitation link |
 | archived | No               | Not able to activate. Invite from `Manage Users` page, status will be changed to invited |
 
-## Workspace SSO flow
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Workspace SSO Flow
   - Diagram shows how SSO configurations are chosen in common login page and workspace login page. Instance level SSO is configured in environment variables and Workspace level SSO is configured in respective `Manage SSO` page.
 
   <div style={{textAlign: 'center'}}>
@@ -98,3 +120,5 @@ Check Workspace docs [here](/docs/tutorial/workspace_overview).
   ![ToolJet - SSO Flow](/img/user-lifecycle/sso-flow.png)
 
   </div>
+
+</div>
