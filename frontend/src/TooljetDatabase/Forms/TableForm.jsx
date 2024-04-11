@@ -185,14 +185,14 @@ const TableForm = ({
     }
   });
 
-  const currentPrimaryKeyIcons = existingPrimaryKeyObjects?.map((item, index) => {
+  const currentPrimaryKeyIcons = existingPrimaryKeyObjects?.map((item) => {
     return {
       columnName: item.column_name,
       icon: item.data_type,
     };
   });
 
-  const newPrimaryKeyIcons = primaryKeyObjects?.map((item, index) => {
+  const newPrimaryKeyIcons = primaryKeyObjects?.map((item) => {
     return {
       columnName: item.column_name,
       icon: item.data_type,

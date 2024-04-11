@@ -7,12 +7,6 @@ import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { maybeSetSubPath } from '../helpers/utils.helper';
 
-enum PostgresErrorCode {
-  NotNullViolation = '23502',
-  ForeignKeyViolation = '23503',
-  UniqueViolation = '23505',
-}
-
 @Injectable()
 export class PostgrestProxyService {
   constructor(private readonly manager: EntityManager, private readonly configService: ConfigService) {}
@@ -48,18 +42,6 @@ export class PostgrestProxyService {
     userResDecorator: function (proxyRes, proxyResData, userReq, _userRes) {
       if (userReq?.headers?.tableInfo && proxyRes.statusCode >= 400) {
         const customErrorObj = Buffer.isBuffer(proxyResData) ? JSON.parse(proxyResData.toString('utf8')) : proxyResData;
-
-        switch (customErrorObj?.code) {
-          case PostgresErrorCode.NotNullViolation:
-            customErrorObj.message = 'Violates not null constraint';
-            break;
-          case PostgresErrorCode.ForeignKeyViolation:
-            customErrorObj.message = 'Violates foreign key constraint';
-            break;
-          case PostgresErrorCode.UniqueViolation:
-            customErrorObj.message = 'Violates unique constraint';
-            break;
-        }
 
         let customErrorMessage = customErrorObj?.message ?? '';
         if (customErrorMessage) {

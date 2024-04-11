@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import cx from 'classnames';
-//import Select from '@/_ui/Select';
-import AddColumnIcon from '../Icons/AddColumnIcon.svg';
 import ColumnName from '../Icons/ColumnName.svg';
 import TableSchema from './TableSchema';
-import { dataTypes } from '../constants';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
