@@ -244,6 +244,8 @@ export const Container = ({
       return;
     }
 
+    if (!appDefinition.pages[currentPageId]?.components) return;
+
     const newDefinition = {
       ...appDefinition,
       pages: {
@@ -251,7 +253,7 @@ export const Container = ({
         [currentPageId]: {
           ...appDefinition.pages[currentPageId],
           components: {
-            ...appDefinition.pages[currentPageId].components,
+            ...appDefinition.pages[currentPageId]?.components,
             ...boxes,
           },
         },

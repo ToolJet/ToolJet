@@ -709,7 +709,18 @@ class ViewerComponent extends React.Component {
   };
 
   handleEvent = (eventName, events, options) => {
-    return onEvent(this.getViewerRef(), eventName, events, options, 'view');
+    const latestEvents = useAppDataStore.getState().events;
+
+    const filteredEvents = latestEvents.filter((event) => {
+      const foundEvent = events.find((e) => e.id === event.id);
+      return foundEvent && foundEvent.name === eventName;
+    });
+
+    try {
+      return onEvent(this.getViewerRef(), eventName, filteredEvents, options, 'view');
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   computeCanvasMaxWidth = () => {
