@@ -35,6 +35,13 @@ export class TooljetDbExceptionFilter implements ExceptionFilter {
         message: message,
       });
     } else {
+      if (Array.isArray(exception.response.message)) {
+        const totalErrors = exception.response.message.length;
+        const firstErrorMessage = exception.response.message[0];
+        const strippedErrorMessage = `Error: ${firstErrorMessage} (1/${totalErrors})`;
+        exception.response.message = strippedErrorMessage;
+      }
+
       next(exception);
     }
   }

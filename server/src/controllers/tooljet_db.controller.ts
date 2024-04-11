@@ -43,6 +43,7 @@ import { TooljetDbExceptionFilter } from 'src/filters/tooljetdb-exception-filter
 const MAX_CSV_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
 @Controller('tooljet-db')
+@UseFilters(new TooljetDbExceptionFilter())
 export class TooljetDbController {
   private readonly pinoLogger: Logger;
   constructor(
@@ -86,7 +87,6 @@ export class TooljetDbController {
   }
 
   @Patch('/organizations/:organizationId/table/:tableName')
-  @UseFilters(new TooljetDbExceptionFilter())
   @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.RenameTable, 'all'))
   async editTable(@Body() editTableBody: EditTableDto, @Param('organizationId') organizationId) {
@@ -103,7 +103,6 @@ export class TooljetDbController {
   }
 
   @Post('/organizations/:organizationId/table/:tableName/column')
-  @UseFilters(new TooljetDbExceptionFilter())
   @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.AddColumn, 'all'))
   async addColumn(
@@ -164,7 +163,6 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
   @Patch('/organizations/:organizationId/table/:tableName/column')
-  @UseFilters(new TooljetDbExceptionFilter())
   @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.EditColumn, 'all'))
   async editColumn(
