@@ -13,7 +13,6 @@ import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { addComponents, addNewWidgetToTheEditor, isPDFSupported } from '@/_helpers/appUtils';
-import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useAppInfo } from '@/_stores/appDataStore';
@@ -31,7 +30,7 @@ import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
 const deviceWindowWidth = EditorConstants.deviceWindowWidth;
 
 export const Container = ({
-  canvasWidth,
+  widthOfCanvas,
   mode,
   snapToGrid,
   onComponentClick,
@@ -72,10 +71,13 @@ export const Container = ({
     shallow
   );
 
+  const canvasWidth = widthOfCanvas
+    ? widthOfCanvas
+    : document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect()?.width;
   const gridWidth = canvasWidth / noOfGrids;
+
   const { appId } = useAppInfo();
 
-  const currentState = useCurrentState();
   const { appVersionsId, isVersionReleased } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
@@ -762,7 +764,6 @@ export const Container = ({
         onEvent,
         appDefinition,
         appDefinitionChanged,
-        currentState,
         appLoading,
         zoomLevel,
         setSelectedComponent,
