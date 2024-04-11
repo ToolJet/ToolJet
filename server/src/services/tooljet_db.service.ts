@@ -92,11 +92,11 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
+    // WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN c.Column_default
     return await this.tooljetDbManager.query(`
     SELECT c.COLUMN_NAME,
         c.DATA_TYPE,
         CASE
-            WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN c.Column_default
             WHEN c.Column_default LIKE '%::%' THEN REPLACE(SUBSTRING(c.Column_default FROM '^''?(.*?)''?::'), '''', '')
             ELSE c.Column_default
         END AS Column_default,
