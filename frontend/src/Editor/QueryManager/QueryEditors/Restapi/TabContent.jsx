@@ -73,6 +73,7 @@ export default ({
             className="query-hinter"
             onChange={(value) => onJsonBodyChange(value)}
             componentName={`${componentName}/${tabType}`}
+            showPreview={true}
           />
         </div>
       ) : (

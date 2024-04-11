@@ -14,6 +14,8 @@ import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
+import { PreviewBox } from './PreviewBox';
+import { resolveCode } from './utils';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -37,9 +39,20 @@ const MultiLineCodeEditor = (props) => {
     hideSuggestion,
     suggestions: hints,
     portalProps,
+    showPreview,
   } = props;
 
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
+  // const [resolvedValue, setResolvedValue] = React.useState(() => initialValue);
+
+  // useEffect(() => {
+  //   if (showPreview == true) {
+  //     // resolveCode(currentValue);
+  //     console.log('test---', resolveCode(currentValue));
+
+  //     // setResolvedValue();
+  //   }
+  // }, [JSON.stringify(currentValue)]);
 
   const context = useContext(CodeHinterContext);
 
@@ -227,6 +240,17 @@ const MultiLineCodeEditor = (props) => {
                 indentWithTab={true}
               />
             </div>
+            {showPreview && (
+              <div className="multiline-previewbox-wrapper">
+                <PreviewBox
+                  currentValue={currentValue}
+                  validationSchema={null}
+                  setErrorStateActive={() => null}
+                  componentId={null}
+                  setErrorMessage={() => null}
+                />
+              </div>
+            )}
           </ErrorBoundary>
         </CodeHinter.Portal>
       </div>
