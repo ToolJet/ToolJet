@@ -85,6 +85,7 @@
     }
 
     .workflows-query-node{
+
       .dynamic-form-row{
         flex-direction: column !important;
       .tooljetdb-worflow-operations{
@@ -97,6 +98,18 @@
         justify-content: space-between;
       }
     }
+    
+    .stripe-operation-container{
+     flex-direction: column;
+     margin-top: 16px !important;
+     label{
+      margin-bottom: 0;
+     }
+     .stripe-operation-options{
+      width: 100% !important;
+     }
+    }
+
     }
     
   }
