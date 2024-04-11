@@ -1,15 +1,20 @@
 ---
 id: print-multi-tabs-report
-title: Print data from multiple tabs
+title: Print Data from Multiple Tabs
 ---
-
+<div style={{paddingBottom:'24px'}}>
 
 In this guide, we will learn how to print data from multiple tabs in ToolJet. This will be useful when you want to print an invoice or a report from your ToolJet application. For example, a tooljet app that has a set of tabs for each invoice and you want to print all the tabs in one go.
 
+</div>
 
-## UI of the app
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## UI of the App
 
 Build an app with a set of tabs for each record. Each tab will have a set of fields to display the invoice details. In the example below, we have tabs component and each tab has a set of fields to display the record details.
+
+</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -19,15 +24,15 @@ Build an app with a set of tabs for each record. Each tab will have a set of fie
 
 **Button**: Clicking on the button will print the data from all the tabs. The button has two events, the details for which we will share later in this guide.
 
-</div>
-
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/appui.png" alt="Print data from multiple tabs" />
 </div>
 
-## Load data from database
+</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Load Data from Database
 
 For this app, we are using tooljet database with table name `patient_data`. We created a query called `getPatientList` to fetch data from the database.
 
@@ -35,15 +40,15 @@ For this app, we are using tooljet database with table name `patient_data`. We c
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/data.png" alt="Print data from multiple tabs" />
 </div>
 
-</div>
-
 Once the data is successfully loaded on the tabs and the app is working as expected, we can move to the next step.
 
-## Printing data from multiple tabs
-
-To print data from multiple tabs, we will create few javascript queries. Using event handlers, we will run these javascript queries in a sequence to print data from all the tabs. 
+</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Printing Data from Multiple Tabs
+
+To print data from multiple tabs, we will create few javascript queries. Using event handlers, we will run these javascript queries in a sequence to print data from all the tabs. 
 
 Before we start creating the javascript queries, we need to add a few events to the button component:
 
@@ -60,6 +65,8 @@ Before we start creating the javascript queries, we need to add a few events to 
 
 </div>
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### viewTabs query
 
 The `viewTabs` query is a javascript query that will run a loop to print data from all the tabs. The query will set a variable `tabIndex` that will store the id of the tab to print data from. he query will loop and increment the tabsIndex variable by 1, using the setVariable action, till the value is less than 5.
@@ -72,7 +79,7 @@ if ((variables?.tabIndex ?? undefined) == undefined) {
 }
 ```
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+</div>
 
 **This query will have 3 events:**
 
@@ -82,8 +89,6 @@ For the first Query Success event, we will add a `Control component` action whic
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/q1.png" alt="Print data from multiple tabs" />
-</div>
-
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
@@ -116,6 +121,8 @@ For the third Query Success event, we will select `Run Query` action which will 
 
 Now that we have created the `viewTabs` query, we can go to the [Download](/docs/how-to/print-multi-tabs-report#printing-data-from-multiple-tabs) button and add the `viewTabs` query to the `On click` event handler.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### getTabsHTML query
 
 The `getTabsHTML` is javascript query that will get the html of the current tab and store it in a variable. The query will have a variable `tabsHtml` that will store the html of all the tabs in the form of an array.
@@ -135,6 +142,8 @@ actions.setVariable( // set tabsHtml variable
   ])
 );
 ```
+
+</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
