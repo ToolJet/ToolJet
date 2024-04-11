@@ -333,7 +333,14 @@ const sidebars = {
         'Enterprise/audit_logs',
         'Enterprise/white-label',
         'Enterprise/superadmin',
-        'org-management/licensing',
+        {
+          "type": "category",
+          "label": "Licensing",
+          "items": [
+            "org-management/licensing/tooljet-cloud",
+            "org-management/licensing/self-hosted"
+          ]
+        }
       ],
     },
     {
@@ -374,6 +381,8 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-harperdb',
             'marketplace/plugins/marketplace-plugin-openai',
             'marketplace/plugins/marketplace-plugin-plivo',
+            'marketplace/plugins/marketplace-plugin-supabase',
+            'marketplace/plugins/marketplace-plugin-pocketbase',
           ],
         },
       ],

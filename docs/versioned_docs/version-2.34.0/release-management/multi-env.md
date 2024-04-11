@@ -9,9 +9,11 @@ ToolJet's **multi-environment** helps in streamlining workflows, thereby minimiz
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/multi-env/newmultienv.png" alt="Multi-Environment" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/multi-env/newmultienv-v2.png" alt="Multi-Environment" />
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Environments
 
@@ -27,7 +29,11 @@ ToolJet provides three default **environments** that serve different purposes in
 The default environments cannot be removed or renamed.
 :::
 
-### Configuring connections for environments
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Configuring Connections for Environments
 
 To configure connection settings for different environments, follow these steps:
 
@@ -38,9 +44,13 @@ To configure connection settings for different environments, follow these steps:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/multi-env/multienvtabs.png" alt="Multi-Environment" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/multi-env/multienvtabs-v2.png" alt="Multi-Environment" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Using Environments
 
@@ -54,7 +64,7 @@ To configure connection settings for different environments, follow these steps:
 
  <div style={{textAlign: 'center'}}>
 
- <img className="screenshot-full" src="/img/v2-beta/multi-env/newapp.png" alt="Multi-Environment" />
+ <img className="screenshot-full" src="/img/v2-beta/multi-env/newapp-v2.png" alt="Multi-Environment" />
 
  </div>
 
@@ -110,3 +120,6 @@ To configure connection settings for different environments, follow these steps:
  :::
 
 ToolJet's app builder remembers your last editing state. When you reopen an app, it resumes from where you left off, ensuring a seamless experience. For instance, if you edited an app in the staging environment, it will open in the staging environment when you return.
+
+
+</div>
