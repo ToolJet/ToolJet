@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
@@ -19,9 +19,12 @@ const useAppDarkMode = () => {
     shallow
   );
 
-  const handleAppModeChange = (appMode = 'auto') => {
-    setAppMode(appMode);
-  };
+  const handleAppModeChange = useCallback(
+    (appMode = 'auto') => {
+      setAppMode(appMode);
+    },
+    [setAppMode]
+  );
 
   const isAppDarkMode = useMemo(() => {
     if (appMode === 'light') {

@@ -174,7 +174,7 @@ const EditorComponent = (props) => {
 
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
   const [isDeletingPage, setIsDeletingPage] = useState(false);
-  const { isAppDarkMode, onAppModeChange } = useAppDarkMode();
+  const { isAppDarkMode, appMode, onAppModeChange } = useAppDarkMode();
 
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -604,15 +604,17 @@ const EditorComponent = (props) => {
   };
 
   const changeDarkMode = (newMode) => {
-    useSuperStore
-      .getState()
-      .modules[moduleName].useCurrentStateStore.getState()
-      .actions.setCurrentState({
-        globals: {
-          ...currentState.globals,
-          theme: { name: newMode ? 'dark' : 'light' },
-        },
-      });
+    if (appMode === 'auto') {
+      useSuperStore
+        .getState()
+        .modules[moduleName].useCurrentStateStore.getState()
+        .actions.setCurrentState({
+          globals: {
+            ...currentState.globals,
+            theme: { name: newMode ? 'dark' : 'light' },
+          },
+        });
+    }
     props.switchDarkMode(newMode);
   };
 
