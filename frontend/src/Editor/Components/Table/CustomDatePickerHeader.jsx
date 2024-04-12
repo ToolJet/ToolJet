@@ -53,7 +53,6 @@ const CustomDatePickerHeader = ({
           <select
             value={months[getMonth(date)]}
             onChange={({ target: { value } }) => changeMonth(months.indexOf(value))}
-            style={{ width: '45px' }}
             className="tj-datepicker-widget-month-selector"
           >
             {months.map((option) => (
