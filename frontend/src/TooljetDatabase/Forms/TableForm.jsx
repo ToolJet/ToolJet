@@ -41,17 +41,29 @@ const TableForm = ({
     toast.dismiss();
   }, []);
 
-  const primaryKeyColumns = [];
-  const nonPrimaryKeyColumns = [];
-  arrayOfTableColumns.forEach((column) => {
-    if (column?.constraints_type?.is_primary_key) {
-      primaryKeyColumns.push({ ...column });
-    } else {
-      nonPrimaryKeyColumns.push({ ...column });
-    }
-  });
+  // const primaryKeyColumns = [];
+  // const nonPrimaryKeyColumns = [];
+  // Object.values(columns).forEach((column) => {
+  //   // this is for old_column object which we need to send in edit table api tracked (old column with primary columns are in top order) deep cloned object
+  //   if (column?.constraints_type?.is_primary_key) {
+  //     primaryKeyColumns.push({ ...column });
+  //   } else {
+  //     nonPrimaryKeyColumns.push({ ...column });
+  //   }
+  // });
 
-  // console.log('first', [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
+  // const editPrimaryKeyColumns = [];
+  // const editNonPrimaryKeyColumns = [];
+  // arrayOfTableColumns.forEach((column) => {
+  //   // this is for new_column object which we need to send in edit table api
+  //   if (column?.constraints_type?.is_primary_key) {
+  //     editPrimaryKeyColumns.push({ ...column });
+  //   } else {
+  //     editNonPrimaryKeyColumns.push({ ...column });
+  //   }
+  // });
+
+  // const editColumns = Object.assign({}, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
 
   function bodyColumns(columns, arrayOfTableColumns) {
     let newArray = [];
@@ -91,7 +103,11 @@ const TableForm = ({
     return newArray;
   }
 
-  let data = bodyColumns(columns, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
+  // let data = isEditMode
+  //   ? bodyColumns(editColumns, _.cloneDeep([...editPrimaryKeyColumns, ...editNonPrimaryKeyColumns]))
+  //   : bodyColumns(columns, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
+
+  let data = bodyColumns(columns, arrayOfTableColumns);
 
   const validateTableName = () => {
     if (isEmpty(tableName)) {
@@ -259,7 +275,7 @@ const TableForm = ({
             </div>
           </div>
         </div>
-        <CreateColumnsForm columns={columns} setColumns={setColumns} isEditMode={isEditMode} />
+        <CreateColumnsForm columns={columns} setColumns={setColumns} isEditMode={isEditMode} editColumns={columns} />
       </div>
       <DrawerFooter
         fetching={fetching}

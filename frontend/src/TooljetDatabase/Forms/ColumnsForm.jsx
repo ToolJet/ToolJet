@@ -6,7 +6,7 @@ import ForeignKeyRelation from './ForeignKeyRelation';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-const ColumnsForm = ({ columns, setColumns, isEditMode }) => {
+const ColumnsForm = ({ columns, setColumns, isEditMode, editColumns }) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
   const [indexHoveredColumn, setIndexHoveredColumn] = useState(null);
 
@@ -25,6 +25,11 @@ const ColumnsForm = ({ columns, setColumns, isEditMode }) => {
       setIndexHoveredColumn(null);
     }
   };
+  // const handleDeleteEditColumn = (index) => {
+  //   const newColumns = { ...editColumns };
+  //   delete newColumns[index];
+  //   setColumns(newColumns);
+  // };
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -62,6 +67,7 @@ const ColumnsForm = ({ columns, setColumns, isEditMode }) => {
 
         <TableSchema
           columns={columns}
+          editColumns={editColumns}
           setColumns={setColumns}
           darkMode={darkMode}
           columnSelection={columnSelection}

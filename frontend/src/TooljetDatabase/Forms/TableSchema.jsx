@@ -21,6 +21,7 @@ function TableSchema({
   isEditMode,
   isActiveForeignKey,
   indexHover,
+  editColumns,
 }) {
   const { Option } = components;
 
@@ -42,17 +43,6 @@ function TableSchema({
   const darkBorder = '#dadcde';
   const dropdownContainerWidth = '360px';
 
-  const primaryKeyColumns = [];
-  const nonPrimaryKeyColumns = [];
-  Object.values(columns).forEach((column) => {
-    if (column?.constraints_type?.is_primary_key) {
-      primaryKeyColumns.push({ ...column });
-    } else {
-      nonPrimaryKeyColumns.push({ ...column });
-    }
-  });
-
-  const editColumns = Object.assign({}, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
   const columnDetails = isEditMode ? editColumns : columns;
 
   const CustomSelectOption = (props) => {
@@ -171,6 +161,7 @@ function TableSchema({
                     }));
                     const prevColumns = { ...columnDetails };
                     prevColumns[index].data_type = value ? value.value : null;
+                    prevColumns[index].column_default = value.value === 'serial' ? 'Auto-generated' : null;
                     prevColumns[index].dataTypeDetails = value;
                     const columnConstraints = prevColumns[index]?.constraints_type ?? {};
                     columnConstraints.is_not_null =
@@ -245,9 +236,9 @@ function TableSchema({
                   value={
                     columnDetails[index].data_type === 'serial'
                       ? 'Auto-generated'
-                      : checkDefaultValue(columnDetails[index].column_default)
-                      ? null
-                      : columnDetails[index].column_default
+                      : // : checkDefaultValue(columnDetails[index].column_default)
+                        // ? null
+                        columnDetails[index].column_default
                   }
                   type="text"
                   className="form-control defaultValue"
