@@ -290,7 +290,9 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
                 <input
                   className="form-check-input"
                   type="checkbox"
-                  checked={isUniqueConstraint}
+                  checked={
+                    !isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key ? true : isUniqueConstraint
+                  }
                   onChange={(e) => {
                     setIsUniqueConstraint(e.target.checked);
                   }}

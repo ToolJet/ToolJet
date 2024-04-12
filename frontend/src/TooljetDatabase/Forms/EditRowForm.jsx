@@ -218,6 +218,18 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
   let matchingObject = {};
   let matchingObjectForCharacter = {};
 
+  const primaryKeyColumns = [];
+  const nonPrimaryKeyColumns = [];
+  columns.forEach((column) => {
+    if (column?.constraints_type?.is_primary_key) {
+      primaryKeyColumns.push({ ...column });
+    } else {
+      nonPrimaryKeyColumns.push({ ...column });
+    }
+  });
+
+  const editRowColumns = [...primaryKeyColumns, ...nonPrimaryKeyColumns];
+
   columns.forEach((obj) => {
     const keyName = Object.values(obj)[0];
     const dataType = Object.values(obj)[2];
@@ -244,8 +256,8 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
       <div className="card-body">
         <div>
           {selectedRowObj &&
-            Array.isArray(columns) &&
-            columns?.map(({ Header, accessor, dataType, column_default, constraints_type }, index) => {
+            Array.isArray(editRowColumns) &&
+            editRowColumns?.map(({ Header, accessor, dataType, column_default, constraints_type }, index) => {
               const currentValue = selectedRowObj[accessor];
               const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);
               const isPrimaryKey = constraints_type?.is_primary_key ?? false;

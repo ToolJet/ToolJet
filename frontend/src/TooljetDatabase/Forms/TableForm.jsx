@@ -41,6 +41,18 @@ const TableForm = ({
     toast.dismiss();
   }, []);
 
+  const primaryKeyColumns = [];
+  const nonPrimaryKeyColumns = [];
+  arrayOfTableColumns.forEach((column) => {
+    if (column?.constraints_type?.is_primary_key) {
+      primaryKeyColumns.push({ ...column });
+    } else {
+      nonPrimaryKeyColumns.push({ ...column });
+    }
+  });
+
+  // console.log('first', [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
+
   function bodyColumns(columns, arrayOfTableColumns) {
     let newArray = [];
 
@@ -79,7 +91,7 @@ const TableForm = ({
     return newArray;
   }
 
-  let data = bodyColumns(columns, arrayOfTableColumns);
+  let data = bodyColumns(columns, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
 
   const validateTableName = () => {
     if (isEmpty(tableName)) {

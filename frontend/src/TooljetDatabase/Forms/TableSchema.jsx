@@ -31,27 +31,20 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
   const darkBorder = '#dadcde';
   const dropdownContainerWidth = '360px';
 
-  // const keyColumns = Object.values(columns).sort((a, b) => {
-  //   const isPrimaryKey1 = a?.constraints_type?.is_primary_key;
-  //   const isPrimaryKey2 = b?.constraints_type?.is_primary_key;
-  //   if (isPrimaryKey1 && !isPrimaryKey2) {
-  //     return -1;
-  //   } else if (!isPrimaryKey1 && isPrimaryKey2) {
-  //     return 1;
-  //   } else {
-  //     return 0;
-  //   }
-  // });
+  const primaryKeyColumns = [];
+  const nonPrimaryKeyColumns = [];
+  Object.values(columns).forEach((column) => {
+    if (column?.constraints_type?.is_primary_key) {
+      primaryKeyColumns.push({ ...column });
+    } else {
+      nonPrimaryKeyColumns.push({ ...column });
+    }
+  });
 
-  // const editColumns = Object.assign({}, keyColumns);
-  const editColumns = Object.assign({}, columns);
+  const editColumns = Object.assign({}, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
   const columnDetails = isEditMode ? editColumns : columns;
 
   const CustomSelectOption = (props) => {
-    // const isCheckDataType = getColumnDataType({
-    //   data_type: columnDetails[columnSelection.index]?.data_type,
-    //   column_default: columnDetails[columnSelection.index]?.column_default,
-    // });
     return (
       <Option {...props}>
         <div className="selected-dropdownStyle d-flex align-items-center justify-content-between">
