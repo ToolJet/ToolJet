@@ -21,6 +21,7 @@ import allPlugins from '@tooljet/plugins/dist/server';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { RequestContext } from 'src/models/request-context.model';
+import { DataQueryStatus } from 'src/models/data_query_status.model';
 
 @Injectable()
 export class DataQueriesService {
@@ -137,170 +138,192 @@ export class DataQueriesService {
   };
 
   async runQuery(user: User, dataQuery: any, queryOptions: object, environmentId?: string): Promise<object> {
-    const dataSource: DataSource = dataQuery?.dataSource;
-
-    const app: App = dataQuery?.app;
-    if (!(dataSource && app)) {
-      throw new UnauthorizedException();
-    }
-    const organizationId = user ? user.organizationId : app.organizationId;
-
-    const dataSourceOptions = await this.appEnvironmentService.getOptions(dataSource.id, organizationId, environmentId);
-    dataSource.options = dataSourceOptions.options;
-
-    let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
-      dataSource,
-      dataQuery,
-      queryOptions,
-      organizationId,
-      environmentId
-    );
     let result;
+    const queryStatus = new DataQueryStatus();
 
     try {
-      // multi-auth will not work with public apps
-      if (app?.isPublic && sourceOptions['multiple_auth_enabled']) {
-        throw new QueryError(
-          'Authentication required for all users should be turned off since the app is public',
-          '',
-          {}
-        );
-      }
+      const dataSource: DataSource = dataQuery?.dataSource;
 
-      if (dataSource.kind === 'restapi') {
-        const customXFFHeader = ['tj-x-forwarded-for', requestIp.getClientIp(RequestContext?.currentContext?.req)];
-        if (!sourceOptions['headers']) {
-          sourceOptions['headers'] = [customXFFHeader];
-        } else {
-          sourceOptions['headers'].push(customXFFHeader);
-        }
+      const app: App = dataQuery?.app;
+      if (!(dataSource && app)) {
+        throw new UnauthorizedException();
       }
+      const organizationId = user ? user.organizationId : app.organizationId;
 
-      result = await service.run(
-        sourceOptions,
-        parsedQueryOptions,
-        `${dataSource.id}-${dataSourceOptions.environmentId}`,
-        dataSourceOptions.updatedAt,
-        {
-          user: { id: user?.id },
-          app: { id: app?.id, isPublic: app?.isPublic },
-        }
+      const dataSourceOptions = await this.appEnvironmentService.getOptions(
+        dataSource.id,
+        organizationId,
+        environmentId
       );
-    } catch (api_error) {
-      if (api_error.constructor.name === 'OAuthUnauthorizedClientError') {
-        const currentUserToken = sourceOptions['refresh_token']
-          ? sourceOptions
-          : this.getCurrentUserToken(
-              sourceOptions['multiple_auth_enabled'],
-              sourceOptions['tokenData'],
-              user?.id,
-              app?.isPublic
-            );
-        if (currentUserToken && currentUserToken['refresh_token']) {
-          console.log('Access token expired. Attempting refresh token flow.');
-          let accessTokenDetails;
-          try {
-            accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, app?.isPublic);
-          } catch (error) {
-            if (error.constructor.name === 'OAuthUnauthorizedClientError') {
-              // unauthorized error need to re-authenticate
-              return {
-                status: 'needs_oauth',
-                data: {
-                  auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
-                },
-              };
+      dataSource.options = dataSourceOptions.options;
+
+      let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
+        dataSource,
+        dataQuery,
+        queryOptions,
+        organizationId,
+        environmentId
+      );
+
+      queryStatus.setOptions(parsedQueryOptions);
+
+      try {
+        // multi-auth will not work with public apps
+        if (app?.isPublic && sourceOptions['multiple_auth_enabled']) {
+          throw new QueryError(
+            'Authentication required for all users should be turned off since the app is public',
+            '',
+            {}
+          );
+        }
+
+        if (dataSource.kind === 'restapi') {
+          const customXFFHeader = ['tj-x-forwarded-for', requestIp.getClientIp(RequestContext?.currentContext?.req)];
+          if (!sourceOptions['headers']) {
+            sourceOptions['headers'] = [customXFFHeader];
+          } else {
+            sourceOptions['headers'].push(customXFFHeader);
+          }
+        }
+
+        result = await service.run(
+          sourceOptions,
+          parsedQueryOptions,
+          `${dataSource.id}-${dataSourceOptions.environmentId}`,
+          dataSourceOptions.updatedAt,
+          {
+            user: { id: user?.id },
+            app: { id: app?.id, isPublic: app?.isPublic },
+          }
+        );
+      } catch (api_error) {
+        if (api_error.constructor.name === 'OAuthUnauthorizedClientError') {
+          const currentUserToken = sourceOptions['refresh_token']
+            ? sourceOptions
+            : this.getCurrentUserToken(
+                sourceOptions['multiple_auth_enabled'],
+                sourceOptions['tokenData'],
+                user?.id,
+                app?.isPublic
+              );
+          if (currentUserToken && currentUserToken['refresh_token']) {
+            console.log('Access token expired. Attempting refresh token flow.');
+            let accessTokenDetails;
+            try {
+              accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, app?.isPublic);
+            } catch (error) {
+              if (error.constructor.name === 'OAuthUnauthorizedClientError') {
+                // unauthorized error need to re-authenticate
+                queryStatus.setSuccess('needs_oauth');
+                return {
+                  status: 'needs_oauth',
+                  data: {
+                    auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
+                  },
+                };
+              }
+              throw new QueryError(
+                `API Error: ${api_error.message}. Refresh Token Error: ${error.message}`,
+                `API Error: ${api_error.description}. Refresh Token Error: ${error.description}`,
+                {
+                  requestObject: {
+                    api: api_error.data?.requestObject,
+                    refresh_token: error.data?.requestObject,
+                  },
+                  responseObject: {
+                    api: api_error.data?.responseObject,
+                    refresh_token: error.data?.responseObject,
+                  },
+                  responseHeaders: {
+                    api: api_error.data?.responseHeaders,
+                    refresh_token: error.data?.responseHeaders,
+                  },
+                }
+              );
             }
-            throw new QueryError(
-              `API Error: ${api_error.message}. Refresh Token Error: ${error.message}`,
-              `API Error: ${api_error.description}. Refresh Token Error: ${error.description}`,
+
+            await this.dataSourcesService.updateOAuthAccessToken(
+              accessTokenDetails,
+              dataSource.options,
+              dataSource.id,
+              user?.id,
+              user?.organizationId,
+              environmentId
+            );
+            const dataSourceOptions = await this.appEnvironmentService.getOptions(
+              dataSource.id,
+              user.organizationId,
+              environmentId
+            );
+            dataSource.options = dataSourceOptions.options;
+
+            ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
+              dataSource,
+              dataQuery,
+              queryOptions,
+              organizationId,
+              environmentId
+            ));
+            queryStatus.setOptions(parsedQueryOptions);
+            result = await service.run(
+              sourceOptions,
+              parsedQueryOptions,
+              `${dataSource.id}-${dataSourceOptions.environmentId}`,
+              dataSourceOptions.updatedAt,
               {
-                requestObject: {
-                  api: api_error.data?.requestObject,
-                  refresh_token: error.data?.requestObject,
-                },
-                responseObject: {
-                  api: api_error.data?.responseObject,
-                  refresh_token: error.data?.responseObject,
-                },
-                responseHeaders: {
-                  api: api_error.data?.responseHeaders,
-                  refresh_token: error.data?.responseHeaders,
-                },
+                user: { id: user?.id },
+                app: { id: app?.id, isPublic: app?.isPublic },
               }
             );
-          }
-
-          await this.dataSourcesService.updateOAuthAccessToken(
-            accessTokenDetails,
-            dataSource.options,
-            dataSource.id,
-            user?.id,
-            user?.organizationId,
-            environmentId
-          );
-          const dataSourceOptions = await this.appEnvironmentService.getOptions(
-            dataSource.id,
-            user.organizationId,
-            environmentId
-          );
-          dataSource.options = dataSourceOptions.options;
-
-          ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
-            dataSource,
-            dataQuery,
-            queryOptions,
-            organizationId,
-            environmentId
-          ));
-          result = await service.run(
-            sourceOptions,
-            parsedQueryOptions,
-            `${dataSource.id}-${dataSourceOptions.environmentId}`,
-            dataSourceOptions.updatedAt,
-            {
-              user: { id: user?.id },
-              app: { id: app?.id, isPublic: app?.isPublic },
-            }
-          );
-        } else if (
-          dataSource.kind === 'restapi' ||
-          dataSource.kind === 'openapi' ||
-          dataSource.kind === 'graphql' ||
-          dataSource.kind === 'googlesheets' ||
-          dataSource.kind === 'slack' ||
-          dataSource.kind === 'zendesk'
-        ) {
-          return {
-            status: 'needs_oauth',
-            data: {
-              kind: dataSource.kind,
-              options: {
-                access_type: sourceOptions['access_type'],
+          } else if (
+            dataSource.kind === 'restapi' ||
+            dataSource.kind === 'openapi' ||
+            dataSource.kind === 'graphql' ||
+            dataSource.kind === 'googlesheets' ||
+            dataSource.kind === 'slack' ||
+            dataSource.kind === 'zendesk'
+          ) {
+            queryStatus.setSuccess('needs_oauth');
+            return {
+              status: 'needs_oauth',
+              data: {
+                kind: dataSource.kind,
+                options: {
+                  access_type: sourceOptions['access_type'],
+                },
+                auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
               },
-              auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
-            },
-          };
+            };
+          } else {
+            throw api_error;
+          }
         } else {
           throw api_error;
         }
-      } else {
-        throw api_error;
+      }
+      queryStatus.setSuccess();
+      return result;
+    } catch (queryError) {
+      queryStatus.setFailure({
+        message: queryError?.message,
+        description: queryError?.description,
+        data: queryError?.data,
+        stack: queryError?.stack,
+      });
+      throw queryError;
+    } finally {
+      if (user) {
+        await this.auditLoggerService.perform({
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: dataQuery?.id,
+          resourceName: dataQuery?.name,
+          resourceType: ResourceTypes.DATA_QUERY,
+          actionType: ActionTypes.DATA_QUERY_RUN,
+          metadata: queryStatus.getMetaData(),
+        });
       }
     }
-
-    if (user) {
-      await this.auditLoggerService.perform({
-        userId: user.id,
-        organizationId: user.organizationId,
-        resourceId: dataQuery?.id,
-        resourceName: dataQuery?.name,
-        resourceType: ResourceTypes.DATA_QUERY,
-        actionType: ActionTypes.DATA_QUERY_RUN,
-        metadata: { parsedQueryOptions },
-      });
-    }
-    return result;
   }
 
   checkIfContentTypeIsURLenc(headers: [] = []) {
@@ -539,7 +562,11 @@ export class DataQueriesService {
       );
 
       if (constant) {
-        result = constant.value;
+        result = await this.encryptionService.decryptColumnValue(
+          'org_environment_constant_values',
+          organization_id,
+          constant.value
+        );
       }
     }
 

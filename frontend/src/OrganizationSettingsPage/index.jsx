@@ -71,7 +71,7 @@ export function OrganizationSettings(props) {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
     });
-    updateSidebarNAV('Users');
+    admin ? updateSidebarNAV('Users') : updateSidebarNAV('Workspace variables');
 
     () => subscription.unsubsciption();
     // eslint-disable-next-line react-hooks/exhaustive-deps

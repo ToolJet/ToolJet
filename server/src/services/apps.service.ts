@@ -43,6 +43,7 @@ import { Layout } from 'src/entities/layout.entity';
 
 import { Component } from 'src/entities/component.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { AppBase } from 'src/entities/app_base.entity';
 
 const uuid = require('uuid');
 @Injectable()
@@ -250,7 +251,7 @@ export class AppsService {
     });
   };
 
-  async all(user: User, page: number, searchKey: string, type: string): Promise<App[]> {
+  async all(user: User, page: number, searchKey: string, type: string): Promise<AppBase[]> {
     const organizationId = user?.organizationId;
     const viewableAppsQb = viewableAppsQuery(
       user,

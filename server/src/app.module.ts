@@ -60,24 +60,6 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { InstanceLoginConfigsModule } from './modules/instance_login_configs/instance_login_configs.module';
 import { OrganizationPaymentModule } from './modules/organization_payment/organization_payment.module';
 
-const port = +process.env.SMTP_PORT || 587;
-const transport =
-  process.env.NODE_ENV === 'development'
-    ? {
-        host: 'localhost',
-        ignoreTLS: true,
-        secure: false,
-      }
-    : {
-        host: process.env.SMTP_DOMAIN,
-        port: port,
-        secure: port == 465,
-        auth: {
-          user: process.env.SMTP_USERNAME,
-          pass: process.env.SMTP_PASSWORD,
-        },
-      };
-
 const imports = [
   EventEmitterModule.forRoot({
     wildcard: false,
@@ -123,9 +105,23 @@ const imports = [
       redact: ['req.headers.authorization'],
     },
   }),
-
   MailerModule.forRoot({
-    transport: transport,
+    transport:
+      process.env.NODE_ENV === 'development'
+        ? {
+            host: 'localhost',
+            ignoreTLS: true,
+            secure: false,
+          }
+        : {
+            host: process.env.SMTP_DOMAIN,
+            port: +process.env.SMTP_PORT || 587,
+            secure: process.env.SMTP_SSL === 'true',
+            auth: {
+              user: process.env.SMTP_USERNAME,
+              pass: process.env.SMTP_PASSWORD,
+            },
+          },
     preview: process.env.NODE_ENV === 'development',
     template: {
       dir: join(__dirname, 'mails'),

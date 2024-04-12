@@ -35,6 +35,7 @@ describe("", () => {
 
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
+        updateLicense(Cypress.env("license-key"));
     });
     after(() => {
         updateLicense(Cypress.env("license-key"));
@@ -499,7 +500,6 @@ describe("", () => {
         data.dsName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.widgetName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.slug = `${fake.companyName.toLowerCase()}-app`;
-        updateLicense(Cypress.env("license-key"));
 
         cy.apiLogin();
         cy.apiCreateGDS(
@@ -805,7 +805,7 @@ describe("", () => {
         );
         cy.get(instanceSettingsSelector.allowWorkspaceToggle)
             .eq(0)
-            .should("be.enabled");
+            .should("be.checked");
         cy.get(instanceSettingsSelector.allowWorkspaceToggle)
             .eq(1)
             .should("be.enabled");

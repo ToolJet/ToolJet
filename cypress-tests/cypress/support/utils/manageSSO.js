@@ -656,6 +656,7 @@ export const deleteOrganisationSSO = (workspaceName, services) => {
   });
 };
 
+
 export const resetDomain = () => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request(

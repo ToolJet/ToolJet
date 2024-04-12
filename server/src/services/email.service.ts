@@ -21,6 +21,7 @@ handlebars.registerHelper('highlightMentionedUser', function (comment) {
   const regex = /(\()([^)]+)(\))/g;
   return comment.replace(regex, '<span style="color: #218DE3">$2</span>');
 });
+handlebars.registerHelper('eq', (a, b) => a == b);
 
 handlebars.registerHelper('eq', (a, b) => a == b);
 

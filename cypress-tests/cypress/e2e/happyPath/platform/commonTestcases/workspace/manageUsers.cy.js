@@ -24,6 +24,7 @@ describe("Manage Users", () => {
     userId,
     url = "";
   it("Should verify the Manage users page", () => {
+    cy.exec("cd ./cypress/downloads/ && rm -rf *");
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     common.navigateToManageUsers();

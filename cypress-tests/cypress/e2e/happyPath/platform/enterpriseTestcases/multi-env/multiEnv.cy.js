@@ -265,242 +265,6 @@ describe("Multi env", () => {
     ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
   });
 
-  it("Verify the multi env components UI", () => {
-    data.appName = `${fake.companyName} App`;
-    cy.apiCreateApp(data.appName);
-    cy.openApp();
-    cy.waitForAppLoad();
-    cy.dragAndDropWidget("Text", 550, 650);
-    cy.get(multiEnvSelector.envContainer).should("be.visible");
-    cy.get(multiEnvSelector.currentEnvName)
-      .verifyVisibleElement("have.text", "Development")
-      .click();
-    cy.get(multiEnvSelector.envArrow).should("be.visible");
-    cy.get(multiEnvSelector.selectedEnvName).verifyVisibleElement(
-      "have.text",
-      " Development"
-    );
-    cy.get(multiEnvSelector.envNameList)
-      .eq(0)
-      .verifyVisibleElement("have.text", "Development");
-    cy.get(multiEnvSelector.envNameList)
-      .eq(1)
-      .verifyVisibleElement("have.text", "Staging");
-    cy.get(multiEnvSelector.envNameList)
-      .eq(2)
-      .verifyVisibleElement("have.text", "Production");
-
-    verifyTooltip(
-      '[data-cy="env-name-dropdown"]:eq(1)',
-      "There are no versions in this environment"
-    );
-    verifyTooltip(
-      '[data-cy="env-name-dropdown"]:eq(2)',
-      "There are no versions in this environment"
-    );
-
-    cy.get(multiEnvSelector.appVersionLabel).should("be.visible");
-    cy.get('[data-cy="v1-current-version-text"]')
-      .verifyVisibleElement("have.text", "v1")
-      .click();
-    cy.get(multiEnvSelector.currentVersion).verifyVisibleElement(
-      "have.text",
-      "v1"
-    );
-    cy.get(".col-10 > .app-version-name").verifyVisibleElement(
-      "have.text",
-      "v1"
-    );
-    cy.get(multiEnvSelector.createNewVersionButton).verifyVisibleElement(
-      "have.text",
-      "Create new version"
-    );
-
-    verifyPromoteModalUI("v1", "Development", "Staging");
-    cy.get('[data-cy="env-change-info-text"]').verifyVisibleElement(
-      "have.text",
-      "You won’t be able to edit this version after promotion. Are you sure you want to continue?"
-    );
-    cy.get(commonSelectors.closeButton).click();
-    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
-      "have.text",
-      "Development"
-    );
-
-    cy.get(commonEeSelectors.promoteButton).click();
-    cy.get(commonSelectors.cancelButton).click();
-    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
-      "have.text",
-      "Development"
-    );
-
-    cy.get(commonEeSelectors.promoteButton).click();
-    cy.get(commonEeSelectors.promoteButton).eq(1).click();
-
-    cy.waitForAppLoad();
-    cy.wait(3000);
-
-    cy.get(commonSelectors.warningText).verifyVisibleElement(
-      "have.text",
-      "App cannot be edited after promotion. Please create a new version from Development to make any changes."
-    );
-    cy.get(multiEnvSelector.envContainer).should("be.visible");
-    cy.get(multiEnvSelector.currentEnvName)
-      .verifyVisibleElement("have.text", "Staging")
-      .click();
-    cy.get(multiEnvSelector.envArrow).should("be.visible");
-    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
-      "have.text",
-      "Staging"
-    );
-    cy.get(multiEnvSelector.envNameList)
-      .eq(0)
-      .verifyVisibleElement("have.text", "Development");
-    cy.get(multiEnvSelector.envNameList)
-      .eq(1)
-      .verifyVisibleElement("have.text", "Staging");
-    cy.get(multiEnvSelector.envNameList)
-      .eq(2)
-      .verifyVisibleElement("have.text", "Production");
-    verifyTooltip(
-      '[data-cy="env-name-dropdown"]:eq(2)',
-      "There are no versions in this environment"
-    );
-
-    cy.get(multiEnvSelector.appVersionLabel).should("be.visible");
-    cy.get('[data-cy="v1-current-version-text"]')
-      .verifyVisibleElement("have.text", "v1")
-      .click();
-    cy.get(multiEnvSelector.currentVersion).verifyVisibleElement(
-      "have.text",
-      "v1"
-    );
-    cy.get(".col-10 > .app-version-name").verifyVisibleElement(
-      "have.text",
-      "v1"
-    );
-    cy.get(multiEnvSelector.createNewVersionButton).verifyVisibleElement(
-      "have.text",
-      "Create new version"
-    );
-
-    verifyTooltip(
-      multiEnvSelector.createNewVersionButton,
-      "New versions can only be created in development"
-    );
-    cy.get(".datasource-picker").should("have.class", "disabled");
-    cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
-    cy.get(".components-container").should("have.class", "disabled");
-
-    verifyPromoteModalUI("v1", "Staging", "Production");
-    cy.get(commonSelectors.closeButton).click();
-    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
-      "have.text",
-      "Staging"
-    );
-
-    cy.get(commonEeSelectors.promoteButton).click();
-    cy.get(commonSelectors.cancelButton).click();
-    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
-      "have.text",
-      "Staging"
-    );
-
-    cy.get(commonEeSelectors.promoteButton).click();
-    cy.get(commonEeSelectors.promoteButton).eq(1).click();
-    cy.waitForAppLoad();
-    cy.wait(3000);
-
-    cy.get(commonSelectors.warningText).verifyVisibleElement(
-      "have.text",
-      "App cannot be edited after promotion. Please create a new version from Development to make any changes."
-    );
-    cy.get(multiEnvSelector.envContainer).should("be.visible");
-    cy.get(multiEnvSelector.currentEnvName)
-      .verifyVisibleElement("have.text", "Production")
-      .click();
-    cy.get(multiEnvSelector.envArrow).should("be.visible");
-    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
-      "have.text",
-      "Production"
-    );
-    cy.get(multiEnvSelector.envNameList)
-      .eq(0)
-      .verifyVisibleElement("have.text", "Development");
-    cy.get(multiEnvSelector.envNameList)
-      .eq(1)
-      .verifyVisibleElement("have.text", "Staging");
-    cy.get(multiEnvSelector.envNameList)
-      .eq(2)
-      .verifyVisibleElement("have.text", "Production");
-
-    cy.get(multiEnvSelector.appVersionLabel).should("be.visible");
-    cy.get('[data-cy="v1-current-version-text"]')
-      .verifyVisibleElement("have.text", "v1")
-      .click();
-    cy.get(multiEnvSelector.currentVersion).verifyVisibleElement(
-      "have.text",
-      "v1"
-    );
-    cy.get(".col-10 > .app-version-name").verifyVisibleElement(
-      "have.text",
-      "v1"
-    );
-    cy.get(multiEnvSelector.createNewVersionButton).verifyVisibleElement(
-      "have.text",
-      "Create new version"
-    );
-
-    cy.get(commonSelectors.releaseButton)
-      .verifyVisibleElement("have.text", "Release")
-      .click();
-    cy.get('[data-cy="modal-title"]').verifyVisibleElement(
-      "have.text",
-      "Release Version"
-    );
-    cy.get(commonSelectors.closeButton).should("be.visible");
-    cy.get('[data-cy="confirm-dialogue-box-text"]').verifyVisibleElement(
-      "have.text",
-      "Are you sure you want to release this version?"
-    );
-    cy.get(commonSelectors.cancelButton).verifyVisibleElement(
-      "have.text",
-      "Cancel"
-    );
-    cy.get(commonSelectors.yesButton).verifyVisibleElement("have.text", "Yes");
-
-    cy.get(commonSelectors.closeButton).click();
-    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
-      "have.text",
-      "Production"
-    );
-
-    cy.get(commonSelectors.releaseButton).click();
-    cy.get(commonSelectors.cancelButton).click();
-    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
-      "have.text",
-      "Production"
-    );
-
-    cy.get(commonSelectors.releaseButton).click();
-    cy.get(commonSelectors.yesButton).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
-    cy.wait(500);
-    cy.get(commonSelectors.warningText).verifyVisibleElement(
-      "have.text",
-      "This version of the app is released. Please create a new version in development to make any changes."
-    );
-    cy.get('[data-cy="v1-current-version-text"]').click();
-    verifyTooltip(
-      multiEnvSelector.createNewVersionButton,
-      "New versions can only be created in development"
-    );
-    cy.get(".datasource-picker").should("have.class", "disabled");
-    cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
-    cy.get(".components-container").should("have.class", "disabled");
-    cy.get(commonSelectors.releaseButton).should("be.disabled");
-  });
-
   it("should verify edit privilages of a promoted version", () => {
     data.appName = `${fake.companyName} App`;
     cy.apiCreateApp(data.appName);
@@ -654,4 +418,241 @@ describe("Multi env", () => {
       "Staging"
     );
   })
+
+  it("Verify the multi env components UI", () => {
+    data.appName = `${fake.companyName} App`;
+    cy.apiCreateApp(data.appName);
+    cy.openApp();
+    cy.waitForAppLoad();
+    cy.dragAndDropWidget("Text", 550, 650);
+    cy.get(multiEnvSelector.envContainer).should("be.visible");
+    cy.get(multiEnvSelector.currentEnvName)
+      .verifyVisibleElement("have.text", "Development")
+      .click();
+    cy.get(multiEnvSelector.envArrow).should("be.visible");
+    cy.get(multiEnvSelector.selectedEnvName).verifyVisibleElement(
+      "have.text",
+      " Development"
+    );
+    cy.get(multiEnvSelector.envNameList)
+      .eq(0)
+      .verifyVisibleElement("have.text", "Development");
+    cy.get(multiEnvSelector.envNameList)
+      .eq(1)
+      .verifyVisibleElement("have.text", "Staging");
+    cy.get(multiEnvSelector.envNameList)
+      .eq(2)
+      .verifyVisibleElement("have.text", "Production");
+
+    verifyTooltip(
+      '[data-cy="env-name-dropdown"]:eq(1)',
+      "There are no versions in this environment"
+    );
+    verifyTooltip(
+      '[data-cy="env-name-dropdown"]:eq(2)',
+      "There are no versions in this environment"
+    );
+
+    cy.get(multiEnvSelector.appVersionLabel).should("be.visible");
+    cy.get('[data-cy="v1-current-version-text"]')
+      .verifyVisibleElement("have.text", "v1")
+      .click();
+    cy.get(multiEnvSelector.currentVersion).verifyVisibleElement(
+      "have.text",
+      "v1"
+    );
+    cy.get(".col-10 > .app-version-name").verifyVisibleElement(
+      "have.text",
+      "v1"
+    );
+    cy.get(multiEnvSelector.createNewVersionButton).verifyVisibleElement(
+      "have.text",
+      "Create new version"
+    );
+
+    verifyPromoteModalUI("v1", "Development", "Staging");
+    cy.get('[data-cy="env-change-info-text"]').verifyVisibleElement(
+      "have.text",
+      "You won’t be able to edit this version after promotion. Are you sure you want to continue?"
+    );
+    cy.get(commonSelectors.closeButton).click();
+    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
+      "have.text",
+      "Development"
+    );
+
+    cy.get(commonEeSelectors.promoteButton).click();
+    cy.get(commonSelectors.cancelButton).click();
+    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
+      "have.text",
+      "Development"
+    );
+
+    cy.get(commonEeSelectors.promoteButton).click();
+    cy.get(commonEeSelectors.promoteButton).eq(1).click();
+
+    cy.waitForAppLoad();
+    cy.wait(3000);
+
+    cy.get(commonSelectors.warningText).verifyVisibleElement(
+      "have.text",
+      "App cannot be edited after promotion. Please create a new version from Development to make any changes."
+    );
+    cy.get(multiEnvSelector.envContainer).should("be.visible");
+    cy.get(multiEnvSelector.currentEnvName)
+      .verifyVisibleElement("have.text", "Staging")
+      .click();
+    cy.get(multiEnvSelector.envArrow).should("be.visible");
+    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
+      "have.text",
+      "Staging"
+    );
+    cy.get(multiEnvSelector.envNameList)
+      .eq(0)
+      .verifyVisibleElement("have.text", "Development");
+    cy.get(multiEnvSelector.envNameList)
+      .eq(1)
+      .verifyVisibleElement("have.text", "Staging");
+    cy.get(multiEnvSelector.envNameList)
+      .eq(2)
+      .verifyVisibleElement("have.text", "Production");
+    cy.wait(2000)
+    verifyTooltip(
+      '[data-cy="env-name-dropdown"]:eq(2)',
+      "There are no versions in this environment"
+    );
+
+    cy.get(multiEnvSelector.appVersionLabel).should("be.visible");
+    cy.get('[data-cy="v1-current-version-text"]')
+      .verifyVisibleElement("have.text", "v1")
+      .click();
+    cy.get(multiEnvSelector.currentVersion).verifyVisibleElement(
+      "have.text",
+      "v1"
+    );
+    cy.get(".col-10 > .app-version-name").verifyVisibleElement(
+      "have.text",
+      "v1"
+    );
+    cy.get(multiEnvSelector.createNewVersionButton).verifyVisibleElement(
+      "have.text",
+      "Create new version"
+    );
+
+    verifyTooltip(
+      multiEnvSelector.createNewVersionButton,
+      "New versions can only be created in development"
+    );
+    cy.get(".datasource-picker").should("have.class", "disabled");
+    cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
+    cy.get(".components-container").should("have.class", "disabled");
+
+    verifyPromoteModalUI("v1", "Staging", "Production");
+    cy.get(commonSelectors.closeButton).click();
+    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
+      "have.text",
+      "Staging"
+    );
+
+    cy.get(commonEeSelectors.promoteButton).click();
+    cy.get(commonSelectors.cancelButton).click();
+    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
+      "have.text",
+      "Staging"
+    );
+
+    cy.get(commonEeSelectors.promoteButton).click();
+    cy.get(commonEeSelectors.promoteButton).eq(1).click();
+    cy.waitForAppLoad();
+    cy.wait(3000);
+
+    cy.get(commonSelectors.warningText).verifyVisibleElement(
+      "have.text",
+      "App cannot be edited after promotion. Please create a new version from Development to make any changes."
+    );
+    cy.get(multiEnvSelector.envContainer).should("be.visible");
+    cy.get(multiEnvSelector.currentEnvName)
+      .verifyVisibleElement("have.text", "Production")
+      .click();
+    cy.get(multiEnvSelector.envArrow).should("be.visible");
+    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
+      "have.text",
+      "Production"
+    );
+    cy.get(multiEnvSelector.envNameList)
+      .eq(0)
+      .verifyVisibleElement("have.text", "Development");
+    cy.get(multiEnvSelector.envNameList)
+      .eq(1)
+      .verifyVisibleElement("have.text", "Staging");
+    cy.get(multiEnvSelector.envNameList)
+      .eq(2)
+      .verifyVisibleElement("have.text", "Production");
+
+    cy.get(multiEnvSelector.appVersionLabel).should("be.visible");
+    cy.get('[data-cy="v1-current-version-text"]')
+      .verifyVisibleElement("have.text", "v1")
+      .click();
+    cy.get(multiEnvSelector.currentVersion).verifyVisibleElement(
+      "have.text",
+      "v1"
+    );
+    cy.get(".col-10 > .app-version-name").verifyVisibleElement(
+      "have.text",
+      "v1"
+    );
+    cy.get(multiEnvSelector.createNewVersionButton).verifyVisibleElement(
+      "have.text",
+      "Create new version"
+    );
+
+    cy.get(commonSelectors.releaseButton)
+      .verifyVisibleElement("have.text", "Release")
+      .click();
+    cy.get('[data-cy="modal-title"]').verifyVisibleElement(
+      "have.text",
+      "Release Version"
+    );
+    cy.get(commonSelectors.closeButton).should("be.visible");
+    cy.get('[data-cy="confirm-dialogue-box-text"]').verifyVisibleElement(
+      "have.text",
+      "Are you sure you want to release this version?"
+    );
+    cy.get(commonSelectors.cancelButton).verifyVisibleElement(
+      "have.text",
+      "Cancel"
+    );
+    cy.get(commonSelectors.yesButton).verifyVisibleElement("have.text", "Yes");
+
+    cy.get(commonSelectors.closeButton).click();
+    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
+      "have.text",
+      "Production"
+    );
+
+    cy.get(commonSelectors.releaseButton).click();
+    cy.get(commonSelectors.cancelButton).click();
+    cy.get(multiEnvSelector.currentEnvName).verifyVisibleElement(
+      "have.text",
+      "Production"
+    );
+
+    cy.get(commonSelectors.releaseButton).click();
+    cy.get(commonSelectors.yesButton).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
+    cy.wait(500);
+    cy.get(commonSelectors.warningText).verifyVisibleElement(
+      "have.text",
+      "This version of the app is released. Please create a new version in development to make any changes."
+    );
+    cy.get('[data-cy="v1-current-version-text"]').click();
+    verifyTooltip(
+      multiEnvSelector.createNewVersionButton,
+      "New versions can only be created in development"
+    );
+    cy.get(".datasource-picker").should("have.class", "disabled");
+    cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
+    cy.get(".components-container").should("have.class", "disabled");
+    cy.get(commonSelectors.releaseButton).should("be.disabled");
+  });
 });
