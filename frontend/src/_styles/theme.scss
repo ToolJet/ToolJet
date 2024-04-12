@@ -12503,7 +12503,7 @@ tbody {
   }
 
   .group-chip {
-    padding: 5px 8px;
+    padding: 2px 8px;
     border-radius: 6px;
     background-color: var(--slate3);
     color: var(--slate11);
@@ -12511,6 +12511,7 @@ tbody {
     overflow: hidden;
     white-space: nowrap;
     max-width: 95px;
+    min-height: 22px;
   }
 
   .all-groups-list {
