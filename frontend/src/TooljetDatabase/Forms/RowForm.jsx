@@ -36,7 +36,11 @@ const RowForm = ({ onCreate, onClose }) => {
             return { value: '', checkboxValue: false, disabled: false };
           }
           if (item.column_default !== null) {
-            return { value: item.column_default || '', checkboxValue: item.column_default, disabled: true };
+            return {
+              value: item.column_default || '',
+              checkboxValue: item.column_default === 'true' ? true : false,
+              disabled: true,
+            };
           } else if (item.constraints_type.is_not_null === false) {
             return { value: '', checkboxValue: false, disabled: false };
           }
@@ -44,6 +48,12 @@ const RowForm = ({ onCreate, onClose }) => {
         })
       : []
   );
+
+  useEffect(() => {
+    columns.map(({ accessor, dataType, column_default }, index) => {
+      saveData(dataType, accessor, inputValues, index, column_default);
+    });
+  }, []);
 
   const [data, setData] = useState(() => {
     const data = {};
@@ -62,7 +72,7 @@ const RowForm = ({ onCreate, onClose }) => {
     newActiveTabs[index] = tabData;
     setActiveTab(newActiveTabs);
     const newInputValues = [...inputValues];
-    const actualDefaultVal = defaultValue === 'true' ? true : false;
+    const actualDefaultVal = defaultValue;
     if (defaultValue && tabData === 'Default' && dataType !== 'boolean') {
       newInputValues[index] = { value: defaultValue, checkboxValue: defaultValue, disabled: true };
     } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
@@ -77,20 +87,24 @@ const RowForm = ({ onCreate, onClose }) => {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false };
     }
     setInputValues(newInputValues);
+    saveData(dataType, columnName, newInputValues, index, defaultValue);
+  };
+
+  const saveData = (dataType, accessor, inputValuesArr, index, defaultVal) => {
     if (dataType === 'boolean') {
       setData({
         ...data,
-        [columnName]: newInputValues[index].checkboxValue === null ? null : newInputValues[index].checkboxValue,
+        [accessor]: inputValuesArr[index].checkboxValue === null ? null : inputValuesArr[index].checkboxValue,
       });
     } else {
       setData({
         ...data,
-        [columnName]:
-          newInputValues[index].value === null
+        [accessor]:
+          inputValuesArr[index].value === null
             ? null
-            : newInputValues[index].value === 'Default'
-            ? defaultValue
-            : newInputValues[index].value,
+            : inputValuesArr[index].value === 'Default'
+            ? defaultVal
+            : inputValuesArr[index].value,
       });
     }
   };
@@ -183,7 +197,7 @@ const RowForm = ({ onCreate, onClose }) => {
               className="form-check-input"
               data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-check-input`}
               type="checkbox"
-              checked={inputValues[index].checkboxValue === 'true' ? true : false}
+              checked={inputValues[index].checkboxValue}
               onChange={(e) => {
                 if (!inputValues[index].disabled) handleCheckboxChange(index, e.target.checked, columnName);
               }}
