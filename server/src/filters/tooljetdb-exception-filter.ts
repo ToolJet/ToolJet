@@ -20,7 +20,8 @@ export class TooljetDbExceptionFilter implements ExceptionFilter {
       if (Array.isArray(exception.response.message)) {
         const totalErrors = exception.response.message.length;
         const firstErrorMessage = exception.response.message[0];
-        const strippedErrorMessage = `Error: ${firstErrorMessage} (1/${totalErrors})`;
+        const strippedErrorMessage =
+          totalErrors > 1 ? `Error: ${firstErrorMessage} (1/${totalErrors})` : `Error: ${firstErrorMessage}`;
         exception.response.message = strippedErrorMessage;
       }
 
