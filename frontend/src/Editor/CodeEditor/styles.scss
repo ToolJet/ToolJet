@@ -38,7 +38,6 @@
     border: 1px solid var(--Border-week, #E4E7EB) !important;
     border-radius: 6px !important;
     box-shadow: 0px 4px 8px 0px rgba(48, 49, 51, 0.10), 0px 0px 1px 0px rgba(48, 49, 51, 0.05);
-    position: absolute !important;
     z-index: 99999 !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
@@ -209,8 +208,7 @@
 
     .cm-tooltip-autocomplete {
         @extend .cm-base-autocomplete;
-        left: 0 !important;
-        top: 35px !important;
+        margin-top: 13px;
     }
 
     .cm-editor {
