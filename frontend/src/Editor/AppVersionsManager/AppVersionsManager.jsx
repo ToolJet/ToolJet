@@ -7,6 +7,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import { shallow } from 'zustand/shallow';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 export const AppVersionsManager = function ({
   appId,
@@ -108,6 +109,16 @@ export const AppVersionsManager = function ({
     isUserSwitchedVersion = false,
     canLoadSameEnv = false
   ) => {
+    const currentVersionId = useAppDataStore.getState().currentVersionId;
+
+    const isSameVersionSelected = currentVersionId === id;
+
+    if (isSameVersionSelected) {
+      return toast('You are already editing this version', {
+        icon: '⚠️',
+      });
+    }
+
     return appVersionService
       .getAppVersionData(appId, id)
       .then((data) => {

@@ -34,15 +34,9 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
 
   useEffect(() => {
     if (typeof initialValue !== 'string') return;
-
-    if (fxActive && initialValue?.startsWith('{{')) {
-      const _value = initialValue?.replace(/{{/g, '').replace(/}}/g, '');
-      return setCurrentValue(_value);
-    }
-
     setCurrentValue(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [componentName, initialValue, fxActive]);
+  }, [componentName, initialValue]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -80,7 +74,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
         componentId={restProps?.componentId ?? null}
-        fxActive={fxActive}
+        // fxActive={fxActive}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
@@ -99,7 +93,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, fxAc
               cyLabel={restProps.cyLabel}
               portalProps={portalProps}
               componentName={componentName}
-              fxActive={fxActive}
               {...restProps}
             />
           </div>
@@ -124,7 +117,6 @@ const EditorInput = ({
   renderPreview,
   portalProps,
   ignoreValidation,
-  fxActive,
   lang,
   isFocused,
   componentId,
@@ -138,15 +130,15 @@ const EditorInput = ({
 
     if (totalReferences > 1) {
       const currentWord = queryInput.split('{{').pop().split('}}')[0];
-      queryInput = fxActive ? currentWord : `{{${currentWord}}}`;
+      queryInput = '{{' + currentWord + '}}';
     }
 
-    let completions = getAutocompletion(queryInput, validationType, hints, fxActive, totalReferences);
+    let completions = getAutocompletion(queryInput, validationType, hints, totalReferences);
 
     return {
       from: word.from,
       options: completions,
-      validFor: !fxActive ? /^\{\{.*\}\}$/ : '',
+      validFor: /^\{\{.*\}\}$/,
     };
   }
 
@@ -168,18 +160,17 @@ const EditorInput = ({
     setCurrentValue(val);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   const handleOnBlur = React.useCallback(() => {
     setFirstTimeFocus(false);
     if (ignoreValidation) {
       return onBlurUpdate(currentValue);
     }
-
-    if (!error) {
-      const _value = fxActive ? `{{${currentValue}}}` : currentValue;
-
-      onBlurUpdate(_value);
-    }
+    setTimeout(() => {
+      if (!error || currentValue == '') {
+        const _value = currentValue;
+        onBlurUpdate(_value);
+      }
+    }, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentValue, error]);
 

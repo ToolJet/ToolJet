@@ -3,7 +3,7 @@ import moment from 'moment';
 import _, { isEmpty } from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
-import { previewQuery, executeAction } from '@/_helpers/appUtils';
+import { executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
@@ -15,6 +15,7 @@ import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 
+const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
@@ -160,7 +161,7 @@ export function resolveReferences(
   forPreviewBox = false
 ) {
   if (object === '{{{}}}') return '';
-  const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
+
   object = _.clone(object);
   const objectType = typeof object;
   let error;
@@ -326,10 +327,11 @@ export const serializeNestedObjectToQueryParams = function (obj, prefix) {
   return str.join('&');
 };
 
-export function resolveWidgetFieldValue(prop, state, _default = [], customResolveObjects = {}) {
+export function resolveWidgetFieldValue(prop, _default = [], customResolveObjects = {}) {
   const widgetFieldValue = prop;
 
   try {
+    const state = getCurrentState();
     return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
     console.log(err);
@@ -349,7 +351,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const maxValue = validationObject?.maxValue?.value;
   const customRule = validationObject?.customRule?.value;
   const mandatory = validationObject?.mandatory?.value;
-  const validationRegex = resolveWidgetFieldValue(regex, currentState, '', customResolveObjects);
+  const validationRegex = resolveWidgetFieldValue(regex, '', customResolveObjects);
   const re = new RegExp(validationRegex, 'g');
 
   if (!re.test(widgetValue)) {
@@ -359,7 +361,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     };
   }
 
-  const resolvedMinLength = resolveWidgetFieldValue(minLength, currentState, 0, customResolveObjects);
+  const resolvedMinLength = resolveWidgetFieldValue(minLength, 0, customResolveObjects);
   if ((widgetValue || '').length < parseInt(resolvedMinLength)) {
     return {
       isValid: false,
@@ -367,7 +369,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     };
   }
 
-  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, currentState, undefined, customResolveObjects);
+  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, undefined, customResolveObjects);
   if (resolvedMaxLength !== undefined) {
     if ((widgetValue || '').length > parseInt(resolvedMaxLength)) {
       return {
@@ -377,7 +379,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     }
   }
 
-  const resolvedMinValue = resolveWidgetFieldValue(minValue, currentState, undefined, customResolveObjects);
+  const resolvedMinValue = resolveWidgetFieldValue(minValue, undefined, customResolveObjects);
   if (resolvedMinValue !== undefined) {
     if (widgetValue === undefined || widgetValue < parseFloat(resolvedMinValue)) {
       return {
@@ -397,12 +399,12 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     }
   }
 
-  const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
+  const resolvedCustomRule = resolveWidgetFieldValue(customRule, false, customResolveObjects);
   if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
     return { isValid: false, validationError: resolvedCustomRule };
   }
 
-  const resolvedMandatory = resolveWidgetFieldValue(mandatory, currentState, false, customResolveObjects);
+  const resolvedMandatory = resolveWidgetFieldValue(mandatory, false, customResolveObjects);
 
   if (resolvedMandatory == true) {
     if (!widgetValue) {
@@ -434,6 +436,19 @@ export function constructSearchParams(params = {}) {
 
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
+  if ([...reservedKeyword, 'this'].some((keyword) => code.includes(keyword))) {
+    const message = `Code contains ${reservedKeyword.join(' or ')} or this keywords`;
+    const description = 'Cannot resolve code with reserved keywords in it. Please remove them and try again.';
+
+    return {
+      status: 'failed',
+      data: {
+        message,
+        description,
+      },
+    };
+  }
+
   const currentState = getCurrentState();
   let result = {},
     error = null;
@@ -1264,68 +1279,3 @@ export const humanizeifDefaultGroupName = (groupName) => {
       return groupName;
   }
 };
-
-export function isPDFSupported() {
-  const browser = getBrowserUserAgent();
-
-  if (!browser) {
-    return true;
-  }
-
-  const isChrome = browser.name === 'Chrome' && browser.major >= 92;
-  const isEdge = browser.name === 'Edge' && browser.major >= 92;
-  const isSafari = browser.name === 'Safari' && browser.major >= 15 && browser.minor >= 4; // Handle minor version check for Safari
-  const isFirefox = browser.name === 'Firefox' && browser.major >= 90;
-
-  console.log('browser--', browser, isChrome || isEdge || isSafari || isFirefox);
-
-  return isChrome || isEdge || isSafari || isFirefox;
-}
-
-export function getBrowserUserAgent(userAgent) {
-  var regexps = {
-      Chrome: [/Chrome\/(\S+)/],
-      Firefox: [/Firefox\/(\S+)/],
-      MSIE: [/MSIE (\S+);/],
-      Opera: [/Opera\/.*?Version\/(\S+)/ /* Opera 10 */, /Opera\/(\S+)/ /* Opera 9 and older */],
-      Safari: [/Version\/(\S+).*?Safari\//],
-    },
-    re,
-    m,
-    browser,
-    version;
-
-  if (userAgent === undefined) userAgent = navigator.userAgent;
-
-  for (browser in regexps)
-    while ((re = regexps[browser].shift()))
-      if ((m = userAgent.match(re))) {
-        version = m[1].match(new RegExp('[^.]+(?:.[^.]+){0,1}'))[0];
-        const { major, minor } = extractVersion(version);
-        return {
-          name: browser,
-          major,
-          minor,
-        };
-      }
-
-  return null;
-}
-
-function extractVersion(versionStr) {
-  // Split the string by "."
-  const parts = versionStr.split('.');
-
-  // Check for valid input
-  if (parts.length === 0 || parts.some((part) => isNaN(part))) {
-    return { major: null, minor: null };
-  }
-
-  // Extract major version
-  const major = parseInt(parts[0], 10);
-
-  // Handle minor version (default to 0)
-  const minor = parts.length > 1 ? parseInt(parts[1], 10) : 0;
-
-  return { major, minor };
-}

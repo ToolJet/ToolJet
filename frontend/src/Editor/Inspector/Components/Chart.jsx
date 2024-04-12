@@ -2,7 +2,7 @@ import React from 'react';
 import { renderElement } from '../Utils';
 import { EventManager } from '@/Editor/Inspector/EventManager';
 import Accordion from '@/_ui/Accordion';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import CodeHinter from '@/Editor/CodeEditor';
 
 class Chart extends React.Component {
@@ -74,9 +74,8 @@ class Chart extends React.Component {
 
     const jsonDescription = this.props.component.component.definition.properties.jsonDescription;
 
-    const plotFromJson = resolveReferences(
-      this.props.component.component.definition.properties.plotFromJson?.value,
-      currentState
+    const plotFromJson = resolveWidgetFieldValue(
+      this.props.component.component.definition.properties.plotFromJson?.value
     );
     const chartType = this.props.component.component.definition.properties.type.value;
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   appService,
   appsService,
@@ -20,13 +20,10 @@ import { componentTypes } from './WidgetManager/components';
 import { Inspector } from './Inspector/Inspector';
 import QueryPanel from './QueryPanel/QueryPanel';
 import {
-  onComponentOptionChanged,
-  onComponentOptionsChanged,
   onEvent,
   onQueryConfirmOrCancel,
   runQuery,
   computeComponentState,
-  debuggerActions,
   cloneComponents,
   removeSelectedComponent,
   buildAppDefinition,
@@ -55,9 +52,9 @@ import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
+import { useAppVersionStore, useAppVersionActions } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
-import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
+import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
 import {
   computeAppDiff,
   computeComponentPropertyDiff,
@@ -68,7 +65,7 @@ import {
 } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import GitSyncModal from './GitSyncModal';
-import { EMPTY_ARRAY, useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
+import { EMPTY_ARRAY, flushComponentsToRender, useEditorActions, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useNoOfGrid } from '@/_stores/gridStore';
 import { useMounted } from '@/_hooks/use-mount';
@@ -85,11 +82,11 @@ import AutoLayoutAlert from './AutoLayoutAlert';
 import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
+import { decimalToHex } from './editorConstants';
+import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 
 setAutoFreeze(false);
 enablePatches();
-
-const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
@@ -104,6 +101,7 @@ const EditorComponent = (props) => {
     autoUpdateEventStore,
     setEnvironments,
   } = useAppDataActions();
+
   const {
     updateEditorState,
     updateQueryConfirmationList,
@@ -111,6 +109,7 @@ const EditorComponent = (props) => {
     setCurrentPageId,
     setCurrentAppEnvironmentId,
     setCurrentAppEnvironmentDetails,
+    updateComponentsNeedsUpdateOnNextRender,
   } = useEditorActions();
 
   const { setAppVersionCurrentEnvironment, setAppVersionPromoted, onEditorFreeze } = useAppVersionActions();
@@ -197,8 +196,6 @@ const EditorComponent = (props) => {
     shallow
   );
 
-  const currentState = useCurrentState();
-
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isQueryPaneDragging, setIsQueryPaneDragging] = useState(false);
   const [isQueryPaneExpanded, setIsQueryPaneExpanded] = useState(false); //!check where this is used
@@ -223,7 +220,6 @@ const EditorComponent = (props) => {
   const selectionDragRef = useRef(null);
   const selectionRef = useRef(null);
   const prevAppDefinition = useRef(appDefinition);
-  const prevEventsStoreRef = useRef(events);
 
   useEffect(() => {
     updateState({ isLoading: true });
@@ -251,7 +247,7 @@ const EditorComponent = (props) => {
 
         useCurrentStateStore.getState().actions.setCurrentState({
           globals: {
-            ...currentState.globals,
+            ...getCurrentState().globals,
             theme: { name: props?.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
             currentUser: userVars,
@@ -294,12 +290,55 @@ const EditorComponent = (props) => {
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
-      if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
-        autoSave();
-      }
+      handleLowPriorityWork(() => autoSave());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
+
+  /**
+   ** Async updates components in batches to optimize and processing efficiency.
+   * This function iterates over an array of component IDs, updating them in fixed-size batches,
+   * and introduces a delay after each batch to allow the UI thread to manage other tasks, such as rendering updates.
+   * After all batches are processed, it flushes the updates to clear any flags or temporary states indicating pending updates,
+   * ensuring the system is ready for the next cycle of updates.
+   *
+   * @param {Array} componentIds An array of component IDs that need updates.
+   * @returns {Promise<void>} A promise that resolves once all batches have been processed and flushed.
+   */
+
+  async function batchUpdateComponents(componentIds) {
+    if (componentIds.length === 0) return;
+
+    let updatedComponentIds = [];
+
+    for (let i = 0; i < componentIds.length; i += 10) {
+      const batch = componentIds.slice(i, i + 10);
+      batch.forEach((id) => {
+        updatedComponentIds.push(id);
+      });
+
+      updateComponentsNeedsUpdateOnNextRender(batch);
+      // Delay to allow UI to process
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    // Flush only updated components
+    flushComponentsToRender(updatedComponentIds);
+  }
+
+  const lastUpdatedRef = useResolveStore((state) => state.lastUpdatedRefs, shallow);
+
+  useEffect(() => {
+    if (lastUpdatedRef.length > 0) {
+      const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
+      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, lastUpdatedRef);
+
+      if (componentIdsWithReferences.length > 0) {
+        batchUpdateComponents(componentIdsWithReferences);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastUpdatedRef]);
 
   useEffect(
     () => {
@@ -345,12 +384,6 @@ const EditorComponent = (props) => {
     });
   };
 
-  /**
-   * ThandleMessage event listener in the login component for iframe communication.
-   * It now checks if the received message has a type of 'redirectTo' and extracts the redirectPath value from the payload.
-   * If the value is present, it sets a cookie named 'redirectPath' with the received value and a one-day expiration.
-   * This allows for redirection to a specific path after the login process is completed.
-   */
   const handleMessage = (event) => {
     const { data } = event;
 
@@ -499,11 +532,6 @@ const EditorComponent = (props) => {
     socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') fetchApp();
-      // else if (data === 'dataQueriesChanged') {
-      //   fetchDataQueries(editingVersion?.id);
-      // } else if (data === 'dataSourcesChanged') {
-      //   fetchDataSources(editingVersion?.id);
-      // }
     });
   };
 
@@ -625,43 +653,30 @@ const EditorComponent = (props) => {
   const handleQueryPaneDragging = (bool) => setIsQueryPaneDragging(bool);
   const handleQueryPaneExpanding = (bool) => setIsQueryPaneExpanded(bool);
 
-  const handleOnComponentOptionChanged = (component, optionName, value) => {
-    return onComponentOptionChanged(component, optionName, value);
-  };
-
-  const handleOnComponentOptionsChanged = (component, options) => {
-    return onComponentOptionsChanged(component, options);
-  };
-
-  const handleComponentClick = (id, component) => {
-    updateEditorState({
-      selectedComponent: { id, component },
-    });
-  };
-
-  const sideBarDebugger = {
-    error: (data) => {
-      debuggerActions.error(data);
-    },
-    flush: () => {
-      debuggerActions.flush();
-    },
-    generateErrorLogs: (errors) => debuggerActions.generateErrorLogs(errors),
-  };
-
   const changeDarkMode = (newMode) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       globals: {
-        ...currentState.globals,
+        ...getCurrentState().globals,
         theme: { name: newMode ? 'dark' : 'light' },
       },
     });
     props.switchDarkMode(newMode);
   };
 
-  const handleEvent = (eventName, event, options) => {
-    return onEvent(getEditorRef(), eventName, event, options, 'edit');
-  };
+  const handleEvent = React.useCallback((eventName, events, options) => {
+    const latestEvents = useAppDataStore.getState().events;
+    const filteredEvents = latestEvents.filter((event) => {
+      const foundEvent = events.find((e) => e.id === event.id);
+      return foundEvent && foundEvent.name === eventName;
+    });
+
+    try {
+      return onEvent(getEditorRef(), eventName, filteredEvents, options, 'edit');
+    } catch (error) {
+      console.error(error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleRunQuery = (queryId, queryName) => runQuery(getEditorRef(), queryId, queryName);
 
@@ -669,13 +684,13 @@ const EditorComponent = (props) => {
     dataSourceModalRef.current.dataSourceModalToggleStateHandler();
   };
 
-  const setSelectedComponent = (id, component, multiSelect = false) => {
+  const setSelectedComponent = React.useCallback((id, component, multiSelect = false) => {
     const isAlreadySelected = useEditorStore.getState()?.selectedComponents.find((component) => component.id === id);
 
     if (!isAlreadySelected) {
       setSelectedComponents([{ id, component }], multiSelect);
     }
-  };
+  }, []);
 
   const onVersionRelease = (versionId) => {
     useAppVersionStore.getState().actions.updateReleasedVersionId(versionId);
@@ -699,7 +714,6 @@ const EditorComponent = (props) => {
   };
 
   const getPagesWithIds = () => {
-    //! Needs attention
     return Object.entries(appDefinition?.pages).map(([id, page]) => ({ ...page, id }));
   };
 
@@ -845,148 +859,27 @@ const EditorComponent = (props) => {
       await fetchDataSources(data.editing_version?.id),
       await fetchDataQueries(data.editing_version?.id, true, true),
     ])
-      .then(() => {
-        useCurrentStateStore.getState().actions.setEditorReady(true);
-
-        const currentPageId = useEditorStore.getState().currentPageId;
-        const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components;
-
-        const referenceManager = useResolveStore.getState().referenceMapper;
-
-        const newComponents = Object.keys(currentComponents).map((componentId) => {
-          const component = currentComponents[componentId];
-
-          if (!referenceManager.get(componentId)) {
-            return {
-              id: componentId,
-              name: component.component.name,
-            };
-          }
-        });
-
-        useResolveStore.getState().actions.addEntitiesToMap(newComponents);
-      })
-      .then(() => {
-        const currentPageId = useEditorStore.getState().currentPageId;
-        const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components;
-        let dataQueries = JSON.parse(JSON.stringify(useDataQueriesStore.getState().dataQueries));
-        let allEvents = JSON.parse(JSON.stringify(useAppDataStore.getState().events));
-
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
-
-        const entityReferencesInQueryoOptions = findAllEntityReferences(dataQueries, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
-
-        const entityReferencesInEvents = findAllEntityReferences(allEvents, [])
-          ?.map((entity) => {
-            if (entity && isValidUUID(entity)) {
-              return entity;
-            }
-          })
-          ?.filter((e) => e !== undefined);
-
-        const manager = useResolveStore.getState().referenceMapper;
-
-        if (
-          Array.isArray(entityReferencesInComponentDefinitions) &&
-          entityReferencesInComponentDefinitions?.length > 0
-        ) {
-          let newComponentDefinition = JSON.parse(JSON.stringify(currentComponents));
-
-          entityReferencesInComponentDefinitions.forEach((entity) => {
-            const entityrefExists = manager.has(entity);
-
-            if (entityrefExists) {
-              const value = manager.get(entity);
-              newComponentDefinition = dfs(newComponentDefinition, entity, value);
-            }
-          });
-
-          const newAppDefinition = produce(appJson, (draft) => {
-            draft.pages[homePageId].components = newComponentDefinition;
-          });
-
-          updateEditorState({
-            isUpdatingEditorStateInProcess: false,
-            appDefinition: newAppDefinition,
-          });
-        }
-
-        if (Array.isArray(entityReferencesInQueryoOptions) && entityReferencesInQueryoOptions?.length > 0) {
-          let newQueryOptions = {};
-          dataQueries?.forEach((query) => {
-            newQueryOptions[query.id] = query.options;
-            ``;
-          });
-
-          entityReferencesInQueryoOptions.forEach((entity) => {
-            const entityrefExists = manager.has(entity);
-
-            if (entityrefExists) {
-              const value = manager.get(entity);
-              newQueryOptions = dfs(newQueryOptions, entity, value);
-            }
-          });
-
-          dataQueries = dataQueries.map((query) => {
-            const queryId = query.id;
-            const dqOptions = newQueryOptions[queryId];
-
-            return {
-              ...query,
-              options: dqOptions,
-            };
-          });
-
-          useDataQueriesStore.getState().actions.setDataQueries(dataQueries, 'mappingUpdate');
-        }
-
-        if (Array.isArray(entityReferencesInEvents) && entityReferencesInEvents?.length > 0) {
-          let newEvents = JSON.parse(JSON.stringify(allEvents));
-
-          entityReferencesInEvents.forEach((entity) => {
-            const entityrefExists = manager.has(entity);
-
-            if (entityrefExists) {
-              const value = manager.get(entity);
-              newEvents = dfs(newEvents, entity, value);
-            }
-          });
-
-          updateState({
-            events: newEvents,
-          });
-        }
+      .then(async () => {
+        await onEditorLoad(appJson, homePageId, versionSwitched);
+        updateEntityReferences(appJson, homePageId);
       })
       .finally(async () => {
         const currentPageEvents = data.events.filter(
           (event) => event.target === 'page' && event.sourceId === homePageId
         );
 
-        const queuedQueriesForRunOnAppLoad = useDataQueriesStore.getState().queuedQueriesForRunOnAppLoad;
         const editorRef = getEditorRef();
 
-        await runQueries(queuedQueriesForRunOnAppLoad, editorRef);
-        await handleEvent('onPageLoad', currentPageEvents, {}, true);
+        handleLowPriorityWork(async () => {
+          await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
+          await handleEvent('onPageLoad', currentPageEvents, {}, true);
 
-        useDataQueriesStore.getState().actions.clearQueuedQueriesForRunOnAppLoad();
-
-        const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
-        if (currentEnvironmentObj[appId] !== envDetails?.id) {
-          currentEnvironmentObj[appId] = currentEnvironmentId;
-          localStorage.setItem('currentEnvironmentIds', JSON.stringify(currentEnvironmentObj));
-        }
+          const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
+          if (currentEnvironmentObj[appId] !== envDetails?.id) {
+            currentEnvironmentObj[appId] = currentEnvironmentId;
+            localStorage.setItem('currentEnvironmentIds', JSON.stringify(currentEnvironmentObj));
+          }
+        });
       });
   };
 
@@ -1025,6 +918,10 @@ const EditorComponent = (props) => {
       });
       if (appData.creationMode !== 'GIT') onEditorFreeze(false);
       setAppVersionPromoted(false);
+      useCurrentStateStore.getState().actions.setCurrentState({});
+      useCurrentStateStore.getState().actions.setEditorReady(false);
+      useResolveStore.getState().actions.resetStore();
+
       callBack(appData, null, versionSwitched, isEnvironmentSwitched, selectedEnvironmentId, extraProps);
       initComponentVersioning();
     }
@@ -1037,9 +934,8 @@ const EditorComponent = (props) => {
     }, []);
   };
 
-  const appDefinitionChanged = async (newDefinition, opts = {}) => {
+  const appDefinitionChanged = useCallback(async (newDefinition, opts = {}) => {
     if (useAppVersionStore.getState().isAppVersionPromoted) return;
-
     if (opts?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
       return new Promise((resolve) => {
@@ -1051,7 +947,9 @@ const EditorComponent = (props) => {
       });
     }
     let updatedAppDefinition;
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
+    const appDefinition = useEditorStore.getState().appDefinition;
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+    const currentPageId = useEditorStore.getState().currentPageId;
 
     if (opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
       updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
@@ -1080,7 +978,6 @@ const EditorComponent = (props) => {
 
         if (opts?.containerChanges || opts?.componentDefinitionChanged) {
           const currentPageComponents = newDefinition.pages[currentPageId]?.components;
-
           draft.pages[currentPageId].components = currentPageComponents;
         }
 
@@ -1145,7 +1042,7 @@ const EditorComponent = (props) => {
         appDefinition: updatedAppDefinition,
       });
     }
-  };
+  }, []);
 
   const cloneEventsForClonedComponents = (componentUpdateDiff, operation, componentMap) => {
     function getKeyFromComponentMap(componentMap, newItem) {
@@ -1197,7 +1094,7 @@ const EditorComponent = (props) => {
       updateEditorState({
         isUpdatingEditorStateInProcess: false,
       });
-    } else if (!isEmpty(editingVersion)) {
+    } else if (!isEmpty(editingVersion) && !isEmpty(appDiffOptions) && appDefinition) {
       //! The computeComponentPropertyDiff function manages the calculation of differences in table columns by requiring complete column data. Without this complete data, the resulting JSON structure may be incorrect.
       const paramDiff = computeComponentPropertyDiff(appDefinitionDiff, appDefinition, appDiffOptions);
       const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions, currentLayout);
@@ -1235,24 +1132,26 @@ const EditorComponent = (props) => {
           }
 
           //Todo: Move this to a separate function or as a middleware of the api to createing a component
-          if (updateDiff?.type === 'components' && updateDiff?.operation === 'create') {
-            const componentsFromCurrentState = getCurrentState().components;
-            const newComponentIds = Object.keys(updateDiff?.updateDiff);
-            const newComponentsExposedData = {};
-            const componentEntityArray = [];
-            Object.values(componentsFromCurrentState).filter((component) => {
-              if (newComponentIds.includes(component.id)) {
-                const componentName = updateDiff?.updateDiff[component.id]?.name;
-                newComponentsExposedData[componentName] = component;
-                componentEntityArray.push({ id: component.id, name: componentName });
-              }
-            });
+          handleLowPriorityWork(() => {
+            if (updateDiff?.type === 'components' && updateDiff?.operation === 'create') {
+              const componentsFromCurrentState = getCurrentState().components;
+              const newComponentIds = Object.keys(updateDiff?.updateDiff);
+              const newComponentsExposedData = {};
+              const componentEntityArray = [];
+              Object.values(componentsFromCurrentState).filter((component) => {
+                if (newComponentIds.includes(component.id)) {
+                  const componentName = updateDiff?.updateDiff[component.id]?.name;
+                  newComponentsExposedData[componentName] = component;
+                  componentEntityArray.push({ id: component.id, name: componentName });
+                }
+              });
 
-            useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
-            useResolveStore.getState().actions.addAppSuggestions({
-              components: newComponentsExposedData,
-            });
-          }
+              useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
+              useResolveStore.getState().actions.addAppSuggestions({
+                components: newComponentsExposedData,
+              });
+            }
+          });
 
           if (
             updateDiff?.type === 'components' &&
@@ -1303,7 +1202,7 @@ const EditorComponent = (props) => {
   };
 
   const realtimeSave = debounce(appDefinitionChanged, 100);
-  const autoSave = debounce(saveEditingVersion, 150);
+  const autoSave = saveEditingVersion;
 
   function handlePaths(prevPatch, path = [], appJSON) {
     const paths = [...path];
@@ -1436,9 +1335,11 @@ const EditorComponent = (props) => {
       }
     }
   };
-  const removeComponent = (componentId) => {
+  const removeComponent = React.useCallback((componentId) => {
     if (!isVersionReleased) {
+      const appDefinition = useEditorStore.getState().appDefinition;
       let newDefinition = JSON.parse(JSON.stringify(appDefinition));
+      const currentPageId = useEditorStore.getState().currentPageId;
 
       let childComponents = [];
 
@@ -1496,13 +1397,15 @@ const EditorComponent = (props) => {
     } else {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }
-  };
+  }, []);
 
   const moveComponents = (direction) => {
     const _appDefinition = JSON.parse(JSON.stringify(appDefinition));
     let newComponents = _appDefinition?.pages[currentPageId].components;
     const selectedComponents = useEditorStore.getState()?.selectedComponents;
+    const componentsIds = [];
     for (const selectedComponent of selectedComponents) {
+      componentsIds.push(selectedComponent.id);
       let top = newComponents[selectedComponent.id].layouts[currentLayout].top;
       let left = newComponents[selectedComponent.id].layouts[currentLayout].left;
       const width = newComponents[selectedComponent.id]?.layouts[currentLayout]?.width;
@@ -1539,6 +1442,8 @@ const EditorComponent = (props) => {
     _appDefinition.pages[currentPageId].components = newComponents;
 
     appDefinitionChanged(_appDefinition, { containerChanges: true, widgetMovedWithKeyboard: true });
+    // console.log('arpit::', { componentsIds });
+    // updateComponentsNeedsUpdateOnNextRender(componentsIds);
   };
 
   const copyComponents = () =>
@@ -1586,6 +1491,144 @@ const EditorComponent = (props) => {
     if (useEditorStore.getState()?.selectedComponents?.length > 0) {
       updateEditorState({
         selectedComponents: [],
+      });
+    }
+  };
+
+  const onEditorLoad = (appJson, pageId, isPageSwitchOrVersionSwitch = false) => {
+    useCurrentStateStore.getState().actions.setEditorReady(true);
+    const currentComponents = appJson?.pages?.[pageId]?.components;
+
+    const referenceManager = useResolveStore.getState().referenceMapper;
+
+    const newComponents = Object.keys(currentComponents).map((componentId) => {
+      const component = currentComponents[componentId];
+
+      if (isPageSwitchOrVersionSwitch || !referenceManager.get(componentId)) {
+        return {
+          id: componentId,
+          name: component.component.name,
+        };
+      }
+    });
+
+    useResolveStore.getState().actions.addEntitiesToMap(newComponents);
+  };
+
+  const updateEntityReferences = (appJson, pageId) => {
+    const currentComponents = appJson?.pages?.[pageId]?.components;
+    const globalSettings = appJson['globalSettings'];
+
+    let dataQueries = JSON.parse(JSON.stringify(useDataQueriesStore.getState().dataQueries));
+    let allEvents = JSON.parse(JSON.stringify(useAppDataStore.getState().events));
+
+    const entittyReferencesInGlobalSettings = findAllEntityReferences(globalSettings, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
+
+    const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
+
+    const entityReferencesInQueryOptions = findAllEntityReferences(dataQueries, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
+
+    const entityReferencesInEvents = findAllEntityReferences(allEvents, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
+
+    const manager = useResolveStore.getState().referenceMapper;
+
+    if (Array.isArray(entittyReferencesInGlobalSettings) && entittyReferencesInGlobalSettings?.length > 0) {
+      let newGlobalSettings = JSON.parse(JSON.stringify(globalSettings));
+      entittyReferencesInGlobalSettings.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+          newGlobalSettings = dfs(newGlobalSettings, entity, value);
+        }
+      });
+
+      const newAppDefinition = produce(appJson, (draft) => {
+        draft.globalSettings = newGlobalSettings;
+      });
+
+      updateEditorState({
+        isUpdatingEditorStateInProcess: false,
+        appDefinition: newAppDefinition,
+      });
+    }
+
+    if (Array.isArray(entityReferencesInComponentDefinitions) && entityReferencesInComponentDefinitions?.length > 0) {
+      let newComponentDefinition = JSON.parse(JSON.stringify(currentComponents));
+
+      entityReferencesInComponentDefinitions.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+          newComponentDefinition = dfs(newComponentDefinition, entity, value);
+        }
+      });
+
+      const appDefinition = useEditorStore.getState().appDefinition;
+      const newAppDefinition = produce(appDefinition, (draft) => {
+        draft.pages[pageId].components = newComponentDefinition;
+      });
+
+      handleLowPriorityWork(() => {
+        updateEditorState({
+          isUpdatingEditorStateInProcess: false,
+          appDefinition: newAppDefinition,
+        });
+      });
+    }
+
+    if (Array.isArray(entityReferencesInQueryOptions) && entityReferencesInQueryOptions?.length > 0) {
+      let newQueryOptions = {};
+      dataQueries?.forEach((query) => {
+        newQueryOptions[query.id] = query.options;
+        ``;
+      });
+
+      entityReferencesInQueryOptions.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+          newQueryOptions = dfs(newQueryOptions, entity, value);
+        }
+      });
+
+      dataQueries = dataQueries.map((query) => {
+        const queryId = query.id;
+        const dqOptions = newQueryOptions[queryId];
+
+        return {
+          ...query,
+          options: dqOptions,
+        };
+      });
+
+      useDataQueriesStore.getState().actions.setDataQueries(dataQueries, 'mappingUpdate');
+    }
+
+    if (Array.isArray(entityReferencesInEvents) && entityReferencesInEvents?.length > 0) {
+      let newEvents = JSON.parse(JSON.stringify(allEvents));
+
+      entityReferencesInEvents.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+          newEvents = dfs(newEvents, entity, value);
+        }
+      });
+
+      updateState({
+        events: newEvents,
       });
     }
   };
@@ -1688,7 +1731,7 @@ const EditorComponent = (props) => {
     };
 
     const globals = {
-      ...currentState.globals,
+      ...getCurrentState().globals,
     };
     useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
   };
@@ -1704,7 +1747,9 @@ const EditorComponent = (props) => {
     });
   };
 
-  const switchPage = (pageId, queryParams = []) => {
+  const switchPage = async (pageId, queryParams = []) => {
+    useCurrentStateStore.getState().actions.setEditorReady(false);
+    useResolveStore.getState().actions.resetStore();
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useEditorStore.getState().currentPageId;
     const appDefinition = useEditorStore.getState().appDefinition;
@@ -1729,10 +1774,16 @@ const EditorComponent = (props) => {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const globals = {
-      ...currentState.globals,
+      ...getCurrentState().globals,
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
     };
+
     useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
+    useResolveStore.getState().actions.pageSwitched(true);
+
+    await onEditorLoad(appDefinition, pageId, true);
+    updateEntityReferences(appDefinition, pageId);
+    useResolveStore.getState().actions.updateJSHints();
 
     setCurrentPageId(pageId);
 
@@ -2004,9 +2055,9 @@ const EditorComponent = (props) => {
     }
   };
 
-  const deviceWindowWidth = 450;
+  const isEditorReady = useCurrentStateStore((state) => state.isEditorReady);
 
-  if (isLoading) {
+  if (isLoading && !isEditorReady) {
     return (
       <div className="apploader">
         <div className="col col-* editor-center-wrapper">
@@ -2079,7 +2130,6 @@ const EditorComponent = (props) => {
             canRedo={canRedo}
             handleUndo={handleUndo}
             handleRedo={handleRedo}
-            // saveError={saveError}
             onNameChanged={onNameChanged}
             currentAppEnvironmentId={currentAppEnvironmentId}
             setAppDefinitionFromVersion={setAppDefinitionFromVersion}
@@ -2109,7 +2159,6 @@ const EditorComponent = (props) => {
                 globalDataSourcesChanged={globalDataSourcesChanged}
                 onZoomChanged={onZoomChanged}
                 switchDarkMode={changeDarkMode}
-                debuggerActions={sideBarDebugger}
                 appDefinition={{
                   components: appDefinition?.pages[currentPageId]?.components ?? {},
                   pages: appDefinition?.pages ?? {},
@@ -2165,7 +2214,7 @@ const EditorComponent = (props) => {
                   onMouseUp={handleCanvasContainerMouseUp}
                   ref={canvasContainerRef}
                   onScroll={() => {
-                    selectionRef.current.checkScroll();
+                    selectionRef.current?.checkScroll();
                   }}
                 >
                   <div style={{ minWidth: `calc((100vw - 300px) - 48px)` }} className={`app-${appId}`}>
@@ -2210,10 +2259,8 @@ const EditorComponent = (props) => {
                       {defaultComponentStateComputed && (
                         <>
                           <Container
-                            turnOffAutoLayout={turnOffAutoLayout}
-                            canvasWidth={getCanvasWidth()}
+                            widthOfCanvas={getCanvasWidth()}
                             socket={socket}
-                            appDefinition={appDefinition}
                             appDefinitionChanged={appDefinitionChanged}
                             snapToGrid={true}
                             darkMode={props.darkMode}
@@ -2223,17 +2270,13 @@ const EditorComponent = (props) => {
                                 : 'edit'
                             }
                             zoomLevel={zoomLevel}
-                            deviceWindowWidth={deviceWindowWidth}
                             appLoading={isLoading}
                             onEvent={handleEvent}
-                            onComponentOptionChanged={handleOnComponentOptionChanged}
-                            onComponentOptionsChanged={handleOnComponentOptionsChanged}
                             setSelectedComponent={setSelectedComponent}
                             handleUndo={handleUndo}
                             handleRedo={handleRedo}
                             removeComponent={removeComponent}
                             onComponentClick={noop} // Prop is used in Viewer hence using a dummy function to prevent error in editor
-                            sideBarDebugger={sideBarDebugger}
                             currentPageId={currentPageId}
                           />
                           <CustomDragLayer

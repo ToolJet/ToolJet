@@ -2,11 +2,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import cx from 'classnames';
 import { useDrag } from 'react-dnd';
-import { ItemTypes } from './ItemTypes';
+import { ItemTypes } from './editorConstants';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
 import { ConfigHandle } from './ConfigHandle';
-import { resolveWidgetFieldValue, resolveReferences } from '@/_helpers/utils';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
@@ -15,8 +15,6 @@ import { useNoOfGrid, useGridStore } from '@/_stores/gridStore';
 import WidgetBox from './WidgetBox';
 import * as Sentry from '@sentry/react';
 import { findHighestLevelofSelection } from './DragContainer';
-
-// const noOfGrid = 43;
 
 function computeWidth(currentLayoutOptions) {
   return `${currentLayoutOptions?.width}%`;
@@ -32,45 +30,40 @@ function getStyles(isDragging, isSelectedComponent) {
   };
 }
 
-export const DraggableBox = React.memo(
+const DraggableBox = React.memo(
   ({
     id,
     className,
     mode,
     title,
     parent,
-    allComponents,
     component,
     index,
     inCanvas,
     onEvent,
     onComponentClick,
-    onComponentOptionChanged,
-    onComponentOptionsChanged,
     paramUpdated,
-    resizingStatusChanged,
     zoomLevel,
-    containerProps,
-    setSelectedComponent,
     removeComponent,
     layouts,
-    draggingStatusChanged,
     darkMode,
     canvasWidth,
     readOnly,
     customResolvables,
     parentId,
-    sideBarDebugger,
+    getContainerProps,
+    currentPageId,
+    onComponentOptionChanged = null,
+    onComponentOptionsChanged = null,
+    isFromSubContainer = false,
     childComponents = null,
   }) => {
-    const [isResizing, setResizing] = useState(false);
-    const [isDragging2, setDragging] = useState(false);
+    const isResizing = useGridStore((state) => state.resizingComponentId === id);
     const [canDrag, setCanDrag] = useState(true);
     const noOfGrid = useNoOfGrid();
     const {
       currentLayout,
       setHoveredComponent,
-      mouseOver,
       selectionInProgress,
       isSelectedComponent,
       isMultipleComponentsSelected,
@@ -79,7 +72,6 @@ export const DraggableBox = React.memo(
       (state) => ({
         currentLayout: state?.currentLayout,
         setHoveredComponent: state?.actions?.setHoveredComponent,
-        mouseOver: state?.hoveredComponent === id,
         selectionInProgress: state?.selectionInProgress,
         isSelectedComponent:
           mode === 'edit' ? state?.selectedComponents?.some((component) => component?.id === id) : false,
@@ -89,7 +81,6 @@ export const DraggableBox = React.memo(
       shallow
     );
     const currentState = useCurrentState();
-    const [boxHeight, setboxHeight] = useState(layoutData?.height); // height for layouting with top and side values
 
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({
@@ -116,22 +107,6 @@ export const DraggableBox = React.memo(
       preview(getEmptyImage(), { captureDraggingState: true });
     }, [isDragging]);
 
-    useEffect(() => {
-      if (resizingStatusChanged) {
-        resizingStatusChanged(isResizing);
-      }
-    }, [isResizing]);
-
-    useEffect(() => {
-      if (draggingStatusChanged) {
-        draggingStatusChanged(isDragging2);
-      }
-
-      if (isDragging2 && !isSelectedComponent) {
-        setSelectedComponent(id, component);
-      }
-    }, [isDragging2]);
-
     let _refProps = {};
 
     if (mode === 'edit' && canDrag) {
@@ -153,51 +128,23 @@ export const DraggableBox = React.memo(
       width: 43,
       height: 500,
     };
-    // const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
+
     const layoutData = inCanvas ? layouts[currentLayout] || layouts['desktop'] : defaultData;
-    console.log('layoutData--', layoutData, currentLayout, layouts);
     const width = (canvasWidth * layoutData.width) / noOfGrid;
 
     const configWidgetHandlerForModalComponent =
       !isSelectedComponent &&
       component.component === 'Modal' &&
-      resolveWidgetFieldValue(component.definition.properties.useDefaultButton, currentState)?.value === false;
+      resolveWidgetFieldValue(component.definition.properties.useDefaultButton?.value) === false;
 
-    const onComponentHover = (id) => {
-      if (selectionInProgress) return;
-      setHoveredComponent(id);
-    };
+    const onComponentHover = useCallback(
+      (id) => {
+        if (selectionInProgress) return;
+        setHoveredComponent(id);
+      },
+      [id]
+    );
 
-    const { label = { value: null } } = component?.definition?.properties ?? {};
-
-    useEffect(() => {
-      if (
-        component.component == 'TextInput' ||
-        component.component == 'PasswordInput' ||
-        component.component == 'NumberInput'
-      ) {
-        const { alignment = { value: null } } = component?.definition?.styles ?? {};
-        let newHeight = layoutData?.height;
-        if (alignment?.value && resolveReferences(alignment?.value, currentState, null, customResolvables) === 'top') {
-          const { width = { value: null } } = component?.definition?.styles ?? {};
-          const { auto = { value: null } } = component?.definition?.styles ?? {};
-          const resolvedWidth = resolveReferences(width?.value, currentState, null, customResolvables);
-          const resolvedAuto = resolveReferences(auto?.value, currentState, null, customResolvables);
-          if (
-            (label?.value?.length > 0 && resolvedWidth > 0) ||
-            (resolvedAuto && resolvedWidth == 0 && label?.value && label?.value?.length != 0)
-          ) {
-            newHeight = layoutData?.height + 20;
-          }
-        }
-        setboxHeight(newHeight);
-      }
-    }, [layoutData?.height, label?.value?.length, currentLayout]);
-
-    const adjustHeightBasedOnAlignment = (increase) => {
-      if (increase) return setboxHeight(layoutData?.height + 20);
-      else return setboxHeight(layoutData?.height);
-    };
     return (
       <div
         className={
@@ -240,7 +187,7 @@ export const DraggableBox = React.memo(
             style={getStyles(isDragging, isSelectedComponent)}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-              {mode === 'edit' && !readOnly && !isResizing && (
+              {mode === 'edit' && !readOnly && (
                 <ConfigHandle
                   id={id}
                   removeComponent={removeComponent}
@@ -250,9 +197,8 @@ export const DraggableBox = React.memo(
                   widgetHeight={layoutData.height}
                   isMultipleComponentsSelected={isMultipleComponentsSelected}
                   configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
-                  mouseOver={mouseOver}
                   isSelectedComponent={isSelectedComponent}
-                  showHandle={(configWidgetHandlerForModalComponent || mouseOver || isSelectedComponent) && !isResizing}
+                  showHandle={configWidgetHandlerForModalComponent || isSelectedComponent}
                 />
               )}
               <Sentry.ErrorBoundary
@@ -271,26 +217,22 @@ export const DraggableBox = React.memo(
                   inCanvas={inCanvas}
                   paramUpdated={paramUpdated}
                   onEvent={onEvent}
-                  onComponentOptionChanged={onComponentOptionChanged}
-                  onComponentOptionsChanged={onComponentOptionsChanged}
                   onComponentClick={onComponentClick}
-                  // currentState={currentState}
-                  containerProps={containerProps}
                   darkMode={darkMode}
                   removeComponent={removeComponent}
                   canvasWidth={canvasWidth}
                   readOnly={readOnly}
                   customResolvables={customResolvables}
                   parentId={parentId}
-                  allComponents={allComponents}
-                  sideBarDebugger={sideBarDebugger}
+                  getContainerProps={getContainerProps}
+                  currentPageId={currentPageId}
+                  onOptionChanged={onComponentOptionChanged}
+                  onOptionsChanged={onComponentOptionsChanged}
+                  isFromSubContainer={isFromSubContainer}
                   childComponents={childComponents}
-                  isResizing={isResizing}
-                  adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
                 />
               </Sentry.ErrorBoundary>
             </div>
-            {/* </Rnd> */}
           </div>
         ) : (
           <div ref={drag} role="DraggableBox" className="draggable-box" style={{ height: '100%' }}>
@@ -303,3 +245,5 @@ export const DraggableBox = React.memo(
     );
   }
 );
+
+export { DraggableBox };

@@ -27,7 +27,7 @@ const initialState = {
   isUpdatingQueryInProcess: false,
   /** When a 'Create Data Query' operation is in progress, rename/update API calls are cached in the variable. */
   queuedActions: {},
-  queuedQueriesForRunOnAppLoad: [],
+  // queuedQueriesForRunOnAppLoad: [],
 };
 
 export const useDataQueriesStore = create(
@@ -37,7 +37,7 @@ export const useDataQueriesStore = create(
       actions: {
         // TODO: Remove editor state while changing currentState
         fetchDataQueries: async (appVersionId, selectFirstQuery = false, runQueriesOnAppLoad = false, ref) => {
-          set({ loadingDataQueries: true });
+          get().loadingDataQueries && set({ loadingDataQueries: true });
           const data = await dataqueryService.getAll(appVersionId);
 
           const diff = _.differenceWith(data.data_queries, get().dataQueries, _.isEqual);
@@ -75,7 +75,20 @@ export const useDataQueriesStore = create(
             const currentQueries = useCurrentStateStore.getState().queries;
 
             data.data_queries.forEach(({ id, name, options }) => {
-              updatedQueries[name] = _.merge(currentQueries[name], { id: id, isLoading: false, data: [], rawData: [] });
+              if (runQueriesOnAppLoad && options.runOnPageLoad) {
+                updatedQueries[name] = _.merge(currentQueries[name], {
+                  id: id,
+                  isLoading: true,
+                  data: [],
+                  rawData: [],
+                });
+              } else
+                updatedQueries[name] = _.merge(currentQueries[name], {
+                  id: id,
+                  isLoading: false,
+                  data: [],
+                  rawData: [],
+                });
 
               if (options && options?.requestConfirmation && options?.runOnPageLoad) {
                 queryConfirmationList.push({ queryId: id, queryName: name });
@@ -93,9 +106,9 @@ export const useDataQueriesStore = create(
           }
 
           // Runs query on loading application
-          if (runQueriesOnAppLoad) {
-            set({ queuedQueriesForRunOnAppLoad: data.data_queries });
-          }
+          // if (runQueriesOnAppLoad) {
+          //   set({ queuedQueriesForRunOnAppLoad: data.data_queries });
+          // }
         },
         setDataQueries: (dataQueries, type = 'initial') => {
           set({ dataQueries });
@@ -543,9 +556,9 @@ export const useDataQueriesStore = create(
               useAppDataStore.getState().actions.setIsSaving(false);
             });
         },
-        clearQueuedQueriesForRunOnAppLoad: () => {
-          set({ queuedQueriesForRunOnAppLoad: [] });
-        },
+        // clearQueuedQueriesForRunOnAppLoad: () => {
+        //   set({ queuedQueriesForRunOnAppLoad: [] });
+        // },
         updateQueryOptionsState: (queryOptionsList) => {
           set({ isUpdatingQueryInProcess: true });
           const { actions, selectedQuery } = useQueryPanelStore.getState();

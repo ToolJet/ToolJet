@@ -28,11 +28,6 @@ const initialState = {
   selectedComponents: EMPTY_ARRAY,
   isEditorActive: false,
   selectedComponent: null,
-  scrollOptions: {
-    container: null,
-    throttleTime: 0,
-    threshold: 0,
-  },
   canUndo: false,
   canRedo: false,
   currentVersion: {},
@@ -49,6 +44,7 @@ const initialState = {
   currentAppEnvironment: null,
   currentAppEnvironmentId: null,
   featureAccess: null,
+  componentsNeedsUpdateOnNextRender: [],
 };
 
 export const useEditorStore = create(
@@ -74,6 +70,20 @@ export const useEditorStore = create(
       },
       setIsEditorActive: (isEditorActive) => set(() => ({ isEditorActive })),
       updateEditorState: (state) => set((prev) => ({ ...prev, ...state })),
+      updateCurrentStateDiff: (currentStateDiff) => set(() => ({ currentStateDiff })),
+      updateComponentsNeedsUpdateOnNextRender: (componentsNeedsUpdateOnNextRender) => {
+        set(() => ({ componentsNeedsUpdateOnNextRender }));
+      },
+      flushComponentsNeedsUpdateOnNextRender: (toRemoveIds = []) => {
+        const currentComponents = get().componentsNeedsUpdateOnNextRender;
+
+        if (currentComponents.length === 0 || toRemoveIds.length === 0) return;
+
+        const updatedComponents = currentComponents.filter((item) => !toRemoveIds.includes(item));
+
+        set(() => ({ componentsNeedsUpdateOnNextRender: updatedComponents }));
+      },
+
       updateQueryConfirmationList: (queryConfirmationList) => set({ queryConfirmationList }),
       setHoveredComponent: (hoveredComponent) =>
         set({ hoveredComponent }, false, {
@@ -113,4 +123,15 @@ export const useEditorStore = create(
 );
 
 export const useEditorActions = () => useEditorStore((state) => state.actions);
-export const useEditorState = () => useEditorStore((state) => state, shallow);
+export const useEditorState = () => useEditorStore((state) => state);
+
+export const getComponentsToRenders = () => {
+  return useEditorStore.getState().componentsNeedsUpdateOnNextRender;
+};
+
+export const flushComponentsToRender = (componentIds = []) => {
+  if (!componentIds.length) return;
+
+  useEditorStore.getState().actions.flushComponentsNeedsUpdateOnNextRender(componentIds);
+  useResolveStore.getState().actions.flushLastUpdatedRefs();
+};

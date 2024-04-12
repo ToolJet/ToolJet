@@ -21,6 +21,10 @@ import NoListItem from './Components/Table/NoListItem';
 import ManageEventButton from './ManageEventButton';
 import { EditorContext } from '../Context/EditorContextWrapper';
 import CodeHinter from '../CodeEditor';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
+import { useEditorStore } from '@/_stores/editorStore';
+import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 
 export const EventManager = ({
   sourceId,
@@ -104,10 +108,10 @@ export const EventManager = ({
     return { name: action.name, value: action.id };
   });
 
-  let checkIfClicksAreInsideOf = document.querySelector('#cm-complete-0');
+  let checkIfClicksAreInsideOf = document.querySelector('.cm-completionListIncompleteBottom');
   // Listen for click events on body
   if (checkIfClicksAreInsideOf) {
-    document.body.addEventListener('click', function (event) {
+    document.body.addEventListener('mousedown', function (event) {
       if (checkIfClicksAreInsideOf.contains(event.target)) {
         event.stopPropagation();
       }
@@ -297,18 +301,28 @@ export const EventManager = ({
       updatedEvent.event['componentSpecificActionParams'] = getDefault;
     }
 
+    const shouldUpdateEvent = !_.isEmpty(diff(events[index], updatedEvent));
+
+    if (!shouldUpdateEvent) return;
+
+    const eventSourceid = updatedEvent?.sourceId;
+
+    useEditorStore.getState().actions.updateComponentsNeedsUpdateOnNextRender([eventSourceid]);
+
     newEvents[index] = updatedEvent;
 
-    updateAppVersionEventHandlers(
-      [
-        {
-          event_id: updatedEvent.id,
-          diff: updatedEvent,
-        },
-      ],
-      'update',
-      param
-    );
+    handleLowPriorityWork(() => {
+      updateAppVersionEventHandlers(
+        [
+          {
+            event_id: updatedEvent.id,
+            diff: updatedEvent,
+          },
+        ],
+        'update',
+        param
+      );
+    });
   }
 
   function removeHandler(index) {
