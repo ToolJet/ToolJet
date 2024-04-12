@@ -130,7 +130,7 @@ const EditorInput = ({
 
     if (totalReferences > 1) {
       const currentWord = queryInput.split('{{').pop().split('}}')[0];
-      queryInput = currentWord;
+      queryInput = '{{' + currentWord + '}}';
     }
 
     let completions = getAutocompletion(queryInput, validationType, hints, totalReferences);
