@@ -151,6 +151,7 @@ function TableSchema({
                     }));
                     const prevColumns = { ...columnDetails };
                     prevColumns[index].data_type = value ? value.value : null;
+                    prevColumns[index].column_default = value.value === 'serial' ? 'Auto-generated' : null;
                     prevColumns[index].dataTypeDetails = value;
                     const columnConstraints = prevColumns[index]?.constraints_type ?? {};
                     columnConstraints.is_not_null =
@@ -225,9 +226,9 @@ function TableSchema({
                   value={
                     columnDetails[index].data_type === 'serial'
                       ? 'Auto-generated'
-                      : checkDefaultValue(columnDetails[index].column_default)
-                      ? null
-                      : columnDetails[index].column_default
+                      : // : checkDefaultValue(columnDetails[index].column_default)
+                        // ? null
+                        columnDetails[index].column_default
                   }
                   type="text"
                   className="form-control defaultValue"
