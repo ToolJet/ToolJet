@@ -10,7 +10,16 @@ import Tick from '../Icons/Tick.svg';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, checkDefaultValue } from '../constants';
 import Select, { components } from 'react-select';
 
-function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumnSelection, handleDelete, isEditMode }) {
+function TableSchema({
+  columns,
+  setColumns,
+  darkMode,
+  columnSelection,
+  setColumnSelection,
+  handleDelete,
+  isEditMode,
+  editColumns,
+}) {
   const { Option } = components;
 
   const darkDisabledBackground = '#1f2936';
@@ -31,17 +40,6 @@ function TableSchema({ columns, setColumns, darkMode, columnSelection, setColumn
   const darkBorder = '#dadcde';
   const dropdownContainerWidth = '360px';
 
-  const primaryKeyColumns = [];
-  const nonPrimaryKeyColumns = [];
-  Object.values(columns).forEach((column) => {
-    if (column?.constraints_type?.is_primary_key) {
-      primaryKeyColumns.push({ ...column });
-    } else {
-      nonPrimaryKeyColumns.push({ ...column });
-    }
-  });
-
-  const editColumns = Object.assign({}, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
   const columnDetails = isEditMode ? editColumns : columns;
 
   const CustomSelectOption = (props) => {
