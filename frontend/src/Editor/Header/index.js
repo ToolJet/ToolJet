@@ -28,7 +28,6 @@ export default function EditorHeader({
   onNameChanged,
   setAppDefinitionFromVersion,
   onVersionRelease,
-  onVersionDelete,
   slug,
   darkMode,
 }) {
@@ -149,7 +148,6 @@ export default function EditorHeader({
                 <AppVersionsManager
                   appId={appId}
                   setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-                  onVersionDelete={onVersionDelete}
                   isPublic={isPublic ?? false}
                 />
               )}

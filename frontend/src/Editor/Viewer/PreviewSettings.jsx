@@ -10,6 +10,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import classNames from 'classnames';
+import EnvironmentManager from '@/Editor/Header/RightTopHeaderButtons/EnvironmentManager/EnvironmentsManager';
 
 const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHeader, darkMode }) => {
   const { editingVersion } = useAppVersionStore((state) => ({
@@ -23,6 +24,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
       <div className="preview-settings-overlay" style={{ borderColor: darkMode ? '#2B3036' : '#E4E7EB' }}>
         <span className="preview-settings-text">Preview settings</span>
         <span>
+          <EnvironmentManager />
           {editingVersion && (
             <AppVersionsManager
               appId={appId}
@@ -88,6 +90,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
           {previewNavbar && (
             <Offcanvas.Body>
               <span>
+                <EnvironmentManager />
                 {editingVersion && (
                   <AppVersionsManager
                     appId={appId}
