@@ -172,7 +172,7 @@ export class EmailService {
   async sendPasswordResetEmail(to: string, token: string, firstName?: string) {
     await this.init();
     const subject = 'Reset your password';
-    const url = `${this.TOOLJET_HOST}/reset-password/${token}`;
+    const url = `${this.TOOLJET_HOST}${this.SUB_PATH ? this.SUB_PATH : '/'}reset-password/${token}`;
     const templateData = {
       name: firstName || '',
       resetLink: url,
