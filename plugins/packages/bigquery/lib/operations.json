@@ -358,7 +358,7 @@
       "queryOptions": {
         "label": "Query options",
         "key": "queryOptions",
-        "type": "extendedSingleLine",
+        "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ location: 'US', dryRun: true }",
         "description": "Enter query options",
