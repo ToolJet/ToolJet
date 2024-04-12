@@ -15,7 +15,19 @@ const RowForm = ({ onCreate, onClose }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
-  const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Default') : []);
+  const [activeTab, setActiveTab] = useState(() => {
+    if (Array.isArray(columns)) {
+      return columns.map((item) => {
+        if (item.column_default === null) {
+          return 'Custom';
+        } else {
+          return 'Default';
+        }
+      });
+    } else {
+      return [];
+    }
+  });
 
   const [inputValues, setInputValues] = useState(
     Array.isArray(columns)
