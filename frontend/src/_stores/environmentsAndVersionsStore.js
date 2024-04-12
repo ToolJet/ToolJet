@@ -52,7 +52,7 @@ export const useEnvironmentsAndVersionsStore = create(
         },
         setSelectedVersion: (selectedVersion) => set({ selectedVersion }),
         setEnvironmentAndVersionsInitStatus: (state) => set({ completedEnvironmentAndVersionsInit: state }),
-        createNewVersion: async (appId, versionName, selectedVersionId, onSuccess, onFailure) => {
+        createNewVersionAction: async (appId, versionName, selectedVersionId, onSuccess, onFailure) => {
           try {
             const newVersion = await appVersionService.create(appId, versionName, selectedVersionId);
             const editorVersion = {
@@ -71,7 +71,7 @@ export const useEnvironmentsAndVersionsStore = create(
             onFailure(error);
           }
         },
-        updateVersionName: async (appId, versionId, versionName, onSuccess, onFailure) => {
+        updateVersionNameAction: async (appId, versionId, versionName, onSuccess, onFailure) => {
           try {
             await appVersionService.save(appId, versionId, { name: versionName });
             const selectedVersion = get().selectedVersion;
@@ -87,7 +87,7 @@ export const useEnvironmentsAndVersionsStore = create(
             onFailure(error);
           }
         },
-        deleteVersion: async (appId, versionId, onSuccess, onFailure) => {
+        deleteVersionAction: async (appId, versionId, onSuccess, onFailure) => {
           try {
             await appVersionService.del(appId, versionId);
             const isCurrentVersion = get().selectedVersion.id === versionId;
@@ -125,7 +125,7 @@ export const useEnvironmentsAndVersionsStore = create(
             onFailure(error);
           }
         },
-        changeEditorVersion: async (appId, versionId, onSuccess, onFailure) => {
+        changeEditorVersionAction: async (appId, versionId, onSuccess, onFailure) => {
           try {
             const data = await appVersionService.getAppVersionData(appId, versionId);
             const selectedVersion = {

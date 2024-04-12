@@ -7,9 +7,9 @@ import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersio
 
 export const EditVersion = ({ appId, setShowEditAppVersion, showEditAppVersion }) => {
   const [isEditingVersion, setIsEditingVersion] = useState(false);
-  const { updateVersionName, selectedVersion: editingVersion } = useEnvironmentsAndVersionsStore(
+  const { updateVersionNameAction, selectedVersion: editingVersion } = useEnvironmentsAndVersionsStore(
     (state) => ({
-      updateVersionName: state.actions.updateVersionName,
+      updateVersionNameAction: state.actions.updateVersionNameAction,
       selectedVersion: state.selectedVersion,
     }),
     shallow
@@ -28,7 +28,7 @@ export const EditVersion = ({ appId, setShowEditAppVersion, showEditAppVersion }
     }
 
     setIsEditingVersion(true);
-    updateVersionName(
+    updateVersionNameAction(
       appId,
       editingVersion?.id,
       versionName,

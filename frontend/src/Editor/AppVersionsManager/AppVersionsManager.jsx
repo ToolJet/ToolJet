@@ -45,7 +45,7 @@ export const AppVersionsManager = function ({ appId, setAppDefinitionFromVersion
     lazyLoadAppVersions,
     appVersionsLazyLoaded,
     setEnvironmentAndVersionsInitStatus,
-    changeEditorVersion,
+    changeEditorVersionAction,
     selectedVersion,
     deleteVersionAction,
   } = useEnvironmentsAndVersionsStore(
@@ -56,8 +56,8 @@ export const AppVersionsManager = function ({ appId, setAppDefinitionFromVersion
       selectedVersion: state.selectedVersion,
       lazyLoadAppVersions: state.actions.lazyLoadAppVersions,
       setEnvironmentAndVersionsInitStatus: state.actions.setEnvironmentAndVersionsInitStatus,
-      deleteVersionAction: state.actions.deleteVersion,
-      changeEditorVersion: state.actions.changeEditorVersion,
+      deleteVersionAction: state.actions.deleteVersionAction,
+      changeEditorVersionAction: state.actions.changeEditorVersionAction,
     }),
     shallow
   );
@@ -84,7 +84,7 @@ export const AppVersionsManager = function ({ appId, setAppDefinitionFromVersion
       });
     }
 
-    changeEditorVersion(
+    changeEditorVersionAction(
       appId,
       id,
       (newDeff) => {

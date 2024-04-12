@@ -16,12 +16,12 @@ export const CreateVersion = ({
 }) => {
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
-  const { versionsPromotedToEnvironment: appVersions, createNewVersion } = useEnvironmentsAndVersionsStore(
+  const { versionsPromotedToEnvironment: appVersions, createNewVersionAction } = useEnvironmentsAndVersionsStore(
     (state) => ({
       appVersionsLazyLoaded: state.appVersionsLazyLoaded,
       versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
       lazyLoadAppVersions: state.actions.lazyLoadAppVersions,
-      createNewVersion: state.actions.createNewVersion,
+      createNewVersionAction: state.actions.createNewVersionAction,
     }),
     shallow
   );
@@ -54,7 +54,7 @@ export const CreateVersion = ({
 
     setIsCreatingVersion(true);
 
-    createNewVersion(
+    createNewVersionAction(
       appId,
       versionName,
       selectedVersion.id,
