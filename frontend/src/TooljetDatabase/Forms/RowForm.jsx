@@ -36,11 +36,7 @@ const RowForm = ({ onCreate, onClose }) => {
             return { value: '', checkboxValue: false, disabled: false };
           }
           if (item.column_default !== null) {
-            return {
-              value: item.column_default || '',
-              checkboxValue: item.column_default === 'true' ? true : false,
-              disabled: true,
-            };
+            return { value: item.column_default || '', checkboxValue: item.column_default, disabled: true };
           } else if (item.constraints_type.is_not_null === false) {
             return { value: '', checkboxValue: false, disabled: false };
           }
@@ -60,8 +56,6 @@ const RowForm = ({ onCreate, onClose }) => {
     });
     return data;
   });
-  // console.log("Columns: ",columns)
-  console.log('InputValues: ', inputValues);
 
   const handleTabClick = (index, tabData, defaultValue, nullValue, columnName, dataType) => {
     const newActiveTabs = [...activeTab];
@@ -109,17 +103,12 @@ const RowForm = ({ onCreate, onClose }) => {
   };
 
   const handleCheckboxChange = (index, value, columnName) => {
-    console.log('InputValues: ', inputValues);
-    console.log('ColumnName: ', columnName);
-
     const newInputValues = [...inputValues];
     newInputValues[index] = {
       value: inputValues[index].value,
       checkboxValue: !inputValues[index].checkboxValue,
       disabled: inputValues[index].disabled,
     };
-
-    console.log('NewInputValues', newInputValues);
     setInputValues(newInputValues);
     setData({ ...data, [columnName]: value });
   };
@@ -194,7 +183,7 @@ const RowForm = ({ onCreate, onClose }) => {
               className="form-check-input"
               data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-check-input`}
               type="checkbox"
-              checked={inputValues[index].checkboxValue}
+              checked={inputValues[index].checkboxValue === 'true' ? true : false}
               onChange={(e) => {
                 if (!inputValues[index].disabled) handleCheckboxChange(index, e.target.checked, columnName);
               }}
