@@ -1,24 +1,17 @@
 .null-renderer-text {
     font-size: 12px;
     line-height: 18px;
-    color: #1B1F24;
-    background-color: #E4E7EB;
+    color: var(--text-primary);
+    background-color: var(--surfaces-surface-03);
     padding: 2px 6px 2px 6px;
     border-radius: 6px;
-
-    &.dark-theme {
-        color: #CFD3D8;
-        background-color: #3C434B;
-    }
+    font-weight: 500;
 }
 
 .table-editor-component-row {
     &:hover {
         .null-renderer-text {
-            &.dark-theme {
-                background-color: #1E2226 !important
-            }
-            background-color: #FFFFFF !important
+            background-color: var(--surfaces-surface-01) !important
         }
     }
 }
