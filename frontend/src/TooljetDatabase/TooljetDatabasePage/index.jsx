@@ -3,7 +3,6 @@ import cx from 'classnames';
 import Table from '../Table';
 import Sidebar from '../Sidebar';
 import { TooljetDatabaseContext } from '../index';
-import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import Warning from '../Icons/warning.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { isEmpty } from 'lodash';

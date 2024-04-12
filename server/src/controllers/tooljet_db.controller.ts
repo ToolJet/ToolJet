@@ -38,10 +38,12 @@ import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.ser
 import { TooljetDbJoinDto } from '@dto/tooljet-db-join.dto';
 import { TooljetDbJoinExceptionFilter } from 'src/filters/tooljetdb-join-exceptions-filter';
 import { Logger } from 'nestjs-pino';
+import { TooljetDbExceptionFilter } from 'src/filters/tooljetdb-exception-filter';
 
 const MAX_CSV_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
 @Controller('tooljet-db')
+@UseFilters(new TooljetDbExceptionFilter())
 export class TooljetDbController {
   private readonly pinoLogger: Logger;
   constructor(

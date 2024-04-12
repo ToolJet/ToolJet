@@ -33,6 +33,7 @@ const Table = ({ collapseSidebar }) => {
     columns,
     selectedTable,
     selectedTableData,
+    setSelectedTableData,
     setColumns,
     queryFilters,
     setQueryFilters,
@@ -43,8 +44,6 @@ const Table = ({ collapseSidebar }) => {
     pageCount,
     handleRefetchQuery,
     loadingState,
-    setLoadingState,
-    totalRecords,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -276,7 +275,6 @@ const Table = ({ collapseSidebar }) => {
               Header: column_name,
               accessor: column_name,
               dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
-              // dataType: data_type,
               ...rest,
             }))
           );
@@ -665,7 +663,14 @@ const Table = ({ collapseSidebar }) => {
       return;
     }
 
-    handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+    // Optimised by avoiding Refetch API call on Cell-Edit Save and state is updated
+    const selectedTableDataCopy = [...selectedTableData];
+    if (selectedTableDataCopy[rIndex][cellKey] !== undefined) {
+      selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellVal;
+      setSelectedTableData([...selectedTableDataCopy]);
+    }
+
+    // handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
     setEditPopover(false);
     handleOnCloseEditMenu();
     setCellClick((prev) => ({
@@ -798,13 +803,20 @@ const Table = ({ collapseSidebar }) => {
     }
   };
 
-  function tableHeaderContent(column) {
+  function tableHeaderContent(column, index) {
     const { constraints_type = {}, dataType = '' } = column;
     const { is_primary_key } = constraints_type;
 
     return is_primary_key ? (
       <ToolTip show message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
-        <div className="primaryKeyTooltip">
+        <div
+          className={cx({
+            'header-primaryKey-container':
+              editColumnHeader?.hoveredColumn === index ||
+              (editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index),
+            primaryKeyTooltip: true,
+          })}
+        >
           <div>
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
               {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
@@ -981,7 +993,7 @@ const Table = ({ collapseSidebar }) => {
                       onMouseOut={() => handleMouseOut()}
                     >
                       <div className="d-flex align-items-center justify-content-between">
-                        {tableHeaderContent(column)}
+                        {tableHeaderContent(column, index)}
 
                         <TablePopover
                           onEdit={() => {

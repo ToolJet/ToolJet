@@ -41,57 +41,57 @@ const TableForm = ({
     toast.dismiss();
   }, []);
 
+  const primaryKeyColumns = [];
+  const nonPrimaryKeyColumns = [];
+  arrayOfTableColumns.forEach((column) => {
+    if (column?.constraints_type?.is_primary_key) {
+      primaryKeyColumns.push({ ...column });
+    } else {
+      nonPrimaryKeyColumns.push({ ...column });
+    }
+  });
+
+  // console.log('first', [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
+
   function bodyColumns(columns, arrayOfTableColumns) {
     let newArray = [];
 
     for (const key in columns) {
       if (columns.hasOwnProperty(key)) {
-        let newColumn = {};
-        let oldColumn = {};
+        let new_column = {};
+        let old_column = {};
 
-        newColumn = columns[key];
-        oldColumn = arrayOfTableColumns[key];
+        new_column = columns[key];
+        old_column = arrayOfTableColumns[key];
 
-        if (oldColumn !== undefined) {
-          if (newColumn.data_type === 'serial') {
-            delete newColumn['column_default'];
-          }
-          if (oldColumn.data_type === 'serial') {
-            delete oldColumn['column_default'];
-          }
-          // delete newColumn['dataTypeDetails'];
-          // delete oldColumn['dataTypeDetails'];
-          newArray.push({ newColumn, oldColumn });
+        if (old_column !== undefined) {
+          newArray.push({ new_column, old_column });
         } else {
-          newArray.push({ newColumn });
+          newArray.push({ new_column });
         }
       }
     }
 
     arrayOfTableColumns.forEach((col, index) => {
       if (!columns.hasOwnProperty(index)) {
-        let oldColumn = {};
-        oldColumn = col;
-        newArray.push({ oldColumn });
+        let old_column = {};
+        old_column = col;
+        newArray.push({ old_column });
       }
     });
 
     Object.values(columns).forEach((col, index) => {
       if (!arrayOfTableColumns.hasOwnProperty(index)) {
-        let newColumn = col;
-        if (!newArray.some((item) => JSON.stringify(item.newColumn) === JSON.stringify(newColumn))) {
-          if (newColumn.data_type === 'serial') {
-            delete newColumn['column_default'];
-          }
-          // delete newColumn['dataTypeDetails'];
-          newArray.push({ newColumn });
+        let new_column = col;
+        if (!newArray.some((item) => JSON.stringify(item.new_column) === JSON.stringify(new_column))) {
+          newArray.push({ new_column });
         }
       }
     });
     return newArray;
   }
 
-  let data = bodyColumns(columns, arrayOfTableColumns);
+  let data = bodyColumns(columns, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
 
   const validateTableName = () => {
     if (isEmpty(tableName)) {
@@ -197,14 +197,14 @@ const TableForm = ({
     }
   });
 
-  const currentPrimaryKeyIcons = existingPrimaryKeyObjects?.map((item, index) => {
+  const currentPrimaryKeyIcons = existingPrimaryKeyObjects?.map((item) => {
     return {
       columnName: item.column_name,
       icon: item.data_type,
     };
   });
 
-  const newPrimaryKeyIcons = primaryKeyObjects?.map((item, index) => {
+  const newPrimaryKeyIcons = primaryKeyObjects?.map((item) => {
     return {
       columnName: item.column_name,
       icon: item.data_type,
