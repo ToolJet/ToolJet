@@ -13,7 +13,6 @@ import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { addComponents, addNewWidgetToTheEditor, isPDFSupported } from '@/_helpers/appUtils';
-import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useAppInfo } from '@/_stores/appDataStore';
@@ -31,7 +30,7 @@ import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
 const deviceWindowWidth = EditorConstants.deviceWindowWidth;
 
 export const Container = ({
-  canvasWidth,
+  widthOfCanvas,
   mode,
   snapToGrid,
   onComponentClick,
@@ -72,10 +71,13 @@ export const Container = ({
     shallow
   );
 
+  const canvasWidth = widthOfCanvas
+    ? widthOfCanvas
+    : document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect()?.width;
   const gridWidth = canvasWidth / noOfGrids;
+
   const { appId } = useAppInfo();
 
-  const currentState = useCurrentState();
   const { appVersionsId, isVersionReleased } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
@@ -189,7 +191,7 @@ export const Container = ({
     } else {
       const diffState = diff(components, boxes);
 
-      if (!_.isEmpty(diffState) && !isOnlyLayoutUpdate(diffState)) {
+      if (!_.isEmpty(diffState)) {
         setBoxes(components);
       }
     }
@@ -244,6 +246,8 @@ export const Container = ({
       return;
     }
 
+    if (!appDefinition.pages[currentPageId]?.components) return;
+
     const newDefinition = {
       ...appDefinition,
       pages: {
@@ -251,7 +255,7 @@ export const Container = ({
         [currentPageId]: {
           ...appDefinition.pages[currentPageId],
           components: {
-            ...appDefinition.pages[currentPageId].components,
+            ...appDefinition.pages[currentPageId]?.components,
             ...boxes,
           },
         },
@@ -594,23 +598,21 @@ export const Container = ({
       ...updatedBoxes,
     };
 
-    handleLowPriorityWork(() => {
-      const diffState = diff(boxes, newBoxes);
+    const diffState = diff(boxes, newBoxes);
 
-      setBoxes((prev) => {
-        const updatedComponentsAsperDiff = Object.keys(diffState).reduce((acc, key) => {
-          const component = newBoxes[key];
-          if (component) {
-            acc[key] = component;
-          }
-          return acc;
-        }, {});
+    setBoxes((prev) => {
+      const updatedComponentsAsperDiff = Object.keys(diffState).reduce((acc, key) => {
+        const component = newBoxes[key];
+        if (component) {
+          acc[key] = component;
+        }
+        return acc;
+      }, {});
 
-        return {
-          ...prev,
-          ...updatedComponentsAsperDiff,
-        };
-      });
+      return {
+        ...prev,
+        ...updatedComponentsAsperDiff,
+      };
     });
 
     updateCanvasHeight(newBoxes);
@@ -762,7 +764,6 @@ export const Container = ({
         onEvent,
         appDefinition,
         appDefinitionChanged,
-        currentState,
         appLoading,
         zoomLevel,
         setSelectedComponent,

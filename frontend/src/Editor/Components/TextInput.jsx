@@ -224,7 +224,7 @@ export const TextInput = function TextInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
 
-  const renderInput = () => (
+  return (
     <>
       <div
         data-cy={`label-${String(component.name).toLowerCase()}`}
@@ -235,8 +235,8 @@ export const TextInput = function TextInput({
             ? 'flex-column'
             : 'align-items-center '
         }  ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
-      ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
-      ${visibility || 'invisible'}`}
+    ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
+    ${visibility || 'invisible'}`}
         style={{
           position: 'relative',
           whiteSpace: 'nowrap',
@@ -339,6 +339,4 @@ export const TextInput = function TextInput({
       )}
     </>
   );
-
-  return <>{renderInput()}</>;
 };
