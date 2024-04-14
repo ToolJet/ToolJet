@@ -96,7 +96,7 @@ export const generateHints = (hints, totalReferences = 1) => {
           pickedCompletionConfig.from = from;
         }
 
-        if (totalReferences > 1 && completion.type !== 'js_methods') {
+        if (totalReferences > 0 && completion.type !== 'js_methods') {
           let queryInput = view.state.doc.toString();
           const currentWord = queryInput.split('{{').pop().split('}}')[0];
           pickedCompletionConfig.from = from !== to ? from : from - currentWord.length;
