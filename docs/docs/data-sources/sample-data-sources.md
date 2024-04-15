@@ -5,7 +5,7 @@ title: Sample Data Sources
 
 # Sample Data Source in ToolJet
 
-ToolJet includes a built-in PostgreSQL sample data source that allows you to familiarize yourself with its features and components before connecting your own data. This shared database contains example tables and data for hands-on experimentation. The sample data source is a shared PostgreSQL connection available across all workspaces and applications. This means any changes or updates made to the data will be reflected in real-time for all users, regardless of the application or workspace. If are using ToolJet Cloud, the sample data resets daily at midnight. However, if you are using a self-hosted version of ToolJet, the data will not be reset.
+ToolJet includes a built-in PostgreSQL sample data source that allows you to familiarize yourself with its features and components before connecting your own data. This database contains example tables and data for hands-on experimentation. The sample data source is a shared PostgreSQL connection available across all workspaces and applications. This means any changes or updates made to the data will be reflected in real-time for all users, regardless of the application or workspace. If are using ToolJet Cloud, the sample data resets daily at midnight. However, if you are using a self-hosted version of ToolJet, the data will not be reset.
 
   <img className="screenshot-full" src="/img/datasource-reference/sample-data-sources/canvas.png" alt="Canvas View" />
 
@@ -13,18 +13,14 @@ ToolJet includes a built-in PostgreSQL sample data source that allows you to fam
 
 You can connect to the sample data source in three different ways, depending on your requirements:
 
-1. Create a new application with a pre-established sample data source connection.
-2. Connect the sample data source to a newly created application.
-3. Connect the sample data source to an existing application.
-
-### **Create a new application with a pre-established sample data source connection:**
+### **1. Create a Sample Application Using the Sample Data Source.**
 
 This method enables the creation of a sample application with a pre-configured connection to the sample data source. The data will be already visualized on the application's canvas upon creation.
 
    1. Locate the Data Sources page within the dashboard's left-hand sidebar and navigate to it.
-   2. Under the DATA SOURCES ADDED section in the sidebar, you will find the Sample Data Source (postgres). This is a default data source and cannot be deleted.
-   3. Select Sample Data Source (postgres).You can click on the Test Connection button to test your connection to your sample database.
-   4. Click Create sample application to generate a new application. This application automatically includes the sample data source.
+   2. Under the **DATA SOURCES ADDED** section in the sidebar, you will find the **Sample Data Source (postgres)**. This is a default data source and cannot be deleted.
+   3. Select **Sample Data Source (postgres)**. You can click on the **Test Connection** button to test your connection to your sample database.
+   4. Click **Create sample application** to generate the new application. This application automatically includes the sample data source.
    5. By default, this application will feature a table component with tabs. These tabs will visually display the data retrieved from your sample data source.
 
 <div style={{textAlign: 'center'}}>
@@ -32,13 +28,13 @@ This method enables the creation of a sample application with a pre-configured c
 </div>
 
 
-### **Connect the sample data source to a newly created application:**
+### **2. Connect the sample data source to a newly created application.**
 
-This method allows you to add the sample data source to an existing application that doesn't have any UI components added to the canvas yet.
+This method allows you to add a sample data source to an existing application that is in an empty state (i.e., has no pre-existing components)
 
-  1. Select the application you want to connect to the sample data source.
-  2. If no UI components are present on the canvas, you'll find an option to connect to a sample data source on the canvas.
-  3. Click on the **Connect to sample data source** button to connect the sample data source to the application. This will create a query in the query panel which will fetch all the tables names from the sample data source.
+  1. Select/Create the application you want to connect to the sample data source.
+  2. Once you select/create the new application, the empty state guides you through the initial setup for connecting the sample data source.
+  3. Click on the **Connect to sample data source** button. This will create a query in the query panel which will retrieve all the tables names from the sample data source.
 
 
 
@@ -47,7 +43,7 @@ This method allows you to add the sample data source to an existing application 
 </div>
 
 
-### **Connect the sample data source to an existing application.**
+### **3. Connect the sample data source to an existing application.**
 
 This method allows you to connect the sample data source to an existing application from the query panel.
 
