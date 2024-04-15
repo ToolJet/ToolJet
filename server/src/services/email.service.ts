@@ -155,7 +155,7 @@ export class EmailService {
     organizationId?: string
   ) {
     await this.init(organizationId);
-    const subject = `Welcome to ${organizationName || 'ToolJet'}`;
+    const subject = `Welcome to ${this.WHITE_LABEL_TEXT || 'ToolJet'}`;
     const inviteUrl = generateOrgInviteURL(invitationtoken);
     const templateData = {
       name: name || '',
