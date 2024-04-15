@@ -298,6 +298,7 @@ export const NumberInput = function NumberInput({
             display: !visibility ? 'none' : 'flex',
             whiteSpace: 'nowrap',
           }}
+          data-disabled={disable || loading}
         >
           <Label
             label={label}
