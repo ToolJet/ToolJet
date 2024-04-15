@@ -62,7 +62,7 @@ This method allows you to connect the sample data source to an existing applicat
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-query-manager.gif" alt="Connect via query manager" />
 </div>
 
-### **Sample Data Source Schema**
+ ## **Sample Data Source Schema**
 
 The sample data source contains various tables with different data types.
 
