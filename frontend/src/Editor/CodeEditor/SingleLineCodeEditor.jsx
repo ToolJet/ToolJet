@@ -162,22 +162,19 @@ const EditorInput = ({
     setCurrentValue(val);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const handleOnBlur = React.useCallback(() => {
+
+  const handleOnBlur = () => {
     setFirstTimeFocus(false);
     if (ignoreValidation) {
       return onBlurUpdate(currentValue);
     }
     setTimeout(() => {
-      if (
-        (!error && currentValue !== '' && className == 'codehinter-plugins') ||
-        (className !== 'codehinter-plugins' && (!error || currentValue == ''))
-      ) {
+      if (!error || currentValue == '') {
         const _value = currentValue;
         onBlurUpdate(_value);
       }
     }, 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue, error]);
+  };
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const theme = darkMode ? okaidia : githubLight;
