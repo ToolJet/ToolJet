@@ -855,8 +855,10 @@ const EditorComponent = (props) => {
     }
 
     Promise.all([
-      await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id),
-      await fetchDataSources(data.editing_version?.id),
+      await useDataSourcesStore
+        .getState()
+        .actions.fetchGlobalDataSources(data?.organization_id, data.editing_version?.id, currentEnvironmentId),
+      await fetchDataSources(data.editing_version?.id, currentEnvironmentId),
       await fetchDataQueries(data.editing_version?.id, true, true),
     ])
       .then(async () => {
