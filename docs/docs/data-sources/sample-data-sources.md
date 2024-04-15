@@ -7,7 +7,12 @@ title: Sample Data Sources
 
 ToolJet includes a built-in PostgreSQL sample data source that allows you to familiarize yourself with its features and components before connecting your own data. This database contains example tables and data for hands-on experimentation. The sample data source is a shared PostgreSQL connection available across all workspaces and applications. This means any changes or updates made to the data will be reflected in real-time for all users, regardless of the application or workspace. If are using ToolJet Cloud, the sample data resets daily at midnight. However, if you are using a self-hosted version of ToolJet, the data will not be reset.
 
-  <img className="screenshot-full" src="/img/datasource-reference/sample-data-sources/canvas.png" alt="Canvas View" />
+
+### Getting Started with Sample Data Sources
+
+When you create a new application, the empty state will guide you on the next steps for connecting a data source. If you don't have your own data source ready, you can immediately start exploring and building by connecting to our sample data source.
+
+<img className="screenshot-full" src="/img/datasource-reference/sample-data-sources/canvas.png" alt="Canvas View" />
 
 ## Connecting to Sample Data Sources
 
@@ -17,7 +22,7 @@ You can connect to the sample data source in three different ways, depending on 
 
 This method enables the creation of a sample application with a pre-configured connection to the sample data source. The data will be already visualized on the application's canvas upon creation.
 
-   1. Locate the Data Sources page within the dashboard's left-hand sidebar and navigate to it.
+   1. Navigate to the Data Sources page within the dashboard's left-hand sidebar.
    2. Under the **DATA SOURCES ADDED** section in the sidebar, you will find the **Sample Data Source (postgres)**. This is a default data source and cannot be deleted.
    3. Select **Sample Data Source (postgres)**. You can click on the **Test Connection** button to test your connection to your sample database.
    4. Click **Create sample application** to generate the new application. This application automatically includes the sample data source.
