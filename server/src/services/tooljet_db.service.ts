@@ -173,6 +173,12 @@ export class TooljetDbService {
 
     const { table_name: tableName, foreign_keys = [] } = params;
 
+    let referenced_tables_info = {};
+    if (foreign_keys.length) {
+      const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
+      referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(referenced_table_list, organizationId);
+    }
+
     const queryRunner = this.manager.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -181,7 +187,6 @@ export class TooljetDbService {
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
 
-    // Todo: Check if all the Referenced Foreign key tables are valid
     try {
       const internalTable = queryRunner.manager.create(InternalTable, {
         tableName,
@@ -194,7 +199,9 @@ export class TooljetDbService {
         new Table({
           name: internalTable.id,
           columns: this.prepareColumnListForCreateTable(params.columns),
-          ...(foreign_keys.length && { foreignKeys: this.prepareForeignKeyDetails(foreign_keys) }),
+          ...(foreign_keys.length && {
+            foreignKeys: this.prepareForeignKeyDetails(foreign_keys, referenced_tables_info),
+          }),
         })
       );
 
@@ -666,7 +673,7 @@ export class TooljetDbService {
     return columnList;
   }
 
-  private prepareForeignKeyDetails(foreign_keys) {
+  private prepareForeignKeyDetails(foreign_keys, referenced_tables_info) {
     if (!foreign_keys.length) return [];
     const foreignKeyList = foreign_keys.map((foreignKeyDetail) => {
       const {
@@ -679,12 +686,44 @@ export class TooljetDbService {
 
       return {
         columnNames: column_names,
-        referencedTableName: referenced_table_name,
+        referencedTableName: referenced_tables_info[referenced_table_name],
         referencedColumnNames: referenced_column_names,
         ...(on_delete && { onDelete: on_delete }),
         ...(on_update && { onUpdate: on_update }),
       };
     });
     return foreignKeyList;
+  }
+
+  private async fetchAndCheckIfValidForeignKeyTables(referenced_table_list, organisation_id) {
+    const valid_referenced_table_details = await this.manager.find(InternalTable, {
+      where: {
+        organizationId: organisation_id,
+        tableName: In(referenced_table_list),
+      },
+      select: ['tableName', 'id'],
+    });
+
+    const referenced_tables_info = {};
+    const validReferencedTableSet = new Set(
+      valid_referenced_table_details.map((referenced_table_detail) => {
+        referenced_tables_info[referenced_table_detail.tableName] = referenced_table_detail.id;
+        return referenced_table_detail.tableName;
+      })
+    );
+
+    const invalid_tables = [];
+    const is_all_tables_exist = referenced_table_list.every((referenced_table) => {
+      if (validReferencedTableSet.has(referenced_table)) return true;
+      invalid_tables.push(referenced_table);
+      return false;
+    });
+
+    if (!is_all_tables_exist) {
+      throw new BadRequestException(
+        `Tables: ${invalid_tables.join(',')} - used for Foreign key reference was not found`
+      );
+    }
+    return referenced_tables_info;
   }
 }
