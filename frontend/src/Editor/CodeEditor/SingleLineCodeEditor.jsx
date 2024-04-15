@@ -121,6 +121,7 @@ const EditorInput = ({
   isFocused,
   componentId,
   type,
+  className,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
@@ -167,7 +168,10 @@ const EditorInput = ({
       return onBlurUpdate(currentValue);
     }
     setTimeout(() => {
-      if (!error || currentValue == '') {
+      if (
+        (!error && currentValue !== '' && className == 'codehinter-plugins') ||
+        (className !== 'codehinter-plugins' && (!error || currentValue == ''))
+      ) {
         const _value = currentValue;
         onBlurUpdate(_value);
       }
