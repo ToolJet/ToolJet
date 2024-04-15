@@ -54,10 +54,22 @@ This method allows you to connect the sample data source to an existing applicat
 
   1. Open the **Query Panel** of the application you want to connect to the **Sample Data Source**.
   2. In the **Query Panel**, click on the **+Add** button to add a new query, and select **Sample Data Source**.
-  3. This will create a new empty query. You can now write your SQL query to retrieved data from the sample data source.
+  3. This will create a new empty query. You can now write your SQL query to retrieved data from the sample data source. You can checkout the sample data source [schema](#sample-data-source-schema) to understand the tables and columns available in the sample data source.
 
 
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-query-manager.gif" alt="Connect via query manager" />
 </div>
+
+### **Sample Data Source Schema**
+
+The sample data source contains various tables with different data types.
+
+| Table Name                       | Column Names| Number of Rows |
+|:-------|:---------|:---------------|
+| `sampledataxlsx_organizations`   | `index`, `organization_id`, `name`, `website`, `country`, `description`, `founded`, `industry`, `number_of_employees`         | 100              |
+| `sampledataxlsx_countrygdp`      | `country`, `area_sq_km, population`, `exports`, `imports, gdp`, `gdp_per_capita`, `gdp_real_growth_rate`, `inflation_rate_consumer_prices`, `investment_gross_fixed_of_gdp`, `labor_force`, `unemployment_rate` | 263              |
+| `sampledataxlsx_users`           | `first_name`, `last_name`, `company_name`, `address`, `city`, `county`, `state`, `zip`, `phone1`, `phone2`, `email`, `web`     | 500              |
+| `sampledataxlsx_orders`          | `row_id`, `order_id`, `order_date`, `ship_date`, `ship_mode`, `customer_id`, `customer_name`, `segment`, `country`, `city`, `state`, `postal_code`, `region`, `product_id`, `category`, `sub_category`, `product_name`, `sales`, `quantity`, `discount`, `profit` | 500              |
+| `sampledataxlsx_productlistcars` | `car`, `mpg`, `cylinders`, `displacement`, `horsepower`, `weight`, `acceleration`, `model`, `origin`                          | 406              |
