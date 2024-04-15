@@ -634,7 +634,7 @@ export function Table({
       columns,
       data,
       defaultColumn,
-      initialState: { pageIndex: 0, pageSize: -1 },
+      initialState: { pageIndex: 0, pageSize: 1 },
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
