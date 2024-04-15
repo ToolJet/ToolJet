@@ -5,7 +5,7 @@ title: Using Server Side Pagination in Tables
 
 <div style={{paddingBottom:'24px'}}>
 
-Learn to implement server-side pagination for large datasets in a table component to enhance application performance. This guide is applicable for databases like MySQL, PostgreSQL, MSSQL, MongoDB, etc., supporting `limit` and `offset` for chunked data retrieval. An example of loading data from Google Sheets in chunks is also provided.
+In this guide, we will learn how to implement server-side pagination for large datasets in a table component to enhance application performance. This guide is applicable for databases like MySQL, PostgreSQL, MSSQL, MongoDB, etc., supporting `limit` and `offset` for chunked data retrieval. 
 
 </div>
 
