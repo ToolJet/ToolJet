@@ -33,7 +33,7 @@ export const CustomSelect = ({
   const isCellRowIndexFocused = useMemo(() => isFocused === cellRowIndex, [isFocused, cellRowIndex]);
   useEffect(() => {
     const handleDocumentClick = (event) => {
-      if (!containerRef.current?.contains(event.target)) {
+      if (isMulti && !containerRef.current?.contains(event.target)) {
         setIsFocused('');
       }
     };
@@ -140,8 +140,10 @@ export const CustomSelect = ({
           hideSelectedOptions={false}
           isClearable={false}
           clearIndicator={false}
-          menuIsOpen={isCellRowIndexFocused}
-          isFocused={isCellRowIndexFocused}
+          {...(isMulti && {
+            menuIsOpen: isCellRowIndexFocused,
+            isFocused: isCellRowIndexFocused,
+          })}
         />
       </div>
     </OverlayTrigger>

@@ -213,7 +213,6 @@
     .td-container {
       margin-top: auto;
       margin-bottom: auto;
-      // overflow: hidden
     }
 
     .td-container:has(.action-button) {
@@ -853,6 +852,7 @@
       }
 
       &.has-textarea {
+        overflow: hidden;
         .table-column-type-div-element {
           display: block;
         }
