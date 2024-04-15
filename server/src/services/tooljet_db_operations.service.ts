@@ -195,7 +195,7 @@ export class TooljetDbOperationsService implements QueryService {
       joinQueryJson: sanitizedJoinTableJson,
     });
 
-    return { status: 'ok', data: result };
+    return { status: 'ok', data: { result } };
   }
 }
 
