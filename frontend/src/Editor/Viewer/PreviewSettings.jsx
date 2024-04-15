@@ -10,7 +10,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import classNames from 'classnames';
-import EnvironmentManager from '@/Editor/Header/RightTopHeaderButtons/EnvironmentManager/EnvironmentsManager';
+import EnvironmentManager from '@/Editor/Header/EnvironmentManager';
 
 const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHeader, darkMode }) => {
   const { editingVersion } = useAppVersionStore((state) => ({
