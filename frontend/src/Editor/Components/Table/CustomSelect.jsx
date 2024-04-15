@@ -185,7 +185,7 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
         />
       </div>
       <MenuList {...props} selectProps={selectProps}>
-        {optionsLoadingState && _.isEmpty(props.options) ? (
+        {optionsLoadingState ? (
           <div class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
               <span class="sr-only"></span>
