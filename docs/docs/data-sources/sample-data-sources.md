@@ -18,7 +18,7 @@ When you create a new application, the empty state will guide you on the next st
 
 You can connect to the sample data source in three different ways, depending on your requirements:
 
-### **1. Create a Sample Application Using the Sample Data Source.**
+### 1. Create a Sample Application Using the Sample Data Source.
 
 This method enables the creation of a sample application with a pre-configured connection to the sample data source. The data will be already visualized on the application's canvas upon creation.
 
@@ -33,7 +33,7 @@ This method enables the creation of a sample application with a pre-configured c
 </div>
 
 
-### **2. Connect the Sample Data Source to a Newly Created Application.**
+### 2. Connect the Sample Data Source to a Newly Created Application.
 
 This method allows you to add a sample data source to an existing application that is in an empty state (i.e., has no pre-existing components)
 
@@ -48,7 +48,7 @@ This method allows you to add a sample data source to an existing application th
 </div>
 
 
-### **3. Connect the Sample Data Source to an Existing Application.**
+### 3. Connect the Sample Data Source to an Existing Application.
 
 This method allows you to connect the sample data source to an existing application from the query panel.
 
@@ -62,7 +62,7 @@ This method allows you to connect the sample data source to an existing applicat
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-query-manager.gif" alt="Connect via query manager" />
 </div>
 
- ## **Sample Data Source Schema**
+ ## Sample Data Source Schema
 
 The sample data source contains various tables with different data types.
 
