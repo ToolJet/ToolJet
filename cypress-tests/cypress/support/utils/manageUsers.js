@@ -68,6 +68,7 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonUploadCsvFile
   );
+
   cy.get(usersSelector.addUsersCardTitle).verifyVisibleElement(
     "have.text",
     usersText.addUsersCardTitle
@@ -121,6 +122,15 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonDownloadTemplate
   );
+
+  cy.exec("cd ./cypress/downloads/ && rm -rf *");
+  cy.get(usersSelector.buttonDownloadTemplate).click();
+  cy.wait(4000)
+  cy.exec("ls ./cypress/downloads/").then((result) => {
+    const downloadedAppExportFileName = result.stdout.split("\n")[0];
+    expect(downloadedAppExportFileName).to.contain.string("sample_upload.csv");
+  });
+
   cy.get(usersSelector.iconBulkUpload).should("be.visible");
   cy.get(usersSelector.helperTextSelectFile).verifyVisibleElement(
     "have.text",
