@@ -5,7 +5,7 @@ title: Using Server Side Pagination in Tables
 
 <div style={{paddingBottom:'24px'}}>
 
-In this guide, we will learn how to implement server-side pagination for large datasets in a table component to enhance application performance. This guide is applicable for databases like MySQL, PostgreSQL, MSSQL, MongoDB, etc., supporting `limit` and `offset` for chunked data retrieval.
+In this guide, we will implement server-side pagination for large datasets in a table component to enhance application performance. This guide is applicable for databases like MySQL, PostgreSQL, MSSQL, MongoDB, etc., supporting `limit` and `offset` for chunked data retrieval.
 
 </div>
 
@@ -22,7 +22,7 @@ ORDER BY id
 LIMIT 100 OFFSET {{(components.table1.pageIndex-1)*100}};
 ```
   
-The query will fetch 100 rows at a time from the postgresql users table, and the number of rows returned is determined by the current value of `pageIndex`(exposed variable) in the Table component.
+The query will fetch 100 rows at a time from the PostgreSQL users table, and the number of rows returned is determined by the current value of `pageIndex`(exposed variable) in the Table component.
 
 The following is the breakdown of the above PostgreSQL query:
 
@@ -50,7 +50,7 @@ FROM users;
 
 - Drag the table component to the canvas from the components library and set the value of the **Data** property to `{{queries.<postgresquery>.data}}`  to populate the table with the relevant data.
 
-- Enable the **Server-side pagination** option
+- Enable the **Server-side pagination** option.
 - Click on the `Fx` next to **Enable previous page button** and set the value as below. This condition disables the previous page button when the current page is page `1`.
 
   ```js
